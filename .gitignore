@@ -1,0 +1,24 @@
+# Deploy scripts (contain credentials)
+_cf_*.py
+_find_node.py
+_deploy_staging/
+_deploy/
+_deploy_success.json
+_deploy_debug.txt
+_deploy_log.txt
+_deploy_result.json
+_deploy_archive/
+_dns_fix.txt
+_dns_result.txt
+_gh_pages_log.txt
+_git_log.txt
+_pages_result.txt
+_soulseal_log.txt
+_actions_debug.txt
+_calendar_result.txt
+.wrangler/
+dist/
+node_modules/
+*.pyc
+__pycache__/
+.env
