@@ -87,13 +87,13 @@ def sello(rel, path):
     # que funciona es un autogol.
     e = ESTADOS.get(rel)
     if e == "ok":
-        marcas.append('<span class="ok">OK</span>')
+        marcas.append('<span class="badge ok">OK</span>')
     elif e == "obras":
-        marcas.append('<span class="obras">EN OBRAS</span>')
+        marcas.append('<span class="badge obras">EN OBRAS</span>')
     elif e == "indice":
-        marcas.append('<span class="indice">ÍNDICE</span>')
+        marcas.append('<span class="badge indice">ÍNDICE</span>')
     if necesita_colonia(path):
-        marcas.append('<span class="hub">COLONIA</span>')
+        marcas.append('<span class="badge hub">COLONIA</span>')
     return "".join(marcas)
 
 
@@ -186,36 +186,53 @@ page = f"""<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ALISA · lab.html — índice del motor</title>
-<style>
- *{{box-sizing:border-box}}
- body{{margin:0;background:#070a11;color:#cfe3f5;font-family:ui-monospace,monospace;padding:28px 34px 60px}}
- header{{border-bottom:1px solid #1d2b3e;padding-bottom:14px;margin-bottom:22px}}
- h1{{margin:0 0 4px;font-size:20px;color:#7fd0ff;letter-spacing:1px}}
- .sub{{color:#5f7a92;font-size:12px;line-height:1.7}}
- .sub b{{color:#7CFC98}}
- h2{{font-size:13px;color:#9fd0ff;margin:26px 0 10px;font-weight:normal;letter-spacing:.5px}}
- h2 i{{color:#41566b;font-style:normal;font-size:11px}}
- .grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(252px,1fr));gap:9px}}
- .card{{display:block;background:#0d141f;border:1px solid #1a2839;border-radius:8px;padding:10px 12px;
-        text-decoration:none;color:#cfe3f5;transition:.15s}}
- .card:hover{{background:#132133;border-color:#2f5878;transform:translateY(-1px)}}
- .card b{{display:block;font-size:12.5px;color:#e6f1fb;margin-bottom:3px}}
- .card .d{{display:block;font-size:10.5px;color:#5f7a92;line-height:1.45}}
- .card.room{{border-color:#2b2038}} .card.room:hover{{border-color:#5a3f78}}
- .card.juego{{border-color:#20372b}} .card.juego:hover{{border-color:#3f7856}}
- .card.mesa{{border-color:#2e2a1c}} .card.mesa:hover{{border-color:#7a6a34}}
- .ok{{float:right;background:#1d4d32;color:#8ff0b6;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:4px}}
- .mal{{float:right;background:#5a1f1f;color:#ffb3b3;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:4px}}
- .hub{{float:right;background:#3a2d12;color:#e0b020;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:4px}}
- .obras{{float:right;background:#3a2d12;color:#e0b020;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:4px}}
- .indice{{float:right;background:#1c2b3a;color:#7fb0e0;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:4px}}
- .hero{{display:block;background:linear-gradient(120deg,#111c2b,#0d141f);border:1px solid #2f5878;
-        border-radius:10px;padding:20px 22px;text-decoration:none;color:#e6f1fb;margin-bottom:6px}}
- .hero:hover{{border-color:#7fd0ff}}
- .hero b{{display:block;font-size:17px;color:#7fd0ff;letter-spacing:2px;margin-bottom:5px}}
- .hero span{{font-size:11.5px;color:#7d97ad;line-height:1.6}}
- footer{{margin-top:34px;color:#3a4a5a;font-size:10.5px;border-top:1px solid #131e2b;padding-top:12px}}
-</style></head><body>
+<link rel="stylesheet" href="vendor/fonts/fuentes.css">
+ <style>
+  * {{box-sizing:border-box}}
+  :root {{ --bg: #030712; --bg-card: rgba(17, 24, 39, 0.6); --border: rgba(255, 255, 255, 0.08); --text: #e2e8f0; --accent: #38bdf8; --accent-glow: rgba(56, 189, 248, 0.4); }}
+  body {{ margin:0; background: radial-gradient(circle at top center, #1e1b4b 0%, var(--bg) 60%); color: var(--text); font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; padding: 40px 60px 80px; min-height: 100vh; }}
+  header {{ border-bottom: 1px solid var(--border); padding-bottom: 24px; margin-bottom: 32px; display: flex; flex-direction: column; gap: 12px; }}
+  h1 {{ margin:0; font-size: 28px; font-weight: 800; color: #fff; letter-spacing: 2px; text-shadow: 0 0 20px rgba(255,255,255,0.2); font-family: 'JetBrains Mono', monospace; }}
+  .sub {{ color: #94a3b8; font-size: 14px; line-height: 1.8; max-width: 800px; }}
+  .sub b {{ color: #a7f3d0; font-weight: 600; }}
+  code {{ font-family: 'JetBrains Mono', monospace; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 13px; color: #cbd5e1; }}
+  h2 {{ font-size: 16px; color: #fff; margin: 40px 0 16px; font-weight: 600; letter-spacing: 1px; display: flex; align-items: center; gap: 12px; font-family: 'JetBrains Mono', monospace; }}
+  h2 i {{ color: #64748b; font-style: normal; font-size: 13px; font-weight: 400; padding: 2px 8px; background: rgba(255,255,255,0.05); border-radius: 12px; }}
+  .grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }}
+  
+  .card {{ display: flex; flex-direction: column; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; text-decoration: none; color: var(--text); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); position: relative; overflow: hidden; }}
+  .card::before {{ content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0) 100%); pointer-events: none; }}
+  .card:hover {{ background: rgba(30, 41, 59, 0.8); border-color: rgba(255,255,255,0.2); transform: translateY(-3px); box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.3), 0 0 15px var(--accent-glow); }}
+  
+  .card b {{ display: block; font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 6px; letter-spacing: 0.5px; font-family: 'JetBrains Mono', monospace; }}
+  .card .d {{ display: block; font-size: 12px; color: #94a3b8; line-height: 1.5; }}
+  
+  /* Colored borders on hover for different types */
+  .card.room:hover {{ border-color: #c084fc; box-shadow: 0 12px 24px -8px rgba(0,0,0,0.3), 0 0 15px rgba(192, 132, 252, 0.3); }}
+  .card.juego:hover {{ border-color: #34d399; box-shadow: 0 12px 24px -8px rgba(0,0,0,0.3), 0 0 15px rgba(52, 211, 153, 0.3); }}
+  .card.mesa:hover {{ border-color: #fbbf24; box-shadow: 0 12px 24px -8px rgba(0,0,0,0.3), 0 0 15px rgba(251, 191, 36, 0.3); }}
+  
+  /* Badges */
+  .badge {{ position: absolute; top: 16px; right: 20px; font-size: 9px; padding: 3px 8px; border-radius: 20px; font-weight: 700; letter-spacing: 1px; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }}
+  .ok {{ background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.3); }}
+  .mal {{ background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.3); }}
+  .hub {{ background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }}
+  .obras {{ background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }}
+  .indice {{ background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }}
+  
+  /* Make room for absolute badge */
+  .card b {{ padding-right: 60px; }}
+  
+  /* Hero Banner */
+  .hero {{ display: flex; flex-direction: column; background: linear-gradient(135deg, rgba(30, 58, 138, 0.4) 0%, rgba(17, 24, 39, 0.8) 100%); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 16px; padding: 32px 40px; text-decoration: none; color: #fff; margin-bottom: 16px; transition: all 0.3s ease; position: relative; overflow: hidden; backdrop-filter: blur(10px); }}
+  .hero::after {{ content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(56, 189, 248, 0.1) 0%, transparent 60%); opacity: 0; transition: opacity 0.5s ease; pointer-events: none; }}
+  .hero:hover {{ border-color: #38bdf8; transform: translateY(-2px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.5), 0 0 30px rgba(56, 189, 248, 0.2); }}
+  .hero:hover::after {{ opacity: 1; }}
+  .hero b {{ display: block; font-size: 24px; color: #38bdf8; letter-spacing: 3px; margin-bottom: 12px; font-weight: 800; text-shadow: 0 2px 10px rgba(56, 189, 248, 0.3); font-family: 'JetBrains Mono', monospace; }}
+  .hero span {{ font-size: 14px; color: #94a3b8; line-height: 1.7; max-width: 700px; }}
+  
+  footer {{ margin-top: 60px; color: #475569; font-size: 12px; border-top: 1px solid var(--border); padding-top: 24px; text-align: center; }}
+ </style></head><body>
 <header>
  <h1>▓ ALISA · lab.html</h1>
  <div class="sub">

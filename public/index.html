@@ -18,37 +18,29 @@
   el móvil a medio gas, con un lector de pantalla o siendo un buscador. Un
   escaparate que solo existe si tu tarjeta gráfica coopera es medio escaparate.
 -->
+<link rel="stylesheet" href="vendor/fonts/fuentes.css">
 <style>
-  :root { color-scheme: light; }
+  :root { --bg: #030712; --bg-glass: rgba(17, 24, 39, 0.7); --border: rgba(255, 255, 255, 0.08); --text: #e2e8f0; --text-muted: #94a3b8; --accent: #38bdf8; --accent-glow: rgba(56, 189, 248, 0.4); }
   * { box-sizing: border-box; }
-  body { margin:0; min-height:100vh; background:#f4f6f8; color:#1a2230;
-         font-family: ui-monospace, 'JetBrains Mono', 'Courier New', monospace;
-         display:flex; align-items:center; justify-content:center; padding:32px 22px; }
-  main { max-width:560px; text-align:center; }
-  h1 { font-size:15px; letter-spacing:0.6em; font-weight:400; margin:0 0 22px; }
-  .que { font-size:13px; line-height:2; margin:0 0 20px; }
-  .que b { font-weight:600; }
-  .pacto { font-size:11px; color:#6b7684; line-height:2.1; border-top:1px solid #dde3ea;
-           border-bottom:1px solid #dde3ea; padding:18px 0; margin:0 0 26px; }
-  .pacto b { color:#1a2230; }
-  /* El dato del sector va más apagado: es contexto, no la promesa. Si pesa lo
-     mismo que lo nuestro, la portada se convierte en un artículo. */
-  .pacto .fino { color:#8b95a3; font-size:10px; display:inline-block;
-                 margin:6px 0 2px; line-height:1.9; }
-  .puertas { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
-  a.boton { display:inline-block; text-decoration:none; font-size:11px; letter-spacing:0.3em;
-            padding:13px 26px; border-radius:3px; }
-  a.entrar { background:#1a2230; color:#f4f6f8; }
-  a.entrar:hover { background:#39485c; }
-  a.otra { border:1px solid #b9c4d0; color:#39485c; }
-  a.otra:hover { background:#e6ebf0; }
-  .nota { margin-top:26px; font-size:10px; color:#8b95a3; line-height:1.9; }
-  .nota code { color:#39485c; }
-  /* El enlace al manifiesto era el único de la página sin clase, así que salía
-     en el azul subrayado del navegador: un chillido en una portada que es toda
-     grises. Se apaga hasta que pasas por encima. */
-  .nota a { color:#6b7684; text-decoration:none; border-bottom:1px solid #cfd6de; }
-  .nota a:hover { color:#1a2230; border-bottom-color:#8b95a3; }
+  body { margin:0; min-height:100vh; background: radial-gradient(circle at center, #1e1b4b 0%, var(--bg) 100%); color: var(--text); font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; display:flex; align-items:center; justify-content:center; padding:32px 22px; position: relative; overflow: hidden; }
+  body::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(56, 189, 248, 0.05) 0%, transparent 50%); pointer-events: none; }
+  main { max-width:640px; text-align:center; background: var(--bg-glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 48px; border-radius: 24px; border: 1px solid var(--border); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(56, 189, 248, 0.1); position: relative; z-index: 10; }
+  h1 { font-family: 'JetBrains Mono', monospace; font-size:32px; letter-spacing:0.4em; font-weight:800; margin:0 0 24px; color: #fff; text-shadow: 0 0 20px var(--accent-glow); }
+  .que { font-size:15px; line-height:1.8; margin:0 0 24px; color: #cbd5e1; }
+  .que b { font-weight:700; color: #fff; }
+  .pacto { font-size:13px; color:#cbd5e1; line-height:1.9; border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:24px 0; margin:0 0 32px; background: rgba(0,0,0,0.2); border-radius: 8px; box-shadow: inset 0 2px 10px rgba(0,0,0,0.2); }
+  .pacto b { color:#38bdf8; font-weight: 600; }
+  .pacto .fino { color:var(--text-muted); font-size:12px; display:inline-block; margin:12px 0 6px; line-height:1.7; font-style: italic; }
+  .puertas { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom: 32px; }
+  a.boton { display:inline-block; text-decoration:none; font-family: 'JetBrains Mono', monospace; font-size:12px; font-weight: 700; letter-spacing:0.1em; padding:14px 28px; border-radius:8px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); text-transform: uppercase; }
+  a.entrar { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #fff; border: 1px solid #38bdf8; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4); }
+  a.entrar:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(2, 132, 199, 0.6), 0 0 15px var(--accent-glow); background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); }
+  a.otra { background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.15); color: #e2e8f0; backdrop-filter: blur(4px); }
+  a.otra:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.3); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+  .nota { font-size:11px; color:var(--text-muted); line-height:1.9; text-align: left; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border-left: 3px solid #475569; }
+  .nota code { font-family: 'JetBrains Mono', monospace; color: #94a3b8; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; }
+  .nota a { color: #a7f3d0; text-decoration:none; border-bottom:1px solid rgba(167, 243, 208, 0.3); transition: all 0.2s; }
+  .nota a:hover { color: #34d399; border-bottom-color: #34d399; }
 </style>
 </head>
 <body>
