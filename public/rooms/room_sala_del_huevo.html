@@ -567,12 +567,26 @@ escena.add(huevo);
 let incubacionReportada = null;
 let partidasVerificadas = 0;
 
+// ⚠️ NI SIQUIERA SE INTENTA SI NO PUEDE HABER HUB.
+// El hub de la colonia vive en `http://127.0.0.1:8741`, y desde una página
+// servida por HTTPS el navegador **bloquea** esa petición por contenido mixto.
+// El `.catch()` de abajo lo aguantaba sin romper nada —conectarse es una mejora,
+// no un requisito— pero dejaba un error rojo en la consola de un sitio público
+// dirigido justamente a gente que abre la consola. Un banco de pruebas que pide
+// que le audites no puede recibirte con un error que no significa nada.
+//
+// Así que se pregunta antes: sólo puede haber hub si esto se está viendo en la
+// máquina donde correría el hub.
+const HAY_HUB_POSIBLE = location.protocol === 'file:'
+  || ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+
 // Si el hub está levantado, la incubación llega de ahí. Si no, se queda en «—».
-// Mismo principio que el ProtoHub: conectarse es una mejora, no un requisito.
-fetch('http://127.0.0.1:8741/egg/incubation', { signal: AbortSignal.timeout(1200) })
-  .then(r => r.ok ? r.json() : null)
-  .then(d => { if (d && typeof d.incubation === 'number') incubacionReportada = d.incubation; })
-  .catch(() => { /* sin colonia: se queda sin saberse, y se dice */ });
+if (HAY_HUB_POSIBLE) {
+  fetch('http://127.0.0.1:8741/egg/incubation', { signal: AbortSignal.timeout(1200) })
+    .then(r => r.ok ? r.json() : null)
+    .then(d => { if (d && typeof d.incubation === 'number') incubacionReportada = d.incubation; })
+    .catch(() => { /* sin colonia: se queda sin saberse, y se dice */ });
+}
 const vistas = new Set();          // estaciones que has resuelto
 let aportacion = 0;                // 0..1 — lo TUYO
 let rota = false;
@@ -698,7 +712,9 @@ const panel = new SovereignTickerPlugin({ scene: escena }, {
              'MISMAS REGLAS PARA PERSONAS Y PARA MÁQUINAS'],
   // Si el hub de la colonia está levantado, el panel cuenta lo que pasa ahí
   // fuera. Si no, cuenta lo que pasa aquí dentro. Conectarse es una mejora.
-  stream: 'http://127.0.0.1:8741/terminal/logs/stream',
+  // Mismo criterio que arriba: fuera de la máquina del hub ni se intenta, para
+  // no dejar un error de contenido mixto en la consola de un sitio público.
+  stream: HAY_HUB_POSIBLE ? 'http://127.0.0.1:8741/terminal/logs/stream' : null,
   // El log crudo de la colonia trae tracebacks, y lo primero que leía un
   // visitante era un `ERROR Exception`. Verdad, viva, y mala carta de
   // presentación. Se queda lo que se entiende desde fuera.

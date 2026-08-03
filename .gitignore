@@ -70,3 +70,10 @@ public/lab.html
 # El resto de `_archivo/` SÍ se versiona: son cuatro ficheros con su nota, y
 # esa historia vale lo que ocupa.
 _archivo/props_sin_usar/
+
+# Bytecode y copias de seguridad: se regeneran o estan archivadas.
+# Se colaron en el primer despliegue publico junto a 13 scripts de trabajo.
+__pycache__/
+*.pyc
+*.bak
+*.bak2
