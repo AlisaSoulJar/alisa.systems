@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA Arcade — Entropy</title>
+    <link rel="stylesheet" href="css/arcade.css">
+    
+    <script src="/vendor/three-r128/three.min.js"></script>
+    <script src="/vendor/three-r128/OrbitControls.js"></script>
+    <script src="/vendor/tween/tween.umd.js"></script>
+    
+    <link rel="stylesheet" href="css/card_hud.css">
+    <link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+    <div id="canvas-container"></div>
+    <div id="hud-container"></div>
+
+    <script type="module">
+        import { ProtoHub } from './js/protohub/ProtoHub.js';
+        import { crearEntropy } from './js/protohub/rules/entropy.js';
+        
+        window.ALISA_PROTOHUB = new ProtoHub().registrar('entropy', await crearEntropy());
+    </script>
+    <script src="js/arcade_mats.js"></script>
+    <script src="js/SovereignCardEngine.js"></script>
+    <script src="js/entropy_visualizer.js"></script>
+</body>
+</html>
