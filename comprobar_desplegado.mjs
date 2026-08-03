@@ -57,7 +57,21 @@ for (const ruta of ['/noexiste.html', '/tampoco/existe/', '/js/inventado.js']) {
 }
 
 // ── 2 y 3. las páginas y todo lo que cargan ──────────────────────
+//
+// ⚠️ LAS ESTACIONES SE DESCUBREN, NO SE ESCRIBEN.
+// La primera versión miraba sólo la portada y la sala, y las dos salían
+// perfectas mientras **no se podía jugar a nada**: los juegos entran en la sala
+// dentro de un iframe, así que sus fallos ocurren un nivel más abajo y desde
+// fuera la sala parece intacta. La lista sale de la propia sala; una lista
+// escrita a mano aquí se quedaría corta al añadir la máquina veintiocho.
 const PAGINAS = ['/', '/rooms/room_sala_del_huevo.html'];
+{
+    const { cuerpo } = await pedir('/rooms/room_sala_del_huevo.html');
+    for (const m of cuerpo.matchAll(/u:\s*'([^']+)'/g)) {
+        PAGINAS.push(new URL(m[1], BASE + '/rooms/').pathname);
+    }
+    console.log(gris(`  ${PAGINAS.length - 2} estaciones descubiertas en la sala`));
+}
 for (const pagina of PAGINAS) {
     const { estado, cuerpo } = await pedir(pagina);
     console.log(`\n  ${ok(estado === 200, `${pagina}  ${estado}  ${cuerpo.length.toLocaleString()} B`)}`);

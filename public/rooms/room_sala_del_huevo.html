@@ -1135,6 +1135,9 @@ function materializar(e) {
 // cercana. Aquí hay UNO, y se mueve. Se levanta con ESC.
 const holograma = new CSS3DHologramPlugin({ camera: camara, scene: escena });
 let sentadoEn = null;
+// El pie de la pantalla es el único sitio donde un estado puede quedarse quieto.
+const PIE = document.getElementById('pie');
+const PIE_ANDANDO = PIE.textContent;
 
 // El plugin crea su capa sin z-index (queda en 'auto'), y una capa 'auto' se
 // pinta ANTES que un elemento posicionado con z-index positivo: el lienzo la
@@ -1151,13 +1154,67 @@ function sentarse(e) {
   holograma.setSeated(true);
   // La rotación del grupo importa: la pantalla está girada hacia el huevo, y el
   // plugin necesita saberlo para orientar el cartucho igual que la malla.
+  // ⚠️ SENTARSE ES ACERCARSE, Y ESTO FALTABA.
+  // La mira engancha una máquina a quince metros, así que se podía «sentar» sin
+  // moverse: el cartucho se montaba de verdad —cargado, proyectado y clicable—
+  // pero seguía allí, en su mueble, del tamaño de un sello. Lo comprobé en el
+  // navegador: `titulo_dentro` decía el nombre del juego y `pointerEvents` era
+  // `auto`. Todo funcionando y nada jugable, que es la peor combinación posible
+  // porque no hay ningún error que mirar.
+  //
+  // El prototipo `room_arcade_hall.html` ya lo resolvía —`targetCamPos` a 2,5
+  // unidades delante del mueble— y aquí se había perdido por el camino.
+  const mueble = e.grupo.position;
+  const hx = camara.position.x - mueble.x, hz = camara.position.z - mueble.z;
+  const dist = Math.hypot(hx, hz) || 1;
+  camara.position.set(mueble.x + (hx / dist) * 2.6, 1.62,
+                      mueble.z + (hz / dist) * 2.6);
+  // Y mirando al mueble: `giroH = 0` mira al origen desde z=+44, o sea que el
+  // frente es (0,0,-1) girado — de ahí este atan2 y no el contrario.
+  giroH = Math.atan2(camara.position.x - mueble.x, camara.position.z - mueble.z);
+  giroV = -0.02;
+
   holograma.loadMachine(e.u, e.pantalla, e.grupo.rotation.y);
   document.exitPointerLock?.();
-  // ⚠️ Esto era `esc para levantarte`, y era lo peor de la sala: te sentabas,
-  // veías el juego… y los clics no llegaban. El cartucho nace «montado» y hay
-  // que clicar el cristal para que se proyecte y se vuelva usable. Buen diseño
-  // de tres pasos que NADIE contaba, así que parecía roto.
-  avisar(e.n.toUpperCase(), 'clic en la pantalla para jugar · esc para levantarte');
+
+  // ⚠️ AQUÍ ESTABA EL «NO SE PUEDE JUGAR A NADA».
+  // El cartucho nace MONTADO: pegado a la máquina y con `pointerEvents: none`,
+  // o sea mirándose pero sin recibir un clic. Para jugar había que clicar el
+  // cristal y que pasara a PROYECTADO. Un paso invisible — y en esta sala era el
+  // CUARTO: acercarse, clicar la máquina, pulsar JUGAR en la ficha, y sólo
+  // entonces clicar el cristal. El aviso que lo contaba era un mensaje que se
+  // desvanecía, así que quien parpadeara veía una pantalla encendida que no
+  // respondía. Nada estaba roto y todo lo parecía.
+  //
+  // El prototipo `room_arcade_hall.html` ya tenía estas dinámicas resueltas y
+  // hacía dos cosas mejor: sentaba de un clic —sin ficha en medio— y dejaba el
+  // «Click screen to project» FIJO en un panel, no en un aviso que se va.
+  //
+  // Aquí se quita el paso: en cuanto el cartucho termina de montarse, se
+  // proyecta solo. `loadMachine` deja `screenMode` en 'MOUNTED' dentro de un
+  // temporizador propio, así que no vale llamar a `setHologramMode` justo
+  // después: se esperaría a que el plugin termine, mirándolo, en vez de
+  // adivinar cuánto tarda.
+  const seSienta = e;
+  const proyectarCuandoEsteListo = (intentos = 0) => {
+    if (sentadoEn !== seSienta) return;                    // se levantó mientras
+    if (holograma.currentCssObject && holograma.screenMode === 'MOUNTED') {
+      holograma.setHologramMode('PROJECTED');
+      return;
+    }
+    if (intentos > 180) {                                  // ~3 s a 60 fps
+      console.warn('[Sala] el cartucho no llegó a montarse; queda el clic manual');
+      return;
+    }
+    requestAnimationFrame(() => proyectarCuandoEsteListo(intentos + 1));
+  };
+  proyectarCuandoEsteListo();
+
+  avisar(e.n.toUpperCase(), 'esc para levantarte');
+  // Estado FIJO mientras estás sentada, no un aviso que se va. Es lo que hacía
+  // el prototipo con su panel de estado, y es media diferencia entre «esto no
+  // funciona» y «ah, ya estoy dentro».
+  PIE.textContent = `${e.n.toUpperCase()} · juega en la pantalla · esc para levantarte`;
 }
 
 /**
@@ -1365,7 +1422,8 @@ async function levantarse() {
   holograma.setSeated(false);
   holograma.disconnect();
   sentadoEn = null;
-  document.body.requestPointerLock?.();
+  PIE.textContent = PIE_ANDANDO;
+  pedirPuntero();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1555,7 +1613,7 @@ const umbral = document.getElementById('umbral');
 umbral.addEventListener('click', () => {
   umbral.classList.add('ido');
   setTimeout(() => { umbral.style.display = 'none'; }, 1100);
-  document.body.requestPointerLock?.();
+  pedirPuntero();
   dentro = true;
   tLlegada = 0;                 // ← empieza la anomalía
   Sonido.abrir();               // el clic es el único gesto que abre el audio
@@ -1583,10 +1641,72 @@ addEventListener('pointerlockchange', () => {
     : (esTactil ? 'dedo izquierdo para andar · dedo derecho para mirar · toca para usar'
                 : 'wasd para andar · ratón para mirar · clic para usar · esc para soltar el ratón');
 });
+// ═══════════════════════════════════════════════════════════════════════════
+//  MIRAR — con el puntero capturado, y TAMBIÉN sin él
+// ═══════════════════════════════════════════════════════════════════════════
+// ⚠️ ESTE ERA EL FALLO QUE DEJABA LA SALA INJUGABLE, Y SON DOS QUE SE SUMAN.
+//
+// 1. Mirar dependía EN EXCLUSIVA del bloqueo de puntero: `if
+//    (!document.pointerLockElement) return;`. Sin bloqueo, la cámara se queda
+//    clavada mirando al mismo punto para siempre.
+// 2. Y el manejador del clic, al ver el puntero suelto, lo volvía a pedir y
+//    salía. O sea que **tampoco se podía usar nada**: cada clic se gastaba en
+//    reintentar una captura que no llegaba.
+//
+// Juntos dan una sala que se ve preciosa, en la que andas de frente y no puedes
+// ni girar ni tocar nada. Es exactamente lo que se veía: «las máquinas se
+// materializan pero no se puede jugar».
+//
+// El navegador tiene mil razones legítimas para negar el bloqueo —permisos,
+// políticas, cooldown tras un ESC, incrustaciones—. Aquí llegó como
+// `WrongDocumentError`, pero el motivo da igual: **una sala en primera persona
+// no puede tener un único camino para girar la cámara.**
+//
+// Así que hay dos, y el segundo no pide permiso a nadie: arrastrar.
+let punteroVaBien = true;
+
+function sinPuntero(motivo) {
+  if (!punteroVaBien) return;
+  punteroVaBien = false;
+  console.warn('[Sala] el navegador no concede bloqueo de puntero'
+             + (motivo ? ` (${motivo})` : '') + ': se pasa a arrastrar para mirar');
+  if (!sentadoEn) PIE.textContent = 'arrastra para mirar · wasd para andar · clic para usar';
+}
+
+/** Pide la captura del puntero sin que un rechazo rompa nada. */
+function pedirPuntero() {
+  if (!punteroVaBien || esTactil) return;
+  try {
+    const p = pedirPuntero();
+    if (p && typeof p.catch === 'function') p.catch(e => sinPuntero(e?.name));
+  } catch (e) { sinPuntero(e?.name); }
+}
+addEventListener('pointerlockerror', () => sinPuntero('pointerlockerror'));
+
+// Camino 1: puntero capturado. Camino 2: arrastrar con el botón izquierdo.
+let arrastrando = false, ratonX = 0, ratonY = 0, arrastrado = 0;
+
+addEventListener('mousedown', e => {
+  if (e.button !== 0 || sentadoEn || document.pointerLockElement) return;
+  arrastrando = true; arrastrado = 0;
+  ratonX = e.clientX; ratonY = e.clientY;
+});
+addEventListener('mouseup', () => { arrastrando = false; });
+
+const mirarV = (d) => { giroV = Math.max(-1.15, Math.min(1.15, giroV - d)); };
+
 addEventListener('mousemove', e => {
-  if (!document.pointerLockElement) return;
-  giroH -= e.movementX * 0.0022;
-  giroV = Math.max(-1.15, Math.min(1.15, giroV - e.movementY * 0.0022));
+  if (document.pointerLockElement) {
+    giroH -= e.movementX * 0.0022;
+    mirarV(e.movementY * 0.0022);
+    return;
+  }
+  if (!arrastrando) return;
+  const dx = e.clientX - ratonX, dy = e.clientY - ratonY;
+  ratonX = e.clientX; ratonY = e.clientY;
+  arrastrado += Math.abs(dx) + Math.abs(dy);
+  giroH -= dx * 0.0034;
+  mirarV(dy * 0.0034);
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1672,10 +1792,16 @@ function usarLoQueMiro() {
   // El primer clic con el ratón suelto sirve para recuperar la cámara, no para
   // usar. Si no, el visitante que pulsó ESC clica y clica sin entender por qué
   // no pasa nada. (Y con el dedo no hay puntero que capturar: en táctil, fuera.)
-  if (!esTactil && !sentadoEn && !document.pointerLockElement) {
-    document.body.requestPointerLock?.();
+  // ⚠️ Y aquí la segunda mitad del fallo: si el navegador NUNCA concede el
+  // bloqueo, este `return` se comía todos los clics para siempre. Ahora sólo se
+  // gasta un clic en recuperar la cámara mientras la captura siga siendo
+  // posible; si no lo es, se usa directamente y se mira arrastrando.
+  if (!esTactil && punteroVaBien && !sentadoEn && !document.pointerLockElement) {
+    pedirPuntero();
     return;
   }
+  // Un arrastre para girar la cámara no es un clic de «usar».
+  if (arrastrado > 6) { arrastrado = 0; return; }
   if (!mirando) return;
   // ⚠️ El clic que cruza el umbral seguía viajando hasta aquí y abría la ficha
   // de la primera máquina que pillara el rayo: entrabas y te recibía un panel
