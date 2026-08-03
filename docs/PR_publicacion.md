@@ -114,6 +114,41 @@ La portada, por tanto, **ya era la Sala del Huevo**: `public/index.html` lleva
 meses escrito, con su texto para quien llega sin WebGL o con un lector de
 pantalla. Lo que faltaba no era escribirla, era servirla.
 
+## Desplegado en vista previa, y comprobado
+
+👉 **https://publicacion-motor-gym-benchm.alisa-systems.pages.dev**
+
+Producción sigue intacta. En la vista previa:
+
+```
+/                                200    5.961 B   La Sala del Huevo
+/rooms/room_sala_del_huevo.html  200  113.247 B   la Sala
+/colonia/                        200   63.641 B   la portada anterior
+/noexiste.html                   404              ← el canario, en verde
+/tampoco/existe/                 404
+```
+
+Y **el verificador de servidor está vivo por primera vez**. Re-simula la partida
+que le mandas contra el mismo fichero de reglas:
+
+```
+POST /api/verificar   {"juego":"guerra","semilla":11,"jugadas":[…],"puntos":2}
+  → {"valida": true,  "puntos": 2, "declarados": 2}
+
+POST /api/verificar   … pero declarando 0 puntos
+  → {"valida": false, "motivo": "la puntuación no cuadra: dice 0, sale 2"}
+```
+
+Eso es la tesis entera en dos peticiones: la legítima se acepta, la inflada cae,
+y no lo decide un juez sino una re-simulación.
+
+### El 404 hizo falta, y cuenta por qué
+
+Sin `public/404.html`, Pages devolvía **la portada con 200** para cualquier ruta
+inventada. No es estética: con la raíz mal puesta, `/src/main.js` contestaba HTML
+con un 200 triunfal y el navegador recibía una página donde esperaba un módulo.
+Así estuvo meses rota la portada sin que se notara desde fuera.
+
 ## Cómo comprobarlo sin fiarse
 
 ```bash

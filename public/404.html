@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALISA · aquí no hay nada (404)</title>
+
+<!--
+  POR QUÉ EXISTE ESTA PÁGINA — y no es por cortesía
+  ═══════════════════════════════════════════════════════════════════════════
+  Sin un `404.html`, Cloudflare Pages devolvía la PORTADA con código 200 para
+  cualquier ruta inventada. Eso no es un detalle estético: es un sitio que dice
+  que sí a todo, y un sitio que dice que sí a todo no está contestando.
+
+  Lo pagamos caro. Con la raíz del despliegue mal puesta, `/src/main.js` —un
+  módulo que la portada de entonces importaba— devolvía HTML con un 200
+  triunfal. El navegador recibía una página donde esperaba JavaScript y la
+  portada estaba rota en producción sin que se notara desde fuera: cargaba, se
+  veía algo, y fallaba en la consola.
+
+  La pista que lo destapó fue exactamente esto: pedir una ruta que NO EXISTE en
+  ninguna rama y que contestara 200. Por eso `/noexiste.html` es ahora nuestro
+  canario, y por eso esta página tiene que devolver 404 de verdad.
+
+  Un 404 honesto es una prueba de que el servidor distingue lo que tiene de lo
+  que no. En un proyecto cuyo argumento es «no te fíes, comprueba», empezar por
+  no mentir sobre qué existe es lo mínimo.
+-->
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin:0; min-height:100vh; background:#f4f6f8; color:#1a2230;
+         font-family: ui-monospace, 'JetBrains Mono', 'Courier New', monospace;
+         display:flex; align-items:center; justify-content:center; padding:32px 22px; }
+  main { max-width:520px; text-align:center; }
+  .codigo { font-size:52px; letter-spacing:0.18em; font-weight:400; margin:0 0 6px; color:#c3ccd6; }
+  h1 { font-size:13px; letter-spacing:0.5em; font-weight:400; margin:0 0 24px; text-transform:uppercase; }
+  p { font-size:13px; line-height:2; margin:0 0 22px; }
+  .nota { font-size:11px; color:#6b7684; line-height:2.1;
+          border-top:1px solid #dde3ea; padding-top:18px; margin-top:26px; }
+  .nota b { color:#1a2230; font-weight:600; }
+  .puertas { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+  a.boton { display:inline-block; text-decoration:none; font-size:11px; letter-spacing:0.3em;
+            padding:13px 26px; border-radius:3px; }
+  a.entrar { background:#1a2230; color:#f4f6f8; }
+  a.entrar:hover { background:#39485c; }
+  a.otra { border:1px solid #b9c4d0; color:#39485c; }
+  a.otra:hover { background:#e6ebf0; }
+</style>
+</head>
+<body>
+<main>
+  <div class="codigo">404</div>
+  <h1>aquí no hay nada</h1>
+
+  <p>Y que lo diga es buena señal: significa que este servidor
+  <b>distingue lo que tiene de lo que no</b>.</p>
+
+  <div class="puertas">
+    <a class="boton entrar" href="/">LA SALA</a>
+    <a class="boton otra" href="/rooms/room_sala_del_huevo.html">ENTRAR DIRECTO</a>
+  </div>
+
+  <p class="nota">
+    Hubo un tiempo —hasta hace muy poco— en que esta dirección te habría
+    devuelto la portada con un <b>200 OK</b>. Un sitio que contesta que sí a todo
+    no está contestando, y así estuvo meses rota la página de inicio sin que se
+    notara. Esta página existe para que eso no pueda repetirse en silencio.
+  </p>
+</main>
+</body>
+</html>
