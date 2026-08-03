@@ -1,0 +1,53 @@
+{
+    "source_file": "Macaw.glb",
+    "deduced_size_meters": 85.0,
+    "target_tier": "Tier 3: Mega-Structure",
+    "target_scale_constraint": 64.8,
+    "voxel_grid": [
+        8,
+        1,
+        8
+    ],
+    "archetype": "ungulate",
+    "morphology": {
+        "size_m": 85.0,
+        "domain": "organic",
+        "cladistics": "ungulate",
+        "mobility": "bipedal",
+        "mechanical_joints": 0
+    },
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0,
+    "ai_armature": [
+        {
+            "name": "Core Anchor X",
+            "parent": null,
+            "pos": [
+                0.8123677208589118,
+                11.114985110070414,
+                0.0026066670292425147
+            ]
+        },
+        {
+            "name": "Base Mount",
+            "parent": null,
+            "pos": [
+                0.8123677208589118,
+                6.283818824794002,
+                0.0026066670292425147
+            ]
+        }
+    ],
+    "mesh_scale_multiplier": 6.035809632317721,
+    "kinematics": {
+        "base_gait": "static",
+        "cycle_frequency_hz": 0.0,
+        "step_amplitude": 0.0,
+        "vertical_bounce": 0.0,
+        "spine_flexion": 0.0,
+        "idle_sway_hz": 0.0,
+        "locomotion_states": [
+            "idle"
+        ]
+    }
+}

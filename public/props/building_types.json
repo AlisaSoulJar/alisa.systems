@@ -1,0 +1,199 @@
+{
+    "_doc": "Building Types — booster packs. Category is FIXED (slum=slum always). Rarity and condition apply to the building itself, not just props. Each category is a card FAMILY — collecting all epics of slum ≠ collecting all epics of corp.",
+
+    "residential_block": {
+        "category": "slum",
+        "rarity": "common",
+        "floors": [2, 6],
+        "roomsPerFloor": [2, 5],
+        "roomPool": [
+            { "type": "bedroom",  "weight": 80 },
+            { "type": "kitchen",  "weight": 70 },
+            { "type": "living",   "weight": 60 },
+            { "type": "storage",  "weight": 40 },
+            { "type": "corridor", "weight": 90 }
+        ]
+    },
+    "slum_shack": {
+        "category": "slum",
+        "rarity": "common",
+        "floors": [1, 2],
+        "roomsPerFloor": [1, 3],
+        "roomPool": [
+            { "type": "bedroom",  "weight": 60 },
+            { "type": "storage",  "weight": 70 },
+            { "type": "kitchen",  "weight": 40 }
+        ]
+    },
+    "slum_den": {
+        "category": "slum",
+        "rarity": "rare",
+        "floors": [1, 2],
+        "roomsPerFloor": [2, 4],
+        "roomPool": [
+            { "type": "workshop", "weight": 70 },
+            { "type": "storage",  "weight": 80 },
+            { "type": "living",   "weight": 40 },
+            { "type": "corridor", "weight": 50 }
+        ]
+    },
+    "slum_palace": {
+        "category": "slum",
+        "rarity": "epic",
+        "floors": [2, 4],
+        "roomsPerFloor": [3, 6],
+        "roomPool": [
+            { "type": "living",   "weight": 80 },
+            { "type": "bedroom",  "weight": 70 },
+            { "type": "kitchen",  "weight": 60 },
+            { "type": "workshop", "weight": 50 },
+            { "type": "storage",  "weight": 40 },
+            { "type": "corridor", "weight": 90 }
+        ]
+    },
+
+    "office_tower": {
+        "category": "corp",
+        "rarity": "common",
+        "floors": [4, 12],
+        "roomsPerFloor": [3, 6],
+        "roomPool": [
+            { "type": "office",   "weight": 90 },
+            { "type": "storage",  "weight": 50 },
+            { "type": "corridor", "weight": 95 },
+            { "type": "kitchen",  "weight": 20 }
+        ]
+    },
+    "corp_suite": {
+        "category": "corp",
+        "rarity": "rare",
+        "floors": [2, 5],
+        "roomsPerFloor": [2, 4],
+        "roomPool": [
+            { "type": "office",   "weight": 80 },
+            { "type": "living",   "weight": 50 },
+            { "type": "lab",      "weight": 30 },
+            { "type": "corridor", "weight": 70 }
+        ]
+    },
+    "corp_penthouse": {
+        "category": "corp",
+        "rarity": "epic",
+        "floors": [1, 3],
+        "roomsPerFloor": [3, 6],
+        "roomPool": [
+            { "type": "living",   "weight": 90 },
+            { "type": "bedroom",  "weight": 80 },
+            { "type": "office",   "weight": 60 },
+            { "type": "kitchen",  "weight": 50 },
+            { "type": "lab",      "weight": 20 },
+            { "type": "corridor", "weight": 60 }
+        ]
+    },
+
+    "military_barracks": {
+        "category": "military",
+        "rarity": "common",
+        "floors": [1, 3],
+        "roomsPerFloor": [3, 7],
+        "roomPool": [
+            { "type": "barracks", "weight": 70 },
+            { "type": "storage",  "weight": 80 },
+            { "type": "corridor", "weight": 85 }
+        ]
+    },
+    "military_command": {
+        "category": "military",
+        "rarity": "rare",
+        "floors": [2, 4],
+        "roomsPerFloor": [3, 6],
+        "roomPool": [
+            { "type": "office",   "weight": 60 },
+            { "type": "barracks", "weight": 40 },
+            { "type": "storage",  "weight": 50 },
+            { "type": "workshop", "weight": 50 },
+            { "type": "corridor", "weight": 85 }
+        ]
+    },
+    "military_bunker": {
+        "category": "military",
+        "rarity": "epic",
+        "floors": [1, 3],
+        "roomsPerFloor": [4, 8],
+        "roomPool": [
+            { "type": "lab",      "weight": 50 },
+            { "type": "storage",  "weight": 70 },
+            { "type": "workshop", "weight": 60 },
+            { "type": "office",   "weight": 40 },
+            { "type": "barracks", "weight": 30 },
+            { "type": "corridor", "weight": 80 }
+        ]
+    },
+
+    "dock_warehouse": {
+        "category": "docks",
+        "rarity": "common",
+        "floors": [1, 2],
+        "roomsPerFloor": [2, 4],
+        "roomPool": [
+            { "type": "storage",  "weight": 90 },
+            { "type": "corridor", "weight": 70 }
+        ]
+    },
+    "dock_workshop": {
+        "category": "docks",
+        "rarity": "rare",
+        "floors": [1, 3],
+        "roomsPerFloor": [3, 5],
+        "roomPool": [
+            { "type": "workshop", "weight": 70 },
+            { "type": "storage",  "weight": 60 },
+            { "type": "office",   "weight": 30 },
+            { "type": "corridor", "weight": 80 }
+        ]
+    },
+
+    "research_facility": {
+        "category": "lab",
+        "rarity": "rare",
+        "floors": [2, 5],
+        "roomsPerFloor": [2, 5],
+        "roomPool": [
+            { "type": "lab",      "weight": 80 },
+            { "type": "office",   "weight": 50 },
+            { "type": "storage",  "weight": 60 },
+            { "type": "corridor", "weight": 90 }
+        ]
+    },
+    "secret_lab": {
+        "category": "lab",
+        "rarity": "epic",
+        "floors": [1, 3],
+        "roomsPerFloor": [3, 6],
+        "roomPool": [
+            { "type": "lab",      "weight": 90 },
+            { "type": "workshop", "weight": 60 },
+            { "type": "storage",  "weight": 50 },
+            { "type": "office",   "weight": 40 },
+            { "type": "corridor", "weight": 70 }
+        ]
+    },
+
+    "_building_condition_weights": {
+        "slum":     { "pristine": 2,  "used": 10, "worn": 25, "damaged": 38, "ruined": 25 },
+        "corp":     { "pristine": 55, "used": 30, "worn": 10, "damaged": 4,  "ruined": 1  },
+        "military": { "pristine": 20, "used": 35, "worn": 25, "damaged": 15, "ruined": 5  },
+        "docks":    { "pristine": 5,  "used": 20, "worn": 35, "damaged": 30, "ruined": 10 },
+        "lab":      { "pristine": 50, "used": 30, "worn": 15, "damaged": 5,  "ruined": 0  },
+        "default":  { "pristine": 20, "used": 30, "worn": 25, "damaged": 15, "ruined": 10 }
+    },
+
+    "_building_rarity_weights": {
+        "slum":     { "common": 75, "rare": 20, "epic": 5  },
+        "corp":     { "common": 50, "rare": 35, "epic": 15 },
+        "military": { "common": 60, "rare": 30, "epic": 10 },
+        "docks":    { "common": 70, "rare": 25, "epic": 5  },
+        "lab":      { "common": 40, "rare": 40, "epic": 20 },
+        "default":  { "common": 65, "rare": 25, "epic": 10 }
+    }
+}

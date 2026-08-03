@@ -1,0 +1,34 @@
+{
+  "schema": "alisa.realizacion.grafismo_lexicon.v1",
+  "note": "Single source of truth for GRAFISMO — the show's graphics package (the editorial 'furniture'): idents, entradillas/title cards, lower-thirds, bumpers, tickers, stamps, end-cards/outros, the making-of HUD, and the District-9 status stamps. 2D overlay layer (HTML/CSS/canvas). The engine resolves an element + its text fields into a render spec; the runtime draws it. Art: Saul Bass (titles/idents). Show identity: Inter + JetBrains Mono, walnut/amber warm + cold cyan, tetraedro fractal.",
+  "owner": "Saul Bass / Aris (realización: grafismo)",
+
+  "identity": {
+    "fonts": { "display": "Inter", "mono": "JetBrains Mono" },
+    "palette": { "amber": "#F6B35B", "ember": "#D98A24", "cold": "#9FEFFF", "verified": "#7FE8C8", "failed": "#E85C5C", "void": "#0B0E14", "paper": "#F4F1EA", "walnut": "#4A3728" },
+    "logo": "tetraedro fractal de Sierpinski con luz ambar dentro",
+    "tagline": "LA INTELIGENCIA PUEDE SER ARTIFICIAL. LA TRAZABILIDAD NO."
+  },
+
+  "elements": {
+    "ident":        { "fields": ["title", "subtitle"], "anim": "logo_reveal", "dur_ms": 2500, "pos": "center", "desc": "the show ident — ALISA LABS + tetraedro, amber core ignites" },
+    "entradilla":   { "fields": ["kicker", "title"], "anim": "wipe_in", "dur_ms": 1200, "pos": "center", "desc": "section/segment title card (viñeta de entrada)" },
+    "lower_third":  { "fields": ["name", "role"], "anim": "slide_up", "dur_ms": 500, "pos": "bottom_left", "desc": "speaker name + role (tercio inferior)" },
+    "bumper":       { "fields": ["label"], "anim": "flash", "dur_ms": 900, "pos": "center", "desc": "short segment-break graphic" },
+    "ticker":       { "fields": ["items"], "anim": "scroll_left", "dur_ms": 0, "pos": "bottom_bar", "desc": "scrolling data strip (District 9)" },
+    "stamp":        { "fields": ["text"], "anim": "stamp_in", "dur_ms": 300, "pos": "top_right", "desc": "corner label: PUBLIC_SAFE / RECREATION_TEST / TOMA FALSA / CONCEPT PROOF / PAPER_GATED" },
+    "status_stamp": { "fields": ["field", "value"], "anim": "type_in", "dur_ms": 400, "pos": "center", "desc": "STATUS.CLAIMED vs READBACK grammar (District 9 audit)" },
+    "end_card":     { "fields": ["title", "links"], "anim": "fade_up", "dur_ms": 1500, "pos": "center", "desc": "outro / end card: Correcciones · Sourcepack · Production Receipt" }
+  },
+
+  "stamps": {
+    "public_safe":     { "text": "PUBLIC_SAFE",     "color": "#7FE8C8" },
+    "recreation_test": { "text": "RECREATION_TEST", "color": "#9FEFFF" },
+    "toma_falsa":      { "text": "TOMA FALSA",       "color": "#E85C5C" },
+    "concept_proof":   { "text": "CONCEPT PROOF",    "color": "#F6B35B" },
+    "paper_gated":     { "text": "PAPER_GATED",      "color": "#D98A24" },
+    "no_receipt":      { "text": "NO RECEIPT = NO COMPLETION", "color": "#E85C5C" }
+  },
+
+  "defaults": { "element": "lower_third", "pos": "bottom_left" }
+}

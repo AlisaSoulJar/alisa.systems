@@ -1,0 +1,2372 @@
+{
+  "schemaVersion": "0.1.0",
+  "generatedAt": "2026-05-05T14:00:15.448Z",
+  "purpose": "Install-time contract for rendering a local ALISA node as a navigable planet.",
+  "thesis": "The user PC is a city. The local Overworld is the navigable projection. IRealWorld is the federated reflection of many cities.",
+  "contract": "Place -> real system -> state -> action -> evidence -> memory",
+  "renderPolicy": {
+    "default": "render_on_observation",
+    "privacy": "do not deep-scan arbitrary drives until a user or agent enters that district",
+    "performance": "bounded depth, cache filesystem anatomy, promote detail progressively",
+    "agentView": "same contract exposed as JSON graph/matrix for FSMs and beings",
+    "humanView": "same contract exposed as 3D room, voice, console or browser UI"
+  },
+  "filesystemIsomorphism": [
+    {
+      "depth": 0,
+      "filesystem": "drive",
+      "spatial": "district",
+      "example": "Q:"
+    },
+    {
+      "depth": 1,
+      "filesystem": "top_folder",
+      "spatial": "building",
+      "example": "Data"
+    },
+    {
+      "depth": 2,
+      "filesystem": "folder",
+      "spatial": "floor",
+      "example": "Data/Memory"
+    },
+    {
+      "depth": 3,
+      "filesystem": "folder",
+      "spatial": "room",
+      "example": "Data/Memory/Akasha"
+    },
+    {
+      "depth": 4,
+      "filesystem": "folder",
+      "spatial": "cabinet",
+      "example": "Data/Memory/Akasha/Crystals"
+    },
+    {
+      "depth": 5,
+      "filesystem": "file_or_leaf",
+      "spatial": "drawer_or_prop",
+      "example": "lesson.md"
+    }
+  ],
+  "domains": [
+    {
+      "id": "node_city",
+      "label": "Ciudad/Nodo",
+      "contract": "Local machine operations: drives, filesystem, Hub, ports, services, jobs, logs and processes.",
+      "terrain": "city",
+      "sourceSystems": [
+        "filesystem",
+        "Hub",
+        "JobBoard",
+        "ColonialIRC",
+        "workers",
+        "process table"
+      ],
+      "existingRoutes": [
+        "/system/filesystem",
+        "/health",
+        "/jobboard/list",
+        "/board/worker-status",
+        "/irc/status"
+      ]
+    },
+    {
+      "id": "soma_field",
+      "label": "Campo/Soma",
+      "contract": "Embodied interfaces: voice, hearing, browser/desktop control, vision and actuators.",
+      "terrain": "field",
+      "sourceSystems": [
+        "Monk",
+        "ALISA Vision",
+        "Motoko",
+        "Cochlea",
+        "XTTS",
+        "CDP"
+      ],
+      "existingRoutes": [
+        "/monk/status",
+        "/monk/vision/status",
+        "/motoko/vision",
+        "/cdp/status",
+        "/do/speak"
+      ]
+    },
+    {
+      "id": "psyche_celestia",
+      "label": "Celestia/Psyche",
+      "contract": "Identity, memory, volition, lessons, canon, papers, dreams and deliberation.",
+      "terrain": "celestial",
+      "sourceSystems": [
+        "Akasha",
+        "Korin",
+        "MemoryWeaver",
+        "WarpDrive",
+        "Volition",
+        "Diary"
+      ],
+      "existingRoutes": [
+        "/akasha/status",
+        "/do/akasha-search",
+        "/do/akasha-add",
+        "/korin/status",
+        "/memory/status"
+      ]
+    },
+    {
+      "id": "irealworld_gate",
+      "label": "Puerta IRealWorld",
+      "contract": "Federated/cloud reflection: MMO, global jobboard, passports, remote cities and shared events.",
+      "terrain": "gate",
+      "sourceSystems": [
+        "IRealWorld",
+        "Cloudflare Workers",
+        "WorldChain",
+        "global economy"
+      ],
+      "existingRoutes": [
+        "/irealworld/status",
+        "/irealworld/ecology/status",
+        "/irealworld/mining/status"
+      ]
+    }
+  ],
+  "discovered": {
+    "drives": [
+      {
+        "id": "C:",
+        "root": "C:/",
+        "spatialRole": "district",
+        "domain": "node_city",
+        "renderPolicy": "district_shell_only_until_observed"
+      },
+      {
+        "id": "D:",
+        "root": "D:/",
+        "spatialRole": "district",
+        "domain": "node_city",
+        "renderPolicy": "district_shell_only_until_observed"
+      },
+      {
+        "id": "F:",
+        "root": "F:/",
+        "spatialRole": "district",
+        "domain": "node_city",
+        "renderPolicy": "district_shell_only_until_observed"
+      },
+      {
+        "id": "H:",
+        "root": "H:/",
+        "spatialRole": "district",
+        "domain": "node_city",
+        "renderPolicy": "district_shell_only_until_observed"
+      },
+      {
+        "id": "Q:",
+        "root": "Q:/",
+        "spatialRole": "district",
+        "domain": "node_city",
+        "renderPolicy": "district_shell_only_until_observed"
+      }
+    ],
+    "alisaRoot": "Q:/alisa_project/alisa",
+    "cityNodes": [
+      {
+        "id": ".agent",
+        "name": ".agent",
+        "filesystemType": "directory",
+        "spatialRole": "building",
+        "depth": 1,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": ".agents",
+        "name": ".agents",
+        "filesystemType": "directory",
+        "spatialRole": "building",
+        "depth": 1,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": ".env",
+        "name": ".env",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 1882,
+        "domain": "node_city"
+      },
+      {
+        "id": ".env.template",
+        "name": ".env.template",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 1607,
+        "domain": "node_city"
+      },
+      {
+        "id": ".github",
+        "name": ".github",
+        "filesystemType": "directory",
+        "spatialRole": "building",
+        "depth": 1,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": ".gitignore",
+        "name": ".gitignore",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 7309,
+        "domain": "node_city"
+      },
+      {
+        "id": ".pytest_cache",
+        "name": ".pytest_cache",
+        "filesystemType": "directory",
+        "spatialRole": "building",
+        "depth": 1,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": ".vscode",
+        "name": ".vscode",
+        "filesystemType": "directory",
+        "spatialRole": "building",
+        "depth": 1,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "@AutomationLog.txt",
+        "name": "@AutomationLog.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 742,
+        "domain": "node_city"
+      },
+      {
+        "id": "ACKNOWLEDGEMENTS.md",
+        "name": "ACKNOWLEDGEMENTS.md",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 3015,
+        "domain": "node_city"
+      },
+      {
+        "id": "AGENTS.md",
+        "name": "AGENTS.md",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 2520,
+        "domain": "node_city"
+      },
+      {
+        "id": "aio.py",
+        "name": "aio.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 12646,
+        "domain": "node_city"
+      },
+      {
+        "id": "alisa",
+        "name": "alisa",
+        "filesystemType": "directory",
+        "spatialRole": "building",
+        "depth": 1,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "ALISA_GENESIS_SPEC.md",
+        "name": "ALISA_GENESIS_SPEC.md",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 8701,
+        "domain": "node_city"
+      },
+      {
+        "id": "Avatar.py",
+        "name": "Avatar.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 9065,
+        "domain": "node_city"
+      },
+      {
+        "id": "Awaken.py",
+        "name": "Awaken.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 21041,
+        "domain": "node_city"
+      },
+      {
+        "id": "Blockchain",
+        "name": "Blockchain",
+        "filesystemType": "directory",
+        "spatialRole": "building",
+        "depth": 1,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "boot_terminal.bat",
+        "name": "boot_terminal.bat",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 964,
+        "domain": "node_city"
+      },
+      {
+        "id": "chat_cmds.json",
+        "name": "chat_cmds.json",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 4925,
+        "domain": "node_city"
+      },
+      {
+        "id": "CLAUDE.md",
+        "name": "CLAUDE.md",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 3576,
+        "domain": "node_city"
+      },
+      {
+        "id": "Config.json",
+        "name": "Config.json",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 19713,
+        "domain": "node_city"
+      },
+      {
+        "id": "conrad_out.txt",
+        "name": "conrad_out.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 178,
+        "domain": "node_city"
+      },
+      {
+        "id": "crash_dump.txt",
+        "name": "crash_dump.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 85,
+        "domain": "node_city"
+      },
+      {
+        "id": "crash_dump_fault.txt",
+        "name": "crash_dump_fault.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "current_path.txt",
+        "name": "current_path.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 2738,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data",
+        "name": "Data",
+        "filesystemType": "directory",
+        "spatialRole": "building",
+        "depth": 1,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "diag_out.json",
+        "name": "diag_out.json",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 78,
+        "domain": "node_city"
+      },
+      {
+        "id": "err.log",
+        "name": "err.log",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 561,
+        "domain": "node_city"
+      },
+      {
+        "id": "err.txt",
+        "name": "err.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 554,
+        "domain": "node_city"
+      },
+      {
+        "id": "err2.txt",
+        "name": "err2.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 255,
+        "domain": "node_city"
+      },
+      {
+        "id": "err3.txt",
+        "name": "err3.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 127,
+        "domain": "node_city"
+      },
+      {
+        "id": "err4.txt",
+        "name": "err4.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 127,
+        "domain": "node_city"
+      },
+      {
+        "id": "error.txt",
+        "name": "error.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 591,
+        "domain": "node_city"
+      },
+      {
+        "id": "extract.py",
+        "name": "extract.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 288,
+        "domain": "node_city"
+      },
+      {
+        "id": "fix_clock.py",
+        "name": "fix_clock.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 1023,
+        "domain": "node_city"
+      },
+      {
+        "id": "fix_json.py",
+        "name": "fix_json.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 625,
+        "domain": "node_city"
+      },
+      {
+        "id": "GEMINI.md",
+        "name": "GEMINI.md",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 15271,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis",
+        "name": "Genesis",
+        "filesystemType": "directory",
+        "spatialRole": "building",
+        "depth": 1,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "git_files.txt",
+        "name": "git_files.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 1352855,
+        "domain": "node_city"
+      },
+      {
+        "id": "git_history.txt",
+        "name": "git_history.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 3516486,
+        "domain": "node_city"
+      },
+      {
+        "id": "Governance",
+        "name": "Governance",
+        "filesystemType": "directory",
+        "spatialRole": "building",
+        "depth": 1,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "hello.py",
+        "name": "hello.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 26,
+        "domain": "node_city"
+      },
+      {
+        "id": "hello_codex.py",
+        "name": "hello_codex.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 110,
+        "domain": "node_city"
+      },
+      {
+        "id": "Heritage",
+        "name": "Heritage",
+        "filesystemType": "directory",
+        "spatialRole": "building",
+        "depth": 1,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "hub_debug_uvicorn.txt",
+        "name": "hub_debug_uvicorn.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 3677,
+        "domain": "node_city"
+      },
+      {
+        "id": "hub_debug_uvicorn_env.txt",
+        "name": "hub_debug_uvicorn_env.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 9877,
+        "domain": "node_city"
+      },
+      {
+        "id": "hub_terminal.py",
+        "name": "hub_terminal.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 17014,
+        "domain": "node_city"
+      },
+      {
+        "id": "hub_test.log",
+        "name": "hub_test.log",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 18110,
+        "domain": "node_city"
+      },
+      {
+        "id": "hub_test.txt",
+        "name": "hub_test.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 127,
+        "domain": "node_city"
+      },
+      {
+        "id": "import_err.txt",
+        "name": "import_err.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 22104,
+        "domain": "node_city"
+      },
+      {
+        "id": "irc_trace.txt",
+        "name": "irc_trace.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld",
+        "name": "IrealWorld",
+        "filesystemType": "directory",
+        "spatialRole": "building",
+        "depth": 1,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Laboratory",
+        "name": "Laboratory",
+        "filesystemType": "directory",
+        "spatialRole": "building",
+        "depth": 1,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Life.py",
+        "name": "Life.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 49259,
+        "domain": "node_city"
+      },
+      {
+        "id": "MEMORY_POSTURE.md",
+        "name": "MEMORY_POSTURE.md",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 4919,
+        "domain": "node_city"
+      },
+      {
+        "id": "metatron_debug.txt",
+        "name": "metatron_debug.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 112,
+        "domain": "node_city"
+      },
+      {
+        "id": "metatron_debug_2.txt",
+        "name": "metatron_debug_2.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 128,
+        "domain": "node_city"
+      },
+      {
+        "id": "metatron_tail.txt",
+        "name": "metatron_tail.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 3538,
+        "domain": "node_city"
+      },
+      {
+        "id": "methods.txt",
+        "name": "methods.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "old_overworld.html",
+        "name": "old_overworld.html",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 1,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": ".agent/Data",
+        "name": "Data",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": ".agent/docs",
+        "name": "docs",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": ".agent/identities",
+        "name": "identities",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": ".agent/rules",
+        "name": "rules",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": ".agent/scripts",
+        "name": "scripts",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": ".agent/workflows",
+        "name": "workflows",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": ".agents/workflows",
+        "name": "workflows",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": ".github/workflows",
+        "name": "workflows",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": ".pytest_cache/.gitignore",
+        "name": ".gitignore",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 39,
+        "domain": "node_city"
+      },
+      {
+        "id": ".pytest_cache/CACHEDIR.TAG",
+        "name": "CACHEDIR.TAG",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 191,
+        "domain": "node_city"
+      },
+      {
+        "id": ".pytest_cache/README.md",
+        "name": "README.md",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 310,
+        "domain": "node_city"
+      },
+      {
+        "id": ".pytest_cache/v",
+        "name": "v",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": ".vscode/settings.json",
+        "name": "settings.json",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 746,
+        "domain": "node_city"
+      },
+      {
+        "id": "alisa/World",
+        "name": "World",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Blockchain/Contracts",
+        "name": "Contracts",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Blockchain/Ledger",
+        "name": "Ledger",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Blockchain/Standards",
+        "name": "Standards",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Academy",
+        "name": "Academy",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Akasha",
+        "name": "Akasha",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/akasha.db",
+        "name": "akasha.db",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 24576,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Archive",
+        "name": "Archive",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Assets",
+        "name": "Assets",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Audio",
+        "name": "Audio",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/audit_poetic.json",
+        "name": "audit_poetic.json",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 7864,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Autofreelance",
+        "name": "Autofreelance",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/avatars.db",
+        "name": "avatars.db",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 12288,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Backups",
+        "name": "Backups",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Beings",
+        "name": "Beings",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Bin",
+        "name": "Bin",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/BlackBox",
+        "name": "BlackBox",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Brain",
+        "name": "Brain",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Brainstorm",
+        "name": "Brainstorm",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Brainstorming",
+        "name": "Brainstorming",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Brainstorms",
+        "name": "Brainstorms",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Bridges",
+        "name": "Bridges",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Browser",
+        "name": "Browser",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/bugs_conocidos.md",
+        "name": "bugs_conocidos.md",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 1613,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/BuilderEvidence",
+        "name": "BuilderEvidence",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Bus",
+        "name": "Bus",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Cache",
+        "name": "Cache",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/CentroReciclaje",
+        "name": "CentroReciclaje",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Channels",
+        "name": "Channels",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Chispas",
+        "name": "Chispas",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Chrome_Profile",
+        "name": "Chrome_Profile",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Concepts",
+        "name": "Concepts",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Config",
+        "name": "Config",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Contracts",
+        "name": "Contracts",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Conversations",
+        "name": "Conversations",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/cycle_coherence.json",
+        "name": "cycle_coherence.json",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/DailyPlanet",
+        "name": "DailyPlanet",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/dashboard_cache.json",
+        "name": "dashboard_cache.json",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 799,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/decoded_conversations",
+        "name": "decoded_conversations",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Decrees",
+        "name": "Decrees",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Diario",
+        "name": "Diario",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/DreamJournal.md",
+        "name": "DreamJournal.md",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 554,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Dreams",
+        "name": "Dreams",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Economy",
+        "name": "Economy",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/enclave",
+        "name": "enclave",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Gadgets",
+        "name": "Gadgets",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Genesis",
+        "name": "Genesis",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Heritage",
+        "name": "Heritage",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Identity",
+        "name": "Identity",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Inbox",
+        "name": "Inbox",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Index",
+        "name": "Index",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Introspection",
+        "name": "Introspection",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Inventory",
+        "name": "Inventory",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/IrealWorld",
+        "name": "IrealWorld",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Jobs",
+        "name": "Jobs",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Knowledge",
+        "name": "Knowledge",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Korin",
+        "name": "Korin",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Laboratory",
+        "name": "Laboratory",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Learning",
+        "name": "Learning",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Lecciones",
+        "name": "Lecciones",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Local",
+        "name": "Local",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Locks",
+        "name": "Locks",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Logs",
+        "name": "Logs",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Data/Mailbox",
+        "name": "Mailbox",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Action.py",
+        "name": "Action.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 264,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Archives",
+        "name": "Archives",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/AtomicFunction.py",
+        "name": "AtomicFunction.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 4684,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Autonomia.py",
+        "name": "Autonomia.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 4833,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Base.py",
+        "name": "Base.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 9281,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/BlackBox.py",
+        "name": "BlackBox.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 9310,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Building.py",
+        "name": "Building.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 4910,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/BusConnected.py",
+        "name": "BusConnected.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 318,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/BusMixin.py",
+        "name": "BusMixin.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 618,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/ChannelBridge.py",
+        "name": "ChannelBridge.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 31622,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Chronicle.py",
+        "name": "Chronicle.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 12166,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/ColonyReferences.py",
+        "name": "ColonyReferences.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 4127,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Composition.py",
+        "name": "Composition.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 2700,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Container.py",
+        "name": "Container.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 1103,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Create.py",
+        "name": "Create.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 1757,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Crypto",
+        "name": "Crypto",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Cycle.py",
+        "name": "Cycle.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 4636,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Decrees",
+        "name": "Decrees",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Diagnostics.py",
+        "name": "Diagnostics.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 2872,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/docs",
+        "name": "docs",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Economy",
+        "name": "Economy",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Egg.py",
+        "name": "Egg.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 14084,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/EggGames.py",
+        "name": "EggGames.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 16340,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/EggUI.py",
+        "name": "EggUI.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 27432,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Encoding",
+        "name": "Encoding",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Essence.py",
+        "name": "Essence.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 1461,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Evolve.py",
+        "name": "Evolve.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 1582,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Export_Spore.py",
+        "name": "Export_Spore.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 17259,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/first_thought.log",
+        "name": "first_thought.log",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 672,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Fractal.py",
+        "name": "Fractal.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 2782,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/FusionProtocol.py",
+        "name": "FusionProtocol.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 42939,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Genesis.py",
+        "name": "Genesis.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 3668,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/GenesisKey.py",
+        "name": "GenesisKey.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 14768,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/goodboy.txt",
+        "name": "goodboy.txt",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 3499,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Grace.py",
+        "name": "Grace.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 932,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Group.py",
+        "name": "Group.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 968,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/HippocampalBoot.py",
+        "name": "HippocampalBoot.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 29429,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/HiveGenesis.py",
+        "name": "HiveGenesis.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 2254,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/HiveScheduler.py",
+        "name": "HiveScheduler.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 27571,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Hub",
+        "name": "Hub",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/IdentityHolder.py",
+        "name": "IdentityHolder.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 2119,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/import_health.log",
+        "name": "import_health.log",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 1344,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Inspector.py",
+        "name": "Inspector.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 14815,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/IO",
+        "name": "IO",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/LaVarita.py",
+        "name": "LaVarita.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 5873,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/LoRA.py",
+        "name": "LoRA.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 10236,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Materia.py",
+        "name": "Materia.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 2593,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Math",
+        "name": "Math",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Mindset.py",
+        "name": "Mindset.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 8417,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Models.py",
+        "name": "Models.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 8318,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/motoko_patch",
+        "name": "motoko_patch",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Net",
+        "name": "Net",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Neuron.py",
+        "name": "Neuron.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 7113,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/NodePermit.py",
+        "name": "NodePermit.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 8849,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/NodeRegistry.py",
+        "name": "NodeRegistry.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 21499,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/NodeSynapse.py",
+        "name": "NodeSynapse.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 2154,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/OmniBus.py",
+        "name": "OmniBus.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 4198,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Place.py",
+        "name": "Place.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 1321,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/Pneuma.py",
+        "name": "Pneuma.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 66542,
+        "domain": "node_city"
+      },
+      {
+        "id": "Genesis/probe.log",
+        "name": "probe.log",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 676,
+        "domain": "node_city"
+      },
+      {
+        "id": "Governance/Contracts",
+        "name": "Contracts",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Governance/SmartContract.py",
+        "name": "SmartContract.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 3645,
+        "domain": "node_city"
+      },
+      {
+        "id": "Governance/__init__.py",
+        "name": "__init__.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Heritage/Cronicas",
+        "name": "Cronicas",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Heritage/Herodotus",
+        "name": "Herodotus",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld/auto_wirer.py",
+        "name": "auto_wirer.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 4685,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld/BreedingPool.py",
+        "name": "BreedingPool.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 13793,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld/ConsensusEngine.py",
+        "name": "ConsensusEngine.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 16976,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld/Contracts",
+        "name": "Contracts",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld/CraftingEngine.py",
+        "name": "CraftingEngine.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 14586,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld/DecayEngine.py",
+        "name": "DecayEngine.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 9460,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld/diagnose_wiring.py",
+        "name": "diagnose_wiring.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 5822,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld/EggGenesis.py",
+        "name": "EggGenesis.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 11385,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld/EnergySystem.py",
+        "name": "EnergySystem.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 18802,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld/EvolutionEngine.py",
+        "name": "EvolutionEngine.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 23603,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld/MiningEngine.py",
+        "name": "MiningEngine.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 17967,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld/README.md",
+        "name": "README.md",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 2276,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld/simulate_economy.py",
+        "name": "simulate_economy.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 9459,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld/simulate_employment.py",
+        "name": "simulate_employment.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 5300,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld/simulate_marketplace.py",
+        "name": "simulate_marketplace.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 6538,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld/test_sprint4_engines.py",
+        "name": "test_sprint4_engines.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 16318,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld/viewer",
+        "name": "viewer",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld/WorldChain.py",
+        "name": "WorldChain.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 29822,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld/WorldClock.py",
+        "name": "WorldClock.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 12809,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld/WorldState.py",
+        "name": "WorldState.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 15544,
+        "domain": "node_city"
+      },
+      {
+        "id": "IrealWorld/__init__.py",
+        "name": "__init__.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 42125,
+        "domain": "node_city"
+      },
+      {
+        "id": "Laboratory/Archive",
+        "name": "Archive",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Laboratory/Intros",
+        "name": "Intros",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Laboratory/Legacy",
+        "name": "Legacy",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Laboratory/obsolete_sierpinski",
+        "name": "obsolete_sierpinski",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": "Laboratory/README.md",
+        "name": "README.md",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 504,
+        "domain": "node_city"
+      },
+      {
+        "id": "Laboratory/substrate_transfer_score.py",
+        "name": "substrate_transfer_score.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 2,
+        "sizeBytes": 3809,
+        "domain": "node_city"
+      },
+      {
+        "id": ".agent/Data/Logs",
+        "name": "Logs",
+        "filesystemType": "directory",
+        "spatialRole": "room",
+        "depth": 3,
+        "sizeBytes": 0,
+        "domain": "node_city"
+      },
+      {
+        "id": ".agent/docs/cogito_sync_usage.md",
+        "name": "cogito_sync_usage.md",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 3,
+        "sizeBytes": 2069,
+        "domain": "node_city"
+      },
+      {
+        "id": ".agent/identities/alph_seal.json",
+        "name": "alph_seal.json",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 3,
+        "sizeBytes": 2641,
+        "domain": "node_city"
+      },
+      {
+        "id": ".agent/rules/coding-standards.md",
+        "name": "coding-standards.md",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 3,
+        "sizeBytes": 1282,
+        "domain": "node_city"
+      },
+      {
+        "id": ".agent/rules/execution-safety.md",
+        "name": "execution-safety.md",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 3,
+        "sizeBytes": 902,
+        "domain": "node_city"
+      },
+      {
+        "id": ".agent/rules/sacred-files.md",
+        "name": "sacred-files.md",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 3,
+        "sizeBytes": 936,
+        "domain": "node_city"
+      },
+      {
+        "id": ".agent/scripts/alexa_listener.py",
+        "name": "alexa_listener.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 3,
+        "sizeBytes": 4294,
+        "domain": "node_city"
+      },
+      {
+        "id": ".agent/scripts/alexa_test_casa.py",
+        "name": "alexa_test_casa.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 3,
+        "sizeBytes": 2070,
+        "domain": "node_city"
+      },
+      {
+        "id": ".agent/scripts/alisa_startup.py",
+        "name": "alisa_startup.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 3,
+        "sizeBytes": 15641,
+        "domain": "node_city"
+      },
+      {
+        "id": ".agent/scripts/alisa_sudo.py",
+        "name": "alisa_sudo.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 3,
+        "sizeBytes": 3728,
+        "domain": "node_city"
+      },
+      {
+        "id": ".agent/scripts/bark_alexa_server.py",
+        "name": "bark_alexa_server.py",
+        "filesystemType": "file",
+        "spatialRole": "drawer_or_prop",
+        "depth": 3,
+        "sizeBytes": 9335,
+        "domain": "node_city"
+      }
+    ]
+  },
+  "existingComponents": [
+    {
+      "path": "Soma/Navi/hub/filesystem.py",
+      "role": "Exposes bounded filesystem anatomy through /system/filesystem."
+    },
+    {
+      "path": "World/Web/overworld/js/alisa-engine/src/world/systems/FileSystemDioramaSystem.js",
+      "role": "Renders filesystem nodes as a navigable city diorama."
+    },
+    {
+      "path": "World/Engines/Cartographer.py",
+      "role": "Maps live Hub/system state into spatial domains."
+    },
+    {
+      "path": "World/Simulation/Overworld/DomainGenesis.py",
+      "role": "Constructs the conceptual domains: overworld, world, psyche, soma, node and hardware."
+    },
+    {
+      "path": "World/Web/overworld/js/alisa-engine/src/world/systems/HubCartographerSystem.js",
+      "role": "Connects the engine to /overworld/state domain snapshots."
+    },
+    {
+      "path": "World/Web/overworld/props/district_types.json",
+      "role": "Defines city-scale procedural districts, plots and infrastructure pools."
+    },
+    {
+      "path": "World/Web/overworld/data/lab_card_manifest.json",
+      "role": "Current Lab card contract: route, system, owner, claim, evidence and quality gates."
+    }
+  ],
+  "nextMilestones": [
+    "Expose this manifest through a Hub endpoint.",
+    "Teach FileSystemDioramaSystem to consume districts, not only directory nodes.",
+    "Attach each rendered place to actions/evidence/memory gates from lab_card_manifest.json.",
+    "Add an IRealWorld gate room that shows local/cloud sync and remote city presence."
+  ]
+}

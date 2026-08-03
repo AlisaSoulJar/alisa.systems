@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA LAB — EL REPARTO (pasaportes → cuerpos, a máxima potencia)</title>
+<style>
+  body{margin:0;overflow:hidden;background:#05070d;font-family:ui-monospace,monospace;color:#fff}
+  #hud{position:absolute;top:14px;left:16px;z-index:100;font-size:11.5px;line-height:1.65;text-shadow:0 0 8px #000;pointer-events:none}
+  #hud h2{margin:0 0 4px;font-size:15px;color:#7fd0ff;letter-spacing:1px}
+  #hud .k{color:#5f7a92}
+  #hud .ok{color:#7CFC98}
+  #cast{position:absolute;top:14px;right:16px;width:250px;max-height:86vh;overflow:hidden;z-index:100;
+        background:rgba(8,12,20,.72);border:1px solid #1d2b3e;border-radius:8px;padding:8px 10px;font-size:10.5px;line-height:1.5}
+  #cast h3{margin:0 0 5px;color:#7fd0ff;font-size:11px}
+  #cast .r{display:flex;justify-content:space-between;gap:6px;padding:1px 0;color:#9fb3c8}
+  #cast .r b{color:#cfe3f5;font-weight:normal}
+  #cast .t5{color:#ffd166}
+  #cast .t1{color:#8ab4d8}
+  #tag{position:absolute;bottom:12px;left:16px;color:#4a5a6a;font-size:10px;z-index:100}
+  #tag b{color:#00ffcc}
+  #load{position:absolute;bottom:12px;right:16px;color:#5f7a92;font-size:10px;z-index:100}
+</style>
+<script type="importmap">
+{ "imports": {
+    "three": "/vendor/three-0.160.0/build/three.module.js",
+    "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+    "@alisa-engine/": "../js/alisa-engine/" } }
+</script>
+</head>
+<body>
+<div id="hud">montando el reparto…</div>
+<div id="cast"><h3>▓ REPARTO · desde pasaportes</h3><div id="clist"></div></div>
+<div id="tag">Powered by <b>@alisa-engine</b> · Sky+shadows+SSAO+Bloom+ACES · cuerpos y movimiento <b>leídos del dato</b></div>
+<div id="load"></div>
+<script type="module">
+import * as THREE from 'three';
+import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+import { GLTFModelPool } from '@alisa-engine/src/soma/plugins/GLTFModelPool.js';
+import { Sky } from 'three/addons/objects/Sky.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { SSAOPass } from 'three/addons/postprocessing/SSAOPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+const log = m => { const e=document.getElementById('load'); if(e) e.textContent = m; };
+
+window.onload = async () => {
+  // ── EL MOTOR (nuestra máquina) ──
+  const app = new AlisaRenderCore({
+    clearColor: 0x0a0f18, fogColor: null, useShadows: true,
+    cameraPosition: new THREE.Vector3(0, 5.2, 20)
+  });
+  const { scene, camera, renderer, controls } = app;
+  controls.target.set(0, 1.1, -2.2);   // el centro del arco
+  window.__core = app;
+
+  // ── 1. CINE: tonemapping filmico + sombras suaves ──
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.55;   // el cielo atmosférico es MUY luminoso: bajar o quema
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  // ── 2. CIELO con dispersión atmosférica (Rayleigh/Mie) ──
+  const sky = new Sky(); sky.scale.setScalar(45000); scene.add(sky);
+  const sun = new THREE.Vector3();
+  const su = sky.material.uniforms;
+  su.turbidity.value = 6; su.rayleigh.value = 1.4;
+  su.mieCoefficient.value = 0.006; su.mieDirectionalG.value = 0.86;
+  const elev = 6, azim = 168;                       // sol bajo = hora dorada
+  sun.setFromSphericalCoords(1, THREE.MathUtils.degToRad(90-elev), THREE.MathUtils.degToRad(azim));
+  su.sunPosition.value.copy(sun);
+
+  // ── 3. LUZ dirigida con sombras + relleno + rim ──
+  const key = new THREE.DirectionalLight(0xfff0d8, 5.0);
+  key.position.copy(sun).multiplyScalar(60); key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  const d = 18; Object.assign(key.shadow.camera, { left:-d, right:d, top:d, bottom:-d, near:1, far:160 });
+  key.shadow.bias = -0.0006; key.shadow.normalBias = 0.03;
+  scene.add(key);
+  scene.add(new THREE.HemisphereLight(0xbcd8ff, 0x2a2418, 1.15));
+  const rim = new THREE.DirectionalLight(0x7fd0ff, 1.1); rim.position.set(-8, 6, -10); scene.add(rim);
+  // relleno frontal suave: revela al reparto sin matar el contraluz dorado
+  const fill = new THREE.DirectionalLight(0xfff4e6, 1.5); fill.position.set(2, 7, 16); scene.add(fill);
+
+  // suelo que recibe sombra
+  const floor = new THREE.Mesh(new THREE.CircleGeometry(26, 64),
+    new THREE.MeshStandardMaterial({ color: 0x1b2330, roughness: 0.95, metalness: 0.0 }));
+  floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; scene.add(floor);
+
+  // ── 4. POST-PROCESO: SSAO + Bloom + salida ACES ──
+  const composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  const ssao = new SSAOPass(scene, camera, innerWidth, innerHeight);
+  ssao.kernelRadius = 0.35; ssao.minDistance = 0.0012; ssao.maxDistance = 0.09;
+  composer.addPass(ssao);
+  composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.42, 0.75, 0.85));
+  composer.addPass(new OutputPass());
+  addEventListener('resize', () => composer.setSize(innerWidth, innerHeight));
+
+  // ── 5. EL DATO: pasaportes + cinemática ──
+  log('leyendo pasaportes…');
+  const kine = await (await fetch('../data/kinematics.json')).json();
+  const names = await (await fetch('../data/beings_passports/')).text()
+      .then(t => [...t.matchAll(/([a-z0-9_]+)_passport\.json/g)].map(m => m[1]))
+      .catch(() => []);
+  const uniq = [...new Set(names)];
+  const passports = [];
+  for (const n of uniq) {
+    try { const p = await (await fetch(`../data/beings_passports/${n}_passport.json`)).json();
+          if (p && p.model_path && (p.status === 'APPROVED' || p.status === 'ACTIVE')) passports.push(p); }
+    catch(_) {}
+  }
+
+  // ── 6. CUERPOS: solo los que tienen GLB de verdad ──
+  const pool = new GLTFModelPool();
+  const cast = [];
+  for (const p of passports) {
+    let gltf = null;
+    for (const dir of ['../props/ready/', '../props/models/']) {
+      try { gltf = await GLTFModelPool.get(dir + p.model_path); break; } catch(_) {}
+    }
+    if (!gltf) continue;
+    cast.push({ p, obj: gltf.scene });
+    log(`cuerpos: ${cast.length}`);
+  }
+
+  // ── 7. PUESTA EN ESCENA: arco, escala real del pasaporte, movimiento del arquetipo ──
+  const R = 6.2, N = cast.length;
+  const actors = [];
+  cast.forEach((c, i) => {
+    const a = (i / Math.max(1, N)) * Math.PI * 1.75 - Math.PI * 0.875;
+    const g = new THREE.Group();
+    const m = c.obj;
+    const box = new THREE.Box3().setFromObject(m); const sz = box.getSize(new THREE.Vector3());
+    const norm = 1.5 / (Math.max(sz.x, sz.y, sz.z) || 1);
+    m.scale.setScalar(norm * (c.p.scale || 1));
+    const b2 = new THREE.Box3().setFromObject(m); m.position.y = -b2.min.y;
+    m.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+    g.add(m);
+    g.position.set(Math.sin(a) * R, 0, Math.cos(a) * R - 2.2);
+    g.lookAt(0, 0.8, -2.2);
+    scene.add(g);
+    // movimiento: arquetipo de SU pasaporte (fallbacks si no define parámetros)
+    const arch = (c.p.kinematics || '').split('_')[0];
+    const K = kine[arch] || {};
+    actors.push({ g, m, phase: Math.random() * 6.28,
+      sway: K.idle_sway_hz ?? 0.45, bounce: K.vertical_bounce ?? 0.05, flex: K.spine_flexion ?? 0.08 });
+    // cartel
+    const cv = document.createElement('canvas'); cv.width = 320; cv.height = 64;
+    const cx = cv.getContext('2d'); cx.font = '22px monospace'; cx.fillStyle = '#dfeaf7';
+    cx.textAlign = 'center'; cx.fillText(`${c.p.emoji || ''} ${c.p.name}`, 160, 40);
+    const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cv), transparent: true, depthTest: false }));
+    spr.scale.set(3.1, 0.62, 1); spr.position.set(g.position.x, 2.05, g.position.z); scene.add(spr);
+  });
+
+  // ── UI ──
+  const t5 = cast.filter(c => c.p.voice?.tier === 5).length;
+  const t1 = cast.filter(c => c.p.voice?.tier === 1).length;
+  document.getElementById('hud').innerHTML =
+    `<h2>EL REPARTO</h2>` +
+    `<span class="k">actores  </span> <b>${cast.length}</b> de ${passports.length} pasaportes (los que tienen GLB real)<br>` +
+    `<span class="k">cuerpo   </span> model_path · <span class="k">escala</span> scale · <span class="k">movimiento</span> kinematics<br>` +
+    `<span class="k">voces    </span> <span class="ok">${t5} tier5 XTTS</span> · ${t1} tier1 señal · resto neural<br>` +
+    `<span class="k">render   </span> Sky(Rayleigh/Mie) + PCFSoft + SSAO + Bloom + ACES<br>` +
+    `<span class="k">fuente   </span> <span class="ok">todo leído del pasaporte — nada escrito a mano</span>`;
+  document.getElementById('clist').innerHTML = cast.map(c => {
+    const tv = c.p.voice?.tier; const cl = tv===5?'t5':tv===1?'t1':'';
+    return `<div class="r"><b>${c.p.emoji||'·'} ${c.p.name}</b><span class="${cl}">${c.p.skeleton||''}</span></div>`;
+  }).join('');
+  log(`${cast.length} cuerpos · ${composer.passes.length} passes`);
+
+  // ── LOOP: el motor manda; nosotros pintamos por el composer ──
+  let t = 0;
+  app.startLoop((dt) => {
+    t += dt;
+    for (const a of actors) {
+      const br = Math.sin(t * a.sway * Math.PI * 2 + a.phase);
+      a.m.position.y = a.m.position.y * 0.0 + (a.m.userData.y0 ?? (a.m.userData.y0 = a.m.position.y)) + br * a.bounce;
+      a.m.rotation.z = br * a.flex * 0.12;
+    }
+  }, () => composer.render());
+
+  window.__report = { actors: cast.length, passports: passports.length,
+                      passes: composer.passes.length, names: cast.map(c => c.p.name) };
+  window.__ready = true;
+};
+</script>
+</body>
+</html>

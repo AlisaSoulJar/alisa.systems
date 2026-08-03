@@ -1,0 +1,100 @@
+{
+    "_doc": "District Types — city-level loot. BSP divides the city into districts, just like BSP divides floors into rooms. Same algorithm, different scale.",
+
+    "slum_quarter": {
+        "category": "slum",
+        "rarity": "common",
+        "buildingCount": [8, 16],
+        "buildingPool": [
+            { "type": "residential_block", "weight": 80 },
+            { "type": "slum_shack",        "weight": 90 },
+            { "type": "slum_den",          "weight": 30 },
+            { "type": "slum_palace",       "weight": 5  }
+        ],
+        "infrastructure": ["street_lamp", "dumpster", "fire_escape", "power_line"]
+    },
+    "favela": {
+        "category": "slum",
+        "rarity": "rare",
+        "buildingCount": [12, 24],
+        "buildingPool": [
+            { "type": "slum_shack",        "weight": 95 },
+            { "type": "residential_block", "weight": 40 },
+            { "type": "slum_den",          "weight": 50 },
+            { "type": "slum_palace",       "weight": 8  }
+        ],
+        "infrastructure": ["power_line", "water_tank", "makeshift_bridge"]
+    },
+
+    "business_district": {
+        "category": "corp",
+        "rarity": "common",
+        "buildingCount": [6, 12],
+        "buildingPool": [
+            { "type": "office_tower",   "weight": 85 },
+            { "type": "corp_suite",     "weight": 40 },
+            { "type": "corp_penthouse", "weight": 10 }
+        ],
+        "infrastructure": ["street_lamp_modern", "holographic_sign", "bench"]
+    },
+    "financial_core": {
+        "category": "corp",
+        "rarity": "epic",
+        "buildingCount": [4, 8],
+        "buildingPool": [
+            { "type": "office_tower",   "weight": 60 },
+            { "type": "corp_suite",     "weight": 70 },
+            { "type": "corp_penthouse", "weight": 30 }
+        ],
+        "infrastructure": ["holographic_billboard", "fountain", "sculpture"]
+    },
+
+    "military_zone": {
+        "category": "military",
+        "rarity": "common",
+        "buildingCount": [4, 8],
+        "buildingPool": [
+            { "type": "military_barracks", "weight": 70 },
+            { "type": "military_command",  "weight": 40 },
+            { "type": "military_bunker",   "weight": 10 }
+        ],
+        "infrastructure": ["watchtower", "barricade", "sandbag_wall", "antenna"]
+    },
+
+    "harbor": {
+        "category": "docks",
+        "rarity": "common",
+        "buildingCount": [5, 10],
+        "buildingPool": [
+            { "type": "dock_warehouse",  "weight": 80 },
+            { "type": "dock_workshop",   "weight": 50 }
+        ],
+        "infrastructure": ["crane", "bollard", "dock_light", "cargo_container"]
+    },
+
+    "science_park": {
+        "category": "lab",
+        "rarity": "rare",
+        "buildingCount": [3, 6],
+        "buildingPool": [
+            { "type": "research_facility", "weight": 80 },
+            { "type": "secret_lab",        "weight": 15 }
+        ],
+        "infrastructure": ["satellite_dish", "biohazard_sign", "solar_panel"]
+    },
+
+    "_city_bsp_params": {
+        "minDistrictSize": 200,
+        "maxCuts": 4,
+        "splitRatio": [0.3, 0.7],
+        "_doc": "BSP at city scale: same doBsp(), area in meters"
+    },
+
+    "_district_bsp_params": {
+        "minPlotSize": 20,
+        "maxCuts": 5,
+        "splitRatio": [0.25, 0.75],
+        "streetWidth": 4,
+        "_doc": "BSP subdivides district into building plots + streets between cuts"
+    }
+}

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA — Raccoon Escape: Cabinet Search</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { overflow: hidden; background: #0a0a14; font-family: 'Inter', sans-serif; color: #e0e0e0; }
+
+        /* ─── HUD ─── */
+        #hud {
+            position: absolute; top: 14px; left: 14px; z-index: 20;
+            background: rgba(10,12,20,0.88); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;
+            padding: 18px 22px; width: 260px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+            transition: transform 0.3s; display: none;
+        }
+        #hud:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+        #hud h3 {
+            font-size: 15px; font-weight: 800; margin-bottom: 12px; padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255,255,255,0.06);
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffa66b 50%, #6bc5ff 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .hud-row { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; color: #888; }
+        .hud-val { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 12px; }
+        .green { color: #34c759; } .red { color: #ff3b30; } .yellow { color: #ff9500; } .cyan { color: #007aff; } .purple { color: #af52de; }
+
+        /* ─── Phase Banner ─── */
+        #phase-banner {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+            font-size: 52px; font-weight: 900; letter-spacing: -1px;
+            background: linear-gradient(135deg, #ff6b6b, #ffa66b);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            opacity: 0; transition: opacity 0.4s; pointer-events: none; z-index: 30;
+        }
+        #phase-banner.show { opacity: 1; }
+
+        /* ─── Controls Panel ─── */
+        #controls {
+            position: absolute; bottom: 14px; left: 14px; z-index: 20;
+            background: rgba(10,12,20,0.88); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 16px;
+            padding: 14px 18px; width: 260px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3); display: none;
+        }
+        #controls .label { font-size: 10px; color: #666; margin-top: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        #controls select, #controls input[type="number"] {
+            width: 100%; background: #1a1a2e; color: #e0e0e0; border: 1px solid #333;
+            padding: 6px 8px; margin-top: 4px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+            border-radius: 8px; cursor: pointer;
+        }
+        #controls input[type="range"] { width: 100%; margin-top: 4px; accent-color: #007aff; }
+        #controls button {
+            padding: 8px 16px; font-size: 12px; font-weight: 700; font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #007aff, #5856d6); color: #fff; border: none;
+            border-radius: 10px; cursor: pointer; transition: all 0.25s; width: 100%; margin-top: 8px;
+        }
+        #controls button:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,122,255,0.3); }
+        .btn-row { display: flex; gap: 8px; margin-top: 8px; }
+        .btn-row button { flex: 1; }
+
+        /* ─── Mode Badges ─── */
+        #mode-badges {
+            position: absolute; top: 14px; left: 50%; transform: translateX(-50%); z-index: 20;
+            display: none; gap: 6px;
+        }
+        .mode-badge {
+            padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: 700;
+            letter-spacing: 0.5px; text-transform: uppercase;
+            background: rgba(10,12,20,0.9); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+        .badge-game { color: #ff6b6b; } .badge-world { color: #007aff; } .badge-ml { color: #af52de; }
+
+        /* ─── Immersive Camcorder HUD ─── */
+        .immersive-camcorder {
+            position: fixed; top: 18px; right: 24px; z-index: 999;
+            color: #fff; font-family: 'JetBrains Mono', monospace; font-weight: 700;
+            font-size: 26px; text-shadow: 0 0 10px rgba(0,0,0,0.8);
+            display: none; flex-direction: column; align-items: flex-end;
+            pointer-events: none; letter-spacing: 2px;
+        }
+        #cam-batt { font-size: 24px; color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.6); font-weight: 400; letter-spacing: 4px; }
+        #cam-batt.low-batt { color: #ff3b30; text-shadow: 0 0 10px rgba(255,59,48,0.8); animation: batBlink 0.5s infinite alternate; }
+        @keyframes batBlink { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+        /* ─── Scan UI ─── */
+        #scan-ui {
+            position: absolute; pointer-events: none; z-index: 100;
+            display: none; transform: translate(-50%, -50%);
+            filter: drop-shadow(0 0 8px rgba(0,0,0,0.8));
+        }
+
+        /* ─── Minimap (Canvas 2D) ─── */
+        #minimap-wrap {
+            position: absolute; bottom: 14px; right: 14px; z-index: 20;
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;
+            background: rgba(10,12,20,0.88); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3); padding: 6px; display: none;
+        }
+        #c { border-radius: 10px; }
+
+        /* ─── History Panel ─── */
+        #history {
+            position: absolute; bottom: 14px; left: 290px; z-index: 20;
+            background: rgba(10,12,20,0.88); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;
+            padding: 12px; min-width: 220px; max-height: 200px; overflow-y: auto;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.3); display: none;
+        }
+        #history h3 { color: #00ffcc; margin-bottom: 6px; font-size: 11px; letter-spacing: 1px; font-weight: 700; }
+        .hist-row { font-size: 11px; margin: 2px 0; font-family: 'JetBrains Mono', monospace; }
+        .hist-hot { color: #ff6644; } .hist-warm { color: #ffcc44; } .hist-cold { color: #4488ff; } .hist-found { color: #44ff88; font-weight: bold; }
+
+        /* ─── Banner (2D) ─── */
+        #banner {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 48px; font-weight: bold; z-index: 20; pointer-events: none;
+            opacity: 0; transition: opacity 0.4s;
+        }
+
+        /* ─── Snake warning pulse ─── */
+        @keyframes dangerPulse { 0%, 100% { box-shadow: inset 0 0 40px rgba(255,0,0,0); } 50% { box-shadow: inset 0 0 80px rgba(255,0,0,0.3); } }
+        .danger-active { animation: dangerPulse 0.6s ease-in-out 3; }
+
+        /* ═══ SCENARIO MODAL ═══ */
+        #scenarioModal {
+            position: fixed; inset: 0; z-index: 200;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.88);
+            backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+            transition: opacity 0.4s;
+        }
+        #scenarioModal.hidden { opacity: 0; pointer-events: none; }
+        .modal-box {
+            background: rgba(18,18,30,0.96); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px; padding: 38px 42px; max-width: 860px; width: 92%;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+        }
+        .modal-box h1 {
+            text-align: center; font-size: 30px; font-weight: 900; margin-bottom: 26px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffa66b 50%, #6bc5ff 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .scenario-cards { display: flex; gap: 14px; margin-bottom: 24px; }
+        .scenario-card {
+            flex: 1; background: rgba(30,30,50,0.8); border: 2px solid rgba(255,255,255,0.08);
+            border-radius: 16px; padding: 20px 16px; cursor: pointer;
+            transition: all 0.25s ease; text-align: center;
+        }
+        .scenario-card:hover { border-color: #007aff; transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,122,255,0.15); }
+        .scenario-card.selected { border-color: #007aff; background: rgba(0,122,255,0.08); box-shadow: 0 0 0 3px rgba(0,122,255,0.2); }
+        .scenario-card .card-emoji { font-size: 38px; display: block; margin-bottom: 10px; }
+        .scenario-card h3 { font-size: 14px; font-weight: 700; color: #e0e0e0; margin-bottom: 6px; }
+        .scenario-card p { font-size: 11px; color: #888; line-height: 1.55; }
+        .modal-config { margin-top: 18px; display: flex; gap: 16px; flex-wrap: wrap; }
+        .modal-config label { font-size: 11px; color: #888; font-weight: 600; }
+        .modal-config input, .modal-config select {
+            background: rgba(30,30,50,0.8); border: 1px solid #333; border-radius: 8px;
+            padding: 6px 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px;
+            color: #e0e0e0; width: 100%; margin-top: 4px;
+        }
+        .modal-config .cfg-col { flex: 1; min-width: 120px; }
+        #btnStartModal {
+            display: block; margin: 24px auto 0; padding: 14px 52px;
+            font-size: 16px; font-weight: 700; font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #007aff, #5856d6);
+            color: #fff; border: none; border-radius: 14px; cursor: pointer;
+            box-shadow: 0 4px 18px rgba(0,122,255,0.3); transition: all 0.25s;
+        }
+        #btnStartModal:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 28px rgba(0,122,255,0.4); }
+        .card-s1.selected { border-color: #34c759; background: rgba(52,199,89,0.08); }
+        .card-s2.selected { border-color: #007aff; background: rgba(0,122,255,0.08); }
+        .card-s3.selected { border-color: #ff3b30; background: rgba(255,59,48,0.08); }
+
+        .help-hint { font-size: 9px; color: #666; margin-top: 10px; line-height: 1.5; padding-top: 8px; border-top: 1px solid #222; }
+    </style>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+    <!-- ═══ SCENARIO MODAL ═══ -->
+    <div id="scenarioModal">
+        <div class="modal-box">
+            <h1>🦝🗄️ RACCOON ESCAPE: CABINET</h1>
+            <div class="scenario-cards">
+                <div class="scenario-card card-s1 selected" onclick="selectStage(1)">
+                    <span class="card-emoji">🗄️🦝🔍</span>
+                    <h3>Stage 1 · Classic</h3>
+                    <p>Find the raccoon in the cabinet! Open compartments one by one. Mastermind hints guide you with BSP distance feedback.</p>
+                </div>
+                <div class="scenario-card card-s2" onclick="selectStage(2)">
+                    <span class="card-emoji">🗄️🐍💣</span>
+                    <h3>Stage 2 · Minesweeper</h3>
+                    <p>Snake traps lurk in some drawers! Minesweeper numbers reveal adjacent dangers. One wrong move = instant death.</p>
+                </div>
+                <div class="scenario-card card-s3" onclick="selectStage(3)">
+                    <span class="card-emoji">🗄️🔦👻</span>
+                    <h3>Stage 3 · Lights Out</h3>
+                    <p>Total darkness. Your flashlight is your only ally. Battery drains fast — find the raccoon before the ghost finds YOU.</p>
+                </div>
+            </div>
+            <div class="modal-config">
+                <div class="cfg-col"><label>🌱 Seed</label><input type="number" id="mSeed" value="42"></div>
+                <div class="cfg-col"><label>✂️ Cuts <span id="mCutsVal">3</span></label><input type="range" id="mCuts" min="2" max="6" value="3" oninput="document.getElementById('mCutsVal').innerText=this.value"></div>
+                <div class="cfg-col"><label>🎮 Mode</label><select id="mMode"><option value="human">🎮 Human</option><option value="ai" selected>🤖 AI Agent</option></select></div>
+                <div class="cfg-col"><label>📏 Size</label><select id="mSize"><option value="fixed">Fixed</option><option value="random" selected>Random</option><option value="growing">Growing</option></select></div>
+            </div>
+            <button id="btnStartModal" onclick="startSimulation()">▶ START GAME</button>
+        </div>
+    </div>
+
+    <!-- Phase Banner -->
+    <div id="phase-banner"></div>
+
+    <!-- Mode Badges -->
+    <div id="mode-badges">
+        <span class="mode-badge badge-game">🎮 Minigame</span>
+        <span class="mode-badge badge-world">🌍 Raccoon Escape</span>
+        <span class="mode-badge badge-ml">🧠 ML Training</span>
+    </div>
+
+    <!-- Camcorder HUD -->
+    <div id="camcorder" class="immersive-camcorder">
+        <div id="cam-batt">[■■■■]</div>
+        <div id="cam-flash" style="font-size: 16px; margin-top: 5px; color: #ffeb3b;">🔦 ON (F)</div>
+    </div>
+
+    <!-- HUD -->
+    <div id="hud">
+        <h3>🦝🗄️ CABINET SEARCH</h3>
+        <div class="hud-row">Stage: <span class="hud-val cyan" id="vStage">1</span></div>
+        <div class="hud-row">Drawers: <span class="hud-val" id="vDrawers">0</span></div>
+        <div class="hud-row">Attempts: <span class="hud-val yellow" id="vAttempts">0/0</span></div>
+        <div class="hud-row">Optimal: <span class="hud-val purple" id="vOptimal">0</span> <span style="color:#444;font-size:9px;">⌈log₂N⌉</span></div>
+        <div class="hud-row">🐍 Snakes: <span class="hud-val red" id="vSnakes">0</span></div>
+        <div class="hud-row">Score: <span class="hud-val green" id="vScore">0</span></div>
+        <div class="hud-row">Star Rating: <span class="hud-val yellow" id="vStars"></span></div>
+        <div class="hud-row">Episodes: <span class="hud-val" id="vEpisodes">0</span></div>
+        <div class="hud-row">Win Rate: <span class="hud-val yellow" id="vWinRate">—</span></div>
+        <div class="hud-row">🔋 Energy: <span class="hud-val cyan" id="vEnergy">100%</span></div>
+    </div>
+
+    <!-- Minimap -->
+    <div id="minimap-wrap">
+        <canvas id="c" width="260" height="260"></canvas>
+    </div>
+
+    <!-- History -->
+    <div id="history">
+        <h3>📜 ATTEMPT LOG</h3>
+        <div id="histList"></div>
+    </div>
+
+    <!-- Controls -->
+    <div id="controls">
+        <div class="label">Agent:</div>
+        <select id="inAgent"><option value="random">Random</option><option value="areaGreedy" selected>Area Greedy</option><option value="bayesian">Bayesian</option><option value="qlearning">RL Tensor (DQN)</option></select>
+        <div class="label">Speed: <span id="speedV">4x</span></div>
+        <input type="range" id="inSpeed" min="1" max="20" value="4" oninput="document.getElementById('speedV').textContent=this.value+'x'">
+        <div class="btn-row">
+            <button id="btnStart" onclick="toggleAutoPlay()">▶ AUTO</button>
+            <button onclick="newEpisode()">🔄 NEW</button>
+        </div>
+        <div class="help-hint">Click a drawer to open · F = flashlight<br>Drawers glow when hovered</div>
+    </div>
+
+    <!-- Banner (2D) -->
+    <div id="banner"></div>
+
+    <script type="importmap">
+    { 
+        "imports": { 
+            "three": "/vendor/three-0.160.0/build/three.module.js",
+            "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+            "@alisa-engine/": "../js/alisa-engine/src/" 
+        } 
+    }
+    </script>
+    <script src="../alisa_sim_sdk.js"></script>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  STAGE & MODAL SYSTEM
+// ═══════════════════════════════════════════════════
+let currentStage = 1;  // 1=Classic, 2=Minesweeper, 3=Lights Out
+let isDarkMode = false;
+let simulationRunning = false;
+
+window.selectStage = function(n) {
+    currentStage = n;
+    document.querySelectorAll('.scenario-card').forEach((c, i) => {
+        c.classList.toggle('selected', i === n - 1);
+    });
+}
+
+window.startSimulation = function() {
+    // Read modal config
+    const seed = parseInt(document.getElementById('mSeed').value) || 42;
+    document.getElementById('inSeed').value = seed;
+    document.getElementById('inCuts').value = document.getElementById('mCuts').value;
+    document.getElementById('inSize').value = document.getElementById('mSize').value;
+
+    // Configure stage
+    if (currentStage === 1) {
+        document.getElementById('inSignal').value = 'mastermind';
+        document.getElementById('inSnake').value = 'off';
+        document.getElementById('mSize').value = 'growing';
+        document.getElementById('inSize').value = 'growing';
+        isDarkMode = false;
+    } else if (currentStage === 2) {
+        document.getElementById('inSignal').value = 'minesweeper';
+        document.getElementById('inSnake').value = 'on';
+        isDarkMode = false;
+    } else if (currentStage === 3) {
+        document.getElementById('inSignal').value = 'blind';
+        document.getElementById('inSnake').value = 'on';
+        isDarkMode = true;
+    }
+
+    // Mode
+    const mode = document.getElementById('mMode').value;
+    currentMode = mode === 'human' ? 'play' : 'ai';
+
+    // Hide modal, show UI
+    document.getElementById('scenarioModal').classList.add('hidden');
+    document.getElementById('hud').style.display = 'block';
+    document.getElementById('minimap-wrap').style.display = 'block';
+    document.getElementById('history').style.display = 'block';
+    document.getElementById('mode-badges').style.display = 'flex';
+
+    if (currentMode === 'ai') {
+        document.getElementById('controls').style.display = 'block';
+    }
+
+    if (isDarkMode) {
+        document.getElementById('camcorder').style.display = 'flex';
+    }
+
+    document.getElementById('vStage').textContent = currentStage;
+
+    // Init 3D scene + start game
+    simulationRunning = true;
+    introPhase = 'intro_raccoon_run';
+    introTimer = 0;
+
+    window.init3D();
+    window.newEpisode();
+    window.animate();
+}
+
+function show3DBanner(text, duration) {
+    const el = document.getElementById('phase-banner');
+    el.textContent = text;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), duration || 2000);
+}
+
+// ═══════════════════════════════════════════════════
+//  HIDDEN CONFIG INPUTS (used by game logic)
+// ═══════════════════════════════════════════════════
+</script>
+
+<div style="display:none">
+    <input type="range" id="inCuts" min="2" max="6" value="3">
+    <input type="number" id="inSeed" value="42">
+    <select id="inSize"><option value="fixed">Fixed</option><option value="random" selected>Random</option><option value="growing">Growing</option></select>
+    <select id="inSnake"><option value="off">Off</option><option value="on" selected>On</option><option value="hard">Hard</option></select>
+    <select id="inSignal"><option value="blind">Blind</option><option value="minesweeper">Minesweeper</option><option value="mastermind" selected>Mastermind</option><option value="montyHall">Monty Hall</option><option value="gradient">Gradient</option></select>
+    <select id="inPlacement"><option value="area" selected>Area-weighted</option><option value="uniform">Uniform</option></select>
+    <span id="vCabinetSize"></span>
+    <span id="vDeaths">0</span>
+    <span id="vEfficiency">—</span>
+    <span id="vTimer">0.0s</span>
+</div>
+
+<div id="scan-ui">
+    <svg width="60" height="60" viewBox="0 0 60 60">
+        <circle cx="30" cy="30" r="24" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="6"/>
+        <circle id="scan-bar" cx="30" cy="30" r="24" fill="none" stroke="#ff453a" stroke-width="6" stroke-dasharray="150.8" stroke-dashoffset="150.8" transform="rotate(-90 30 30)" stroke-linecap="round"/>
+    </svg>
+</div>
+
+<button id="btnBackRoom" onclick="exitCabinetMode()" style="position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 100; font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: bold; background: rgba(0,0,0,0.8); color: white; border: 1px solid rgba(255,255,255,0.4); padding: 10px 20px; border-radius: 8px; display: none; cursor: pointer; transition: all 0.2s;">⬅ ROOM VIEW</button>
+
+<script type="module">
+import { CabinetEscapeGame } from '@alisa-engine/world/gym_runners/CabinetEscapeGame.js';
+
+window.game = new CabinetEscapeGame();
+window.game.init();
+
+window.selectStage = (n) => window.game.selectStage(n);
+window.startSimulation = () => window.game.startSimulation();
+// ⚠️ Aquí había dos envoltorios más:
+//     window.enterCabinetMode = () => window.game.enterCabinetMode();
+//     window.exitCabinetMode  = () => window.game.exitCabinetMode();
+//
+// Pero `CabinetEscapeGame` ya instala ESAS DOS funciones en `window` desde su
+// propio constructor, y no tiene métodos con ese nombre. Estas líneas se
+// ejecutaban DESPUÉS y pisaban las buenas con envoltorios rotos: el juego
+// llamaba a `window.enterCabinetMode()`, caía aquí, y reventaba con
+// «window.game.enterCabinetMode is not a function» — decenas de veces por
+// segundo, porque lo llama el bucle de juego automático.
+//
+// Es el mismo patrón que el `RLGymBridge` del edificio corporativo: el motor
+// publica algo en `window` y la página lo vuelve a envolver por costumbre.
+// Cuando el motor ya lo instala, envolver es romper.
+window.newEpisode = () => window.game.newEpisode();
+window.toggleAutoPlay = () => window.game.toggleAutoPlay();
+</script>
+</body>
+</html>

@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ALISA Lab - Chopper Aquarium v3</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #010205; font-family: monospace; color: #fff; user-select: none; }
+        
+        #hud {
+            display: none; position: absolute; top: 10px; left: 10px;
+            font-family: monospace; background: rgba(5,10,25,0.85);
+            padding: 14px 18px; border-radius: 10px; border: 1px solid #1e88e5;
+            pointer-events: auto; font-size: 13px; line-height: 1.8; z-index: 10;
+            box-shadow: 0 0 20px rgba(30,136,229,0.2);
+        }
+        #hud .title { color: #42a5f5; font-size: 15px; font-weight: bold; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+        #hud .stat { color: #88bbff; }
+        #hud .v-green { color: #88ff88; font-weight: bold; }
+        #hud .v-cyan { color: #88ccff; font-weight: bold; }
+        #hud .v-gold { color: #ffcc44; font-weight: bold; }
+        #hud .v-alert { color: #ff3b30; font-weight: bold; }
+
+        .fuel-container { 
+            width: 100%; height: 6px; background: #112; 
+            border-radius: 3px; margin-top: 5px; overflow: hidden;
+            border: 1px solid #1a3a5c; margin-bottom: 5px;
+        }
+        .fuel-fill { 
+            width: 100%; height: 100%; 
+            background: linear-gradient(90deg, #ff3b30, #ff9500, #34c759); 
+            transition: width 0.1s linear, background-color 0.3s;
+        }
+
+        #minimap {
+            position: fixed; bottom: 20px; right: 20px; width: 150px; height: 150px;
+            background: rgba(0,10,30,0.6); border: 2px solid #42a5f5; border-radius: 50%;
+            z-index: 20; display: none; pointer-events: none; box-shadow: 0 0 20px rgba(0,120,255,0.2);
+        }
+
+        #modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+            display: flex; align-items: center; justify-content: center; z-index: 100;
+        }
+        #modal .box {
+            background: rgba(10, 20, 30, 0.95); border: 2px solid #1e88e5;
+            padding: 40px; border-radius: 12px; max-width: 600px; width: 90%;
+            box-shadow: 0 0 40px rgba(30,136,229,0.15);
+        }
+        #modal h1 { color: #42a5f5; margin-bottom: 20px; font-size: 32px; letter-spacing: 2px; text-align: center;}
+        #modal p { color: #8bb; margin-bottom: 30px; line-height: 1.5; font-size: 14px; text-align: center;}
+        
+        #btnStart {
+            display: block; margin: 30px auto 0; background: linear-gradient(135deg, #1e88e5, #42a5f5);
+            color: #fff; border: none; padding: 12px 40px; font-size: 18px; font-weight: bold;
+            border-radius: 8px; cursor: pointer; transition: transform 0.2s; font-family: inherit; width: 100%;
+        }
+        #btnStart:hover { transform: scale(1.03); }
+
+        .modal-config { margin-top: 18px; display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+        .modal-config label { font-size: 11px; color: #8bb; font-weight: 600; display: block; text-align: left; }
+        .modal-config input, .modal-config select {
+            background: #0a152e; color: #fff; border: 1px solid #1e88e5;
+            padding: 8px 12px; border-radius: 8px; font-family: monospace; font-size: 12px;
+            width: 100%; margin-top: 4px; box-sizing: border-box; outline: none;
+        }
+        .modal-config .cfg-col { flex: 1; min-width: 120px; max-width: 160px; }
+
+        /* ─── Mode Badges ─── */
+        #mode-badges {
+            position: absolute; top: 14px; left: 50%; transform: translateX(-50%); z-index: 20;
+            display: flex; gap: 6px; font-family: sans-serif;
+        }
+        .mode-badge {
+            padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: 700;
+            letter-spacing: 0.5px; text-transform: uppercase;
+            background: rgba(10,20,30,0.8); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+            border: 1px solid rgba(66,165,245,0.2); box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            color: #8bb; transition: color 0.3s, border-color 0.3s;
+        }
+        .mode-badge.active-game { color: #ff6b6b; border-color: rgba(255,107,107,0.8); }
+        .mode-badge.active-world { color: #007aff; border-color: rgba(0,122,255,0.8); }
+        .mode-badge.active-ml { color: #af52de; border-color: rgba(175,82,222,0.8); }
+
+        .instructions {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            color: rgba(255,255,255,0.6); font-size: 12px; text-align: center; pointer-events: none; z-index: 5;
+            background: rgba(0,0,0,0.5); padding: 8px 12px; border-radius: 8px; border: 1px solid #1a3a5c;
+        }
+        
+        #messages {
+            position: absolute; top: 30%; left: 50%; transform: translateX(-50%);
+            font-size: 24px; font-weight: bold; color: #ff9500; text-shadow: 0 0 10px rgba(255,149,0,0.5);
+            pointer-events: none; opacity: 0; transition: opacity 0.3s, transform 0.3s; z-index: 20; letter-spacing: 2px;
+        }
+    </style>
+    <script src="/vendor/three-r128/three.min.js"></script>
+    <script src="/vendor/three-r128/OrbitControls.js"></script>
+    <script src="/vendor/three-r128/GLTFLoader.js"></script>
+</head>
+<body>
+
+    <!-- HUD Overlay -->
+    <div id="hud">
+        <div class="title" id="mTitleNode">🐟 TANK: SECTOR ALPHA</div>
+        <div class="stat">⏱️ Mission Time: <span class="v-green" id="hTime">0.0</span>s</div>
+        <div class="stat" style="font-family:'JetBrains Mono',monospace;font-size:16px;letter-spacing:2px;"><span id="fuelText">🔋 [■■■■■]</span></div>
+        <div class="stat">🎯 Active Scan: <span class="v-cyan" id="hFloor">NONE</span></div>
+        <div class="stat">📡 Comm Link: <span class="v-green" id="hStatus">IDLE</span></div>
+    </div>
+
+    <!-- Minimap Radar -->
+    <canvas id="minimap" width="150" height="150"></canvas>
+
+    <!-- Mode Badges -->
+    <div id="mode-badges" style="display:none;">
+        <span class="mode-badge" id="badge-game">🎮 Minigame</span>
+        <span class="mode-badge" id="badge-world" style="display:none">🌍 Overworld</span>
+        <span class="mode-badge" id="badge-ml">🧠 ML Training</span>
+    </div>
+
+    <div id="messages">CLEAR</div>
+
+    <!-- AI Machine Data Layer -->
+    <div id="ai-data-layer" style="display:none;" aria-hidden="true"></div>
+
+    <div class="instructions" id="hintBox" style="display:none;">
+        [Mouse Left] Orbit Camera | [Mouse Right] Pan | [Click on Glass] Search Floor
+    </div>
+
+    <div id="modal">
+        <div class="box">
+            <h1 id="mTitle">CHOPPER TERRARIUM <span style="font-size:12px; color:#55aaff;">v3 (Aquarium Edit)</span></h1>
+            <p id="mDesc">A fugitive raccoon is hiding in one of the floors of the Skyscraper.<br><br>The Chopper is flying autonomously like a fish in a tank. Click directly on the building floors through the glass to direct the search!</p>
+            <div class="modal-config">
+                <div class="cfg-col">
+                    <label>🌱 Seed</label>
+                    <input type="number" id="mSeed" value="42">
+                </div>
+                <div class="cfg-col">
+                    <label>🏢 Floors</label>
+                    <input type="number" id="mFloors" value="18" min="5" max="100">
+                </div>
+                <div class="cfg-col">
+                    <label>🎮 Mode</label>
+                    <select id="mMode">
+                        <option value="human">🎮 Human (Manager)</option>
+                        <option value="ai" selected>🤖 AI Agent (Gym)</option>
+                    </select>
+                </div>
+            </div>
+            <button id="btnStart" onclick="initGame(false)">FILL TANK</button>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════
+        //  ENGINE SETUP & LIGHTING
+        // ═══════════════════════════════════════════════════
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x020510);
+        scene.fog = new THREE.FogExp2(0x020510, 0.005);
+
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 2000);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping; 
+        renderer.toneMappingExposure = 1.2;
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.maxDistance = 500;
+        controls.minDistance = 30;
+
+        const ambientLight = new THREE.AmbientLight(0x445577, 1.6);
+        scene.add(ambientLight);
+        
+        // Deep blue point light from below
+        const deepLight = new THREE.PointLight(0x0044aa, 1.2, 200);
+        deepLight.position.set(0, 10, 0);
+        scene.add(deepLight);
+
+        const sunLight = new THREE.DirectionalLight(0xaaddff, 2.0);
+        sunLight.position.set(50, 150, 50);
+        sunLight.castShadow = true;
+        sunLight.shadow.mapSize.set(2048, 2048);
+        sunLight.shadow.camera.left = -100;
+        sunLight.shadow.camera.right = 100;
+        sunLight.shadow.camera.top = 100;
+        sunLight.shadow.camera.bottom = -100;
+        scene.add(sunLight);
+
+        // Ground Plane Options (White Aquarium Ground)
+        const groundGeo = new THREE.PlaneGeometry(1000, 1000);
+        const groundMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 });
+        const ground = new THREE.Mesh(groundGeo, groundMat);
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        // Resize Hook
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Procedural Windows
+        function createStripTex() {
+            const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 128;
+            const ctx = canvas.getContext('2d'); ctx.fillStyle = '#111'; ctx.fillRect(0, 0, 512, 128); 
+            ctx.fillStyle = '#050a15';
+            for(let i=0; i<8; i++) {
+                ctx.fillRect(10 + i*(64), 20, 50, 88); 
+                ctx.fillStyle = '#0a1525'; ctx.fillRect(10 + i*(64) + 5, 25, 20, 40); ctx.fillStyle = '#050a15'; 
+            }
+            const tex = new THREE.CanvasTexture(canvas); tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(1, 1);
+            return tex;
+        }
+        const texStrips = createStripTex();
+
+        // ═══════════════════════════════════════════════════
+        //  SEEDED RANDOM NUMBER GENERATOR
+        // ═══════════════════════════════════════════════════
+        let m_w = 42; let m_z = 987654321; let mask = 0xffffffff;
+        window.seedRandom = function(seed) { m_w = seed; m_z = 987654321; }
+        function random() {
+            m_z = (36969 * (m_z & 65535) + (m_z >> 16)) & mask;
+            m_w = (18000 * (m_w & 65535) + (m_w >> 16)) & mask;
+            let result = ((m_z << 16) + m_w) & mask;
+            result /= 4294967296; return result + 0.5;
+        }
+
+        // ═══════════════════════════════════════════════════
+        //  THE TANK (Aquarium Glass bounds)
+        // ═══════════════════════════════════════════════════
+        let TANK_SIZE = 120;
+        let TANK_HEIGHT = 100;
+        let glassTank;
+
+        function buildTank(height) {
+            if(glassTank) scene.remove(glassTank);
+            TANK_HEIGHT = height + 40;
+            
+            const tankGeo = new THREE.BoxGeometry(TANK_SIZE, TANK_HEIGHT, TANK_SIZE);
+            const tankMat = new THREE.MeshPhysicalMaterial({
+                color: 0x1e88e5, transparent: true, opacity: 0.08,
+                roughness: 0.1, metalness: 0.1, transmission: 0.9, ior: 1.2,
+                side: THREE.BackSide, depthWrite: false
+            });
+            glassTank = new THREE.Mesh(tankGeo, tankMat);
+            glassTank.position.y = TANK_HEIGHT / 2;
+            scene.add(glassTank);
+
+            // Wireframe bounds
+            const edges = new THREE.EdgesGeometry(tankGeo);
+            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x1e88e5, opacity: 0.3, transparent: true }));
+            line.position.y = TANK_HEIGHT / 2;
+            scene.add(line);
+        }
+
+        // ═══════════════════════════════════════════════════
+        //  BUILDING PROCEDURAL GEN
+        // ═══════════════════════════════════════════════════
+        let floors = [];
+        let buildingGroup = new THREE.Group();
+        let targetFloorInfo = { index: -1, mesh: null, content: null };
+
+        const FL_H = 4.0; const FL_W = 20.0; const FL_D = 20.0;
+        let totalFloors = 18;
+        
+        let raccoonModel = null;
+        let raccoonMixer = null;
+
+        function buildSkyscraper() {
+            if(buildingGroup) scene.remove(buildingGroup);
+            buildingGroup = new THREE.Group(); floors = [];
+
+            const geo = new THREE.BoxGeometry(FL_W, FL_H, FL_D);
+            const uv = geo.attributes.uv;
+            // ... (uv setup) ...
+            for (let i = 0; i < uv.count; i++) {
+                let u = uv.getX(i); let v = uv.getY(i); let faceIdx = Math.floor(i / 4);
+                if (faceIdx === 4 || faceIdx===5) u = (u === 1 ? 0.25 : 0.0);       
+                else if (faceIdx === 0) u = (u === 1 ? 0.5 : 0.25);  
+                else if (faceIdx === 1) u = (u === 1 ? 1.0 : 0.75);  
+                uv.setXY(i, u * 2, v);
+            }
+
+            const matBody = new THREE.MeshStandardMaterial({ color: 0x888888, emissive: 0x0a1a3a, emissiveIntensity: 0.6, map: texStrips, roughness: 0.8 });
+            const matRoof = new THREE.MeshStandardMaterial({ color: 0x222225, emissive: 0x050a15, roughness: 0.9 });
+            const matBodyX = matBody.clone();
+            matBodyX.transparent = true; matBodyX.opacity = 0.15; matBodyX.depthWrite = false; matBodyX.side = THREE.DoubleSide;
+            const bottomX = new THREE.MeshStandardMaterial({ color: 0x051a2a, emissive: 0x010515, side: THREE.DoubleSide });
+            const topX = new THREE.MeshStandardMaterial({ color: 0x111111, side: THREE.DoubleSide });
+            
+            // Wash lights to illuminate the building from outside
+            const washLight1 = new THREE.PointLight(0x00e6ff, 1.2, 100);
+            washLight1.position.set(25, totalFloors * FL_H * 0.3, 25);
+            buildingGroup.add(washLight1);
+
+            const washLight2 = new THREE.PointLight(0xff00aa, 0.8, 100);
+            washLight2.position.set(-25, totalFloors * FL_H * 0.7, -25);
+            buildingGroup.add(washLight2);
+
+            const xrayMaterials = [matBodyX, matBodyX, topX, bottomX, matBodyX, matBodyX];
+            
+            for(let i=0; i<totalFloors; i++) {
+                let m = (i === totalFloors-1) ? [matBody, matBody, matRoof, matRoof, matBody, matBody] : [matBody, matBody, matBody, matBody, matBody, matBody];
+                
+                // Group to allow drawer sliding
+                const floorGroup = new THREE.Group(); 
+                floorGroup.position.set(0, (i * FL_H) + (FL_H/2), 0);
+                
+                const mesh = new THREE.Mesh(geo, m);
+                mesh.castShadow = true; mesh.receiveShadow = true;
+                mesh.userData = { isFloor: true, floorIndex: i, originalMaterials: m, xrayMaterials: xrayMaterials, slideOut: 0 };
+                
+                floorGroup.add(mesh);
+
+                // Add Fake Light additive blending box (Fridge style)
+                const glowGeo = new THREE.BoxGeometry(FL_W + 0.1, FL_H + 0.1, FL_D + 0.1);
+                const glowMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false, visible: false });
+                const glowBox = new THREE.Mesh(glowGeo, glowMat);
+                floorGroup.add(glowBox);
+
+                const hitGeo = new THREE.BoxGeometry(FL_W + 0.5, FL_H, FL_D + 0.5);
+                const hitMesh = new THREE.Mesh(hitGeo, new THREE.MeshBasicMaterial({visible:false}));
+                hitMesh.userData = mesh.userData; 
+                
+                buildingGroup.add(floorGroup); buildingGroup.add(hitMesh);
+                // floorGroup position is handled, hitMesh needs explicit Y offset
+                hitMesh.position.set(0, (i * FL_H) + (FL_H/2), 0);
+
+                floors.push({ visual: mesh, hit: hitMesh, group: floorGroup, glow: glowBox });
+            }
+
+            const ringGeo = new THREE.TorusGeometry(FL_W*0.4, 0.2, 8, 32);
+            const ringMat = new THREE.MeshBasicMaterial({ color: 0x1e88e5 });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.position.set(0, (totalFloors * FL_H) + 0.2, 0); ring.rotation.x = -Math.PI/2;
+            buildingGroup.add(ring); scene.add(buildingGroup);
+
+            targetFloorInfo.index = Math.floor(Math.random() * (totalFloors - 2)) + 1; 
+
+            // Place raccoon inside target floor
+            const loader = new THREE.GLTFLoader();
+            loader.load('../props/models/Raccoon.glb', function (gltf) {
+                raccoonModel = gltf.scene;
+                raccoonModel.scale.set(0.6, 0.6, 0.6); // Scale to fit floor
+                raccoonModel.position.set(0, -FL_H/2, 0); // floor of the floorGroup
+                // Hide it until revealed
+                raccoonModel.visible = false;
+                
+                if (gltf.animations && gltf.animations.length > 0) {
+                    raccoonMixer = new THREE.AnimationMixer(raccoonModel);
+                    raccoonMixer.clipAction(gltf.animations[0]).play();
+                }
+                
+                floors[targetFloorInfo.index].group.add(raccoonModel);
+                targetFloorInfo.content = raccoonModel;
+            });
+
+            buildTank(totalFloors * FL_H);
+            createDust();
+        }
+
+        // Procedural Plankton Dust
+        let dustMesh;
+        function createDust() {
+            if(dustMesh) scene.remove(dustMesh);
+            const count = 800;
+            const geo = new THREE.PlaneGeometry(0.15, 0.15);
+            const mat = new THREE.MeshBasicMaterial({ color: 0x44bbff, transparent: true, opacity: 0.3, depthWrite: false, side: THREE.DoubleSide });
+            dustMesh = new THREE.InstancedMesh(geo, mat, count);
+            const matrix = new THREE.Matrix4();
+            const speeds = new Float32Array(count * 3);
+            for(let i=0; i<count; i++) {
+                matrix.setPosition( (Math.random()-0.5)*TANK_SIZE, Math.random()*TANK_HEIGHT, (Math.random()-0.5)*TANK_SIZE );
+                dustMesh.setMatrixAt(i, matrix);
+                speeds[i*3+0] = (Math.random()-0.5)*0.5;
+                speeds[i*3+1] = Math.random()*0.5 + 0.1; // Float up
+                speeds[i*3+2] = (Math.random()-0.5)*0.5;
+            }
+            dustMesh.userData = { speeds: speeds };
+            scene.add(dustMesh);
+        }
+
+        // ═══════════════════════════════════════════════════
+        //  AI CHOPPER VEHICLE (Boid Nado)
+        // ═══════════════════════════════════════════════════
+        const chopper = new THREE.Group();
+        const chopperInner = new THREE.Group();
+        let modelMesh = null;
+        let mainRotor = null;
+        let tailRotor = null;
+        
+        // Light spot pointing forward like a laser
+        const spot = new THREE.SpotLight(0x00ffff, 8.0, 500, Math.PI / 16, 0.1, 1.0);
+        spot.position.set(0, -0.1, 1.2);
+        spot.castShadow = true;
+        spot.shadow.mapSize.set(512, 512);
+        let volBeam = null; // Expose for clipping length
+
+        function buildChopper() {
+            chopper.add(chopperInner);
+            scene.add(chopper);
+
+            // Spotlight Beam Target (Local Forward)
+            const spotTarget = new THREE.Object3D(); 
+            spotTarget.position.set(0, -0.1, 100); // Aim straight forward
+            chopperInner.add(spotTarget);
+            spot.target = spotTarget;
+            chopperInner.add(spot);
+
+            const beamCanvas = document.createElement('canvas'); beamCanvas.width = 16; beamCanvas.height = 256;
+            const bCtx = beamCanvas.getContext('2d');
+            const g = bCtx.createLinearGradient(0,0,0,256);
+            g.addColorStop(0, 'rgba(0, 255, 255, 0.9)'); g.addColorStop(1, 'rgba(0, 255, 255, 0)');
+            bCtx.fillStyle = g; bCtx.fillRect(0,0,16,256);
+            
+            // Thin, long cone to act as a laser beam
+            const volGeo = new THREE.ConeGeometry(2.0, 150, 16, 1, true);
+            volGeo.translate(0, -75, 0); volGeo.rotateX(Math.PI/2);
+            volBeam = new THREE.Mesh(volGeo, new THREE.MeshBasicMaterial({
+                map: new THREE.CanvasTexture(beamCanvas), blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, side: THREE.DoubleSide
+            }));
+            volBeam.position.set(0, -0.1, 1.2);
+            chopperInner.add(volBeam);
+
+            // Premium GLB Loader
+            const loader = new THREE.GLTFLoader();
+            loader.load('../props/models/Helicopter.glb', function (gltf) {
+                modelMesh = gltf.scene;
+                // Scale down to half volume (size) as requested
+                modelMesh.scale.set(0.3, 0.3, 0.3);
+                modelMesh.rotation.y = Math.PI; 
+                
+                modelMesh.traverse(function(node) {
+                    if(node.isMesh) {
+                        node.castShadow = true; node.receiveShadow = true;
+                        let n = node.name.toLowerCase();
+                        if(n.includes('rotor') || n.includes('blade') || n.includes('prop')) {
+                            if(n.includes('tail') || n.includes('back')) tailRotor = node;
+                            else mainRotor = node;
+                        }
+                    }
+                });
+                chopperInner.add(modelMesh);
+                document.getElementById('btnStart').textContent = "FILL TANK";
+                document.getElementById('btnStart').disabled = false;
+            }, undefined, function (error) {
+                console.error("No GLB found, fallback to block.", error);
+                const body = new THREE.Mesh(new THREE.BoxGeometry(2, 1.5, 3.5), new THREE.MeshStandardMaterial({color: 0x1e88e5}));
+                chopperInner.add(body);
+                document.getElementById('btnStart').disabled = false;
+            });
+        }
+        document.getElementById('btnStart').disabled = true;
+        document.getElementById('btnStart').textContent = "INCUBATING ROE...";
+
+        buildSkyscraper();
+        buildChopper();
+
+        // ═══════════════════════════════════════════════════
+        //  GAME STATE & LOGIC
+        // ═══════════════════════════════════════════════════
+        let chopperVelocity = new THREE.Vector3(10, 0, 10);
+        let u = { tx: 40, ty: 18 * 4.0 / 2, tz: 40 }; // Target position tracker like Asteroids
+        let maxSpeed = 25.0;
+        let gameState = { playing: false, ended: false, fuel: 100.0, activeFloor: -1, isAI: false };
+        let chopperState = { mode: 'ROAM', targetFloor: -1, stateTimer: 1.0, scannedFloors: new Set() };
+
+        window.initGame = function(isRLReset = false) {
+            totalFloors = parseInt(document.getElementById('mFloors').value) || 18;
+            gameState.isAI = document.getElementById('mMode').value === 'ai';
+            
+            document.getElementById('modal').style.display = 'none';
+            document.getElementById('hud').style.display = 'block';
+            document.getElementById('minimap').style.display = 'block';
+            document.getElementById('mode-badges').style.display = 'flex';
+            
+            // Set Badge Status
+            document.getElementById('badge-game').classList.remove('active-game');
+            document.getElementById('badge-ml').classList.remove('active-ml');
+            if(window.RLMode) document.getElementById('badge-ml').classList.add('active-ml');
+            else document.getElementById('badge-game').classList.add('active-game');
+
+            if(!gameState.isAI) { document.getElementById('hintBox').style.display = 'block'; } 
+            else { document.getElementById('hintBox').style.display = 'none'; }
+            
+            chopper.position.set(40, (totalFloors * FL_H)/2, 40); chopperVelocity.set(-10, 0, 10);
+            if (!isRLReset) {
+                let seed = parseInt(document.getElementById('mSeed').value) || 42;
+                window.seedRandom(seed);
+                buildSkyscraper(); 
+            }
+
+            camera.position.set(100, (totalFloors * FL_H), 100);
+            controls.target.set(0, (totalFloors * FL_H)/2, 0);
+
+            gameState.fuel = 100.0; gameState.playing = true; gameState.ended = false;
+            updateHUD(0); updateAIDataLayer(); clock.start();
+        };
+
+        // ═══════════════════════════════════════════════════
+        //  HUD & MINIMAP REALTIME RENDER
+        // ═══════════════════════════════════════════════════
+        function updateHUD(time) {
+            document.getElementById('hTime').textContent = time.toFixed(1);
+            let p = Math.max(0, gameState.fuel);
+            document.getElementById('hFuel').textContent = Math.floor(p);
+            document.getElementById('vFuelBar').style.width = p + '%';
+            if(p < 20) { document.getElementById('vFuelBar').style.background = '#ff3b30'; document.getElementById('hFuel').className = 'v-alert'; }
+            else if(p < 50) { document.getElementById('vFuelBar').style.background = '#ff9500'; document.getElementById('hFuel').className = 'v-gold'; }
+            else { document.getElementById('vFuelBar').style.background = '#34c759'; document.getElementById('hFuel').className = 'v-green'; }
+            
+            let st = document.getElementById('hFloor');
+            if(gameState.activeFloor === -1) { st.textContent = 'SCANNING...'; st.className = 'v-cyan'; }
+            else { st.textContent = 'FLOOR_' + gameState.activeFloor; st.className = 'v-gold'; }
+            
+            let cd = document.getElementById('hStatus');
+            if(gameState.ended) { cd.textContent = (gameState.fuel <= 0 ? 'FISH DEAD' : 'RACCOON DETECTED'); cd.className = (gameState.fuel <= 0 ? 'v-alert' : 'v-green'); }
+            else if(chopperState.mode === 'INSPECTING') { cd.textContent = 'SCANNING...'; cd.className = 'v-gold'; }
+            else if(chopperState.mode === 'APPROACH') { cd.textContent = 'INTERCEPTING'; cd.className = 'v-cyan'; }
+            else { cd.textContent = 'AUTONOMOUS PATROL'; cd.className = 'v-cyan'; }
+        }
+
+        function drawMinimap() {
+            const canvas = document.getElementById('minimap');
+            if(!canvas || canvas.style.display === 'none') return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const cx = canvas.width/2; const cy = canvas.height/2;
+            
+            // Draw Tank bounds
+            const scale = 120 / TANK_SIZE; 
+            ctx.strokeStyle = 'rgba(30,136,229,0.3)'; ctx.lineWidth = 2;
+            ctx.strokeRect(cx - (TANK_SIZE/2)*scale, cy - (TANK_SIZE/2)*scale, TANK_SIZE*scale, TANK_SIZE*scale);
+
+            // Draw Core Building
+            ctx.fillStyle = '#ff4400'; ctx.shadowBlur = 10; ctx.shadowColor = '#ff4400';
+            ctx.fillRect(cx - 6, cy - 6, 12, 12);
+            ctx.shadowBlur = 0;
+            
+            // Draw Fish (Chopper)
+            const hx = chopper.position.x * scale; const hz = chopper.position.z * scale;
+            ctx.beginPath(); ctx.arc(cx + hx, cy + hz, 5, 0, Math.PI*2); ctx.fillStyle = '#00ffcc'; ctx.fill();
+        }
+
+        // ═══════════════════════════════════════════════════
+        //  RAYCASTING MOUSE INTERACTION & LIGHT COLLISION
+        // ═══════════════════════════════════════════════════
+        const raycaster = new THREE.Raycaster();
+        const lightRaycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let selectedVisualMesh = null;
+
+        window.addEventListener('pointerdown', (e) => {
+            if(!gameState.playing || window.RLMode || gameState.ended) return;
+            
+            // Calculate mouse position in normalized device coordinates (-1 to +1)
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            
+            const hitBoxes = floors.map(f => f.hit);
+            const intersects = raycaster.intersectObjects(hitBoxes, false);
+            
+            if(intersects.length > 0) {
+                const hit = intersects[0].object; 
+                const fData = hit.userData;
+                // Human Override: Manager orders investigation
+                if(chopperState.mode !== 'INSPECTING' || chopperState.targetFloor !== fData.floorIndex) {
+                    chopperState.mode = 'APPROACH';
+                    chopperState.targetFloor = fData.floorIndex;
+                    chopperState.stateTimer = 0;
+                }
+            }
+        });
+
+        function checkFloor(floorIdx) {
+            if(gameState.ended || floorIdx === -1) return;
+            if(chopperState.scannedFloors.has(floorIdx)) return; // Prevent double trigger
+            
+            gameState.activeFloor = floorIdx;
+            chopperState.scannedFloors.add(floorIdx); // Save as scanned!
+
+            let msg = document.getElementById('messages'); msg.style.opacity = '1'; msg.style.transform = 'translate(-50%, -20px)';
+
+            // Trigger "cabinet drawer" slide out animation for this floor
+            const fMesh = floors[floorIdx].visual;
+            const fGlow = floors[floorIdx].glow;
+
+            // HIDE the concrete box and only keep the ghost glow box!
+            fMesh.visible = false;
+
+            if(floorIdx === targetFloorInfo.index) {
+                if(targetFloorInfo.content) targetFloorInfo.content.visible = true; // Reveal raccoon!
+                fGlow.material.color.setHex(0x34c759); // Green glow for success
+                fGlow.visible = true;
+                
+                rlRewardAccum += 10.0; msg.innerHTML = "<span style='color:#34c759'>RACCOON FOUND!</span>"; 
+                winSequence();
+                setTimeout(() => { if(window.RLBridge) window.RLBridge.endEpisode(true); else location.reload(); }, 4000);
+            } else {
+                // Red glow for empty (like Seeker lightboxes)
+                fGlow.material.color.setHex(0xff3300); 
+                fGlow.material.opacity = 0.5; // Dimmer indication
+                fGlow.visible = true;
+                
+                rlRewardAccum -= 5.0; msg.innerHTML = "CLEAR! <span style='color:#ff3b30;'>(-5 BATT)</span>"; gameState.fuel -= 5;
+                if(gameState.fuel <= 0) {
+                    gameState.ended = true;
+                    msg.innerHTML = "SYSTEM FAIL: BATTERY DEPLETED"; msg.className = "m-fail";
+                    setTimeout(() => { if(window.RLBridge) window.RLBridge.endEpisode(false); else softReset(); }, 3000);
+                }
+            }
+            setTimeout(() => { msg.style.opacity = '0'; msg.style.transform = 'translate(-50%, 0)'; }, 1000);
+        }
+
+        // ═══════════════════════════════════════════════════
+        //  GYMNASIUM BRIDGE
+        // ═══════════════════════════════════════════════════
+        window.RLMode = false; let rlRewardAccum = 0.0;
+
+        window.setRLMode = function(enabled) { window.RLMode = enabled; };
+        window.getObservationVector = function() {
+            const obs = [gameState.fuel/100, chopper.position.x/100, (chopper.position.y-2)/(totalFloors*FL_H), chopper.position.z/100, Math.sin(chopper.rotation.y), Math.sin(chopper.quaternion.x), gameState.activeFloor!==-1 ? gameState.activeFloor/totalFloors : 0, gameState.activeFloor!==-1 ? 1 : 0];
+            return { obs: obs, meta: { fuel: gameState.fuel, activeFloor: gameState.activeFloor, targetFloor: targetFloorInfo.index, buildingHeight: totalFloors * FL_H } };
+        };
+        window.resetEpisode = function(seed) { softReset(); return window.getObservationVector(); };
+        window.stepSimulation = function(actionIdx, dt) {
+            if(gameState.ended) return { obs: window.getObservationVector(), reward: 0, done: true, info: { target: targetFloorInfo.index } };
+            // In Aquarium, the Agent controls the "Fish" thrust vectors
+            let thrust = new THREE.Vector3();
+            if(actionIdx === 1) thrust.z = -1; if(actionIdx === 2) thrust.z = 1;
+            if(actionIdx === 3) thrust.x = -1; if(actionIdx === 4) thrust.x = 1;
+            if(actionIdx === 5) thrust.y = 1; if(actionIdx === 6) thrust.y = -1;
+            
+            // New Yaw actions to decouple aiming from velocity
+            if(actionIdx === 7) rlYawVelocity = 2.0; 
+            else if(actionIdx === 8) rlYawVelocity = -2.0; 
+            else rlYawVelocity = 0.0;
+
+            chopperVelocity.add(thrust.normalize().multiplyScalar(40 * dt));
+
+            
+            executeLogicTick(dt, true); const r = rlRewardAccum; rlRewardAccum = 0.0;
+            return { obs: window.getObservationVector(), reward: r, done: gameState.ended, info: { target: targetFloorInfo.index } };
+        };
+
+        function winSequence() {
+            gameState.playing = false; gameState.ended = true;
+            const landPos = new THREE.Vector3(0, (totalFloors * FL_H) + 1.2, 0); 
+            let panicTime = 0;
+            const winLoop = setInterval(() => {
+                chopperVelocity.multiplyScalar(0.8); chopper.position.lerp(landPos, 0.03); chopperInner.rotation.x = 0; chopperInner.rotation.z = 0;
+                chopper.quaternion.slerp(new THREE.Quaternion().setFromEuler(new THREE.Euler(0, chopper.rotation.y, 0)), 0.05);
+                
+                if(targetFloorInfo.content) {
+                    panicTime += 0.016;
+                    targetFloorInfo.content.position.y = (-FL_H/2) + Math.abs(Math.sin(panicTime * 15)) * 0.5;
+                }
+
+                if(chopper.position.distanceTo(landPos) < 1.0) {
+                    clearInterval(winLoop); 
+                    if (!window.RLMode && document.getElementById('mMode').value === 'human') {
+                        document.getElementById('mTitle').innerHTML = "MISSION COMPLETE <br><span style='font-size:16px;color:#34c759'>Target Confirmed</span>"; 
+                        document.getElementById('btnStart').textContent = "REPLAY"; 
+                        document.getElementById('modal').style.display = 'flex';
+                    } else {
+                        setTimeout(() => { if(window.RLBridge) window.RLBridge.endEpisode(true); else softReset(); }, 2000);
+                    }
+                }
+            }, 16);
+        }
+
+        function crashSequence() {
+            gameState.playing = false; gameState.ended = true;
+            const fallLoop = setInterval(() => {
+                chopperVelocity.y -= 0.5; chopper.position.add(chopperVelocity.clone().multiplyScalar(0.016)); chopperInner.rotation.z += 0.02; chopperInner.rotation.x += 0.01;
+                if(chopper.position.y <= 1.0) { 
+                    clearInterval(fallLoop); 
+                    if (!window.RLMode && document.getElementById('mMode').value === 'human') {
+                        document.getElementById('mTitle').innerHTML = "<span style='color:#ff3b30'>CRITICAL CASCADE</span> <br><span style='font-size:16px;'>Battery Depleted</span>"; 
+                        document.getElementById('btnStart').textContent = "RETRY"; 
+                        document.getElementById('modal').style.display = 'flex'; 
+                    } else {
+                        setTimeout(() => { if(window.RLBridge) window.RLBridge.endEpisode(false); else softReset(); }, 2000);
+                    }
+                }
+            }, 16);
+        }
+
+        // ═══════════════════════════════════════════════════
+        //  MAIN LOOP (BOID FLOCKING LAYER)
+        // ═══════════════════════════════════════════════════
+        const clock = new THREE.Clock();
+        
+        function updateAIDataLayer() {
+            if(!gameState.playing && !gameState.ended) return;
+            const data = { phase: gameState.ended ? (gameState.fuel <= 0 ? 'CRASH' : 'WIN') : 'SEARCHING', fuel: gameState.fuel, agentPos: [chopper.position.x.toFixed(2), chopper.position.y.toFixed(2), chopper.position.z.toFixed(2)], lookAtFloor: gameState.activeFloor, targetFloor_secret: targetFloorInfo.index };
+            document.getElementById('ai-data-layer').textContent = JSON.stringify(data);
+        }
+
+        function executeLogicTick(dt, manualThrust = false) {
+            let time = clock.getElapsedTime();
+            
+            if(mainRotor) mainRotor.rotation.y += 20 * dt;
+            if(tailRotor) tailRotor.rotation.x += 20 * dt;
+
+            if(gameState.playing) {
+                // Determine Control Mode
+                let isManagerMode = document.getElementById('mMode').value === 'human';
+
+                // AUTONOMOUS SEEKER AI FLIGHT OR HUMAN WASD OVERRIDE
+                if (!manualThrust && !window.RLMode) {
+                    let humanManualInput = false;
+                    if(isManagerMode) {
+                        let hThrust = new THREE.Vector3();
+                        if(typeof keys !== 'undefined') {
+                            if(keys.w) hThrust.z = -1; if(keys.s) hThrust.z = 1;
+                            if(keys.a) hThrust.x = -1; if(keys.d) hThrust.x = 1;
+                            if(keys.shift) hThrust.y = 1; if(keys.space) hThrust.y = -1;
+                        }
+                        
+                        if(hThrust.lengthSq() > 0) {
+                            humanManualInput = true;
+                            chopperState.mode = 'ROAM'; // Break auto-pilot instantly
+                            chopperState.targetFloor = -1;
+                            chopperVelocity.add(hThrust.normalize().multiplyScalar(40 * dt));
+                            
+                            // Visual Tilt Feedback for human controls
+                            chopperInner.rotation.x = THREE.MathUtils.lerp(chopperInner.rotation.x, hThrust.z * 0.5, 6*dt);
+                            chopperInner.rotation.z = THREE.MathUtils.lerp(chopperInner.rotation.z, hThrust.x * -0.5, 6*dt);
+                        }
+                    }
+
+                    if(!humanManualInput) {
+                        let acc = new THREE.Vector3();
+
+                    if(chopperState.mode === 'ROAM') {
+                        chopperState.stateTimer -= dt;
+                        if(chopperState.stateTimer <= 0) {
+                            // Find an unscanned floor intelligently
+                            let availableFloors = [];
+                            for(let i=0; i<totalFloors; i++) if(!chopperState.scannedFloors.has(i)) availableFloors.push(i);
+                            
+                            if(availableFloors.length > 0) {
+                                chopperState.targetFloor = availableFloors[Math.floor(Math.random() * availableFloors.length)];
+                                chopperState.mode = 'APPROACH';
+                            } else {
+                                // Re-verify random if everything somehow scanned
+                                chopperState.targetFloor = Math.floor(Math.random() * totalFloors);
+                                chopperState.mode = 'APPROACH'; 
+                            }
+                        }
+                    }
+
+                    if(chopperState.mode === 'ROAM') {
+                        // 1. Seek orbit trajectory around building
+                        const orbitRadius = 45; const orbitSpeed = 0.5; const yOffset = (totalFloors * FL_H / 2) + Math.sin(time * 0.4) * ((totalFloors * FL_H / 3));
+                        const targetX = Math.cos(time * orbitSpeed) * orbitRadius; const targetZ = Math.sin(time * orbitSpeed) * orbitRadius;
+                        let dirToTarget = new THREE.Vector3(targetX - chopper.position.x, yOffset - chopper.position.y, targetZ - chopper.position.z);
+                        acc.add(dirToTarget.normalize().multiplyScalar(15)); 
+                    }
+                    else if(chopperState.mode === 'APPROACH') {
+                        if(chopperState.targetFloor !== -1 && chopperState.scannedFloors.has(chopperState.targetFloor)) {
+                            chopperState.mode = 'ROAM'; chopperState.stateTimer = 0.2;
+                        } else {
+                            let floorY = (chopperState.targetFloor * FL_H) + (FL_H/2);
+                        let angle = Math.atan2(chopper.position.z, chopper.position.x);
+                        let hoverDist = 28;
+                        let targetX = Math.cos(angle) * hoverDist;
+                        let targetZ = Math.sin(angle) * hoverDist;
+                        let dirToTarget = new THREE.Vector3(targetX - chopper.position.x, floorY - chopper.position.y, targetZ - chopper.position.z);
+                        
+                        // Close enough and standing relatively still
+                        if(dirToTarget.length() < 5.0 && chopperVelocity.length() < 12.0) {
+                            chopperState.mode = 'INSPECTING';
+                            chopperState.stateTimer = 1.5; // Seconds to scan
+                            
+                            // Visual Scanner ON using new Fake Light Glowbox instead of X-Ray Materials
+                            const fGlow = floors[chopperState.targetFloor].glow;
+                            fGlow.material.color.setHex(0x00ffff); // Cyan scanning
+                            fGlow.material.opacity = 0.8;
+                            fGlow.visible = true;
+                            
+                            gameState.activeFloor = chopperState.targetFloor;
+                        } else {
+                            acc.add(dirToTarget.normalize().multiplyScalar(35)); // Aggressive vector 
+                            chopperVelocity.multiplyScalar(0.92); // Drag braking
+                        }
+                        }
+                    }
+                    else if(chopperState.mode === 'INSPECTING') {
+                        if(chopperState.targetFloor !== -1 && chopperState.scannedFloors.has(chopperState.targetFloor)) {
+                            chopperState.mode = 'ROAM'; chopperState.stateTimer = 0.1;
+                            gameState.activeFloor = -1;
+                        } else {
+                            chopperState.stateTimer -= dt;
+                            let floorY = (chopperState.targetFloor * FL_H) + (FL_H/2);
+                        let angle = Math.atan2(chopper.position.z, chopper.position.x);
+                        let hoverDist = 40; // FURTHER FORCE FIELD
+                        let targetX = Math.cos(angle) * hoverDist;
+                        let targetZ = Math.sin(angle) * hoverDist;
+                        let dirToTarget = new THREE.Vector3(targetX - chopper.position.x, floorY - chopper.position.y, targetZ - chopper.position.z);
+                        acc.add(dirToTarget.normalize().multiplyScalar(15)); // Station keeping
+                        chopperVelocity.multiplyScalar(0.8); // High atmospheric drag to hover
+                        
+                        if(chopperState.stateTimer <= 0) {
+                            checkFloor(chopperState.targetFloor);
+                            if(!gameState.ended) {
+                                chopperState.mode = 'ROAM';
+                                chopperState.stateTimer = 1.0 + Math.random();
+                                chopperState.targetFloor = -1;
+                                gameState.activeFloor = -1;
+                            }
+                        }
+                        }
+                    }
+
+                    // 2. Avoid Building Core (Larger Force Field)
+                    let distToCenter = Math.sqrt(chopper.position.x**2 + chopper.position.z**2);
+                    if(distToCenter < 28) {
+                        let push = new THREE.Vector3(chopper.position.x, 0, chopper.position.z).normalize().multiplyScalar(40);
+                        acc.add(push);
+                    }
+
+                    // Clip the volumetric flashlight beam dynamically using pure Raycast (The Seeker Math)
+                    if(volBeam) {
+                        let origin = new THREE.Vector3(); chopper.getWorldPosition(origin);
+                        let dir = new THREE.Vector3(0, 0, 1).applyQuaternion(chopperInner.quaternion).applyQuaternion(chopper.quaternion).normalize();
+                        
+                        // We must cast forward (-Z in local is +Z in applyQuat? Wait, chopper looks at -Z usually, but spot.position.z is 1.2, meaning it points +Z)
+                        // Actually in buildChopper: spotTarget.position.set(0, -0.1, 100); -> points +Z
+                        lightRaycaster.set(origin, dir);
+                        const hits = lightRaycaster.intersectObjects(buildingGroup.children, true);
+                        
+                        let beamDist = 150.0;
+                        let hitFloorIdx = -1;
+                        for(let hit of hits) {
+                            if(hit.distance > 0.5) { // ignore inside-chopper hits
+                                beamDist = hit.distance + 0.3; // Penetrate building shell slightly to ensure glow is nested
+                                if(hit.object.userData.isFloor) hitFloorIdx = hit.object.userData.floorIndex;
+                                break; // Stop at first occlusion
+                            }
+                        }
+
+                        volBeam.scale.y = 1; 
+                        volBeam.scale.z = beamDist / 150.0;
+
+                        // Seeker interaction: When light physically touches a floor, instantly check it!
+                        if(hitFloorIdx !== -1 && !chopperState.scannedFloors.has(hitFloorIdx)) {
+                            checkFloor(hitFloorIdx); // "las cajas cambian a glow rojo cuando se tocan"
+                        }
+                    }
+
+                    // 3. Avoid Glass Tank bounds
+                    let wallDist = 12;
+                    if(chopper.position.x < -TANK_SIZE/2 + wallDist) acc.x += 25;
+                    if(chopper.position.x > TANK_SIZE/2 - wallDist) acc.x -= 25;
+                    if(chopper.position.z < -TANK_SIZE/2 + wallDist) acc.z += 25;
+                    if(chopper.position.z > TANK_SIZE/2 - wallDist) acc.z -= 25;
+                    if(chopper.position.y < wallDist) acc.y += 25;
+                    if(chopper.position.y > TANK_HEIGHT - wallDist) acc.y -= 25;
+
+                    chopperVelocity.add(acc.multiplyScalar(dt));
+                    }
+                }
+
+                if (raccoonMixer) raccoonMixer.update(dt);
+
+                // Floors remain completely stationary
+                // Drawers mechanic was removed per user request
+
+                // Damping
+                chopperVelocity.multiplyScalar(0.95);
+
+                // Speed clamp
+                if(chopperVelocity.lengthSq() > maxSpeed*maxSpeed) chopperVelocity.normalize().multiplyScalar(maxSpeed);
+
+                // Asteroids Spring-Damper Tracking System
+                u.tx += chopperVelocity.x * dt;
+                u.ty += chopperVelocity.y * dt;
+                u.tz += chopperVelocity.z * dt;
+
+                let spd = 6.0; // Snappiness
+                chopper.position.x += (u.tx - chopper.position.x) * spd * dt;
+                chopper.position.y += (u.ty - chopper.position.y) * spd * dt;
+                chopper.position.z += (u.tz - chopper.position.z) * spd * dt;
+
+                // Rotate vehicle (YAW DECOUPLING)
+                isManagerMode = document.getElementById('mMode').value === 'human';
+                
+                if (window.RLMode) {
+                    // Gym Agent Rotation (from actionIdx 7 and 8)
+                    chopper.rotation.y += rlYawVelocity * dt;
+                } else if (!window.RLMode && isManagerMode) {
+                    // Human Mouse Look Azimuth
+                    pointerRaycaster.setFromCamera(pointer, camera);
+                    mousePlane.constant = -chopper.position.y; // Ensure ray hits chopper height
+                    pointerRaycaster.ray.intersectPlane(mousePlane, lookTargetPoint);
+                    
+                    let targetQuat = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(chopper.position, lookTargetPoint, camera.up));
+                    chopper.quaternion.slerp(targetQuat, 10 * dt);
+                } else {
+                    // Default AI Aim Logic (Wait for target, or face velocity)
+                    let lookTarget = new THREE.Vector3();
+                    if(chopperState.mode === 'INSPECTING' || chopperState.mode === 'APPROACH') {
+                        lookTarget.set(0, chopper.position.y, 0); 
+                    } else if(chopperVelocity.lengthSq() > 0.1) {
+                        lookTarget.copy(chopper.position).add(new THREE.Vector3(chopperVelocity.x, 0, chopperVelocity.z));
+                    } else {
+                        let fwd = new THREE.Vector3(); chopper.getWorldDirection(fwd);
+                        lookTarget.copy(chopper.position).add(new THREE.Vector3(fwd.x, 0, fwd.z));
+                    }
+
+                    if (lookTarget.distanceToSquared(chopper.position) > 0.01) {
+                        let targetQuat = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().lookAt(chopper.position, lookTarget, camera.up));
+                        chopper.quaternion.slerp(targetQuat, 6 * dt);
+                    }
+                }
+
+                // Visual Pitch & Roll tilting (The Thrust-Tilt Model)
+                let direction = new THREE.Vector3(); let right = new THREE.Vector3();
+                chopper.getWorldDirection(direction); right.copy(direction).cross(camera.up).normalize();
+                
+                let targetPitch = 0.0;
+                let targetRoll = 0.0;
+
+                if (chopperState.mode === 'INSPECTING') {
+                    // Force pitch slightly to physically aim laser down/up at the floor if drifting
+                    let floorY = (chopperState.targetFloor * FL_H) + (FL_H/2);
+                    targetPitch = (chopper.position.y - floorY) * 0.035; // Tilt nose to floor elevation
+                } else {
+                    // Arcade Physics: Tilt nose deeply when going forward, roll when drifting laterally
+                    targetPitch = chopperVelocity.dot(direction) * 0.025; 
+                    targetRoll = chopperVelocity.dot(right) * -0.04; 
+                }
+
+                // Clamp limits so it doesn't flip over
+                targetPitch = Math.max(-0.6, Math.min(0.6, targetPitch));
+                targetRoll = Math.max(-0.7, Math.min(0.7, targetRoll));
+                
+                chopperInner.rotation.x += (targetPitch - chopperInner.rotation.x) * 6.0 * dt;
+                chopperInner.rotation.z += (targetRoll - chopperInner.rotation.z) * 6.0 * dt;
+
+                // Keep inside bounds forcefully just in case
+                if(chopper.position.x < -TANK_SIZE/2) chopper.position.x = -TANK_SIZE/2;
+                if(chopper.position.x > TANK_SIZE/2) chopper.position.x = TANK_SIZE/2;
+                if(chopper.position.z < -TANK_SIZE/2) chopper.position.z = -TANK_SIZE/2;
+                if(chopper.position.z > TANK_SIZE/2) chopper.position.z = TANK_SIZE/2;
+                if(chopper.position.y < 2) chopper.position.y = 2;
+                if(chopper.position.y > TANK_HEIGHT-2) chopper.position.y = TANK_HEIGHT-2;
+
+                if(chopperVelocity.lengthSq() > 1.0) gameState.fuel -= 1.0 * dt; else gameState.fuel -= 0.5 * dt; 
+                if(gameState.fuel <= 0) { crashSequence(); rlRewardAccum -= 10.0; }
+                
+                // Low Battery Seeker FX
+                if(volBeam && spot) {
+                    if(gameState.fuel < 20 && chopperState.mode === 'INSPECTING') {
+                        let flicker = Math.random() > 0.95 ? 0.2 : 1.0;
+                        let fade = Math.max(0.1, gameState.fuel / 20.0);
+                        spot.intensity = 8.0 * fade * flicker;
+                        volBeam.material.opacity = fade * flicker;
+                    } else {
+                        spot.intensity = 8.0;
+                        volBeam.material.opacity = 1.0;
+                    }
+                }
+
+                
+                updateHUD(time); updateAIDataLayer();
+            }
+        }
+
+        function updateHUD(time) {
+            document.getElementById('hTime').textContent = time.toFixed(1);
+            let fuelElem = document.getElementById('fuelText');
+            if(fuelElem) {
+                let blocks = Math.ceil(Math.max(0, gameState.fuel) / 20);
+                let bar = '';
+                for(let i = 0; i < 5; i++) bar += (i < blocks) ? '■' : ' ';
+                fuelElem.innerHTML = '🔋 [' + bar + ']';
+                if(gameState.fuel < 20) {
+                    fuelElem.style.color = '#ff3b30';
+                    fuelElem.style.textShadow = '0 0 10px rgba(255,59,48,0.8)';
+                    fuelElem.style.opacity = (Math.floor(time * 6) % 2 === 0) ? '0.3' : '1.0';
+                } else {
+                    fuelElem.style.color = '#fff';
+                    fuelElem.style.textShadow = '0 0 8px rgba(255,255,255,0.6)';
+                    fuelElem.style.opacity = '1.0';
+                }
+            }
+            let hFloor = document.getElementById('hFloor');
+            if(hFloor) hFloor.textContent = gameState.activeFloor !== -1 ? ('FLOOR ' + (gameState.activeFloor+1)) : 'NONE';
+            let hStatus = document.getElementById('hStatus');
+            if(hStatus) hStatus.textContent = chopperState.mode;
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            let dt = Math.min(clock.getDelta(), 0.1);
+            if(!window.RLMode) executeLogicTick(dt);
+            
+            if(dustMesh) {
+                const arr = dustMesh.instanceMatrix.array;
+                const speeds = dustMesh.userData.speeds;
+                for(let i = 0; i < dustMesh.count; i++) {
+                    let x = arr[i*16 + 12] + speeds[i*3 + 0] * dt;
+                    let y = arr[i*16 + 13] + speeds[i*3 + 1] * dt;
+                    let z = arr[i*16 + 14] + speeds[i*3 + 2] * dt;
+                    if(y > TANK_HEIGHT) y = 0;
+                    if(x > TANK_SIZE/2) x -= TANK_SIZE; else if(x < -TANK_SIZE/2) x += TANK_SIZE;
+                    if(z > TANK_SIZE/2) z -= TANK_SIZE; else if(z < -TANK_SIZE/2) z += TANK_SIZE;
+                    arr[i*16 + 12] = x; arr[i*16 + 13] = y; arr[i*16 + 14] = z;
+                }
+                dustMesh.instanceMatrix.needsUpdate = true;
+            }
+
+            controls.update(); // Update orbit camera
+            drawMinimap();
+            renderer.render(scene, camera);
+        }
+
+        let keys = { w: false, a: false, s: false, d: false, shift: false, space: false };
+        window.addEventListener('keydown', e => {
+            if(e.key.toLowerCase() === 'w' || e.key === 'ArrowUp') keys.w = true;
+            if(e.key.toLowerCase() === 'a' || e.key === 'ArrowLeft') keys.a = true;
+            if(e.key.toLowerCase() === 's' || e.key === 'ArrowDown') keys.s = true;
+            if(e.key.toLowerCase() === 'd' || e.key === 'ArrowRight') keys.d = true;
+            if(e.key === 'Shift') keys.shift = true;
+            if(e.key === ' ') keys.space = true;
+        });
+        window.addEventListener('keyup', e => {
+            if(e.key.toLowerCase() === 'w' || e.key === 'ArrowUp') keys.w = false;
+            if(e.key.toLowerCase() === 'a' || e.key === 'ArrowLeft') keys.a = false;
+            if(e.key.toLowerCase() === 's' || e.key === 'ArrowDown') keys.s = false;
+            if(e.key.toLowerCase() === 'd' || e.key === 'ArrowRight') keys.d = false;
+            if(e.key === 'Shift') keys.shift = false;
+            if(e.key === ' ') keys.space = false;
+        });
+
+        let pointer = new THREE.Vector2();
+        let pointerRaycaster = new THREE.Raycaster();
+        let mousePlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+        let rlYawVelocity = 0.0;
+        let lookTargetPoint = new THREE.Vector3();
+
+        window.addEventListener('mousemove', e => {
+            pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+            pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+        });
+
+        // Soft Reset for continuous Colony API
+        window.softReset = function() {
+            chopperState.scannedFloors.clear();
+            chopperState.mode = 'ROAM';
+            chopperState.targetFloor = -1;
+            gameState.fuel = 100.0;
+            gameState.ended = false;
+            gameState.playing = true;
+            chopperVelocity.set(0,0,0);
+            u.tx = chopper.position.x = 0;
+            u.ty = chopper.position.y = 80;
+            u.tz = chopper.position.z = 0;
+            rlYawVelocity = 0.0;
+            rlRewardAccum = 0.0;
+
+            // Clean up old glow boxes
+            buildingGroup.children.forEach(c => {
+                if(c.userData.isFloorGlow) c.visible = false;
+                if(c.userData.originalMaterials && c.material) {
+                    if(Array.isArray(c.material)) {
+                    // Do nothing, material is fine
+                    }
+                }
+            });
+            if (raccoonGroup && targetFloorInfo.content) targetFloorInfo.content.visible = false;
+
+            let safeSeed = Math.floor(Math.random() * 9999);
+            window.seedRandom(safeSeed);
+            let prevRaccoonFloor = targetFloorInfo.index;
+            let nf = Math.floor(random() * totalFloors);
+            while(nf === prevRaccoonFloor) nf = Math.floor(random() * totalFloors);
+            targetFloorInfo.index = nf;
+            
+            buildingGroup.children.forEach(c => {
+                if(c.userData.isFloor && c.userData.floorIndex === nf) {
+                    targetFloorInfo.mesh = c;
+                    if(raccoonGroup) {
+                        c.add(raccoonGroup);
+                        raccoonGroup.position.set(0, -FL_H/2, 0); // Hide inside
+                        raccoonGroup.visible = false;
+                        targetFloorInfo.content = raccoonGroup;
+                    }
+                }
+            });
+            let msg = document.getElementById('aiMessage');
+            if(msg) {
+                msg.innerHTML = "SYSTEM RESET";
+                msg.className = "";
+                msg.style.opacity = '1'; msg.style.transform = 'translate(-50%, 0)';
+                setTimeout(() => { msg.style.opacity = '0'; msg.style.transform = 'translate(-50%, -20px)'; }, 1500);
+            }
+            if(window.RLMode) document.getElementById('badge-ml').classList.add('active-ml');
+        }
+
+        // Auto-start bypass for RL Mode
+        setTimeout(() => {
+            if(window.RLMode) initGame(false);
+        }, 100);
+
+        animate();
+    </script>
+</body>
+</html>

@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA Room Simulator (N64 / Retro Aesthetic)</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #fff; font-family: 'Courier New', monospace; }
+        #ui { position: absolute; top: 10px; left: 10px; background: rgba(0,20,40,0.85); color: #0f0; padding: 15px; border: 1px solid #0f0; border-radius: 5px; z-index: 10; max-width: 300px; box-shadow: 0 0 10px #0f0; }
+        select, input, button { background: #000; color: #0f0; border: 1px solid #0f0; padding: 5px; margin: 5px 0; width: 100%; font-family: inherit; }
+        button:hover { background: #0f0; color: #000; cursor: pointer; }
+        .label { font-size: 12px; opacity: 0.8; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <h3>Interior Layout</h3>
+        <div class="label">Width (W):</div>
+        <input type="range" id="inW" min="1" max="5" step="0.5" value="2" onchange="rebuild()">
+        <div class="label">Depth (D):</div>
+        <input type="range" id="inD" min="1" max="5" step="0.5" value="2" onchange="rebuild()">
+        
+        <div class="label">Building Aesthetic:</div>
+        <select id="selType" onchange="rebuild()">
+            <option value="corp">Corporation (corp)</option>
+            <option value="slum">Slums (slum)</option>
+            <option value="military">Military (military)</option>
+            <option value="stall">Kiosk (stall)</option>
+        </select>
+        
+        <div class="label">Generation Seed:</div>
+        <input type="text" id="inSeed" value="alisa_seed" onchange="rebuild()">
+        
+        <div class="label">Sub-Rooms (BSP Cuts):</div>
+        <input type="range" id="inCuts" min="0" max="6" step="1" value="3" onchange="rebuild()">
+        
+        <BUTTON onclick="rebuild()">[ GENERATE INSTANCE ]</BUTTON>
+        
+        <div style="font-size:10px; color:#aaa; margin-top:15px;">
+            - Left Click + Drag to rotate view (First Person pivot).<br>
+            - Scroll to Zoom.<br>
+            - Notice the NearestFilter pixelation and glowing Neo-props.
+        </div>
+    </div>
+
+    <!-- Import map mapped to alisa-engine -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/three-0.160.0/build/three.module.js",
+            "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+            "@alisa-engine/": "./js/alisa-engine/"
+        }
+    }
+    </script>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+        
+        window.THREE = Object.assign({}, THREE, { OrbitControls, GLTFLoader });
+
+        const gfx = new AlisaRenderCore({
+            clearColor: 0xffffff,
+            fogColor: 0xffffff,
+            fogDensity: 0.05,
+            autoRender: false,
+            cameraPosition: new THREE.Vector3(10, 10, 10)
+        });
+        const scene = gfx.scene;
+        const camera = gfx.camera;
+        const renderer = gfx.renderer;
+        const controls = gfx.controls;
+        
+        // Remove logic defaults
+        scene.children = scene.children.filter(c => !(c instanceof THREE.Light));
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x1a1a25); // Very dim ambient
+        scene.add(ambientLight);
+
+        // Removed external buildings - keeping focus strictly on the room generator
+
+        const textureLoader = new THREE.TextureLoader();
+        let currentRoomGroup = null;
+
+        // Base box dimensions
+        const boxW = 8;
+        const boxH = 4;
+        const boxD = 8;
+
+        // Deterministic PRNG
+        function mulberry32(a) {
+            return function() {
+              var t = a += 0x6D2B79F5;
+              t = Math.imul(t ^ t >>> 15, t | 1);
+              t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+              return ((t ^ t >>> 14) >>> 0) / 4294967296;
+            }
+        }
+        function cyrb128(str) {
+            let h1 = 1779033703, h2 = 3144134277, h3 = 1013904242, h4 = 2773480762;
+            for (let i = 0, k; i < str.length; i++) {
+                k = str.charCodeAt(i);
+                h1 = h2 ^ Math.imul(h1 ^ k, 597399067);
+                h2 = h3 ^ Math.imul(h2 ^ k, 2869860233);
+                h3 = h4 ^ Math.imul(h3 ^ k, 2373158908);
+                h4 = h1 ^ Math.imul(h4 ^ k, 712054821);
+            }
+            return mulberry32(h1^h2^h3^h4);
+        }
+
+        // Custom function to create a low-res pixelated texture dynamically
+        function createRetroTexture(color) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 4; canvas.height = 4;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = color;
+            ctx.fillRect(0,0,4,4);
+            // Add some noise
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.fillRect(0,0,2,2);
+            ctx.fillRect(2,2,2,2);
+            
+            const tex = new THREE.CanvasTexture(canvas);
+            // THE SECRET SAUCE: NearestFilter = PS1/Minecraft crisp pixels
+            tex.magFilter = THREE.NearestFilter;
+            tex.minFilter = THREE.NearestFilter;
+            return tex;
+        }
+
+        const texWood = createRetroTexture('#8B4513');
+        const texMetal = createRetroTexture('#555566');
+        
+        // Create an emissive computer screen texture
+        const screenCanvas = document.createElement('canvas');
+        screenCanvas.width = 16; screenCanvas.height = 16;
+        const sCtx = screenCanvas.getContext('2d');
+        sCtx.fillStyle = '#002200';
+        sCtx.fillRect(0,0,16,16);
+        sCtx.fillStyle = '#0f0';
+        sCtx.font = '5px monospace';
+        sCtx.fillText('SYS', 1, 6);
+        sCtx.fillText('OK ', 1, 12);
+        const texScreen = new THREE.CanvasTexture(screenCanvas);
+        texScreen.magFilter = THREE.NearestFilter;
+        texScreen.minFilter = THREE.NearestFilter;
+
+        async function createProp(recipe) {
+            const group = new THREE.Group();
+            
+            for (let part of recipe.geometry) {
+                let geo;
+                if (part.shape === 'box') geo = new THREE.BoxGeometry(...part.size);
+                else if (part.shape === 'cylinder') geo = new THREE.CylinderGeometry(...part.size);
+                
+                const matConf = {
+                    map: part.texture === 'wood' ? texWood : 
+                         part.texture === 'screen' ? texScreen : texMetal,
+                    roughness: 0.9
+                };
+                
+                if (part.emissive) {
+                    matConf.emissive = new THREE.Color(part.emissive);
+                    matConf.emissiveIntensity = 1.0;
+                    matConf.emissiveMap = matConf.map; // glow uses the texture pattern
+                    
+                    // Add actual dynamic lighting to the emissive prop
+                    const light = new THREE.PointLight(part.emissive, 1.2, 4);
+                    // Offset light slightly so it isn't buried inside its own origin
+                    light.position.set(part.pos[0], part.pos[1] + 0.1, part.pos[2] + 0.2);
+                    group.add(light);
+                }
+                
+                const mat = new THREE.MeshStandardMaterial(matConf);
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.position.set(...part.pos);
+                group.add(mesh);
+            }
+            return group;
+        }
+
+        async function rebuild() {
+            if (currentRoomGroup) scene.remove(currentRoomGroup);
+            currentRoomGroup = new THREE.Group();
+            
+            const sw = parseFloat(document.getElementById('inW').value);
+            const sd = parseFloat(document.getElementById('inD').value);
+            const type = document.getElementById('selType').value;
+            const seedStr = document.getElementById('inSeed').value;
+            const bspCuts = parseInt(document.getElementById('inCuts').value);
+            
+            const P = cyrb128(seedStr);
+            
+            const w = boxW * sw;
+            const h = boxH;
+            const d = boxD * sd;
+
+            // Load Outer Walls (Using Alisa's generated textures)
+            const texPath = `../textures/strips/${type}_middle.png`;
+            const tex = await new Promise(res => textureLoader.load(texPath, res));
+            // Force nearest filtering for that crisp DOS vibe on the windows
+            tex.magFilter = THREE.NearestFilter;
+            tex.minFilter = THREE.NearestFilter;
+
+            const matWall = new THREE.MeshStandardMaterial({ 
+                map: tex, 
+                roughness: 0.8,
+                transparent: false, // Opaque block in God Mode
+                side: THREE.FrontSide
+            });
+            
+            // X-Ray Material
+            const matWallXray = new THREE.MeshStandardMaterial({ 
+                map: tex, 
+                roughness: 0.8,
+                transparent: true,
+                opacity: 0.15,
+                depthWrite: false,
+                side: THREE.DoubleSide
+            });
+            
+            // Inside Material
+            const matWallFP = new THREE.MeshStandardMaterial({ 
+                map: tex, 
+                roughness: 0.8,
+                transparent: true, // See through windows
+                opacity: 1.0,
+                side: THREE.DoubleSide
+            });
+            
+            const matCeiling = new THREE.MeshStandardMaterial({ color: 0x222222, side: THREE.DoubleSide });
+            
+            // Grid floor
+            const canvas = document.createElement('canvas');
+            canvas.width = 64; canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#1a1a1a'; ctx.fillRect(0,0,64,64);
+            ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
+            ctx.strokeRect(0,0,64,64);
+            const floorTex = new THREE.CanvasTexture(canvas);
+            floorTex.wrapS = THREE.RepeatWrapping;
+            floorTex.wrapT = THREE.RepeatWrapping;
+            floorTex.repeat.set(sw * 2, sd * 2);
+            const matFloor = new THREE.MeshStandardMaterial({ map: floorTex, side: THREE.DoubleSide, roughness: 0.5 });
+            
+            // Fix UVs so there's one window strip per 8 units
+            const repeatX = Math.round(sw);
+            const repeatZ = Math.round(sd);
+
+            // [Right, Left, Top, Bottom, Front, Back]
+            const roomGeo = new THREE.BoxGeometry(w, h, d);
+            const materials = [matWall, matWall, matCeiling, matFloor, matWall, matWall];
+            
+            // Adjust UVs so texture repeats correctly along the walls
+            const groups = roomGeo.groups;
+            const uvAttribute = roomGeo.attributes.uv;
+            
+            function faceUV(matIndex, countX) {
+                const group = groups.find(g => g.materialIndex === matIndex);
+                if (group) {
+                    for(let i = group.start; i < group.start + group.count; i++) {
+                        let u = uvAttribute.getX(i);
+                        uvAttribute.setX(i, u * countX);
+                    }
+                }
+            }
+            faceUV(0, repeatZ); // Right
+            faceUV(1, repeatZ); // Left
+            faceUV(4, repeatX); // Front
+            faceUV(5, repeatX); // Back
+
+            const roomMesh = new THREE.Mesh(roomGeo, materials);
+            roomMesh.userData = { isFloor: true, extMat: matWall, xrayMat: matWallXray, intMat: matWallFP, origMaterials: materials };
+            
+            // NOTE: We move the room so its floor is at y = -h/2
+            roomMesh.position.set(0, 0, 0); 
+            currentRoomGroup.add(roomMesh);
+
+            // --- BSP LAYOUT GENERATION ---
+            let rooms = [];
+            let internalWalls = [];
+            
+            function doBsp(bx, by, bw, bd, cuts) {
+                if (cuts <= 0 || bw < 2 || bd < 2) {
+                    rooms.push({x: bx, y: by, w: bw, d: bd});
+                    return;
+                }
+                let minRatio = type === 'corp' ? 0.4 : 0.2;
+                let splitH = P() > 0.5;
+                if (bw > bd * 1.5) splitH = false; // Force split on longest axis
+                else if (bd > bw * 1.5) splitH = true;
+                
+                let ratio = minRatio + P() * (1.0 - 2 * minRatio);
+                
+                if (splitH) { // Split along Z (depth)
+                    let splitD = Math.floor(bd * ratio);
+                    if (splitD < 1 || bd - splitD < 1) {
+                        rooms.push({x: bx, y: by, w: bw, d: bd}); return;
+                    }
+                    internalWalls.push({ x: bx, y: by + splitD, w: bw, d: 0, isHorizontal: true });
+                    doBsp(bx, by, bw, splitD, cuts - 1);
+                    doBsp(bx, by + splitD, bw, bd - splitD, cuts - 1);
+                } else { // Split along X (width)
+                    let splitW = Math.floor(bw * ratio);
+                    if (splitW < 1 || bw - splitW < 1) {
+                        rooms.push({x: bx, y: by, w: bw, d: bd}); return;
+                    }
+                    internalWalls.push({ x: bx + splitW, y: by, w: 0, d: bd, isHorizontal: false });
+                    doBsp(bx, by, splitW, bd, cuts - 1);
+                    doBsp(bx + splitW, by, bw - splitW, bd, cuts - 1);
+                }
+            }
+            doBsp(0, 0, w, d, bspCuts);
+
+            // Draw internal walls
+            const doorGap = 1.5;
+            const thickness = 0.2;
+            const matInnerWall = new THREE.MeshStandardMaterial({ color: 0x112233, roughness: 0.9 });
+            
+            for (let wall of internalWalls) {
+                let totalLen = wall.isHorizontal ? wall.w : wall.d;
+                let doorPos = type === 'corp' ? totalLen * 0.5 : totalLen * (0.2 + P()*0.6);
+                let len1 = doorPos - doorGap/2;
+                let len2 = totalLen - (doorPos + doorGap/2);
+                
+                if (wall.isHorizontal) {
+                    if (len1 > 0) {
+                        let m1 = new THREE.Mesh(new THREE.BoxGeometry(len1, h, thickness), matInnerWall);
+                        m1.position.set(wall.x + len1/2 - w/2, 0, wall.y - d/2);
+                        currentRoomGroup.add(m1);
+                    }
+                    if (len2 > 0) {
+                        let m2 = new THREE.Mesh(new THREE.BoxGeometry(len2, h, thickness), matInnerWall);
+                        m2.position.set(wall.x + doorPos + doorGap/2 + len2/2 - w/2, 0, wall.y - d/2);
+                        currentRoomGroup.add(m2);
+                    }
+                } else {
+                    if (len1 > 0) {
+                        let m1 = new THREE.Mesh(new THREE.BoxGeometry(thickness, h, len1), matInnerWall);
+                        m1.position.set(wall.x - w/2, 0, wall.y + len1/2 - d/2);
+                        currentRoomGroup.add(m1);
+                    }
+                    if (len2 > 0) {
+                        let m2 = new THREE.Mesh(new THREE.BoxGeometry(thickness, h, len2), matInnerWall);
+                        m2.position.set(wall.x - w/2, 0, wall.y + doorPos + doorGap/2 + len2/2 - d/2);
+                        currentRoomGroup.add(m2);
+                    }
+                }
+            }
+
+            // --- SPAWN RETRO ASSETS BASED ON ROOM SEED ---
+            const cyberTerminalRecipe = {
+                geometry: [
+                    {shape: "box", size: [2, 0.2, 1], pos: [0, 0, 0], texture: "wood"},
+                    {shape: "box", size: [0.2, 1.4, 0.8], pos: [-0.8, -0.8, 0], texture: "wood"},
+                    {shape: "box", size: [0.2, 1.4, 0.8], pos: [0.8, -0.8, 0], texture: "wood"},
+                    {shape: "box", size: [0.8, 0.8, 0.8], pos: [0, 0.5, -0.1], texture: "metal"},
+                    {shape: "box", size: [0.7, 0.6, 0.1], pos: [0, 0.5, 0.35], texture: "screen", emissive: "#00ffcc"}
+                ]
+            };
+            const serverRecipe = {
+                geometry: [
+                    {shape: "box", size: [1, 3, 1], pos: [0, 0, 0], texture: "metal"},
+                    {shape: "box", size: [0.8, 0.2, 1.1], pos: [0, 0.5, 0], texture: "screen", emissive: "#ff0055"},
+                    {shape: "box", size: [0.8, 0.2, 1.1], pos: [0, 1.0, 0], texture: "screen", emissive: "#00ffcc"},
+                    {shape: "box", size: [0.8, 0.2, 1.1], pos: [0, -0.5, 0], texture: "screen", emissive: "#00ffcc"}
+                ]
+            };
+
+            for (let room of rooms) {
+                let cx = room.x + room.w/2 - w/2;
+                let cz = room.y + room.d/2 - d/2;
+                let area = room.w * room.d;
+                
+                // Add Dynamic Procedural Ceiling Light for this exact sub-room
+                let lightColor = type === 'corp' ? 0xffffff : (type === 'military' ? 0xffaaaa : 0xddccaa);
+                let lightInt = type === 'corp' ? 1.0 : (type === 'slum' ? 0.5 : 0.8);
+                let ceilLight = new THREE.PointLight(lightColor, lightInt, Math.max(room.w, room.d) * 1.5);
+                ceilLight.position.set(cx, h/2 - 0.2, cz);
+                currentRoomGroup.add(ceilLight);
+                
+                if (area <= 12) {
+                    // Small room/closet: high probability of server rack, pushed against the back wall
+                    if (P() > 0.3) {
+                        const server = await createProp(serverRecipe);
+                        let dx = (room.x + room.w/2) - w/2;
+                        let dz = (room.y + 1.0) - d/2; // pushed back
+                        server.position.set(dx, -h/2 + 1.5, dz);
+                        // occasionally rotates if narrow
+                        server.rotation.y = room.w < room.d ? Math.PI/2 : 0;
+                        currentRoomGroup.add(server);
+                    }
+                } else {
+                    // Open office area: distribute desks
+                    let numDesks = Math.max(1, Math.floor(area / 20));
+                    if (type === 'slum') numDesks = Math.max(1, Math.floor(area / 10)); // Cramped slums
+                    
+                    for(let i=0; i<numDesks; i++) {
+                        let dx, dz, angle;
+                        let isSmallOrSlum = (area < 25 || type === 'slum');
+                        
+                        // "Wall Hugging" Algorithm: Small spaces attach furniture to walls
+                        if (isSmallOrSlum || P() > 0.6) {
+                            let wallSide = Math.floor(P() * 4);
+                            if (wallSide === 0) { // Back Wall (Z-)
+                                dx = room.x + 1.5 + P()*(room.w - 3);
+                                dz = room.y + 0.9;
+                                angle = 0; // Facing inward
+                            } else if (wallSide === 1) { // Front Wall (Z+)
+                                dx = room.x + 1.5 + P()*(room.w - 3);
+                                dz = room.y + room.d - 0.9;
+                                angle = Math.PI;
+                            } else if (wallSide === 2) { // Left Wall (X-)
+                                dx = room.x + 0.9;
+                                dz = room.y + 1.5 + P()*(room.d - 3);
+                                angle = -Math.PI/2;
+                            } else { // Right Wall (X+)
+                                dx = room.x + room.w - 0.9;
+                                dz = room.y + 1.5 + P()*(room.d - 3);
+                                angle = Math.PI/2;
+                            }
+                        } else {
+                            // Center island placement (Corporations / Big rooms)
+                            dx = room.x + 2 + P()*(room.w - 4);
+                            dz = room.y + 2 + P()*(room.d - 4);
+                            angle = Math.floor(P() * 4) * (Math.PI / 2);
+                        }
+                        
+                        const desk = await createProp(cyberTerminalRecipe);
+                        desk.position.set(dx - w/2, -h/2 + 1.4, dz - d/2);
+                        desk.rotation.y = angle;
+                        currentRoomGroup.add(desk);
+                    }
+                }
+            }
+
+            scene.add(currentRoomGroup);
+        }
+
+        // Resize is handled by AlisaRenderCore
+
+        // Raycaster for Mode Transition
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let cameraTargetPos = null;
+        let controlsTargetPos = null;
+        let selectedMeshes = [];
+
+        window.addEventListener('click', (event) => {
+            if (event.clientY < 200 && event.clientX < 200) return;
+
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(scene.children, true);
+            const valid = intersects.find(i => i.object.userData && i.object.userData.isFloor);
+            
+            let wasAlreadySelected = false;
+            selectedMeshes.forEach(m => {
+                if (valid && m === valid.object) {
+                    wasAlreadySelected = true;
+                }
+                if (m.userData.outline) m.remove(m.userData.outline);
+                
+                // Revert X-Ray if returning to overview
+                if (!m.userData.isFirstPerson) {
+                    const mats = m.material;
+                    mats[0] = mats[1] = mats[4] = mats[5] = m.userData.extMat;
+                    m.material = mats;
+                }
+            });
+            selectedMeshes = [];
+
+            if (valid && !wasAlreadySelected && !valid.object.userData.isFirstPerson) {
+                const mesh = valid.object;
+                selectedMeshes.push(mesh);
+                
+                if (!mesh.userData.outline) {
+                    const edges = new THREE.EdgesGeometry(mesh.geometry);
+                    const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x00ffcc, linewidth: 2 }));
+                    line.scale.set(1.02, 1.02, 1.02);
+                    mesh.userData.outline = line;
+                }
+                mesh.add(mesh.userData.outline);
+                
+                // Apply X-Ray Translucency
+                const mats = mesh.material;
+                mats[0] = mats[1] = mats[4] = mats[5] = mesh.userData.xrayMat;
+                mesh.material = mats;
+            }
+        });
+
+        window.addEventListener('dblclick', (event) => {
+            if (event.clientY < 200 && event.clientX < 200) return; // ignore UI clicks
+
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(scene.children, true);
+            const valid = intersects.find(i => i.object.userData && i.object.userData.isFloor);
+            
+            if (valid) {
+                const mesh = valid.object;
+                
+                // Remove outline
+                if (mesh.userData.outline && mesh.children.includes(mesh.userData.outline)) {
+                    mesh.remove(mesh.userData.outline);
+                }
+                
+                // Switch room to Interior (Micro) mode
+                const mats = mesh.material;
+                mats[0] = mats[1] = mats[4] = mats[5] = mesh.userData.intMat;
+                mesh.material = mats;
+                mesh.userData.isFirstPerson = true;
+
+                // Move camera inside
+                const worldPos = new THREE.Vector3();
+                mesh.getWorldPosition(worldPos);
+                cameraTargetPos = worldPos.clone();
+                controlsTargetPos = worldPos.clone().add(new THREE.Vector3(0.1, 0, 0.1));
+            } else {
+                // Switch back to Overview (Macro / God) mode
+                if (currentRoomGroup) {
+                    cameraTargetPos = new THREE.Vector3(10, 10, 10);
+                    controlsTargetPos = new THREE.Vector3(0, 0, 0);
+                    
+                    currentRoomGroup.traverse((child) => {
+                        if (child.userData && child.userData.isFirstPerson) {
+                            const mats = child.material;
+                            mats[0] = mats[1] = mats[4] = mats[5] = child.userData.extMat;
+                            child.material = mats;
+                            child.userData.isFirstPerson = false;
+                        }
+                    });
+                }
+            }
+        });
+
+        const updateCb = () => {
+            if (cameraTargetPos) {
+                camera.position.lerp(cameraTargetPos, 0.08);
+                controls.target.lerp(controlsTargetPos, 0.08);
+                if (camera.position.distanceTo(cameraTargetPos) < 0.05) {
+                    cameraTargetPos = null;
+                }
+            }
+        };
+        
+        window.rebuild = rebuild;
+        
+        rebuild().then(() => {
+            gfx.startLoop(updateCb);
+        });
+    </script>
+</body>
+</html>

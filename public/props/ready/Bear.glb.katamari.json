@@ -1,0 +1,53 @@
+{
+    "source_file": "Bear.glb",
+    "deduced_size_meters": 2.5,
+    "target_tier": "Tier 0: Base Humanoid",
+    "target_scale_constraint": 1.7999999999999998,
+    "voxel_grid": [
+        3,
+        6,
+        2
+    ],
+    "archetype": "prop_cube",
+    "morphology": {
+        "size_m": 2.5,
+        "domain": "inorganic",
+        "cladistics": "none",
+        "mobility": "stationary",
+        "mechanical_joints": 0
+    },
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0,
+    "ai_armature": [
+        {
+            "name": "Core Anchor X",
+            "parent": null,
+            "pos": [
+                0.008181338285077689,
+                88.30467224231144,
+                -20.642560875235752
+            ]
+        },
+        {
+            "name": "Base Mount",
+            "parent": null,
+            "pos": [
+                0.008181338285077689,
+                25.390018845705,
+                -20.642560875235752
+            ]
+        }
+    ],
+    "mesh_scale_multiplier": 0.00834283055503132,
+    "kinematics": {
+        "base_gait": "static",
+        "cycle_frequency_hz": 0.0,
+        "step_amplitude": 0.0,
+        "vertical_bounce": 0.0,
+        "spine_flexion": 0.0,
+        "idle_sway_hz": 0.0,
+        "locomotion_states": [
+            "idle"
+        ]
+    }
+}

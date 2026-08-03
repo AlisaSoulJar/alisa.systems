@@ -1,0 +1,168 @@
+{
+    "source_file": "Trout.glb",
+    "deduced_size_meters": 2.0,
+    "target_tier": "Tier 0: Base Humanoid",
+    "target_scale_constraint": 1.7999999999999998,
+    "voxel_grid": [
+        3,
+        6,
+        2
+    ],
+    "archetype": "ungulate",
+    "morphology": {
+        "size_m": 2.0,
+        "domain": "organic",
+        "cladistics": "ungulate",
+        "mobility": "quadrupedal",
+        "mechanical_joints": 0
+    },
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0,
+    "ai_armature": [
+        {
+            "name": "Spine Core",
+            "parent": null,
+            "pos": [
+                0.0,
+                0.09999999999999998,
+                0.0
+            ]
+        },
+        {
+            "name": "Neck Base",
+            "parent": null,
+            "pos": [
+                0.0,
+                0.19999999999999996,
+                0.5
+            ]
+        },
+        {
+            "name": "Snout",
+            "parent": null,
+            "pos": [
+                0.0,
+                0.30000000000000004,
+                0.8
+            ]
+        },
+        {
+            "name": "Hindquarters",
+            "parent": null,
+            "pos": [
+                0.0,
+                0.09999999999999998,
+                -0.6
+            ]
+        },
+        {
+            "name": "Femur FL",
+            "parent": null,
+            "pos": [
+                0.2,
+                -0.15000000000000002,
+                0.5
+            ]
+        },
+        {
+            "name": "Tibia FL",
+            "parent": null,
+            "pos": [
+                0.2,
+                -0.35,
+                0.5
+            ]
+        },
+        {
+            "name": "Foot FL",
+            "parent": null,
+            "pos": [
+                0.2,
+                -0.45,
+                0.5
+            ]
+        },
+        {
+            "name": "Femur FR",
+            "parent": null,
+            "pos": [
+                -0.2,
+                -0.15000000000000002,
+                0.5
+            ]
+        },
+        {
+            "name": "Tibia FR",
+            "parent": null,
+            "pos": [
+                -0.2,
+                -0.35,
+                0.5
+            ]
+        },
+        {
+            "name": "Foot FR",
+            "parent": null,
+            "pos": [
+                -0.2,
+                -0.45,
+                0.5
+            ]
+        },
+        {
+            "name": "Femur BL",
+            "parent": null,
+            "pos": [
+                0.2,
+                -0.15000000000000002,
+                -0.5
+            ]
+        },
+        {
+            "name": "Tibia BL",
+            "parent": null,
+            "pos": [
+                0.2,
+                -0.35,
+                -0.5
+            ]
+        },
+        {
+            "name": "Foot BL",
+            "parent": null,
+            "pos": [
+                0.2,
+                -0.45,
+                -0.5
+            ]
+        },
+        {
+            "name": "Femur BR",
+            "parent": null,
+            "pos": [
+                -0.2,
+                -0.15000000000000002,
+                -0.5
+            ]
+        },
+        {
+            "name": "Tibia BR",
+            "parent": null,
+            "pos": [
+                -0.2,
+                -0.35,
+                -0.5
+            ]
+        },
+        {
+            "name": "Foot BR",
+            "parent": null,
+            "pos": [
+                -0.2,
+                -0.45,
+                -0.5
+            ]
+        }
+    ],
+    "mesh_scale_multiplier": 1.7999999999999998
+}

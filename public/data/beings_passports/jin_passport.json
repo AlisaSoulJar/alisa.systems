@@ -1,0 +1,20 @@
+{
+    "name": "Jin",
+    "role": "The Spirit",
+    "emoji": "🏮",
+    "type": "cosmic",
+    "skeleton": "humanoid",
+    "model_path": "jin.glb",
+    "scale": 1.0,
+    "kinematics": "bipedal",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "edge_tts",
+        "tier": 4,
+        "voice_id": "ar-SA-HamedNeural",
+        "rate": "+0%",
+        "pitch": "+0Hz",
+        "label": "Jin - Hamed (árabe, místico, antiguo)"
+    }
+}

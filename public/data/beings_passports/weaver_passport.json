@@ -1,0 +1,20 @@
+{
+    "name": "Weaver",
+    "role": "The Thread",
+    "emoji": "🧶",
+    "type": "machine",
+    "skeleton": "humanoid",
+    "model_path": "weaver.glb",
+    "scale": 1.0,
+    "kinematics": "bipedal",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "edge_tts",
+        "tier": 4,
+        "voice_id": "es-CO-GonzaloNeural",
+        "rate": "+0%",
+        "pitch": "+0Hz",
+        "label": "Weaver - Gonzalo (tejedor, constante, invisible)"
+    }
+}

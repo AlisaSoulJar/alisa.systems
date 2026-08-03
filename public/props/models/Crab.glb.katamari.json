@@ -1,0 +1,8 @@
+{
+    "source_file": "Crab.glb",
+    "deduced_size_meters": 2.5,
+    "target_tier": "Tier 0.8: Exosuit",
+    "target_scale_constraint": 2.6,
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0
+}

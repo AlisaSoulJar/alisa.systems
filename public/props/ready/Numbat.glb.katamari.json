@@ -1,0 +1,53 @@
+{
+    "source_file": "Numbat.glb",
+    "deduced_size_meters": 0.7,
+    "target_tier": "Tier -1: Small Fauna",
+    "target_scale_constraint": 0.6,
+    "voxel_grid": [
+        2,
+        4,
+        6
+    ],
+    "archetype": "ungulate",
+    "morphology": {
+        "size_m": 0.7,
+        "domain": "organic",
+        "cladistics": "ungulate",
+        "mobility": "quadrupedal",
+        "mechanical_joints": 0
+    },
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0,
+    "ai_armature": [
+        {
+            "name": "Core Anchor X",
+            "parent": null,
+            "pos": [
+                0.04981451215031934,
+                9.816583929231458,
+                0.4225140040022268
+            ]
+        },
+        {
+            "name": "Base Mount",
+            "parent": null,
+            "pos": [
+                0.04981451215031934,
+                4.461431415306471,
+                0.4225140040022268
+            ]
+        }
+    ],
+    "mesh_scale_multiplier": 0.05041873210854777,
+    "kinematics": {
+        "base_gait": "static",
+        "cycle_frequency_hz": 0.0,
+        "step_amplitude": 0.0,
+        "vertical_bounce": 0.0,
+        "spine_flexion": 0.0,
+        "idle_sway_hz": 0.0,
+        "locomotion_states": [
+            "idle"
+        ]
+    }
+}

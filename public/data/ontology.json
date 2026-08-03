@@ -1,0 +1,221 @@
+{
+    "_doc": "Ontología Soberana de Arachne. Define los Tiers de Katamari y el mapa léxico estático. Arachne aprende y expande este archivo.",
+    "base_cell_size": 0.3,
+    "katamari_tiers": [
+        {
+            "level": -3,
+            "name": "Tier -3: Micro",
+            "archetype": "crawler",
+            "gw": 3,
+            "gh": 1,
+            "gd": 6
+        },
+        {
+            "level": -2,
+            "name": "Tier -2: Tiny",
+            "archetype": "quadruped_long",
+            "gw": 2,
+            "gh": 4,
+            "gd": 6
+        },
+        {
+            "level": -1,
+            "name": "Tier -1: Small Fauna",
+            "archetype": "quadruped_long",
+            "gw": 2,
+            "gh": 4,
+            "gd": 6
+        },
+        {
+            "level": 0,
+            "name": "Tier 0: Base Humanoid",
+            "archetype": "humanoid",
+            "gw": 3,
+            "gh": 6,
+            "gd": 2
+        },
+        {
+            "level": 1,
+            "name": "Tier 1: Megafauna/Vehicles",
+            "archetype": "vehicle_car",
+            "gw": 4,
+            "gh": 3,
+            "gd": 6
+        },
+        {
+            "level": 2,
+            "name": "Tier 2: Colossal",
+            "archetype": "vehicle_air",
+            "gw": 10,
+            "gh": 3,
+            "gd": 8
+        },
+        {
+            "level": 3,
+            "name": "Tier 3: Mega-Structure",
+            "archetype": "prop_floor",
+            "gw": 8,
+            "gh": 1,
+            "gd": 8
+        },
+        {
+            "level": 4,
+            "name": "Tier 4: Arcology",
+            "archetype": "celestial_flat",
+            "gw": 16,
+            "gh": 2,
+            "gd": 16
+        },
+        {
+            "level": 5,
+            "name": "Tier 5: City Chunk",
+            "archetype": "celestial_sphere",
+            "gw": 10,
+            "gh": 10,
+            "gd": 10
+        },
+        {
+            "level": 6,
+            "name": "Tier 6: Orbital Habitat",
+            "archetype": "celestial_flat",
+            "gw": 16,
+            "gh": 2,
+            "gd": 16
+        },
+        {
+            "level": 7,
+            "name": "Tier 7: Deep Space Anomaly",
+            "archetype": "celestial_sphere",
+            "gw": 10,
+            "gh": 10,
+            "gd": 10
+        },
+        {
+            "level": 8,
+            "name": "Tier 8: Lunar Mass",
+            "archetype": "celestial_sphere",
+            "gw": 10,
+            "gh": 10,
+            "gd": 10
+        },
+        {
+            "level": 9,
+            "name": "Tier 9: Planetary Core",
+            "archetype": "celestial_sphere",
+            "gw": 10,
+            "gh": 10,
+            "gd": 10
+        },
+        {
+            "level": 10,
+            "name": "Tier 10: Earth Class",
+            "archetype": "celestial_sphere",
+            "gw": 10,
+            "gh": 10,
+            "gd": 10
+        },
+        {
+            "level": 11,
+            "name": "Tier 11: Gas Giant",
+            "archetype": "celestial_sphere",
+            "gw": 10,
+            "gh": 10,
+            "gd": 10
+        },
+        {
+            "level": 12,
+            "name": "Tier 12: Stellar Mass",
+            "archetype": "celestial_sphere",
+            "gw": 10,
+            "gh": 10,
+            "gd": 10
+        },
+        {
+            "level": 13,
+            "name": "Tier 13: Solar System",
+            "archetype": "celestial_sphere",
+            "gw": 10,
+            "gh": 10,
+            "gd": 10
+        },
+        {
+            "level": 14,
+            "name": "Tier 14: Galactic Core",
+            "archetype": "celestial_sphere",
+            "gw": 10,
+            "gh": 10,
+            "gd": 10
+        }
+    ],
+    "static_morphology_map": {
+        "cup": 0.2,
+        "mug": 0.2,
+        "apple": 0.1,
+        "can": 0.2,
+        "bottle": 0.3,
+        "chair": 1.5,
+        "desk": 2.0,
+        "table": 2.0,
+        "sofa": 2.5,
+        "bed": 2.5,
+        "car": 4.5,
+        "van": 5.0,
+        "truck": 8.0,
+        "bus": 12.0,
+        "tractor": 4.0,
+        "man": 1.8,
+        "woman": 1.7,
+        "human": 1.8,
+        "alien": 2.0,
+        "robot": 2.2,
+        "dog": 0.8,
+        "cat": 0.5,
+        "bear": 2.5,
+        "lion": 2.0,
+        "tiger": 2.0,
+        "bird": 0.2,
+        "pigeon": 0.3,
+        "eagle": 0.8,
+        "ant": 0.01,
+        "tree": 15.0,
+        "bush": 2.0,
+        "plant": 1.0,
+        "rock": 3.0,
+        "godzilla": 108.0,
+        "house": 15.0,
+        "building": 30.0
+    },
+    "taxonomy": {
+        "biological": [
+            "humanoid",
+            "canine",
+            "equine",
+            "theropod",
+            "arachnid",
+            "bird",
+            "serpentine",
+            "piscine",
+            "cetacean",
+            "primate",
+            "lacertilian",
+            "pachyderm",
+            "mustelid",
+            "crocodilian",
+            "anuran",
+            "chelonian",
+            "insecta",
+            "feline_house",
+            "feline_medium",
+            "feline_big",
+            "lagomorph",
+            "crustacean"
+        ],
+        "mechanical": [
+            "wheeled",
+            "hovering",
+            "igor_surgical",
+            "pygmalion_scanner"
+        ],
+        "passive": []
+    }
+}

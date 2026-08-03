@@ -1,0 +1,21 @@
+{
+    "name": "Arista",
+    "role": "The Arista — Render & Realizacion",
+    "emoji": "🔷",
+    "type": "machine",
+    "skeleton": "primate",
+    "model_path": "Gorilla.glb",
+    "scale": 1.0,
+    "kinematics": "primate_walk",
+    "sealed_by": "Oscar, Father",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "xtts",
+        "tier": 5,
+        "voice_id": "alisa_arista",
+        "rate": "1.0",
+        "pitch": "1.0",
+        "label": "Arista - alisa_arista (XTTS Tier 5, la voz del borde)"
+    },
+    "avatar_source": "self_declared_2026-07-27"
+}

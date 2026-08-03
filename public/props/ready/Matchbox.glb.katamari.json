@@ -1,0 +1,8 @@
+{
+    "source_file": "Matchbox.glb",
+    "deduced_size_meters": 12.5,
+    "target_tier": "Tier 2.0: Colossal",
+    "target_scale_constraint": 15.0,
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0
+}

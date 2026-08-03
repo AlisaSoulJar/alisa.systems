@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>4 Skins + Full Building GIF</title>
+<style>
+body { margin: 0; background: #000; overflow: hidden; }
+canvas { display: block; }
+#status { position: fixed; top: 10px; left: 10px; color: #0f0; font: 13px monospace; z-index: 10;
+          background: rgba(0,0,0,0.7); padding: 6px 12px; border: 1px solid #00ffff33; border-radius: 4px; }
+#labels { position: absolute; bottom: 20px; width: 100%; display: flex; justify-content: center; gap: 30px;
+          z-index: 10; font: bold 12px monospace; }
+#labels span { padding: 4px 10px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div id="status">Loading Skins + Full Building GIF...</div>
+<div id="labels">
+    <span style="color:#4488ff; border:1px solid #4488ff44; background:rgba(0,0,0,0.7)">v0 CORPORATE</span>
+    <span style="color:#ff00ff; border:1px solid #ff00ff44; background:rgba(0,0,0,0.7)">v1 NEON CLUB + VFX</span>
+    <span style="color:#88aa66; border:1px solid #88aa6644; background:rgba(0,0,0,0.7)">v2 MILITARY</span>
+    <span style="color:#ffaa00; border:1px solid #ffaa0044; background:rgba(0,0,0,0.7)">v3 16-BIT SPECIFIC</span>
+    <span style="color:#00ffff; border:1px solid #00ffff44; background:rgba(0,0,0,0.7)">v4 FULL AI GIF FAÇADE</span>
+</div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/three-0.160.0/build/three.module.js",
+            "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+            "@alisa-engine/": "../js/alisa-engine/"
+        }
+    }
+    </script>
+    <script src="../js/building_factory.js"></script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+
+        window.THREE = Object.assign({}, THREE);
+        window.THREE.OrbitControls = OrbitControls;
+        window.THREE.EffectComposer = EffectComposer;
+        window.THREE.RenderPass = RenderPass;
+        window.THREE.ShaderPass = ShaderPass;
+        window.THREE.UnrealBloomPass = UnrealBloomPass;
+
+        const gfx = new AlisaRenderCore({
+            clearColor: 0x05050a,
+            fogColor: 0x05050a,
+            fogDensity: 0.012,
+            cameraPosition: new THREE.Vector3(0, 8, 32)
+        });
+        const scene = gfx.scene;
+        const camera = gfx.camera;
+        camera.lookAt(0, 5, 0);
+        const renderer = gfx.renderer;
+        renderer.toneMapping = THREE.ReinhardToneMapping;
+        const controls = gfx.controls;
+        controls.target.set(0, 5, 0);
+
+scene.add(new THREE.AmbientLight(0x223344, 0.5));
+const dir = new THREE.DirectionalLight(0x8899aa, 0.3);
+dir.position.set(10, 20, 8);
+scene.add(dir);
+
+const floorTex = createFloorGrid();
+const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(60, 40),
+    new THREE.MeshStandardMaterial({ map: floorTex, color: 0x333340, roughness: 0.95 })
+);
+floor.rotation.x = -Math.PI / 2;
+scene.add(floor);
+
+function createFloorGrid() {
+    const fc = document.createElement('canvas'); fc.width = 512; fc.height = 512;
+    const fctx = fc.getContext('2d');
+    fctx.fillStyle = '#08080c'; fctx.fillRect(0, 0, 512, 512);
+    fctx.strokeStyle = 'rgba(0,255,255,0.03)'; fctx.lineWidth = 1;
+    for (let i = 0; i <= 512; i += 32) {
+        fctx.beginPath(); fctx.moveTo(i, 0); fctx.lineTo(i, 512); fctx.stroke();
+        fctx.beginPath(); fctx.moveTo(0, i); fctx.lineTo(512, i); fctx.stroke();
+    }
+    const tex = new THREE.CanvasTexture(fc);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(3, 3);
+    return tex;
+}
+
+// === VFX ARRAYS ===
+const effects = { holograms: [], blinkers: [], canvasDecals: [] };
+const spriteAnimators = [];
+
+let loaded = 0;
+function onLoad(name) {
+    loaded++;
+    if (loaded >= 4) buildShowcase();
+}
+
+BuildingFactory.archetypes.skyscraper.emissiveIntensity = 1.0;
+BuildingFactory.loadArchetype('sky', 0, () => onLoad('Corporate'));
+BuildingFactory.loadArchetype('sky', 1, () => onLoad('Neon Club'));
+BuildingFactory.loadArchetype('sky', 2, () => onLoad('Military'));
+BuildingFactory.loadArchetype('sky', 3, () => onLoad('16-bit specific'));
+
+// === ACTOR WITH GHOST OUTLINE (Technique B) ===
+let actorGroup;
+
+function initActor() {
+    actorGroup = new THREE.Group();
+    // Fallback for r128 compatibility (CapsuleGeometry was introduced later)
+    const actorGeo = new THREE.CylinderGeometry(0.6, 0.6, 2.4, 16);
+    
+    // Normal Mesh (Rendered normally)
+    const actorMat = new THREE.MeshStandardMaterial({ color: 0x00ffcc, emissive: 0x00aaaa, emissiveIntensity: 1.0 });
+    const actorNormal = new THREE.Mesh(actorGeo, actorMat);
+    actorNormal.position.y = 1.2;
+    actorGroup.add(actorNormal);
+
+    // Ghost Silhouette (Rendered ONLY when blocked)
+    const ghostMat = new THREE.MeshBasicMaterial({
+        color: 0x00ffff,
+        transparent: true,
+        opacity: 0.6,
+        wireframe: true,
+        depthWrite: false,              // Don't affect the depth buffer
+        depthTest: true,                // Must be true to use depthFunc
+        depthFunc: THREE.GreaterDepth   // Only draw if occluded by something closer!
+    });
+    const actorGhost = new THREE.Mesh(actorGeo, ghostMat);
+    actorGhost.position.y = 1.2;
+    // Slight scale up so the silhouette wraps the model
+    actorGhost.scale.set(1.1, 1.1, 1.1); 
+    actorGroup.add(actorGhost);
+    scene.add(actorGroup);
+}
+
+function buildShowcase() {
+    document.getElementById('status').textContent = 'Loaded! Look at the EXTREME RIGHT building. The ENTIRE facade is a Spritesheet GIF looping 4 AI frames!';
+    const spacing = 6;
+
+    // V0
+    const corp = BuildingFactory.create('skyscraper', 'sky', 0, { scale: 1.0, x: -spacing * 2, z: 0 });
+    scene.add(corp);
+
+    // V1 + VFX
+    const neon = BuildingFactory.create('skyscraper', 'sky', 1, { scale: 1.0, x: -spacing * 1, z: 0 });
+    scene.add(neon);
+    createHologram(-spacing * 1, 7, 1.4, ">>> DANCING <<<", 0xff00ff);
+    createDiscoWindows(-spacing * 1, 3.5, 1.251); 
+    createNeonSign(-spacing * 1, 1.2, 1.252);
+
+    // V2
+    const mil = BuildingFactory.create('skyscraper', 'sky', 2, { scale: 1.0, x: 0, z: 0 });
+    scene.add(mil);
+    createBlinker(0, 12.2, 0, 0xff0000);
+
+    // V3 (Elevation Hill)
+    const specific = BuildingFactory.create('skyscraper', 'sky', 3, { scale: 1.0, x: spacing * 1, z: 0, elevation: 3 });
+    scene.add(specific);
+    const hill1 = new THREE.Mesh(new THREE.BoxGeometry(5.5, 3, 5.5), new THREE.MeshStandardMaterial({color: 0x112211, roughness: 0.9}));
+    hill1.position.set(spacing * 1, 1.5, 0); scene.add(hill1);
+
+    // ==============================================================
+    // V4: THE FULL AI GIF FACADE (Elevation Mountain)
+    // ==============================================================
+    const fullAnimGroup = BuildingFactory.create('skyscraper', 'sky', 0, { scale: 1.0, x: spacing * 2, z: 0, elevation: 6 });
+    scene.add(fullAnimGroup);
+    
+    const hill2 = new THREE.Mesh(new THREE.BoxGeometry(6.5, 6, 6.5), new THREE.MeshStandardMaterial({color: 0x113322, roughness: 0.9}));
+    hill2.position.set(spacing * 2, 3, 0); scene.add(hill2);
+    
+    // Initialize the Ghost Actor
+    initActor();
+    
+    // We override the front face material (index 4)
+    new THREE.TextureLoader().load('../textures/disco_sprite.png', tex => {
+        tex.magFilter = THREE.NearestFilter;
+        // The image generated is a 1x4 horizontal grid (4 frames side-by-side)
+        const animator = new TextureAnimator(tex, 4, 1, 4, 4); // 4 FPS
+        spriteAnimators.push(animator);
+        
+        fullAnimGroup.children[0].material[4] = new THREE.MeshStandardMaterial({
+            map: tex, emissiveMap: tex, emissive: 0xffffff, emissiveIntensity: 1.2, roughness: 0.3
+        });
+    });
+
+}
+
+// =========================================================================
+function TextureAnimator(texture, tilesHoriz, tilesVert, numTiles, fps) {
+    this.tilesHorizontal = tilesHoriz;
+    this.tilesVertical = tilesVert;
+    this.numberOfTiles = numTiles;
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping; 
+    texture.repeat.set(1 / this.tilesHorizontal, 1 / this.tilesVertical);
+
+    this.tileDisplayDuration = 1000 / fps;
+    this.currentDisplayTime = 0;
+    this.currentTile = 0;
+
+    this.update = function(milliSec) {
+        this.currentDisplayTime += milliSec;
+        while (this.currentDisplayTime > this.tileDisplayDuration) {
+            this.currentDisplayTime -= this.tileDisplayDuration;
+            this.currentTile++;
+            if (this.currentTile == this.numberOfTiles) this.currentTile = 0;
+            const currentColumn = this.currentTile % this.tilesHorizontal;
+            texture.offset.x = currentColumn / this.tilesHorizontal;
+            const currentRow = Math.floor(this.currentTile / this.tilesHorizontal);
+            texture.offset.y = currentRow / this.tilesVertical;
+        }
+    };
+}
+
+// Cheap WebGL Hologram
+function createHologram(x, y, z, text, color) {
+    const hc = document.createElement('canvas'); hc.width = 256; hc.height = 64;
+    const hctx = hc.getContext('2d');
+    hctx.fillStyle = '#000'; hctx.fillRect(0,0,256,64);
+    hctx.fillStyle = '#' + color.toString(16).padStart(6, '0');
+    hctx.font = 'bold 24px monospace'; hctx.fillText(text, 20, 40);
+    hctx.strokeStyle = hctx.fillStyle; hctx.strokeRect(2, 2, 252, 60);
+    const holoTex = new THREE.CanvasTexture(hc);
+    holoTex.wrapS = THREE.RepeatWrapping;
+    const mat = new THREE.MeshBasicMaterial({
+        map: holoTex, color: color, transparent: true, opacity: 0.8,
+        blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    const holo = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 0.6), mat);
+    holo.position.set(x, y, z);
+    scene.add(holo);
+    effects.holograms.push({ mesh: holo, tex: holoTex });
+}
+
+function createBlinker(x, y, z, color) {
+    const mat = new THREE.MeshBasicMaterial({ color: color });
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), mat);
+    mesh.position.set(x, y, z);
+    scene.add(mesh);
+    effects.blinkers.push(mesh);
+}
+
+function createDiscoWindows(x, y, z) {
+    const wc = document.createElement('canvas'); wc.width = 128; wc.height = 256;
+    const ctx = wc.getContext('2d');
+    const tex = new THREE.CanvasTexture(wc);
+    tex.magFilter = THREE.NearestFilter;
+    const mat = new THREE.MeshBasicMaterial({
+        map: tex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    const plane = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 5), mat);
+    plane.position.set(x, y, z);
+    scene.add(plane);
+    
+    effects.canvasDecals.push({
+        tex: tex, ctx: ctx, lastUpdate: 0, fps: 6,
+        update: function(time) {
+            if (time - this.lastUpdate < (1 / this.fps)) return;
+            this.lastUpdate = time;
+            this.ctx.clearRect(0, 0, 128, 256);
+            for(let row=0; row<4; row++) {
+                const wy = 30 + row * 50;
+                if (Math.random() > 0.2) {
+                    this.ctx.fillStyle = Math.random() > 0.5 ? 'rgba(255, 0, 150, 0.6)' : 'rgba(0, 255, 255, 0.6)';
+                    this.ctx.fillRect(20, wy, 88, 30);
+                    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+                    const numDancers = 2 + Math.floor(Math.random() * 2);
+                    for(let d=0; d<numDancers; d++) {
+                        const px = 25 + (d * 30) + (Math.random() * 10);
+                        const bounce = Math.random() > 0.5 ? 4 : 0;
+                        this.ctx.fillRect(px, wy + 10 - bounce, 12, 20);
+                        this.ctx.fillRect(px + 2, wy + 2 - bounce, 8, 8);
+                    }
+                }
+            }
+            this.tex.needsUpdate = true;
+        }
+    });
+}
+
+function createNeonSign(x, y, z) {
+    const sc = document.createElement('canvas'); sc.width = 128; sc.height = 64;
+    const ctx = sc.getContext('2d');
+    const tex = new THREE.CanvasTexture(sc);
+    tex.magFilter = THREE.NearestFilter;
+    const mat = new THREE.MeshBasicMaterial({
+        map: tex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    const plane = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.6), mat);
+    plane.position.set(x, y, z);
+    scene.add(plane);
+    
+    effects.canvasDecals.push({
+        tex: tex, ctx: ctx, lastUpdate: 0, fps: 4, frame: 0,
+        update: function(time) {
+            if (time - this.lastUpdate < (1 / this.fps)) return;
+            this.lastUpdate = time;
+            this.frame = (this.frame + 1) % 4;
+            this.ctx.clearRect(0, 0, 128, 64);
+            this.ctx.font = 'bold 36px monospace';
+            this.ctx.fillStyle = '#ff00ff';
+            if (this.frame === 0)      { this.ctx.fillText('CLUB', 20, 40); }
+            else if (this.frame === 1) { this.ctx.fillText('CL B', 20, 40); }
+            else if (this.frame === 2) { this.ctx.fillStyle = '#ffffff'; this.ctx.fillText('CLUB', 20, 40); }
+            else if (this.frame === 3) { this.ctx.fillText(' L B', 20, 40); }
+            this.tex.needsUpdate = true;
+        }
+    });
+}
+
+// === POST PROCESSING (BLOOM) ===
+const renderScene = new RenderPass(scene, camera);
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 1.5, 0.4, 0.85);
+bloomPass.threshold = 0.1;
+bloomPass.strength = 1.2;
+bloomPass.radius = 0.5;
+
+const composer = new EffectComposer(renderer);
+composer.addPass(renderScene);
+composer.addPass(bloomPass);
+
+gfx.startLoop(
+    (dt) => {
+        const time = gfx.clock.getElapsedTime();
+        
+        effects.holograms.forEach(h => {
+            h.tex.offset.x -= 0.01;
+            h.mesh.material.opacity = 0.5 + Math.sin(time * 8) * 0.3;
+        });
+        effects.blinkers.forEach(b => {
+            b.visible = Math.sin(time * 6) > 0;
+        });
+        effects.canvasDecals.forEach(d => d.update(time));
+        spriteAnimators.forEach(a => a.update(16.6)); // approx 60fps delta in ms
+
+        // MOVE THE ACTOR BEHIND BUILDINGS
+        if (actorGroup) {
+            // Walk in a massive circle passing strictly behind the skyscrapers
+            const radiusX = 16;
+            const radiusZ = 6;
+            actorGroup.position.x = Math.sin(time * 0.8) * radiusX;
+            actorGroup.position.z = Math.cos(time * 0.8) * radiusZ - 4; // Shifted backwards
+        }
+    },
+    () => {
+        composer.render();
+    }
+);
+
+window.addEventListener('resize', () => {
+    composer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+{
+    "source_file": "Fox-10u8FYPC5Br.glb",
+    "deduced_size_meters": 2.5,
+    "target_tier": "Tier 0: Base Humanoid",
+    "target_scale_constraint": 1.7999999999999998,
+    "voxel_grid": [
+        3,
+        6,
+        2
+    ],
+    "archetype": "ungulate",
+    "morphology": {
+        "size_m": 2.5,
+        "domain": "organic",
+        "cladistics": "ungulate",
+        "mobility": "digitigrade",
+        "mechanical_joints": 0
+    },
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0,
+    "ai_armature": [
+        {
+            "name": "Core Anchor X",
+            "parent": null,
+            "pos": [
+                5.8536174515795285e-05,
+                4.000698052947595,
+                0.09841765866070351
+            ]
+        },
+        {
+            "name": "Base Mount",
+            "parent": null,
+            "pos": [
+                5.8536174515795285e-05,
+                2.27337078959234,
+                0.09841765866070351
+            ]
+        }
+    ],
+    "mesh_scale_multiplier": 0.279693152630441,
+    "kinematics": {
+        "base_gait": "static",
+        "cycle_frequency_hz": 0.0,
+        "step_amplitude": 0.0,
+        "vertical_bounce": 0.0,
+        "spine_flexion": 0.0,
+        "idle_sway_hz": 0.0,
+        "locomotion_states": [
+            "idle"
+        ]
+    }
+}

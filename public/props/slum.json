@@ -1,0 +1,80 @@
+{
+    "mattress_dirty": [
+        {"shape": "box", "size": [1.2, 0.15, 2.0], "pos": [0, 0.075, 0], "radius": 0.075, "type": "base"}
+    ],
+    "fire_barrel": [
+        {"shape": "cylinder", "size": [0.4, 0.4, 1.0, 8], "pos": [0, 0.5, 0], "type": "container", "name": "Barril Caliente"},
+        {"shape": "box", "size": [0.2, 0.4, 0.2], "pos": [0, 1.1, 0], "type": "red_neo"}
+    ],
+    "pallet_stack": [
+        {"shape": "box", "size": [1.2, 0.1, 1.2], "pos": [0, 0.05, 0], "type": "dark"},
+        {"shape": "box", "size": [1.2, 0.1, 1.2], "pos": [0, 0.25, 0], "type": "dark"},
+        {"shape": "box", "size": [1.2, 0.1, 1.2], "pos": [0, 0.45, 0], "type": "dark"}
+    ],
+    "toilet_dirty": [
+        {"shape": "box", "size": [0.5, 0.4, 0.6], "pos": [0, 0.2, 0.2], "type": "base"},
+        {"shape": "box", "size": [0.6, 0.7, 0.3], "pos": [0, 0.5, -0.25], "type": "container", "name": "Cisterna"}
+    ],
+    "junk_pile": [
+        {"shape": "box", "size": [1.5, 1.0, 0.01], "pos": [0, 0.5, 0], "rot": [0, 0.7854, 0], "type": "sprite"},
+        {"shape": "box", "size": [1.5, 1.0, 0.01], "pos": [0, 0.5, 0], "rot": [0, -0.7854, 0], "type": "sprite"}
+    ],
+    "couch_broken": [
+        {"shape": "box", "size": [0.9, 0.2, 0.7], "pos": [-0.5, 0.2, 0.1], "rot": [0, 0.2, -0.1], "radius": 0.1, "type": "dark"},
+        {"shape": "box", "size": [0.9, 0.2, 0.7], "pos": [0.5, 0.15, 0.1], "rot": [0, -0.2, 0.15], "radius": 0.1, "type": "dark"},
+        {"shape": "box", "size": [2.0, 0.6, 0.15], "pos": [0, 0.5, -0.35], "rot": [0.1, 0, 0], "radius": 0.04, "type": "base"}
+    ],
+    "cardboard_box_pile": [
+        {"shape": "box", "size": [0.7, 0.7, 0.7], "pos": [0, 0.35, 0], "radius": 0.01, "type": "container", "name": "Caja Grande"},
+        {"shape": "box", "size": [0.5, 0.5, 0.5], "pos": [0.4, 0.25, 0.5], "rot": [0, 0.3, 0], "radius": 0.01, "type": "container", "name": "Caja Mediana"},
+        {"shape": "box", "size": [0.3, 0.3, 0.3], "pos": [-0.3, 0.85, 0.1], "rot": [0, -0.5, 0.1], "radius": 0.01, "type": "container", "name": "Caja Pequeña"}
+    ],
+    "tire_stack": [
+        {"shape": "cylinder", "size": [0.45, 0.45, 0.2, 12], "pos": [0, 0.1, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.25, 0.25, 0.22, 12], "pos": [0, 0.11, 0], "type": "base"},
+        {"shape": "cylinder", "size": [0.45, 0.45, 0.2, 12], "pos": [0.1, 0.3, 0], "rot": [0.1, 0, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.25, 0.25, 0.22, 12], "pos": [0.1, 0.31, 0], "rot": [0.1, 0, 0], "type": "base"},
+        {"shape": "cylinder", "size": [0.45, 0.45, 0.2, 12], "pos": [-0.05, 0.5, 0.05], "rot": [-0.05, 0.15, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.25, 0.25, 0.22, 12], "pos": [-0.05, 0.51, 0.05], "rot": [-0.05, 0.15, 0], "type": "base"}
+    ],
+    "hacker_bench": [
+        {"shape": "box", "size": [0.8, 0.5, 0.6], "pos": [-0.5, 0.25, 0], "type": "dark"},
+        {"shape": "box", "size": [0.6, 0.7, 0.5], "pos": [0.5, 0.35, 0], "rot": [0, 0, 0.02], "type": "dark"},
+        {"shape": "box", "size": [1.6, 0.08, 0.7], "pos": [0, 0.72, 0], "type": "base"},
+        {"shape": "box", "size": [0.7, 0.5, 0.05], "pos": [0.2, 1.1, -0.3], "rot": [-0.15, 0.1, 0], "type": "l3_screen", "name": "BBS Terminal"}
+    ],
+    "tv_stack": [
+        {"shape": "box", "size": [1.0, 0.8, 0.8], "pos": [0, 0.4, 0], "type": "dark"},
+        {"shape": "box", "size": [0.8, 0.6, 0.6], "pos": [0.1, 1.1, 0], "rot": [0, 0.15, 0], "type": "dark"},
+        {"shape": "box", "size": [0.7, 0.5, 0.1], "pos": [0.1, 1.1, 0.35], "type": "l3_screen", "name": "Tele Muerta"}
+    ],
+    "shopping_cart_abandoned": [
+        {"shape": "wedge", "size": [0.8, 0.6, 0.5], "pos": [0, 0.65, 0], "rot": [0.2, 0.1, -0.1], "type": "container", "name": "Carro Abandonado"},
+        {"shape": "cylinder", "size": [0.03, 0.03, 0.7, 6], "pos": [0, 1.0, 0.35], "rot": [0, 0, 1.5708], "type": "dark"},
+        {"shape": "cylinder", "size": [0.03, 0.03, 0.65], "pos": [0.2, 0.65, 0.35], "rot": [0.2, 0.1, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.03, 0.03, 0.65], "pos": [-0.5, 0.65, 0.35], "rot": [0, 0.1, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.06, 0.06, 0.05, 8], "pos": [-0.32, 0.06, 0.25], "rot": [0.3, 0, 1.5708], "type": "dark"},
+        {"shape": "cylinder", "size": [0.06, 0.06, 0.05, 8], "pos": [0.32, 0.06, 0.25], "rot": [0, 0, 1.5708], "type": "dark"}
+    ],
+    "dumpster_overflowing": [
+        {"shape": "wedge", "size": [2.2, 1.8, 1.2], "pos": [0, 0.6, 0], "type": "container", "name": "Contenedor de Basura"}
+    ],
+    "tarp_shelter": [
+        {"shape": "box", "size": [2.5, 0.05, 2.5], "pos": [0, 1.1, 0], "rot": [0.2, -0.1, 0.15], "type": "base"},
+        {"shape": "cylinder", "size": [0.03, 0.03, 1.8], "pos": [-0.9, 0.9, -0.9], "type": "dark"},
+        {"shape": "cylinder", "size": [0.03, 0.03, 1.5], "pos": [0.9, 0.75, 0.9], "type": "dark"},
+        {"shape": "cylinder", "size": [0.03, 0.03, 1.0], "pos": [-0.9, 0.5, 0.9], "type": "dark"}
+    ],
+    "wire_spool_table": [
+        {"shape": "cylinder", "size": [0.8, 0.8, 0.1, 12], "pos": [0, 0.6, 0], "type": "base"},
+        {"shape": "cylinder", "size": [0.3, 0.3, 0.55, 8], "pos": [0, 0.3, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.8, 0.8, 0.1, 12], "pos": [0, 0.05, 0], "type": "base"}
+    ],
+    "makeshift_stove": [
+        {"shape": "wedge", "size": [0.8, 0.9, 0.6], "pos": [0, 0.3, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.3, 0.3, 0.05, 8], "pos": [-0.15, 0.65, 0], "type": "red_neo"}
+    ],
+    "oil_drum_cut": [
+        {"shape": "wedge", "size": [0.5, 0.7, 1.0], "pos": [0, 0.5, 0], "type": "container", "name": "Bidón Cortado"}
+    ]
+}

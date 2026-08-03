@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ALISA — Raccoon Scape: Stage 6 — Planet</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000008; font-family: monospace; color: #fff; user-select: none; }
+        #hud {
+            display: none; position: absolute; top: 10px; left: 10px;
+            font-family: monospace; background: rgba(5,10,15,0.85);
+            padding: 14px 18px; border-radius: 10px; border: 1px solid #22cc88;
+            pointer-events: auto; font-size: 13px; line-height: 1.8; z-index: 10;
+            box-shadow: 0 0 20px rgba(34,204,136,0.2);
+        }
+        #hud .title { color: #44eebb; font-size: 15px; font-weight: bold; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+        #hud .stat { color: #88ddbb; }
+        #hud .v-green { color: #88ff88; font-weight: bold; }
+        #hud .v-cyan { color: #88ccff; font-weight: bold; }
+        #hud .v-gold { color: #ffcc44; font-weight: bold; }
+        #hud .v-alert { color: #ff3b30; font-weight: bold; }
+        .fuel-container { width: 100%; height: 6px; background: #112; border-radius: 3px; margin-top: 5px; overflow: hidden; border: 1px solid #1a3c2c; margin-bottom: 5px; }
+        .fuel-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #ff3b30, #ff9500, #34c759); transition: width 0.1s linear; }
+        #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.92); display: flex; align-items: center; justify-content: center; z-index: 100; }
+        #modal .box { background: rgba(5,15,10,0.95); border: 2px solid #22cc88; padding: 40px; border-radius: 12px; max-width: 600px; width: 90%; box-shadow: 0 0 40px rgba(34,204,136,0.15); }
+        #modal h1 { color: #44eebb; margin-bottom: 10px; font-size: 28px; letter-spacing: 2px; text-align: center; }
+        #modal h1 .emoji { font-size: 48px; display: block; margin-bottom: 10px; }
+        #modal p { color: #8aa; margin-bottom: 20px; line-height: 1.6; font-size: 13px; text-align: center; }
+        #btnStart { display: block; margin: 20px auto 0; background: linear-gradient(135deg, #22cc88, #44eebb); color: #000; border: none; padding: 12px 40px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: transform 0.2s; font-family: inherit; width: 100%; }
+        #btnStart:hover { transform: scale(1.03); }
+        .modal-config { margin-top: 18px; display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+        .modal-config label { font-size: 11px; color: #8aa; font-weight: 600; display: block; }
+        .modal-config select, .modal-config input { background: #0a0f18; color: #44eebb; border: 1px solid #333; padding: 6px 10px; border-radius: 4px; font-family: inherit; font-size: 13px; width: 80px; }
+        #messages { position: fixed; bottom: 45%; left: 50%; transform: translateX(-50%); font-size: 22px; font-weight: bold; text-shadow: 0 0 20px rgba(0,0,0,0.8); z-index: 30; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        #hintBox { position: fixed; bottom: 20px; left: 20px; background: rgba(5,10,15,0.8); border: 1px solid #444; border-radius: 8px; padding: 10px 14px; font-size: 11px; color: #8aa; z-index: 20; display: none; max-width: 250px; line-height: 1.5; }
+        .mode-badge { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        .badge-world { background: #002211; color: #22cc88; border: 1px solid #22cc88; }
+        #mode-badges { position: fixed; top: 10px; right: 10px; z-index: 20; display: none; }
+    </style>
+    <script type="importmap">
+    { 
+        "imports": { 
+            "three": "/vendor/three-0.160.0/build/three.module.js",
+            "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+            "@alisa-engine/": "../js/alisa-engine/" 
+        } 
+    }
+    </script>
+</head>
+<body>
+
+<div id="modal">
+    <div class="box">
+        <h1 id="mTitle"><span class="emoji">🦝🌍</span>RACCOON SCAPE — PLANET</h1>
+        <p>The raccoon fled to one of the settlements on this planet.<br><br>
+        <b>Rotate the globe</b> and click on cities to scan them. 
+        Your orbital scanner shows thermal signatures: 🟢 HOT → 🔴 COLD.<br><br>
+        Powered by ALISA <b>RaccoonPlanetSystem</b> y <b>RaccoonEnvironmentFactory</b> ECS.</p>
+        <div class="modal-config">
+            <div><label>SETTLEMENTS</label><input type="number" id="mCities" value="8" min="3" max="20"></div>
+            <div><label>SEED</label><input type="number" id="mSeed" value="42" min="1"></div>
+        </div>
+        <button id="btnStart" onclick="initGame()">START: 🌍 PLANETARY SCAN</button>
+    </div>
+</div>
+
+<div id="hud">
+    <div class="title">🦝 PLANET — STAGE 6</div>
+    <span class="stat">SCANNED:</span> <span id="hScanned" class="v-cyan">0/8</span><br>
+    <span class="stat">SAT POWER:</span> <span id="hFuel" class="v-green">100</span>%
+    <div class="fuel-container"><div class="fuel-fill" id="vFuelBar"></div></div>
+    <span class="stat">SETTLEMENT:</span> <span id="hCity" class="v-cyan">—</span><br>
+    <span class="stat">STATUS:</span> <span id="hStatus" class="v-cyan">ORBITING</span><br>
+    <span class="stat">SCORE:</span> <span id="hScore" class="v-gold">0</span>
+</div>
+
+<div id="messages"></div>
+<div id="mode-badges"><span class="mode-badge badge-world">🌍 ECS Powered</span></div>
+<div id="hintBox">🌍 <b>Drag</b> to rotate planet · <b>Scroll</b> to zoom · <b>Click city</b> to scan</div>
+
+<script type="module">
+import * as THREE from 'three';
+window.THREE = Object.assign({}, THREE);
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+window.THREE.OrbitControls = OrbitControls;
+</script>
+<script type="module">
+import { RaccoonEnvironmentFactory } from '@alisa-engine/src/world/factories/RaccoonEnvironmentFactory.js';
+import { RaccoonPlanetSystem } from '@alisa-engine/src/world/systems/RaccoonPlanetSystem.js';
+
+import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+
+const gfx = new AlisaRenderCore({
+    clearColor: 0x000008,
+    cameraPosition: new THREE.Vector3(0, 20, 55)
+});
+const scene = gfx.scene;
+const camera = gfx.camera;
+const renderer = gfx.renderer;
+const controls = gfx.controls;
+controls.enablePan = false;
+controls.minDistance = 25;
+controls.maxDistance = 80;
+
+scene.add(new THREE.AmbientLight(0x223344, 0.3));
+const sunLight = new THREE.DirectionalLight(0xffeedd, 1.2);
+sunLight.position.set(50, 30, 40);
+scene.add(sunLight);
+
+// ECS Setup
+const factory = new RaccoonEnvironmentFactory();
+const system = new RaccoonPlanetSystem({ radius: 15 });
+
+let settlements = [];
+let targetSettlementIdx = -1;
+let totalCities = 8;
+let scannedCount = 0;
+let gameState = { ended: false, score: 0 };
+let planetRig = null;
+
+// Replace old window functions
+window.initGame = function() {
+    let seed = parseInt(document.getElementById('mSeed').value) || 42;
+    factory.seedRandom(seed);
+    totalCities = parseInt(document.getElementById('mCities').value) || 8;
+    
+    // Clear old
+    while(scene.children.length > 0) scene.remove(scene.children[0]);
+    scene.add(new THREE.AmbientLight(0x223344, 0.3));
+    scene.add(sunLight);
+    factory.createDecoration(scene, 400); // reuse stars
+
+    // Generate
+    planetRig = factory.generatePlanet(scene, 15, totalCities);
+    settlements = planetRig.settlements;
+    targetSettlementIdx = planetRig.targetSettlementIdx;
+    
+    const sat = factory.createSatellite(scene, 15);
+    
+    system.init(sat, planetRig.planetGroup);
+    system.onPowerDrain = () => {
+        gameState.ended = true;
+        const msg = document.getElementById('messages');
+        msg.style.opacity = '1';
+        msg.innerHTML = "<span style='color:#ff3b30'>⚡ SATELLITE POWER DEPLETED!</span>";
+        setTimeout(() => location.reload(), 3000);
+    };
+
+    gameState = { ended: false, score: 0 };
+    scannedCount = 0;
+    
+    document.getElementById('modal').style.display = 'none';
+    document.getElementById('hud').style.display = 'block';
+    document.getElementById('mode-badges').style.display = 'flex';
+    document.getElementById('hintBox').style.display = 'block';
+};
+
+function getCityTemperature(cityIdx) {
+    if (cityIdx === targetSettlementIdx) return { level: 'FOUND', color: 0x34c759, cssColor: '#34c759', label: '🎯 FOUND', dist: 0 };
+    const p1 = settlements[cityIdx].pos;
+    const p2 = settlements[targetSettlementIdx].pos;
+    const angle = p1.angleTo(p2); 
+    const maxAngle = Math.PI;
+    const normDist = angle / maxAngle;
+    
+    if (normDist < 0.15) return { level: 'HOT', color: 0x34c759, cssColor: '#34c759', label: '🟢 HOT', dist: angle };
+    if (normDist < 0.3) return { level: 'WARM', color: 0xaacc00, cssColor: '#aacc00', label: '🟡 WARM', dist: angle };
+    if (normDist < 0.5) return { level: 'COOL', color: 0xffcc00, cssColor: '#ffcc00', label: '🟠 COOL', dist: angle };
+    if (normDist < 0.7) return { level: 'CHILLY', color: 0xff8800, cssColor: '#ff8800', label: '🟠 CHILLY', dist: angle };
+    return { level: 'COLD', color: 0xff2200, cssColor: '#ff2200', label: '🔴 COLD', dist: angle };
+}
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+window.addEventListener('pointerdown', (e) => {
+    if (!system.playing || gameState.ended) return;
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    
+    const hitObjects = settlements.map(s => s.hit);
+    const intersects = raycaster.intersectObjects(hitObjects, false);
+    
+    if (intersects.length > 0) {
+        scanCity(intersects[0].object.userData.cityIndex);
+    }
+});
+
+function scanCity(idx) {
+    if (gameState.ended || settlements[idx].scanned) return;
+    settlements[idx].scanned = true;
+    scannedCount++;
+    
+    const temp = getCityTemperature(idx);
+    const s = settlements[idx];
+    const msg = document.getElementById('messages');
+    msg.style.opacity = '1';
+    
+    // Visual feedback
+    s.ring.material.color.setHex(temp.color);
+    s.ring.material.opacity = 0.9;
+    s.label.material.color.setHex(temp.color);
+    s.group.children.forEach(c => {
+        if (c.isMesh && c.material && c !== s.ring && c !== s.label && c !== s.hit) {
+            c.material = c.material.clone();
+            c.material.emissive = new THREE.Color(temp.color);
+            c.material.emissiveIntensity = 0.5;
+        }
+    });
+    
+    if (idx === targetSettlementIdx) {
+        gameState.score += Math.floor(system.fuel) + (totalCities - scannedCount) * 15;
+        msg.innerHTML = "<span style='color:#34c759'>🎯🦝 RACCOON FOUND ON THIS SETTLEMENT!</span>";
+        system.playing = false;
+        gameState.ended = true;
+        
+        const tgt = s.pos.clone().normalize().multiplyScalar(15 + 10);
+        const zoomLoop = setInterval(() => {
+            camera.position.lerp(tgt, 0.03);
+            controls.target.lerp(s.pos, 0.03);
+            if (camera.position.distanceTo(tgt) < 1) {
+                clearInterval(zoomLoop);
+                msg.innerHTML = `<span style='color:#34c759'>🏆 STAGE 6 CLEAR! SCORE: ${gameState.score}</span>`;
+                setTimeout(() => location.reload(), 4000);
+            }
+        }, 16);
+    } else {
+        system.fuel -= 8;
+        msg.innerHTML = `${temp.label} <span style='color:${temp.cssColor}'>(${(temp.dist * 180 / Math.PI).toFixed(0)}° away)</span>`;
+    }
+    
+    setTimeout(() => { msg.style.opacity = '0'; }, 1500);
+    updateHUD();
+}
+
+function updateHUD() {
+    document.getElementById('hScanned').textContent = `${scannedCount}/${totalCities}`;
+    document.getElementById('hFuel').textContent = Math.floor(system.fuel);
+    document.getElementById('vFuelBar').style.width = system.fuel + '%';
+    document.getElementById('hScore').textContent = gameState.score;
+    const p = system.fuel;
+    if (p < 20) document.getElementById('vFuelBar').style.background = '#ff3b30';
+    else if (p < 50) document.getElementById('vFuelBar').style.background = '#ff9500';
+    else document.getElementById('vFuelBar').style.background = 'linear-gradient(90deg, #ff3b30, #ff9500, #34c759)';
+}
+
+gfx.startLoop((dt) => {
+    const time = gfx.clock.getElapsedTime() * 1000; // time in ms
+    
+    if (system.playing) {
+        system.update(dt, time);
+        updateHUD();
+    }
+    
+    settlements.forEach(s => {
+        if (!s.scanned) {
+            s.label.material.opacity = 0.5 + Math.sin(time * 0.003 + s.index) * 0.2;
+        }
+    });
+});
+</script>
+</body>
+</html>

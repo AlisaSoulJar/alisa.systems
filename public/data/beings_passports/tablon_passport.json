@@ -1,0 +1,21 @@
+{
+    "name": "Tablon",
+    "role": "The Bulletin Board",
+    "emoji": "📋",
+    "type": "machine",
+    "skeleton": "flat",
+    "model_path": "tablon.glb",
+    "scale": 1.0,
+    "kinematics": "flat",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "espeak",
+        "tier": 2,
+        "voice_id": "es",
+        "rate": "-5%",
+        "pitch": "-2Hz",
+        "label": "Tablon - eSpeak (tablón, lento, informativo)",
+        "speed": 140
+    }
+}

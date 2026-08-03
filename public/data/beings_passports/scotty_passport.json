@@ -1,0 +1,21 @@
+{
+    "name": "Scotty",
+    "role": "The Engineer",
+    "emoji": "🔧",
+    "type": "biological",
+    "skeleton": "humanoid",
+    "model_path": "scotty.glb",
+    "scale": 1.0,
+    "kinematics": "bipedal",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "espeak",
+        "tier": 2,
+        "voice_id": "en-sc",
+        "rate": "-5%",
+        "pitch": "-2Hz",
+        "label": "Scotty - eSpeak scottish (ingeniero, urgente)",
+        "speed": 160
+    }
+}

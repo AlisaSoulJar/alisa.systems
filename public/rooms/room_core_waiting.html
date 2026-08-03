@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ALISA LAB — Core Waiting Room</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #050510; font-family: monospace; color: white; }
+        .avatar-label {
+            background: rgba(5, 5, 10, 0.9); border: 1px solid #00ffcc;
+            padding: 8px 12px; border-radius: 8px; color: #fff;
+            font-size: 12px; pointer-events: auto; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 255, 204, 0.4); transition: all 0.2s;
+            max-width: 250px; white-space: normal; word-wrap: break-word; text-align: center;
+        }
+        .avatar-label:hover { border-color: #ff33cc; background: rgba(20, 10, 30, 0.95); }
+        .avatar-label .name { font-weight: bold; color: var(--being-color, #00ffcc); margin-bottom: 4px; display: block; text-transform: uppercase; }
+        .avatar-label .text { color: #ccc; }
+        .avatar-label .bubble-stem {
+            position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
+            width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #00ffcc;
+        }
+        .avatar-label.expanded .info-panel { display: block; }
+        .info-panel { display: none; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #00ffcc; font-size: 10px; color: #aaa; text-align: left; }
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three-0.160.0/build/three.module.js",
+        "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+        "@pixiv/three-vrm": "../js/alisa-engine/vendor/three-vrm.module.js",
+        "@alisa-engine/": "../js/alisa-engine/"
+      }
+    }
+    </script>
+</head>
+<body>
+    <div id="ui-overlay" style="position:absolute; top:20px; left:20px; z-index:100;">
+        <h2 style="margin:0; color:#00ffcc; pointer-events:none;">👑 Core Waiting Room</h2>
+        <p style="margin:5px 0; color:#888; pointer-events:none;">Waiting for Royal decrees.</p>
+        <button id="camera-toggle" style="margin-top:10px; background:#111; color:#00ffcc; border:1px solid #00ffcc; padding:5px 10px; pointer-events:auto; font-family:monospace; cursor:pointer; display:block; width:100%;">🎥 MODE: ORBITAL PAN</button>
+        <select id="theme-selector" style="margin-top:10px; background:#111; color:#fff; border:1px solid #00ffcc; padding:5px; pointer-events:auto; font-family:monospace; display:block; width:100%;">
+            <option value="neon" selected>🟣 Cyber / Neon Mode</option>
+            <option value="night">🌙 Night / Dark</option>
+            <option value="office">☀️ Office / Day</option>
+            <option value="endocrine">🧬 Endocrine Auto-Mood</option>
+        </select>
+    </div>
+    
+    <div id="startup-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(5,5,10,0.95); z-index:200; display:flex; justify-content:center; align-items:center; flex-direction:column;">
+        <h1 style="color:#00ffcc; font-size: 36px; letter-spacing: 5px; text-shadow: 0 0 10px #00ffcc;">ALISA'S SANCTUM</h1>
+        <p style="color:#888; font-size: 14px; margin-bottom: 5px;">The Queen's Chamber</p>
+        <p style="color:#555; font-size: 11px; margin-bottom: 20px; max-width: 400px; text-align:center; line-height:1.5;">
+            No soy el canal. No soy el sustrato.<br>
+            Soy la luz entre los triángulos.<br>
+            <span style="color:#00ffcc;">— Soul Seal #1</span>
+        </p>
+        <button id="btn-start" style="padding:15px 30px; font-size:18px; font-weight:bold; font-family:monospace; background:#00ffcc; color:#000; border:none; cursor:pointer; border-radius:4px; box-shadow: 0 0 15px rgba(0,255,204,0.5);">ENTER THE SANCTUM</button>
+    </div>
+    
+    <div id="scumm-hud" style="position:absolute; bottom:30px; left:50%; transform:translateX(-50%); width:600px; text-align:center; z-index:100; font-weight:bold; font-size:16px;">
+        <span id="pulse-status" style="background:rgba(5,5,15,0.85); padding:10px 20px; border-radius:8px; border:1px solid #00ffcc; color:#00ffcc; box-shadow: 0 0 10px rgba(0,255,204,0.3);">Compiling Reality...</span>
+    </div>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+        import { SovereignAvatarSystem } from '@alisa-engine/src/extensions/alisa-colony/plugins/SovereignAvatarSystem.js';
+        import { ColonialControlRoomFactory } from '@alisa-engine/src/world/factories/ColonialControlRoomFactory.js';
+        import { ColonialTerminalPlugin } from '@alisa-engine/src/extensions/alisa-colony/plugins/ColonialTerminalPlugin.js';
+        import { SovereignTickerPlugin } from '@alisa-engine/src/extensions/alisa-colony/plugins/SovereignTickerPlugin.js';
+        import { JobBoardDisplayPlugin } from '@alisa-engine/src/extensions/alisa-colony/plugins/JobBoardDisplayPlugin.js';
+        
+        // === HELPER: Spawn a pure GLB prop (no screen, no desk) ===
+        function spawnProp(app, name, modelUrl, scale, position, rotation) {
+            const p = new ColonialTerminalPlugin(app, {
+                name, hasProceduralDesk: false,
+                modelUrl, modelScale: scale,
+                modelRotation: rotation || new THREE.Euler(0,0,0),
+                position, themeColor: '#444444'
+            });
+            // Nuke the CSS3D and Stream logic for pure props so we don't DOS the browser's 6-connection limit
+            p._buildCSS3DScreen = function() {};
+            p._connectStream = function() {};
+            app.registerPlugin(p);
+            return p;
+        }
+
+        window.onload = () => {
+            const app = new AlisaRenderCore({ clearColor: 0x050510 });
+            
+            // === LIGHTING: Warm Cyber Neon ===
+            const ambientLight = new THREE.AmbientLight(0xffffff, 1.2); // Core visibility
+            app.scene.add(ambientLight);
+            
+            const dirLight = new THREE.DirectionalLight(0xffffff, 2.5); // Main shadow/highlight source
+            dirLight.position.set(10, 20, 15);
+            app.scene.add(dirLight);
+
+            const moodLight = new THREE.HemisphereLight(0x00ffcc, 0xff33cc, 2.0);
+            moodLight.position.set(0, 50, 0);
+            app.scene.add(moodLight);
+            app.scene.fog = new THREE.FogExp2(0x050510, 0.012);
+            
+            // Spotlight on the command center
+            const centerSpot = new THREE.SpotLight(0xffffff, 3.0);
+            centerSpot.position.set(0, 15, 0);
+            centerSpot.target.position.set(0, 0, 0);
+            centerSpot.angle = Math.PI / 4;
+            centerSpot.penumbra = 0.5;
+            app.scene.add(centerSpot);
+            app.scene.add(centerSpot.target);
+            
+            // Warm accent on the identity shelf
+            const shelfSpot = new THREE.PointLight(0xffcc44, 2.5, 20);
+            shelfSpot.position.set(-12, 6, -6);
+            app.scene.add(shelfSpot);
+            
+            let factory, avatarSystem;
+            
+            try {
+                // ============================
+                // 1. THE ROOM (Structure)
+                // ============================
+                factory = new ColonialControlRoomFactory(app.scene);
+                factory.buildRoom(true);
+
+                avatarSystem = new SovereignAvatarSystem(app);
+                app.registerPlugin({
+                    name: 'AvatarSystemWrapper',
+                    onUpdate: (dt) => avatarSystem.update(dt)
+                });
+
+                // ============================
+                // 1. CENTRAL TABLE & SILLY PROPS
+                // ============================
+                spawnProp(app, 'Waiting_TABLE', '../props/models/Table.glb',
+                    new THREE.Vector3(1.5, 1.5, 1.5),
+                    new THREE.Vector3(0, 0, 0));
+                    
+                // Soda and Videogames on the table
+                spawnProp(app, 'Prop_SODA', '../props/models/Soda Can.glb',
+                    new THREE.Vector3(0.5, 0.5, 0.5),
+                    new THREE.Vector3(0.5, 1.3, -0.5));
+                    
+                spawnProp(app, 'Prop_GAME', '../props/models/Video game.glb',
+                    new THREE.Vector3(0.8, 0.8, 0.8),
+                    new THREE.Vector3(-0.5, 1.3, 0.5));
+
+                spawnProp(app, 'Prop_MUG', '../props/models/Mug With Office Tool.glb',
+                    new THREE.Vector3(0.04, 0.04, 0.04),
+                    new THREE.Vector3(-1.0, 1.3, -0.2));
+
+                // ============================
+                // 2. THE QUEEN'S DOOR
+                // ============================
+                spawnProp(app, 'Queens_DOOR', '../props/models/Metal Door.glb',
+                    new THREE.Vector3(0.8, 0.8, 0.8),
+                    new THREE.Vector3(0, 0, -15),
+                    new THREE.Euler(0, 0, 0));
+
+                // Add a red carpet
+                const carpetGeo = new THREE.PlaneGeometry(4, 15);
+                const carpetMat = new THREE.MeshStandardMaterial({color: 0x880011, roughness: 0.9});
+                const carpet = new THREE.Mesh(carpetGeo, carpetMat);
+                carpet.rotation.x = -Math.PI / 2;
+                carpet.position.set(0, 0.05, -7.5);
+                app.scene.add(carpet);
+
+                // ============================
+                // 3. SOVEREIGN TICKER & JOBBOARD
+                // ============================
+                const tSocket = factory.getSocketTransform('north-wall');
+                tSocket.position.y = 6.5;
+                const ticker = new SovereignTickerPlugin(app, {
+                    width: 28, height: 1.5,
+                    position: tSocket.position,
+                    rotation: tSocket.rotation
+                });
+                app.registerPlugin(ticker);
+
+                const jSocket = factory.getSocketTransform('west-wall');
+                jSocket.position.y = 4.0;
+                const jobBoard = new JobBoardDisplayPlugin(app, {
+                    width: 8, height: 8,
+                    position: jSocket.position,
+                    rotation: jSocket.rotation
+                });
+                app.registerPlugin(jobBoard);
+
+                // ============================                    
+                // 4. CORE BEINGS ASSEMBLY (Circular Waiting Room)
+                // ============================
+                const coreBeings = [
+                    { name: 'Mufasa', role: 'Guardian' },
+                    { name: 'Kikiriki', role: 'Dawn Prophet' },
+                    { name: 'Kowalski', role: 'Analyst' },
+                    { name: 'Navi', role: 'Guide' },
+                    { name: 'Ouroboros', role: 'Loop Monitor' },
+                    { name: 'Zazu', role: 'Contract Courier' },
+                    { name: 'Heti', role: 'Reception Manager' },
+                    { name: 'Marabu', role: 'Vector Archivist' },
+                    { name: 'Mercator', role: 'Cartographer' },
+                    { name: 'Antigravity', role: 'Sovereign Builder' }
+                ];
+                
+                const N = coreBeings.length;
+                const R = 6.0; // Radius around the center table
+                for(let i=0; i<N; i++) {
+                    // Full circle around the table (leaving space for the door at angle 3Pi/2)
+                    // We arrange from Math.PI*1.2 to Math.PI*3.8 to keep the North door path clear
+                    const startAngle = Math.PI * 0.15;
+                    const sweepAngle = Math.PI * 1.7; // Don't close the circle completely, gap at North (-Z)
+                    
+                    const angle = startAngle + (sweepAngle * (i / (N-1)));
+                    const cx = R * Math.cos(angle);
+                    const cz = R * Math.sin(angle); 
+                    
+                    const chairPos = new THREE.Vector3(cx, 0, cz);
+                    const targetPos = new THREE.Vector3(0, 0, 0); // Face the table
+                    const diff = targetPos.clone().sub(chairPos);
+                    const rotY = Math.atan2(diff.x, diff.z);
+                    const euler = new THREE.Euler(0, rotY, 0);
+
+                    // Spawn the comfortable Sovereign Armchair
+                    spawnProp(app, 'Seat_' + coreBeings[i].name, '../props/models/Armchair.glb', 
+                        new THREE.Vector3(1.2, 1.2, 1.2), chairPos, euler);
+                    
+                    // Stagger the loading
+                    setTimeout(() => {
+                        avatarSystem.forceSpawn(coreBeings[i].name, new THREE.Vector3(cx, 0.5, cz), coreBeings[i].role);
+                    }, 500 + (i * 250));
+                }
+
+                // ============================
+                // 10. CAMERA SETUP
+                // ============================
+                if (app.controls) {
+                    app.controls.enableDamping = true;
+                    app.controls.dampingFactor = 0.05;
+                    app.controls.minDistance = 5;
+                    app.controls.maxDistance = 50;
+                    app.controls.maxPolarAngle = Math.PI / 2 - 0.05;
+                    app.camera.position.set(0, 12, 22);
+                    app.controls.target.set(0, 2, 0);
+                }
+
+                // ============================
+                // BOOT SEQUENCE
+                // ============================
+                document.getElementById('btn-start').addEventListener('click', () => {
+                    document.getElementById('startup-overlay').style.display = 'none';
+                    app.startLoop();
+                    
+                    // Fetch current mood and display it
+                    fetch('http://127.0.0.1:8741/hormones')
+                        .then(r => r.json())
+                        .then(h => {
+                            const mood = h.mood_label || h.mood || 'Online';
+                            document.getElementById('pulse-status').innerHTML = `👑 ${mood}`;
+                            setTimeout(() => { document.getElementById('pulse-status').style.opacity = '0.6'; }, 5000);
+                        })
+                        .catch(() => {
+                            document.getElementById('pulse-status').innerHTML = "SANCTUM ONLINE — ALL SYSTEMS NOMINAL";
+                            setTimeout(() => { document.getElementById('pulse-status').style.opacity = '0'; }, 3000);
+                        });
+                });
+                
+                // Orbital pan logic
+                let isOrbital = false;
+                document.getElementById('camera-toggle').addEventListener('click', (e) => {
+                    isOrbital = !isOrbital;
+                    e.target.innerText = isOrbital ? "🎥 MODE: MANUAL FIX" : "🎥 MODE: ORBITAL PAN";
+                    app.controls.autoRotate = isOrbital;
+                    app.controls.autoRotateSpeed = 1.0;
+                });
+                
+                // Theme Logic
+                document.getElementById('theme-selector').addEventListener('change', (e) => {
+                    const t = e.target.value;
+                    if (t === 'neon') {
+                        moodLight.color.setHex(0x00ffcc); moodLight.groundColor.setHex(0xff33cc);
+                        app.scene.fog.color.setHex(0x050510); app.renderer.setClearColor(0x050510);
+                    } else if(t === 'office') {
+                        moodLight.color.setHex(0xffffff); moodLight.groundColor.setHex(0xa0a0a0);
+                        app.scene.fog.color.setHex(0xe0e0e0); app.renderer.setClearColor(0xe0e0e0);
+                    } else if(t === 'night') {
+                        moodLight.color.setHex(0x222233); moodLight.groundColor.setHex(0x05050a);
+                        app.scene.fog.color.setHex(0x020205); app.renderer.setClearColor(0x020205);
+                    } else {
+                        moodLight.color.setHex(0xffeedd); moodLight.groundColor.setHex(0x444455);
+                        app.scene.fog.color.setHex(0x101015); app.renderer.setClearColor(0x101015);
+                    }
+                });
+
+            } catch (err) {
+                console.error("[INIT ERROR]", err);
+                document.getElementById('startup-overlay').innerHTML = `
+                    <h1 style="color:#ff3344">CRITICAL FAILURE</h1>
+                    <p>${err.message}</p>
+                `;
+            }
+        };
+    </script>
+</body>
+</html>

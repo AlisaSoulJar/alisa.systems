@@ -1,0 +1,38 @@
+MIT License
+
+Copyright (c) 2026 Oscar Nock / ALISA Systems
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+───────────────────────────────────────────────────────────────────────────────
+NOTAS SOBRE TERCEROS
+
+Este repositorio incluye assets y dependencias con sus propias licencias:
+
+· three.js — MIT (https://github.com/mrdoob/three.js)
+· Modelos .glb bajo `public/props/` y `public/arcade/assets/` — revisar la
+  procedencia de cada uno antes de redistribuir. Los generados por nosotros
+  quedan cubiertos por esta licencia; los de terceros conservan la suya.
+
+NOMBRES DE JUEGOS
+Los juegos de este arcade usan nombres genéricos o de dominio público (ajedrez,
+go, reversi, backgammon, mancala, xiangqi, damas, brisca, tute, mus, chinchón,
+póker, blackjack…) o nombres propios nuestros (UNIT, Usura, Grimorio, Fagocito,
+Peatón, Bestiario). Las mecánicas de un juego no son registrables; los nombres
+comerciales sí, y por eso no se usa ninguno.

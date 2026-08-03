@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA — Security CMS Control</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            margin: 0; overflow: hidden; background-color: #050505;
+            font-family: 'Inter', sans-serif; cursor: crosshair; user-select: none;
+        }
+
+        /* 4-Way Crosshair Grid */
+        .grid-line-v, .grid-line-h {
+            position: absolute; background: rgba(255,255,255,0.15); z-index: 100; pointer-events: none;
+        }
+        .grid-line-v { top: 0; left: 50%; width: 2px; height: 100%; }
+        .grid-line-h { top: 50%; left: 0; width: 100%; height: 2px; }
+
+        /* Realtime UI Overlays for each camera quadrant */
+        .cctv-ui {
+            position: absolute; width: 50%; height: 50%; pointer-events: none; z-index: 10;
+            padding: 25px; display: flex; flex-direction: column; justify-content: space-between;
+        }
+        
+        #ui-cam1 { top: 0; left: 0; }
+        #ui-cam2 { top: 0; left: 50%; }
+        #ui-cam3 { top: 50%; left: 0; }
+        #ui-cam4 { top: 50%; left: 50%; }
+
+        .cctv-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+        }
+
+        .cam-badge {
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px);
+            padding: 8px 14px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2);
+            color: #fff; display: flex; flex-direction: column; gap: 4px;
+        }
+        .cam-title { font-size: 14px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: #fff; }
+        .cam-desc { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #00e5ff; }
+
+        .rec-indicator {
+            display: flex; align-items: center; gap: 8px;
+            font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: #ff3333;
+            animation: pulse-rec 2s infinite; text-shadow: 0 0 8px rgba(255,51,51,0.6);
+        }
+        .rec-dot { width: 10px; height: 10px; background: #ff3333; border-radius: 50%; box-shadow: 0 0 10px rgba(255,51,51,0.8); }
+        @keyframes pulse-rec { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+        .cctv-footer {
+            font-family: 'JetBrains Mono', monospace; font-size: 10px; color: rgba(255,255,255,0.5); text-align: right; letter-spacing: 2px;
+        }
+
+        #global-ui {
+            position: absolute; bottom: 30px; left: 30px; z-index: 100;
+            background: rgba(20,20,30,0.85); box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1); border-left: 4px solid #00e5ff;
+            padding: 15px 20px; border-radius: 8px; color: #fff; pointer-events: auto;
+        }
+        #global-ui h1 { font-size: 15px; margin-bottom: 5px; }
+        #global-ui p { font-size: 11px; color: #aaa; margin-bottom: 10px;}
+        #back-btn { font-size: 11px; font-weight: 700; color: #111; background: #fff; padding: 5px 12px; text-decoration: none; border-radius: 4px; display: inline-block;}
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three-0.160.0/build/three.module.js",
+        "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+            "@alisa-engine/": "../js/alisa-engine/"
+        }
+    }
+    </script>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+
+    <div class="grid-line-v"></div>
+    <div class="grid-line-h"></div>
+
+    <!-- CAM 1: GOD MODE -->
+    <div class="cctv-ui" id="ui-cam1">
+        <div class="cctv-header">
+            <div class="cam-badge">
+                <span class="cam-title">CAM 1: GOD MODE</span>
+                <span class="cam-desc">TIER 4 (FREE ORBIT/OUTSIDE)</span>
+            </div>
+            <div class="rec-indicator"><div class="rec-dot"></div>REC</div>
+        </div>
+        <div class="cctv-footer">ALISA.CMS.001 // CH:A // 30.00FPS</div>
+    </div>
+
+    <!-- CAM 2: ANT MODE -->
+    <div class="cctv-ui" id="ui-cam2">
+        <div class="cctv-header">
+            <div class="cam-badge">
+                <span class="cam-title">CAM 2: ANT MODE</span>
+                <span class="cam-desc">TIER 1 (ORTHOGRAPHIC MAP)</span>
+            </div>
+            <div class="rec-indicator" style="color:#00e5ff"><div class="rec-dot" style="background:#00e5ff;box-shadow: 0 0 10px #00e5ff;"></div>LINK</div>
+        </div>
+        <div class="cctv-footer">ALISA.CMS.002 // CH:B // 30.00FPS</div>
+    </div>
+
+    <!-- CAM 3: PEASANT / HOLOGRAM -->
+    <div class="cctv-ui" id="ui-cam3">
+        <div class="cctv-header">
+            <div class="cam-badge">
+                <span class="cam-title">CAM 3: PEASANT WINDOW</span>
+                <span class="cam-desc">TIER 2 (OFF-AXIS PARALLAX)</span>
+            </div>
+            <div class="rec-indicator" style="color:#00e5ff"><div class="rec-dot" style="background:#00e5ff;box-shadow: 0 0 10px #00e5ff;"></div>LINK</div>
+        </div>
+        <div class="cctv-footer">ALISA.CMS.003 // CH:C // 60.00FPS</div>
+    </div>
+
+    <!-- CAM 4: CCTV STATIC -->
+    <div class="cctv-ui" id="ui-cam4">
+        <div class="cctv-header">
+            <div class="cam-badge">
+                <span class="cam-title">CAM 4: STATIC DOME</span>
+                <span class="cam-desc">TIER 3 (SECURITY CORNER)</span>
+            </div>
+            <div class="rec-indicator"><div class="rec-dot"></div>REC</div>
+        </div>
+        <div class="cctv-footer">ALISA.CMS.004 // CH:D // 15.00FPS</div>
+    </div>
+
+    <div id="global-ui">
+        <h1>Master Operations Control</h1>
+        <p><b>[ArrowRight] / [ArrowLeft]</b> to rotate the Diorama.</p>
+        <a href="../lab.html" id="back-btn">Exit CMS</a>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+
+        // 1. Unified Scene and Engine Setup
+        const W = window.innerWidth;
+        const H = window.innerHeight;
+        const qW = W / 2; // Quadrant Width
+        const qH = H / 2; // Quadrant Height
+
+        const gfx = new AlisaRenderCore({
+            clearColor: 0xefefef,
+            fogColor: null,
+            useShadows: true
+        });
+        const scene = gfx.scene;
+        const renderer = gfx.renderer;
+        gfx.controls.enabled = false;
+        renderer.setScissorTest(true); // Crucial for multi-viewport
+        
+        scene.add(new THREE.HemisphereLight(0xffffff, 0xcadcfa, 0.8));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+        dirLight.position.set(0, 1000, 1000);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        // 2. Build The Compiz Cube Scene ONCE (Single source of physical truth)
+        const roomGroup = new THREE.Group();
+        scene.add(roomGroup);
+        const entities = [];
+        
+        // Base CamZ calculation derived from FOV 45 over the whole screen Height equivalent
+        const FOV = 45;
+        // In viewport split, the apparent height is qH. To keep scale native, we use full H equivalent for the Peasant cam scaling.
+        const baseCamZ = (H / 2) / Math.tan(THREE.MathUtils.degToRad(FOV / 2));
+        const ROOM_SIZE = W * 0.8; 
+
+        // Static Void Concealer
+        const outerGeo = new THREE.BoxGeometry(ROOM_SIZE * 3, H * 3, ROOM_SIZE * 3);
+        const outerMat = new THREE.MeshBasicMaterial({ color: 0xeeeeee, side: THREE.BackSide });
+        const outerBox = new THREE.Mesh(outerGeo, outerMat);
+        outerBox.position.set(0, 0, -ROOM_SIZE/2);
+        roomGroup.add(outerBox);
+
+        // The spinning central cube
+        const cubeGroup = new THREE.Group();
+        cubeGroup.position.set(0, 0, -ROOM_SIZE/2);
+        roomGroup.add(cubeGroup);
+        const halfW = ROOM_SIZE/2;
+
+        const wallMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, metalness: 0.1 });
+        const loader = new GLTFLoader();
+        const scaleMult = ROOM_SIZE * 0.05;
+
+        function addDomain(x, z, rotY, colorStr, glbPath, s) {
+            // Invisible inwards wall to catch light/shadow seamlessly behind doors
+            const plane = new THREE.Mesh(new THREE.PlaneGeometry(ROOM_SIZE, H), wallMat);
+            plane.position.set(x, 0, z); plane.rotation.y = rotY; plane.receiveShadow = true;
+            cubeGroup.add(plane);
+
+            // Colored 'Portal' door
+            const doorW = ROOM_SIZE * 0.15; const doorH = H * 0.6;
+            const door = new THREE.Mesh(new THREE.PlaneGeometry(doorW, doorH), new THREE.MeshStandardMaterial({ color: new THREE.Color(colorStr), roughness: 0.2 }));
+            door.position.set(x * 0.98, -H/2 + doorH/2, z * 0.98);
+            door.rotation.y = rotY; door.receiveShadow = true; door.castShadow = true;
+            cubeGroup.add(door);
+
+            // Load Prop
+            const lpX = isNaN(x)? 0 : Math.sign(x) * (Math.abs(x) - ROOM_SIZE * 0.25);
+            const lpZ = isNaN(z)? 0 : Math.sign(z) * (Math.abs(z) - ROOM_SIZE * 0.25);
+            
+            loader.load(glbPath, (gltf) => {
+                const model = gltf.scene;
+                model.scale.setScalar(s); model.position.set(lpX, -H/2, lpZ); model.rotation.y = rotY;
+                model.userData = { baseX: lpX, baseY: -H/2, baseZ: lpZ, baseRotY: rotY, baseScale: s };
+                model.traverse(c => { if(c.isMesh){ c.castShadow = true; c.receiveShadow = true; } });
+                cubeGroup.add(model); entities.push(model); 
+            });
+        }
+
+        // 4 Domains
+        addDomain(0, -halfW, 0, '#26c6da', '../props/models/Cardboard Boxes.glb', scaleMult*2.5); // World
+        addDomain(-halfW, 0, Math.PI/2, '#66bb6a', '../props/models/Vending Machine.glb', scaleMult*1.5); // Soma
+        addDomain(halfW, 0, -Math.PI/2, '#ffa726', '../props/models/Gaming Computer.glb', scaleMult*3.0); // Alisa
+        addDomain(0, halfW, Math.PI, '#ab47bc', '../props/models/Couch Small.glb', scaleMult*2.5); // Psyche
+
+        const floorGrid = new THREE.GridHelper(ROOM_SIZE, 40, 0x000000, 0x000000);
+        floorGrid.position.set(0, -H/2 + 2, 0); floorGrid.material.opacity = 0.1; floorGrid.material.transparent = true;
+        cubeGroup.add(floorGrid);
+
+        dirLight.shadow.camera.left = -ROOM_SIZE; dirLight.shadow.camera.right = ROOM_SIZE;
+        dirLight.shadow.camera.top = H; dirLight.shadow.camera.bottom = -H;
+        dirLight.shadow.camera.far = baseCamZ + ROOM_SIZE * 3;
+        dirLight.shadow.camera.updateProjectionMatrix();
+
+        // 3. CAMERAS
+        const aspect = qW / qH;
+
+        // CAM 1: GOD MODE (Perspective floating around the box)
+        const camGod = new THREE.PerspectiveCamera(45, aspect, 0.1, 50000);
+        
+        // CAM 2: ANT MODE (Orthographic Top-Down)
+        const frustumSize = ROOM_SIZE * 1.6;
+        const camAnt = new THREE.OrthographicCamera((frustumSize * aspect) / -2, (frustumSize * aspect) / 2, frustumSize / 2, frustumSize / -2, 0.1, 50000);
+        camAnt.position.set(0, ROOM_SIZE * 2, -ROOM_SIZE/2);
+        camAnt.lookAt(0, 0, -ROOM_SIZE/2);
+        // Correct rotation to match front direction
+        camAnt.up.set(0, 0, -1);
+
+        // CAM 3: PEASANT WINDOW (Holographic off-axis)
+        // Kept wide aspect W/H to simulate full screen proportions but scaled
+        const camPeasant = new THREE.PerspectiveCamera(FOV, W/H, 0.1, 50000);
+
+        // CAM 4: STATIC CCTV (Security Corner Wide-angle inside)
+        const camCCTV = new THREE.PerspectiveCamera(85, aspect, 0.1, 20000);
+        camCCTV.position.set(halfW * 0.9, H/2 * 0.8, -ROOM_SIZE * 0.9); // Top right back corner
+        camCCTV.lookAt(0, -H/4, -halfW * 0.2); // Look towards the bottom centerish
+
+        // 4. INPUTS
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / W) - 0.5; mouseY = (e.clientY / H) - 0.5; 
+        });
+        document.addEventListener('mouseleave', () => { mouseX = 0; mouseY = 0; });
+
+        let targetRotY = 0, currentRotY = 0;
+        let targetRotX = 0, currentRotX = 0;
+        let godAngle = Math.PI / 4;
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') targetRotY -= Math.PI / 2;
+            if (e.key === 'ArrowLeft') targetRotY += Math.PI / 2;
+            if (e.key === 'ArrowUp') targetRotX += Math.PI / 2;
+            if (e.key === 'ArrowDown') targetRotX -= Math.PI / 2;
+        });
+
+        let smoothHeadX = 0, smoothHeadY = 0;
+
+        function renderQuadrant(cam, vx, vy, vw, vh) {
+            renderer.setViewport(vx, vy, vw, vh);
+            renderer.setScissor(vx, vy, vw, vh);
+            renderer.render(scene, cam);
+        }
+
+        gfx.startLoop((dt) => {
+            // Update Input / Physics
+            currentRotY += (targetRotY - currentRotY) * 0.08;
+            currentRotX += (targetRotX - currentRotX) * 0.08;
+            
+            // Use YXZ to preserve global pitch regardless of rotation
+            cubeGroup.rotation.set(currentRotX, currentRotY, 0, 'YXZ');
+
+            godAngle += 0.002;
+
+            smoothHeadX += (mouseX * 1.5 * W - smoothHeadX) * 0.1;
+            smoothHeadY += (mouseY * 1.5 * H - smoothHeadY) * 0.1;
+
+            // Update CAM 1: GOD MODE (Orbiting)
+            const godRadius = ROOM_SIZE * 2;
+            camGod.position.set(Math.cos(godAngle) * godRadius, H, -ROOM_SIZE/2 + Math.sin(godAngle) * godRadius);
+            camGod.lookAt(0, 0, -ROOM_SIZE/2);
+
+            // Update CAM 3: PEASANT (Off-Axis Parallax)
+            // Apply entasis correction dynamically just for CAM 3 rendering frame!
+            camPeasant.position.set(smoothHeadX, smoothHeadY, baseCamZ);
+            camPeasant.rotation.set(0, 0, 0);
+
+            // The 'Monitor' bounds calculation. Since Peasant is mapped to Q3, we still use full W/H ratios
+            // multiplied to feel like it controls the whole frame, preserving pure 1:1 feel inside the window.
+            const ratio = 1.0 / baseCamZ;
+            const nL = (-W/2 - smoothHeadX) * ratio; const nR = (W/2 - smoothHeadX) * ratio;
+            const nT = (H/2 - smoothHeadY) * ratio; const nB = (-H/2 - smoothHeadY) * ratio;
+
+            camPeasant.projectionMatrix.makePerspective(nL, nR, nT, nB, 1.0, 20000);
+            camPeasant.projectionMatrixInverse.copy(camPeasant.projectionMatrix).invert();
+        }, () => {
+            // RENDER PASS 1 (Top-Left): GOD MODE
+            // Reset scale of entities purely for normal cameras
+            entities.forEach(m => m.scale.setScalar(m.userData.baseScale));
+            renderQuadrant(camGod, 0, qH, qW, qH);
+
+            // RENDER PASS 2 (Top-Right): ANT MODE
+            renderQuadrant(camAnt, qW, qH, qW, qH);
+
+            // RENDER PASS 3 (Bottom-Left): PEASANT (Needs Parallax Array Entasis Fake)
+            const tmpWPos = new THREE.Vector3();
+            entities.forEach(m => {
+                m.getWorldPosition(tmpWPos);
+                const dy = Math.abs(smoothHeadY - tmpWPos.y);
+                const dz = Math.abs(baseCamZ - tmpWPos.z);
+                const pitch = Math.atan(dy / dz);
+                m.scale.setScalar(m.userData.baseScale * Math.cos(pitch));
+            });
+            renderQuadrant(camPeasant, 0, 0, qW, qH);
+
+            // RENDER PASS 4 (Bottom-Right): CCTV
+            // Reset scales for static perspective
+            entities.forEach(m => m.scale.setScalar(m.userData.baseScale));
+            renderQuadrant(camCCTV, qW, 0, qW, qH);
+        });
+
+        window.addEventListener('resize', () => { window.location.reload(); });
+    </script>
+</body>
+</html>

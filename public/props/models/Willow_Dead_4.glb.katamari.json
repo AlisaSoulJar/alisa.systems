@@ -1,0 +1,8 @@
+{
+    "source_file": "Willow_Dead_4.glb",
+    "deduced_size_meters": 25.0,
+    "target_tier": "Tier 2.5: Titanic",
+    "target_scale_constraint": 25.0,
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0
+}

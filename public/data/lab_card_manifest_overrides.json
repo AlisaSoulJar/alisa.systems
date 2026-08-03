@@ -1,0 +1,101 @@
+{
+  "schemaVersion": "1.0.0",
+  "updatedAt": "2026-05-05T15:34:00+02:00",
+  "purpose": "Manual excellence gate promotions for Lab cards after live verification.",
+  "cards": {
+    "card-room-akasha": {
+      "claim": "Akasha is not only a visual metaphor: it exposes live semantic memory status and supports recall from the rendered memory field.",
+      "endpointHints": [
+        "/akasha/status",
+        "/korin/status",
+        "/memory/status",
+        "/do/akasha-search"
+      ],
+      "evidence": {
+        "sourceLine": "World/Web/overworld/lab.html:449",
+        "smokeReport": "Data/BuilderEvidence/lab_cdp_smoke_2026-05-05_final.json",
+        "liveCdpReport": "Data/BuilderEvidence/akasha_room_live_cdp_2026-05-05.json",
+        "page": "World/Web/overworld/rooms/room_akasha_fractal.html"
+      },
+      "qualityGates": {
+        "canonicalPurpose": {
+          "status": "pass",
+          "evidence": "Owner Korin, axes memory_identity_continuity and sovereign_governance, systems Akasha/Korin/MemoryWeaver/WarpDrive."
+        },
+        "liveSystemIntegration": {
+          "status": "pass",
+          "evidence": "HUD reads /akasha/status, /korin/status and /memory/status; vector clicks call /do/akasha-search with fallback only on Hub failure."
+        },
+        "observabilityTelemetry": {
+          "status": "pass",
+          "evidence": "CDP report captured VECTORS=1158, DIMENSIONS=768, STORE=SQLITE_WAL, QUEUE=1044 pending, RECALL=READY, STATUS=MEMORY LIVE."
+        }
+      },
+      "nextUpgrade": "Add explicit paper/canon citation and a polished recall inspector that shows source, score and memory type without crowding the 3D view."
+    },
+    "card-room-monitor": {
+      "claim": "The Monitor Hub is a live mission-control room for ALISA perception and browser/desktop agency, not only a spatial monitor showcase.",
+      "endpointHints": [
+        "/health",
+        "/cdp/status",
+        "/monk/status",
+        "/monk/vision/status",
+        "/motoko/vision"
+      ],
+      "evidence": {
+        "sourceLine": "World/Web/overworld/lab.html:548",
+        "smokeReport": "Data/BuilderEvidence/lab_cdp_smoke_2026-05-05_final.json",
+        "liveCdpReport": "Data/BuilderEvidence/monitor_hub_live_cdp_2026-05-05.json",
+        "page": "World/Web/overworld/rooms/room_css3d_monitor_hub.html"
+      },
+      "qualityGates": {
+        "canonicalPurpose": {
+          "status": "pass",
+          "evidence": "Owner Queen, axes sovereign_governance and perception_browser_control; represents the observable command surface for Hub/CDP/Monk/Vision/Motoko."
+        },
+        "liveSystemIntegration": {
+          "status": "pass",
+          "evidence": "HUD reads /health, /cdp/status, /monk/vision/status, /monk/status and /motoko/vision."
+        },
+        "observabilityTelemetry": {
+          "status": "pass",
+          "evidence": "CDP report captured Hub online, CDP :9222 with 1 tab, Vision connected, Monk 20 frames/119kb, Motoko offline with 1 cam."
+        }
+      },
+      "nextUpgrade": "Add a compact action strip for scan/tabs/read dispatch once the UI can represent command results without stealing focus from the 3D terminals."
+    },
+    "card-room-hacker-queen": {
+      "claim": "The Queen Office is a live sovereign command sanctum: governance, delegation, colony channels, workers, models and housekeeping are visible as system state.",
+      "endpointHints": [
+        "/health",
+        "/system",
+        "/jobboard/list",
+        "/board/worker-status",
+        "/irc/status",
+        "/fleet/status",
+        "/cogsworth/jobboard-gc-status"
+      ],
+      "evidence": {
+        "sourceLine": "World/Web/overworld/lab.html:409",
+        "smokeReport": "Data/BuilderEvidence/lab_cdp_smoke_2026-05-05_final.json",
+        "liveCdpReport": "Data/BuilderEvidence/queen_office_live_cdp_2026-05-05_fixed.json",
+        "page": "World/Web/overworld/rooms/room_queen_office.html"
+      },
+      "qualityGates": {
+        "canonicalPurpose": {
+          "status": "pass",
+          "evidence": "Owner Queen, axis sovereign_governance; the room exposes the command center of ALISA rather than a static throne scene."
+        },
+        "liveSystemIntegration": {
+          "status": "pass",
+          "evidence": "Panel reads /health, /jobboard/list, /board/worker-status, /irc/status, /fleet/status and /cogsworth/jobboard-gc-status; startup pulse reads /system."
+        },
+        "observabilityTelemetry": {
+          "status": "pass",
+          "evidence": "CDP report captured Hub online, 0 open jobs, 15 worker reports, IRC 1 client/5 channels, 25 models, Cogsworth active, CPU and RAM percentages."
+        }
+      },
+      "nextUpgrade": "Add a safe decree console that can publish a dry-run JobBoard task and display the resulting job id/evidence trace."
+    }
+  }
+}

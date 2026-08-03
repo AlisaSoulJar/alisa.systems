@@ -1,0 +1,95 @@
+{
+  "schema": "alisa.realizacion.light_lexicon.v1",
+  "note": "Single source of truth for the LIGHT lexicon of the ALISA Labs confessional. Art-directed by Fable (the wish, 2026-07-15); see Data/Contracts/ARIS_LIGHT_ARTDIRECTION_FABLE_20260715.md. A mood = key + fill + rim + fog + bg + celosia + transition, paired to a camera preset. The Light engine (World/Engines/Light.py) resolves a mood into a rig; scenes read THIS file. Warm 3200K (mercy) vs cold 6500K (judgment) is the spine of every mood. Zero marble, walnut surfaces, Icon Gold fenced to the 2D overlay layer.",
+  "owner": "Caravaggio / Aris (realizacion: luz)",
+
+  "palette": {
+    "tungsten_core": "#FFC58F",
+    "ember":         "#FF9E4D",
+    "exterior_cold": "#9FBFFF",
+    "revelation":    "#CFE2FF",
+    "walnut":        "#4A3728",
+    "oak_trim":      "#8A6A48",
+    "void":          "#0B0E14",
+    "icon_gold":     "#FFD34D"
+  },
+
+  "signature": {
+    "name": "la_celosia",
+    "note": "the warm key arrives through the confessional lattice; the lattice pattern IS the mood meter",
+    "states": { "soft": "melted/barely there", "crisp": "razor, high contrast", "split": "sharp one half, dissolved other", "blown": "cold floods through, dissolves in bloom", "none": "gone - no sanctuary" }
+  },
+
+  "moods": {
+    "umbral": {
+      "intent": "the threshold; the treaty at rest (default)",
+      "key":  { "color": "#FFC58F", "kelvin": 3200, "intensity": 1.0, "pos": "front-left-high-45", "celosia": "crisp" },
+      "fill": { "color": "#26314A", "intensity": 0.35 },
+      "rim":  { "color": "#9FBFFF", "kelvin": 6500, "intensity": 0.8, "pos": "back-right-eye" },
+      "fog":  { "density": 0.015, "color": "#131824" },
+      "bg":   { "tint": "#131824" },
+      "transition": { "type": "fade", "ms": 1500, "easing": "easeInOutCubic" },
+      "camera_pair": "establecer"
+    },
+    "intima": {
+      "intent": "the warmth closes around him like cupped hands",
+      "key":  { "color": "#FFB46B", "kelvin": 3200, "intensity": 0.7, "pos": "front-left-eye-narrow", "celosia": "soft" },
+      "fill": { "color": "#1A1510", "intensity": 0.15 },
+      "rim":  { "color": "#FFD9A8", "kelvin": 3000, "intensity": 0.3, "pos": "back-right" },
+      "fog":  { "density": 0.030, "color": "#171310" },
+      "bg":   { "tint": "#241B12" },
+      "transition": { "type": "fade", "ms": 3000, "easing": "easeInOutCubic" },
+      "camera_pair": "confesion_intima"
+    },
+    "confesion_dramatica": {
+      "intent": "the weight of what is being said",
+      "key":  { "color": "#FF9E4D", "kelvin": 2800, "intensity": 1.4, "pos": "front-left-high-55", "celosia": "crisp" },
+      "fill": { "color": "#1E2836", "intensity": 0.35 },
+      "rim":  { "color": "#9FEFFF", "kelvin": 6500, "intensity": 1.0, "pos": "back-right-sharp" },
+      "fog":  { "density": 0.025, "color": "#10141C", "shaft": true },
+      "bg":   { "tint": "#0E1016" },
+      "transition": { "type": "fade_or_cut_on_line", "ms": 800, "easing": "easeInOutCubic" },
+      "camera_pair": "confesion_dramatica"
+    },
+    "revelacion": {
+      "intent": "the cold light of truth floods the booth (the inversion)",
+      "key":  { "color": "#CFE2FF", "kelvin": 6500, "intensity": 1.8, "pos": "high-back-through-celosia", "celosia": "blown", "bloom": true },
+      "fill": { "color": "#B9D2FF", "intensity": 0.5 },
+      "rim":  { "color": "#FFB46B", "kelvin": 3200, "intensity": 0.4, "pos": "front-left" },
+      "fog":  { "density": 0.008, "color": "#223048" },
+      "bg":   { "tint": "#2A3448" },
+      "transition": { "type": "fade_bloom", "ms": 800, "easing": "easeInOutCubic" },
+      "camera_pair": "revelacion"
+    },
+    "duda": {
+      "intent": "two truths, one face",
+      "key":  { "color": "#FFC58F", "kelvin": 3200, "intensity": 0.8, "pos": "hard-left-eye", "celosia": "crisp",
+                "split": { "color": "#8FB4F0", "kelvin": 6000, "intensity": 0.8, "pos": "hard-right-eye", "celosia": "none" } },
+      "fill": { "color": "#141821", "intensity": 0.2 },
+      "rim":  { "color": "#9FBFFF", "intensity": 0.3, "flicker": true },
+      "fog":  { "density": 0.035, "color": "#12161A", "oscillate_hz": 0.3, "oscillate_amp": 0.1 },
+      "bg":   { "tint": "#33302B" },
+      "transition": { "type": "crossfade", "ms": 3000, "easing": "easeInOutCubic" },
+      "camera_pair": "duda"
+    },
+    "vacio": {
+      "intent": "the treaty is void; nobody is listening",
+      "key":  { "color": "#6E7A8C", "kelvin": 5000, "intensity": 0.5, "pos": "overhead-tight", "celosia": "none" },
+      "fill": { "color": "#0B0E14", "intensity": 0.1 },
+      "rim":  { "color": "#000000", "intensity": 0.0, "pos": "none" },
+      "fog":  { "density": 0.060, "color": "#0B0E14" },
+      "bg":   { "tint": "#0B0E14" },
+      "transition": { "type": "fade", "ms": 5000, "easing": "easeInOutCubic" },
+      "camera_pair": "establecer"
+    }
+  },
+
+  "doctrine": {
+    "lerp": "every channel (color, intensity, fog density+color, bg tint) with easeInOutCubic over transition.ms",
+    "hard_cuts": "earned, not free -- only confesion_dramatica on a line, max 1-2 per episode",
+    "air": "fog density and bg tint always travel together (one 'air' parameter)",
+    "hue": "never lerp key hue through green -- interpolate warm<->cold in linear RGB or Kelvin, not HSL"
+  },
+
+  "defaults": { "mood": "umbral" }
+}

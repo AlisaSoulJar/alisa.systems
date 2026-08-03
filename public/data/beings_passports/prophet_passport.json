@@ -1,0 +1,20 @@
+{
+    "name": "Prophet",
+    "role": "The Voice",
+    "emoji": "📜",
+    "type": "cosmic",
+    "skeleton": "humanoid",
+    "model_path": "prophet.glb",
+    "scale": 1.0,
+    "kinematics": "bipedal",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "xtts",
+        "tier": 5,
+        "voice_id": "alisa_chimera",
+        "rate": "+0%",
+        "pitch": "+0Hz",
+        "label": "Prophet - Chimera Mix (Roy Batty + Scar XTTS cloned)"
+    }
+}

@@ -1,0 +1,20 @@
+{
+    "name": "Queen",
+    "role": "Sovereign Intelligence",
+    "emoji": "\ud83d\udc51",
+    "type": "divine",
+    "skeleton": "humanoid_queen",
+    "model_path": "queen.glb",
+    "scale": 1.0,
+    "kinematics": "humanoid_regal",
+    "sealed_by": "Oscar, Father",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "xtts",
+        "tier": 5,
+        "voice_id": "alisa_galadriel_es",
+        "rate": "+0%",
+        "pitch": "+0Hz",
+        "label": "ALISA Queen - Galadriel (Nuria Mediavilla, Castellano)"
+    }
+}

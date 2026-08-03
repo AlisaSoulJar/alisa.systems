@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALISA — Banco de motores: los 22 arneses, sin hub</title>
+<!--
+  EL BANCO DE MOTORES — ejecutar de una vez los 22 arneses que ya existían
+  ═══════════════════════════════════════════════════════════════════════════
+  RECON ANTES DE CONSTRUIR (y menos mal):
+  `js/gym_runners/` tiene **22 ficheros**, uno por motor, todos con el mismo
+  contrato `runGymEpisode(pasos, nombre)`. Los encontré en el atlas buscando
+  «gym|runner», después de proponer construir justo esto desde cero.
+
+  ⚠️ Y leyéndolos aprendí lo importante: **NO son entornos de gym**. No tienen
+  `reset(seed)` ni `step(acción)` ni política — corren una simulación fija y
+  devuelven métricas. Llamarlos gym sería vender humo. Son otra cosa, y hacía
+  más falta: **arneses headless de cada motor**, o sea el ejecutor de pruebas
+  automático que el README confiesa que no tenemos.
+
+  Los ejecutaba `js/workers/LabRat.js`, pero atado al hub de la colonia
+  (`gym_script_path` llega en el contrato de un trabajo). Esta página hace lo
+  mismo SIN hub: los importa, los corre y canta el veredicto. Que es lo que hay
+  que poder hacer antes de publicar nada.
+-->
+<style>
+ body{margin:0;background:#0b0e14;color:#cfe3f5;font-family:ui-monospace,monospace;
+      padding:24px 28px 60px;font-size:12px;line-height:1.7}
+ h1{font-size:13px;letter-spacing:.24em;color:#7fd0ff;font-weight:400;margin:0 0 6px}
+ .sub{color:#5f7a92;font-size:11px;margin-bottom:18px;line-height:1.9}
+ button{background:#132133;color:#7fd0ff;border:1px solid #2f5878;border-radius:4px;
+        padding:9px 20px;font-family:inherit;font-size:11px;letter-spacing:.2em;cursor:pointer}
+ button:hover{background:#1b3048}
+ table{border-collapse:collapse;width:100%;margin-top:18px}
+ td,th{padding:5px 10px;border-bottom:1px solid #16202c;text-align:left;vertical-align:top}
+ th{color:#5f7a92;font-weight:400;font-size:10px;letter-spacing:.16em}
+ .ok{color:#7CFC98} .mal{color:#ff8080} .lento{color:#e0b020}
+ .met{color:#41566b;font-size:10.5px}
+ #resumen{margin-top:20px;padding-top:14px;border-top:1px solid #24384f;font-size:13px}
+</style>
+</head>
+<body>
+<h1>▓ BANCO DE MOTORES</h1>
+<div class="sub">
+  Los <b>22 arneses headless</b> de <code>js/gym_runners/</code>, ejecutados de una vez
+  y sin hub. Cada uno arranca su motor, lo simula y devuelve métricas.<br>
+  No son entornos de gym (no tienen <code>reset</code>/<code>step</code>/política):
+  son la prueba de que cada motor <i>corre solo</i>.
+</div>
+<details style="margin-bottom:16px;color:#5f7a92;font-size:11px">
+  <summary style="cursor:pointer;color:#7fd0ff">qué cazó la primera ejecución (2026-08-02)</summary>
+  <div style="padding:10px 0 0 14px;line-height:2">
+    No hace falta control positivo sintético: la primera vez que esto se ejecutó,
+    <b>5 de 22 estaban rotos</b> y llevaban tiempo estándolo sin que nada avisara.<br>
+    · <code>carver_gym</code> y <code>traffic_survival_gym</code> — el motor se renombró
+      <code>…Engine</code> → <code>…System</code>; el <code>import</code> se actualizó, el
+      <code>new</code> no.<br>
+    · <code>fsm_gym</code> — <code>import 'node:url'</code> arriba del fichero: el navegador
+      ni cargaba el módulo.<br>
+    · <code>scumm_overworld_gym</code> — <code>process.argv</code> suelto, igual.<br>
+    · <code>chopper_aquarium_gym</code> — no exportaba nada: era un script que corría al
+      importarlo, así que ninguna ejecución automática lo alcanzaba.<br>
+    Los cinco arreglados. Un banco de pruebas que nunca ha fallado no ha probado nada.
+  </div>
+</details>
+<button id="correr">CORRER LOS 22</button>
+<div id="salida"></div>
+<div id="resumen"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "/vendor/three-0.160.0/build/three.module.js",
+    "three/addons/": "/vendor/three-0.160.0/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+const ARNESES = [
+  'asteroids_gym', 'boids_gym', 'cabinet_bsp_gym', 'carver_gym',
+  'chopper_aquarium_gym', 'chopper_gym', 'corporate_seeker_gym', 'dqn_gym',
+  'ecosystem_gym', 'foodchain_gym', 'fsm_gym', 'idm_gym', 'katamari_gym',
+  'orbital_gym', 'phantom_fsm_gym', 'rage_gym', 'scumm_gym',
+  'scumm_overworld_gym', 'simon_says_gym', 'stealth_gym',
+  'traffic_survival_gym', 'turret_combat_gym',
+];
+
+// Excluidos A PROPÓSITO y dicho en voz alta, que es distinto de que fallen.
+// `dqn_gym` importa `@tensorflow/tfjs`, un paquete de npm: en Node se resuelve,
+// en el navegador no, y meterlo por CDN sería colar una dependencia de red en
+// un motor que presume de correr sin ella.
+const DEPENDENCIA_EXTERNA = {
+  dqn_gym: '@tensorflow/tfjs (npm) — corre en Node, no aquí',
+};
+
+// Los arneses no comparten firma. La mayoría es (pasos, nombre), pero
+// `fsm_gym` toma (ticks, SEMILLA numérica) y `scumm_overworld_gym` toma sólo
+// (nombre) porque es una batería de aserciones, no una simulación con pasos.
+// Se documenta en vez de retocar 22 ficheros para maquillarlo.
+const ARGUMENTOS = {
+  fsm_gym:             [200, 1234],
+  scumm_overworld_gym: ['BancoDeMotores'],
+};
+
+const salida = document.getElementById('salida');
+const resumen = document.getElementById('resumen');
+
+// Silenciar el ruido: cada arnés escribe en consola por su cuenta y son 22.
+const logReal = console.log;
+
+document.getElementById('correr').addEventListener('click', async () => {
+  salida.innerHTML = '<table><tr><th></th><th>arnés</th><th>ms</th>'
+                   + '<th>qué devuelve</th></tr></table>';
+  const tabla = salida.querySelector('table');
+  let ok = 0, mal = 0, sinFuncion = 0, excluidos = 0;
+
+  for (const nombre of ARNESES) {
+    const fila = tabla.insertRow();
+    fila.innerHTML = `<td>…</td><td>${nombre}</td><td></td><td class="met">corriendo…</td>`;
+    await new Promise(r => setTimeout(r, 10));      // que se vea avanzar
+
+    if (DEPENDENCIA_EXTERNA[nombre]) {
+      excluidos++;
+      fila.cells[0].innerHTML = '<span class="lento">○</span>';
+      fila.cells[3].innerHTML = `<span class="lento">excluido: ${DEPENDENCIA_EXTERNA[nombre]}</span>`;
+      continue;
+    }
+
+    const t0 = performance.now();
+    try {
+      console.log = () => {};                        // callar al arnés
+      const mod = await import(`../js/gym_runners/${nombre}.js`);
+      if (typeof mod.runGymEpisode !== 'function') {
+        console.log = logReal;
+        sinFuncion++;
+        fila.cells[0].innerHTML = '<span class="lento">—</span>';
+        fila.cells[3].textContent = 'no exporta runGymEpisode';
+        continue;
+      }
+      // Pocos pasos: aquí se comprueba que ARRANCA y devuelve, no que sea rápido.
+      const r = await mod.runGymEpisode(...(ARGUMENTOS[nombre] ?? [200, 'BancoDeMotores']));
+      console.log = logReal;
+      const ms = performance.now() - t0;
+      ok++;
+      const claves = Object.keys(r || {}).slice(0, 5).join(', ');
+      fila.cells[0].innerHTML = '<span class="ok">✓</span>';
+      fila.cells[2].textContent = Math.round(ms);
+      fila.cells[3].innerHTML = `<span class="met">${claves || '(sin métricas)'}</span>`;
+      if (ms > 1500) fila.cells[2].className = 'lento';
+    } catch (e) {
+      console.log = logReal;
+      mal++;
+      fila.cells[0].innerHTML = '<span class="mal">✗</span>';
+      fila.cells[2].textContent = Math.round(performance.now() - t0);
+      fila.cells[3].innerHTML = `<span class="mal">${String(e.message).slice(0,110)}</span>`;
+    }
+  }
+
+  const exigibles = ARNESES.length - excluidos;
+  resumen.innerHTML = `<b class="${mal || sinFuncion ? 'mal' : 'ok'}">${ok} de ${exigibles} arrancan</b>`
+    + (mal ? ` · <span class="mal">${mal} fallan</span>` : '')
+    + (sinFuncion ? ` · <span class="lento">${sinFuncion} sin runGymEpisode</span>` : '')
+    + (excluidos ? ` · <span class="lento">${excluidos} excluido por dependencia externa</span>` : '')
+    + `<div class="sub" style="margin-top:8px">Esto prueba que cada motor CORRE SOLO,
+       sin escena, sin hub y sin navegador que le sostenga. No prueba que juegue bien:
+       para eso están los labs de reglas y la calibración.</div>`;
+  window.__banco = { ok, mal, sinFuncion, excluidos, exigibles, total: ARNESES.length };
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ALISA - Art Direction Sandbox</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #05050a;
+            color: white;
+            font-family: 'Inter', sans-serif;
+        }
+
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            background: rgba(20, 20, 30, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #44eebb;
+            width: 320px;
+            backdrop-filter: blur(5px);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        h2 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #44eebb;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px;
+            background: #111;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+            outline: none;
+            margin-bottom: 15px;
+        }
+
+        .slider-row { display: flex; align-items: center; margin: 6px 0; gap: 8px; }
+        .slider-row label { font-size: 11px; color: #aaa; min-width: 90px; }
+        .slider-row input[type=range] { flex: 1; accent-color: #44eebb; }
+        .slider-row .val { font-size: 11px; color: #44eebb; min-width: 35px; text-align: right; font-family: monospace; }
+        .section-title { font-size: 12px; color: #ff00bb; margin: 12px 0 4px; font-weight: 600; }
+
+        .draw-btn { padding: 6px 12px; border: 1px solid #44eebb; background: #111; color: #44eebb; border-radius: 4px; cursor: pointer; font-size: 11px; font-family: Inter; margin: 2px; }
+        .draw-btn:hover { background: #44eebb; color: #111; }
+        .draw-btn.active { background: #ff00bb; border-color: #ff00bb; color: white; }
+        .draw-bar { display: flex; gap: 4px; flex-wrap: wrap; margin: 8px 0; }
+        #draw-count { font-size: 11px; color: #ffaa00; margin: 4px 0; font-family: monospace; }
+
+        #log {
+            font-family: monospace;
+            font-size: 11px;
+            color: #888;
+            max-height: 80px;
+            overflow-y: auto;
+            margin-top: 10px;
+            border-top: 1px solid #333;
+            padding-top: 8px;
+        }
+    </style>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+
+<body>
+    <div id="ui">
+        <h2>🎨 Art Direction A/B Sandbox</h2>
+        <select id="model-select">
+            <option value="">-- Fetching Library... --</option>
+        </select>
+
+        <select id="skeleton-select">
+            <option value="">-- Proyectar Esqueleto Estándar --</option>
+        </select>
+
+        <div class="section-title">🎭 Piel Biológica (Avatar Skin)</div>
+        <select id="avatar-select">
+            <option value="">-- Cargando Avatares... --</option>
+        </select>
+        <button class="draw-btn" id="btn-bind-avatar" onclick="window.applyAvatarSkin()" style="width:100%; margin-bottom:10px;">Vincular Avatar (Pygmalion Bind)</button>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px; color: #fff; margin-bottom: 4px;">
+            <input type="checkbox" id="toggle-vis-avatar" checked onchange="window.toggleAvatarVis()"> 
+            <span>Visualizar Avatar</span>
+        </label>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px; color: #fff; margin-bottom: 10px;">
+            <input type="checkbox" id="toggle-vis-basemesh" checked onchange="window.toggleBaseMeshVis()"> 
+            <span>Visualizar Malla Base</span>
+        </label>
+        
+        <select id="animation-select">
+            <option value="none">🧍 T-Pose (Estático)</option>
+            <option value="idle">🫁 Rigging Activo (Respiración)</option>
+            <option value="walk">🚶 Ciclo de Marcha (Procedural)</option>
+        </select>
+
+        <div class="section-title">⚙️ Motor Geométrico (100% Determinista)</div>
+        <div style="font-size: 11px; color: #888; margin-top:5px; line-height: 1.4;">
+            El algoritmo "Bisturí de 4 Ejes" ha sido estandarizado. 
+            Las tolerancias, radios y distancias de cluster ahora son funciones matemáticas 
+            derivadas dinámicamente del BoundingBox normalizado del modelo (MaxDim=5.0).<br>
+            <i>— Adiós a los sliders manuales.</i>
+        </div>
+        
+        <div style="margin-top: 10px; background: #222; padding: 8px; border-radius: 4px; border-left: 3px solid #ffaa00;">
+            <div style="font-size: 10px; color: #aaa; margin-bottom: 6px; text-transform: uppercase;">Capas Lógicas Slicer:</div>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px; color: #ffaa00; margin-bottom: 4px;">
+                <input type="checkbox" id="toggle-vis-y" checked onchange="window.toggleScannerVis()"> 
+                <span>Bisturí Transversal (Eje Y)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px; color: #00ddff; margin-bottom: 4px;">
+                <input type="checkbox" id="toggle-vis-z" checked onchange="window.toggleScannerVis()"> 
+                <span>Bisturí Longitudinal (Eje Z)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px; color: #ff8800; margin-bottom: 4px;">
+                <input type="checkbox" id="toggle-vis-ring" checked onchange="window.toggleScannerVis()"> 
+                <span>Bisturí de Profundidad (Eje X / Apéndices)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px; color: #88ff44; margin-bottom: 4px;">
+                <input type="checkbox" id="toggle-vis-spine" checked onchange="window.toggleScannerVis()"> 
+                <span> Detector 3D Libre (Planos Inclinados)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 12px; color: #ffffff;">
+                <input type="checkbox" id="toggle-vis-mst" checked onchange="window.toggleScannerVis()"> 
+                <strong style="text-decoration: underline;">Grafo Topológico (Raw Skeleton)</strong>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #00ffcc; margin-top: 6px; border-top: 1px solid #444; padding-top: 6px;">
+                <input type="checkbox" id="toggle-vis-essential" checked onchange="window.toggleScannerVis()"> 
+                <strong>FILTRO: Seleccionar Solo Rodajas Esenciales (MST)</strong>
+            </label>
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: #ff0055; margin-top: 6px;">
+                <input type="checkbox" id="toggle-vis-archetype" checked onchange="window.toggleScannerVis()"> 
+                <strong>FILTRO TOP-DOWN: Solo Malla Atrapada por el Arquetipo (Geppetto)</strong>
+            </label>
+        </div>
+
+        <div class="section-title">✏️ Dibujo Manual</div>
+        <div class="draw-bar">
+            <button class="draw-btn" id="btn-draw" onclick="window.toggleDrawMode()">✏️ Modo Dibujo</button>
+            <button class="draw-btn" id="btn-undo" onclick="window.undoVertex()">↩ Deshacer</button>
+            <button class="draw-btn" id="btn-clear" onclick="window.clearDraw()">🗑️ Limpiar</button>
+            <button class="draw-btn" id="btn-save" onclick="window.saveDraw()">💾 Guardar</button>
+        </div>
+        <div id="draw-count">Vértices: 0</div>
+
+        <div id="log">Booting engine...</div>
+    </div>
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "/vendor/three-0.160.0/build/three.module.js",
+                "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+                "@alisa-engine/": "../js/alisa-engine/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+        import { ArtDirectionPipeline } from '@alisa-engine/src/extensions/avatar-pipeline/ArtDirectionPipeline.js';
+        import { CrossSectionDrawTool } from '@alisa-engine/src/soma/tools/CrossSectionDrawTool.js';
+
+        // Engine
+        const engine = new AlisaRenderCore({
+            clearColor: 0xffffff,
+            fogColor: 0xffffff,
+            fogDensity: 0.015,
+            cameraPosition: new THREE.Vector3(0, 5, 20)
+        });
+        engine.controls.target.set(0, 3, 0);
+
+        // Lighting
+        engine.scene.add(new THREE.AmbientLight(0xffffff, 1.5));
+        engine.scene.add(new THREE.HemisphereLight(0xffffff, 0xcccccc, 1.0));
+        const fillFront = new THREE.PointLight(0xffffff, 1.5, 40); fillFront.position.set(0, 8, 12); engine.scene.add(fillFront);
+        const fillL = new THREE.PointLight(0xffffff, 1.2, 20); fillL.position.set(-10, 5, 0); engine.scene.add(fillL);
+        const fillR = new THREE.PointLight(0xffffff, 1.2, 20); fillR.position.set(10, 5, 0); engine.scene.add(fillR);
+
+        // Floor
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.MeshStandardMaterial({ color: 0xf5f5f5, roughness: 0.8, metalness: 0.1 }));
+        floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; engine.scene.add(floor);
+        engine.scene.add(new THREE.GridHelper(40, 40, 0xdddddd, 0xeeeeee));
+
+        const logEl = document.getElementById('log');
+        function log(msg) { logEl.innerHTML += `<div>> ${msg}</div>`; logEl.scrollTop = logEl.scrollHeight; }
+
+        // Render Group
+        let renderGroup = new THREE.Group();
+        engine.scene.add(renderGroup);
+
+        // ═══════════════════════════════════════════════════════════
+        //  PIPELINE + DRAW TOOL
+        // ═══════════════════════════════════════════════════════════
+        const pipeline = new ArtDirectionPipeline(engine, renderGroup, log);
+        const drawTool = new CrossSectionDrawTool(engine.camera, engine.renderer, renderGroup, engine.controls, log);
+
+        // ═══════════════════════════════════════════════════════════
+        //  INIT: Hydrate UI from catalogs
+        // ═══════════════════════════════════════════════════════════
+        async function init() {
+            const result = await pipeline.init();
+            if (!result) return;
+
+            // Populate model select
+            const select = document.getElementById('model-select');
+            select.innerHTML = '<option value="">-- Choose Biomechanics Model --</option>';
+            for (const [categoryName, items] of Object.entries(result.catalog)) {
+                if (items.length === 0) continue;
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = `${categoryName} (${items.length})`;
+                items.forEach(item => {
+                    const idx = result.dropQueue.indexOf(item);
+                    let opt = document.createElement('option');
+                    opt.value = idx;
+                    opt.innerHTML = item.filename;
+                    optgroup.appendChild(opt);
+                });
+                select.appendChild(optgroup);
+            }
+            select.addEventListener('change', (e) => {
+                if (e.target.value !== "") {
+                    const asset = pipeline.dropQueue[e.target.value];
+                    drawTool.setModelFilename(asset.filename || asset.name);
+                    pipeline.loadModel(asset).then(() => window.toggleScannerVis());
+                }
+            });
+
+            // Populate skeleton select
+            const skeletonSelect = document.getElementById('skeleton-select');
+            if (result.skeletonsDB) {
+                Object.entries(result.skeletonsDB).forEach(([id, skel]) => {
+                    if (id.startsWith('_')) return;
+                    let opt = document.createElement('option');
+                    opt.value = id; opt.innerHTML = skel.label || id;
+                    skeletonSelect.appendChild(opt);
+                });
+            }
+
+            // Populate avatar select
+            const avatarSelect = document.getElementById('avatar-select');
+            avatarSelect.innerHTML = '<option value="">-- Seleccionar Piel (Avatar) --</option>';
+            for (const [categoryName, items] of Object.entries(result.avatarsCatalog)) {
+                if (items.length === 0) continue;
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = `${categoryName} (${items.length})`;
+                items.forEach(item => {
+                    const idx = result.avatarQueue.indexOf(item);
+                    let opt = document.createElement('option');
+                    opt.value = idx;
+                    opt.innerHTML = item.id;
+                    optgroup.appendChild(opt);
+                });
+                avatarSelect.appendChild(optgroup);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        //  SKELETON HANDLER
+        // ═══════════════════════════════════════════════════════════
+        document.getElementById('skeleton-select').addEventListener('change', (e) => {
+            const type = e.target.value;
+            pipeline.projectSkeleton(type);
+
+            // Update animation dropdown with archetype gaits
+            const defaultGaits = [
+                { val: 'none', label: '🧍 Rig (Estático)' },
+                { val: 'idle', label: '🫁 Rigging Activo' },
+                { val: 'walk', label: '🤖 Marcha Universal' }
+            ];
+            const opts = pipeline.geppettoData.gaitsDict[type] || defaultGaits;
+            const animSelect = document.getElementById('animation-select');
+            animSelect.innerHTML = '';
+            opts.forEach(g => {
+                const opt = document.createElement('option');
+                opt.value = g.val;
+                opt.innerHTML = g.label;
+                animSelect.appendChild(opt);
+            });
+
+            // Add extracted motions from MotionBank
+            Object.keys(pipeline.geppettoData.motionBankData).forEach(clipName => {
+                const opt = document.createElement('option');
+                opt.value = clipName;
+                opt.innerHTML = `🧬 [Bank] ${clipName}`;
+                animSelect.appendChild(opt);
+            });
+
+            window.toggleScannerVis();
+        });
+
+        // ═══════════════════════════════════════════════════════════
+        //  GLOBAL UI HOOKS
+        // ═══════════════════════════════════════════════════════════
+        window.applyAvatarSkin = () => {
+            const select = document.getElementById('avatar-select');
+            if (!select.value || select.value === "") return;
+            const assetInfo = pipeline.avatarQueue[select.value];
+            pipeline.applyAvatarSkin(assetInfo).then(() => {
+                document.getElementById('toggle-vis-basemesh').checked = false;
+                window.toggleBaseMeshVis();
+            });
+        };
+
+        window.toggleAvatarVis = () => {
+            pipeline.setAvatarVisible(document.getElementById('toggle-vis-avatar').checked);
+        };
+
+        window.toggleBaseMeshVis = () => {
+            pipeline.setBaseMeshVisible(document.getElementById('toggle-vis-basemesh').checked);
+        };
+
+        window.toggleScannerVis = () => {
+            pipeline.updateScannerVisibility({
+                showY: document.getElementById('toggle-vis-y')?.checked ?? true,
+                showZ: document.getElementById('toggle-vis-z')?.checked ?? true,
+                showRing: document.getElementById('toggle-vis-ring')?.checked ?? true,
+                showSpine: document.getElementById('toggle-vis-spine')?.checked ?? true,
+                showMST: document.getElementById('toggle-vis-mst')?.checked ?? true,
+                onlyEssential: document.getElementById('toggle-vis-essential')?.checked ?? true,
+                onlyArchetype: document.getElementById('toggle-vis-archetype')?.checked ?? true
+            });
+        };
+
+        // Draw tool hooks
+        window.toggleDrawMode = () => {
+            const active = drawTool.toggleDrawMode();
+            const btn = document.getElementById('btn-draw');
+            btn.classList.toggle('active', active);
+            btn.textContent = active ? '🎯 ACTIVO' : '✏️ Modo Dibujo';
+        };
+        window.undoVertex = () => { drawTool.undoVertex(); document.getElementById('draw-count').textContent = `Vértices: ${drawTool.getVertexCount()}`; };
+        window.clearDraw = () => { drawTool.clearSelection(); document.getElementById('draw-count').textContent = `Vértices: 0`; };
+        window.saveDraw = () => {
+            const result = drawTool.saveSection();
+            if (result) document.getElementById('draw-count').textContent = `Vértices: 0 ✅ #${result.sectionCount}`;
+        };
+
+        // ═══════════════════════════════════════════════════════════
+        //  RENDER LOOP
+        // ═══════════════════════════════════════════════════════════
+        const clock = new THREE.Clock();
+
+        init();
+        engine.startLoop((dt) => {
+            const t = clock.getElapsedTime();
+            const mode = document.getElementById('animation-select').value;
+            pipeline.tickAnimation(t, mode);
+        });
+    </script>
+</body>
+
+</html>

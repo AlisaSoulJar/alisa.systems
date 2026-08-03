@@ -1,0 +1,65 @@
+{
+    "shop_counter": [
+        {"shape": "box", "size": [2.4, 0.9, 0.6], "pos": [0, 0.45, 0], "radius": 0.02, "type": "base"},
+        {"shape": "box", "size": [2.4, 0.08, 0.7], "pos": [0, 0.95, 0], "radius": 0.02, "type": "dark"},
+        {"shape": "box", "size": [0.5, 0.3, 0.4], "pos": [1.0, 1.25, 0], "type": "dark"},
+        {"shape": "wedge", "size": [0.45, 0.5, 0.15], "pos": [1.0, 1.1, 0.1], "type": "base"},
+        {"shape": "box", "size": [0.5, 0.1, 0.05], "pos": [1.0, 1.42, -0.05], "type": "base"}
+    ],
+    "cash_register": [
+        {"shape": "box", "size": [0.5, 0.2, 0.4], "pos": [0, 0.1, 0], "type": "dark"},
+        {"shape": "wedge", "size": [0.48, 0.5, 0.15], "pos": [0, 0.28, 0.05], "type": "base"},
+        {"shape": "box", "size": [0.5, 0.08, 0.1], "pos": [0, 0.38, -0.15], "type": "dark"},
+        {"shape": "box", "size": [0.3, 0.12, 0.03], "pos": [0, 0.42, -0.1], "rot": [-0.3, 0, 0], "type": "l3_screen", "name": "Pantalla Registradora"}
+    ],
+    "display_case_glass": [
+        {"shape": "wedge", "size": [1.4, 1.6, 0.35], "pos": [0, 0.175, 0], "type": "dark"},
+        {"shape": "box", "size": [1.5, 0.05, 0.7], "pos": [0, 0.4, 0], "radius": 0.015, "type": "dark"},
+        {"shape": "box", "size": [1.4, 0.7, 0.6], "pos": [0, 0.8, 0], "type": "glass"},
+        {"shape": "box", "size": [1.5, 0.05, 0.7], "pos": [0, 1.15, 0], "radius": 0.015, "type": "dark"}
+    ],
+    "market_stall_awning": [
+        {"shape": "box", "size": [2.4, 0.9, 1.0], "pos": [0, 0.45, 0], "type": "base"},
+        {"shape": "box", "size": [0.08, 2.0, 0.08], "pos": [-1.1, 1.0, 0.5], "type": "dark"},
+        {"shape": "box", "size": [0.08, 2.0, 0.08], "pos": [1.1, 1.0, 0.5], "type": "dark"},
+        {"shape": "wedge", "size": [2.4, 2.6, 0.06], "pos": [0, 2.0, 0.2], "rot": [0.15, 0, 0], "type": "base"}
+    ],
+    "mannequin_display": [
+        {"shape": "cylinder", "size": [0.2, 0.2, 0.04, 6], "pos": [0, 0.02, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.03, 0.03, 0.8, 4], "pos": [0, 0.42, 0], "type": "dark"},
+        {"shape": "wedge", "size": [0.35, 0.45, 0.5], "pos": [0, 1.05, 0], "type": "base"},
+        {"shape": "box", "size": [0.15, 0.15, 0.15], "pos": [0, 1.38, 0], "type": "dark"},
+        {"shape": "sphere", "size": [0.12, 6, 3], "pos": [0, 1.55, 0], "type": "base"}
+    ],
+    "shelving_unit": {
+        "generator": "bsp_shelf",
+        "size": [2.0, 2.2, 0.5],
+        "cuts": 5
+    },
+    "atm_machine": [
+        {"shape": "box", "size": [0.8, 1.2, 0.6], "pos": [0, 0.6, 0], "type": "dark"},
+        {"shape": "wedge", "size": [0.75, 0.8, 0.3], "pos": [0, 1.35, 0], "type": "dark"},
+        {"shape": "box", "size": [0.6, 0.45, 0.04], "pos": [0, 1.2, 0.32], "type": "l3_screen", "name": "Cajero Automático"},
+        {"shape": "box", "size": [0.3, 0.04, 0.08], "pos": [0, 0.85, 0.32], "type": "base"}
+    ],
+    "ice_cream_cart": [
+        {"shape": "wedge", "size": [1.1, 0.9, 0.7], "pos": [0, 0.65, 0], "type": "base"},
+        {"shape": "box", "size": [1.2, 0.06, 0.65], "pos": [0, 1.03, 0], "type": "dark"},
+        {"shape": "box", "size": [1.1, 0.3, 0.55], "pos": [0, 1.22, 0], "type": "glass"},
+        {"shape": "box", "size": [1.2, 0.04, 0.65], "pos": [0, 1.4, 0], "type": "dark"}
+    ],
+    "hanging_lantern": [
+        {"shape": "cylinder", "size": [0.02, 0.02, 0.4, 4], "pos": [0, 2.5, 0], "type": "dark"},
+        {"shape": "wedge", "size": [0.08, 0.2, 0.25], "pos": [0, 2.17, 0], "type": "base"},
+        {"shape": "sphere", "size": [0.12, 6, 3], "pos": [0, 2.05, 0], "type": "red_neo"}
+    ],
+    "barrel_display": [
+        {"shape": "cylinder", "size": [0.35, 0.35, 0.9, 12], "pos": [0, 0.45, 0], "type": "base"}
+    ],
+    "vending_machine": [
+        {"shape": "box", "size": [0.8, 1.6, 0.6], "pos": [0, 0.8, 0], "type": "dark"},
+        {"shape": "wedge", "size": [0.7, 0.8, 0.2], "pos": [0, 1.7, 0], "type": "dark"},
+        {"shape": "box", "size": [0.7, 1.0, 0.04], "pos": [0, 1.1, 0.32], "type": "l3_screen", "name": "Bebidas \u00a53000"},
+        {"shape": "box", "size": [0.25, 0.15, 0.08], "pos": [0, 0.4, 0.34], "type": "container", "name": "Ranura de Recogida"}
+    ]
+}

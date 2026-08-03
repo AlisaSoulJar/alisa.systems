@@ -1,0 +1,28 @@
+{
+  "schema": "alisa.realizacion.face_lexicon.v1",
+  "note": "Single source of truth for facial expressions on GLB avatars (rendered by AvatarCalibrationTool / avatar_face_lab). The Face engine maps a cue's emotion to one of the 8 rendered expressions + its anime symbol; the JS scene applies it. mood/voice/camera/light + FACE = one performance (Aris's art-direction doctrine).",
+  "owner": "Zeami / Aris (realización: cara)",
+
+  "expressions": {
+    "neutral":   { "symbol": null,    "intent": "at rest, listening" },
+    "happy":     { "symbol": "note",  "intent": "warmth, relief, victory" },
+    "sad":       { "symbol": "tear",  "intent": "loss, weight, regret" },
+    "angry":     { "symbol": "vein",  "intent": "frustration, threat" },
+    "surprised": { "symbol": "bang",  "intent": "shock, discovery" },
+    "thinking":  { "symbol": "dots",  "intent": "deliberation, doubt" },
+    "crying":    { "symbol": "tears", "intent": "grief, breakdown" },
+    "nervous":   { "symbol": "sweat", "intent": "unease, guilt, confession" }
+  },
+
+  "emotion_map": {
+    "happy": "happy", "victory": "happy", "love": "happy", "excited": "happy", "complete": "happy", "success": "happy", "relief": "happy",
+    "sad": "sad", "regret": "sad", "loss": "sad",
+    "angry": "angry", "panic": "angry", "error": "angry", "frustration": "angry",
+    "surprise": "surprised", "surprised": "surprised", "shock": "surprised",
+    "suspense": "nervous", "awkward": "nervous", "nervous": "nervous", "guilt": "nervous", "unease": "nervous",
+    "thinking": "thinking", "doubt": "thinking", "deliberation": "thinking",
+    "crying": "crying", "grief": "crying"
+  },
+
+  "defaults": { "expression": "neutral" }
+}

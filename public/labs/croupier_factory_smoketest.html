@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA LAB — Banco de pruebas de FACTORIES</title>
+<style>
+  body{margin:0;background:#070a11;color:#cfe3f5;font-family:ui-monospace,monospace;padding:20px 26px 60px}
+  h1{margin:0 0 3px;font-size:18px;color:#7fd0ff;letter-spacing:1px}
+  .sub{color:#5f7a92;font-size:11.5px;line-height:1.7;margin-bottom:14px}
+  table{border-collapse:collapse;font-size:11.5px;width:100%}
+  th{text-align:left;color:#5f7a92;font-weight:normal;border-bottom:1px solid #1d2b3e;padding:5px 8px}
+  td{padding:4px 8px;border-bottom:1px solid #101a26;vertical-align:top}
+  .ok{color:#7CFC98}.bad{color:#ff7b72}.warn{color:#ffd166}.k{color:#5f7a92}
+  .err{color:#ff9b8a;font-size:10.5px}
+  #sum{margin:14px 0;font-size:12px;line-height:1.8}
+</style>
+<script type="importmap">
+{ "imports": { "three": "/vendor/three-0.160.0/build/three.module.js",
+               "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+               "@alisa-engine/": "../js/alisa-engine/" } }
+</script>
+</head>
+<body>
+<h1>▓ BANCO DE PRUEBAS · las 25 factories del motor</h1>
+<div class="sub">Importa cada factory, la instancia y llama a la puerta común <code>buildAll(config)</code>.<br>
+<b>El contrato lo fija <code>BaseEnvironmentFactory</code>, cuyo <code>buildAll()</code> LANZA</b> si la subclase no lo sobrescribe:
+por eso una factory sin <code>buildAll</code> propio sale en rojo aunque su código esté sano.<br>
+Rojo = <b>no arranca por la puerta común</b>. Las bibliotecas estáticas (ProceduralProps, NeonSign) quedan fuera del contrato a propósito.</div>
+<div id="sum">ejecutando…</div>
+<table id="t"><thead><tr><th>factory</th><th>import</th><th>new</th><th>build()</th><th>objetos</th><th>luces</th><th>detalle</th></tr></thead><tbody></tbody></table>
+<script type="module">
+import * as THREE from 'three';
+
+const BASE = '@alisa-engine/src/world/factories/';
+// argumentos razonables por factory (los que no aparecen: build() sin args)
+// Ahora TODAS las constructoras aceptan un objeto de config en buildAll(),
+// así que solo hace falta desviarse del defecto donde el defecto sea caro.
+const ARGS = {
+  KatamariFactory:             [50],   // buildAll(chunkCount) — firma propia, numérica
+  ProceduralBuildingFactory:   [{ floors: 6, doorsPerFloor: 3, lightScale: 20 }],
+  ChopperFlightFactory:        [{ citySize: 300, buildings: 40 }],
+  TrafficEnvironmentFactory:   [{ roadLength: 300, roadWidth: 20 }],
+  TreadmillEnvironmentFactory: [{ radius: 1 }],
+  AsteroidsFactory:            [{ arenaW: 40, arenaH: 25 }],
+};
+// Bibliotecas de piezas: catálogos de createXxx(), NO constructoras de escena.
+// No tienen buildAll a propósito — pedírselo sería meterlas en un contrato que
+// no es el suyo. Se listan como N/A, no como fallo.
+const TOOLBOX = new Set(['EnvironmentFactory','NeonSignFactory','ProceduralPropsFactory']);
+
+const FILES = ['AquariumEnvironmentFactory','ArcadeDojoFactory','ArcadeRoomManager','ArcadeTableRoomFactory',
+  'ArchetypeEnvironmentFactory','AsteroidsFactory','BiolabEnvironmentFactory','CabinetEnvironmentFactory',
+  'CarverEnvironmentFactory','ChopperFlightFactory','ColonialControlRoomFactory','CompizEnvironmentFactory',
+  'CuccoEnvironmentFactory','DojoEnvironmentFactory','EnvironmentFactory','InteractionLabFactory',
+  'KatamariFactory','LocomotionEnvironmentFactory','NeonSignFactory','ProceduralBuildingFactory',
+  'ProceduralPropsFactory','RaccoonEnvironmentFactory','TreadmillEnvironmentFactory','TrafficEnvironmentFactory',
+  'VoxelGlitchFactory'];
+
+const tb = document.querySelector('#t tbody');
+const cell = (t, c='') => `<td class="${c}">${t}</td>`;
+const results = [];
+
+for (const name of FILES) {
+  const r = { name, imported:false, constructed:false, built:false, objs:0, lights:0, err:'' };
+  try {
+    const mod = await import(/* @vite-ignore */ BASE + name + '.js');
+    const Cls = mod[name] || Object.values(mod)[0];
+    r.imported = !!Cls;
+    if (Cls) {
+      const scene = new THREE.Scene();
+      // ── OJO, HALLAZGO ───────────────────────────────────────────────────
+      // El SEGUNDO argumento del constructor significa SEIS cosas distintas
+      // según la factory:  camera · engine/renderCore · AssetManager ·
+      // carverGrid (datos) · nada.  BaseEnvironmentFactory documenta
+      // (scene, engine) pero casi ninguna subclase lo cumple.
+      // Mientras eso no se unifique, el doble tiene que valer para todo: una
+      // cámara REAL a la que le colgamos la interfaz de engine.
+      const camera = new THREE.PerspectiveCamera(50, 16/9, 0.1, 2000);
+      const dual = Object.assign(camera, {
+        scene, camera, renderer: null, controls: null, registerPlugin(){}
+      });
+      // Las que usan el 2º argumento para DATOS necesitan su propio doble.
+      const CTOR = {
+        // Carver recibe DATOS en el 2º argumento (la rejilla urbana), no cámara.
+        CarverEnvironmentFactory: [scene, null],  // se rellena abajo con su propio demoGrid
+        ProceduralBuildingFactory: [scene, null],   // 2º arg = AssetManager, opcional
+        RaccoonEnvironmentFactory: [],
+        CuccoEnvironmentFactory:   [],
+      };
+      let inst;
+      // OJO: detectar "es clase" por toString() es frágil. Intentamos `new` y si
+      // no es constructible, usamos el módulo como objeto (algunas factories lo son).
+      if (typeof Cls === 'function') {
+        // Carver necesita su rejilla, y la fabrica ella misma.
+        if (name === 'CarverEnvironmentFactory' && Cls.demoGrid) CTOR[name] = [scene, Cls.demoGrid(12, 12)];
+        try { inst = new Cls(...(CTOR[name] ?? [scene, dual])); r.constructed = true; }
+        catch (e) {
+          if (/without 'new'|is not a constructor/i.test(e.message)) { inst = Cls; r.constructed = true; }
+          else r.err = 'new: ' + e.message;
+        }
+      } else { inst = Cls; r.constructed = true; }
+      if (inst) {
+        // EL CONTRATO REAL es buildAll() (BaseEnvironmentFactory). `build()` es la
+        // excepción: ProceduralBuildingFactory nunca adoptó la clase base.
+        const fn = inst.buildAll || inst.build || inst.create || inst.setup;
+        r.metodo = inst.buildAll ? 'buildAll()' : inst.build ? 'build()' : inst.create ? 'create()' : '—';
+        if (typeof fn === 'function') {
+          try {
+            if (inst.scene === undefined) inst.scene = scene;
+            // `await` porque Asteroids y Traffic cargan GLBs: su buildAll es
+            // async. Sin esto, sus fallos se perdían en una promesa sin dueño
+            // y el banco los daba por buenos.
+            await fn.apply(inst, ARGS[name] || []);
+            r.built = true;
+            let o = 0, l = 0;
+            scene.traverse(n => { o++; if (n.isLight) l++; });
+            if (inst.buildingGroup) inst.buildingGroup.traverse(n => { o++; if (n.isLight) l++; });
+            if (inst.group) inst.group.traverse(n => { o++; if (n.isLight) l++; });
+            r.objs = o; r.lights = l;
+          } catch (e) { r.err = 'build: ' + e.message; }
+        } else { r.err = 'sin build()/create()'; }
+      }
+    }
+  } catch (e) { r.err = 'import: ' + e.message; }
+  results.push(r);
+  const mark = b => b ? '<span class="ok">✓</span>' : '<span class="bad">✗</span>';
+  tb.insertAdjacentHTML('beforeend', `<tr>${cell(r.name)}${cell(mark(r.imported))}${cell(mark(r.constructed))}` +
+    `${cell(r.built ? '<span class="ok">✓</span>' : '<span class="bad">✗</span>')}` +
+    `${cell(r.objs||'—','k')}${cell(r.lights||'—','k')}${cell((r.metodo||'')+' '+r.err,'err')}</tr>`);
+}
+
+const ok = results.filter(r => r.built).length;
+const toolbox = results.filter(r => !r.built && TOOLBOX.has(r.name)).length;
+const noBuild = results.filter(r => !r.built && r.constructed && !TOOLBOX.has(r.name)).length;
+const broken = results.filter(r => !r.constructed).length;
+const construibles = results.length - toolbox;
+document.getElementById('sum').innerHTML =
+  `<span class="ok">✓ arrancan y construyen: <b>${ok}</b></span> de <b>${construibles}</b> construtoras<br>` +
+  `<span class="k">— bibliotecas de piezas (sin buildAll a propósito): <b>${toolbox}</b></span><br>` +
+  `<span class="warn">⚠ instancian pero buildAll() falla o falta: <b>${noBuild}</b></span><br>` +
+  `<span class="bad">✗ ni siquiera instancian: <b>${broken}</b></span>`;
+window.__report = { ok, construibles, toolbox, noBuild, broken, total: results.length,
+                    fallos: results.filter(r => !r.built && !TOOLBOX.has(r.name)).map(r => ({ f: r.name, e: r.err })) };
+window.__ready = true;
+</script>
+</body>
+</html>

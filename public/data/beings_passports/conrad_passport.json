@@ -1,0 +1,20 @@
+{
+    "name": "Conrad",
+    "role": "Head of Bureaucracy",
+    "emoji": "❔",
+    "type": "biological",
+    "skeleton": "humanoid",
+    "model_path": "conrad.glb",
+    "scale": 1.0,
+    "kinematics": "humanoid_bureaucrat",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "espeak",
+        "tier": 2,
+        "voice_id": "es",
+        "speed": 130,
+        "pitch": "40",
+        "label": "Conrad - eSpeak (burocrático, lento, robótico)"
+    }
+}

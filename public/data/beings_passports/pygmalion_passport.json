@@ -1,0 +1,20 @@
+{
+    "name": "Pygmalion",
+    "role": "The Surgeon",
+    "emoji": "❔",
+    "type": "mechanical",
+    "skeleton": "pygmalion_scanner",
+    "model_path": "pygmalion.glb",
+    "scale": 1.0,
+    "kinematics": "pygmalion_scanner",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "espeak",
+        "tier": 2,
+        "voice_id": "en+whisper",
+        "speed": 100,
+        "pitch": "25",
+        "label": "Pygmalion - eSpeak whisper (scanner, susurro mecánico)"
+    }
+}

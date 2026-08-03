@@ -1,0 +1,21 @@
+{
+    "name": "Zazu",
+    "role": "The Majordomo",
+    "emoji": "🦜",
+    "type": "biological",
+    "skeleton": "bird",
+    "model_path": "beast_parrot.glb",
+    "scale": 1.0,
+    "kinematics": "bird_flight",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "xtts",
+        "tier": 5,
+        "voice_id": "alisa_zazu",
+        "rate": "+15%",
+        "pitch": "+5Hz",
+        "label": "Zazu - alisa_zazu (XTTS Tier 5, rápido y nervioso)"
+    },
+    "avatar_source": "colonial_census_2026-04-23"
+}

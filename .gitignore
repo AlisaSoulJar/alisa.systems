@@ -1,0 +1,72 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  CREDENCIALES — lo de aquí NO puede salir del disco
+# ═══════════════════════════════════════════════════════════════════════════
+# Esta lista iba fichero a fichero y se dejó fuera `_deploy_archive/`, que es
+# justo donde estaban 9 cadenas con forma de clave API y 8 tokens asignados.
+# Un `git add .` los habría publicado en un repo PÚBLICO — y publicar no tiene
+# marcha atrás: aunque borres el commit, queda en clones y en cachés.
+#
+# Por eso ahora se ignora POR PATRÓN, no por nombre: cualquier `_deploy*` y
+# cualquier `_cf_*` quedan fuera aunque mañana aparezca otra carpeta nueva.
+# Comprobación: `python check_secretos.py` antes de cada subida.
+_deploy*
+_cf_*
+_find_node.py
+_deploy_success.json
+_deploy_debug.txt
+_deploy_log.txt
+_deploy_result.json
+_dns_fix.txt
+_dns_result.txt
+_gh_pages_log.txt
+_git_log.txt
+_pages_result.txt
+_soulseal_log.txt
+_actions_debug.txt
+_calendar_result.txt
+*.pyc
+__pycache__/
+.env
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  LO QUE SE GENERA — no se versiona lo que se puede reconstruir
+# ═══════════════════════════════════════════════════════════════════════════
+# Medido el 2 de agosto de 2026: sin esto, git veía **13.411 ficheros y 1,7 GB**.
+# `dist/` sola eran 669 MB de una compilación de mayo con una copia entera de
+# `public/` dentro. Un repositorio así no se clona: se abandona.
+#
+# Todo lo de aquí se rehace con un comando, y está dicho al lado.
+# ⚠️ SIN COMENTARIOS AL FINAL DE LA LÍNEA. `.gitignore` no los admite: el
+# patrón pasa a ser la línea entera, comentario incluido, y deja de coincidir
+# con nada. Lo escribí así y `dist/` —669 MB— siguió viajando tan tranquila.
+# Un fichero de reglas que se ignora a sí mismo en silencio.
+node_modules/
+
+# `npm run build`
+dist/
+# `python empaquetar.py`
+dist_publico/
+# `python atlas.py` — 2,3 MB de índice
+atlas.json
+# `python censo.py`
+public/inventario.html
+# `python gen_lab_index.py`
+public/lab.html
+.wrangler/
+.playwright-mcp/
+*.bak
+*.tmp
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  LA BIBLIOTECA DE TALLER — se queda en disco, no en el repositorio
+# ═══════════════════════════════════════════════════════════════════════════
+# `aligerar_props.py` aparta aquí lo que ninguna demo carga: 552 MB en 1.772
+# ficheros (851 modelos, 197 fuentes de Blender, 228 FBX…).
+#
+# ⚠️ Y esto hay que ignorarlo o no sirve de nada: moverlos DENTRO del
+# repositorio no adelgaza el repositorio. Lo medí — seguía en 1.079 MB después
+# de la mudanza, porque git los veía igual en su sitio nuevo.
+#
+# El resto de `_archivo/` SÍ se versiona: son cuatro ficheros con su nota, y
+# esa historia vale lo que ocupa.
+_archivo/props_sin_usar/

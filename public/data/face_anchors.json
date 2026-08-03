@@ -1,0 +1,214 @@
+{
+  "_doc": "face_anchor v1.2 (head-height body-plan model; stub-skeleton archetypes recalibrated 2026-07-04)",
+  "_canonical_size": 5.0,
+  "face_anchors": {
+    "arachnid": {
+      "pos": [
+        0.0,
+        2.5,
+        1.0
+      ],
+      "size": 0.8,
+      "facing": [
+        0,
+        0,
+        1
+      ]
+    },
+    "primate": {
+      "pos": [
+        0.0,
+        3.75,
+        1.0
+      ],
+      "size": 1.1,
+      "facing": [
+        0,
+        0,
+        1
+      ]
+    },
+    "canine": {
+      "pos": [
+        -0.2,
+        3.75,
+        1.6
+      ],
+      "size": 1.3,
+      "facing": [
+        0,
+        0,
+        1
+      ]
+    },
+    "bear": {
+      "pos": [
+        0.0,
+        3.4,
+        1.8
+      ],
+      "size": 1.2,
+      "facing": [
+        0,
+        0,
+        1
+      ]
+    },
+    "insecta": {
+      "pos": [
+        0.0,
+        2.9,
+        1.0
+      ],
+      "size": 1.2,
+      "facing": [
+        0,
+        0,
+        1
+      ]
+    },
+    "serpentine": {
+      "pos": [
+        0.0,
+        3.0,
+        1.5
+      ],
+      "size": 0.6,
+      "facing": [
+        0,
+        0,
+        1
+      ]
+    },
+    "bird": {
+      "pos": [
+        0.0,
+        2.95,
+        1.5
+      ],
+      "size": 0.5,
+      "facing": [
+        0,
+        0,
+        1
+      ]
+    },
+    "piscine": {
+      "pos": [
+        0.0,
+        3.25,
+        0.0
+      ],
+      "size": 0.5,
+      "facing": [
+        0,
+        0,
+        1
+      ]
+    },
+    "plantigrade": {
+      "pos": [
+        0.0,
+        3.5,
+        1.3
+      ],
+      "size": 0.9,
+      "facing": [
+        0,
+        0,
+        1
+      ]
+    },
+    "ungulate": {
+      "pos": [
+        0.0,
+        3.8,
+        1.2
+      ],
+      "size": 0.7,
+      "facing": [
+        0,
+        0,
+        1
+      ]
+    },
+    "digitigrade": {
+      "pos": [
+        0.0,
+        3.7,
+        1.4
+      ],
+      "size": 0.8,
+      "facing": [
+        0,
+        0,
+        1
+      ]
+    },
+    "bipedal": {
+      "pos": [
+        0.0,
+        4.1,
+        0.8
+      ],
+      "size": 0.9,
+      "facing": [
+        0,
+        0,
+        1
+      ]
+    },
+    "wheeled": {
+      "pos": [
+        0.0,
+        3.4,
+        0.6
+      ],
+      "size": 0.8,
+      "facing": [
+        0,
+        0,
+        1
+      ]
+    },
+    "droid_compact": {
+      "pos": [
+        0.0,
+        3.6,
+        0.0
+      ],
+      "size": 0.7,
+      "facing": [
+        0,
+        0,
+        1
+      ]
+    },
+    "droid_barrel": {
+      "pos": [
+        0.0,
+        3.4,
+        0.0
+      ],
+      "size": 0.8,
+      "facing": [
+        0,
+        0,
+        1
+      ]
+    },
+    "console_box": {
+      "pos": [
+        0.0,
+        2.6,
+        0.0
+      ],
+      "size": 1.3,
+      "facing": [
+        0,
+        0,
+        1
+      ]
+    }
+  }
+}

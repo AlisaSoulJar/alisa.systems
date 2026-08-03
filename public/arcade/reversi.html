@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA Arcade — Reversi Arena</title>
+    <link rel="stylesheet" href="css/arcade.css">
+    
+    <script src="/vendor/three-r128/three.min.js"></script>
+    <script src="/vendor/tween/tween.umd.js"></script>
+    
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #05050A; }
+        #canvas-container { width: 100vw; height: 100vh; position: absolute; z-index: 1; }
+        
+        .overlay {
+            position: absolute; z-index: 10; pointer-events: none;
+            padding: 30px; display: flex; flex-direction: column; gap: 15px;
+        }
+
+        .hud-panel {
+            background: rgba(15, 25, 15, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(46, 204, 113, 0.4);
+            border-radius: 12px;
+            padding: 20px;
+            color: #E2E2F0;
+            font-family: 'JetBrains Mono', monospace;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5), inset 0 0 20px rgba(46, 204, 113, 0.05);
+            max-width: 350px;
+            pointer-events: all;
+        }
+
+        .hud-panel h1 {
+            font-family: 'Inter', sans-serif; margin: 0 0 10px 0; font-size: 24px;
+            background: linear-gradient(135deg, #2ecc71, #fff);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .hud-panel .status-row {
+            display: flex; justify-content: space-between;
+            font-size: 12px; margin-bottom: 6px; color: #a1c1a1;
+        }
+
+        .hud-panel .val { color: #fff; font-weight: bold; }
+        .val.turn-white { color: #ffffff; text-shadow: 0 0 5px #fff; }
+        .val.turn-black { color: #2ecc71; text-shadow: 0 0 5px #2ecc71; }
+
+        .legal-moves {
+            margin-top: 15px; font-size: 10px; color: rgba(255,255,255,0.4);
+            max-height: 80px; overflow-y: hidden;
+            word-wrap: break-word; line-height: 1.4;
+        }
+
+        .agent-control {
+            margin-top: 12px; display: flex; flex-direction: column; gap: 6px;
+        }
+
+        .input-row { display: flex; gap: 4px; }
+
+        .input-row input {
+            background: rgba(0,0,0,0.4); border: 1px solid rgba(46,204,113,0.3);
+            color: #fff; padding: 6px 8px; border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace; font-size: 11px; flex: 1;
+        }
+
+        .input-row button, .auto-btn {
+            background: rgba(46,204,113,0.15); border: 1px solid rgba(46,204,113,0.4);
+            color: #2ecc71; padding: 6px 10px; border-radius: 4px; cursor: pointer;
+            font-family: 'JetBrains Mono', monospace; font-size: 11px;
+            transition: all 0.2s;
+        }
+        .input-row button:hover, .auto-btn:hover { background: rgba(46,204,113,0.3); }
+        .auto-btn { width: 100%; text-align: center; }
+        .auto-btn.active { background: rgba(46,204,113,0.4); color: #fff; }
+
+        /* Disc counts */
+        .disc-counts {
+            display: flex; justify-content: space-around; margin-top: 8px;
+            font-size: 14px; font-weight: bold;
+        }
+        .disc-counts .black-count { color: #2ecc71; }
+        .disc-counts .white-count { color: #ffffff; }
+
+        /* Ambient glows */
+        body::before {
+            content: ''; position: fixed; inset: 0;
+            background: radial-gradient(ellipse at 50% 50%, rgba(46,204,113,0.05) 0%, transparent 60%);
+            z-index: 0; pointer-events: none;
+        }
+    </style>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+    
+    <div id="hud-container"></div>
+
+    <!-- The Brains -->
+    <!-- ProtoHub: reglas locales, para que la página funcione sin ningún backend. -->
+    <script type="module">
+        import { ProtoHub } from './js/protohub/ProtoHub.js';
+        import { reversi }  from './js/protohub/rules/reversi.js';
+        window.ALISA_PROTOHUB = new ProtoHub().registrar('reversi', reversi);
+    </script>
+    <script src="js/Entrada.js"></script>
+    <script src="js/SovereignBoardEngine.js"></script>
+    <script src="js/reversi_visualizer.js"></script>
+
+</body>
+</html>

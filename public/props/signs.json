@@ -1,0 +1,30 @@
+{
+    "hologram_ad_floating": [
+        {"shape": "box", "size": [2.4, 1.2, 0.1], "pos": [0, 2.0, 0], "type": "l3_screen", "name": "Compra N-Cola"}
+    ],
+    "neon_sign_wall": [
+        {"shape": "box", "size": [0.4, 2.8, 0.1], "pos": [0, 1.4, -0.4], "type": "red_neo"}
+    ],
+    "warning_a_frame": [
+        {"shape": "box", "size": [0.6, 0.8, 0.05], "pos": [0, 0.4, 0.15], "rot": [0.3, 0, 0], "type": "base"},
+        {"shape": "box", "size": [0.6, 0.8, 0.05], "pos": [0, 0.4, -0.15], "rot": [-0.3, 0, 0], "type": "base"}
+    ],
+    "arrow_hologram": [
+        {"shape": "box", "size": [1.5, 0.6, 0.05], "pos": [0, 2.5, 0], "type": "l3_screen", "name": "Dirección →"}
+    ],
+    "holo_projector_ground": [
+        {"shape": "cylinder", "size": [0.3, 0.3, 0.15, 8], "pos": [0, 0.075, 0], "type": "dark"},
+        {"shape": "box", "size": [1.5, 2.0, 0.05], "pos": [0, 1.2, 0], "type": "l3_screen", "name": "Holo Proyección"}
+    ],
+    "neon_cross_pharmacy": [
+        {"shape": "box", "size": [1.0, 0.2, 0.1], "pos": [0, 2.0, -0.4], "radius": 0.04, "type": "cyan_neo"},
+        {"shape": "box", "size": [0.2, 1.0, 0.1], "pos": [0, 2.0, -0.4], "radius": 0.04, "type": "cyan_neo"}
+    ],
+    "banner_vertical": [
+        {"shape": "box", "size": [0.05, 3.0, 0.05], "pos": [0, 1.5, 0], "type": "dark"},
+        {"shape": "box", "size": [0.8, 2.0, 0.02], "pos": [0, 2.0, 0.05], "type": "base"}
+    ],
+    "wanted_poster": [
+        {"shape": "box", "size": [0.6, 0.8, 0.02], "pos": [0, 1.5, -0.4], "type": "l3_screen", "name": "SE BUSCA"}
+    ]
+}

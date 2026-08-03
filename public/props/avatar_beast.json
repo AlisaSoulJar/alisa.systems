@@ -1,0 +1,331 @@
+{
+    "apatosaurus": {
+        "type": "glb",
+        "url": "props/models/Apatosaurus.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "bat": {
+        "type": "glb",
+        "url": "props/models/Bat.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "chickenbrown": {
+        "type": "glb",
+        "url": "props/models/ChickenBrown.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "cow": {
+        "type": "glb",
+        "url": "props/models/Cow.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "cowblw": {
+        "type": "glb",
+        "url": "props/models/CowBlW.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "dog_1": {
+        "type": "glb",
+        "url": "props/models/Dog (1).glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "dog": {
+        "type": "glb",
+        "url": "props/models/Dog.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "dolphin": {
+        "type": "glb",
+        "url": "props/models/Dolphin.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "duckwhite": {
+        "type": "glb",
+        "url": "props/models/DuckWhite.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "everythinglibrary_animals_001": {
+        "type": "glb",
+        "url": "props/models/EverythingLibrary_Animals_001.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "ferret": {
+        "type": "glb",
+        "url": "props/models/Ferret.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "fish1": {
+        "type": "glb",
+        "url": "props/models/Fish1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "fish2": {
+        "type": "glb",
+        "url": "props/models/Fish2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "fish3": {
+        "type": "glb",
+        "url": "props/models/Fish3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "frog": {
+        "type": "glb",
+        "url": "props/models/Frog.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "horse": {
+        "type": "glb",
+        "url": "props/models/Horse.glb",
+        "scale": 0.005,
+        "tint": "#aa8855",
+        "faceStyle": "decal"
+    },
+    "lion": {
+        "type": "glb",
+        "url": "props/models/Lion.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "llama": {
+        "type": "glb",
+        "url": "props/models/Llama.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "manta_ray": {
+        "type": "glb",
+        "url": "props/models/Manta_ray.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "mouse": {
+        "type": "glb",
+        "url": "props/models/Mouse.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "parasaurolophus": {
+        "type": "glb",
+        "url": "props/models/Parasaurolophus.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "pig": {
+        "type": "glb",
+        "url": "props/models/Pig.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "pug": {
+        "type": "glb",
+        "url": "props/models/Pug.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "puppy": {
+        "type": "glb",
+        "url": "props/models/Puppy.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rat": {
+        "type": "glb",
+        "url": "props/models/Rat.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "shark": {
+        "type": "glb",
+        "url": "props/models/Shark.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "sheep": {
+        "type": "glb",
+        "url": "props/models/Sheep.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "sheepwhite": {
+        "type": "glb",
+        "url": "props/models/SheepWhite.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "snake": {
+        "type": "glb",
+        "url": "props/models/Snake.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "snake_angry": {
+        "type": "glb",
+        "url": "props/models/Snake_angry.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "stegosaurus": {
+        "type": "glb",
+        "url": "props/models/Stegosaurus.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "trex": {
+        "type": "glb",
+        "url": "props/models/Trex.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "triceratops": {
+        "type": "glb",
+        "url": "props/models/Triceratops.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "velociraptor": {
+        "type": "glb",
+        "url": "props/models/Velociraptor.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "whale": {
+        "type": "glb",
+        "url": "props/models/Whale.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "wolf": {
+        "type": "glb",
+        "url": "props/models/Wolf.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "zebra": {
+        "type": "glb",
+        "url": "props/models/Zebra.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "beast_flamingo": {
+        "type": "glb",
+        "url": "props/models/beast_flamingo.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "beast_fox": {
+        "type": "glb",
+        "url": "props/models/beast_fox.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "beast_horse": {
+        "type": "glb",
+        "url": "props/models/beast_horse.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "beast_parrot": {
+        "type": "glb",
+        "url": "props/models/beast_parrot.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "beast_stork": {
+        "type": "glb",
+        "url": "props/models/beast_stork.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "elephant": {
+        "type": "glb",
+        "url": "props/models/elephant.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "gazelle": {
+        "type": "glb",
+        "url": "props/models/gazelle.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "penguin": {
+        "type": "glb",
+        "url": "props/models/penguin.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rabbit": {
+        "type": "glb",
+        "url": "props/models/rabbit.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rhino": {
+        "type": "glb",
+        "url": "props/models/rhino.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    }
+}

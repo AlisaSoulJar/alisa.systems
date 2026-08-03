@@ -1,0 +1,8 @@
+{
+    "source_file": "Alien Computer.glb",
+    "deduced_size_meters": 2.0,
+    "target_tier": "Tier 0.2: Heavy Appliance",
+    "target_scale_constraint": 2.0,
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0
+}

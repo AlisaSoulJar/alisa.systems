@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ALISA — Standard Procedural Entity (SPE) Lab</title>
+<style>
+body { margin: 0; background: #e0e5ec; overflow: hidden; font-family: 'Courier New', Courier, monospace; }
+canvas { display: block; }
+#ui-pane { 
+    position: fixed; top: 10px; left: 10px; color: #333; z-index: 10;
+    background: rgba(255,255,255,0.9); padding: 15px 20px; border: 1px solid #aaa; border-radius: 4px; 
+    max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+#ui-pane h1 { margin: 0 0 10px 0; font-size: 16px; letter-spacing: 1px; color: #111; border-bottom: 2px solid #555; padding-bottom:5px; }
+.btn-group { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
+button { 
+    background: #f0f0f5; border: 1px solid #d0d0dc; color: #333; 
+    padding: 10px 15px; cursor: pointer; font-family: inherit; font-size:13px; font-weight: bold;
+    transition: all 0.2s; border-radius: 4px; text-align: left;
+}
+button:hover { background: #e0e0e0; border-color: #888; }
+button:active { transform: scale(0.98); }
+.info-row { margin: 5px 0; font-size: 12px; color: #555; display: flex; justify-content: space-between;}
+.info-val { color: #0077cc; font-weight: bold; }
+#labels { position: absolute; bottom: 20px; width: 100%; text-align: center; color: #556;
+          z-index: 10; font: 11px monospace; letter-spacing: 2px; text-shadow: 0 0 3px #fff; }
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "/vendor/three-0.160.0/build/three.module.js",
+    "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+    "@alisa-engine/": "../js/alisa-engine/"
+  }
+}
+</script>
+</head>
+<body>
+
+<div id="ui-pane">
+    <h1>SPE: VARIANCE vs RIGID HITBOX</h1>
+    <div style="font-size:11px; color:#555; margin-bottom:10px;">
+        ML requires rigid grid bounds (Tiers). Art requires organic chaos (Variance). The Standard Procedural Entity (SPE) merges both. Green lines = ML Hitbox Logic.
+    </div>
+    
+    <div class="info-row">Active Entity: <span id="ui-state" class="info-val">AWAITING SPAWN</span></div>
+    <div class="info-row">ML Voxel Logic Grid: <span class="info-val" style="color:green">LOCKED</span></div>
+    
+    <div class="btn-group">
+        <button onclick="window.spawnEntity('building', 7, 1.0)">🏙️ SPAWN TIER 7 (Architecture)</button>
+        <button onclick="window.spawnEntity('avatar', 4, 1.25)">🧍 SPAWN TIER 4 (La Montaña var=1.25)</button>
+        <button onclick="window.spawnEntity('avatar', 4, 0.75)">🧍 SPAWN TIER 4 (Rompetechos var=0.75)</button>
+        <button onclick="window.spawnEntity('item', 2, 0.9)">📻 SPAWN TIER 2 (Radio prop)</button>
+        <button onclick="window.clearScene()" style="text-align:center; margin-top:10px;">🗑️ CLEAR SCENE</button>
+    </div>
+</div>
+
+<div id="labels">ALISA OVERWORLD · PROCEDURAL LAB · STANDARDIZED API</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { AlisaEntity, SPEFactory } from '@alisa-engine/src/soma/morphology/ProceduralSPE.js';
+import * as TWEEN from '/vendor/tween/tween.esm.js';
+import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+
+// --- Core Setup ---
+const gfx = new AlisaRenderCore({
+    clearColor: 0xf0f2f5,
+    fogColor: 0xf0f2f5,
+    fogDensity: 0.02,
+    cameraPosition: new THREE.Vector3(20, 15, 30)
+});
+const scene = gfx.scene;
+const camera = gfx.camera;
+const renderer = gfx.renderer;
+const controls = gfx.controls;
+
+// --- Lighting ---
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0xcadcfa, 0.8);
+scene.add(hemiLight);
+
+const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+dirLight.position.set(50, 100, 50); 
+scene.add(dirLight);
+
+// Floor Grid
+const gridHelper = new THREE.GridHelper(200, 200, 0x888888, 0xdddddd);
+gridHelper.material.opacity = 0.5;
+gridHelper.material.transparent = true;
+scene.add(gridHelper);
+
+const mainGroup = new THREE.Group();
+scene.add(mainGroup);
+
+const speFactory = new SPEFactory();
+
+// --- Spawner Logic ---
+
+let currentSpawn = null;
+let currentBspGroup = null;
+
+window.clearScene = function() {
+    if(currentSpawn) { mainGroup.remove(currentSpawn.root); currentSpawn = null; }
+    if(currentBspGroup) { mainGroup.remove(currentBspGroup); currentBspGroup = null; }
+    document.getElementById('ui-state').innerText = "CLEARED";
+}
+
+window.spawnEntity = function(type, tier, variance) {
+    window.clearScene();
+    
+    document.getElementById('ui-state').innerText = `${type.toUpperCase()} (T${tier} Var:${variance})`;
+    
+    const entity = new AlisaEntity({ type, tier, variance, seed: Math.random() });
+    const models = entity.generateVisualModel();
+    
+    // Position target depending on type to test different placements in procedural city
+    const offset = Math.random() * 5;
+    models.root.position.x = (Math.random()-0.5) * 10;
+    models.root.position.z = (Math.random()-0.5) * 10;
+    
+    // Keep reference and hide visual organic initially
+    currentSpawn = models;
+    models.visual.visible = false;
+    mainGroup.add(models.root);
+    
+    // Adapt Camera to Tier size
+    const lookT = models.root.position.clone();
+    lookT.y = entity.physicsBox.h / 2;
+    controls.target.copy(lookT);
+    camera.position.set(lookT.x + entity.physicsBox.w*1.5, lookT.y + entity.physicsBox.h, lookT.z + entity.physicsBox.w*2.5);
+    
+    // Execute Sober Sequence exactly over the logical box
+    currentBspGroup = new THREE.Group();
+    currentBspGroup.position.copy(models.root.position);
+    mainGroup.add(currentBspGroup);
+    
+    let vLevel0 = [{ cx: 0, cy: entity.physicsBox.h/2, cz: 0, sx: entity.physicsBox.w, sy: entity.physicsBox.h, sz: entity.physicsBox.d }];
+    
+    let vLevel1 = speFactory.subdivideVoxels(vLevel0, entity.physicsBox);
+    let vLevel2 = speFactory.subdivideVoxels(vLevel1, entity.physicsBox);
+    let vLevel3 = speFactory.subdivideVoxels(vLevel2, entity.physicsBox);
+    let vLevel4 = speFactory.subdivideVoxels(vLevel3, entity.physicsBox);
+    
+    // Skip ghost box to be incredibly sober
+    const clouds = [
+        speFactory.generateStaticMeshCloud(vLevel1, entity.physicsBox, entity.identity),
+        speFactory.generateStaticMeshCloud(vLevel2, entity.physicsBox, entity.identity),
+        speFactory.generateStaticMeshCloud(vLevel3, entity.physicsBox, entity.identity),
+        speFactory.generateStaticMeshCloud(vLevel4, entity.physicsBox, entity.identity)
+    ];
+    
+    let step = 0;
+    currentBspGroup.add(clouds[step]);
+    
+    const interval = setInterval(() => {
+        currentBspGroup.remove(clouds[step]);
+        step++;
+        if (step < clouds.length) {
+            currentBspGroup.add(clouds[step]);
+        } else {
+            clearInterval(interval);
+            mainGroup.remove(currentBspGroup);
+            currentBspGroup = null;
+            models.visual.visible = true; // SOBER MATERIALIZATION
+        }
+    }, 250);
+}
+
+// Main Loop
+gfx.startLoop((dt) => {
+    TWEEN.update(performance.now());
+});
+</script>
+</body>
+</html>

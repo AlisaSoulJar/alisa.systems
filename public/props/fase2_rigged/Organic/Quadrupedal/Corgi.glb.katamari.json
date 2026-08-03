@@ -1,0 +1,23 @@
+{
+    "source_file": "Corgi.glb",
+    "deduced_size_meters": 0.5,
+    "target_tier": "Tier -1: Small Fauna",
+    "target_scale_constraint": 0.6,
+    "voxel_grid": [
+        2,
+        4,
+        6
+    ],
+    "archetype": "ungulate",
+    "morphology": {
+        "size_m": 0.5,
+        "domain": "organic",
+        "cladistics": "ungulate",
+        "mobility": "quadrupedal",
+        "mechanical_joints": 4
+    },
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0,
+    "mesh_scale_multiplier": 0.45224495813120924,
+    "mathematical_tomography": []
+}

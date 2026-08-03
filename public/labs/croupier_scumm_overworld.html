@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA - Croupier SCUMM Overworld</title>
+    <style>
+        @import url('/vendor/fonts/fuentes.css');
+
+        :root {
+            --bg-color: #0d0d0d;
+            --canvas-bg: #1a1a2e;
+            --verb-color: #3498db;
+            --verb-selected: #f1c40f;
+            --text-color: #ecf0f1;
+            --border-color: #2c3e50;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'VT323', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 800px;
+            height: 600px;
+            border: 4px solid var(--border-color);
+            position: relative;
+            background-color: var(--canvas-bg);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            margin-top: 20px;
+        }
+
+        #world-canvas {
+            width: 100%;
+            height: 400px;
+            image-rendering: pixelated;
+        }
+
+        #ui-layer {
+            height: 200px;
+            background-color: #000;
+            border-top: 4px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+
+        #dialog-area {
+            height: 40px;
+            color: var(--verb-selected);
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        #verb-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            flex-grow: 1;
+        }
+
+        .verb {
+            background: none;
+            border: none;
+            color: var(--verb-color);
+            font-family: 'Press Start 2P', cursive;
+            font-size: 14px;
+            cursor: pointer;
+            text-align: left;
+            padding: 5px;
+            transition: color 0.1s;
+        }
+
+        .verb:hover {
+            color: #fff;
+        }
+
+        .verb.active {
+            color: var(--verb-selected);
+        }
+
+        #inventory {
+            width: 300px;
+            border-left: 2px solid var(--border-color);
+            padding-left: 10px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+        }
+
+        .inv-item {
+            width: 48px;
+            height: 48px;
+            background-color: #222;
+            border: 1px solid #444;
+        }
+
+        #room-info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-family: 'Press Start 2P';
+            font-size: 10px;
+            color: #555;
+            pointer-events: none;
+        }
+
+        /* Scanline effect */
+        #game-container::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <div id="room-info">NODE: HOME | 127.0.0.1:ALISA</div>
+        <canvas id="world-canvas" width="800" height="400"></canvas>
+        <div id="ui-layer">
+            <div id="dialog-area">WALK TO</div>
+            <div style="display: flex; flex-grow: 1;">
+                <div id="verb-grid">
+                    <button class="verb" data-verb="OPEN">OPEN</button>
+                    <button class="verb" data-verb="CLOSE">CLOSE</button>
+                    <button class="verb" data-verb="PICK UP">PICK UP</button>
+                    <button class="verb" data-verb="LOOK AT">LOOK AT</button>
+                    <button class="verb" data-verb="TALK TO">TALK TO</button>
+                    <button class="verb active" data-verb="WALK TO">WALK TO</button>
+                    <button class="verb" data-verb="USE">USE</button>
+                    <button class="verb" data-verb="PUSH">PUSH</button>
+                    <button class="verb" data-verb="PULL">PULL</button>
+                </div>
+                <div id="inventory">
+                    <div class="inv-item" title="La Corona"></div>
+                    <div class="inv-item"></div>
+                    <div class="inv-item"></div>
+                    <div class="inv-item"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Import Map -->
+    <script type="importmap">
+    {
+        "imports": {
+            "@alisa-engine/": "../js/alisa-engine/src/"
+        }
+    }
+    </script>
+
+    <script type="module">
+        import { ScummOverworldEngine } from '@alisa-engine/world/systems/ScummOverworldEngine.js';
+
+        const canvas = document.getElementById('world-canvas');
+        const ctx = canvas.getContext('2d');
+        const dialogArea = document.getElementById('dialog-area');
+        
+        // Croupier Engine Initialization
+        const engine = new ScummOverworldEngine();
+
+        // Assets
+        const loadedSprite = new Image();
+        loadedSprite.src = '../../../Data/Assets/sprites/icon_happy.png'; // Adjust path as in original ('../Data/Assets/...' in recovered, labs is deeper)
+
+        // UI Helpers
+        function updateActionText(suffix = "") {
+            dialogArea.innerText = engine.state.currentVerb + (suffix ? " " + suffix : "");
+        }
+
+        document.querySelectorAll('.verb').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const verb = e.target.dataset.verb;
+                engine.setVerb(verb);
+                document.querySelectorAll('.verb').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                updateActionText();
+            });
+        });
+
+        // Input
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const res = engine.resolveInteraction(x, y);
+            if (res.target) {
+                updateActionText(res.target.name);
+            } else if (res.action === 'MISS') {
+                updateActionText('');
+            }
+        });
+
+        // External State Sync
+        async function syncApiState() {
+            try {
+                // Keep the exact same structure requested by legacy
+                const response = await fetch('../Recovered/state.json?t=' + Date.now());
+                if (!response.ok) return;
+                const data = await response.json();
+
+                if (data && data.view) {
+                    engine.syncStateOverride(data.view.x, data.view.y);
+                    document.getElementById('room-info').innerText = `NODE: ${data.node.toUpperCase()} | POS: ${data.pos.x.toFixed(1)},${data.pos.y.toFixed(1)}`;
+                }
+            } catch (e) {
+                // Silently fail if state.json doesn't exist
+            }
+        }
+
+        // Chat Polling
+        let chatBubbles = [];
+        let lastMsgTimestamp = 0;
+
+        async function syncChat() {
+            try {
+                // Note: labs path vs overworld path
+                const response = await fetch('../../../../Data/Channels/console_outbox.json?t=' + Date.now());
+                if (!response.ok) return;
+                const messages = await response.json();
+
+                messages.forEach(msg => {
+                    const ts = parseFloat(msg.timestamp);
+                    if (ts > lastMsgTimestamp) {
+                        lastMsgTimestamp = ts;
+                        const sender = msg.sender || "ALISA";
+
+                        chatBubbles.push({
+                            text: msg.content,
+                            sender: sender,
+                            x: sender === "ALISA" ? engine.state.queen.x : 100,
+                            y: sender === "ALISA" ? engine.state.queen.y - 60 : 500,
+                            life: 300 // frames
+                        });
+
+                        updateActionText(`[${sender}] Says...`);
+                    }
+                });
+
+            } catch (e) {}
+        }
+
+        setInterval(syncApiState, 500);
+        setInterval(syncChat, 500);
+
+        // Rendering Pipeline
+        function drawBubbles() {
+            ctx.font = "14px 'Press Start 2P'";
+            ctx.textAlign = "center";
+
+            chatBubbles.forEach(bubble => {
+                bubble.life--;
+                let x = bubble.x;
+                let y = bubble.y;
+
+                if (bubble.sender === "ALISA") {
+                    x = engine.state.queen.x;
+                    y = engine.state.queen.y - 70;
+                }
+
+                const width = ctx.measureText(bubble.text).width + 20;
+                const height = 30;
+
+                ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+                ctx.strokeStyle = "#000";
+                ctx.lineWidth = 2;
+
+                ctx.beginPath();
+                ctx.roundRect(x - width / 2, y - height / 2, width, height, 10);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = "#000";
+                ctx.fillText(bubble.text, x, y + 5);
+            });
+
+            chatBubbles = chatBubbles.filter(b => b.life > 0);
+        }
+
+        let lastTime = performance.now();
+        function loop(timestamp) {
+            const dt = (timestamp - lastTime) / 1000.0;
+            lastTime = timestamp;
+
+            // 1. Math / Kinematics Update
+            engine.update(dt);
+
+            // 2. Clear Screen
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 3. Draw Objects
+            engine.state.objects.forEach(obj => {
+                ctx.fillStyle = obj.color;
+                ctx.fillRect(obj.x - 20, obj.y - 20, 40, 40);
+            });
+
+            // 4. Draw Queen
+            try {
+                ctx.drawImage(loadedSprite, engine.state.queen.x - 32, engine.state.queen.y - 32, 64, 64);
+            } catch (e) {
+                ctx.fillStyle = 'cyan';
+                ctx.fillRect(engine.state.queen.x - 20, engine.state.queen.y - 20, 40, 40);
+            }
+
+            // 5. Draw Target Marker (if WALKING and not reached)
+            const q = engine.state.queen;
+            if (Math.abs(q.targetX - q.x) > 5 || Math.abs(q.targetY - q.y) > 5) {
+                ctx.strokeStyle = '#f1c40f';
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.arc(q.targetX, q.targetY, 10, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // 6. Draw Chat
+            drawBubbles();
+
+            requestAnimationFrame(loop);
+        }
+
+        requestAnimationFrame(loop);
+
+    </script>
+</body>
+
+</html>

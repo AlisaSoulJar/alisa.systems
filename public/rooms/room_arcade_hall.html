@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA - Arcade Hall (Multiplayer)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { margin: 0; overflow: hidden; background: #0a001a; font-family: 'Inter', sans-serif; user-select: none; }
+
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; padding: 30px; z-index: 10;
+        }
+
+        .hud-panel {
+            background: rgba(10, 0, 26, 0.85); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,0,255,0.2); border-radius: 12px;
+            padding: 20px; pointer-events: auto;
+            box-shadow: 0 10px 30px rgba(255,0,255,0.08); color: #e0e0ff; width: 320px;
+        }
+
+        h1 { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 5px; color: #ff00ff; }
+        .subtitle { font-size: 12px; color: #888; font-family: 'JetBrains Mono', monospace; }
+
+        .btn-exit {
+            display: inline-block; margin-top: 15px; text-decoration: none;
+            border: 1px solid #00ffff; background: rgba(0, 255, 255, 0.05);
+            color: #00ffff; cursor: pointer; padding: 8px 12px; font-weight: 700;
+            font-family: 'JetBrains Mono', monospace; border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .btn-exit:hover { background: rgba(0, 255, 255, 0.15); }
+
+        #romCartridge {
+            width: 1024px; height: 768px; border: none;
+            background: #000;
+        }
+
+        #env-controls select {
+            pointer-events: auto; background: rgba(255,0,255,0.1); color: #ff80ff;
+            border: 1px solid rgba(255,0,255,0.3); padding: 6px; border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace; font-size: 12px; outline: none; cursor: pointer;
+        }
+    </style>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+
+    <div id="css-container" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; overflow:hidden;"></div>
+    
+    <!-- SINGLE SHARED IFRAME (only one game active at a time per player) -->
+    <div id="iframe-hide-container" style="display:none;">
+        <iframe id="romCartridge" src="about:blank"></iframe>
+    </div>
+
+    <div id="ui-layer">
+        <div class="hud-panel">
+            <h1>🕹️ ARCADE HALL</h1>
+            <div class="subtitle">Multi-Cabinet · MMO-Ready</div>
+            
+            <hr style="border: 0; border-top: 1px dashed rgba(255,0,255,0.2); margin: 15px 0;">
+            
+            <div id="game-status" style="color:#888; font-size:12px; font-family:'JetBrains Mono', monospace; min-height: 40px;">
+                Walk around. Click any machine to sit down.
+            </div>
+
+            <a href="../lab.html" class="btn-exit" style="width: 100%; text-align: center; margin-top: 15px;">⮌ EXIT TO OVERWORLD</a>
+            
+            <div id="env-controls" style="margin-top: 15px; display:flex; flex-direction:column; gap:5px;">
+                <span style="color:#ff80ff;font-size:11px;font-weight:bold;">ENVIRONMENT:</span>
+                <select id="lightSelect" onchange="window.setLighting(this.value)">
+                    <option value="day" selected>☀️ Day / Office</option>
+                    <option value="night">🌙 Night / Dark</option>
+                    <option value="neon">🟣 Cyberpunk Neon</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/three-0.160.0/build/three.module.js",
+            "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+            "@alisa-engine/": "../js/alisa-engine/src/"
+        }
+    }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { AlisaRenderCore } from '@alisa-engine/soma/AlisaRenderCore.js';
+        import { ArcadeRoomManager } from '@alisa-engine/world/factories/ArcadeRoomManager.js';
+        import { CSS3DHologramPlugin } from '@alisa-engine/soma/plugins/CSS3DHologramPlugin.js';
+        import { ArcadeFXPlugin } from '@alisa-engine/soma/plugins/ArcadeFXPlugin.js';
+
+        // ═══════════════════════════════════════════════════
+        //  CABINET LAYOUT CONFIG
+        // ═══════════════════════════════════════════════════
+        const CABINET_CONFIGS = [
+            {
+                id: 'cab-1', glb: '../props/models/Arcade Machine.glb',
+                position: [-5, 0, -1], cssRotationOffset: Math.PI / 2,
+                gameUrl: '../labs/croupier_asteroids_survival.html',
+                gameName: 'Asteroids 3D'
+            },
+            {
+                id: 'cab-2', glb: '../props/models/Arcade Machine (1).glb',
+                position: [-2.5, 0, -2.5], baseRotation: -Math.PI, cssRotationOffset: Math.PI / 2,
+                gameUrl: '../labs/croupier_peaton_m30.html',
+                gameName: 'Peatón Tropical'
+            },
+            {
+                id: 'cab-3', glb: '../props/models/Arcade Machine.glb',
+                position: [0, 0, -3], cssRotationOffset: Math.PI / 2,
+                gameUrl: '../labs/croupier_katamari_swarm.html',
+                gameName: 'Katamari Swarm'
+            },
+            {
+                id: 'cab-4', glb: '../props/models/Arcade Machine (1).glb',
+                position: [2.5, 0, -2.5], baseRotation: -Math.PI, cssRotationOffset: Math.PI / 2,
+                gameUrl: '../labs/croupier_cucco_swarm.html',
+                gameName: 'Cucco Swarm Defense'
+            },
+            {
+                id: 'cab-5', glb: '../props/models/Arcade Machine.glb',
+                position: [5, 0, -1], cssRotationOffset: Math.PI / 2,
+                gameUrl: '../labs/croupier_math_boids_flock.html',
+                gameName: 'Aquarium Ecosystem'
+            }
+        ];
+
+        // ═══════════════════════════════════════════════════
+        //  CORE INITIALIZATION
+        // ═══════════════════════════════════════════════════
+        const gfx = new AlisaRenderCore();
+        const scene = gfx.scene;
+        const camera = gfx.camera;
+        camera.position.set(0, 3.5, 7);
+
+        // ═══════════════════════════════════════════════════
+        //  MODULAR COMPOSITION
+        // ═══════════════════════════════════════════════════
+        // sync:true — esta sala ES de la colonia y quiere el multijugador.
+        // Ya no viene activado por defecto: el motor tiene que poder correr suelto.
+        const room = new ArcadeRoomManager(scene, gfx, { sync: true });
+        const hologram = new CSS3DHologramPlugin(gfx);
+        const arcadeFx = new ArcadeFXPlugin(hologram);
+
+        gfx.plugins.push(hologram);
+        gfx.plugins.push(arcadeFx);
+
+        room.setLighting('day');
+        window.setLighting = (mode) => room.setLighting(mode);
+
+        // Expose for debugging / network
+        window.room = room;
+        window.hologram = hologram;
+
+        // ═══════════════════════════════════════════════════
+        //  STATUS DISPLAY
+        // ═══════════════════════════════════════════════════
+        const statusDiv = document.getElementById('game-status');
+        hologram.setStatusCallback((msg) => statusDiv.innerHTML = msg);
+
+        // ═══════════════════════════════════════════════════
+        //  CINEMATIC CAMERA
+        // ═══════════════════════════════════════════════════
+        let targetCamPos = new THREE.Vector3(0, 3.5, 7);
+        let targetCamLook = new THREE.Vector3(0, 1, 0);
+        let activeCabinet = null;  // The cabinet entity the local player is sitting at
+
+        hologram.setStandUpCallback(() => {
+            standUp();
+        });
+
+        function sitAt(cabinet) {
+            if (!cabinet || cabinet.occupiedBy) return;
+            activeCabinet = cabinet;
+            cabinet.occupiedBy = 'local'; // MMO: would be the player ID
+
+            // Compute camera: place in front of the screen, along cabinet→focalPoint vector
+            const cx = cabinet.cabPosition[0];
+            const cz = cabinet.cabPosition[2];
+            const fx = cabinet.focalPoint[0];
+            const fz = cabinet.focalPoint[2];
+            const dx = fx - cx;
+            const dz = fz - cz;
+            const dist = Math.sqrt(dx * dx + dz * dz);
+            const nx = dx / dist;
+            const nz = dz / dist;
+
+            // Sit 2.5 units in front of cabinet, along the screen-facing direction
+            targetCamPos.set(cx + nx * 2.5, 1.55, cz + nz * 2.5);
+            targetCamLook.set(cx, 1.25, cz);
+
+            hologram.setSeated(true);
+            hologram.setTiedLight(cabinet.screenLight);
+
+            // Auto-load the game into the shared hologram
+            if (cabinet.gameUrl && cabinet.screenMesh) {
+                hologram.loadMachine(cabinet.gameUrl, cabinet.screenMesh, cabinet.cssRotation);
+                statusDiv.innerHTML = `Seated at <b>${cabinet.gameName}</b>. Click screen to project.`;
+            } else {
+                statusDiv.innerHTML = `Seated. <span style="color:#fca311">(No game loaded)</span> <br>[ESC] Stand Up`;
+            }
+
+            // Hide world controls when seated
+            document.getElementById('env-controls').style.display = 'none';
+        }
+
+        function standUp() {
+            if (activeCabinet) {
+                activeCabinet.occupiedBy = null;
+                activeCabinet = null;
+            }
+            hologram.disconnect();
+            hologram.setSeated(false);
+            hologram.setTiedLight(null);
+            targetCamPos.set(0, 3.5, 7);
+            targetCamLook.set(0, 1, 0);
+            document.getElementById('env-controls').style.display = 'flex';
+            statusDiv.innerHTML = 'Walk around. Click any machine to sit down.';
+        }
+
+        // ═══════════════════════════════════════════════════
+        //  ZERO-UI RAYCASTER (Hover + Click)
+        // ═══════════════════════════════════════════════════
+        const globalRaycaster = new THREE.Raycaster();
+        const globalMouse = new THREE.Vector2();
+
+        const hoverBox = new THREE.BoxHelper(camera, 0xff00ff);
+        hoverBox.visible = false;
+        hoverBox.material.transparent = true;
+        hoverBox.material.opacity = 0.8;
+        hoverBox.material.depthTest = false;
+        scene.add(hoverBox);
+
+        window.addEventListener('pointermove', (e) => {
+            if (hologram.screenMode !== 'MOUNTED') {
+                document.body.style.cursor = 'default';
+                hoverBox.visible = false;
+                return;
+            }
+
+            globalMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            globalMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            globalRaycaster.setFromCamera(globalMouse, camera);
+
+            let isHovering = false;
+            let targetObj = null;
+
+            if (!hologram.isSeated) {
+                // Standing: detect any available cabinet
+                for (const cab of room.getAvailableCabinets()) {
+                    const intersects = globalRaycaster.intersectObject(cab.group, true);
+                    if (intersects.length > 0) {
+                        isHovering = true;
+                        targetObj = cab.group;
+                        break;
+                    }
+                }
+            } else if (hologram.isSeated && activeCabinet && activeCabinet.gameUrl) {
+                // Seated: detect the screen for projection
+                if (hologram.currentDebugScreen) {
+                    const intersects = globalRaycaster.intersectObject(hologram.currentDebugScreen, false);
+                    if (intersects.length > 0) {
+                        isHovering = true;
+                        targetObj = hologram.currentDebugScreen;
+                    }
+                }
+            }
+
+            if (isHovering && targetObj) {
+                document.body.style.cursor = 'pointer';
+                hoverBox.setFromObject(targetObj);
+                hoverBox.visible = true;
+            } else {
+                document.body.style.cursor = 'default';
+                hoverBox.visible = false;
+            }
+        });
+
+        window.addEventListener('pointerdown', (e) => {
+            if (hologram.isSeated || hologram.screenMode !== 'MOUNTED') return;
+
+            globalMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            globalMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            globalRaycaster.setFromCamera(globalMouse, camera);
+
+            for (const cab of room.getAvailableCabinets()) {
+                const intersects = globalRaycaster.intersectObject(cab.group, true);
+                if (intersects.length > 0) {
+                    sitAt(cab);
+                    return;
+                }
+            }
+        });
+
+        // ═══════════════════════════════════════════════════
+        //  RENDER PIPELINE
+        // ═══════════════════════════════════════════════════
+        room.loadCabinets(CABINET_CONFIGS).then(() => {
+            gfx.startLoop(null, (dt) => {
+                if (hologram.screenMode === 'FULLSCREEN') {
+                    document.getElementById('ui-layer').style.display = 'none';
+                    return;
+                } else {
+                    document.getElementById('ui-layer').style.display = '';
+                }
+
+                camera.position.lerp(targetCamPos, dt * 3.0);
+                gfx.controls.target.lerp(targetCamLook, dt * 3.0);
+
+                gfx.renderer.render(scene, camera);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+{
+    "name": "Cogsworth",
+    "role": "",
+    "emoji": "❔",
+    "type": "biological",
+    "skeleton": "biped",
+    "model_path": "cogsworth.glb",
+    "scale": 1.0,
+    "kinematics": "humanoid_walk",
+    "voice": {
+        "engine": "edge_tts",
+        "voice_id": "en-GB-RyanNeural",
+        "rate": "-10%",
+        "pitch": "-5Hz",
+        "label": "Cogsworth - Ryan (britanico, pausado, solemne)"
+    },
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED"
+}

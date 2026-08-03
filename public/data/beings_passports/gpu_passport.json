@@ -1,0 +1,24 @@
+{
+    "name": "GPU",
+    "role": "The Furnace",
+    "emoji": "🔥",
+    "type": "machine",
+    "skeleton": "cube",
+    "model_path": "gpu.glb",
+    "scale": 1.0,
+    "kinematics": "cube",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "synth",
+        "tier": 1,
+        "voice_id": "",
+        "rate": "-5%",
+        "pitch": "-2Hz",
+        "label": "GPU - Synth sine (zumbido profundo, industrial)",
+        "signal_type": "sine",
+        "signal_freq": 250,
+        "signal_duration": 0.5,
+        "freq_label": "grave industrial, zumbido GPU"
+    }
+}

@@ -1,0 +1,53 @@
+{
+    "source_file": "Starfish.glb",
+    "deduced_size_meters": 0.5,
+    "target_tier": "Tier -1: Small Fauna",
+    "target_scale_constraint": 0.6,
+    "voxel_grid": [
+        2,
+        4,
+        6
+    ],
+    "archetype": "ungulate",
+    "morphology": {
+        "size_m": 0.5,
+        "domain": "organic",
+        "cladistics": "ungulate",
+        "mobility": "bipedal",
+        "mechanical_joints": 0
+    },
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0,
+    "ai_armature": [
+        {
+            "name": "Core Anchor X",
+            "parent": null,
+            "pos": [
+                -1.1772956591222064,
+                0.5892181313285078,
+                -2.649932748948706
+            ]
+        },
+        {
+            "name": "Base Mount",
+            "parent": null,
+            "pos": [
+                -1.1772956591222064,
+                0.246669141078874,
+                -2.649932748948706
+            ]
+        }
+    ],
+    "mesh_scale_multiplier": 0.05821171958196633,
+    "kinematics": {
+        "base_gait": "static",
+        "cycle_frequency_hz": 0.0,
+        "step_amplitude": 0.0,
+        "vertical_bounce": 0.0,
+        "spine_flexion": 0.0,
+        "idle_sway_hz": 0.0,
+        "locomotion_states": [
+            "idle"
+        ]
+    }
+}

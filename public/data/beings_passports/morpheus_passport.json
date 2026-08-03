@@ -1,0 +1,20 @@
+{
+    "name": "Morpheus",
+    "role": "Dream Architect",
+    "emoji": "😎",
+    "type": "biological",
+    "skeleton": "humanoid",
+    "model_path": "morpheus.glb",
+    "scale": 1.1,
+    "kinematics": "humanoid_serene",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "xtts",
+        "tier": 5,
+        "voice_id": "alisa_morpheus",
+        "rate": "-5%",
+        "pitch": "-2Hz",
+        "label": "Morpheus - Laurence Fishburne (castellano, XTTS cloned)"
+    }
+}

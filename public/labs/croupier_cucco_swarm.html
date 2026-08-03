@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>🐔 Cucco Swarm — Bullet Heaven | Powered by alisa-engine</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#060612;overflow:hidden;font-family:'Inter',sans-serif}
+canvas{display:block}
+#hud{position:fixed;top:0;left:0;right:0;padding:15px 24px;display:flex;gap:18px;align-items:center;background:linear-gradient(180deg,rgba(15,15,20,.95),rgba(15,15,20,0));border-bottom:1px solid rgba(255,255,255,.05);z-index:10;pointer-events:none}
+.hs{font-family:'JetBrains Mono',monospace;font-size:13px;color:#8a8d91;font-weight:600;text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:6px}
+.hs .v{font-weight:800;color:#e2e8f0;font-size:15px;text-shadow:0 0 10px rgba(255,255,255,.1)}
+.bw{width:140px;height:10px;background:rgba(0,0,0,.6);border:1px solid #333;box-shadow:inset 0 2px 5px rgba(0,0,0,.5);border-radius:2px;overflow:hidden}
+.bf{height:100%;border-radius:0;transition:width .15s ease-out}
+.bhp .bf{background:linear-gradient(90deg,#b91c1c,#ef4444);box-shadow:0 0 8px rgba(239,68,68,.4)}
+.bxp .bf{background:linear-gradient(90deg,#4338ca,#6366f1);box-shadow:0 0 8px rgba(99,102,241,.4)}
+#hr{margin-left:auto;display:flex;gap:24px}
+#up{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(8px)}
+#up.show{display:flex}
+.upn{display:flex;gap:14px;max-width:680px}
+.uc{flex:1;padding:24px 16px;border-radius:14px;background:linear-gradient(135deg,#1a1a2e,#12121e);border:2px solid #333;cursor:pointer;text-align:center;color:#c8c8e0;transition:all .2s}
+.uc:hover{border-color:#818cf8;transform:translateY(-4px);box-shadow:0 8px 30px rgba(129,140,248,.3)}
+.uci{font-size:32px;margin-bottom:10px}
+.ucn{font-size:14px;font-weight:700;color:#fff;margin-bottom:4px}
+#ge{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.8);backdrop-filter:blur(12px)}
+#ge.show{display:flex}
+.gep{text-align:center;color:#fff;padding:36px;background:rgba(18,18,30,.95);border-radius:18px;border:2px solid #333;min-width:280px}
+.gep h1{font-size:38px;margin-bottom:10px}
+.gep .st{font-family:'JetBrains Mono',monospace;font-size:13px;color:#aaa;line-height:2}
+.gep button{margin-top:20px;padding:12px 36px;font-size:15px;font-weight:700;background:linear-gradient(135deg,#6366f1,#818cf8);color:#fff;border:none;border-radius:10px;cursor:pointer}
+#wb{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:10;pointer-events:none}
+#controls{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);font-family:'JetBrains Mono',monospace;font-size:10px;color:#555;text-align:center;pointer-events:none;z-index:10}
+.ws{width:40px;height:40px;border-radius:8px;background:rgba(18,18,30,.85);border:2px solid #333;display:flex;align-items:center;justify-content:center;font-size:20px}
+#wa{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-size:48px;font-weight:900;color:#fff;text-shadow:0 0 40px #6366f1;opacity:0;transition:opacity .3s;pointer-events:none;z-index:40}
+#badge{position:fixed;bottom:6px;left:10px;font-family:'JetBrains Mono',monospace;font-size:9px;color:#333;pointer-events:none;z-index:5}
+</style>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+
+<!-- HUD -->
+<div id="hud">
+  <div class="hs">❤️<div class="bw bhp"><div class="bf" id="hpb" style="width:100%"></div></div><span class="v" id="hpv">100</span></div>
+  <div class="hs">⭐<div class="bw bxp"><div class="bf" id="xpb" style="width:0%"></div></div><span class="v" id="xpv">Lv.1</span></div>
+  <div id="hr">
+    <div class="hs">🌊 Wave <span class="v" id="wv">1</span></div>
+    <div class="hs">💀 <span class="v" id="kv">0</span></div>
+    <div class="hs">⏱️ <span class="v" id="tv">0:00</span></div>
+    <div class="hs">🏆 <span class="v" id="sv">0</span></div>
+  </div>
+</div>
+<div id="boss-hud" style="display:none;position:fixed;top:70px;left:50%;transform:translateX(-50%);text-align:center;z-index:10;pointer-events:none;">
+  <div id="boss-name" style="font-family:'JetBrains Mono',monospace;color:#ef4444;font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:3px;margin-bottom:6px;text-shadow:0 0 10px rgba(239,68,68,0.5);">ELITE SWARM</div>
+  <div class="bw" style="width:400px;height:12px;border:2px solid #555;box-shadow:0 0 15px rgba(0,0,0,0.8);"><div class="bf" id="bhpb" style="background:linear-gradient(90deg,#991b1b,#ef4444);width:100%"></div></div>
+</div>
+<div id="wa"></div>
+<div id="up"><div class="upn" id="uo"></div></div>
+<div id="ge"><div class="gep" id="ec"></div></div>
+<div id="wb"></div>
+<div id="controls">WASD move · Q sweep · SPACE slam · SHIFT dash</div>
+<div id="badge">powered by alisa-engine</div>
+
+<script type="importmap">{"imports":{"three":"/vendor/three-0.170.0/build/three.module.min.js","three/addons/":"/vendor/three-0.170.0/examples/jsm/"}}</script>
+<script type="module">
+// ═══════════════════════════════════════════════
+//  CUCCO SWARM CROUPIER — Pure wire, no rendering
+//  System + Factory + Engine = Game
+// ═══════════════════════════════════════════════
+import { AlisaRenderCore } from '../js/alisa-engine/src/soma/AlisaRenderCore.js';
+import { CuccoGameSystem } from '../js/alisa-engine/src/world/systems/CuccoGameSystem.js';
+import { CuccoEnvironmentFactory } from '../js/alisa-engine/src/world/factories/CuccoEnvironmentFactory.js';
+import { AlisaBloomEngine } from '../js/alisa-engine/src/soma/plugins/AlisaBloomEngine.js';
+import * as THREE from 'three';
+
+// ── Engine Core ──
+const core = new AlisaRenderCore({ clearColor: 0x060612, fogColor: 0x060612, fogDensity: 0.006, cameraPosition: new THREE.Vector3(0, 38, 28) });
+core.controls.maxDistance = 65;
+core.controls.maxPolarAngle = Math.PI / 2 - 0.05;
+
+// ── Bloom Plugin ──
+let bloomRender = null;
+try { 
+  const bloom = new AlisaBloomEngine(core); 
+  core.registerPlugin(bloom); 
+  bloomRender = bloom.render.bind(bloom);
+} catch(e) { console.warn('Bloom not available:', e.message); }
+
+// ── Game System (math) ──
+const game = new CuccoGameSystem();
+
+// ── Visual Factory ──
+const factory = new CuccoEnvironmentFactory();
+factory.setCore(core);
+factory.init(core.scene);
+
+// ── Input ──
+const keys = {};
+document.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+document.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+// ── HUD ──
+const wIcons = { broom: '🧹', mop: '🧽', vacuum: '🔌', binlid: '🗑️' };
+let lastWave = 0;
+
+function updateHUD(s) {
+  const p = s.player;
+  document.getElementById('hpb').style.width = `${(p.hp / p.maxHp) * 100}%`;
+  document.getElementById('hpv').textContent = Math.ceil(p.hp);
+  document.getElementById('xpb').style.width = `${(p.xp / (p.xpNeeded || 1)) * 100}%`;
+  document.getElementById('xpv').textContent = `Lv.${p.level}`;
+  document.getElementById('wv').textContent = s.wave;
+  document.getElementById('kv').textContent = s.kills;
+  document.getElementById('sv').textContent = s.score.toLocaleString();
+  const m = Math.floor(s.time / 60), sec = Math.floor(s.time % 60);
+  document.getElementById('tv').textContent = `${m}:${sec.toString().padStart(2, '0')}`;
+  const wb = document.getElementById('wb');
+  wb.innerHTML = '';
+  for (const wid of p.weapons) { const sl = document.createElement('div'); sl.className = 'ws'; sl.textContent = wIcons[wid] || '⚔️'; wb.appendChild(sl); }
+  
+  // Boss HUD
+  const boss = s.enemies.find(e => e.type === 'boss' || e.type === 'cucco');
+  const bHud = document.getElementById('boss-hud');
+  if (boss) {
+    bHud.style.display = 'block';
+    document.getElementById('boss-name').textContent = boss.guard ? '🛡️ ELITE (GUARD UP) 🛡️' : 'ELITE SWARM';
+    document.getElementById('boss-name').style.color = boss.guard ? '#38bdf8' : '#ef4444';
+    document.getElementById('bhpb').style.background = boss.guard ? 'linear-gradient(90deg,#0369a1,#38bdf8)' : 'linear-gradient(90deg,#991b1b,#ef4444)';
+    document.getElementById('bhpb').style.width = Math.max(0, boss.hp) * 100 + '%';
+  } else {
+    bHud.style.display = 'none';
+  }
+
+  // Wave announce
+  if (s.wave !== lastWave) { lastWave = s.wave; const el = document.getElementById('wa'); el.textContent = `🌊 WAVE ${s.wave}`; el.style.opacity = 1; setTimeout(() => el.style.opacity = 0, 1500); }
+}
+
+function showUpgrade(opts) {
+  const el = document.getElementById('up'), co = document.getElementById('uo');
+  co.innerHTML = '';
+  opts.forEach((o, i) => {
+    const ic = o.label.split(' ')[0], nm = o.label.replace(ic, '').trim();
+    const c = document.createElement('div'); c.className = 'uc';
+    c.innerHTML = `<div class="uci">${ic}</div><div class="ucn">${nm}</div>`;
+    c.onclick = () => { game.act(9 + i); el.classList.remove('show'); };
+    co.appendChild(c);
+  });
+  el.classList.add('show');
+}
+
+function showEnd(s) {
+  const p = document.getElementById('ec');
+  const t = s.victory ? '👑 VICTORY!' : '💀 GAME OVER', c = s.victory ? '#4ade80' : '#ef4444';
+  p.innerHTML = `<h1 style="color:${c}">${t}</h1><div class="st">Score: ${s.score.toLocaleString()}<br>Kills: ${s.kills}<br>Wave: ${s.wave}<br>Level: ${s.player.level}<br>Time: ${Math.floor(s.time / 60)}:${Math.floor(s.time % 60).toString().padStart(2, '0')}</div><button onclick="window.resetGame()">🔄 Play Again</button>`;
+  document.getElementById('ge').classList.add('show');
+}
+
+window.resetGame = () => {
+  document.getElementById('ge').classList.remove('show');
+  document.getElementById('up').classList.remove('show');
+  
+  // Clean up factory visual meshes
+  if (factory.swarmPool) {
+    for (const [type, m] of factory.swarmPool.pools) { m.count = 0; }
+    factory.swarmPool._rotations.clear();
+  }
+  for (const [id, m] of factory.crateMeshes) { factory.scene.remove(m); }
+  factory.crateMeshes.clear();
+  if (factory.puddleMeshes) {
+    for (const [id, m] of factory.puddleMeshes) { factory.scene.remove(m); }
+    factory.puddleMeshes.clear();
+  }
+  for (const m of factory.projPool) { factory.scene.remove(m); m.material.dispose(); }
+  factory.projPool = [];
+  for (const m of factory.pickPool) { factory.scene.remove(m); m.material.dispose(); }
+  factory.pickPool = [];
+  
+  // Clean up core engine arrays directly
+  game.projectiles = [];
+  game.pickups = [];
+  game.enemies = [];
+  game.obstacles = [];
+  game.puddles = [];
+  
+  // Re-init system and start fresh
+  game.init();
+};
+
+// ── GAME LOOP (the only wire) ──
+core.startLoop((dt) => {
+  // 1. Input → System
+  let dx = 0, dz = 0;
+  if (keys['w'] || keys['arrowup']) dz = -1;
+  if (keys['s'] || keys['arrowdown']) dz = 1;
+  if (keys['a'] || keys['arrowleft']) dx = -1;
+  if (keys['d'] || keys['arrowright']) dx = 1;
+  game.setInput(dx, dz);
+  game.setSpecial(!!keys['q'], !!keys[' '], !!keys['shift']);
+
+  // 2. System tick
+  const result = game.update(dt);
+
+  // 3. System state → Factory visuals
+  factory.syncState(result.state, dt);
+  factory.update(dt);
+
+  // 4. HUD
+  updateHUD(result.state);
+  if (result.state.pendingUpgrade && !document.getElementById('up').classList.contains('show')) showUpgrade(result.state.pendingUpgrade.options);
+  if (result.done && !document.getElementById('ge').classList.contains('show')) showEnd(result.state);
+}, bloomRender);
+
+console.log('🐔 Cucco Swarm Bullet Heaven — Powered by alisa-engine');
+</script>
+</body>
+</html>

@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Building Archetypes v2 — Wedge + Hemisphere</title>
+<style>
+body { margin: 0; background: #000; overflow: hidden; }
+canvas { display: block; }
+#status { position: fixed; top: 10px; left: 10px; color: #0fffcc; font: 13px monospace; z-index: 10;
+          background: rgba(0,0,0,0.85); padding: 12px 18px; border: 1px solid #00ffff44; border-radius: 4px; 
+          max-width: 300px; line-height: 1.5; }
+#labels { position: absolute; bottom: 20px; width: 100%; text-align: center; color: #556;
+          z-index: 10; font: 11px monospace; letter-spacing: 2px; }
+</style>
+</head>
+<body>
+<div id="status">
+    <b>ARCHETYPES v2 — 26 + ARCOLOGY</b><br><br>
+    Row 1: Mega (tower, industrial, skybridge, ziggurat...)<br>
+    Row 2: Street (stall, mart, capsule, utility, clinic)<br>
+    Row 3: Wedge compositions (temple, pagoda, brutalist...)<br>
+    Row 4: <span style="color:#ff0">Street furniture</span> (phone, ramen, bus, gas...)<br>
+    Right: <span style="color:#0ff">★ MEGA ARCOLOGY ★</span> (35 stories)<br><br>
+    Drag to orbit · Scroll to zoom
+</div>
+<div id="labels">ALISA OVERWORLD · BUILDING ARCHITECTURE PREVIEW v2</div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/three-0.160.0/build/three.module.js",
+            "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+            "@alisa-engine/": "../js/alisa-engine/"
+        }
+    }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+
+        window.THREE = Object.assign({}, THREE);
+        window.THREE.OrbitControls = OrbitControls;
+        window.THREE.EffectComposer = EffectComposer;
+        window.THREE.RenderPass = RenderPass;
+        window.THREE.ShaderPass = ShaderPass;
+        window.THREE.UnrealBloomPass = UnrealBloomPass;
+
+        const gfx = new AlisaRenderCore({
+            clearColor: 0x050508,
+            fogColor: 0x050508,
+            fogDensity: 0.012,
+            cameraPosition: new THREE.Vector3(0, 22, 50)
+        });
+        
+        const scene = gfx.scene;
+        const camera = gfx.camera;
+        camera.lookAt(0, 3, 0);
+        
+        const renderer = gfx.renderer;
+        renderer.toneMapping = THREE.ReinhardToneMapping;
+        
+        const controls = gfx.controls;
+        controls.target.set(0, 3, 0);
+
+// Lights
+scene.add(new THREE.AmbientLight(0x223344, 0.8));
+const dir = new THREE.DirectionalLight(0x6688aa, 0.5);
+dir.position.set(10, 20, 8); scene.add(dir);
+
+// Ground
+const fc = document.createElement('canvas'); fc.width = 512; fc.height = 512;
+const fctx = fc.getContext('2d');
+fctx.fillStyle = '#08080c'; fctx.fillRect(0,0,512,512);
+fctx.strokeStyle = 'rgba(0,255,150,0.05)'; fctx.lineWidth = 1;
+for (let i=0; i<=512; i+=16) {
+    fctx.beginPath(); fctx.moveTo(i,0); fctx.lineTo(i,512); fctx.stroke();
+    fctx.beginPath(); fctx.moveTo(0,i); fctx.lineTo(512,i); fctx.stroke();
+}
+const floorTex = new THREE.CanvasTexture(fc);
+floorTex.wrapS = floorTex.wrapT = THREE.RepeatWrapping; floorTex.repeat.set(6,4);
+const floor = new THREE.Mesh(
+    new THREE.PlaneGeometry(120, 60),
+    new THREE.MeshStandardMaterial({ map: floorTex, color: 0x222230, roughness: 0.9 })
+);
+floor.rotation.x = -Math.PI/2; scene.add(floor);
+
+// ==========================================
+// GEOMETRY HELPERS (Box, Wedge, Dome, Cylinder)
+// ==========================================
+const materials = {
+    base: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5, metalness: 0.1, transparent: true, opacity: 0.92 }),
+    neonCyan:   new THREE.LineBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.4 }),
+    neonPink:   new THREE.LineBasicMaterial({ color: 0xff00ff, transparent: true, opacity: 0.4 }),
+    neonGreen:  new THREE.LineBasicMaterial({ color: 0x00ff88, transparent: true, opacity: 0.4 }),
+    neonYellow: new THREE.LineBasicMaterial({ color: 0xffdd00, transparent: true, opacity: 0.4 }),
+    neonOrange: new THREE.LineBasicMaterial({ color: 0xff6600, transparent: true, opacity: 0.4 }),
+    neonRed:    new THREE.LineBasicMaterial({ color: 0xff0044, transparent: true, opacity: 0.4 }),
+    neonPurple: new THREE.LineBasicMaterial({ color: 0x8800ff, transparent: true, opacity: 0.4 }),
+    neonWhite:  new THREE.LineBasicMaterial({ color: 0xaaaaaa, transparent: true, opacity: 0.35 })
+};
+
+// Box with wireframe
+function createBlock(w, h, d, x, y, z, lineMat) {
+    const group = new THREE.Group();
+    const geo = new THREE.BoxGeometry(w, h, d);
+    group.add(new THREE.Mesh(geo, materials.base));
+    group.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), lineMat));
+    group.position.set(x, y, z);
+    return group;
+}
+
+// Wedge (frustum) — topW, botW, height → creates flat-faced tapered prism
+function createWedge(topW, botW, h, x, y, z, lineMat) {
+    const group = new THREE.Group();
+    const topR = topW * 0.7071;
+    const botR = botW * 0.7071;
+    const geo = new THREE.CylinderGeometry(topR, botR, h, 4);
+    geo.rotateY(Math.PI / 4);
+    group.add(new THREE.Mesh(geo, materials.base));
+    group.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), lineMat));
+    group.position.set(x, y, z);
+    return group;
+}
+
+// Hemisphere dome
+function createDome(r, x, y, z, lineMat) {
+    const group = new THREE.Group();
+    const geo = new THREE.SphereGeometry(r, 8, 4, 0, Math.PI*2, 0, Math.PI/2);
+    group.add(new THREE.Mesh(geo, materials.base));
+    group.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), lineMat));
+    group.position.set(x, y, z);
+    return group;
+}
+
+// Inverted dome (bowl)
+function createBowl(r, x, y, z, lineMat) {
+    const group = new THREE.Group();
+    const geo = new THREE.SphereGeometry(r, 8, 4, 0, Math.PI*2, 0, Math.PI/2);
+    geo.rotateX(Math.PI);
+    group.add(new THREE.Mesh(geo, materials.base));
+    group.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), lineMat));
+    group.position.set(x, y, z);
+    return group;
+}
+
+// Cylinder
+function createCyl(r, h, x, y, z, lineMat, segs) {
+    const group = new THREE.Group();
+    const geo = new THREE.CylinderGeometry(r, r, h, segs || 8);
+    group.add(new THREE.Mesh(geo, materials.base));
+    group.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), lineMat));
+    group.position.set(x, y, z);
+    return group;
+}
+
+// Label
+function addLabel(txt, x, y, z, colorHex) {
+    const hc = document.createElement('canvas'); hc.width = 320; hc.height = 64;
+    const ctx = hc.getContext('2d');
+    ctx.fillStyle = colorHex;
+    ctx.font = 'bold 20px monospace'; ctx.fillText(txt, 6, 40);
+    const tex = new THREE.CanvasTexture(hc);
+    const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+    const plane = new THREE.Mesh(new THREE.PlaneGeometry(5, 1), mat);
+    plane.position.set(x, y, z); scene.add(plane);
+}
+
+// ==========================================
+// ROW 1: MEGA-BUILDINGS (original + enhanced)
+// ==========================================
+const sX = 9;
+const r1Z = -10;
+let cx = -32;
+
+// 1. PODIUM TOWER — original with wedge crown
+const g1 = new THREE.Group();
+g1.add(createWedge(5, 5.5, 2, 0, 1, 0, materials.neonCyan));        // Wedge podium (wider at base)
+g1.add(createBlock(2.5, 7, 2.5, 0, 5.5, 0, materials.neonCyan));     // Tower shaft
+g1.add(createWedge(1.8, 2.5, 2, 0, 10, 0, materials.neonCyan));      // Wedge crown (narrower at top)
+g1.add(createDome(0.8, 0, 11, 0, materials.neonCyan));                // Domed roof
+g1.position.set(cx, 0, r1Z); scene.add(g1);
+addLabel('1. PODIUM+DOME', cx, -1, r1Z+3.5, '#00ffff'); cx += sX;
+
+// 2. INDUSTRIAL COMPLEX
+const g2 = new THREE.Group();
+g2.add(createWedge(3.8, 4.2, 3, -1, 1.5, 0, materials.neonOrange)); // Main hall (tapered)
+g2.add(createBlock(4.2, 0.3, 4.2, -1, 3.15, 0, materials.neonOrange));// Roof lip
+g2.add(createCyl(1.2, 4, 2.5, 2, 0, materials.neonOrange));          // Cylindrical silo
+g2.add(createDome(1.2, 2.5, 4, 0, materials.neonOrange));            // Silo dome cap
+g2.add(createCyl(0.25, 6, -1.5, 3, -1.5, materials.neonOrange));     // Chimney
+g2.add(createDome(0.25, -1.5, 6, -1.5, materials.neonOrange));       // Chimney cap
+g2.position.set(cx, 0, r1Z); scene.add(g2);
+addLabel('2. INDUSTRIAL', cx, -1, r1Z+3.5, '#ff6600'); cx += sX;
+
+// 3. SKYBRIDGE TWINS
+const g3 = new THREE.Group();
+g3.add(createBlock(2, 10, 2, -2.5, 5, 0, materials.neonPurple));
+g3.add(createWedge(1.5, 2, 2, -2.5, 11, 0, materials.neonPurple));   // Crown A tapers
+g3.add(createBlock(2, 10, 2, 2.5, 5, 0, materials.neonPurple));
+g3.add(createWedge(1.5, 2, 2, 2.5, 11, 0, materials.neonPurple));    // Crown B tapers
+g3.add(createBlock(3, 1.5, 1.5, 0, 7, 0, materials.neonPurple));     // Bridge
+g3.position.set(cx, 0, r1Z); scene.add(g3);
+addLabel('3. SKYBRIDGE', cx, -1, r1Z+3.5, '#8800ff'); cx += sX;
+
+// 4. L-SHAPE RESIDENTIAL
+const g4 = new THREE.Group();
+g4.add(createBlock(2, 7, 5, -1, 3.5, 0, materials.neonYellow));
+g4.add(createBlock(4, 5, 2, 2, 2.5, -2, materials.neonYellow));
+g4.add(createWedge(3.5, 4, 0.6, 2, 5.3, -2, materials.neonYellow)); // Roof wedge on wing
+g4.position.set(cx, 0, r1Z); scene.add(g4);
+addLabel('4. L-SHAPE', cx, -1, r1Z+4, '#ffdd00'); cx += sX;
+
+// 5. ZIGGURAT — Stacked wedges!
+const g5 = new THREE.Group();
+g5.add(createWedge(5.5, 6, 2, 0, 1, 0, materials.neonRed));         // Tier 1 (widest)
+g5.add(createWedge(4, 5, 2.5, 0, 3.25, 0, materials.neonRed));      // Tier 2
+g5.add(createWedge(2.5, 3.5, 2.5, 0, 5.75, 0, materials.neonRed));  // Tier 3
+g5.add(createWedge(1, 2, 1.5, 0, 7.75, 0, materials.neonRed));      // Crown peak
+g5.position.set(cx, 0, r1Z); scene.add(g5);
+addLabel('5. ZIGGURAT', cx, -1, r1Z+3.5, '#ff0044'); cx += sX;
+
+// 6. DATACENTER with dome antennas
+const g6 = new THREE.Group();
+g6.add(createBlock(3.5, 3.5, 3.5, 0, 1.75, 0, materials.neonGreen));
+g6.add(createCyl(0.15, 4, 0, 5.5, 0, materials.neonGreen, 4));       // Antenna mast
+g6.add(createDome(0.4, 0, 7.5, 0, materials.neonGreen));              // Dome antenna
+g6.add(createCyl(0.1, 2.5, 1, 4.75, 1, materials.neonGreen, 4));
+g6.add(createDome(0.35, 1, 6, 1, materials.neonGreen));
+g6.add(createDome(1.5, 0, 3.5, 0, materials.neonGreen));              // Rooftop dome
+g6.position.set(cx, 0, r1Z); scene.add(g6);
+addLabel('6. DATACENTER', cx, -1, r1Z+3.5, '#00ff88'); cx += sX;
+
+// 7. BROADCAST TOWER — pure spire composition
+const g7 = new THREE.Group();
+g7.add(createWedge(2, 3.5, 1.5, 0, 0.75, 0, materials.neonWhite));   // Base platform
+g7.add(createWedge(0.8, 2, 3, 0, 3, 0, materials.neonWhite));        // Lower tapering frame
+g7.add(createWedge(0.2, 0.8, 4, 0, 6.5, 0, materials.neonWhite));    // Upper needle taper
+g7.add(createDome(0.5, 0, 8.5, 0, materials.neonWhite));              // Top dome
+g7.add(createBlock(1, 0.2, 1, 0, 4.3, 0, materials.neonWhite));       // Platform ring
+g7.position.set(cx, 0, r1Z); scene.add(g7);
+addLabel('7. BROADCAST', cx, -1, r1Z+3.5, '#aaaaaa');
+
+// ==========================================
+// ROW 2: STREET LEVEL (original + enhanced)
+// ==========================================
+const r2Z = 4;
+cx = -28;
+
+// 8. STREET STALL
+const g8 = new THREE.Group();
+g8.add(createBlock(4, 1.5, 3, 0, 0.75, 0, materials.neonPink));
+const awning = createWedge(4.2, 4.5, 0.2, 0, 2, 1, materials.neonPink);
+awning.rotation.x = Math.PI/6; g8.add(awning);
+g8.add(createCyl(0.08, 2.5, -1.8, 1.25, 2, materials.neonPink, 4));
+g8.add(createCyl(0.08, 2.5, 1.8, 1.25, 2, materials.neonPink, 4));
+g8.position.set(cx, 0, r2Z); scene.add(g8);
+addLabel('8. STALL', cx, -1, r2Z+3, '#ff00ff'); cx += sX;
+
+// 9. MINI-MART
+const g9 = new THREE.Group();
+g9.add(createBlock(3.5, 2, 3.5, 0, 1, 0, materials.neonCyan));
+g9.add(createWedge(3.2, 3.5, 0.4, 0, 2.2, 0, materials.neonCyan));    // Roof lip
+g9.add(createBlock(0.3, 2.5, 1.8, -1.2, 3.25, 0, materials.neonCyan));// Neon sign
+g9.position.set(cx, 0, r2Z); scene.add(g9);
+addLabel('9. MINI-MART', cx, -1, r2Z+3, '#00ffff'); cx += sX;
+
+// 10. CAPSULE HOTEL
+const g10 = new THREE.Group();
+g10.add(createBlock(1.8, 5, 2.5, 0, 2.5, 0, materials.neonYellow));
+g10.add(createWedge(1.5, 1.8, 1.2, 0, 5.6, 0, materials.neonYellow));  // Wedge roof
+g10.add(createDome(0.7, 0, 6.2, 0, materials.neonYellow));              // Water tank dome
+g10.add(createWedge(0.5, 0.6, 0.5, -0.9, 1.5, 1.25, materials.neonYellow));  // AC unit = wedge!
+g10.add(createWedge(0.5, 0.6, 0.5, -0.9, 3.5, 1.25, materials.neonYellow));
+g10.add(createWedge(0.5, 0.6, 0.5, -0.9, 5.0, 1.25, materials.neonYellow));
+g10.position.set(cx, 0, r2Z); scene.add(g10);
+addLabel('10. CAPSULE', cx, -1, r2Z+3, '#ffdd00'); cx += sX;
+
+// 11. UTILITY HUB
+const g11 = new THREE.Group();
+g11.add(createWedge(4, 4.5, 1.5, 0, 0.75, 0, materials.neonOrange));   // Tapered base
+g11.add(createCyl(1, 0.2, -1, 1.6, 1, materials.neonOrange, 8));       // Fan 1
+g11.add(createCyl(1, 0.2, 1, 1.6, -1, materials.neonOrange, 8));       // Fan 2
+g11.add(createDome(1, -1, 1.7, 1, materials.neonOrange));               // Fan guard dome
+g11.add(createDome(1, 1, 1.7, -1, materials.neonOrange));
+g11.position.set(cx, 0, r2Z); scene.add(g11);
+addLabel('11. UTILITY', cx, -1, r2Z+3, '#ff6600'); cx += sX;
+
+// 12. CYBER CLINIC
+const g12 = new THREE.Group();
+g12.add(createBlock(2.5, 2.5, 2.5, 0, 1.25, 0, materials.neonGreen));
+g12.add(createWedge(2.2, 2.5, 0.3, 0, 2.65, 0, materials.neonGreen)); // Roof edge
+g12.add(createDome(1, 0, 2.8, 0, materials.neonGreen));                 // Rounded skylight
+g12.add(createBlock(2.8, 0.3, 1.5, 0, 1.4, 2, materials.neonGreen));   // Entrance awning
+g12.add(createBlock(0.4, 1, 0.15, 0, 3.8, 1.25, materials.neonGreen)); // Cross V
+g12.add(createBlock(1, 0.4, 0.15, 0, 3.8, 1.25, materials.neonGreen)); // Cross H
+g12.position.set(cx, 0, r2Z); scene.add(g12);
+addLabel('12. CLINIC', cx, -1, r2Z+3, '#00ff88');
+
+// ==========================================
+// ROW 3: NEW WEDGE COMPOSITIONS
+// ==========================================
+const r3Z = 18;
+cx = -28;
+
+// 13. TEMPLE — Pure wedge pyramid
+const g13 = new THREE.Group();
+g13.add(createWedge(0.5, 6, 1.5, 0, 0.75, 0, materials.neonRed));     // Base platform
+g13.add(createWedge(0.3, 4, 3, 0, 3, 0, materials.neonRed));           // Mid pyramid
+g13.add(createWedge(0.1, 1.5, 3, 0, 6, 0, materials.neonRed));         // Top spike
+g13.add(createDome(0.4, 0, 7.5, 0, materials.neonRed));                // Peak dome
+g13.add(createBlock(4.5, 0.15, 4.5, 0, 1.5, 0, materials.neonRed));   // Platform ring
+g13.position.set(cx, 0, r3Z); scene.add(g13);
+addLabel('13. TEMPLE', cx, -1, r3Z+3.5, '#ff0044'); cx += sX;
+
+// 14. DOMED GREENHOUSE — Hemisphere dominant
+const g14 = new THREE.Group();
+g14.add(createBlock(4.5, 0.6, 4.5, 0, 0.3, 0, materials.neonGreen));  // Low wall ring
+g14.add(createDome(3, 0, 0.6, 0, materials.neonGreen));                  // Main dome
+g14.add(createCyl(0.08, 1, -1.5, 2, 0, materials.neonGreen, 4));        // Internal support
+g14.add(createCyl(0.08, 1, 1.5, 2, 0, materials.neonGreen, 4));
+g14.position.set(cx, 0, r3Z); scene.add(g14);
+addLabel('14. GREENHOUSE', cx, -1, r3Z+3.5, '#00ff88'); cx += sX;
+
+// 15. WEDGE-STACK SKYSCRAPER — Opposing wedges = diamond sections
+const g15 = new THREE.Group();
+g15.add(createWedge(2.2, 3, 2.5, 0, 1.25, 0, materials.neonPurple));   // Lower taper in
+g15.add(createWedge(3, 2.2, 2.5, 0, 3.75, 0, materials.neonPurple));   // Upper taper out = diamond!
+g15.add(createWedge(1.5, 2.2, 2.5, 0, 6.25, 0, materials.neonPurple)); // Mid taper
+g15.add(createWedge(2, 1.5, 2, 0, 8.5, 0, materials.neonPurple));      // Crown taper
+g15.add(createDome(0.6, 0, 9.5, 0, materials.neonPurple));              // Dome peak
+g15.position.set(cx, 0, r3Z); scene.add(g15);
+addLabel('15. DIAMOND TWR', cx, -1, r3Z+3.5, '#8800ff'); cx += sX;
+
+// 16. CYBERPUNK PAGODA — Wedge eaves on each level
+const g16 = new THREE.Group();
+g16.add(createBlock(3, 2, 3, 0, 1, 0, materials.neonPink));
+g16.add(createWedge(3.5, 2.5, 0.3, 0, 2.15, 0, materials.neonPink));   // Eave 1 (wider than floor = overhang!)
+g16.add(createBlock(2.2, 2, 2.2, 0, 3.15, 0, materials.neonPink));
+g16.add(createWedge(2.8, 1.8, 0.3, 0, 4.3, 0, materials.neonPink));    // Eave 2
+g16.add(createBlock(1.5, 1.5, 1.5, 0, 5.05, 0, materials.neonPink));
+g16.add(createWedge(2, 1.2, 0.3, 0, 5.95, 0, materials.neonPink));     // Eave 3
+g16.add(createDome(0.5, 0, 6.1, 0, materials.neonPink));                // Top ornament
+g16.position.set(cx, 0, r3Z); scene.add(g16);
+addLabel('16. PAGODA', cx, -1, r3Z+3.5, '#ff00ff'); cx += sX;
+
+// 17. BRUTALIST MINISTRY — Inverted pyramid (top wider than bottom)
+const g17 = new THREE.Group();
+g17.add(createWedge(4, 2.5, 6, 0, 3, 0, materials.neonWhite));         // Inverted trapezoid body
+g17.add(createBlock(2.5, 2, 2.5, 0, 0.7, 0, materials.neonWhite));     // Pillar base
+g17.add(createBlock(4.2, 0.3, 4.2, 0, 6.15, 0, materials.neonWhite));  // Roof slab
+g17.add(createCyl(0.08, 2, -1.5, 7.2, 0, materials.neonWhite, 4));     // Antenna
+g17.add(createCyl(0.08, 2, 1.5, 7.2, 0, materials.neonWhite, 4));
+g17.position.set(cx, 0, r3Z); scene.add(g17);
+addLabel('17. BRUTALIST', cx, -1, r3Z+3.5, '#aaaaaa'); cx += sX;
+
+// 18. ORGANIC HIVE — All domes and curves
+const g18 = new THREE.Group();
+g18.add(createDome(3, 0, 0, 0, materials.neonCyan));
+g18.add(createDome(1.8, 2, 0, 1.5, materials.neonCyan));
+g18.add(createDome(1.5, -1.5, 0, 2, materials.neonCyan));
+g18.add(createCyl(0.4, 2, 0, 3, 0, materials.neonCyan, 6));
+g18.add(createDome(0.6, 0, 4, 0, materials.neonCyan));
+g18.add(createBlock(0.6, 0.8, 0.6, 2, 1.8, 1.5, materials.neonCyan));
+g18.position.set(cx, 0, r3Z); scene.add(g18);
+addLabel('18. HIVE', cx, -1, r3Z+3.5, '#00ffff');
+
+// ==========================================
+// ROW 4: TINY STREET FURNITURE (scale 1:1)
+// ==========================================
+const r4Z = 30;
+cx = -36;
+const sX2 = 6;
+
+// 19. PHONE BOOTH
+const g19 = new THREE.Group();
+g19.add(createBlock(1, 2.4, 1, 0, 1.2, 0, materials.neonRed));         // Box body
+g19.add(createWedge(0.9, 1, 0.3, 0, 2.55, 0, materials.neonRed));      // Crown wedge top
+g19.add(createBlock(0.7, 1.5, 0.04, 0, 1.5, 0.52, materials.neonRed)); // Glass panel front
+g19.position.set(cx, 0, r4Z); scene.add(g19);
+addLabel('19. PHONE', cx, -1, r4Z+2, '#ff0044'); cx += sX2;
+
+// 20. RAMEN STAND
+const g20 = new THREE.Group();
+g20.add(createBlock(2.5, 1.2, 1.2, 0, 0.6, 0, materials.neonOrange));  // Counter
+g20.add(createWedge(2.3, 2.5, 0.15, 0, 1.27, 0, materials.neonOrange));// Counter lip
+g20.add(createCyl(0.06, 1.8, -1.1, 0.9, 0.7, materials.neonOrange, 4));// Post L
+g20.add(createCyl(0.06, 1.8, 1.1, 0.9, 0.7, materials.neonOrange, 4)); // Post R
+g20.add(createWedge(2.6, 2.8, 0.12, 0, 1.85, 0.6, materials.neonOrange));// Awning (wedge!)
+const ra = g20.children[g20.children.length-1]; ra.rotation.x = 0.25;
+g20.add(createBlock(2, 0.4, 0.1, 0, 1.8, -0.55, materials.neonOrange));// Menu sign
+g20.position.set(cx, 0, r4Z); scene.add(g20);
+addLabel('20. RAMEN', cx, -1, r4Z+2, '#ff6600'); cx += sX2;
+
+// 21. BUS STOP SHELTER
+const g21 = new THREE.Group();
+g21.add(createBlock(3, 0.08, 1.5, 0, 2.5, 0, materials.neonGreen));     // Roof slab
+g21.add(createWedge(2.8, 3, 0.15, 0, 2.42, 0, materials.neonGreen));    // Roof wedge underside
+g21.add(createBlock(0.1, 2.4, 0.1, -1.4, 1.2, 0.65, materials.neonGreen));// Post L
+g21.add(createBlock(0.1, 2.4, 0.1, 1.4, 1.2, 0.65, materials.neonGreen)); // Post R
+g21.add(createBlock(2.6, 1.8, 0.06, 0, 1.4, -0.72, materials.neonGreen));// Back panel
+g21.add(createBlock(1, 0.5, 0.06, 0, 2.3, -0.72, materials.neonGreen)); // Route sign
+g21.position.set(cx, 0, r4Z); scene.add(g21);
+addLabel('21. BUS STOP', cx, -1, r4Z+2, '#00ff88'); cx += sX2;
+
+// 22. GAS PUMP ISLAND
+const g22 = new THREE.Group();
+g22.add(createBlock(3.5, 0.25, 1.5, 0, 0.125, 0, materials.neonYellow));// Island base
+g22.add(createBlock(0.5, 1.5, 0.3, -0.8, 0.95, 0, materials.neonYellow));// Pump L
+g22.add(createWedge(0.45, 0.5, 0.25, -0.8, 1.83, 0, materials.neonYellow));// Pump L top
+g22.add(createBlock(0.5, 1.5, 0.3, 0.8, 0.95, 0, materials.neonYellow)); // Pump R
+g22.add(createWedge(0.45, 0.5, 0.25, 0.8, 1.83, 0, materials.neonYellow));// Pump R top
+g22.add(createBlock(4, 0.15, 2, 0, 3, 0, materials.neonYellow));         // Canopy roof
+g22.add(createCyl(0.12, 2.75, -1.5, 1.5, 0.8, materials.neonYellow, 4));// Canopy pole L
+g22.add(createCyl(0.12, 2.75, 1.5, 1.5, 0.8, materials.neonYellow, 4));// Canopy pole R
+g22.position.set(cx, 0, r4Z); scene.add(g22);
+addLabel('22. GAS PUMP', cx, -1, r4Z+2, '#ffdd00'); cx += sX2;
+
+// 23. GUARD BOOTH / CHECKPOINT
+const g23 = new THREE.Group();
+g23.add(createBlock(1.5, 1.8, 1.5, 0, 0.9, 0, materials.neonPink));    // Booth body
+g23.add(createWedge(1.3, 1.5, 0.3, 0, 1.95, 0, materials.neonPink));   // Roof wedge taper
+g23.add(createBlock(1.6, 0.08, 1.6, 0, 2.14, 0, materials.neonPink));  // Roof slab overhang
+g23.add(createBlock(0.8, 1.2, 0.04, 0, 1.2, 0.77, materials.neonPink));// Window glass
+g23.add(createBlock(2, 0.8, 0.06, -1.75, 0.4, 0, materials.neonPink)); // Barrier arm L
+g23.add(createBlock(2, 0.8, 0.06, 1.75, 0.4, 0, materials.neonPink));  // Barrier arm R
+g23.position.set(cx, 0, r4Z); scene.add(g23);
+addLabel('23. GUARD', cx, -1, r4Z+2, '#ff00ff'); cx += sX2;
+
+// 24. TRANSFORMER / ELECTRICAL BOX
+const g24 = new THREE.Group();
+g24.add(createWedge(0.9, 1, 1.6, 0, 0.8, 0, materials.neonPurple));    // Tapered body
+g24.add(createBlock(1, 0.08, 1, 0, 1.64, 0, materials.neonPurple));    // Lid
+g24.add(createCyl(0.04, 0.8, 0, 2.04, 0, materials.neonPurple, 4));    // Insulator post
+g24.add(createDome(0.12, 0, 2.44, 0, materials.neonPurple));            // Insulator dome
+g24.add(createCyl(0.04, 0.8, 0.3, 2.04, 0.3, materials.neonPurple, 4));
+g24.add(createDome(0.12, 0.3, 2.44, 0.3, materials.neonPurple));
+g24.position.set(cx, 0, r4Z); scene.add(g24);
+addLabel('24. TRANSF', cx, -1, r4Z+2, '#8800ff'); cx += sX2;
+
+// 25. NEON BILLBOARD (Vertical)
+const g25 = new THREE.Group();
+g25.add(createCyl(0.08, 4, 0, 2, 0, materials.neonWhite, 4));          // Pole
+g25.add(createBlock(2.5, 1.5, 0.15, 0, 4.5, 0, materials.neonCyan));   // Billboard face
+g25.add(createWedge(2.3, 2.5, 0.2, 0, 3.65, 0, materials.neonCyan));   // Lower wedge lip
+g25.add(createBlock(2.6, 0.1, 0.2, 0, 5.3, 0, materials.neonCyan));    // Top frame
+g25.position.set(cx, 0, r4Z); scene.add(g25);
+addLabel('25. BILLBOARD', cx, -1, r4Z+2, '#00ffff'); cx += sX2;
+
+// 26. PUBLIC TOILET BLOCK
+const g26 = new THREE.Group();
+g26.add(createBlock(2.5, 2.2, 2, 0, 1.1, 0, materials.neonGreen));     // Main block
+g26.add(createWedge(2.3, 2.5, 0.25, 0, 2.33, 0, materials.neonGreen));// Roof ledge
+g26.add(createBlock(2.6, 0.1, 2.2, 0, 2.5, 0, materials.neonGreen)); // Flat roof
+g26.add(createDome(0.4, 0.8, 2.6, 0, materials.neonGreen));           // Vent dome
+g26.add(createBlock(0.7, 1.6, 0.04, -0.6, 1.0, 1.02, materials.neonGreen));// Door L
+g26.add(createBlock(0.7, 1.6, 0.04, 0.6, 1.0, 1.02, materials.neonGreen));// Door R
+g26.position.set(cx, 0, r4Z); scene.add(g26);
+addLabel('26. TOILET', cx, -1, r4Z+2, '#00ff88');
+
+// ==========================================
+// CENTERPIECE: MEGA ARCOLOGY (the biggest!)
+// ==========================================
+const gMega = new THREE.Group();
+const mC = materials.neonCyan;
+const mR = materials.neonRed;
+const mP = materials.neonPurple;
+
+// === BASE TIER: Massive podium (20x20) ===
+gMega.add(createWedge(18, 20, 4, 0, 2, 0, mC));                          // Tapered base
+gMega.add(createBlock(20, 0.3, 20, 0, 4.15, 0, mC));                     // Podium deck
+
+// === TIER 2: Four corner pillars + central tower start ===
+gMega.add(createBlock(4, 8, 4, -7, 8.3, -7, mC));                        // Pillar NW
+gMega.add(createBlock(4, 8, 4, 7, 8.3, -7, mC));                         // Pillar NE
+gMega.add(createBlock(4, 8, 4, -7, 8.3, 7, mC));                         // Pillar SW
+gMega.add(createBlock(4, 8, 4, 7, 8.3, 7, mC));                          // Pillar SE
+gMega.add(createWedge(3, 4, 2, -7, 13.3, -7, mC));                       // Pillar NW crown
+gMega.add(createWedge(3, 4, 2, 7, 13.3, -7, mC));                        // Pillar NE crown
+gMega.add(createWedge(3, 4, 2, -7, 13.3, 7, mC));                        // Pillar SW crown
+gMega.add(createWedge(3, 4, 2, 7, 13.3, 7, mC));                         // Pillar SE crown
+
+// === CENTRAL TOWER (reaches for the sky) ===
+gMega.add(createBlock(6, 16, 6, 0, 12.3, 0, mP));                        // Main shaft
+gMega.add(createWedge(4.5, 6, 4, 0, 22.3, 0, mP));                      // Upper taper
+gMega.add(createWedge(2.5, 4.5, 4, 0, 26.3, 0, mP));                    // Crown taper
+gMega.add(createWedge(1, 2.5, 3, 0, 29.8, 0, mR));                      // Spire taper
+gMega.add(createDome(1.2, 0, 31.3, 0, mR));                              // Observatory dome
+gMega.add(createCyl(0.15, 4, 0, 33.3, 0, mR, 4));                       // Antenna mast
+gMega.add(createDome(0.3, 0, 35.3, 0, mR));                              // Antenna dome
+
+// === SKYBRIDGES (connect pillars to central tower) ===
+gMega.add(createBlock(5.5, 1.2, 1.2, -3.5, 10, -3.5, mC));              // Bridge NW
+const brNW = gMega.children[gMega.children.length-1]; brNW.rotation.y = Math.PI/4;
+gMega.add(createBlock(5.5, 1.2, 1.2, 3.5, 10, -3.5, mC));               // Bridge NE
+const brNE = gMega.children[gMega.children.length-1]; brNE.rotation.y = -Math.PI/4;
+gMega.add(createBlock(5.5, 1.2, 1.2, -3.5, 10, 3.5, mC));               // Bridge SW
+const brSW = gMega.children[gMega.children.length-1]; brSW.rotation.y = -Math.PI/4;
+gMega.add(createBlock(5.5, 1.2, 1.2, 3.5, 10, 3.5, mC));                // Bridge SE
+const brSE = gMega.children[gMega.children.length-1]; brSE.rotation.y = Math.PI/4;
+
+// === LATERAL WINGS (mid height) ===
+gMega.add(createBlock(5, 4, 2, -5.5, 16, 0, mP));                       // West wing
+gMega.add(createWedge(4, 5, 1.5, -5.5, 18.75, 0, mP));                  // West wing crown
+gMega.add(createBlock(5, 4, 2, 5.5, 16, 0, mP));                        // East wing
+gMega.add(createWedge(4, 5, 1.5, 5.5, 18.75, 0, mP));                   // East wing crown
+
+// === DOCKING PLATFORMS (floating wedge platforms) ===
+gMega.add(createWedge(3, 4, 0.5, -10, 8, 0, mR));                      // Dock West
+gMega.add(createWedge(3, 4, 0.5, 10, 8, 0, mR));                       // Dock East
+gMega.add(createWedge(3, 4, 0.5, 0, 8, -10, mR));                      // Dock North
+gMega.add(createWedge(3, 4, 0.5, 0, 8, 10, mR));                       // Dock South
+
+// === GREENHOUSE DOMES on corners ===
+gMega.add(createDome(2, -7, 14.3, -7, mC));                              // Dome NW
+gMega.add(createDome(2, 7, 14.3, -7, mC));                               // Dome NE
+gMega.add(createDome(2, -7, 14.3, 7, mC));                               // Dome SW
+gMega.add(createDome(2, 7, 14.3, 7, mC));                                // Dome SE
+
+// Place the mega-arcology at center-right
+gMega.position.set(45, 0, 0);
+scene.add(gMega);
+addLabel('★ MEGA ARCOLOGY ★', 45, -1, 13, '#00ffff');
+addLabel('Height: 35+ stories', 45, -2, 13, '#ff0044');
+
+
+// === POST PROCESSING (BLOOM) ===
+const renderScene = new RenderPass(scene, camera);
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 1.5, 0.4, 0.85);
+bloomPass.threshold = 0.05; bloomPass.strength = 1.4; bloomPass.radius = 0.7;
+const composer = new EffectComposer(renderer);
+composer.addPass(renderScene); composer.addPass(bloomPass);
+
+// Animation
+gfx.startLoop(
+    (dt) => {
+        const time = Date.now() * 0.001;
+        materials.base.opacity = 0.88 + Math.sin(time*2) * 0.04;
+    },
+    () => {
+        composer.render();
+    }
+);
+
+window.addEventListener('resize', () => {
+    composer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>

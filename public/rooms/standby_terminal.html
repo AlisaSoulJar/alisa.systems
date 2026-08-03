@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>ALISA TERMINAL STANDBY</title>
+    <style>
+        body { 
+            background: #0b0b14; 
+            color: #818cf8; 
+            font-family: 'Courier New', Courier, monospace; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+            overflow: hidden; 
+            cursor: pointer;
+            box-shadow: inset 0 0 150px #000000;
+        }
+        .scanlines {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+        }
+        .content { 
+            text-align: center; 
+            z-index: 10;
+        }
+        h1 { font-size: 60px; margin-bottom: 0; letter-spacing: 5px; text-shadow: 0 0 20px #818cf8; }
+        h2 { font-size: 30px; margin-top: 10px; opacity: 0.8; }
+        .pulse { 
+            margin-top: 50px;
+            font-size: 25px;
+            animation: p 2s infinite; 
+            border: 2px solid #818cf8;
+            padding: 20px 40px;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        .pulse:hover {
+            background: #818cf8;
+            color: #0b0b14;
+        }
+        @keyframes p { 0%, 100% { opacity: 1; border-color: rgba(129, 140, 248, 1); } 50% { opacity: 0.3; border-color: rgba(129, 140, 248, 0.3); } }
+        .sys-log {
+            position: absolute; top: 20px; left: 20px; text-align: left; font-size: 14px; opacity: 0.5; color: #4ade80;
+        }
+    </style>
+    <script>
+        function boot() {
+            const url = new URLSearchParams(window.location.search).get('target');
+            if(url) {
+                document.querySelector('.pulse').innerText = "COMPILING JIT ENGINE...";
+                
+                // Procedural Confirmation Beep
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'square'; osc.frequency.value = 880;
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.start(); osc.stop(ctx.currentTime + 0.1);
+
+                setTimeout(() => window.top.location.href = url, 500);
+            }
+        }
+    </script>
+</head>
+<body onclick="boot()">
+    <div class="scanlines"></div>
+    <div class="sys-log">
+        [ALISA OS V4.0]<br>
+        [NODE CONSTRUCT: TENSHI NO TAMAGO]<br>
+        [WORKER ID: 0x8A9F32]<br>
+        CPU: SLEEP_STATE_3<br>
+        GPU: WEBGL_CONTEXT_ORPHANED
+    </div>
+    <div class="content">
+        <h1>ALISA NEURAL NODE</h1>
+        <h2>AWAITING OPERATOR INPUT</h2>
+        <div class="pulse">CLICK TO JIT-COMPILE SIMULATION</div>
+    </div>
+</body>
+</html>

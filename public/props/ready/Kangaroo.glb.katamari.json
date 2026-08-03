@@ -1,0 +1,107 @@
+{
+    "source_file": "Kangaroo.glb",
+    "deduced_size_meters": 2.5,
+    "target_tier": "Tier 0: Base Humanoid",
+    "target_scale_constraint": 1.7999999999999998,
+    "voxel_grid": [
+        3,
+        6,
+        2
+    ],
+    "archetype": "ungulate",
+    "morphology": {
+        "size_m": 2.5,
+        "domain": "organic",
+        "cladistics": "ungulate",
+        "mobility": "bipedal",
+        "mechanical_joints": 0
+    },
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0,
+    "ai_armature": [
+        {
+            "name": "Spine Core",
+            "parent": null,
+            "pos": [
+                0.0,
+                4.8823205620050425,
+                -0.5901110172271729
+            ]
+        },
+        {
+            "name": "Neck Base",
+            "parent": null,
+            "pos": [
+                0.0,
+                5.708313822001219,
+                5.607419967651367
+            ]
+        },
+        {
+            "name": "Snout",
+            "parent": null,
+            "pos": [
+                0.0,
+                6.534307081997395,
+                9.325938558578493
+            ]
+        },
+        {
+            "name": "Hindquarters",
+            "parent": null,
+            "pos": [
+                0.0,
+                4.8823205620050425,
+                -8.02714819908142
+            ]
+        },
+        {
+            "name": "Leg FL",
+            "parent": null,
+            "pos": [
+                1.186024832725525,
+                0.7523542620241642,
+                5.607419967651367
+            ]
+        },
+        {
+            "name": "Leg FR",
+            "parent": null,
+            "pos": [
+                -1.186024832725525,
+                0.7523542620241642,
+                5.607419967651367
+            ]
+        },
+        {
+            "name": "Leg RL",
+            "parent": null,
+            "pos": [
+                1.186024832725525,
+                0.7523542620241642,
+                -6.787642002105713
+            ]
+        },
+        {
+            "name": "Leg RR",
+            "parent": null,
+            "pos": [
+                -1.186024832725525,
+                0.7523542620241642,
+                -6.787642002105713
+            ]
+        }
+    ],
+    "mesh_scale_multiplier": 0.1452191206782064,
+    "kinematics": {
+        "base_gait": "static",
+        "cycle_frequency_hz": 0.0,
+        "step_amplitude": 0.0,
+        "vertical_bounce": 0.0,
+        "spine_flexion": 0.0,
+        "idle_sway_hz": 0.0,
+        "locomotion_states": [
+            "idle"
+        ]
+    }
+}

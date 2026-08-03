@@ -1,0 +1,8 @@
+{
+    "source_file": "Match Burnt.glb",
+    "deduced_size_meters": 2.3,
+    "target_tier": "Tier 0.5: Tall Humanoid",
+    "target_scale_constraint": 2.2,
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0
+}

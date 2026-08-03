@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALISA — Las máquinas de la sala, jugadas por una máquina</title>
+<!--
+  ¿PAGA EL CÓDIGO LO QUE PROMETE LA PORTADA?
+  ═══════════════════════════════════════════════════════════════════════════
+  La portada dice «mismas reglas para personas y para máquinas». Esta página lo
+  ejecuta: enumera el catálogo de entornos, los carga, y deja que una política
+  juegue una partida entera en cada uno — sin abrir la sala, sin persona, y sin
+  hub.
+
+  Y de cada partida saca el MISMO recibo que dejaría una persona:
+  `{juego, semilla, jugadas, puntos}`. Ahí es donde la frase deja de ser frase.
+
+  Las tres columnas de la derecha son la LEY DE CALIBRACIÓN: un entorno está
+  listo cuando la política tonta pierde, una razonable gana a veces, y queda
+  techo. Si la tonta ya gana, el juego no mide nada.
+-->
+<style>
+ body{margin:0;background:#0b0e14;color:#cfe3f5;font-family:ui-monospace,monospace;
+      padding:24px 28px 70px;font-size:12px;line-height:1.7}
+ h1{font-size:13px;letter-spacing:.24em;color:#7fd0ff;font-weight:400;margin:0 0 6px}
+ .sub{color:#5f7a92;font-size:11px;margin-bottom:16px;line-height:1.95;max-width:900px}
+ button{background:#132133;color:#7fd0ff;border:1px solid #2f5878;border-radius:4px;
+        padding:9px 20px;font-family:inherit;font-size:11px;letter-spacing:.2em;cursor:pointer}
+ button:hover{background:#1b3048}
+ table{border-collapse:collapse;width:100%;margin-top:16px;font-size:11.5px}
+ td,th{padding:5px 9px;border-bottom:1px solid #16202c;text-align:left;vertical-align:top}
+ th{color:#5f7a92;font-weight:400;font-size:10px;letter-spacing:.14em}
+ .ok{color:#7CFC98} .mal{color:#ff8080} .ojo{color:#e0b020} .gris{color:#41566b}
+ .fam{font-size:9.5px;letter-spacing:.1em;color:#41566b}
+ #resumen{margin-top:22px;padding-top:14px;border-top:1px solid #24384f;font-size:12.5px;
+          line-height:2}
+ code{color:#7fd0ff}
+</style>
+</head>
+<body>
+<h1>▓ LAS MÁQUINAS DE LA SALA, JUGADAS POR UNA MÁQUINA</h1>
+<div class="sub">
+  Se enumera el catálogo (<code>gym/registro.js</code>), se carga cada entorno y
+  se juega una partida entera con dos políticas. Sin sala, sin persona, sin hub.<br>
+  <b>reproducible</b>: misma semilla ⇒ misma partida. <b>sensible</b>: otra semilla ⇒
+  otro resultado (si no, el juego ignora la semilla y no se puede verificar).<br>
+  <b>Tres tipos de jugador sobre el mismo entorno y la misma métrica:</b>
+  <b>tonta</b> (elige siempre la primera opción, el suelo),
+  <b>🤖 FSM</b> (una máquina de estados del motor —la misma que mueve al cazador
+  de Rue del Percebe— que aprieta cuando el marcador sube y cambia de tercio
+  cuando baja) y <b>azar</b> entre las legales.<br>
+  Falta el cuarto y ya tiene su puerta: un <b>agente LLM</b> juega por
+  <code>affordances()</code>, donde no puede ni alucinar una jugada ilegal. Y el
+  quinto eres tú, en la sala.<br>
+  Un entorno mide algo cuando el resultado <i>depende de quién juega</i>.
+</div>
+<button id="correr">JUGARLAS TODAS</button>
+<div id="salida"></div>
+<div id="resumen"></div>
+
+<script type="importmap">
+{ "imports": { "three": "/vendor/three-0.160.0/build/three.module.js",
+               "three/addons/": "/vendor/three-0.160.0/examples/jsm/" } }
+</script>
+<script type="module">
+import { CATALOGO, politicaTonta, politicaAzar, politicaFSM }
+  from '../js/alisa-engine/src/gym/registro.js';
+
+const salida = document.getElementById('salida');
+const resumen = document.getElementById('resumen');
+const logReal = console.log;
+
+const num = (v) => (v === null || v === undefined || Number.isNaN(v)) ? '—'
+                 : (typeof v === 'number' ? (Number.isInteger(v) ? v : v.toFixed(2)) : v);
+
+document.getElementById('correr').addEventListener('click', async () => {
+  salida.innerHTML = `<table><tr>
+      <th></th><th>entorno</th><th>familia</th><th>repro</th><th>sens</th>
+      <th>tonta</th><th>🤖 FSM</th><th>azar</th><th>jugadas</th>
+      <th>recibo verificable</th></tr></table>`;
+  const tabla = salida.querySelector('table');
+  let vivos = 0, rotos = 0, reproducibles = 0, conRecibo = 0, midenAlgo = 0;
+
+  for (const entrada of CATALOGO) {
+    const fila = tabla.insertRow();
+    fila.innerHTML = `<td>…</td><td>${entrada.titulo}</td>`
+                   + `<td class="fam">${entrada.familia}</td>`
+                   + `<td colspan="6" class="gris">cargando…</td>`;
+    await new Promise(r => setTimeout(r, 8));
+
+    try {
+      console.log = () => {};
+      const Env = await entrada.cargar();
+      if (typeof Env !== 'function') throw new Error('el módulo no exporta un entorno');
+
+      const azar = politicaAzar(7);
+      const opciones = { seed: 1234, maxSteps: 400 };
+      const prueba = Env.selfTest(azar, opciones);
+
+      // Una partida entera con cada tipo de jugador, para poder comparar.
+      // Tres, no dos: la FSM es el jugador que faltaba y el motor ya la tenía.
+      const conTonta = new Env().runEpisode(politicaTonta, opciones);
+      const conFSM   = new Env().runEpisode(politicaFSM(), opciones);
+      const env = new Env();
+      const conAzar = env.runEpisode(politicaAzar(7), opciones);
+      const recibo = typeof env.partida === 'function' ? env.partida() : null;
+      console.log = logReal;
+
+      vivos++;
+      if (prueba.reproducible) reproducibles++;
+      if (recibo && recibo.reproducible && recibo.jugadas.length) conRecibo++;
+      // "Mide algo" = jugar con criterio no da lo mismo que jugar en piloto
+      // automático. Si empatan, el entorno todavía no distingue a nadie.
+      const mide = conAzar.score !== conTonta.score;
+      if (mide) midenAlgo++;
+
+      const celdas = [
+        '<span class="ok">✓</span>',
+        entrada.titulo,
+        `<span class="fam">${entrada.familia}</span>`,
+        prueba.reproducible ? '<span class="ok">sí</span>' : '<span class="mal">NO</span>',
+        prueba.sensible ? '<span class="ok">sí</span>' : '<span class="ojo">no</span>',
+        num(conTonta.score),
+        num(conFSM.score),
+        `<b class="${mide ? 'ok' : 'ojo'}">${num(conAzar.score)}</b>`,
+        num(conAzar.steps),
+        recibo ? `<span class="gris">${recibo.juego} · semilla ${recibo.semilla} · `
+                 + `${recibo.jugadas.length} jugadas</span>`
+               : '<span class="gris">—</span>',
+      ];
+      celdas.forEach((c, i) => { fila.cells[i] ? null : fila.insertCell(); });
+      fila.innerHTML = celdas.map(c => `<td>${c}</td>`).join('');
+    } catch (e) {
+      console.log = logReal;
+      rotos++;
+      fila.innerHTML = `<td><span class="mal">✗</span></td><td>${entrada.titulo}</td>`
+        + `<td class="fam">${entrada.familia}</td>`
+        + `<td colspan="6" class="mal">${String(e.message).slice(0, 120)}</td>`;
+    }
+  }
+
+  resumen.innerHTML =
+      `<b class="${rotos ? 'mal' : 'ok'}">${vivos} de ${CATALOGO.length} entornos jugables por una máquina</b>`
+    + (rotos ? ` · <span class="mal">${rotos} rotos</span>` : '')
+    + `<br><span class="gris">reproducibles: <b class="${reproducibles === vivos ? 'ok' : 'ojo'}">${reproducibles}/${vivos}</b>`
+    + ` · con recibo verificable: <b>${conRecibo}</b>`
+    + ` · distinguen a quien juega mejor: <b class="${midenAlgo === vivos ? 'ok' : 'ojo'}">${midenAlgo}/${vivos}</b></span>`
+    + `<div class="sub" style="margin-top:10px">Los que <b>no</b> distinguen todavía no
+       miden nada: la política tonta saca lo mismo que la de azar. Es un dato honesto,
+       no un fallo — la calibración es trabajo aparte, y decirlo es lo que separa un
+       banco de pruebas de una tabla de puntuaciones bonita.</div>`;
+  window.__estaciones = { vivos, rotos, reproducibles, conRecibo, midenAlgo,
+                          total: CATALOGO.length };
+});
+</script>
+</body>
+</html>

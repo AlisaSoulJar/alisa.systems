@@ -1,0 +1,21 @@
+{
+    "name": "Metatron",
+    "role": "The Voice of God",
+    "emoji": "⚡",
+    "type": "divine",
+    "skeleton": "humanoid_archangel",
+    "model_path": "Crown.glb",
+    "scale": 2.0,
+    "kinematics": "humanoid_float",
+    "sealed_by": "Oscar, Father",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "xtts",
+        "tier": 5,
+        "voice_id": "alisa_metatron_v2",
+        "rate": "1.0",
+        "pitch": "1.0",
+        "label": "Metatron - alisa_metatron_v2 (XTTS Tier 5, divino)"
+    },
+    "avatar_source": "colonial_census_2026-04-23"
+}

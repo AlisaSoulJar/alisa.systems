@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA - Overworld SCUMM</title>
+    <style>
+        @import url('/vendor/fonts/fuentes.css');
+
+        :root {
+            --bg-color: #0d0d0d;
+            --canvas-bg: #1a1a2e;
+            --verb-color: #3498db;
+            --verb-selected: #f1c40f;
+            --text-color: #ecf0f1;
+            --border-color: #2c3e50;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'VT323', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 800px;
+            height: 600px;
+            border: 4px solid var(--border-color);
+            position: relative;
+            background-color: var(--canvas-bg);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            margin-top: 20px;
+        }
+
+        #world-canvas {
+            width: 100%;
+            height: 400px;
+            image-rendering: pixelated;
+        }
+
+        #ui-layer {
+            height: 200px;
+            background-color: #000;
+            border-top: 4px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+
+        #dialog-area {
+            height: 40px;
+            color: var(--verb-selected);
+            font-size: 24px;
+            text-align: center;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        #verb-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            flex-grow: 1;
+        }
+
+        .verb {
+            background: none;
+            border: none;
+            color: var(--verb-color);
+            font-family: 'Press Start 2P', cursive;
+            font-size: 14px;
+            cursor: pointer;
+            text-align: left;
+            padding: 5px;
+            transition: color 0.1s;
+        }
+
+        .verb:hover {
+            color: #fff;
+        }
+
+        .verb.active {
+            color: var(--verb-selected);
+        }
+
+        #inventory {
+            width: 300px;
+            border-left: 2px solid var(--border-color);
+            padding-left: 10px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+        }
+
+        .inv-item {
+            width: 48px;
+            height: 48px;
+            background-color: #222;
+            border: 1px solid #444;
+        }
+
+        #room-info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-family: 'Press Start 2P';
+            font-size: 10px;
+            color: #555;
+            pointer-events: none;
+        }
+
+        /* Scanline effect */
+        #game-container::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-container">
+        <div id="room-info">NODE: HOME | 127.0.0.1:ALISA</div>
+        <canvas id="world-canvas" width="800" height="400"></canvas>
+        <div id="ui-layer">
+            <div id="dialog-area">WALK TO</div>
+            <div style="display: flex; flex-grow: 1;">
+                <div id="verb-grid">
+                    <button class="verb" onclick="setVerb('OPEN')">OPEN</button>
+                    <button class="verb" onclick="setVerb('CLOSE')">CLOSE</button>
+                    <button class="verb" onclick="setVerb('PICK UP')">PICK UP</button>
+                    <button class="verb" onclick="setVerb('LOOK AT')">LOOK AT</button>
+                    <button class="verb" onclick="setVerb('TALK TO')">TALK TO</button>
+                    <button class="verb active" onclick="setVerb('WALK TO')">WALK TO</button>
+                    <button class="verb" onclick="setVerb('USE')">USE</button>
+                    <button class="verb" onclick="setVerb('PUSH')">PUSH</button>
+                    <button class="verb" onclick="setVerb('PULL')">PULL</button>
+                </div>
+                <div id="inventory">
+                    <div class="inv-item" title="La Corona"></div>
+                    <div class="inv-item"></div>
+                    <div class="inv-item"></div>
+                    <div class="inv-item"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('world-canvas');
+        const ctx = canvas.getContext('2d');
+        const dialogArea = document.getElementById('dialog-area');
+
+        // Game State
+        const state = {
+            queen: {
+                x: 400,
+                y: 200,
+                targetX: 400,
+                targetY: 200,
+                speed: 3,
+                sprite: new Image(),
+                emotion: 'happy'
+            },
+            currentVerb: 'WALK TO',
+            objects: [
+                { id: 'throne', x: 100, y: 150, name: 'THRONE', color: '#8e44ad' },
+                { id: 'terminal', x: 600, y: 300, name: 'TERMINAL', color: '#27ae60' }
+            ]
+        };
+
+        state.queen.sprite.src = '../Data/Assets/sprites/icon_happy.png';
+
+        function setVerb(verb) {
+            state.currentVerb = verb;
+            document.querySelectorAll('.verb').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            updateActionText();
+        }
+
+        function updateActionText(suffix = "") {
+            dialogArea.innerText = state.currentVerb + " " + suffix;
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (state.currentVerb === 'WALK TO') {
+                state.queen.targetX = x;
+                state.queen.targetY = y;
+            } else {
+                // Check collision with objects
+                const clickedObj = state.objects.find(obj => {
+                    const dist = Math.sqrt((obj.x - x) ** 2 + (obj.y - y) ** 2);
+                    return dist < 30;
+                });
+                if (clickedObj) {
+                    updateActionText(clickedObj.name);
+                }
+            }
+        });
+
+        async function syncState() {
+            try {
+                const response = await fetch('state.json?t=' + Date.now());
+                if (!response.ok) return;
+                const data = await response.json();
+
+                if (data && data.view) {
+                    state.queen.targetX = data.view.x;
+                    state.queen.targetY = data.view.y;
+
+                    // Update room info
+                    document.getElementById('room-info').innerText = `NODE: ${data.node.toUpperCase()} | POS: ${data.pos.x.toFixed(1)},${data.pos.y.toFixed(1)}`;
+                }
+            } catch (e) {
+                // silenty fail
+            }
+        }
+
+        // Chat State
+        let chatBubbles = []; // { text, x, y, life, sender }
+        let lastMsgTimestamp = 0;
+
+        async function syncChat() {
+            try {
+                // Fetch bridge outbox (assuming served at relative path)
+                // Adjust path based on where HTML is served from
+                const response = await fetch('../../Data/Channels/console_outbox.json?t=' + Date.now());
+                if (!response.ok) return;
+                const messages = await response.json();
+
+                messages.forEach(msg => {
+                    const ts = parseFloat(msg.timestamp);
+                    if (ts > lastMsgTimestamp) {
+                        lastMsgTimestamp = ts;
+                        // Determine speaker
+                        const sender = msg.sender || "ALISA";
+
+                        // Add bubble
+                        chatBubbles.push({
+                            text: msg.content,
+                            sender: sender,
+                            x: sender === "ALISA" ? state.queen.x : 100, // User on left, Queen on right? Or floating?
+                            y: sender === "ALISA" ? state.queen.y - 60 : 500,
+                            life: 300 // Frames to live (~5s)
+                        });
+
+                        // Also update last action text
+                        updateActionText(`[${sender}] Says...`);
+
+                        // [Fractal Link] Psyche -> World
+                        // If message has mood and sender is ALISA, update world weather
+                        if (sender === "ALISA" && msg.mood) {
+                            currentMood = msg.mood;
+                        }
+                    }
+                });
+
+            } catch (e) {
+                // console.log("Chat sync error", e);
+            }
+        }
+
+        // Weather & Mood State
+        let currentMood = "neutral";
+        let rainDrops = [];
+
+        function updateWeather() {
+            // [Fractal Weather] The internal mood reflects on the external world.
+            if (currentMood.toLowerCase().includes("sad") || currentMood.toLowerCase().includes("rain")) {
+                // Generate rain
+                if (Math.random() > 0.5) {
+                    rainDrops.push({
+                        x: Math.random() * canvas.width,
+                        y: 0,
+                        speed: Math.random() * 5 + 2,
+                        length: Math.random() * 10 + 5
+                    });
+                }
+            }
+            // Update rain
+            rainDrops.forEach(d => d.y += d.speed);
+            rainDrops = rainDrops.filter(d => d.y < canvas.height);
+        }
+
+        function drawWeather() {
+            ctx.strokeStyle = "rgba(173, 216, 230, 0.5)";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            rainDrops.forEach(d => {
+                ctx.moveTo(d.x, d.y);
+                ctx.lineTo(d.x, d.y + d.length);
+            });
+            ctx.stroke();
+
+            // Mood tint overlay
+            if (currentMood.toLowerCase().includes("sad")) {
+                ctx.fillStyle = "rgba(0, 0, 50, 0.2)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            } else if (currentMood.toLowerCase().includes("happy")) {
+                ctx.fillStyle = "rgba(255, 255, 0, 0.05)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        function update() {
+            // Movement (Interpolated)
+            const q = state.queen;
+            const dx = q.targetX - q.x;
+            const dy = q.targetY - q.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+
+            if (dist > 1) {
+                // Easing function for smoother movement
+                const moveSpeed = q.speed * 1.5;
+                q.x += (dx / dist) * moveSpeed;
+                q.y += (dy / dist) * moveSpeed;
+            }
+
+            updateWeather();
+            draw();
+            requestAnimationFrame(update);
+        }
+
+        function drawBubbles() {
+            ctx.font = "14px 'Press Start 2P'";
+            ctx.textAlign = "center";
+
+            chatBubbles.forEach((bubble) => {
+                bubble.life--;
+
+                // Position logic
+                let x = bubble.x;
+                let y = bubble.y;
+                let color = "#fff";
+                let stroke = "#000";
+
+                if (bubble.sender === "ALISA") {
+                    x = state.queen.x;
+                    y = state.queen.y - 70;
+                    color = "#e8eaf6"; // Soft white
+                    stroke = "#3f51b5"; // Indigo
+                } else if (bubble.sender === "OSCAR" || bubble.sender === "USER") {
+                    x = 100; // Fixed position for user? Or floating head?
+                    y = 100;
+                    color = "#e0f2f1"; // Teal light
+                    stroke = "#009688"; // Teal
+                }
+
+                // Draw Bubble
+                const metrics = ctx.measureText(bubble.text);
+                const width = metrics.width + 20;
+                const height = 30;
+
+                // Shadow
+                ctx.fillStyle = "rgba(0,0,0,0.3)";
+                ctx.beginPath();
+                ctx.roundRect(x - width / 2 + 3, y - height / 2 + 3, width, height, 8);
+                ctx.fill();
+
+                // Background
+                ctx.fillStyle = color;
+                ctx.strokeStyle = stroke;
+                ctx.lineWidth = 2;
+
+                ctx.beginPath();
+                ctx.roundRect(x - width / 2, y - height / 2, width, height, 8);
+                ctx.fill();
+                ctx.stroke();
+
+                // Draw Text
+                ctx.fillStyle = "#000";
+                ctx.fillText(bubble.text, x, y + 5);
+
+                // Update mood from ALISA's messages if present
+                if (bubble.sender === "ALISA" && bubble.life > 290) { // On spawn
+                    // Simple heuristic needed here or rely on msg.mood
+                }
+            });
+
+            // Remove dead bubbles
+            chatBubbles = chatBubbles.filter(b => b.life > 0);
+        }
+
+        function draw() {
+            // Clear
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw objects
+            state.objects.forEach(obj => {
+                ctx.fillStyle = obj.color;
+                ctx.fillRect(obj.x - 20, obj.y - 20, 40, 40);
+
+                // Simple label
+                ctx.fillStyle = "#fff";
+                ctx.font = "10px monospace";
+                ctx.fillText(obj.name, obj.x, obj.y + 30);
+            });
+
+            // Draw Queen
+            try {
+                // Shadow for Queen
+                ctx.fillStyle = "rgba(0,0,0,0.5)";
+                ctx.beginPath();
+                ctx.ellipse(state.queen.x, state.queen.y + 20, 20, 5, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.drawImage(state.queen.sprite, state.queen.x - 32, state.queen.y - 32, 64, 64);
+            } catch (e) {
+                ctx.fillStyle = 'cyan';
+                ctx.fillRect(state.queen.x - 20, state.queen.y - 20, 40, 40);
+            }
+
+            // Target marker
+            if (Math.sqrt((state.queen.targetX - state.queen.x) ** 2 + (state.queen.targetY - state.queen.y) ** 2) > 5) {
+                ctx.strokeStyle = '#f1c40f';
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.arc(state.queen.targetX, state.queen.targetY, 10, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // Weather (Atmosphere Layer)
+            drawWeather();
+
+            // Chat (Communication Layer)
+            drawBubbles();
+        }
+
+        setInterval(syncState, 500);
+        setInterval(syncChat, 500); // Poll for chat
+        update();
+    </script>
+</body>
+
+</html>

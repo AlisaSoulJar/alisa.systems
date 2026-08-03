@@ -1,0 +1,27 @@
+{
+  "name": "@alisa/engine",
+  "version": "1.0.0",
+  "description": "ALISA Universal Simulation & World Engines",
+  "main": "src/AlisaRenderCore.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "three.js",
+    "webgl",
+    "alisa",
+    "simulation",
+    "engine",
+    "headless",
+    "procgen"
+  ],
+  "author": "ALISA Colony",
+  "license": "MIT",
+  "peerDependencies": {
+    "three": "^0.170.0"
+  },
+  "imports": {
+    "@alisa-engine/*": "./*"
+  }
+}

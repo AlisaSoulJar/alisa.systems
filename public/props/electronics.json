@@ -1,0 +1,82 @@
+{
+    "_doc": "Electronic prop extensions — powered state, strip animations, L3 portals, and WebGL material effects. All electronic props inherit these properties via the 'electronic' tag in blueprints.",
+
+    "_electronic_states": {
+        "powered_on":   { "emissive": true,  "stripAnim": true,  "portal": true,  "glowIntensity": 1.0 },
+        "powered_off":  { "emissive": false, "stripAnim": false, "portal": false, "glowIntensity": 0.0 },
+        "standby":      { "emissive": true,  "stripAnim": false, "portal": false, "glowIntensity": 0.3 },
+        "broken":       { "emissive": false, "stripAnim": false, "portal": false, "glowIntensity": 0.0, "sparks": true },
+        "flickering":   { "emissive": true,  "stripAnim": true,  "portal": false, "glowIntensity": "flicker", "flickerRate": [0.1, 0.8] }
+    },
+
+    "_power_probability_by_category": {
+        "slum":     { "powered_on": 20, "powered_off": 15, "standby": 10, "broken": 40, "flickering": 15 },
+        "corp":     { "powered_on": 70, "powered_off": 10, "standby": 15, "broken": 3,  "flickering": 2  },
+        "military": { "powered_on": 55, "powered_off": 15, "standby": 20, "broken": 5,  "flickering": 5  },
+        "docks":    { "powered_on": 30, "powered_off": 20, "standby": 10, "broken": 25, "flickering": 15 },
+        "lab":      { "powered_on": 80, "powered_off": 5,  "standby": 10, "broken": 2,  "flickering": 3  }
+    },
+
+    "_strip_animations": {
+        "_doc": "Fake GIF system — spritesheet with horizontal offset. frames = number of cells, speed = offset per second. Each strip is a PNG row.",
+        "terminal_screen": { "frames": 4, "speed": 2.0, "stripFile": "strips/terminal_anim.png", "emissiveColor": "#00ffcc" },
+        "tv_static":       { "frames": 6, "speed": 8.0, "stripFile": "strips/tv_static.png",     "emissiveColor": "#ffffff" },
+        "vending_display":  { "frames": 3, "speed": 1.0, "stripFile": "strips/vending_anim.png",  "emissiveColor": "#ff00aa" },
+        "washing_cycle":    { "frames": 8, "speed": 1.5, "stripFile": "strips/washer_anim.png",   "emissiveColor": "#aaccff" },
+        "neon_sign":        { "frames": 2, "speed": 0.5, "stripFile": "strips/neon_blink.png",    "emissiveColor": "#ff3366" },
+        "monitor_data":     { "frames": 4, "speed": 3.0, "stripFile": "strips/data_scroll.png",   "emissiveColor": "#33ff99" },
+        "hologram":         { "frames": 6, "speed": 2.5, "stripFile": "strips/holo_rotate.png",   "emissiveColor": "#66ccff" }
+    },
+
+    "_webgl_material_effects": {
+        "_doc": "Cheap WebGL effects per material type. Applied via shader uniforms, not textures. Cost: ~0 GPU.",
+        "metal":    { "specular": 0.7, "metalness": 0.9, "envMapIntensity": 0.4 },
+        "wood":     { "specular": 0.1, "metalness": 0.0, "envMapIntensity": 0.05 },
+        "glass":    { "specular": 1.0, "metalness": 0.1, "envMapIntensity": 0.8, "transparent": true, "opacity": 0.3 },
+        "fabric":   { "specular": 0.0, "metalness": 0.0, "envMapIntensity": 0.0 },
+        "plastic":  { "specular": 0.4, "metalness": 0.0, "envMapIntensity": 0.2 },
+        "ceramic":  { "specular": 0.6, "metalness": 0.0, "envMapIntensity": 0.3 },
+        "screen":   { "specular": 0.9, "metalness": 0.1, "envMapIntensity": 0.1, "emissive": true },
+        "neon":     { "specular": 0.0, "metalness": 0.0, "envMapIntensity": 0.0, "emissive": true, "bloom": true },
+        "rust":     { "specular": 0.05,"metalness": 0.3, "envMapIntensity": 0.1, "roughnessBoost": 0.3 }
+    },
+
+    "_lod_for_electronics": {
+        "god": {
+            "_doc": "Top-down: static PNG with emissive glow from WebGL point light. No animation.",
+            "render": "static_icon + emissive_point_light",
+            "textureType": "icon_16px",
+            "glowRadius": 2.0,
+            "glowColor": "from_strip.emissiveColor"
+        },
+        "room": {
+            "_doc": "Room view: strip animation running + WebGL material effects. Fake GIF visible.",
+            "render": "strip_animation + webgl_material",
+            "textureType": "strip_spritesheet",
+            "animSpeed": "from_strip.speed"
+        },
+        "card": {
+            "_doc": "Inspect: L3 portal — embedded browser (iframe). The prop BECOMES an interactive surface.",
+            "render": "l3_portal_iframe",
+            "portalUrl": "from_prop.portal_url || default_terminal",
+            "fallback": "high_res_ai_texture_256"
+        }
+    },
+
+    "_l3_portal_defaults": {
+        "terminal":   { "url": "/overworld-ui/terminal.html",   "aspect": "4:3" },
+        "tv":         { "url": "/overworld-ui/tv.html",         "aspect": "16:9" },
+        "monitor":    { "url": "/overworld-ui/monitor.html",    "aspect": "16:10" },
+        "vending":    { "url": "/overworld-ui/vending.html",    "aspect": "3:4" },
+        "jukebox":    { "url": "/overworld-ui/jukebox.html",    "aspect": "1:1" }
+    },
+
+    "_gameplay_dynamics": {
+        "power_grid": {
+            "_doc": "Electronic props need power. Rooms have a 'powered' flag from building generator. If unpowered, all electronics are off. Player can fix generators, wire rooms.",
+            "power_source_props": ["generator", "solar_panel", "battery_pack", "power_relay"],
+            "wirable_radius": 3.0,
+            "repair_action": "increases powered_on probability for connected props"
+        }
+    }
+}

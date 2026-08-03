@@ -1,0 +1,144 @@
+<!-- RECUPERADO del transcript de la sesion 2026-07-27 tras el `git clean`.
+     Original: World/Web/overworld/avatar_face_lab.html (ruta pre-reorg).
+     Rutas adaptadas a la convencion de labs del motor. -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALISA · Avatar Face Lab — expression preview</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0b0d12; color: #cfe; font-family: 'JetBrains Mono', monospace; overflow: hidden; }
+  #c { position: fixed; inset: 0; display: block; }
+  #panel {
+    position: fixed; top: 16px; left: 16px; z-index: 10;
+    background: rgba(8,12,18,0.82); border: 1px solid #0ff3; border-radius: 10px;
+    padding: 14px 16px; backdrop-filter: blur(6px); max-width: 260px;
+  }
+  h1 { font-size: 14px; color: #00ffff; letter-spacing: 0.5px; margin-bottom: 2px; }
+  .sub { font-size: 10px; color: #6aa; margin-bottom: 10px; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; }
+  button {
+    background: rgba(0,255,255,0.07); color: #00ffff; border: 1px solid #0ff5;
+    border-radius: 5px; padding: 6px 9px; font: inherit; font-size: 11px; cursor: pointer;
+  }
+  button:hover { background: rgba(0,255,255,0.18); }
+  button.on { background: #00ffff; color: #012; }
+  #status { font-size: 10px; color: #6aa; margin-top: 10px; min-height: 1.2em; }
+  #cycle { margin-top: 8px; width: 100%; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="panel">
+  <h1>😊 AVATAR FACE LAB</h1>
+  <div class="sub">expression preview · AvatarCalibrationTool</div>
+  <div class="row" id="btns"></div>
+  <button id="cycle">▶ auto-cycle</button>
+  <div id="status">booting…</div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "/vendor/three-0.160.0/build/three.module.js",
+    "three/addons/": "/vendor/three-0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { AvatarCalibrationTool } from './js/tools/AvatarCalibrationTool.js?v=glbparam';
+
+const EXPRESSIONS = ['neutral','happy','sad','angry','surprised','thinking','crying','nervous'];
+const GLB = new URLSearchParams(location.search).get('glb') || '../props/ready/Gorilla.glb';
+const statusEl = document.getElementById('status');
+const setStatus = t => { statusEl.textContent = t; };
+
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x0b0d12);
+const camera = new THREE.PerspectiveCamera(40, innerWidth/innerHeight, 0.1, 100);
+camera.position.set(0, 1.4, 3.2);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 1.2, 0);
+scene.add(new THREE.HemisphereLight(0x8899aa, 0x223, 0.9));
+const key = new THREE.DirectionalLight(0xffffff, 1.1); key.position.set(2, 4, 3); scene.add(key);
+
+let tool = null, group = null;
+window.__faceReady = false;
+
+new GLTFLoader().load(GLB, async gl => {
+  group = new THREE.Group();
+  const m = gl.scene;
+  const box = new THREE.Box3().setFromObject(m); const sz = new THREE.Vector3(); box.getSize(sz);
+  m.scale.setScalar(2.0 / (sz.y || 1));
+  const box2 = new THREE.Box3().setFromObject(m);
+  m.position.y = -box2.min.y;
+  group.add(m); scene.add(group);
+  group.updateMatrixWorld(true);
+
+  tool = new AvatarCalibrationTool(scene, { document });
+  tool.currentModelLoaded = m; tool.currentGroup = group;
+  // Data-driven: fetch the production anchors (Pygmalion machine output) and pick this avatar's archetype.
+  // AUTO-MAP: the GLB's katamari sidecar carries skeleton_override / archetype — the mapping harvested from
+  // the friction recon (skeleton_override was a dead, unread field until now). ?arch= overrides for testing.
+  let sidecar = null;
+  try { sidecar = await fetch(GLB + '.katamari.json').then(r => r.ok ? r.json() : null); } catch (e) {}
+  const arch = new URLSearchParams(location.search).get('arch')
+             || (sidecar && (sidecar.skeleton_override || sidecar.archetype))
+             || 'primate';
+  window.__derivedArch = arch; window.__sidecarOverride = sidecar && sidecar.skeleton_override; // debug: prove the sidecar-derived archetype
+  let anchors = null;
+  try { anchors = await fetch('../data/face_anchors.json?v=' + Date.now()).then(r => r.ok ? r.json() : null); } catch (e) {}  // cache-bust: anchors iterate during calibration
+  const A = (anchors && anchors.face_anchors && anchors.face_anchors[arch]) || { pos: [0, 3.75, 1.0], size: 1.1 };
+  const canon = (anchors && anchors._canonical_size) || 5.0;
+  tool.setFaceAnchor(A.pos, A.size, canon);
+  setStatus('anchor · ' + arch + (anchors ? '' : ' (fallback)'));
+  tool.attachStripeFace(group, 'hologram');   // billboard plane; decal mode = tool.attachStripeFace(group,'decal')
+  tool.setExpression('neutral');
+
+  const box3 = new THREE.Box3().setFromObject(group); const c3 = box3.getCenter(new THREE.Vector3());
+  controls.target.copy(c3); camera.position.set(c3.x, c3.y + 0.2, box3.max.z + 2.2); controls.update();
+
+  window.__faceReady = true;
+  setStatus('ready · neutral');
+}, undefined, err => setStatus('GLB load error: ' + err));
+
+// --- expression control (also exposed for Playwright verification) ---
+function setExpr(name) {
+  if (!tool) return;
+  tool.setExpression(name);
+  [...document.querySelectorAll('#btns button')].forEach(b => b.classList.toggle('on', b.dataset.x === name));
+  setStatus('expression · ' + name);
+}
+window.setFaceExpression = setExpr;
+window.__faceCanvasDataURL = () => (tool && tool.faceCanvas) ? tool.faceCanvas.toDataURL() : null;
+window.__glitchFreeze = () => { if (tool) { tool.drawFace(tool.currentExpression, false); tool.applyGlitch(); if (tool.faceTexture) tool.faceTexture.needsUpdate = true; } }; // debug: hold a glitch frame for capture
+
+const btns = document.getElementById('btns');
+EXPRESSIONS.forEach(x => { const b = document.createElement('button'); b.textContent = x; b.dataset.x = x; b.onclick = () => setExpr(x); btns.appendChild(b); });
+
+let cycling = false, cyi = 0, cyt = 0;
+document.getElementById('cycle').onclick = e => { cycling = !cycling; e.target.classList.toggle('on', cycling); };
+
+const clock = new THREE.Clock();
+function loop() {
+  requestAnimationFrame(loop);
+  const dt = clock.getDelta();
+  if (cycling) { cyt += dt; if (cyt > 1.4) { cyt = 0; cyi = (cyi + 1) % EXPRESSIONS.length; setExpr(EXPRESSIONS[cyi]); } }
+  if (tool) tool.tickBlock();
+  controls.update();
+  renderer.render(scene, camera);
+}
+loop();
+addEventListener('resize', () => { camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+{
+    "normalcar1": {
+        "type": "glb",
+        "url": "props/models/NormalCar1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "normalcar2": {
+        "type": "glb",
+        "url": "props/models/NormalCar2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "raptor_heavy_planetary_crawler": {
+        "type": "glb",
+        "url": "props/models/Raptor Heavy Planetary Crawler.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "suv": {
+        "type": "glb",
+        "url": "props/models/SUV.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "sportscar": {
+        "type": "glb",
+        "url": "props/models/SportsCar.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "sportscar2": {
+        "type": "glb",
+        "url": "props/models/SportsCar2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "taxi": {
+        "type": "glb",
+        "url": "props/models/Taxi.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    }
+}

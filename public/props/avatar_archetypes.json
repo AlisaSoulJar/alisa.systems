@@ -1,0 +1,46 @@
+{
+    "_doc": "ALISA Phenotype Blueprint. Paradigma: Minecraft + GoldenEye 64. Bloques contundentes para el cuerpo, cilindros segmentados para extremidades. Listo para Sprites Impostores.",
+    "humanoid": {
+        "humanoid_goldeneye": [
+            {"shape": "box", "size": [0.45, 0.6, 0.3], "pos": [0, 1.0, 0], "radius": 0.02, "type": "dark", "_comment": "Torso Minecraft: Contundente, recto y perfecto para el chaleco"},
+            {"shape": "box", "size": [0.3, 0.3, 0.3], "pos": [0, 1.5, 0], "type": "base", "_comment": "Cabeza Minecraft: 100% plana para texturizar rostros IA"},
+            
+            {"shape": "cylinder", "size": [0.08, 0.08, 0.35, 6], "pos": [0.35, 1.15, 0], "rot": [0, 0, -0.2], "type": "base", "_comment": "Brazo superior R (GoldenEye segment)"},
+            {"shape": "cylinder", "size": [0.08, 0.08, 0.35, 6], "pos": [0.45, 0.85, 0], "rot": [0, 0, -0.1], "type": "dark", "_comment": "Brazo inferior R"},
+            
+            {"shape": "cylinder", "size": [0.08, 0.08, 0.35, 6], "pos": [-0.35, 1.15, 0], "rot": [0, 0, 0.2], "type": "base", "_comment": "Brazo superior L"},
+            {"shape": "cylinder", "size": [0.08, 0.08, 0.35, 6], "pos": [-0.45, 0.85, 0], "rot": [0, 0, 0.1], "type": "dark", "_comment": "Brazo inferior L"},
+            
+            {"shape": "cylinder", "size": [0.1, 0.1, 0.45, 6], "pos": [0.15, 0.45, 0], "type": "base", "_comment": "Pierna superior R"},
+            {"shape": "cylinder", "size": [0.1, 0.1, 0.45, 6], "pos": [0.15, 0.1, 0], "type": "dark", "_comment": "Pierna inferior R (bota)"},
+            
+            {"shape": "cylinder", "size": [0.1, 0.1, 0.45, 6], "pos": [-0.15, 0.45, 0], "type": "base", "_comment": "Pierna superior L"},
+            {"shape": "cylinder", "size": [0.1, 0.1, 0.45, 6], "pos": [-0.15, 0.1, 0], "type": "dark", "_comment": "Pierna inferior L (bota)"}
+        ]
+    },
+    "beast": {
+        "beast_scrap_dog": [
+            {"shape": "box", "size": [0.4, 0.4, 1.0], "pos": [0, 0.5, 0], "radius": 0.03, "type": "dark", "_comment": "Lomo robusto Minecraft"},
+            {"shape": "cone", "size": [0.25, 0.6, 6], "pos": [0, 0.7, 0.7], "rot": [-1.2, 0, 0], "type": "base", "_comment": "Cabeza de lobo en cono Katamari puro"},
+            {"shape": "box", "size": [0.08, 0.5, 0.08], "pos": [0.15, 0.25, 0.3], "rot": [0.2, 0, 0], "type": "base", "_comment": "Pata R delantera"},
+            {"shape": "box", "size": [0.08, 0.5, 0.08], "pos": [-0.15, 0.25, 0.3], "rot": [0.2, 0, 0], "type": "base", "_comment": "Pata L delantera"},
+            {"shape": "box", "size": [0.08, 0.5, 0.08], "pos": [0.15, 0.25, -0.4], "rot": [-0.2, 0, 0], "type": "base", "_comment": "Pata R trasera"},
+            {"shape": "box", "size": [0.08, 0.5, 0.08], "pos": [-0.15, 0.25, -0.4], "rot": [-0.2, 0, 0], "type": "base", "_comment": "Pata L trasera"}
+        ]
+    },
+    "mech": {
+        "mech_sentry_drone": [
+            {"shape": "box", "size": [0.8, 0.6, 0.8], "pos": [0, 1.2, 0], "radius": 0.05, "type": "dark", "_comment": "Bloque principal de torreta Minecraft"},
+            {"shape": "wedge", "size": [0.4, 0.3, 0.1], "pos": [0, 1.2, 0.45], "rot": [1.5708, 0, 0], "type": "red_neo", "_comment": "Ojo/Visor cíclope plano pegado para texturas"},
+            {"shape": "cone", "size": [0.15, 0.8, 6], "pos": [0, 0.5, 0], "type": "base", "_comment": "Pilar de flotación o cañón focal"}
+        ]
+    },
+    "vehicle": {
+        "vehicle_block_speeder": [
+            {"shape": "box", "size": [1.0, 0.3, 2.4], "pos": [0, 0.4, 0], "radius": 0.05, "type": "dark", "_comment": "Chasis general super bloque"},
+            {"shape": "wedge", "size": [0.8, 0.4, 0.6], "pos": [0, 0.65, -0.2], "type": "base", "_comment": "Cabina angular"},
+            {"shape": "box", "size": [0.3, 0.1, 0.8], "pos": [-0.6, 0.2, -0.8], "type": "cyan_neo", "_comment": "Motor flotante L"},
+            {"shape": "box", "size": [0.3, 0.1, 0.8], "pos": [0.6, 0.2, -0.8], "type": "cyan_neo", "_comment": "Motor flotante R"}
+        ]
+    }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "Chimera",
+  "id": "SC-CHIMERA",
+  "tier": 5,
+  "role": "Experimento",
+  "domain": "laboratorio",
+  "purpose": "Probar mezclas vocales en XTTS.",
+  "voice": {
+    "engine": "xtts",
+    "voice_id": "alisa_chimera",
+    "speed": 1.0,
+    "pitch": 0.0,
+    "vol": 1.0,
+    "emotion": "neutral"
+  }
+}

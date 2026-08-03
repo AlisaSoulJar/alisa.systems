@@ -1,0 +1,21 @@
+{
+    "name": "Sonar",
+    "role": "Deep Scanner",
+    "emoji": "📡",
+    "type": "mechanical",
+    "skeleton": "scanner_dish",
+    "model_path": "sonar.glb",
+    "scale": 1.0,
+    "kinematics": "scanner_rotate",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "synth",
+        "tier": 1,
+        "signal_type": "sine",
+        "signal_freq": 180,
+        "signal_duration": 0.5,
+        "label": "Sonar - Synth sine (ping bajo, submarino)",
+        "freq_label": "grave, submarino, ping lento"
+    }
+}

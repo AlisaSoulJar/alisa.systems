@@ -1,0 +1,38 @@
+{
+    "stasis_pod": [
+        {"shape": "cylinder", "size": [0.6, 0.6, 2.0, 12], "pos": [0, 1.1, 0], "type": "glass"},
+        {"shape": "sphere", "size": [0.6, 12, 6, 0, 6.2832, 0, 1.5708], "pos": [0, 2.1, 0], "type": "glass"},
+        {"shape": "sphere", "size": [0.6, 12, 6, 0, 6.2832, 0, 1.5708], "pos": [0, 0.1, 0], "rot": [3.1416, 0, 0], "type": "dark"}
+    ],
+    "server_dna_centrifuge": [
+        {"shape": "wedge", "size": [0.9, 1.2, 1.2], "pos": [0, 0.6, 0], "type": "dark"},
+        {"shape": "sphere", "size": [0.64, 8, 4, 0, 6.2832, 0, 1.5708], "pos": [0, 1.2, 0], "type": "glass"}
+    ],
+    "operating_table": [
+        {"shape": "wedge", "size": [0.3, 0.5, 0.8], "pos": [0, 0.4, 0], "type": "dark"},
+        {"shape": "box", "size": [1.0, 0.1, 2.2], "pos": [0, 0.85, 0], "radius": 0.02, "type": "base"}
+    ],
+    "containment_chamber_bio": [
+        {"shape": "box", "size": [3.0, 3.0, 3.0], "pos": [0, 1.5, 0], "radius": 0.01, "type": "glass"},
+        {"shape": "sphere", "size": [2.0, 8, 4, 0, 6.2832, 0, 1.5708], "pos": [0, 3.0, 0], "type": "glass"},
+        {"shape": "box", "size": [3.2, 0.2, 3.2], "pos": [0, 0.1, 0], "radius": 0.03, "type": "dark"}
+    ],
+    "chemical_shower_decon": [
+        {"shape": "box", "size": [1.2, 0.1, 1.2], "pos": [0, 0.05, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.05, 0.05, 2.4, 6], "pos": [-0.5, 1.2, -0.5], "type": "base"},
+        {"shape": "sphere", "size": [0.3, 8, 4, 0, 6.2832, 0, 1.5708], "pos": [0, 2.4, -0.1], "rot": [3.1416, 0, 0], "type": "dark"}
+    ],
+    "lab_bench_microscopes": [
+        {"shape": "box", "size": [2.8, 0.9, 1.0], "pos": [0, 0.45, 0], "radius": 0.02, "type": "base"}
+    ],
+    "cryo_tank": [
+        {"shape": "cylinder", "size": [0.8, 0.8, 2.0, 8], "pos": [0, 1.0, 0], "type": "dark"},
+        {"shape": "sphere", "size": [0.8, 8, 4, 0, 6.2832, 0, 1.5708], "pos": [0, 2.0, 0], "type": "base"},
+        {"shape": "sphere", "size": [0.8, 8, 4, 0, 6.2832, 0, 1.5708], "pos": [0, 0, 0], "rot": [3.1416, 0, 0], "type": "base"}
+    ],
+    "dna_helix_display": [
+        {"shape": "cylinder", "size": [0.4, 0.4, 0.1, 12], "pos": [0, 0.05, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.03, 0.03, 1.5, 4], "pos": [0, 0.8, 0], "type": "dark"},
+        {"shape": "sphere", "size": [0.3, 8, 4], "pos": [0, 1.6, 0], "type": "glass"}
+    ]
+}

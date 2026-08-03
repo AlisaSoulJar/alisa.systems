@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA - Catálogo Universal de Siluetas (Zero Greeble)</title>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: monospace; background-color: #222; color: #fff; }
+        #ui {
+            position: absolute; top: 20px; left: 20px; z-index: 10;
+            background: rgba(0,0,0,0.85); border: 1px solid #0f0; padding: 15px;
+            width: 360px; max-height: 90vh; overflow-y: auto;
+        }
+        h3 { margin-top: 0; color: #0f0; border-bottom: 1px solid #333; padding-bottom: 5px;}
+        .label { margin-top: 10px; font-size: 12px; color: #ccc; }
+        select, button {
+            width: 100%; background: #000; color: #0f0; 
+            border: 1px solid #0f0; padding: 5px; margin-top: 5px; font-family: monospace;
+            cursor: pointer;
+        }
+        select { border-color: #0aa; color: #0ff; outline: none; background: #000;}
+        select#selCategory { font-weight: bold; background: #001100; border-color: #0c0; }
+        option { padding: 3px; }
+        option:hover { background: #0c0; color: #000; }
+        
+        #l3_overlay {
+            position: absolute; top: 10%; left: 10%; width: 80%; height: 80%;
+            background: rgba(0,0,20,0.95); border: 2px solid #0ff; box-shadow: 0 0 20px #0ff;
+            display: none; z-index: 100; padding: 20px; box-sizing: border-box; backdrop-filter: blur(5px);
+        }
+        #l3_header { float: right; cursor: pointer; color: #f00; font-size: 20px; font-weight: bold; }
+        #l3_content { color: #0ff; margin-top: 40px; font-size: 18px; text-align: center; }
+        
+        .instruction { font-size: 10px; color: #888; margin-top: 20px; line-height: 1.4; border-top: 1px dotted #555; padding-top: 10px;}
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three-0.160.0/build/three.module.js",
+        "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+        "@alisa-engine/": "../js/alisa-engine/"
+      }
+    }
+    </script>
+</head>
+<body>
+    <div id="ui">
+        <h3>Librería Maestra (PS1)</h3>
+        
+        <div class="label">Clase / Dominio:</div>
+        <select id="selCategory" title="Categoría de Props" onchange="updatePropList()">
+            <option value="common">Common (Mobiliario Universal)</option>
+            <option value="corp">Corporate (Oficinas Prime)</option>
+            <option value="commercial">Commercial (Tiendas / Mercado)</option>
+            <option value="slum">Slum (Suburbios bajos)</option>
+            <option value="military">Militar (Seguridad táctica)</option>
+            <option value="urban">Urban (Mobiliario ciudad)</option>
+            <option value="rooftop">Rooftop (Infraestructura Skyline)</option>
+            <option value="lab">Lab / Med (Biotecnología)</option>
+            <option value="industrial">Industrial (Fábrica / Maquinaria)</option>
+            <option value="recreation">Recreation (Casino / Ocio)</option>
+            <option value="utility">Utility (Backrooms / Mantenimiento)</option>
+            <option value="infrastructure">Infrastructure (Puentes / Escaleras)</option>
+            <option value="docks">Docks (Puerto / Carga)</option>
+            <option value="decor">Decor (Lámparas / Cuadros)</option>
+            <option value="signs">Signs (Carteles y Hologramas)</option>
+            <option value="vehicles" selected>Vehicles (Vehículos y Movilidad)</option>
+        </select>
+
+        <div class="label">Arquetipo Base:</div>
+        <select id="selProp" onchange="loadProp()" size="12">
+            <!-- Loaded dynamically -->
+        </select>
+        
+        <div class="label" style="margin-top:15px;color:#0f0; border-top:1px solid #333; padding-top:10px;">🛠️ Procedural Lab (v7 Engine)</div>
+        <div style="display:flex; gap:5px; margin-top:5px; align-items:center;">
+            <input type="color" id="uiHex" value="#C59364" onchange="loadProp()" style="width:40px; cursor:pointer;" title="Hex Color Override">
+            <select id="uiOverlay" onchange="loadProp()" style="flex:1;">
+                <option value="none">No Overlay (Solid)</option>
+                <option value="ov_wood">Procedural Wood</option>
+                <option value="ov_metal">Procedural Metal</option>
+                <option value="ov_fabric" selected>Procedural Fabric</option>
+                <option value="ov_brick">Procedural Brick</option>
+                <option value="ov_concrete">Procedural Concrete/Worn</option>
+                <option value="ov_wallpaper">Procedural Wallpaper</option>
+                <option value="ov_corrugated">Procedural Corrugated Metal</option>
+                <option value="ov_diamond">Procedural Diamond Plate</option>
+                <option value="ov_chainlink">Procedural Chainlink Fence</option>
+                <option value="ov_tiles">Procedural Floor Tiles</option>
+                <option value="ov_rust">Procedural Rust / Grunge</option>
+                <option value="ov_leather">Procedural Leather</option>
+                <option value="ov_cobble">Procedural Cobblestone</option>
+                <option value="ov_hardwood">Procedural Hardwood Floor</option>
+                <option value="ov_water">Procedural Water Ripple</option>
+                <option value="ov_dirt">Wear: Dirt (edge-biased)</option>
+                <option value="ov_scratches">Wear: Scratches</option>
+                <option value="ov_grime">Wear: Grime (gravity drip)</option>
+                <option value="ov_wall_stain">Surface: Wall Stain (drips)</option>
+                <option value="ov_floor_wear">Surface: Floor Wear (traffic)</option>
+                <option value="ov_ceil_damage">Surface: Ceiling Damage (rings)</option>
+            </select>
+        </div>
+        <div style="display:flex; gap:5px; align-items:center; margin-top:5px; margin-bottom:10px;">
+             <span class="label" style="margin:0;">Seed:</span>
+             <input type="range" id="uiSeed" min="1" max="1000" value="42" oninput="loadProp()" style="flex:1;">
+        </div>
+
+        <div class="instruction">
+            <b>12 Dominios. Catálogo Absoluto.</b> Desde una caja de cartón genérica hasta una furgoneta de reparto y hologramas. Todo parametrizado en primitivas Tetris y mallas procedurales híbridas.
+        </div>
+    </div>
+
+    <div id="l3_overlay">
+        <div id="l3_header" onclick="closeL3()">[ X ] CLOSE</div>
+        <div id="l3_content">
+            <h1 id="l3_title">L3 PORTAL</h1>
+            <p>Se inicializaría el Iframe de interacción para este Agente.</p>
+        </div>
+    </div>
+
+    <div id="loading" style="display:flex; position:absolute; inset:0; background:#222; justify-content:center; align-items:center; z-index:9999; font-size:24px;">Loading Hero Textures...</div>
+
+    <!-- MatrixRoom Container -->
+    <div id="render-container" style="position:absolute; inset:0; z-index:1;"></div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+        import { ProceduralTexture } from '@alisa-engine/src/soma/morphology/ProceduralTexture.js';
+        import { BspPropSystem } from '@alisa-engine/src/world/BspPropSystem.js';
+
+        window.THREE = Object.assign({}, THREE);
+        window.THREE.OrbitControls = OrbitControls;
+        window.THREE.RoundedBoxGeometry = RoundedBoxGeometry;
+
+        const gfx = new AlisaRenderCore('render-container', {
+            autoGrid: true,
+            cameraY: 4.0,
+            cameraZ: 6.0,
+            background: 0x111115
+        });
+
+        const texPlugin = new ProceduralTexture();
+        gfx.registerPlugin(texPlugin);
+        
+        const scene = gfx.scene;
+        const camera = gfx.camera;
+        const renderer = gfx.renderer;
+        let currentPropGroup = null;
+
+        // Clean silhouette mode: all black with slight translucency
+        const matBase = new THREE.MeshStandardMaterial({ color: 0x111111, transparent: true, opacity: 0.75, roughness: 0.8 });
+        const matDark = new THREE.MeshStandardMaterial({ color: 0x000000, transparent: true, opacity: 0.85, roughness: 0.6 });
+        const matVehBase = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, transparent: true, opacity: 0.8, roughness: 0.5 });
+        const matContainer = new THREE.MeshStandardMaterial({ color: 0x111111, transparent: true, opacity: 0.7, roughness: 0.9 });
+        
+        const matGlass = new THREE.MeshPhysicalMaterial({ color: 0x222222, transmission: 0.6, opacity: 0.3, transparent: true, roughness: 0.1 });
+        const matL3Portal = new THREE.MeshBasicMaterial({ color: 0x333333, transparent: true, opacity: 0.5, wireframe: true });
+        
+        const matCyanNeo = new THREE.MeshStandardMaterial({ color: 0x222222, transparent: true, opacity: 0.6 });
+        const matRedNeo = new THREE.MeshStandardMaterial({ color: 0x222222, transparent: true, opacity: 0.6 });
+
+        // ==========================================
+        // LIBRERÍA UNIVERSAL DE ARQUETIPOS
+        // ==========================================
+        const PROP_CATEGORIES = ['common','vehicles','corp','commercial','slum','military','urban','rooftop','lab','industrial','recreation','utility','infrastructure','docks','decor','signs'];
+        const archetypes = {};
+
+        async function loadArchetypes() {
+            const promises = PROP_CATEGORIES.map(async cat => {
+                try {
+                    const resp = await fetch('../props/' + cat + '.json');
+                    if (resp.ok) archetypes[cat] = await resp.json();
+                } catch(e) { console.warn('Could not load props/' + cat + '.json', e); }
+            });
+            await Promise.all(promises);
+
+            const selCat = document.getElementById('selCategory');
+            selCat.innerHTML = '';
+            for (const cat of Object.keys(archetypes)) {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.innerText = cat.charAt(0).toUpperCase() + cat.slice(1);
+                selCat.appendChild(opt);
+            }
+            updatePropList();
+        }
+
+        const l3Interactables = [];
+
+        function updatePropList() {
+            const cat = document.getElementById('selCategory').value;
+            const dict = archetypes[cat];
+            const selProp = document.getElementById('selProp');
+            selProp.innerHTML = ''; 
+            
+            for (const key in dict) {
+                const opt = document.createElement('option');
+                opt.value = key;
+                const niceName = key.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+                opt.innerText = niceName;
+                selProp.appendChild(opt);
+            }
+            if(Object.keys(dict || {}).length > 0) {
+                loadProp();
+            }
+        }
+
+        function loadProp() {
+            if (currentPropGroup) scene.remove(currentPropGroup);
+            currentPropGroup = new THREE.Group();
+            l3Interactables.length = 0;
+            
+            const cat = document.getElementById('selCategory').value;
+            let key = document.getElementById('selProp').value;
+
+            if (!key && document.getElementById('selProp').options.length > 0) {
+                key = document.getElementById('selProp').options[0].value;
+                document.getElementById('selProp').value = key;
+            }
+
+            if (!cat || !key) return;
+            const rawRecipe = archetypes[cat][key];
+            const uiHex = document.getElementById('uiHex').value;
+            const uiSeed = parseInt(document.getElementById('uiSeed').value) || 42;
+
+            let recipe = [];
+            if (!Array.isArray(rawRecipe) && rawRecipe.generator) {
+                if (rawRecipe.generator === 'bsp_shelf') {
+                    recipe = BspPropSystem.generateBspShelf(rawRecipe.size[0], rawRecipe.size[1], rawRecipe.size[2], rawRecipe.cuts || 5, uiSeed);
+                } else if (rawRecipe.generator === 'grid_lockers') {
+                    recipe = BspPropSystem.generateGridStorage(rawRecipe.size[0], rawRecipe.size[1], rawRecipe.size[2], rawRecipe.cols || 4, rawRecipe.rows || 3);
+                }
+            } else {
+                recipe = rawRecipe.parts || rawRecipe;
+            }
+
+            recipe.forEach((part, i) => {
+                let geo;
+                if (part.radius && part.shape === 'box') geo = new RoundedBoxGeometry(part.size[0], part.size[1], part.size[2], 2, part.radius);
+                else if (part.shape === 'box') geo = new THREE.BoxGeometry(...part.size);
+                else if (part.shape === 'cylinder') geo = new THREE.CylinderGeometry(...part.size);
+                else if (part.shape === 'sphere') geo = new THREE.SphereGeometry(...part.size);
+                
+                // Lógica Procedural via SOMA Plugin
+                let finalMat = matBase;
+                if (part.type === 'glass') finalMat = matGlass;
+                else if (part.type === 'sprite') finalMat = matBase; 
+                else if (part.type === 'red_neo') finalMat = matRedNeo;
+                else if (part.type === 'cyan_neo') finalMat = matCyanNeo;
+                else if (part.type === 'l3_screen') finalMat = matL3Portal;
+                else if (part.texture) finalMat = createPropTex(part.color || uiHex, '#000000', 0.1, part.type === 'container');
+                else if (part.call) finalMat = part.call(texPlugin);
+                else {
+                    finalMat = texPlugin.getAutoMaterial(cat, key, i, part.type, uiSeed);
+                }
+
+                const mesh = new THREE.Mesh(geo, finalMat);
+                mesh.position.set(part.pos[0] || 0, part.pos[1] || 0, part.pos[2] || 0);
+                currentPropGroup.add(mesh);
+            });
+            scene.add(currentPropGroup);
+        }
+
+        function createPropTex(colorHex, borderHex, noiseIntensity = 0.1, isContainer = false) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64; canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = colorHex; ctx.fillRect(0,0,64,64);
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.magFilter = THREE.NearestFilter;
+            tex.minFilter = THREE.NearestFilter;
+            return tex;
+        }
+
+        window.loadArchetypes = loadArchetypes;
+        window.loadProp = loadProp;
+        window.updatePropList = updatePropList;
+
+        window.onload = () => {
+            texPlugin.preloadAssets('../textures/props', ['hero_locker_bw', 'hero_sofa_seat', 'hero_mattress_top'], () => {
+                document.getElementById('loading').style.display = 'none';
+                gfx.startLoop();
+                loadArchetypes();
+            });
+        };
+
+        // ─── Bind Globals for ES Module ──────────────────────────────
+        window.updatePropList = updatePropList;
+        window.loadProp = loadProp;
+        // window.closeL3 = closeL3;
+
+        // ─── Logic Tick (Delegated Render) ───────────────────────
+        function tickLogic() {
+            requestAnimationFrame(tickLogic);
+            
+            const t = Date.now() * 0.003;
+            if(matL3Portal) matL3Portal.opacity = 0.5 + Math.sin(t) * 0.5;
+            
+            if (currentPropGroup) {
+                currentPropGroup.children.forEach(c => {
+                    if (c.userData.isLoot && c.type === 'Group') c.rotation.y += 0.02;
+                });
+            }
+        }
+        tickLogic();
+    </script>
+</body>
+</html>

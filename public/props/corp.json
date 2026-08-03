@@ -1,0 +1,86 @@
+{
+    "office_chair": [
+        {"shape": "cylinder", "size": [0.3, 0.3, 0.04, 5], "pos": [0, 0.02, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.04, 0.04, 0.4, 6], "pos": [0, 0.22, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.3, 0.3, 0.08, 8], "pos": [0, 0.46, 0.02], "type": "base"},
+        {"shape": "box", "size": [0.48, 0.5, 0.06], "pos": [0, 0.75, -0.2], "rot": [0.1, 0, 0], "radius": 0.02, "type": "base"}
+    ],
+    "desk_executive": [
+        {"shape": "box", "size": [2.4, 0.08, 1.0], "pos": [0, 0.95, 0], "radius": 0.02, "type": "base"},
+        {"shape": "box", "size": [2.4, 0.06, 0.08], "pos": [0, 0.99, -0.46], "radius": 0.02, "type": "dark"},
+        {"shape": "box", "size": [0.6, 0.91, 0.9], "pos": [-0.9, 0.455, 0], "type": "container", "name": "Cajón Izquierdo Exec"},
+        {"shape": "box", "size": [0.6, 0.91, 0.9], "pos": [0.9, 0.455, 0], "type": "container", "name": "Cajón Derecho Exec"}
+    ],
+    "conference_table": [
+        {"shape": "box", "size": [4.0, 0.08, 1.4], "pos": [0, 0.95, 0], "radius": 0.03, "type": "base"},
+        {"shape": "box", "size": [4.0, 0.05, 0.06], "pos": [0, 0.99, -0.67], "radius": 0.015, "type": "dark"},
+        {"shape": "cylinder", "size": [0.4, 0.4, 0.91, 12], "pos": [-1.2, 0.455, 0], "scale": [1.0, 1.0, 0.5], "type": "dark"},
+        {"shape": "cylinder", "size": [0.4, 0.4, 0.91, 12], "pos": [1.2, 0.455, 0], "scale": [1.0, 1.0, 0.5], "type": "dark"}
+    ],
+    "filing_cabinet": {
+        "generator": "grid_lockers",
+        "size": [0.8, 1.8, 0.8],
+        "cols": 1,
+        "rows": 4
+    },
+    "server_rack": [
+        {"shape": "box", "size": [1.0, 2.4, 1.2], "pos": [0, 1.2, 0], "type": "dark"},
+        {"shape": "box", "size": [0.9, 0.3, 0.04], "pos": [0, 1.8, 0.62], "type": "l3_screen", "name": "Status Panel"},
+        {"shape": "box", "size": [0.9, 0.1, 0.04], "pos": [0, 1.0, 0.62], "type": "cyan_neo"},
+        {"shape": "box", "size": [0.9, 0.1, 0.04], "pos": [0, 0.6, 0.62], "type": "cyan_neo"}
+    ],
+    "terminal_workstation": [
+        {"shape": "box", "size": [1.2, 0.08, 0.8], "pos": [0, 0.85, 0], "radius": 0.02, "type": "base"},
+        {"shape": "wedge", "size": [0.35, 0.5, 0.85], "pos": [-0.4, 0.43, 0], "type": "dark"},
+        {"shape": "wedge", "size": [0.35, 0.5, 0.85], "pos": [0.4, 0.43, 0], "type": "dark"},
+        {"shape": "box", "size": [0.06, 0.4, 0.06], "pos": [0, 1.1, -0.35], "type": "dark"},
+        {"shape": "wedge", "size": [0.85, 1.0, 0.06], "pos": [0, 1.35, -0.35], "type": "dark"},
+        {"shape": "box", "size": [0.9, 0.65, 0.04], "pos": [0, 1.37, -0.32], "type": "l3_screen", "name": "Corporative Terminal"}
+    ],
+    "trading_desk_multi_monitor": [
+        {"shape": "box", "size": [2.4, 0.08, 1.0], "pos": [0, 0.9, 0], "radius": 0.02, "type": "base"},
+        {"shape": "box", "size": [0.1, 0.86, 0.8], "pos": [-0.9, 0.43, 0], "type": "dark"},
+        {"shape": "box", "size": [0.1, 0.86, 0.8], "pos": [0.9, 0.43, 0], "type": "dark"},
+        {"shape": "box", "size": [0.65, 0.5, 0.04], "pos": [-0.8, 1.4, -0.4], "rot": [0, 0.25, 0], "radius": 0.01, "type": "l3_screen", "name": "Monitor L"},
+        {"shape": "box", "size": [0.65, 0.5, 0.04], "pos": [0, 1.4, -0.45], "radius": 0.01, "type": "l3_screen", "name": "Monitor C"},
+        {"shape": "box", "size": [0.65, 0.5, 0.04], "pos": [0.8, 1.4, -0.4], "rot": [0, -0.25, 0], "radius": 0.01, "type": "l3_screen", "name": "Monitor R"}
+    ],
+    "water_cooler": [
+        {"shape": "box", "size": [0.35, 0.9, 0.35], "pos": [0, 0.45, 0], "radius": 0.02, "type": "dark"},
+        {"shape": "box", "size": [0.4, 0.06, 0.4], "pos": [0, 0.93, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.15, 0.15, 0.45, 6], "pos": [0, 1.18, 0], "type": "glass"},
+        {"shape": "sphere", "size": [0.15, 6, 3, 0, 6.2832, 0, 1.5708], "pos": [0, 1.4, 0], "type": "glass"}
+    ],
+    "zen_plant": [
+        {"shape": "cylinder", "size": [0.25, 0.15, 0.3, 6], "pos": [0, 0.15, 0], "type": "base"},
+        {"shape": "box", "size": [0.8, 0.8, 0.01], "pos": [0, 0.7, 0], "rot": [0, 0.7854, 0], "type": "sprite"},
+        {"shape": "box", "size": [0.8, 0.8, 0.01], "pos": [0, 0.7, 0], "rot": [0, -0.7854, 0], "type": "sprite"}
+    ],
+    "holo_projector_table": [
+        {"shape": "cylinder", "size": [0.5, 0.3, 0.8, 8], "pos": [0, 0.4, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.08, 0.08, 0.2, 6], "pos": [0, 0.9, 0], "type": "cyan_neo"}
+    ],
+    "presentation_board": [
+        {"shape": "box", "size": [2.0, 1.4, 0.08], "pos": [0, 1.5, 0], "type": "l3_screen", "name": "Presentación"},
+        {"shape": "box", "size": [2.1, 0.06, 0.12], "pos": [0, 0.78, 0], "type": "dark"},
+        {"shape": "wedge", "size": [0.06, 0.1, 2.1], "pos": [-0.9, 1.1, 0], "type": "dark"},
+        {"shape": "wedge", "size": [0.06, 0.1, 2.1], "pos": [0.9, 1.1, 0], "type": "dark"}
+    ],
+    "coffee_machine": [
+        {"shape": "box", "size": [0.4, 0.4, 0.3], "pos": [0, 0.2, 0], "radius": 0.02, "type": "dark"},
+        {"shape": "cylinder", "size": [0.15, 0.2, 0.15, 8], "pos": [0, 0.48, 0], "type": "dark"},
+        {"shape": "box", "size": [0.35, 0.08, 0.04], "pos": [0, 0.6, 0.14], "type": "base"},
+        {"shape": "box", "size": [0.08, 0.02, 0.14], "pos": [0, 0.4, 0.16], "type": "dark"}
+    ],
+    "security_scanner": [
+        {"shape": "box", "size": [0.15, 2.2, 0.6], "pos": [-0.6, 1.1, 0], "radius": 0.02, "type": "dark"},
+        {"shape": "box", "size": [0.15, 2.2, 0.6], "pos": [0.6, 1.1, 0], "radius": 0.02, "type": "dark"},
+        {"shape": "box", "size": [1.0, 0.15, 0.5], "pos": [0, 2.2, 0], "type": "base"},
+        {"shape": "box", "size": [0.3, 0.15, 0.04], "pos": [0.6, 1.6, 0.12], "type": "l3_screen", "name": "Scan Status"}
+    ],
+    "wall_screen_board": [
+        {"shape": "box", "size": [3.0, 1.8, 0.06], "pos": [0, 1.8, -0.4], "type": "l3_screen", "name": "Dashboard Corporativo"},
+        {"shape": "box", "size": [3.1, 0.06, 0.1], "pos": [0, 0.88, -0.4], "type": "dark"},
+        {"shape": "box", "size": [3.1, 0.06, 0.1], "pos": [0, 2.72, -0.4], "type": "dark"}
+    ]
+}

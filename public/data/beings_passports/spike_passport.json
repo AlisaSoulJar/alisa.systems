@@ -1,0 +1,20 @@
+{
+    "name": "Spike",
+    "role": "The Bounty Hunter",
+    "emoji": "🚬",
+    "type": "biological",
+    "skeleton": "humanoid",
+    "model_path": "spike.glb",
+    "scale": 1.0,
+    "kinematics": "humanoid_cool",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "xtts",
+        "tier": 5,
+        "voice_id": "alisa_spike",
+        "rate": "-5%",
+        "pitch": "-2Hz",
+        "label": "Spike Spiegel (castellano, XTTS cloned)"
+    }
+}

@@ -1,0 +1,21 @@
+{
+    "name": "Kirby",
+    "role": "The Absorber",
+    "emoji": "🩷",
+    "type": "biological",
+    "skeleton": "blob_round",
+    "model_path": "kirby.glb",
+    "scale": 0.5,
+    "kinematics": "blob_bounce",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "synth",
+        "tier": 1,
+        "signal_type": "chirp",
+        "signal_freq": 1047,
+        "signal_duration": 0.2,
+        "label": "Kirby - Synth chirp (agudo, pequeño, dulce)",
+        "freq_label": "más agudo, do5, aspiración"
+    }
+}

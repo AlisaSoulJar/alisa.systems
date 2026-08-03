@@ -1,0 +1,21 @@
+{
+    "name": "Precop",
+    "role": "The Pre-Crime Unit",
+    "emoji": "🔮",
+    "type": "machine",
+    "skeleton": "humanoid",
+    "model_path": "precop.glb",
+    "scale": 1.0,
+    "kinematics": "bipedal",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "espeak",
+        "tier": 2,
+        "voice_id": "en",
+        "rate": "-5%",
+        "pitch": "-2Hz",
+        "label": "Precop - eSpeak (rápido, predictivo, frío)",
+        "speed": 200
+    }
+}

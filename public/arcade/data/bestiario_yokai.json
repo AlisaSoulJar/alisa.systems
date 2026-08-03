@@ -1,0 +1,199 @@
+{
+  "version": "0.1",
+  "meta": {
+    "titulo": "Bestiario Yokai de ALISA",
+    "descripcion": "Cada yokai es la personificación de un fallo real de sistema. El bestiario sirve a la vez de catálogo de criaturas para el juego 'Bestiario' y de taxonomía para el BugDex: cazar al bicho ES arreglar el bug.",
+    "canon": "Extiende Docs/DevOps_Bestiary_and_Weather.md. Los cuatro yokai griegos (Ouroboros, Hydra, Poltergeist, Doppelgänger) ya eran canon y se conservan tal cual; los japoneses son ampliación.",
+    "por_que_nombres_propios": "Esto se publica libre. Un bestiario poblado por criaturas NUESTRAS no imita a nadie: ni marca registrada ni imagen ajena que defender. Los yokai del folclore japonés son de dominio público.",
+    "tipos": {
+      "flora": "crece solo, se descontrola — fugas y crecimiento sin tope",
+      "mineral": "duro e inmóvil — bloqueos, muros, cosas que no ceden",
+      "liquid": "se escapa y se filtra — datos que salen por donde no deben",
+      "scrap": "chatarra que sigue viva — legado, deprecado, deuda",
+      "fauna": "se mueve y decide — atacantes, bots, agentes hostiles"
+    },
+    "habitats": ["overworld", "world", "psyche", "soma", "node", "hardware"],
+    "cuadro_de_ventajas": {
+      "comentario": "Quién puede con quién. La lógica es la del oficio real: contra una fuga (liquid) va el que la contiene (mineral); contra la chatarra (scrap) va la fauna que la caza; etc.",
+      "flora": ["scrap"],
+      "mineral": ["liquid", "flora"],
+      "liquid": ["fauna"],
+      "scrap": ["mineral"],
+      "fauna": ["flora", "scrap"]
+    }
+  },
+
+  "yokai": [
+    {
+      "id": "ouroboros", "nombre": "Ouroboros", "origen": "canon",
+      "tipo": "flora", "habitat": "world", "severidad": "critica",
+      "fallo": "Bucle infinito o dependencia circular extrema.",
+      "sintoma": "La CPU al 100% sin que avance nada. El import que se importa a sí mismo.",
+      "como_se_caza": "Cortar el ciclo: romper la dependencia o poner condición de salida.",
+      "ataques": ["Mordida de Cola", "Recursión sin Fondo"]
+    },
+    {
+      "id": "hydra", "nombre": "Hydra", "origen": "canon",
+      "tipo": "fauna", "habitat": "soma", "severidad": "critica",
+      "fallo": "Race condition asíncrona.",
+      "sintoma": "Arreglas una cabeza y salen dos. Solo falla en producción y nunca igual.",
+      "como_se_caza": "Serializar el acceso: un cerrojo, una cola, o hacerlo inmutable.",
+      "ataques": ["Dos por Una", "Escritura Simultánea"]
+    },
+    {
+      "id": "poltergeist", "nombre": "Poltergeist", "origen": "canon",
+      "tipo": "liquid", "habitat": "psyche", "severidad": "alta",
+      "fallo": "Heisenbug: desaparece cuando lo miras.",
+      "sintoma": "Con el depurador puesto funciona. Sin él, revienta.",
+      "como_se_caza": "Registrar en vez de observar: trazas, no puntos de parada.",
+      "ataques": ["Se Esfuma", "Solo en Producción"]
+    },
+    {
+      "id": "doppelganger", "nombre": "Doppelgänger", "origen": "canon",
+      "tipo": "scrap", "habitat": "node", "severidad": "alta",
+      "fallo": "Conflicto de merge gigantesco que bloquea la ciudad.",
+      "sintoma": "Dos versiones del mismo fichero, ambas con razón.",
+      "como_se_caza": "Ramas cortas y fusiones frecuentes. Se previene, no se cura.",
+      "ataques": ["Rama Paralela", "Ambos Tienen Razón"]
+    },
+
+    {
+      "id": "noppera", "nombre": "Noppera-bō", "origen": "japones",
+      "tipo": "scrap", "habitat": "psyche", "severidad": "media",
+      "fallo": "Referencia nula / identidad ausente.",
+      "sintoma": "Le miras la cara y no tiene: `None`, `undefined`, un id que no apunta a nada.",
+      "como_se_caza": "Validar en la frontera. Si algo puede no existir, decláralo.",
+      "ataques": ["Cara Lisa", "Atributo Perdido"],
+      "nota": "El yokai sin rostro. Parece una persona normal hasta que te giras."
+    },
+    {
+      "id": "rokurokubi", "nombre": "Rokurokubi", "origen": "japones",
+      "tipo": "flora", "habitat": "hardware", "severidad": "alta",
+      "fallo": "Fuga de memoria / crecimiento sin tope.",
+      "sintoma": "De día parece normal; de noche el cuello se le estira sin fin. La RAM sube y nunca baja.",
+      "como_se_caza": "Poner un tope y soltar lo que no se usa. Perfilar antes de adivinar.",
+      "ataques": ["Cuello Infinito", "Sin Techo"],
+      "nota": "Encaja con la 'Niebla Tóxica' del clima: presión de RAM."
+    },
+    {
+      "id": "tsukumogami", "nombre": "Tsukumogami", "origen": "japones",
+      "tipo": "scrap", "habitat": "node", "severidad": "media",
+      "fallo": "Dependencia obsoleta que sigue en producción.",
+      "sintoma": "Un objeto que a los cien años cobró alma propia. Nadie sabe quién lo puso ni se atreve a quitarlo.",
+      "como_se_caza": "Inventariar, fijar versiones y jubilar con respeto.",
+      "ataques": ["Nadie Sabe Por Qué", "Si Lo Tocas Se Rompe"]
+    },
+    {
+      "id": "kappa", "nombre": "Kappa", "origen": "japones",
+      "tipo": "liquid", "habitat": "soma", "severidad": "alta",
+      "fallo": "Agotamiento del pool de conexiones / fuga de recursos.",
+      "sintoma": "Te arrastra al río y te vacía. Cada petición abre algo que nadie cierra.",
+      "como_se_caza": "Cerrar siempre: contexto, `finally`, límites del pool.",
+      "ataques": ["Vaciar el Pozo", "Conexión Sin Cerrar"],
+      "nota": "Al kappa se le vence haciéndole una reverencia: derrama el agua de su cabeza. Traducción: reinicia el pool."
+    },
+    {
+      "id": "jorogumo", "nombre": "Jorōgumo", "origen": "japones",
+      "tipo": "fauna", "habitat": "overworld", "severidad": "critica",
+      "fallo": "Phishing / hombre en el medio.",
+      "sintoma": "Se presenta guapa y de confianza. Cuando te das cuenta estás en la tela.",
+      "como_se_caza": "Verificar el certificado, no la apariencia. Segundo factor.",
+      "ataques": ["Tela Invisible", "Parece de Confianza"]
+    },
+    {
+      "id": "kitsune", "nombre": "Kitsune", "origen": "japones",
+      "tipo": "fauna", "habitat": "node", "severidad": "critica",
+      "fallo": "Suplantación de identidad / certificado falsificado.",
+      "sintoma": "Cambia de forma a voluntad. El token dice que es quien no es.",
+      "como_se_caza": "Firmar y verificar. La confianza se demuestra, no se declara.",
+      "ataques": ["Nueve Colas", "Firma Prestada"],
+      "nota": "Cuantas más colas, más antiguo y más difícil de desenmascarar."
+    },
+    {
+      "id": "yuki_onna", "nombre": "Yuki-onna", "origen": "japones",
+      "tipo": "mineral", "habitat": "soma", "severidad": "critica",
+      "fallo": "Interbloqueo / hilo colgado.",
+      "sintoma": "Te congela con el aliento. El proceso sigue vivo pero no avanza jamás.",
+      "como_se_caza": "Pedir los cerrojos siempre en el mismo orden. Y poner tiempo máximo.",
+      "ataques": ["Aliento Helado", "Espera Eterna"],
+      "nota": "Encaja con la 'Tormenta de Nieve' del clima: throttling."
+    },
+    {
+      "id": "oni", "nombre": "Oni", "origen": "japones",
+      "tipo": "fauna", "habitat": "overworld", "severidad": "alta",
+      "fallo": "Ataque de fuerza bruta.",
+      "sintoma": "Ni astucia ni sutileza: aporrea la puerta hasta que cede.",
+      "como_se_caza": "Los Arqueros de la muralla — limitar intentos, banear, ralentizar.",
+      "ataques": ["Mazazo", "Diccionario Entero"]
+    },
+    {
+      "id": "zashiki_warashi", "nombre": "Zashiki-warashi", "origen": "japones",
+      "tipo": "fauna", "habitat": "psyche", "severidad": "media",
+      "fallo": "Test intermitente (flaky).",
+      "sintoma": "Espíritu de la casa: mientras está, todo va bien. Se marcha y la fortuna cae. Pasa en tu máquina y falla en CI.",
+      "como_se_caza": "Quitarle la dependencia del reloj y del orden. Sembrar el azar.",
+      "ataques": ["En Mi Máquina Va", "Aprueba Si Lo Miras"],
+      "nota": "El más querido y el más odiado. Da suerte hasta que se va."
+    },
+    {
+      "id": "nurikabe", "nombre": "Nurikabe", "origen": "japones",
+      "tipo": "mineral", "habitat": "node", "severidad": "media",
+      "fallo": "Regla de cortafuegos que descarta en silencio.",
+      "sintoma": "Un muro invisible en mitad del camino. No hay error, no hay rechazo: no llega y ya.",
+      "como_se_caza": "Golpear la base del muro — traza de ruta, y revisar reglas de salida.",
+      "ataques": ["Muro Invisible", "Silencio Absoluto"],
+      "nota": "Lo peor no es que bloquee: es que no avisa."
+    },
+    {
+      "id": "amikiri", "nombre": "Amikiri", "origen": "japones",
+      "tipo": "liquid", "habitat": "node", "severidad": "alta",
+      "fallo": "Conexión cortada / pérdida de paquetes.",
+      "sintoma": "Corta redes con sus pinzas. El socket se cae a mitad de transferencia.",
+      "como_se_caza": "Reintentos con espera creciente e idempotencia.",
+      "ataques": ["Tijeretazo", "A Mitad de Envío"],
+      "nota": "Encaja con la 'Lluvia Ligera' del clima: latencia alta."
+    },
+    {
+      "id": "baku", "nombre": "Baku", "origen": "japones",
+      "tipo": "scrap", "habitat": "hardware", "severidad": "media",
+      "fallo": "Rotación de logs que se comió la prueba.",
+      "sintoma": "Devorador de sueños. Vas a mirar qué pasó anoche y el log ya no está.",
+      "como_se_caza": "Retener antes de rotar. Enviar fuera lo que importe.",
+      "ataques": ["Devorar la Noche", "Sin Rastro"],
+      "nota": "Come pesadillas, que es justo lo que necesitabas leer."
+    },
+    {
+      "id": "betobeto", "nombre": "Betobeto-san", "origen": "japones",
+      "tipo": "fauna", "habitat": "psyche", "severidad": "media",
+      "fallo": "Telemetría no consentida / software espía.",
+      "sintoma": "Pasos detrás de ti que no ves. Alguien registra todo lo que haces.",
+      "como_se_caza": "Se le dice «pase usted primero» y se va. Traducción: auditar salidas y cortar lo que no pediste.",
+      "ataques": ["Pasos Detrás", "Siempre Escuchando"]
+    },
+    {
+      "id": "mokumokuren", "nombre": "Mokumokuren", "origen": "japones",
+      "tipo": "mineral", "habitat": "hardware", "severidad": "alta",
+      "fallo": "Puertos abiertos / superficie expuesta.",
+      "sintoma": "Ojos en el papel de la pared. Cuando cuentas cuántos hay, ya es tarde.",
+      "como_se_caza": "Vigilar la muralla: escanear puertos y cerrar lo que no se usa.",
+      "ataques": ["Cien Ojos", "Todo a la Vista"]
+    },
+    {
+      "id": "ittan_momen", "nombre": "Ittan-momen", "origen": "japones",
+      "tipo": "liquid", "habitat": "overworld", "severidad": "critica",
+      "fallo": "Denegación de servicio por saturación.",
+      "sintoma": "Una tela que vuela y te envuelve la cara hasta que no respiras.",
+      "como_se_caza": "Limitar peticiones y filtrar antes de que llegue al servicio.",
+      "ataques": ["Envolver", "Ahogar"]
+    },
+    {
+      "id": "tanuki", "nombre": "Tanuki", "origen": "japones",
+      "tipo": "scrap", "habitat": "node", "severidad": "critica",
+      "fallo": "Ataque a la cadena de suministro / paquete con nombre casi igual.",
+      "sintoma": "Te paga con hojas que parecen billetes. El paquete se llama casi como el bueno.",
+      "como_se_caza": "Fijar versiones con hash. Comprobar la firma, no el nombre.",
+      "ataques": ["Hoja por Moneda", "Una Letra de Diferencia"],
+      "nota": "El engaño no está en el código: está en el nombre."
+    }
+  ]
+}

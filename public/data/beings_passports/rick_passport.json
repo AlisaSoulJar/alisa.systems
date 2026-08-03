@@ -1,0 +1,20 @@
+{
+    "name": "Rick",
+    "role": "Mad Scientist",
+    "emoji": "🧪",
+    "type": "biological",
+    "skeleton": "humanoid",
+    "model_path": "rick.glb",
+    "scale": 1.0,
+    "kinematics": "humanoid_erratic",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "xtts",
+        "tier": 5,
+        "voice_id": "alisa_rick_v2",
+        "rate": "-5%",
+        "pitch": "-2Hz",
+        "label": "Rick Sanchez - Justin Roiland (castellano, XTTS cloned)"
+    }
+}

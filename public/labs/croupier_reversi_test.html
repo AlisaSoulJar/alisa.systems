@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA LAB — ¿son correctas las reglas de Reversi?</title>
+<style>
+  body{margin:0;background:#070a11;color:#cfe3f5;font-family:ui-monospace,monospace;padding:20px 26px 60px}
+  h1{margin:0 0 3px;font-size:18px;color:#7fd0ff}
+  h2{font-size:13px;color:#7fd0ff;margin:20px 0 6px;border-bottom:1px solid #1d2b3e;padding-bottom:4px}
+  pre{background:#0b1018;border:1px solid #16202e;padding:10px 12px;font-size:11.5px;
+      line-height:1.65;white-space:pre-wrap;color:#b8d4ea;margin:6px 0;border-radius:3px}
+</style>
+</head>
+<body>
+<h1>▓ REVERSI · reglas del ProtoHub</h1>
+<div id="out"></div>
+<script type="module">
+import { reversi, jugadasDe, cuenta } from '../arcade/js/protohub/rules/reversi.js';
+
+const out = document.getElementById('out');
+const say = (h, t) => out.insertAdjacentHTML('beforeend', `<h2>${h}</h2><pre>${t}</pre>`);
+const R = {};
+
+// ── 1. APERTURA ────────────────────────────────────────────────
+// En Othello la apertura tiene EXACTAMENTE 4 jugadas legales para negras.
+const p0 = reversi.nuevaPartida();
+const st0 = reversi.estado(p0);
+const esperadas = ['d3', 'c4', 'f5', 'e6'].sort().join(',');
+const salieron = [...st0.legal_moves].sort().join(',');
+R.apertura = salieron === esperadas && st0.discs.black === 2 && st0.discs.white === 2;
+say('1 · Apertura',
+  `  FEN: ${st0.fen}\n  turno: ${st0.turn}   fichas: negras ${st0.discs.black}, blancas ${st0.discs.white}\n` +
+  `  legales: ${salieron}\n  esperadas: ${esperadas}\n  ${R.apertura ? '✓' : '✗ MAL'}`);
+
+// ── 2. UNA JUGADA VOLTEA DE VERDAD ─────────────────────────────
+const p1 = reversi.nuevaPartida();
+reversi.mover(p1, 'd3');
+const st1 = reversi.estado(p1);
+// d3 captura d4 → negras 4, blancas 1
+R.voltea = st1.discs.black === 4 && st1.discs.white === 1;
+say('2 · Voltear fichas',
+  `  negras juegan d3\n  fichas: negras ${st1.discs.black} (esperado 4), blancas ${st1.discs.white} (esperado 1)\n` +
+  `  FEN: ${st1.fen}\n  ${R.voltea ? '✓' : '✗ MAL'}`);
+
+// ── 3. ILEGALES RECHAZADAS ─────────────────────────────────────
+const p2 = reversi.nuevaPartida();
+const rechazos = [
+  ['a1', 'casilla que no voltea nada'],
+  ['d4', 'casilla ocupada'],
+  ['z9', 'casilla inexistente'],
+  ['pass', 'pasar teniendo jugadas'],
+];
+let l3 = '', okRech = true;
+for (const [j, por] of rechazos) {
+  const ok = reversi.mover(p2, j) === false;
+  if (!ok) okRech = false;
+  l3 += `  ${ok ? '✓' : '✗'}  rechaza '${j}' (${por})\n`;
+}
+R.ilegales = okRech;
+say('3 · Jugadas ilegales', l3);
+
+// ── 4. 200 PARTIDAS AL AZAR: INVARIANTES ───────────────────────
+// Lo importante no es que no pete: es que no aparezcan ni desaparezcan fichas.
+let fallos = 0, atascos = 0, terminadas = 0, sumaFichas = [];
+let mal = '';
+for (let s = 0; s < 200; s++) {
+  const p = reversi.nuevaPartida();
+  let pasos = 0;
+  while (true) {
+    const st = reversi.estado(p);
+    if (st.is_game_over || !st.legal_moves.length) break;
+    if (++pasos > 200) { atascos++; break; }
+    const m = st.legal_moves[(Math.random() * st.legal_moves.length) | 0];
+    if (!reversi.mover(p, m)) { fallos++; mal += `  semilla ${s}: rechazó su propia jugada legal '${m}'\n`; break; }
+  }
+  const st = reversi.estado(p);
+  if (st.is_game_over) terminadas++;
+  const { W, B } = cuenta(p.tablero);
+  sumaFichas.push(W + B);
+  // Ninguna casilla puede tener algo que no sea W, B o vacío
+  for (const fila of p.tablero) for (const x of fila)
+    if (x !== null && x !== 'W' && x !== 'B') { fallos++; mal += `  casilla corrupta: ${x}\n`; }
+  // Nunca más de 64 fichas
+  if (W + B > 64) { fallos++; mal += `  semilla ${s}: ${W + B} fichas en un tablero de 64\n`; }
+}
+const min = Math.min(...sumaFichas), max = Math.max(...sumaFichas);
+R.partidas = fallos === 0 && atascos === 0;
+say('4 · 200 partidas al azar',
+  `  terminadas correctamente: ${terminadas}/200\n  atascos: ${atascos}\n  fallos: ${fallos}\n` +
+  `  fichas en el tablero al final: entre ${min} y ${max} (el tope es 64)\n` + mal +
+  `  ${R.partidas ? '✓ ninguna ficha se pierde ni se inventa' : '✗ MAL'}`);
+
+// ── 5. DESHACER ────────────────────────────────────────────────
+const p4 = reversi.nuevaPartida();
+const antes = reversi.estado(p4).fen;
+reversi.mover(p4, 'd3');
+reversi.mover(p4, reversi.estado(p4).legal_moves[0]);
+reversi.deshacer(p4); reversi.deshacer(p4);
+const despues = reversi.estado(p4).fen;
+R.deshacer = antes === despues;
+say('5 · Deshacer devuelve el tablero exacto',
+  `  antes:   ${antes}\n  después: ${despues}\n  ${R.deshacer ? '✓' : '✗ MAL'}`);
+
+// ── 6. EL RIVAL DE CASA GANA AL AZAR? ──────────────────────────
+function partida(negrasIA, blancasIA) {
+  const p = reversi.nuevaPartida();
+  for (let i = 0; i < 200; i++) {
+    const st = reversi.estado(p);
+    if (st.is_game_over || !st.legal_moves.length) break;
+    const usaIA = (p.turno === 'B') ? negrasIA : blancasIA;
+    const m = usaIA ? reversi.sugerencia(p)
+                    : st.legal_moves[(Math.random() * st.legal_moves.length) | 0];
+    if (!m || !reversi.mover(p, m)) break;
+  }
+  return reversi.estado(p);
+}
+let gana = 0, empata = 0;
+for (let i = 0; i < 100; i++) {
+  const st = partida(true, false);   // la casa lleva negras
+  if (st.result === 'black') gana++; else if (st.result === 'draw') empata++;
+}
+R.rival = gana > 55;
+say('6 · El rival de casa contra el azar (100 partidas)',
+  `  la casa gana ${gana}%, empata ${empata}%\n` +
+  `  (si no le gana claramente al azar, la heurística no vale)\n  ${R.rival ? '✓' : '✗ flojo'}`);
+
+const todo = Object.values(R).every(Boolean);
+say('VEREDICTO', Object.entries(R).map(([k, v]) => `  ${v ? '✓' : '✗'}  ${k}`).join('\n') +
+  `\n\n  ${todo ? '✅ REVERSI CORRECTO' : '❌ hay algo mal'}`);
+window.__reversi = R;
+window.__ready = true;
+</script>
+</body>
+</html>

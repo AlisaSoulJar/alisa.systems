@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA LAB — Sala Cinematográfica (CinematicPipeline + CascadedShadow)</title>
+<style>
+  body{margin:0;overflow:hidden;background:#05070d;font-family:ui-monospace,monospace;color:#fff}
+  #hud{position:absolute;top:14px;left:16px;z-index:100;font-size:11.5px;line-height:1.7;text-shadow:0 0 8px #000;pointer-events:none}
+  #hud h2{margin:0 0 5px;font-size:15px;color:#7fd0ff;letter-spacing:1px}
+  #hud .k{color:#5f7a92;display:inline-block;width:82px}
+  #hud .ok{color:#7CFC98}
+  #ctl{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);z-index:110;display:flex;gap:8px}
+  #ctl button{background:#12283c;color:#bfe3ff;border:1px solid #2a5578;border-radius:6px;
+              padding:7px 15px;font-family:inherit;font-size:12px;cursor:pointer}
+  #ctl button:hover{background:#1d456a}
+  #ctl button.on{background:#e0b020;color:#221a05;border-color:#ffd166}
+  #tag{position:absolute;bottom:14px;left:16px;color:#4a5a6a;font-size:10px;z-index:100}
+  #tag b{color:#00ffcc}
+</style>
+<script type="importmap">
+{ "imports": {
+    "three": "/vendor/three-0.160.0/build/three.module.js",
+    "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+    "@alisa-engine/": "../js/alisa-engine/" } }
+</script>
+</head>
+<body>
+<div id="hud">montando…</div>
+<div id="ctl"></div>
+<div id="tag">Powered by <b>@alisa-engine</b> · dos plugins nuevos del motor, no código de escena</div>
+<script type="module">
+import * as THREE from 'three';
+import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+import { CinematicPipelinePlugin } from '@alisa-engine/src/soma/plugins/CinematicPipelinePlugin.js';
+import { CascadedShadowPlugin } from '@alisa-engine/src/soma/plugins/CascadedShadowPlugin.js';
+import { GLTFModelPool } from '@alisa-engine/src/soma/plugins/GLTFModelPool.js';
+
+window.onload = async () => {
+  const app = new AlisaRenderCore({
+    clearColor: 0x0a0f18, fogColor: null, useShadows: true,
+    cameraPosition: new THREE.Vector3(6.5, 3.2, 11)
+  });
+  app.controls.target.set(0, 1, -14);
+  window.__core = app;
+
+  // ── LOS DOS PLUGINS NUEVOS: una línea cada uno ──
+  // directionalLights:false → el CSM será la ÚNICA fuente direccional (si no, su shader peta)
+  const cine = new CinematicPipelinePlugin({ preset: 'golden_hour', directionalLights: false });
+  app.registerPlugin(cine);
+  const csm = new CascadedShadowPlugin({ cascades: 4, maxFar: 140, lightIntensity: 2.6 });
+  app.registerPlugin(csm);
+  csm.setSunDirection(cine.sunDir.clone().negate());   // el CSM sigue al sol del pipeline
+
+  // ── SUELO LARGO: para ver las cascadas trabajar en profundidad ──
+  const groundMat = new THREE.MeshStandardMaterial({ color: 0x2a3340, roughness: 0.95 });
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(70, 220), groundMat);
+  ground.rotation.x = -Math.PI/2; ground.position.z = -80; ground.receiveShadow = true;
+  app.add(ground); csm.setupMaterial(groundMat);
+
+  // ── UNA AVENIDA DE COLUMNAS que se pierde en el horizonte ──
+  // (la prueba de fuego del CSM: sombra nítida en la primera Y en la última)
+  const colGeo = new THREE.BoxGeometry(1.1, 5.5, 1.1);
+  for (let i = 0; i < 26; i++) {
+    const z = -i * 6.5;
+    for (const x of [-5.5, 5.5]) {
+      const mat = new THREE.MeshStandardMaterial({
+        color: new THREE.Color().setHSL(0.09, 0.18, 0.42 + (i % 2) * 0.08), roughness: 0.8 });
+      const c = new THREE.Mesh(colGeo, mat);
+      c.position.set(x, 2.75, z); c.castShadow = true; c.receiveShadow = true;
+      app.add(c); csm.setupMaterial(mat);
+    }
+  }
+
+  // ── ACTORES REALES de la biblioteca, a distintas distancias ──
+  const CAST = [
+    ['Gorilla.glb', 0,  -6],  ['Lion.glb',   -2.4, -20], ['Bear.glb',    2.6, -34],
+    ['Cat.glb',     -2.0, -48], ['Beagle.glb', 2.2, -62], ['Android Robot.glb', 0, -78],
+  ];
+  let placed = 0;
+  for (const [file, x, z] of CAST) {
+    let g = null;
+    for (const dir of ['../props/ready/', '../props/models/']) {
+      try { g = await GLTFModelPool.get(dir + file); break; } catch(_) {}
+    }
+    if (!g) continue;
+    const m = g.scene;
+    const box = new THREE.Box3().setFromObject(m); const sz = box.getSize(new THREE.Vector3());
+    m.scale.setScalar(2.0 / (Math.max(sz.x, sz.y, sz.z) || 1));
+    const b2 = new THREE.Box3().setFromObject(m);
+    m.position.set(x, -b2.min.y, z);
+    m.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; if (o.material) csm.setupMaterial(o.material); } });
+    app.add(m); placed++;
+  }
+
+  // ── UI: presets en caliente ──
+  const presets = ['golden_hour', 'noon', 'night', 'interior'];
+  const ctl = document.getElementById('ctl');
+  let current = 'golden_hour';
+  const paint = () => {
+    document.getElementById('hud').innerHTML =
+      `<h2>SALA CINEMATOGRÁFICA</h2>` +
+      `<span class="k">pipeline</span> <b>${cine.composer.passes.length}</b> passes · Sky(Rayleigh/Mie) + SSAO + Bloom + ACES<br>` +
+      `<span class="k">sombras</span> CSM <b>${csm.csm.cascades}</b> cascadas · maxFar <b>${csm.csm.maxFar}</b> · fade on<br>` +
+      `<span class="k">escena</span> 52 columnas + <b>${placed}</b> actores GLB hasta z=-78<br>` +
+      `<span class="k">preset</span> <span class="ok">${current}</span> · exposición ${app.renderer.toneMappingExposure.toFixed(2)}<br>` +
+      `<span class="k">código</span> <span class="ok">2 líneas de plugin — el resto es contenido</span>`;
+  };
+  presets.forEach(p => {
+    const b = document.createElement('button'); b.textContent = p.replace('_', ' ');
+    if (p === current) b.className = 'on';
+    b.onclick = () => {
+      cine.setPreset(p); current = p;
+      csm.setSunDirection(cine.sunDir.clone().negate());
+      [...ctl.children].forEach(c => c.className = ''); b.className = 'on';
+      paint();
+    };
+    ctl.appendChild(b);
+  });
+  paint();
+
+  // el composer pinta (el motor pasa el control con customRenderCallback)
+  app.startLoop(() => {}, cine.renderFn);
+
+  window.__report = { passes: cine.composer.passes.length, cascades: csm.csm.cascades,
+                      actors: placed, preset: current };
+  window.__ready = true;
+  window.__setPreset = p => { cine.setPreset(p); csm.setSunDirection(cine.sunDir.clone().negate()); current = p; paint(); };
+};
+</script>
+</body>
+</html>

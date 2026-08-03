@@ -1,0 +1,8 @@
+{
+    "source_file": "Bison.glb",
+    "deduced_size_meters": 6.4,
+    "target_tier": "Tier 1.7: Heavy Transport",
+    "target_scale_constraint": 8.0,
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0
+}

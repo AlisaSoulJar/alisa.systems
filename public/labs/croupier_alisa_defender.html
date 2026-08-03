@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ALISA DEFENDER - ARCADE ROM</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background-color: #050510;
+            overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
+            font-family: 'Courier New', Courier, monospace;
+            cursor: crosshair;
+        }
+        canvas {
+            background-color: #020205;
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.2);
+            border: 2px solid #0ff;
+            border-radius: 10px;
+        }
+        #ui {
+            position: absolute; top: 20px; left: 20px;
+            color: #0ff; font-size: 24px; font-weight: bold;
+            text-shadow: 0 0 10px #0ff; pointer-events: none;
+        }
+        #scanline {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px;
+            pointer-events: none; z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div id="ui">SCORE: <span id="score">0</span> | WAVE: <span id="wave">1</span></div>
+    <div id="scanline"></div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const waveEl = document.getElementById('wave');
+
+        let score = 0;
+        let wave = 1;
+        let isGameOver = false;
+
+        const player = { x: 400, y: 300, vx: 0, vy: 0, size: 15, color: '#0ff' };
+        const bullets = [];
+        const enemies = [];
+        const particles = [];
+
+        const keys = { w:false, a:false, s:false, d:false };
+        
+        window.addEventListener('keydown', e => {
+            if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = true;
+        });
+        window.addEventListener('keyup', e => {
+            if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = false;
+        });
+
+        // Mouse aiming
+        let targetX = 400, targetY = 300;
+        canvas.addEventListener('mousemove', e => {
+            const rect = canvas.getBoundingClientRect();
+            targetX = e.clientX - rect.left;
+            targetY = e.clientY - rect.top;
+        });
+
+        canvas.addEventListener('mousedown', () => {
+            if (isGameOver) {
+                resetGame();
+                return;
+            }
+            // Disparar
+            const dx = targetX - player.x;
+            const dy = targetY - player.y;
+            const angle = Math.atan2(dy, dx);
+            bullets.push({
+                x: player.x, y: player.y,
+                vx: Math.cos(angle) * 15, vy: Math.sin(angle) * 15,
+                life: 60
+            });
+            createParticles(player.x, player.y, 5, '#fff', 2);
+        });
+
+        function spawnEnemy() {
+            const side = Math.floor(Math.random() * 4);
+            let ex, ey;
+            if (side === 0) { ex = Math.random() * 800; ey = -50; }
+            else if (side === 1) { ex = 850; ey = Math.random() * 600; }
+            else if (side === 2) { ex = Math.random() * 800; ey = 650; }
+            else { ex = -50; ey = Math.random() * 600; }
+            
+            enemies.push({
+                x: ex, y: ey,
+                hp: wave,
+                size: 15 + Math.random() * 15,
+                color: Math.random() > 0.5 ? '#f0f' : '#f00',
+                speed: 1 + Math.random() * wave * 0.5,
+                angle: Math.random() * Math.PI * 2
+            });
+        }
+
+        function createParticles(x, y, count, color, speedScale) {
+            for(let i=0; i<count; i++){
+                const ang = Math.random() * Math.PI * 2;
+                const spd = Math.random() * 5 * speedScale;
+                particles.push({
+                    x, y, vx: Math.cos(ang)*spd, vy: Math.sin(ang)*spd,
+                    life: 20 + Math.random()*20, maxLife: 40, color
+                });
+            }
+        }
+
+        function resetGame() {
+            score = 0; wave = 1; isGameOver = false;
+            enemies.length = 0; bullets.length = 0; particles.length = 0;
+            player.x = 400; player.y = 300;
+            scoreEl.innerText = score; waveEl.innerText = wave;
+        }
+
+        function update() {
+            if (isGameOver) return;
+
+            // Player Physics (Inertia + WASD)
+            const speed = 0.8;
+            if(keys.w) player.vy -= speed;
+            if(keys.s) player.vy += speed;
+            if(keys.a) player.vx -= speed;
+            if(keys.d) player.vx += speed;
+            
+            player.x += player.vx;
+            player.y += player.vy;
+            player.vx *= 0.9; // Friction
+            player.vy *= 0.9;
+            
+            // Bounds
+            if(player.x < 10) { player.x = 10; player.vx *= -1; }
+            if(player.x > 790) { player.x = 790; player.vx *= -1; }
+            if(player.y < 10) { player.y = 10; player.vy *= -1; }
+            if(player.y > 590) { player.y = 590; player.vy *= -1; }
+
+            // Bullets
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                let b = bullets[i];
+                b.x += b.vx; b.y += b.vy; b.life--;
+                if(b.life <= 0) { bullets.splice(i, 1); continue; }
+                
+                // Collision
+                for (let j = enemies.length - 1; j >= 0; j--) {
+                    let e = enemies[j];
+                    const dist = Math.hypot(b.x - e.x, b.y - e.y);
+                    if (dist < e.size) {
+                        e.hp--;
+                        bullets.splice(i, 1);
+                        createParticles(b.x, b.y, 10, '#ff0', 1);
+                        if (e.hp <= 0) {
+                            score += 100 * wave;
+                            scoreEl.innerText = score;
+                            createParticles(e.x, e.y, 30, e.color, 3);
+                            enemies.splice(j, 1);
+                            if (score > wave * 1000) { wave++; waveEl.innerText = wave; }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            // Enemies
+            if (Math.random() < 0.02 * wave) spawnEnemy();
+            
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                let e = enemies[i];
+                const dx = player.x - e.x;
+                const dy = player.y - e.y;
+                const angle = Math.atan2(dy, dx);
+                e.x += Math.cos(angle) * e.speed;
+                e.y += Math.sin(angle) * e.speed;
+                e.angle += 0.05;
+
+                // Player collision
+                if (Math.hypot(dx, dy) < e.size + player.size - 5) {
+                    createParticles(player.x, player.y, 100, '#0ff', 5);
+                    isGameOver = true;
+                }
+            }
+
+            // Particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx; p.y += p.vy; p.life--;
+                if(p.life <= 0) particles.splice(i, 1);
+            }
+        }
+
+        function draw() {
+            ctx.fillStyle = 'rgba(2, 2, 5, 0.3)'; // Motion blur trail
+            ctx.fillRect(0, 0, 800, 600);
+
+            // Setup Neon Bloom
+            ctx.globalCompositeOperation = 'lighter';
+
+            // Particles
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, (p.life/p.maxLife)*3, 0, Math.PI*2);
+                ctx.fillStyle = p.color;
+                ctx.shadowBlur = 10; ctx.shadowColor = p.color;
+                ctx.fill();
+            });
+
+            // Bullets
+            bullets.forEach(b => {
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, 3, 0, Math.PI*2);
+                ctx.fillStyle = '#fff';
+                ctx.shadowBlur = 15; ctx.shadowColor = '#0ff';
+                ctx.fill();
+            });
+
+            // Enemies
+            enemies.forEach(e => {
+                ctx.save();
+                ctx.translate(e.x, e.y);
+                ctx.rotate(e.angle);
+                ctx.beginPath();
+                ctx.rect(-e.size/2, -e.size/2, e.size, e.size);
+                ctx.strokeStyle = e.color;
+                ctx.lineWidth = 3;
+                ctx.shadowBlur = 20; ctx.shadowColor = e.color;
+                ctx.stroke();
+                ctx.restore();
+            });
+
+            // Player
+            if (!isGameOver) {
+                const aimDx = targetX - player.x;
+                const aimDy = targetY - player.y;
+                const aimAngle = Math.atan2(aimDy, aimDx);
+
+                ctx.save();
+                ctx.translate(player.x, player.y);
+                ctx.rotate(aimAngle);
+                
+                ctx.beginPath();
+                ctx.moveTo(player.size, 0);
+                ctx.lineTo(-player.size, player.size/1.5);
+                ctx.lineTo(-player.size/2, 0);
+                ctx.lineTo(-player.size, -player.size/1.5);
+                ctx.closePath();
+                
+                ctx.strokeStyle = player.color;
+                ctx.lineWidth = 3;
+                ctx.shadowBlur = 20; ctx.shadowColor = player.color;
+                ctx.stroke();
+                ctx.fillStyle = '#fff';
+                ctx.fill();
+                ctx.restore();
+            } else {
+                ctx.fillStyle = '#f00';
+                ctx.font = '50px Courier New';
+                ctx.shadowBlur = 30; ctx.shadowColor = '#f00';
+                ctx.fillText("SYSTEM FAILURE", 200, 300);
+                ctx.font = '20px Courier New';
+                ctx.fillText("CLICK TO REBOOT CORE", 280, 350);
+            }
+
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.shadowBlur = 0;
+        }
+
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+        
+        loop();
+    </script>
+</body>
+</html>

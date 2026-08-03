@@ -1,0 +1,31 @@
+{
+  "schema": "alisa.realizacion.gesture_lexicon.v1",
+  "note": "Single source of truth for BODY gestures on un-rigged GLB avatars. Each gesture is a whole-mesh transform SIGNATURE (rot/pos deltas relative to the base pose + timing) that the JS scene animates over its duration — no skeleton needed. Body language is what makes a static GLB 'act'. The emotion_map lets a cue's emotion drive the body too, so ONE atom moves camera+light+face+voice+BODY. Art: Marceau (the mime).",
+  "owner": "Marceau / Aris (realización: cuerpo)",
+
+  "gestures": {
+    "idle":       { "rot": [0,0,0],     "pos": [0,0,0],      "amp": 1.0, "freq": 0.3, "dur": 0.0, "loop": true,  "intent": "at rest, breathing" },
+    "lean_in":    { "rot": [0.14,0,0],  "pos": [0,0,0.12],   "dur": 1.2, "ease": "out",   "intent": "interest, drawing the listener in" },
+    "recoil":     { "rot": [-0.12,0,0], "pos": [0,0,-0.18],  "dur": 0.5, "ease": "out",   "intent": "shock, defense" },
+    "nod":        { "rot": [0.18,0,0],  "pos": [0,-0.03,0],  "dur": 0.7, "ease": "inout", "cycles": 1, "intent": "agreement, the weight lands" },
+    "shake_head": { "rot": [0,0.22,0],  "pos": [0,0,0],      "dur": 0.8, "ease": "inout", "cycles": 2, "intent": "denial, no" },
+    "tremble":    { "rot": [0,0,0.02],  "pos": [0.012,0,0],  "amp": 1.0, "freq": 9.0, "dur": 2.4, "shake": true, "intent": "nerves, guilt, fear" },
+    "slump":      { "rot": [0.16,0,0],  "pos": [0,-0.12,0],  "dur": 1.6, "ease": "out",   "intent": "defeat, sadness, the weight of it" },
+    "turn_away":  { "rot": [0,0.5,0],   "pos": [0,0,0],      "dur": 1.0, "ease": "out",   "intent": "shame, avoidance" },
+    "bow_head":   { "rot": [0.28,0,0],  "pos": [0,-0.05,0],  "dur": 1.2, "ease": "out",   "intent": "shame, confession, humility" },
+    "straighten": { "rot": [-0.06,0,0], "pos": [0,0.06,0],   "dur": 1.0, "ease": "out",   "intent": "resolve, dignity, rising" }
+  },
+
+  "emotion_map": {
+    "guilt": "tremble", "nervous": "tremble", "suspense": "tremble", "unease": "tremble", "fear": "tremble",
+    "sad": "slump", "regret": "slump", "loss": "slump", "grief": "slump", "crying": "slump",
+    "shame": "bow_head", "confession": "bow_head",
+    "angry": "lean_in", "frustration": "lean_in", "panic": "recoil",
+    "surprise": "recoil", "shock": "recoil", "surprised": "recoil",
+    "happy": "straighten", "victory": "straighten", "relief": "straighten", "excited": "straighten",
+    "thinking": "idle", "doubt": "shake_head", "denial": "shake_head",
+    "interest": "lean_in", "weight": "nod"
+  },
+
+  "defaults": { "gesture": "idle" }
+}

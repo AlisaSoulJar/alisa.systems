@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ALISA LAB — TrafficEnvironmentFactory V4 (Sovereign Aesthetics)</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #050510; font-family: 'JetBrains Mono', sans-serif; color: white; user-select: none; }
+        
+        /* ─── HUD ─── */
+        #hud {
+            display: none; position: absolute; top: 15px; left: 15px;
+            background: rgba(10,5,5,0.85); box-shadow: 0 0 15px rgba(255,100,0,0.2);
+            padding: 14px 18px; border-radius: 8px; border: 1px solid #aa4400;
+            pointer-events: none; font-size: 13px; line-height: 1.8; z-index: 10;
+        }
+        #hud .title { color: #ffaa00; font-size: 15px; font-weight: bold; margin-bottom: 6px; letter-spacing: 1px; }
+        #hud .stat { color: #cc8855; }
+        #hud .v-green { color: #88ff88; font-weight: bold; }
+        #hud .v-orange { color: #ffaa00; font-weight: bold; }
+        #hud .v-alert { color: #ff3b30; font-weight: bold; }
+        #hud .v-score { color: #ffff00; font-weight: bold; font-size: 16px; }
+        #hud .v-lives { color: #ff3366; font-weight: bold; font-size: 16px; letter-spacing: 2px;}
+        
+        /* ─── MODAL ─── */
+        #modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+            display: flex; align-items: center; justify-content: center; z-index: 100;
+        }
+        #modal .box {
+            background: rgba(20, 10, 5, 0.95); border: 2px solid #ff6600;
+            padding: 40px; border-radius: 12px; max-width: 600px; width: 90%;
+            box-shadow: 0 0 40px rgba(255,100,0,0.15);
+        }
+        #modal h1 { color: #ffaa00; margin-bottom: 20px; font-size: 32px; text-align: center;}
+        #modal p { color: #ccaa88; margin-bottom: 30px; line-height: 1.5; font-size: 14px; text-align: center;}
+        
+        #btnStart {
+            display: block; margin: 30px auto 0; background: linear-gradient(135deg, #cc4400, #ff8800);
+            color: #fff; border: none; padding: 12px 40px; font-size: 18px; font-weight: bold;
+            border-radius: 8px; cursor: pointer; transition: transform 0.2s; font-family: inherit; width: 100%;
+        }
+        #btnStart:hover { transform: scale(1.03); }
+
+        .scanlines {
+            position: fixed; inset: 0; pointer-events: none; z-index: 50;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 3px);
+            mix-blend-mode: multiply; opacity: 0; transition: opacity 1s;
+        }
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three-0.160.0/build/three.module.js",
+        "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+        "@alisa-engine/": "../js/alisa-engine/"
+      }
+    }
+    </script>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+
+    <!-- HUD Overlay -->
+    <div id="hud">
+        <div class="title">🐸 PEATON M-30: SOVEREIGN</div>
+        <div class="stat">SCORE: <span class="v-score" id="hScore">0</span></div>
+        <div class="stat">LIVES: <span class="v-lives" id="hLives">❤️❤️❤️</span></div>
+        <div class="stat" style="margin-top:10px; font-size:11px;">⏱️ Uptime: <span class="v-orange" id="hTime">0.0</span>s</div>
+        <div class="stat" style="font-size:11px;">🚔 Traffic: <span class="v-green" id="hVehicles">0</span></div>
+    </div>
+
+    <!-- Scanlines -->
+    <div class="scanlines" id="scanlines"></div>
+
+    <!-- LAUNCH MODAL -->
+    <div id="modal">
+        <div class="box">
+            <h1>PEATON M-30 <span style="font-size:12px; color:#ffaa00;">SOVEREIGN</span></h1>
+            <p>Cross the lethal highway. IDM traffic kinematics simulation. WASD to move.</p>
+            <button id="btnStart">ENGAGE SIMULATION</button>
+        </div>
+    </div>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js?v=4';
+        import { TrafficEnvironmentFactory } from '@alisa-engine/src/world/factories/TrafficEnvironmentFactory.js?v=4';
+        import { AlisaBloomEngine } from '@alisa-engine/src/soma/plugins/AlisaBloomEngine.js?v=4';
+
+        const modal = document.getElementById('modal');
+        const hud = document.getElementById('hud');
+        const btnStart = document.getElementById('btnStart');
+        const hTime = document.getElementById('hTime');
+        const hVehicles = document.getElementById('hVehicles');
+        const scanlines = document.getElementById('scanlines');
+        
+        let core, engine, bloomPlugin;
+        let timeElapsed = 0;
+
+        btnStart.onclick = async () => {
+            modal.style.display = 'none';
+            hud.style.display = 'block';
+            scanlines.style.opacity = '1';
+
+            // 1. Initialize ECS
+            core = new AlisaRenderCore({ clearColor: 0x050510, fogColor: 0x050510, fogDensity: 0.02 });
+            core.setupDefaultEnvironment();
+            core.scene.fog = new THREE.FogExp2(0x050510, 0.015);
+            
+            // Sodium Vapor Lighting (Orange/Yellow Highway lights)
+            core.hemiLight.color.setHex(0xffaa44);
+            core.hemiLight.groundColor.setHex(0x110a05);
+            core.hemiLight.intensity = 0.8;
+            core.spotLight.color.setHex(0xffaa00);
+            core.spotLight.intensity = 3.0;
+            core.spotLight.position.set(0, 50, 0);
+
+            // Hide standard grid, we will let ECS draw roads
+            core.scene.children.forEach(c => {
+                if(c.type === 'GridHelper') {
+                    c.material.color.setHex(0xffaa00);
+                    c.material.opacity = 0.2;
+                    c.material.transparent = true;
+                }
+            });
+
+            // 2. Headlights effect via Bloom
+            bloomPlugin = new AlisaBloomEngine(core, 1.2, 0.5, 0.2);
+
+            // 3. Initialize Factory
+            engine = new TrafficEnvironmentFactory();
+            if(engine.init) engine.init(core.scene);
+            if(engine.setCore) engine.setCore(core);
+            
+            // Adjust camera for CCTV angle initially, the engine will lerp it
+            core.camera.position.set(0, 20, 20);
+            core.controls.target.set(0,0,0);
+            core.camera.lookAt(0,0,0);
+            
+            // Game State
+            let score = 0;
+            let lives = 3;
+            
+            window.onFrogCross = () => {
+                score++;
+                document.getElementById('hScore').innerText = score;
+                // Optional: Increase difficulty
+            };
+            
+            window.onFrogDeath = () => {
+                lives--;
+                let hearts = "";
+                for(let i=0; i<lives; i++) hearts += "❤️";
+                document.getElementById('hLives').innerText = hearts;
+                
+                if (lives <= 0) {
+                    alert("GAME OVER! Score: " + score);
+                    score = 0;
+                    lives = 3;
+                    document.getElementById('hScore').innerText = score;
+                    document.getElementById('hLives').innerText = "❤️❤️❤️";
+                }
+            };
+
+            // 4. Start Render/Logic Loop
+            core.startLoop((dt) => {
+                timeElapsed += dt;
+                
+                // If the factory exposes a system (IDMSystem), update it
+                if(engine.system && engine.system.update) engine.system.update(dt);
+                
+                // Update Peatón/Factory logic
+                if(engine.update) engine.update(dt);
+                
+                hTime.innerText = timeElapsed.toFixed(1);
+                
+                // Track vehicles array if exposed, fallback to scene child count approx
+                let vehCount = core.scene.children.length - 4; // Minus lights/grid
+                if(engine.system && engine.system.vehicles) {
+                    vehCount = engine.system.vehicles.length;
+                }
+                hVehicles.innerText = Math.max(0, vehCount);
+
+            }, bloomPlugin.render.bind(bloomPlugin));
+            
+            window.__alisa_engine = engine;
+        };
+    </script>
+</body>
+</html>

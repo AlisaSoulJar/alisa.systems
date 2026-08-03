@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA LAB — Perft: ¿son correctas las reglas de ajedrez?</title>
+<style>
+  body{margin:0;background:#070a11;color:#cfe3f5;font-family:ui-monospace,monospace;padding:20px 26px 60px}
+  h1{margin:0 0 3px;font-size:18px;color:#7fd0ff;letter-spacing:1px}
+  h2{font-size:13px;color:#7fd0ff;margin:20px 0 6px;border-bottom:1px solid #1d2b3e;padding-bottom:4px}
+  .sub{color:#5f7a92;font-size:11.5px;line-height:1.7;max-width:920px;margin-bottom:10px}
+  pre{background:#0b1018;border:1px solid #16202e;padding:10px 12px;font-size:11.5px;
+      line-height:1.65;white-space:pre-wrap;color:#b8d4ea;margin:6px 0;border-radius:3px}
+  .ok{color:#7CFC98}.bad{color:#ff7b72}.k{color:#5f7a92}
+</style>
+</head>
+<body>
+<h1>▓ PERFT · ¿son correctas las reglas de ajedrez del ProtoHub?</h1>
+<div class="sub">
+<b>Perft</b> es la prueba estándar de un motor de ajedrez: contar cuántas posiciones distintas existen
+a N jugadas de profundidad. Los valores son conocidos y públicos, así que si cuadran <b>exactamente</b>,
+la generación de jugadas es correcta — incluidos enroques, captura al paso, coronaciones y la seguridad del rey.<br>
+Un solo número que no cuadre significa que hay una regla mal. No hay término medio.
+</div>
+<div id="out"></div>
+
+<script type="module">
+import { ajedrez, desdeFEN, legales, aUCI, INICIAL } from '../arcade/js/protohub/rules/ajedrez.js';
+
+const out = document.getElementById('out');
+const say = (h, t) => out.insertAdjacentHTML('beforeend', `<h2>${h}</h2><pre>${t}</pre>`);
+const R = {};
+
+// perft: cuenta hojas a profundidad n
+function perft(p, n) {
+  if (n === 0) return 1;
+  const movs = legales(p);
+  if (n === 1) return movs.length;
+  let total = 0;
+  for (const m of movs) {
+    const d = aplicaTemporal(p, m);
+    total += perft(p, n - 1);
+    revierteTemporal(p, d);
+  }
+  return total;
+}
+// Reutilizamos mover/deshacer del módulo para no duplicar lógica.
+function aplicaTemporal(p, m) { ajedrez.mover(p, aUCI(m)); return true; }
+function revierteTemporal(p) { ajedrez.deshacer(p); }
+
+// ── 1. POSICIÓN INICIAL ────────────────────────────────────────
+const ESPERADO = [
+  { d: 1, n: 20 }, { d: 2, n: 400 }, { d: 3, n: 8902 }, { d: 4, n: 197281 },
+];
+let l = 'posición inicial\n\n';
+let todoBien = true;
+for (const { d, n } of ESPERADO) {
+  const p = ajedrez.nuevaPartida();
+  const t0 = performance.now();
+  const got = perft(p, d);
+  const ms = (performance.now() - t0).toFixed(0);
+  const ok = got === n;
+  if (!ok) todoBien = false;
+  l += `  profundidad ${d}: ${String(got).padStart(8)}   esperado ${String(n).padStart(8)}   ${ok ? '✓' : '✗ MAL'}   (${ms} ms)\n`;
+}
+say('1 · Perft desde la posición inicial', l);
+R.inicial = todoBien;
+
+// ── 2. POSICIONES TRAMPA ───────────────────────────────────────
+// Las clásicas: cada una exprime una regla que casi todos los motores fallan.
+const TRAMPAS = [
+  { nombre: 'Kiwipete (enroques + clavadas)',
+    fen: 'r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1',
+    d: [{ d: 1, n: 48 }, { d: 2, n: 2039 }, { d: 3, n: 97862 }] },
+  { nombre: 'Final de peones (coronaciones y al paso)',
+    fen: '8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1',
+    d: [{ d: 1, n: 14 }, { d: 2, n: 191 }, { d: 3, n: 2812 }] },
+  { nombre: 'Posición 4 (coronación bajo jaque)',
+    fen: 'r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1',
+    d: [{ d: 1, n: 6 }, { d: 2, n: 264 }, { d: 3, n: 9467 }] },
+];
+let l2 = '';
+let trampasBien = true;
+for (const t of TRAMPAS) {
+  l2 += `${t.nombre}\n  ${t.fen}\n`;
+  for (const { d, n } of t.d) {
+    const p = ajedrez.nuevaPartida({ fen: t.fen });
+    const got = perft(p, d);
+    const ok = got === n;
+    if (!ok) trampasBien = false;
+    l2 += `    profundidad ${d}: ${String(got).padStart(7)}  esperado ${String(n).padStart(7)}  ${ok ? '✓' : '✗ MAL'}\n`;
+  }
+  l2 += '\n';
+}
+say('2 · Posiciones trampa (las que rompen a la mayoría de motores)', l2);
+R.trampas = trampasBien;
+
+// ── 3. FEN de ida y vuelta ─────────────────────────────────────
+const FENS = [INICIAL,
+  'r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1',
+  '8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1'];
+let l3 = '', idaVueltaOk = true;
+for (const f of FENS) {
+  const salida = ajedrez.estado(ajedrez.nuevaPartida({ fen: f })).fen;
+  const ok = salida === f;
+  if (!ok) idaVueltaOk = false;
+  l3 += `  ${ok ? '✓' : '✗'}  ${f}\n`;
+  if (!ok) l3 += `     salió: ${salida}\n`;
+}
+say('3 · FEN de ida y vuelta (leer y volver a escribir)', l3);
+R.fen = idaVueltaOk;
+
+// ── 4. FINALES: ¿detecta mate y ahogado? ───────────────────────
+const FINALES = [
+  { nombre: 'Mate del pastor (mate)', fen: 'r1bqkb1r/pppp1Qpp/2n2n2/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 4',
+    espera: { is_checkmate: true, is_game_over: true, result: '1-0' } },
+  { nombre: 'Rey ahogado (tablas)', fen: '7k/5Q2/6K1/8/8/8/8/8 b - - 0 1',
+    espera: { is_stalemate: true, is_game_over: true, result: '1/2-1/2' } },
+  { nombre: 'Rey contra rey (material insuficiente)', fen: '8/8/4k3/8/8/4K3/8/8 w - - 0 1',
+    espera: { is_game_over: true, result: '1/2-1/2' } },
+];
+let l4 = '', finalesOk = true;
+for (const f of FINALES) {
+  const st = ajedrez.estado(ajedrez.nuevaPartida({ fen: f.fen }));
+  const fallos = Object.entries(f.espera).filter(([k, v]) => st[k] !== v);
+  if (fallos.length) finalesOk = false;
+  l4 += `  ${fallos.length ? '✗' : '✓'}  ${f.nombre}\n`;
+  l4 += `      jugadas legales: ${st.legal_moves.length} · jaque: ${st.is_check} · fin: ${st.is_game_over} · resultado: ${st.result}\n`;
+  for (const [k, v] of fallos) l4 += `      MAL ${k}: esperaba ${v}, salió ${st[k]}\n`;
+}
+say('4 · Finales de partida', l4);
+R.finales = finalesOk;
+
+// ── 5. UNA PARTIDA ENTERA ──────────────────────────────────────
+const p = ajedrez.nuevaPartida();
+const APERTURA = ['e2e4','e7e5','g1f3','b8c6','f1c4','g8f6','e1g1'];  // acaba en enroque corto
+let l5 = '', partidaOk = true;
+for (const j of APERTURA) {
+  const antes = ajedrez.estado(p);
+  const ok = ajedrez.mover(p, j);
+  if (!ok) { partidaOk = false; l5 += `  ✗ RECHAZÓ ${j} (legales: ${antes.legal_moves.slice(0,6).join(' ')}…)\n`; break; }
+  l5 += `  ✓ ${j}\n`;
+}
+const fin = ajedrez.estado(p);
+l5 += `\n  FEN tras la apertura:\n  ${fin.fen}\n`;
+l5 += `  ¿el rey blanco enrocó a g1? ${fin.fen.split(' ')[0].split('/')[7].includes('RK') ? 'SÍ ✓' : 'revisar'}\n`;
+l5 += `\n  jugada ilegal rechazada: ${ajedrez.mover(p, 'e1e8') === false ? 'SÍ ✓' : 'NO ✗'}\n`;
+say('5 · Partida real (apertura italiana + enroque)', l5);
+R.partida = partidaOk;
+
+// ── VEREDICTO ──────────────────────────────────────────────────
+const todo = Object.values(R).every(Boolean);
+say('VEREDICTO',
+  Object.entries(R).map(([k, v]) => `  ${v ? '✓' : '✗'}  ${k}`).join('\n') +
+  `\n\n  ${todo ? '✅ LAS REGLAS DE AJEDREZ SON CORRECTAS' : '❌ HAY REGLAS MAL — no publicar'}`);
+
+window.__perft = R;
+window.__ready = true;
+</script>
+</body>
+</html>

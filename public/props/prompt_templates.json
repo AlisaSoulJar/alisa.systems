@@ -1,0 +1,82 @@
+{
+    "_doc": "AI Prompt Templates — auto-compose image generation prompts from prop metadata. Every placeholder resolves from spawn() output. Templates are per-face (front/side/top) for UV mapping.",
+
+    "_base_prompt": "{art_style}, {face} view of a {prop_desc}, {dimensions}, {material_desc}, {condition_desc}, {category_style}, {detail_level}, game asset, clean edges, {background}",
+
+    "_placeholders": {
+        "art_style":      { "common": "pixel art 32x32", "rare": "pixel art 64x64", "epic": "detailed digital painting 128x128" },
+        "background":     { "default": "transparent background", "silhouette": "solid black background" },
+        "detail_level":   { "common": "simple flat shading", "rare": "subtle shadows and highlights", "epic": "rich detail with reflections and micro-texture" }
+    },
+
+    "_face_templates": {
+        "front":  "{art_style}, front view of a {prop_desc}, {w}x{h}cm, {material_desc}, {condition_desc}, {category_style}, {detail_level}, game asset, clean edges, {background}",
+        "side":   "{art_style}, side view of a {prop_desc}, {d}x{h}cm, {material_desc}, {condition_desc}, {category_style}, {detail_level}, game asset, clean edges, {background}",
+        "top":    "{art_style}, top-down view of a {prop_desc}, {w}x{d}cm, {material_desc}, {condition_desc}, {category_style}, {detail_level}, flat lay, {background}"
+    },
+
+    "_material_descriptions": {
+        "organic":    "{color} natural wood with visible grain",
+        "industrial": "{color} brushed metal with welding marks",
+        "luxury":     "{color} polished lacquered surface with subtle sheen",
+        "military":   "{color} matte painted metal with stenciled markings",
+        "nautical":   "{color} weathered painted wood with salt residue",
+        "abandoned":  "{color} corroded surface with peeling paint"
+    },
+
+    "_condition_descriptions": {
+        "pristine":  "brand new, clean, factory fresh",
+        "used":      "slightly worn, minor scuffs, lived-in feel",
+        "worn":      "visibly aged, scratches, faded color",
+        "damaged":   "dents, cracks, rust spots, missing parts",
+        "ruined":    "heavily destroyed, broken, covered in grime and corrosion"
+    },
+
+    "_category_styles": {
+        "slum":      "cyberpunk slum aesthetic, neon-lit grime, makeshift repairs",
+        "corp":      "sleek corporate minimalism, glass and chrome, sterile white",
+        "military":  "tactical military style, olive drab, utilitarian design",
+        "docks":     "maritime industrial, rope and rust, salt-weathered",
+        "lab":       "clean laboratory aesthetic, clinical white, biosafety markings"
+    },
+
+    "_prop_descriptions": {
+        "chair":     { "basic": "simple wooden chair", "office": "ergonomic office swivel chair", "stool": "round bar stool" },
+        "table":     { "basic": "rectangular dining table", "round": "round pedestal table", "desk": "office desk with drawers" },
+        "crate":     { "wood": "wooden shipping crate with slats", "metal": "reinforced metal storage crate", "ammo": "military ammunition box with latches" },
+        "barrel":    { "standard": "cylindrical storage barrel", "oil": "industrial oil drum with cap", "water": "large water collection barrel with tap" },
+        "light":     { "ceiling": "hanging ceiling pendant light", "floor_lamp": "standing floor lamp with shade", "wall_sconce": "wall-mounted sconce light" }
+    },
+
+    "_lod_levels": {
+        "god": {
+            "_doc": "Overhead God Mode — Project Zomboid style. Tiny icons through transparent walls.",
+            "prompt_style": "1-bit pixel icon {w}x{h}px, top-down silhouette of a {prop_desc}, {material_desc}, black outline, {background}",
+            "resolution":  { "common": 16, "rare": 16, "epic": 16 },
+            "faces": ["top"],
+            "trigger": "always loaded",
+            "steps": 8
+        },
+        "room": {
+            "_doc": "First-Person Room Mode — click to enter. AI textures at rarity-based resolution.",
+            "prompt_style": null,
+            "resolution":  { "common": 32, "rare": 64, "epic": 128 },
+            "faces_by_rarity": {
+                "common": ["front"],
+                "rare":   ["front", "side"],
+                "epic":   ["front", "side", "top"]
+            },
+            "trigger": "on room enter (single click)",
+            "steps": { "common": 12, "rare": 20, "epic": 30 }
+        },
+        "card": {
+            "_doc": "Inspect Card Mode — double-click prop. Bestiario-style stat card with hero pixel art.",
+            "prompt_style": "detailed pixel art portrait of a {prop_desc}, {material_desc}, {condition_desc}, {category_style}, centered composition, dramatic lighting, RPG item card illustration, {background}",
+            "resolution":  { "common": 128, "rare": 192, "epic": 256 },
+            "faces": ["front"],
+            "trigger": "on prop inspect (double click)",
+            "steps": { "common": 20, "rare": 30, "epic": 40 }
+        }
+    }
+
+}

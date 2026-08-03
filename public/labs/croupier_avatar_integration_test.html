@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ALISA LAB — ScummInteractionPlugin</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #050508; font-family: monospace; color: white; }
+        .avatar-label {
+            background: rgba(10, 10, 15, 0.85); border: 1px solid #555;
+            padding: 8px 12px; border-radius: 8px; color: #fff;
+            font-size: 12px; pointer-events: auto; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5); transition: all 0.2s;
+            max-width: 250px; white-space: normal; word-wrap: break-word; text-align: center;
+        }
+        .avatar-label:hover { border-color: #ffcc00; background: rgba(30, 30, 40, 0.95); }
+        .avatar-label .name { font-weight: bold; color: var(--being-color, #fff); margin-bottom: 4px; display: block; text-transform: uppercase; }
+        .avatar-label .text { color: #ccc; }
+        .avatar-label .bubble-stem {
+            position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
+            width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #555;
+        }
+        .avatar-label.expanded .info-panel { display: block; }
+        .info-panel { display: none; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #555; font-size: 10px; color: #aaa; text-align: left; }
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three-0.160.0/build/three.module.js",
+        "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+        "@alisa-engine/": "../js/alisa-engine/"
+      }
+    }
+    </script>
+</head>
+<body>
+    <div id="ui-overlay" style="position:absolute; top:20px; left:20px; z-index:100;">
+        <h2 style="margin:0; color:#00ffcc; pointer-events:none;">Sovereign Avatar System</h2>
+        <p style="margin:5px 0; color:#888; pointer-events:none;">Powered by <code>SovereignAvatarSystem.js</code></p>
+        <button id="camera-toggle" style="margin-top:10px; background:#222; color:#00ffcc; border:1px solid #555; padding:5px 10px; pointer-events:auto; font-family:monospace; cursor:pointer; display:block; width:100%;">🎥 MODE: DIORAMA (SCUMM)</button>
+        <select id="theme-selector" style="margin-top:10px; background:#222; color:#fff; border:1px solid #555; padding:5px; pointer-events:auto; font-family:monospace; display:block; width:100%;">
+            <option value="endocrine" selected>🧬 Endocrine Auto-Mood</option>
+            <option value="office">☀️ Office / Day</option>
+            <option value="night">🌙 Night / Dark</option>
+            <option value="neon">🟣 Neon / Cyber</option>
+        </select>
+    </div>
+    
+    <div id="startup-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(5,5,8,0.9); z-index:200; display:flex; justify-content:center; align-items:center; flex-direction:column;">
+        <h1 style="color:#44ff88; font-size: 32px; letter-spacing: 2px;">AVATAR INTEGRATION TEST</h1>
+        <p style="color:#888; font-size: 16px; margin-bottom: 20px;">Sovereign Avatar System & SCUMM</p>
+        <button id="btn-start" style="padding:15px 30px; font-size:18px; font-weight:bold; font-family:monospace; background:#44ff88; color:#000; border:none; cursor:pointer; border-radius:4px;">INICIALIZAR SENSORIUM</button>
+    </div>
+    
+    <div id="scumm-hud" style="position:absolute; bottom:30px; left:50%; transform:translateX(-50%); width:600px; text-align:center; z-index:100; font-weight:bold; font-size:16px;">
+        <span id="pulse-status" style="background:rgba(10,10,15,0.8); padding:10px 20px; border-radius:8px; border:1px solid #333; color:#555;">Waiting for SCUMM Signal...</span>
+    </div>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+        import { ScummInteractionPlugin } from '@alisa-engine/src/soma/plugins/ScummInteractionPlugin.js';
+        import { SovereignAvatarSystem } from '@alisa-engine/src/extensions/alisa-colony/plugins/SovereignAvatarSystem.js';
+        
+        // --- MODULAR ARCHITECTURE IMPORTS ---
+        import { ColonialControlRoomFactory } from '@alisa-engine/src/world/factories/ColonialControlRoomFactory.js';
+        import { SovereignTickerPlugin } from '@alisa-engine/src/extensions/alisa-colony/plugins/SovereignTickerPlugin.js';
+        import { JobBoardDisplayPlugin } from '@alisa-engine/src/extensions/alisa-colony/plugins/JobBoardDisplayPlugin.js';
+        import { ColonialTerminalPlugin } from '@alisa-engine/src/extensions/alisa-colony/plugins/ColonialTerminalPlugin.js';
+        
+        window.onload = () => {
+            const app = new AlisaRenderCore({ clearColor: 0x050508 });
+            // Notice: We don't call app.setupDefaultEnvironment() because ColonialControlRoomFactory does it
+            
+            // Add a global ambient light to flash when events happen
+            const flashLight = new THREE.AmbientLight(0x000000);
+            app.scene.add(flashLight);
+            
+            // [ISOMORFISMO] Endocrine Atmosphere Control
+            const moodLight = new THREE.HemisphereLight(0xffeedd, 0x444455, 1.5);
+            moodLight.position.set(0, 50, 0);
+            app.scene.add(moodLight);
+            app.scene.fog = new THREE.FogExp2(0x050508, 0.01);
+            
+            let factory;
+            let avatarSystem;
+            
+            try {
+                // Initialize Legacy SCUMM parsing support
+                const plugin = new ScummInteractionPlugin();
+                
+                // --- 1. COLONIAL CONTROL ROOM ---
+                factory = new ColonialControlRoomFactory(app.scene);
+                factory.buildRoom(true); // Dark Mode
+                
+                // --- 2. SOVEREIGN PLUGINS ---
+                avatarSystem = new SovereignAvatarSystem(app);
+                
+                // --- DEBUG DASHBOARD INJECTION ---
+                const debugHtml = `
+                    <div id="telemetry-debug" style="position:fixed; top:20px; right:20px; width:350px; background:rgba(5,5,15,0.9); border:1px solid #00ffcc; border-radius:8px; z-index:100; font-size:10px; padding:10px; max-height:90vh; overflow-y:auto; box-shadow: 0 0 15px rgba(0,255,204,0.2);">
+                        <h3 style="margin:0 0 10px 0; color:#00ffcc; text-align:center; font-size:12px; border-bottom:1px solid #333; padding-bottom:5px;">SOVEREIGN TELEMETRY DASHBOARD</h3>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                            <div style="color:#ffaa00; font-weight:bold;">RX: Nexus State (Volition)</div>
+                            <div id="rx-status" style="color:#fff;">Wait...</div>
+                        </div>
+                        <pre id="rx-log" style="background:#000; padding:5px; border-radius:4px; height:120px; overflow-y:auto; margin-bottom:10px; color:#aaa; font-family:monospace;"></pre>
+                        
+                        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                            <div style="color:#ff33aa; font-weight:bold;">TX: Inverse Telemetry (Positions)</div>
+                            <div id="tx-status" style="color:#fff;">Wait...</div>
+                        </div>
+                        <pre id="tx-log" style="background:#000; padding:5px; border-radius:4px; height:120px; overflow-y:auto; margin:0; color:#aaa; font-family:monospace;"></pre>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', debugHtml);
+                
+                avatarSystem.onDebugReceive = (data) => {
+                    const el = document.getElementById('rx-log');
+                    const status = document.getElementById('rx-status');
+                    status.innerText = new Date().toLocaleTimeString();
+                    status.style.color = '#00ffcc';
+                    
+                    // Format output
+                    let formatted = "";
+                    if (data.type === 'sovereign_nexus_state' && data.beings) {
+                        for (const [name, state] of Object.entries(data.beings)) {
+                            formatted += `[${name}] \n`;
+                            formatted += `  Goal: ${state.desire || 'Idle'}\n`;
+                            formatted += `  Emot: ${state.emoji || '😶'}\n`;
+                        }
+                    } else {
+                        formatted = JSON.stringify(data, null, 2);
+                    }
+                    el.innerText = formatted;
+                    setTimeout(() => status.style.color = '#fff', 200);
+                };
+                
+                avatarSystem.onDebugEmit = (data) => {
+                    const el = document.getElementById('tx-log');
+                    const status = document.getElementById('tx-status');
+                    status.innerText = new Date().toLocaleTimeString();
+                    status.style.color = '#ff33aa';
+                    
+                    let formatted = "";
+                    if (data.type === 'avatar_positions' && data.avatars) {
+                        for (const [name, pos] of Object.entries(data.avatars)) {
+                            formatted += `[${name}] X:${pos.x.toFixed(1)} Y:${pos.y.toFixed(1)} Z:${pos.z.toFixed(1)}\n`;
+                        }
+                    }
+                    el.innerText = formatted || "No Active Avatars";
+                    setTimeout(() => status.style.color = '#fff', 200);
+                };
+                // --- END DEBUG DASHBOARD ---
+
+                app.registerPlugin({
+                    name: 'AvatarSystemWrapper',
+                    onUpdate: (dt) => avatarSystem.update(dt)
+                });
+                
+                // Mount Sovereign Ticker to North Wall
+                const tSocket = factory.getSocketTransform('north-wall');
+                tSocket.position.y = 5.5;
+                const ticker = new SovereignTickerPlugin(app, {
+                    width: 28, height: 1.5,
+                    position: tSocket.position,
+                    rotation: tSocket.rotation
+                });
+                app.registerPlugin(ticker);
+                
+                // Mount JobBoard Whiteboard to West Wall
+                const jSocket = factory.getSocketTransform('west-wall');
+                jSocket.position.y = 4.0;
+                const jobBoard = new JobBoardDisplayPlugin(app, {
+                    width: 8, height: 8,
+                    position: jSocket.position,
+                    rotation: jSocket.rotation
+                });
+                app.registerPlugin(jobBoard);
+                
+                // GLB Desktops (Central stations)
+                const somaDesk = new ColonialTerminalPlugin(app, {
+                    name: 'Terminal_SOMA',
+                    hasProceduralDesk: true,
+                    modelUrl: '../props/models/Simple Computer Monitor.glb',
+                    modelScale: new THREE.Vector3(1.5, 1.5, 1.5),
+                    modelOffset: new THREE.Vector3(0, 1.2, -0.1), // Sit ON the table, not through it
+                    modelRotation: new THREE.Euler(0, -Math.PI, 0), // Rotate another 90 degrees
+                    position: new THREE.Vector3(5, 0, 4),
+                    rotation: new THREE.Euler(0, -Math.PI/2, 0),
+                    screenOffset: new THREE.Vector3(0, 1.15, -0.05), // Float screen over the monitor
+                    screenDimensions: { w: 0.65, h: 0.45, cssW: 200, cssH: 140 },
+                    channelId: 'SOMA',
+                    themeColor: '#ff2255'
+                });
+                app.registerPlugin(somaDesk);
+                
+                const nexusDesk = new ColonialTerminalPlugin(app, {
+                    name: 'Terminal_WORLD',
+                    hasProceduralDesk: true,
+                    modelUrl: '../props/models/Simple Computer Monitor.glb',
+                    modelScale: new THREE.Vector3(1.5, 1.5, 1.5),
+                    modelOffset: new THREE.Vector3(0, 1.2, -0.1),
+                    modelRotation: new THREE.Euler(0, -Math.PI, 0),
+                    position: new THREE.Vector3(5, 0, -4),
+                    rotation: new THREE.Euler(0, -Math.PI/2, 0),
+                    screenOffset: new THREE.Vector3(0, 1.15, -0.05),
+                    screenDimensions: { w: 0.65, h: 0.45, cssW: 200, cssH: 140 },
+                    channelId: 'GLOBAL',
+                    themeColor: '#ffaa00'
+                });
+                
+                // Heti's Reception (West)
+                const receptionDesk = new ColonialTerminalPlugin(app, {
+                    name: 'Reception_HETI',
+                    hasProceduralDesk: true,
+                    modelUrl: '../props/models/Simple Computer Monitor.glb',
+                    modelScale: new THREE.Vector3(1.5, 1.5, 1.5),
+                    modelOffset: new THREE.Vector3(0, 1.2, -0.1),
+                    modelRotation: new THREE.Euler(0, Math.PI, 0), // Facing East
+                    position: new THREE.Vector3(-5, 0, -4),
+                    rotation: new THREE.Euler(0, Math.PI/2, 0), // Facing East to greet workers
+                    screenOffset: new THREE.Vector3(0, 1.15, -0.05),
+                    screenDimensions: { w: 0.65, h: 0.45, cssW: 200, cssH: 140 },
+                    channelId: 'JOBBOARD',
+                    themeColor: '#ff33cc'
+                });
+                app.registerPlugin(nexusDesk);
+                
+                // Arcade Training Nodes (East Wall)
+                const arcade1 = new ColonialTerminalPlugin(app, {
+                    name: 'Arcade_NODO_1',
+                    modelUrl: '../props/models/Arcade Machine.glb',
+                    modelScale: new THREE.Vector3(0.85, 0.85, 0.85),
+                    position: new THREE.Vector3(14.5, 0, -5), // East wall
+                    rotation: new THREE.Euler(0, -Math.PI/6, 0), // Facing slightly towards camera
+                    screenOffset: new THREE.Vector3(0, 1.45, 0.15), // Arcade screen height adjusted
+                    screenRotation: new THREE.Euler(-Math.PI/10, 0, 0), // Tilted screen
+                    screenDimensions: { w: 0.8, h: 0.6, cssW: 240, cssH: 180 },
+                    channelId: 'NODO',
+                    themeColor: '#00ffcc'
+                });
+                app.registerPlugin(arcade1);
+                
+                const arcade2 = new ColonialTerminalPlugin(app, {
+                    name: 'Arcade_NODO_2',
+                    modelUrl: '../props/models/Arcade Machine.glb',
+                    modelScale: new THREE.Vector3(0.85, 0.85, 0.85),
+                    position: new THREE.Vector3(14.5, 0, 0),
+                    rotation: new THREE.Euler(0, -Math.PI/6, 0), // Facing slightly towards camera
+                    screenOffset: new THREE.Vector3(0, 1.45, 0.15),
+                    screenRotation: new THREE.Euler(-Math.PI/10, 0, 0),
+                    screenDimensions: { w: 0.8, h: 0.6, cssW: 240, cssH: 180 },
+                    channelId: 'PSYCHE',
+                    themeColor: '#4488ff'
+                });
+                app.registerPlugin(arcade2);
+                
+                if (app.controls) {
+                    app.controls.maxDistance = 25; // Prevent zooming out into the void
+                }
+                
+                // Target values for smooth lerp
+                const endocrineTargets = {
+                    ambientHex: 0xffffff,
+                    groundHex: 0x444444,
+                    fogHex: 0x050508,
+                    fogDensity: 0.003, // Adjusted for massive 32m hangar
+                    intensity: 1.5
+                };
+                
+                let currentTheme = 'endocrine';
+                
+                document.getElementById('theme-selector').addEventListener('change', (e) => {
+                    currentTheme = e.target.value;
+                    if(currentTheme === 'office') {
+                        document.body.style.background = '#eef2f5';
+                        app.scene.background = new THREE.Color(0xeef2f5);
+                        endocrineTargets.ambientHex = 0xffffff;
+                        endocrineTargets.groundHex = 0xaaaaaa;
+                        endocrineTargets.fogHex = 0xeef2f5;
+                        endocrineTargets.fogDensity = 0.001;
+                        endocrineTargets.intensity = 2.0;
+                    } else if(currentTheme === 'night') {
+                        document.body.style.background = '#020205';
+                        app.scene.background = new THREE.Color(0x020205);
+                        endocrineTargets.ambientHex = 0xffffff;
+                        endocrineTargets.groundHex = 0x444455;
+                        endocrineTargets.fogHex = 0x020205;
+                        endocrineTargets.fogDensity = 0.004;
+                        endocrineTargets.intensity = 0.8;
+                    } else if(currentTheme === 'neon') {
+                        document.body.style.background = '#0a001a';
+                        app.scene.background = new THREE.Color(0x0a001a);
+                        endocrineTargets.ambientHex = 0xff00ff;
+                        endocrineTargets.groundHex = 0x00ffff;
+                        endocrineTargets.fogHex = 0x0a001a;
+                        endocrineTargets.fogDensity = 0.003;
+                        endocrineTargets.intensity = 0.7;
+                    } else { // Endocrine default dark
+                        document.body.style.background = '#050508';
+                        app.scene.background = null; // transparent to show body
+                        endocrineTargets.ambientHex = 0xffffff;
+                        endocrineTargets.groundHex = 0x666677;
+                        endocrineTargets.fogHex = 0x0b0b14;
+                        endocrineTargets.fogDensity = 0.003;
+                        endocrineTargets.intensity = 1.5;
+                    }
+                });
+                
+                // Force an initial trigger to set default state
+                document.getElementById('theme-selector').dispatchEvent(new Event('change'));
+                
+                let targetFOV = 60; // Default camera FOV
+                app.camera.fov = targetFOV;
+                app.camera.updateProjectionMatrix();
+
+                // --- CAMERA CONTROLS ---
+                let camMode = 0; // 0: Diorama, 1: Orbit, 2: God, 3: First Person
+                const camToggleBtn = document.getElementById('camera-toggle');
+                
+                const updateCameraMode = () => {
+                    if (app.controls) app.controls.enabled = false;
+                    switch(camMode) {
+                        case 0: // Diorama
+                            app.camera.position.set(0, 4.5, 12.5);
+                            app.camera.lookAt(0, 1.5, -2);
+                            if (app.controls) app.controls.target.set(0, 1.5, -2);
+                            camToggleBtn.innerText = "🎥 MODE: DIORAMA (SCUMM)";
+                            camToggleBtn.style.color = "#00ffcc";
+                            break;
+                        case 1: // Orbit Free
+                            if (app.controls) {
+                                app.controls.enabled = true;
+                                app.controls.target.set(0, 1.5, -2);
+                            }
+                            camToggleBtn.innerText = "🎥 MODE: FREE ORBIT";
+                            camToggleBtn.style.color = "#ffaa00";
+                            break;
+                        case 2: // God Mode (Zenith)
+                            app.camera.position.set(0, 8, -1.5);
+                            app.camera.lookAt(0, 0, -1.6);
+                            if (app.controls) app.controls.target.set(0, 0, -1.6);
+                            camToggleBtn.innerText = "🎥 MODE: GOD (TOP-DOWN)";
+                            camToggleBtn.style.color = "#ff33ff";
+                            break;
+                        case 3: // 1st Person
+                            app.camera.position.set(0, 1.6, 2);
+                            app.camera.lookAt(0, 1.6, -4);
+                            if (app.controls) app.controls.target.set(0, 1.6, -4);
+                            camToggleBtn.innerText = "🎥 MODE: 1ST PERSON";
+                            camToggleBtn.style.color = "#ffff00";
+                            break;
+                    }
+                };
+                
+                camToggleBtn.addEventListener('click', () => {
+                    camMode = (camMode + 1) % 4;
+                    updateCameraMode();
+                });
+                
+                updateCameraMode();
+
+                // Push to render pipeline
+                app.plugins.push(avatarSystem, somaDesk, nexusDesk, receptionDesk, arcade1, arcade2);
+
+                // --- 📝 WAITING ROOM CHAIRS ---
+                const loader = new GLTFLoader();
+                for (let i = -3; i <= 3; i += 2) {
+                    loader.load('../props/models/Office Chair.glb', (gltf) => {
+                        const chair = gltf.scene;
+                        chair.scale.setScalar(1.5); // Adjust as needed
+                        chair.position.set(-10, 0, i);
+                        chair.rotation.y = Math.PI / 2; // Face towards center (East)
+                        chair.traverse(c => { if(c.isMesh) { c.castShadow=true; c.receiveShadow=true; }});
+                        app.scene.add(chair);
+                    });
+                }
+                
+                // --- 👑 PRE-SPAWN NAMED BEINGS ---
+                // Wait briefly for AvatarSystem to init, then spawn them.
+                setTimeout(() => {
+                    avatarSystem.forceSpawn("Zazu", new THREE.Vector3(5, 0.82, -4), "Contract Courier");
+                    avatarSystem.forceSpawn("Heti", new THREE.Vector3(-6.5, 0, -4), "Reception Manager"); // Stand slightly behind the desk
+                }, 500);
+
+                app.startLoop((dt) => {
+                    if(factory && factory.updateActiveModels) factory.updateActiveModels(dt, app.clock.getElapsedTime() * 1000);
+                    // Decay the flash light smoothly
+                    flashLight.intensity = THREE.MathUtils.lerp(flashLight.intensity, 0, dt * 5.0);
+                    
+                    // Smoothly restore FOV after camera kicks
+                    if (Math.abs(app.camera.fov - targetFOV) > 0.1) {
+                        app.camera.fov = THREE.MathUtils.lerp(app.camera.fov, targetFOV, dt * 8.0);
+                        app.camera.updateProjectionMatrix();
+                    }
+                    
+                    // Smoothly transition mood lighting (Endocrine regulation)
+                    moodLight.color.lerp(new THREE.Color(endocrineTargets.ambientHex), dt * 0.5);
+                    moodLight.groundColor.lerp(new THREE.Color(endocrineTargets.groundHex), dt * 0.5);
+                    app.scene.fog.color.lerp(new THREE.Color(endocrineTargets.fogHex), dt * 0.5);
+                    app.scene.fog.density = THREE.MathUtils.lerp(app.scene.fog.density, endocrineTargets.fogDensity, dt * 0.5);
+                    moodLight.intensity = THREE.MathUtils.lerp(moodLight.intensity, endocrineTargets.intensity, dt * 0.5);
+                    
+                    // Plugins are updated automatically by AlisaRenderCore
+                });
+                
+                // [ISOMORFISMO 1:1] SCUMM SSE Integration
+                const pulseStatusEl = document.getElementById('pulse-status');
+                
+                const connectSCUMM = () => {
+                    const scummStream = new EventSource('http://127.0.0.1:8741/scumm/stream');
+                    
+                    scummStream.onopen = () => {
+                        pulseStatusEl.innerText = "SCUMM NARRATOR: Synchronized";
+                        pulseStatusEl.style.borderColor = '#ffcc00';
+                        pulseStatusEl.style.color = '#ffcc00';
+                    };
+                    
+                    scummStream.onmessage = (event) => {
+                        if(event.data.includes("heartbeat")) return;
+                        try {
+                            const scene = JSON.parse(event.data);
+                            
+                            // [ISOMORFISMO] Router: Avatar System
+                            avatarSystem.processScene(scene);
+                            
+                            // [TICKER INJECTION REMOVED: Now using Hub Logs source below]
+                            
+                            // [ISOMORFISMO] Actualizar Color Grading (Hormonas) si existen
+                            if (scene.endocrine && currentTheme === 'endocrine') {
+                                const dop = scene.endocrine.dopamine || 0.5;
+                                const cor = scene.endocrine.cortisol || 0.5;
+                                const ser = scene.endocrine.serotonin || 0.5;
+                                
+                                // Mezcla cromática según hormonas:
+                                // Dopamina: Luz dorada, calidez y mucha visibilidad.
+                                // Cortisol: Oscuridad, tonos rojizos y niebla densa.
+                                // Serotonina: Tonos azules/rosados pastel, niebla clara.
+                                
+                                if (cor > 0.6 && cor > dop && cor > ser) {
+                                    // Cortisol Dominante (Estrés)
+                                    endocrineTargets.ambientHex = 0xff3333;
+                                    endocrineTargets.groundHex = 0x220000;
+                                    endocrineTargets.fogHex = 0x330505;
+                                    endocrineTargets.fogDensity = 0.05;
+                                    endocrineTargets.intensity = 0.8;
+                                } else if (dop > 0.6 && dop > ser) {
+                                    // Dopamina Dominante (Recompensa/Acción)
+                                    endocrineTargets.ambientHex = 0xffcc33;
+                                    endocrineTargets.groundHex = 0x553311;
+                                    endocrineTargets.fogHex = 0x221105;
+                                    endocrineTargets.fogDensity = 0.002;
+                                    endocrineTargets.intensity = 1.0;
+                                } else if (ser > 0.5) {
+                                    // Serotonina Dominante (Calma)
+                                    endocrineTargets.ambientHex = 0x88ccff;
+                                    endocrineTargets.groundHex = 0x223355;
+                                    endocrineTargets.fogHex = 0x112233;
+                                    endocrineTargets.fogDensity = 0.015;
+                                    endocrineTargets.intensity = 0.7;
+                                } else {
+                                    // Neutral
+                                    endocrineTargets.ambientHex = 0xffffff;
+                                    endocrineTargets.groundHex = 0x444444;
+                                    endocrineTargets.fogHex = 0x050508;
+                                    endocrineTargets.fogDensity = 0.01;
+                                    endocrineTargets.intensity = 0.6;
+                                }
+                            }
+                            
+                            if (scene.narrative) {
+                                // Cortar el texto si es muy largo
+                                let text = scene.narrative;
+                                if(text.length > 100) text = text.substring(0, 100) + "...";
+                                
+                                pulseStatusEl.innerText = `[${(scene.domain || 'SYSTEM').toUpperCase()}] ${text}`;
+                                
+                                // Detonar flash luminico segun el dominio
+                                flashLight.intensity = 2.0;
+                                if(scene.domain === "world") {
+                                    pulseStatusEl.style.color = '#ffaa33';
+                                    flashLight.color.setHex(0xffaa33);
+                                } else if(scene.domain === "soma") {
+                                    pulseStatusEl.style.color = '#ff3344';
+                                    flashLight.color.setHex(0xff3344);
+                                } else if(scene.domain === "psyche") {
+                                    pulseStatusEl.style.color = '#4488ff';
+                                    flashLight.color.setHex(0x4488ff);
+                                } else {
+                                    pulseStatusEl.style.color = '#44ff88';
+                                    flashLight.color.setHex(0x44ff88);
+                                }
+                                pulseStatusEl.style.borderColor = pulseStatusEl.style.color;
+                            }
+                          } catch(e) {
+                            console.error("SCUMM Error:", e);
+                        }
+                    };
+                    
+                    // Hub Low-Level Logs are now encapsulated in SovereignTickerPlugin
+                    
+                    
+                    scummStream.onerror = () => {
+                        pulseStatusEl.innerText = "SCUMM NARRATOR: Desynchronized";
+                        pulseStatusEl.style.color = '#ff3344';
+                        pulseStatusEl.style.borderColor = '#ff3344';
+                        scummStream.close();
+                        setTimeout(connectSCUMM, 5000);
+                    };
+                };
+                
+                document.getElementById('btn-start').addEventListener('click', () => {
+                    document.getElementById('startup-overlay').style.display = 'none';
+                    // Ignite AudioContext inside user gesture
+                    try {
+                        const Ctx = window.AudioContext || window.webkitAudioContext;
+                        window._alisa_audio_ctx = new Ctx();
+                        window._alisa_audio_ctx.resume();
+                    } catch(e) {}
+                    connectSCUMM();
+                });
+                
+                window.__alisa_engine = { factory, plugin };
+            } catch(e) {
+                console.error("ALISA Digital Twin Test Failed:", e);
+                document.getElementById('ui-overlay').innerHTML += `<p style='color:red'>Crash: ${e.message}</p>`;
+            }
+        };
+    </script>
+</body>
+</html>

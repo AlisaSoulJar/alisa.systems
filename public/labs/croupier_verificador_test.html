@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA LAB — ¿pillamos a un tramposo?</title>
+<style>
+  body{margin:0;background:#070a11;color:#cfe3f5;font-family:ui-monospace,monospace;padding:20px 26px 60px}
+  h1{margin:0 0 3px;font-size:18px;color:#7fd0ff}
+  h2{font-size:13px;color:#7fd0ff;margin:20px 0 6px;border-bottom:1px solid #1d2b3e;padding-bottom:4px}
+  .sub{color:#5f7a92;font-size:11.5px;line-height:1.7;max-width:900px;margin-bottom:10px}
+  pre{background:#0b1018;border:1px solid #16202e;padding:10px 12px;font-size:11.5px;
+      line-height:1.65;white-space:pre-wrap;color:#b8d4ea;margin:6px 0;border-radius:3px}
+</style>
+</head>
+<body>
+<h1>▓ EL VERIFICADOR · re-simular la partida de un desconocido</h1>
+<div class="sub">
+Alguien nos manda "he sacado 5.000 puntos". <b>Su palabra no vale nada.</b> Lo que vale es la partida:
+la semilla y la lista de jugadas. Volvemos a jugarla y comprobamos.<br>
+Aquí se envían partidas <b>buenas y trucadas</b> a ver si el verificador distingue.
+</div>
+<div id="out"></div>
+<script type="module">
+import { verificar, verificarTanda } from '../arcade/js/protohub/Verificador.js';
+import { ajedrez }  from '../arcade/js/protohub/rules/ajedrez.js';
+import { reversi }  from '../arcade/js/protohub/rules/reversi.js';
+import { mancala }  from '../arcade/js/protohub/rules/mancala.js';
+import { snake }    from '../arcade/js/protohub/rules/snake.js';
+
+const out = document.getElementById('out');
+const say = (h,t) => out.insertAdjacentHTML('beforeend', `<h2>${h}</h2><pre>${t}</pre>`);
+const R = {};
+
+const REGLAS = { chess: ajedrez, reversi, mancala, snake };
+
+/** Juega una partida honrada y devuelve el "envío" que haría un jugador. */
+function partidaHonrada(nombre, reglas, semilla, tope = 200) {
+  const p = reglas.nuevaPartida({ seed: semilla });
+  const jugadas = [];
+  for (let i = 0; i < tope; i++) {
+    const st = reglas.estado(p);
+    if (st.is_game_over || !st.legal_moves.length) break;
+    const m = reglas.sugerencia ? reglas.sugerencia(p) : st.legal_moves[0];
+    if (!m || !reglas.mover(p, m)) break;
+    jugadas.push(m);
+  }
+  const fin = reglas.estado(p);
+  const puntos = typeof fin.score === 'number' ? fin.score : (fin.score?.white ?? fin.score?.black ?? 0);
+  return { juego: nombre, semilla, jugadas, puntos };
+}
+
+// ── 1. PARTIDAS HONRADAS ───────────────────────────────────────
+const buenas = [
+  partidaHonrada('reversi', reversi, 7),
+  partidaHonrada('mancala', mancala, 7),
+  partidaHonrada('snake', snake, 7, 300),
+  partidaHonrada('chess', ajedrez, 7, 120),
+];
+const t1 = verificarTanda(REGLAS, buenas);
+R.honradas = t1.invalidas === 0;
+say('1 · Partidas honradas — deben pasar todas',
+  t1.resultados.map(r =>
+    `  ${r.valida ? '✓' : '✗'}  ${r.juego.padEnd(9)} ${String(r.jugadas).padStart(4)} jugadas   ${r.puntos} puntos` +
+    (r.motivo ? `   ← ${r.motivo}` : '')).join('\n') +
+  `\n\n  válidas ${t1.validas}/${buenas.length}   ${R.honradas ? '✓' : '✗ MAL: rechaza partidas buenas'}`);
+
+// ── 2. LOS TRAMPOSOS ───────────────────────────────────────────
+const trucos = [];
+
+// (a) Inflar la puntuación sin tocar las jugadas
+const a = JSON.parse(JSON.stringify(buenas[0])); a.puntos = 9999;
+trucos.push(['inflar la puntuación', a]);
+
+// (b) Colar una jugada ilegal en medio
+const b = JSON.parse(JSON.stringify(buenas[1])); b.jugadas.splice(3, 0, '99');
+trucos.push(['colar una jugada ilegal', b]);
+
+// (c) Cambiar la semilla y quedarse la puntuación.
+// ⚠️ Mi primera versión usaba REVERSI aquí y el truco "se colaba". No era un
+// agujero: reversi **no tiene azar** —su tablero de salida es fijo—, así que
+// cambiar la semilla no cambia nada y pasar era lo correcto. Para probar esto
+// hace falta un juego donde la semilla mande de verdad, como snake.
+const c = JSON.parse(JSON.stringify(buenas[2])); c.semilla = 999999;
+trucos.push(['cambiar la semilla (snake)', c]);
+
+// (d) Seguir jugando después del final
+const d = JSON.parse(JSON.stringify(buenas[1]));
+d.jugadas = d.jugadas.concat(['0','1','2','3','4','5','0','1','2','3']);
+trucos.push(['jugar tras el final', d]);
+
+// (e) Inventarse un juego
+trucos.push(['juego inexistente', { juego: 'tetris', semilla: 1, jugadas: [], puntos: 500 }]);
+
+// (f) Reordenar las jugadas
+const f = JSON.parse(JSON.stringify(buenas[0]));
+f.jugadas = f.jugadas.slice().reverse();
+trucos.push(['reordenar las jugadas', f]);
+
+let pillados = 0, l2 = '';
+for (const [nombre, envio] of trucos) {
+  const reglas = REGLAS[envio.juego];
+  const r = reglas ? verificar(reglas, envio) : { valida: false, motivo: `juego desconocido: '${envio.juego}'` };
+  if (!r.valida) pillados++;
+  l2 += `  ${!r.valida ? '✓ PILLADO' : '✗ SE COLÓ '}  ${nombre.padEnd(26)} ${r.motivo ?? '(pasó como buena)'}\n`;
+}
+R.tramposos = pillados === trucos.length;
+say('2 · Los tramposos — deben caer todos', l2 + `\n  pillados ${pillados}/${trucos.length}   ${R.tramposos ? '✓' : '✗ MAL: alguno se coló'}`);
+
+// ── 3. ¿ES REPRODUCIBLE ENTRE "MÁQUINAS"? ──────────────────────
+// Se verifica la misma partida dos veces: debe dar exactamente lo mismo.
+const v1 = verificar(reversi, buenas[0]);
+const v2 = verificar(reversi, buenas[0]);
+R.reproducible = JSON.stringify(v1) === JSON.stringify(v2);
+say('3 · Verificar dos veces da lo mismo',
+  `  ${JSON.stringify(v1)}\n  ${JSON.stringify(v2)}\n  ${R.reproducible ? '✓' : '✗ MAL'}`);
+
+// ── 4. ¿CUÁNTO CUESTA VERIFICAR? ───────────────────────────────
+const t0 = performance.now();
+const N = 200;
+for (let i = 0; i < N; i++) verificar(reversi, buenas[0]);
+const ms = (performance.now() - t0) / N;
+R.barato = ms < 20;
+say('4 · Lo que cuesta verificar una partida',
+  `  ${ms.toFixed(2)} ms por partida (${buenas[0].jugadas.length} jugadas)\n` +
+  `  → un Worker de Cloudflare del plan gratuito (10 ms de CPU) aguanta esto de sobra\n` +
+  `  ${R.barato ? '✓ barato' : '⚠ caro: habría que trocearlo'}`);
+
+// ── 5. EL TAMAÑO DEL ENVÍO ─────────────────────────────────────
+const bytes = new TextEncoder().encode(JSON.stringify(buenas[0])).length;
+say('5 · Lo que ocupa una partida enviada',
+  `  ${bytes} bytes (${buenas[0].jugadas.length} jugadas)\n` +
+  `  Es la semilla y la lista de jugadas: eso ES el conjunto de datos.\n` +
+  `  Diez mil partidas ≈ ${(bytes * 10000 / 1048576).toFixed(1)} MB. Cabe en cualquier sitio.`);
+
+const todo = Object.values(R).every(Boolean);
+say('VEREDICTO', Object.entries(R).map(([k,v]) => `  ${v ? '✓' : '✗'}  ${k}`).join('\n') +
+  `\n\n  ${todo ? '✅ EL VERIFICADOR SIRVE' : '❌ hay un agujero'}`);
+window.__verif = R;
+window.__ready = true;
+</script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA LAB — Customs LIVE Replay BATCH 7 (AlisaRenderCore)</title>
+<style>
+  body{margin:0;overflow:hidden;background:#080a10;font-family:ui-monospace,monospace;color:#fff}
+  #hud{position:absolute;top:12px;left:14px;color:#cde;font-size:12px;line-height:1.6;z-index:100;text-shadow:0 0 6px #000;pointer-events:none}
+  #hud b{color:#ffd166}
+  #roster{position:absolute;top:12px;right:14px;width:308px;background:rgba(10,14,22,.85);border:1px solid #1d2b3e;border-radius:8px;
+       color:#9fb3c8;font-size:11px;line-height:1.5;z-index:100;padding:9px 11px;text-shadow:0 0 4px #000}
+  #roster h3{margin:0 0 6px;color:#7fd0ff;font-size:12px}
+  #roster .r{display:flex;justify-content:space-between;gap:6px;padding:2px 5px;border-radius:4px;opacity:.4;transition:all .3s}
+  #roster .r.done{opacity:1}
+  #roster .r.cur{opacity:1;background:#16324a;color:#fff}
+  #roster .r .nm{color:#cfe3f5}
+  #roster .r .rc{color:#5f7a92;font-size:10px}
+  #roster .foot{margin-top:7px;padding-top:6px;border-top:1px solid #1d2b3e;color:#7CFC98;font-size:10px;line-height:1.5}
+  #eng{position:absolute;top:12px;left:14px;transform:translateY(-2px)}
+  #beat{position:absolute;bottom:52px;left:50%;transform:translateX(-50%);color:#eaf2ff;font-size:14px;z-index:100;text-align:center;text-shadow:0 0 10px #000}
+  #beat b{color:#ffd166}
+  #tag{position:absolute;bottom:14px;left:14px;color:#4a5a6a;font-size:10px;z-index:100}
+  #tag b{color:#00ffcc}
+</style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "/vendor/three-0.160.0/build/three.module.js",
+    "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+    "@alisa-engine/": "../js/alisa-engine/"
+  }
+}
+</script>
+</head>
+<body>
+<div id="hud">arrancando AlisaRenderCore…</div>
+<div id="roster"><h3>▓ ROSTER · receipts vivos</h3><div id="rlist"></div><div class="foot" id="rfoot"></div></div>
+<div id="beat"></div>
+<div id="tag">Powered by <b>@alisa-engine/src/soma/AlisaRenderCore.js</b> · CUSTOMS_LIVE_REPLAY_BATCH_7 · desde el ledger · sin coords inventadas / sin protegidos</div>
+<script type="module">
+import * as THREE from 'three';
+import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+
+const ROLE_ORCH=0xe0b020;
+function label(scene,text,x,y,z,size,color){
+  const c=document.createElement("canvas"); c.width=320; c.height=64; const g=c.getContext("2d");
+  g.font=(size||20)+"px monospace"; g.fillStyle=color||"#eaf2ff"; g.textAlign="center"; g.textBaseline="middle"; g.fillText(text.slice(0,26),160,34);
+  const t=new THREE.CanvasTexture(c); const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false}));
+  const sc=(size||20)/20; s.scale.set(9*sc,1.8*sc,1); s.position.set(x,y,z); scene.add(s); return s;
+}
+function room(scene,name,cx,cz,w,d,col){
+  const floor=new THREE.Mesh(new THREE.BoxGeometry(w,0.4,d),new THREE.MeshStandardMaterial({color:col,roughness:.85})); floor.position.set(cx,0.2,cz); scene.add(floor);
+  const wm=new THREE.MeshStandardMaterial({color:col,transparent:true,opacity:0.1,side:THREE.DoubleSide}); const h=5;
+  [[cx,cz-d/2,w,0],[cx,cz+d/2,w,0],[cx-w/2,cz,d,Math.PI/2],[cx+w/2,cz,d,Math.PI/2]].forEach(([x,z,len,ry])=>{
+    const wl=new THREE.Mesh(new THREE.PlaneGeometry(len,h),wm); wl.position.set(x,h/2,z); wl.rotation.y=ry; scene.add(wl);
+    wl.add(new THREE.LineSegments(new THREE.EdgesGeometry(wl.geometry),new THREE.LineBasicMaterial({color:col,transparent:true,opacity:0.3})));
+  });
+  label(scene,name.replace(/_/g,' '),cx,h+1,cz-d/2,18,"#8fbfe8");
+}
+// tween engine driven by AlisaRenderCore.startLoop(dt)
+const tweens=[];
+function tween(obj,to,dur,onDone){ tweens.push({obj,to,t:0,dur,onDone,started:false}); }
+function stepTweens(dt){ for(let i=tweens.length-1;i>=0;i--){ const w=tweens[i];
+  if(!w.started){w.from={};for(const k in w.to)w.from[k]=w.obj[k];w.started=true;}
+  w.t=Math.min(1,w.t+dt/w.dur); const e=w.t<.5?2*w.t*w.t:1-Math.pow(-2*w.t+2,2)/2;
+  for(const k in w.to)w.obj[k]=w.from[k]+(w.to[k]-w.from[k])*e;
+  if(w.t>=1){w.onDone&&w.onDone();tweens.splice(i,1);} } }
+function emojiColor(e){ const m={"🔵":0x2f7fff,"🕷️":0x8a4fbf,"🦉":0xb08040,"🧵":0xcf5fa0,"⚔️":0xc0c0d0,"💼":0x4aa06a}; return m[e]||0x66c0e0; }
+
+window.onload = async () => {
+  // === NUESTRA MÁQUINA: el motor monta scene/cámara/renderer/controls/loop + ColonialPassportPlugin(Hub) ===
+  const app = new AlisaRenderCore({
+    clearColor:0x080a10, fogColor:0x080a10, fogDensity:0.006,
+    cameraPosition:new THREE.Vector3(-2,17,42)
+  });
+  app.setupDefaultEnvironment();
+  app.camera.fov=60; app.camera.updateProjectionMatrix();  // ensanchar para encuadrar los 7 nacidos
+  app.controls.target.set(-2,2,4);
+  const scene=app.scene;
+  window.__core=app;
+
+  let batch, receipts;
+  try{
+    [batch,receipts]=await Promise.all([
+      fetch("data/customs_live_replay_batch_7.json").then(r=>r.json()),
+      fetch("data/batch_registry_receipts_live.json").then(r=>r.json())
+    ]);
+  }catch(e){ document.getElementById("hud").textContent="error cargando ledger: "+e; console.error(e); return; }
+
+  const V={ vault:{x:-17,z:-2}, registry:{x:12,z:-2} };
+  room(scene,"vault_room · archive_shelf",V.vault.x,V.vault.z,15,15,0x3a2f52);
+  room(scene,"registry_counter · dossier_tray",V.registry.x,V.registry.z,15,15,0x4a3f22);
+  const desk=new THREE.Mesh(new THREE.BoxGeometry(6,1.4,2.4),new THREE.MeshStandardMaterial({color:0x6a5533,roughness:.7})); desk.position.set(V.registry.x,0.9,V.registry.z-1); scene.add(desk);
+  const tray=new THREE.Mesh(new THREE.BoxGeometry(3.2,0.25,2.2),new THREE.MeshStandardMaterial({color:0x2a2214,roughness:.9})); tray.position.set(V.registry.x,1.75,V.registry.z-1); scene.add(tray);
+  // Conrad — officer (Orchestrator), único actor del batch (actor=being.conrad)
+  const conrad=new THREE.Group(); conrad.position.set(V.registry.x+4,0,V.registry.z+3);
+  const cbody=new THREE.Mesh(new THREE.CapsuleGeometry(0.7,1.5,4,8),new THREE.MeshStandardMaterial({color:ROLE_ORCH,emissive:ROLE_ORCH,emissiveIntensity:.15,roughness:.5})); cbody.position.set(0,1.6,0); conrad.add(cbody);
+  const chead=new THREE.Mesh(new THREE.SphereGeometry(0.55,16,12),new THREE.MeshStandardMaterial({color:ROLE_ORCH,roughness:.4})); chead.position.set(0,3.0,0); conrad.add(chead);
+  scene.add(conrad);
+  label(scene,"🧠 Conrad (officer · Orchestrator)",conrad.position.x,4.2,conrad.position.z,15,"#e0c060");
+  const doc=new THREE.Mesh(new THREE.BoxGeometry(1.0,0.08,1.4),new THREE.MeshStandardMaterial({color:0x9fd8ff,emissive:0x2a4a6a,emissiveIntensity:.4,roughness:.5})); doc.visible=false; scene.add(doc);
+
+  // roster UI
+  const rlist=document.getElementById("rlist");
+  batch.replays.forEach((r,i)=>{ const d=document.createElement("div"); d.className="r"; d.id="rr"+i;
+    d.innerHTML=`<span class="nm">${r.emoji||"•"} ${r.name}</span><span class="rc">${r.receipt_id.split('.').pop()} · ${r.mode}</span>`; rlist.appendChild(d); });
+  const acc=batch.acceptance;
+  document.getElementById("rfoot").innerHTML=
+    `from_live_receipts ${acc.all_from_live_receipts?'✓':'✗'} · resolve_all ${acc.all_resolve_being_document_dossier_slot?'✓':'✗'}<br>`+
+    `no_invented_coords ${acc.no_invented_coordinates?'✓':'✗'} · no_protected ${acc.no_protected_identities?'✓':'✗'}`;
+
+  const N=batch.replays.length, rowZ=9, span=20, cx0=-2;
+  const slotX=i=> cx0 - span/2 + (span*(i/(N-1||1)));
+
+  document.getElementById("hud").innerHTML=
+    `<b>CUSTOMS · LIVE REPLAY BATCH 7</b> · facade <b>${batch.facade.split('.').pop()}</b> · actor <b>being.conrad</b> · <b>@alisa-engine</b><br>`+
+    `7 naturalizaciones colapsadas desde <b>receipts vivos</b> · Being+Document+Dossier+slot resueltos · sin coords inventadas / sin protegidos<br>`+
+    `protegidos en HOLD (excluidos): ${batch.protected_excluded.join(', ')}`;
+
+  // === TIMELINE, avanzado por el loop del motor ===
+  let idx=-1, acc_t=0, waiting=0, phase="idle";
+  function naturalize(i){ if(i>=batch.replays.length){ finish(); return; } idx=i; const r=batch.replays[i];
+    document.querySelectorAll("#roster .r").forEach(e=>e.classList.remove("cur"));
+    const row=document.getElementById("rr"+i); row.classList.add("cur");
+    document.getElementById("beat").innerHTML=`naturalizando <b>${r.emoji||''} ${r.name}</b> · <b>${r.role||''}</b> · doc✓ dossier✓ slot=${r.slot_id}`;
+    doc.visible=true; doc.material.emissiveIntensity=.6; doc.position.set(V.vault.x,3.2,V.vault.z-3); doc.scale.set(1,1,1);
+    tween(doc.position,{x:V.registry.x,y:2.2,z:V.registry.z-1},0.7,()=>{
+      const flash=new THREE.Mesh(new THREE.CircleGeometry(2.4,20),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.9}));
+      flash.rotation.x=-Math.PI/2; flash.position.set(V.registry.x,2.1,V.registry.z-1); scene.add(flash); tween(flash.material,{opacity:0},0.6);
+      doc.visible=false;
+      const bcol=emojiColor(r.emoji);
+      const g=new THREE.Group(); g.position.set(slotX(i),0,rowZ); g.scale.set(0.01,0.01,0.01);
+      const bMesh=new THREE.Mesh(new THREE.CylinderGeometry(0.75,0.75,2.2,18),new THREE.MeshStandardMaterial({color:bcol,emissive:bcol,emissiveIntensity:.3,roughness:.4})); bMesh.position.set(0,1.3,0); g.add(bMesh);
+      scene.add(g); tween(g.scale,{x:1,y:1,z:1},0.5);
+      label(scene,`${r.emoji||''} ${r.name}`,slotX(i),3.0,rowZ,15,"#bfe0ff");
+      row.classList.remove("cur"); row.classList.add("done");
+      waiting=0.65; phase="wait"; // pausa antes del siguiente, contada por el loop
+    });
+    phase="run";
+  }
+  function finish(){ phase="done";
+    document.getElementById("beat").innerHTML=`▓ <b>BATCH 7 COMPLETO</b> · 7 ciudadanos vivos nacidos desde el ledger · <b>cine ⇒ directo</b> · en @alisa-engine`;
+    window.__done=true;
+  }
+
+  // arranca el loop DEL MOTOR (no un RAF propio): el motor pasa dt y actualiza plugins/controls/render
+  let started=false, startDelay=0.9;
+  app.startLoop((dt)=>{
+    stepTweens(dt);
+    if(!started){ startDelay-=dt; if(startDelay<=0){ started=true; naturalize(0); } return; }
+    if(phase==="wait"){ waiting-=dt; if(waiting<=0){ naturalize(idx+1); } }
+  });
+
+  window.__report={atom:batch.atom,count:batch.replays.length,acceptance:batch.acceptance,names:batch.replays.map(r=>r.name),engine:"AlisaRenderCore",passport_plugin:!!app.getPlugin&&!!app.plugins.length};
+  window.__ready=true;
+};
+</script>
+</body>
+</html>

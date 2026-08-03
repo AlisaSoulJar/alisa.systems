@@ -1,0 +1,22 @@
+{
+    "name": "WallE",
+    "role": "Maintenance Worker",
+    "emoji": "🤖",
+    "type": "mechanical",
+    "skeleton": "droid_compact",
+    "model_path": "Butter Robot.glb",
+    "scale": 0.7,
+    "kinematics": "droid_compact",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "synth",
+        "tier": 1,
+        "signal_type": "chirp",
+        "signal_freq": 330,
+        "signal_duration": 0.4,
+        "label": "WallE - Synth chirp (lento, melódico, trabajador)",
+        "freq_label": "mecánico trabajador, medio-bajo"
+    },
+    "avatar_source": "colonial_census_2026-04-23"
+}

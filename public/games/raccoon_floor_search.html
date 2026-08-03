@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALISA — Raccoon Scape: Registro de Planta</title>
+<!--
+  ═══════════════════════════════════════════════════════════════════════════
+   RECONSTRUCCIÓN de la etapa perdida: buscar al mapache en UNA PLANTA.
+  ═══════════════════════════════════════════════════════════════════════════
+  El original se llamaba "Chopper Search (Building Floors)" y vivía en
+  `labs/croupier_scanner_lab.html`. No se borró: alguien reutilizó ese nombre
+  para una prueba del plugin BSP y lo SOBRESCRIBIÓ. En el backup del 3 de mayo
+  ya estaba así, con 1.946 bytes y otro título dentro. Por eso no aparecía en
+  ninguna búsqueda de "falta un fichero": el fichero estaba, con otra cosa.
+
+  NO SE HA PROGRAMADO NADA NUEVO. Todo esto ya estaba escrito en el motor y sin
+  enchufar — que es el hallazgo de estos dos días:
+
+    ProceduralBuildingFactory   ya construye habitaciones detrás de cada puerta
+                                y expone `hidingSpots[]` con `hasRaccoon`
+    createApplianceBeam('tv')       escrito, NADIE lo llamaba
+    createApplianceBeam('window')   escrito, NADIE lo llamaba
+    createApplianceBeam('bulb')     escrito, NADIE lo llamaba
+    createApplianceBeam('fridge')   solo lo usaba el ascensor
+    CinematicPipelinePlugin         bloom + SSAO, solo en el barril
+    isLightsOut / currentStage      los tres niveles que recordaba Oscar
+
+  Los tres niveles del original: con luz · sin luz · sin luz y con predador.
+  ═══════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root { --acento: #ffb347; --fondo: #05050a; }
+  body, html { margin:0; padding:0; width:100%; height:100%; overflow:hidden;
+               background: var(--fondo); font-family: 'JetBrains Mono', monospace; }
+  #lienzo { position:absolute; inset:0; z-index:1; }
+  .panel { position:absolute; z-index:10; background: rgba(12,12,22,0.78);
+           backdrop-filter: blur(14px); border:1px solid rgba(255,179,71,0.28);
+           border-radius:14px; padding:16px; color:#e8e8f2; font-size:12px; }
+  #hud { top:18px; left:18px; min-width:230px; }
+  #hud h1 { margin:0 0 10px; font-size:15px; color: var(--acento); letter-spacing:-0.3px; }
+  .fila { display:flex; justify-content:space-between; margin-bottom:5px; color:#8a8a9e; }
+  .fila b { color:#fff; font-weight:600; }
+  #ayuda { bottom:18px; left:50%; transform:translateX(-50%); font-size:11px; color:#9a9aae;
+           text-align:center; }
+  #menu { position:absolute; inset:0; z-index:20; display:flex; align-items:center;
+          justify-content:center; background: rgba(5,5,10,0.94); }
+  #menu .caja { text-align:center; padding:34px 40px; }
+  #menu h2 { color: var(--acento); font-size:22px; margin:0 0 6px; }
+  #menu p  { color:#9a9aae; font-size:12px; margin:0 0 22px; max-width:430px; line-height:1.6; }
+  .nivel { display:block; width:100%; margin:8px 0; padding:13px 20px; cursor:pointer;
+           background: rgba(255,179,71,0.09); border:1px solid rgba(255,179,71,0.35);
+           border-radius:9px; color:#fff; font-family:inherit; font-size:13px; text-align:left; }
+  .nivel:hover { background: rgba(255,179,71,0.2); }
+  .nivel small { display:block; color:#8a8a9e; font-size:10px; margin-top:3px; }
+  #aviso { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:15;
+           font-size:26px; color: var(--acento); text-shadow:0 0 22px rgba(255,179,71,0.6);
+           display:none; text-align:center; }
+</style>
+</head>
+<body>
+
+<div id="lienzo"></div>
+
+<div class="panel" id="hud">
+  <h1>🦝 REGISTRO DE PLANTA</h1>
+  <div class="fila"><span>Nivel</span><b id="vNivel">—</b></div>
+  <div class="fila"><span>Registrados</span><b id="vRegistrados">0 / 0</b></div>
+  <div class="fila"><span>Linterna</span><b id="vLinterna">—</b></div>
+  <div class="fila"><span>Estado</span><b id="vEstado">Buscando</b></div>
+  <div class="fila"><span>Semilla</span><b id="vSemilla">—</b></div>
+</div>
+
+<div class="panel" id="ayuda">
+  A / D: caminar &nbsp;·&nbsp; ENTER o clic: registrar escondite &nbsp;·&nbsp; F: linterna &nbsp;·&nbsp; C: cine
+</div>
+
+<div id="aviso"></div>
+
+<div id="menu">
+  <div class="caja">
+    <h2>🦝 REGISTRO DE PLANTA</h2>
+    <p>Un mapache se ha escondido en una de las habitaciones de esta planta.
+       Recórrela y registra los escondites hasta dar con él.<br>
+       En los niveles a oscuras solo verás lo que alumbre tu linterna.</p>
+    <button class="nivel" onclick="empezar(1)">
+      ① Con luz
+      <small>La planta iluminada. Para aprender dónde está cada cosa.</small>
+    </button>
+    <button class="nivel" onclick="empezar(2)">
+      ② A oscuras
+      <small>Se va la luz. Linterna, y las pantallas y ventanas como única referencia.</small>
+    </button>
+    <button class="nivel" onclick="empezar(3)">
+      ③ A oscuras, con predador
+      <small>Algo más te busca a ti. Si te alcanza, se acabó.</small>
+    </button>
+  </div>
+</div>
+
+<!-- ⚠️ El juego estaba MUDO, y los 24 juegos de `games/` con él: ni una línea
+     de audio en toda la carpeta. Teníamos al lado `js/sfx.js` — 36 KB, 66
+     efectos sintetizados con Web Audio, sin un solo .wav — y CERO usuarios.
+     No es un script de módulo: publica `window.SFX`, así que va aquí arriba y
+     se usa con `SFX?.play()`, que no rompe nada si algún día no está. -->
+<script src="../js/sfx.js"></script>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "/vendor/three-0.160.0/build/three.module.js",
+    "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+    "@alisa-engine/": "../js/alisa-engine/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { AlisaRenderCore }           from '@alisa-engine/src/soma/AlisaRenderCore.js';
+import { AssetManager }              from '@alisa-engine/src/soma/AssetManager.js';
+import { ProceduralBuildingFactory } from '@alisa-engine/src/world/factories/ProceduralBuildingFactory.js';
+import { VolumetricsPlugin }         from '@alisa-engine/src/soma/plugins/VolumetricsPlugin.js';
+import { CinematicPipelinePlugin }   from '@alisa-engine/src/soma/plugins/CinematicPipelinePlugin.js';
+import { mulberry32 }                from '@alisa-engine/src/world/core/DeterministicScope.js';
+
+// ─── Núcleo de render ────────────────────────────────────────────────────
+const gfx = new AlisaRenderCore({
+    clearColor: 0x05050a,
+    cameraPosition: new THREE.Vector3(0, 4, 16),
+    autoRender: false,
+});
+document.getElementById('lienzo').appendChild(gfx.renderer.domElement);
+const escena = gfx.scene, camara = gfx.camera;
+
+// El cine: bloom + SSAO. Sin cielo ni luces propias — la iluminación ES la
+// mecánica de los niveles 2 y 3, igual que en el edificio corporativo.
+const cine = new CinematicPipelinePlugin({ preset:'night', sky:false, lights:false, ssao:true, bloom:true });
+gfx.registerPlugin(cine);
+let cineOn = true;
+const pintar = () => {
+    if (cineOn && cine.composer) cine.composer.render();
+    else gfx.renderer.render(escena, camara);
+    if (gfx.css3dRenderer) gfx.css3dRenderer.render(escena, camara);
+};
+
+// ─── Estado ──────────────────────────────────────────────────────────────
+const E = {
+    nivel: 1, semilla: 0, aOscuras: false, hayPredador: false,
+    escondites: [], registrados: 0, conMapache: -1,
+    terminado: false, linterna: true, energia: 100,
+    jugador: { x: 0, vx: 0 }, predador: { x: -14, activo: false },
+};
+const teclas = {};
+let fabrica = null, grupoJugador = null, hazLinterna = null, mallaPredador = null;
+
+// ─── Construir la planta ─────────────────────────────────────────────────
+function construirPlanta(nivel) {
+    E.nivel = nivel;
+    E.aOscuras   = nivel >= 2;
+    E.hayPredador = nivel === 3;
+    E.semilla = 1000 + nivel * 137;
+    const rnd = mulberry32(E.semilla);
+
+    // UNA sola planta. La fábrica ya hace las habitaciones detrás de cada
+    // puerta y devuelve sus escondites: no hay que inventar nada.
+    fabrica = new ProceduralBuildingFactory(escena, AssetManager);
+    fabrica.buildAll({
+        floors: 1,
+        doorsPerFloor: 5,
+        lightsOut: E.aOscuras,
+        stage: nivel,
+        camera: camara,
+        controls: gfx.controls,
+        characters: false,
+        // El ×20 del edificio corporativo es la corrección de r155 para una
+        // escena de SEIS plantas vistas de lejos. Aquí la cámara está dentro de
+        // UNA sola planta, así que esa misma corrección sobreexpone: sale todo
+        // blanco y el nivel "a oscuras" se ve mejor que el iluminado.
+        //
+        // A oscuras se baja más todavía: el juego consiste en no ver.
+        lightScale: E.aOscuras ? 3 : 8,
+    });
+
+    // Los escondites que la propia fábrica ha creado.
+    E.escondites = (fabrica.floors?.[0]?.hidingSpots ?? []).map(h => ({ ...h, registrado: false }));
+    if (!E.escondites.length) {          // sin escondites no hay juego que jugar
+        document.getElementById('vEstado').textContent = 'sin escondites';
+        return false;
+    }
+    E.conMapache = Math.floor(rnd() * E.escondites.length);
+    E.registrados = 0;
+    E.terminado = false;
+
+    ponerElectrodomesticos(rnd);
+    ponerJugador();
+    if (E.hayPredador) ponerPredador();
+    return true;
+}
+
+/**
+ * Tele, ventana y bombilla. Estos tres haces llevaban meses escritos en
+ * `VolumetricsPlugin` y NADIE los llamaba: solo se usaba 'fridge', y solo en el
+ * ascensor del edificio. Son la luz de referencia cuando se va la corriente.
+ */
+function ponerElectrodomesticos(rnd) {
+    const tipos = ['tv', 'window', 'bulb', 'fridge'];
+    E.escondites.forEach((h, i) => {
+        const tipo = tipos[i % tipos.length];
+        const haz = VolumetricsPlugin.createApplianceBeam(tipo);
+        haz.position.set(h.x + (rnd() - 0.5) * 1.2, 1.6, -1.4);
+        haz.rotation.x = -Math.PI / 2 + 0.35;
+        // Con luz apenas se notan; a oscuras son lo único que ves.
+        haz.material.opacity = (E.aOscuras ? 0.55 : 0.12) * haz.material.opacity;
+        escena.add(haz);
+    });
+}
+
+function ponerJugador() {
+    grupoJugador = new THREE.Group();
+    const cuerpo = new THREE.Mesh(
+        new THREE.CapsuleGeometry(0.28, 0.9, 4, 12),
+        new THREE.MeshStandardMaterial({ color: 0xffd9a0, roughness: 0.7 }));
+    cuerpo.position.y = 0.85;
+    grupoJugador.add(cuerpo);
+
+    // La linterna, con su cono volumétrico — la misma pieza que usa el edificio.
+    const foco = new THREE.SpotLight(0xfff0d0, 60, 22, Math.PI / 7, 0.45, 1.2);
+    foco.position.set(0, 1.4, 0);
+    foco.target.position.set(0, 0.9, -6);
+    grupoJugador.add(foco, foco.target);
+
+    const geo = new THREE.ConeGeometry(2.2, 11, 24, 1, true);
+    geo.translate(0, -5.5, 0); geo.rotateX(-Math.PI / 2);
+    hazLinterna = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+        map: VolumetricsPlugin.createBaseTexture(), blending: THREE.AdditiveBlending,
+        depthWrite: false, transparent: true, opacity: 0.35, side: THREE.DoubleSide }));
+    hazLinterna.position.set(0, 1.4, 0);
+    hazLinterna.rotation.x = -0.12;
+    grupoJugador.add(hazLinterna);
+    grupoJugador.userData.foco = foco;
+
+    E.jugador.x = 0;
+    escena.add(grupoJugador);
+}
+
+function ponerPredador() {
+    mallaPredador = new THREE.Mesh(
+        new THREE.CapsuleGeometry(0.34, 1.2, 4, 12),
+        new THREE.MeshStandardMaterial({ color: 0x220008, emissive: 0x660011,
+                                          emissiveIntensity: 0.7, roughness: 0.4 }));
+    mallaPredador.position.set(-16, 1.0, 0);
+    E.predador.x = -16;
+    E.predador.activo = true;
+    escena.add(mallaPredador);
+}
+
+// ─── Bucle ───────────────────────────────────────────────────────────────
+gfx.startLoop((dt) => {
+    if (!grupoJugador || E.terminado) return;
+
+    // Caminar
+    const v = 6.5;
+    if (teclas['a'] || teclas['arrowleft'])  E.jugador.x -= v * dt;
+    if (teclas['d'] || teclas['arrowright']) E.jugador.x += v * dt;
+    E.jugador.x = Math.max(-15, Math.min(15, E.jugador.x));
+    grupoJugador.position.x = E.jugador.x;
+
+    // La cámara sigue con retraso y se queda ATRÁS y ARRIBA: es la vista lateral
+    // de plataformas, y además es la que deja ver la planta como una sección
+    // —el encuadre de "13 Rue del Percebe"— en vez de meterse entre los muebles.
+    camara.position.x += (E.jugador.x - camara.position.x) * Math.min(1, dt * 3);
+    camara.position.y = 3.4;
+    camara.position.z = 15;
+    camara.lookAt(camara.position.x, 1.9, 0);
+
+    // La linterna gasta pilas y, sin energía, se apaga sola
+    if (E.linterna && E.aOscuras) {
+        E.energia = Math.max(0, E.energia - dt * 3.2);
+        if (E.energia <= 0) alternarLinterna(false);
+    }
+
+    // El predador te persigue, y solo si NO le alumbras: la FSM de emboscada
+    // del motor funciona igual — se detiene cuando le da la luz.
+    if (E.predador.activo && mallaPredador) {
+        const alumbrado = E.linterna &&
+              Math.abs(mallaPredador.position.x - E.jugador.x) < 7 &&
+              Math.sign(mallaPredador.position.x - E.jugador.x) === Math.sign(-1);
+        if (!alumbrado) {
+            E.predador.x += Math.sign(E.jugador.x - E.predador.x) * 2.1 * dt;
+            mallaPredador.position.x = E.predador.x;
+        }
+        mallaPredador.material.emissiveIntensity = 0.5 + Math.sin(performance.now() / 260) * 0.35;
+        if (Math.abs(E.predador.x - E.jugador.x) < 0.9) terminar(false, 'Te ha alcanzado');
+    }
+
+    actualizarHUD();
+}, pintar);
+
+// ─── Interacción ─────────────────────────────────────────────────────────
+function esconditeCercano() {
+    let mejor = null, d = 2.4;
+    E.escondites.forEach((h, i) => {
+        const dist = Math.abs(h.x - E.jugador.x);
+        if (dist < d && !h.registrado) { d = dist; mejor = i; }
+    });
+    return mejor;
+}
+
+function registrar() {
+    if (E.terminado) return;
+    const i = esconditeCercano();
+    if (i === null) { SFX?.play('error'); return; }   // nada a mano: se oye el fallo
+    E.escondites[i].registrado = true;
+    E.registrados++;
+    SFX?.play('door_open');                          // abrir un escondite
+    if (E.escondites[i].mesh) {
+        E.escondites[i].mesh.material.emissive?.setHex(0x224422);
+    }
+    if (i === E.conMapache) terminar(true, '¡Encontrado!');
+    else if (E.registrados >= E.escondites.length) terminar(false, 'No queda dónde mirar');
+    actualizarHUD();
+}
+
+function alternarLinterna(estado) {
+    const antes = E.linterna;
+    E.linterna = estado ?? !E.linterna;
+    if (E.energia <= 0) E.linterna = false;
+    if (E.linterna !== antes) SFX?.play('toggle');
+    const foco = grupoJugador?.userData?.foco;
+    if (foco) foco.intensity = E.linterna ? 60 : 0;
+    if (hazLinterna) hazLinterna.visible = E.linterna;
+    actualizarHUD();
+}
+
+function terminar(ganado, texto) {
+    E.terminado = true;
+    SFX?.play(ganado ? 'level_complete' : 'game_over');
+    const a = document.getElementById('aviso');
+    a.textContent = (ganado ? '🦝 ' : '💀 ') + texto;
+    a.style.display = 'block';
+    document.getElementById('vEstado').textContent = ganado ? 'encontrado' : 'perdido';
+}
+
+function actualizarHUD() {
+    document.getElementById('vNivel').textContent = ['—','① con luz','② a oscuras','③ predador'][E.nivel];
+    document.getElementById('vRegistrados').textContent = `${E.registrados} / ${E.escondites.length}`;
+    document.getElementById('vLinterna').textContent = E.aOscuras
+        ? (E.linterna ? `ON  ${Math.round(E.energia)}%` : 'OFF') : 'no hace falta';
+    document.getElementById('vSemilla').textContent = E.semilla;
+}
+
+window.addEventListener('keydown', (e) => {
+    const k = e.key.toLowerCase();
+    teclas[k] = true;
+    if (k === 'enter') registrar();
+    if (k === 'f') alternarLinterna();
+    if (k === 'c') cineOn = !cineOn;
+});
+window.addEventListener('keyup', (e) => { teclas[e.key.toLowerCase()] = false; });
+gfx.renderer.domElement.addEventListener('pointerdown', registrar);
+
+window.empezar = (nivel) => {
+    // El navegador solo deja abrir el audio dentro de un gesto del usuario, y
+    // pulsar "empezar" ES ese gesto. Aquí o en ningún sitio.
+    SFX?.init();
+    SFX?.play('menu_close');
+    document.getElementById('menu').style.display = 'none';
+    document.getElementById('aviso').style.display = 'none';
+    E.energia = 100; E.linterna = true;
+    if (construirPlanta(nivel)) actualizarHUD();
+    // El tercer nivel trae predador: que se oiga que algo ha cambiado.
+    if (nivel === 3) setTimeout(() => SFX?.play('predator_alert'), 700);
+};
+
+// Para poder comprobarlo desde fuera: una entrada humana que no se puede
+// verificar es una que no sabes si funciona.
+window.__juego = E;
+window.gfx = gfx;
+</script>
+</body>
+</html>

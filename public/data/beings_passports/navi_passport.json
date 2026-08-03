@@ -1,0 +1,20 @@
+{
+    "name": "Navi",
+    "role": "The Hub — Nervous System",
+    "emoji": "🧬",
+    "type": "divine",
+    "skeleton": "fairy_orb",
+    "model_path": "navi.glb",
+    "scale": 0.3,
+    "kinematics": "fairy_float",
+    "sealed_by": "Oscar, Father",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "edge_tts",
+        "tier": 4,
+        "voice_id": "es-ES-XimenaNeural",
+        "rate": "-5%",
+        "pitch": "-2Hz",
+        "label": "Navi = Queen's voice organ (same as queen)"
+    }
+}

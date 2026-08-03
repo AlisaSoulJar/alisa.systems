@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA Arcade — Texas Hold'em</title>
+    <link rel="stylesheet" href="css/arcade.css">
+    
+    <script src="/vendor/three-r128/three.min.js"></script>
+    <script src="/vendor/three-r128/OrbitControls.js"></script>
+    <script src="/vendor/tween/tween.umd.js"></script>
+    
+    <link rel="stylesheet" href="css/card_hud.css">
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+    <div id="canvas-container"></div>
+    <div id="hud-container"></div>
+
+    <!-- Las reglas, dentro del navegador. Texas Hold'em heads-up a límite fijo:
+         cuatro acciones (fold/check/call/raise), que es lo que permite que una
+         partida se re-simule exactamente. Va ANTES del visualizador para que
+         `window.ALISA_PROTOHUB` exista cuando el motor lo busque. -->
+    <script type="module">
+        import { ProtoHub }  from './js/protohub/ProtoHub.js';
+        import { crearPoker } from './js/protohub/rules/poker.js';
+        window.ALISA_PROTOHUB = new ProtoHub().registrar('poker', await crearPoker());
+    </script>
+    <script src="js/arcade_mats.js"></script>
+    <script src="js/SovereignCardEngine.js"></script>
+    <script src="js/poker_visualizer.js"></script>
+</body>
+</html>

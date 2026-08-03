@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA - Anatomy Lab (Quirófano)</title>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/three-0.160.0/build/three.module.js",
+            "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+            "@alisa-engine/": "../js/alisa-engine/"
+        }
+    }
+    </script>
+
+    <style>
+        @import url('/vendor/fonts/fuentes.css');
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #05050a; font-family: 'JetBrains Mono', 'Courier New', monospace; }
+        #canvas-container { width: 100%; height: 100%; display: block; }
+
+        #hud-top {
+            position: absolute; top: 20px; left: 20px; color: #00ffff;
+            text-shadow: 0 0 10px rgba(0,255,255,0.5), 0 0 30px rgba(0,255,255,0.2); pointer-events: none; z-index: 100;
+        }
+        h1 { font-size: 22px; margin: 0; font-weight: 700; letter-spacing: 3px; }
+        .subtitle { font-size: 10px; opacity: 0.6; letter-spacing: 5px; margin-top: 6px; font-weight: 300; }
+
+        #log-panel {
+            position: absolute; bottom: 20px; left: 20px;
+            width: 420px; height: 170px; overflow-y: auto;
+            color: #0a0; font-size: 11px;
+            background: rgba(0, 8, 0, 0.8); border: 1px solid rgba(0,255,0,0.4);
+            padding: 12px; border-left: 3px solid #0f0;
+            box-shadow: 0 0 20px rgba(0,255,0,0.1), inset 0 0 30px rgba(0,20,0,0.5); z-index: 100;
+            backdrop-filter: blur(4px);
+        }
+        #log-panel p { margin: 2px 0; line-height: 1.4; }
+        .log-highlight { color: #00ffff; font-weight: 700; text-shadow: 0 0 6px rgba(0,255,255,0.4); }
+
+        #status-panel {
+            position: absolute; top: 20px; right: 20px;
+            width: 300px;
+            background: rgba(0, 8, 15, 0.88); border: 1px solid rgba(0,255,255,0.4);
+            padding: 16px; color: #fff;
+            box-shadow: 0 0 30px rgba(0,255,255,0.12), inset 0 0 40px rgba(0,20,40,0.4);
+            border-right: 3px solid #00ffff; z-index: 100;
+            backdrop-filter: blur(4px);
+        }
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 11px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 5px; }
+        .stat-val { color: #00ffff; font-weight: 700; text-shadow: 0 0 4px rgba(0,255,255,0.3); }
+
+        #progress-bar {
+            width: 100%; height: 4px; background: rgba(255,255,255,0.08); margin-top: 12px; border-radius: 2px; overflow: hidden;
+        }
+        #progress-fill {
+            width: 0%; height: 100%; background: linear-gradient(90deg, #00ffff, #00ff88); transition: width 0.3s ease;
+            box-shadow: 0 0 8px rgba(0,255,255,0.5);
+        }
+
+        .btn {
+            position: absolute; bottom: 20px; right: 20px;
+            background: rgba(0,255,0,0.05); color: #0f0; border: 1px solid rgba(0,255,0,0.5);
+            padding: 14px 28px; font-family: 'JetBrains Mono', monospace; font-size: 13px;
+            cursor: pointer; text-transform: uppercase; letter-spacing: 3px;
+            transition: all 0.3s; z-index: 100;
+            box-shadow: 0 0 15px rgba(0,255,0,0.1);
+        }
+        .btn:hover { background: rgba(0,255,0,0.9); color: #000; box-shadow: 0 0 30px rgba(0,255,0,0.5); }
+
+        .scanner-flash {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: radial-gradient(ellipse at center, rgba(0,255,255,0.2) 0%, transparent 70%); pointer-events: none;
+            opacity: 0; transition: opacity 0.15s; z-index: 50;
+        }
+
+        .impact-flash {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: radial-gradient(ellipse at center, rgba(255,170,0,0.15) 0%, transparent 60%); pointer-events: none;
+            opacity: 0; transition: opacity 0.08s; z-index: 50;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scanner-flash" id="flash"></div>
+    <div class="impact-flash" id="impact-flash"></div>
+
+    <div id="hud-top">
+        <h1>🏭 PYGMALION GIGAFACTORY</h1>
+        <div class="subtitle">SOVEREIGN SKELETAL INJECTION · PHASE 2</div>
+    </div>
+
+    <div id="status-panel">
+        <div class="stat-row"><span>SYSTEM_STATE:</span> <span class="stat-val" id="ui-state">IDLE</span></div>
+        <div class="stat-row"><span>PYGMALION.FSM:</span> <span class="stat-val" id="ui-fsm" style="color:#ffaa00">BOOTING</span></div>
+        <div class="stat-row"><span>TARGET_ASSET:</span> <span class="stat-val" id="ui-asset">—</span></div>
+        <div class="stat-row"><span>KATAMARI_TIER:</span> <span class="stat-val" id="ui-tier">—</span></div>
+        <div class="stat-row"><span>SOCKET_NODES:</span> <span class="stat-val" id="ui-nodes">0</span></div>
+        <div class="stat-row"><span>PROCESSED:</span> <span class="stat-val" id="ui-count">0</span></div>
+        <div id="progress-bar"><div id="progress-fill"></div></div>
+    </div>
+
+    <div id="log-panel"></div>
+
+    <div id="control-panel" style="position: absolute; bottom: 85px; right: 20px; display: flex; gap: 10px; z-index: 100;">
+        <button class="btn" style="padding: 10px 14px; position: relative; bottom: auto; right: auto; font-size: 11px;" onclick="window.testRig('auto')">L: AUTO</button>
+        <button class="btn" style="padding: 10px 14px; position: relative; bottom: auto; right: auto; font-size: 11px;" onclick="window.testRig('idle')">L: IDLE</button>
+        <button class="btn" style="padding: 10px 14px; position: relative; bottom: auto; right: auto; font-size: 11px;" onclick="window.testRig('hover')">L: HOVER</button>
+        <button class="btn" style="padding: 10px 14px; position: relative; bottom: auto; right: auto; font-size: 11px;" onclick="window.testRig('scan')">L: SCAN</button>
+    </div>
+
+    <button class="btn" onclick="startFactory()" id="btn-start">⚡ Boot Gigafactory</button>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+        import { PygmalionTopologySystem } from '@alisa-engine/src/extensions/alisa-colony/avatar-pipeline/PygmalionTopologySystem.js';
+        import { PygmalionEnvironmentFactory } from '@alisa-engine/src/extensions/avatar-pipeline/PygmalionEnvironmentFactory.js';
+        const logPanel = document.getElementById('log-panel');
+        function log(msg, highlight=false) {
+            const p = document.createElement('p');
+            const time = new Date().toLocaleTimeString('en-US', { hour12: false, hour: "numeric", minute: "numeric", second: "numeric" });
+            p.innerHTML = `<span style="color:#555">[${time}]</span> ${highlight ? `<span class="log-highlight">${msg}</span>` : msg}`;
+            logPanel.appendChild(p);
+            logPanel.scrollTop = logPanel.scrollHeight;
+        }
+
+        function setUI(state, asset, tier, nodes) {
+            if(state !== undefined) document.getElementById('ui-state').innerText = state;
+            if(asset !== undefined) document.getElementById('ui-asset').innerText = asset.length > 22 ? asset.substring(0, 20) + '…' : asset;
+            if(tier !== undefined) document.getElementById('ui-tier').innerText = tier;
+            if(nodes !== undefined) document.getElementById('ui-nodes').innerText = nodes;
+        }
+
+        function flashImpact() {
+            const f = document.getElementById('impact-flash');
+            f.style.opacity = '1';
+            setTimeout(() => f.style.opacity = '0', 120);
+        }
+
+        function setProgress(pct) {
+            document.getElementById('progress-fill').style.width = Math.min(100, pct) + '%';
+        }
+
+        const engine = new AlisaRenderCore({
+            clearColor: 0x05050a, 
+            fogColor: 0x050810,
+            fogDensity: 0.015,
+            cameraPosition: new THREE.Vector3(15, 10, 15)
+        });
+        engine.controls.target.set(0, 8, 0);
+
+        const pmremGenerator = new THREE.PMREMGenerator(engine.renderer);
+        pmremGenerator.compileEquirectangularShader();
+        const synthScene = new THREE.Scene();
+        synthScene.background = new THREE.Color(0x020205); 
+        
+        const studioLightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const tube1 = new THREE.Mesh(new THREE.SphereGeometry(2, 16, 16), studioLightMat);
+        tube1.position.set(0, 10, 5);
+        synthScene.add(tube1);
+        
+        const tube2 = new THREE.Mesh(new THREE.PlaneGeometry(10, 2), studioLightMat);
+        tube2.position.set(-8, 5, -5);
+        tube2.lookAt(0, 0, 0);
+        synthScene.add(tube2);
+
+        engine.scene.environment = pmremGenerator.fromScene(synthScene).texture;
+
+        const renderPass = new RenderPass(engine.scene, engine.camera);
+        const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.5, 0.96);
+        const composer = new EffectComposer(engine.renderer);
+        composer.addPass(renderPass);
+        composer.addPass(bloomPass);
+        
+        window.addEventListener('resize', () => {
+            composer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        const envFactory = new PygmalionEnvironmentFactory(engine.scene, engine);
+        envFactory.buildAll();
+        const pygmalion = new PygmalionTopologySystem(engine, envFactory, setUI, log, flashImpact, setProgress);
+        window.testRig = function(state) {
+            pygmalion.testRigMode = state;
+            if (state === 'idle') pygmalion.currentAsset = null;
+            else if (state === 'scan') {
+                if (!pygmalion.currentAsset) pygmalion.currentAsset = new THREE.Object3D();
+                pygmalion.currentAsset.position.set(0, 0.5, 0);
+            }
+            log(`[TEST RIG] Kinematic mode: ${state}`, true);
+        };
+
+        window.startFactory = function() {
+            document.getElementById('btn-start').style.display = 'none';
+            log("⚡ PYGMALION GIGAFACTORY Online. Sovereign surgical protocols armed.", true);
+            pygmalion.boot();
+        }
+
+        let elapsed = 0;
+        engine.startLoop((dt) => {
+            elapsed += dt;
+            pygmalion.tick(dt, elapsed);
+        }, () => {
+            composer.render();
+        });
+    </script>
+</body>
+</html>
+
+
+

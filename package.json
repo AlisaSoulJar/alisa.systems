@@ -1,0 +1,75 @@
+{
+  "name": "alisa-engine",
+  "version": "1.0.0",
+  "description": "Motor 3D ligero con puerta al gym: el mismo entorno para politicas numericas, agentes LLM y humanos, y una partida que se verifica volviendola a jugar.",
+  "//type": "Todo el codigo son modulos ES. Sin esto node los reparsea y avisa por consola en CADA runner del gym, que para un producto publico es ruido y ademas cuesta rendimiento.",
+  "type": "module",
+
+  "//entradas": "`main` apuntaba a `index.js`, un fichero que NO EXISTE. Un paquete cuyo punto de entrada no existe no se puede importar: `import 'alisa-engine'` fallaba y nadie lo habia probado porque aqui todo se carga por ruta desde el navegador. Ahora apunta al indice real del motor y se declaran las tres puertas por separado.",
+  "main": "./public/js/alisa-engine/src/index.js",
+  "module": "./public/js/alisa-engine/src/index.js",
+  "exports": {
+    ".": "./public/js/alisa-engine/src/index.js",
+    "./gym": "./public/js/alisa-engine/src/gym/registro.js",
+    "./gym/env": "./public/js/alisa-engine/src/gym/GymEnv.js",
+    "./verificador": "./public/arcade/js/protohub/Verificador.js",
+    "./reglas/*": "./public/arcade/js/protohub/rules/*.js"
+  },
+
+  "//files": "Lo que viaja a npm. `dist_publico/` no entra: es el SITIO, y se reconstruye con `npm run empaquetar`.",
+  "files": [
+    "public/js/alisa-engine/src",
+    "public/arcade/js/protohub",
+    "public/arcade/data/card_library.json",
+    "README.md",
+    "LICENSE"
+  ],
+
+  "scripts": {
+    "//test": "La tesis del proyecto es que una partida se verifica volviendola a jugar. Que `npm test` dijera 'no test specified' era, ademas de feo, incoherente. Ahora corre las dos comprobaciones que sostienen el argumento.",
+    "//test2": "`check_gym_envs.mjs` ya existia y no lo corria nadie: comprueba los 5 entornos NATIVOS (los que tienen fisica propia), que es justo lo que `prueba_funcion.mjs` no toca — ese cubre los 11 del ProtoHub. Juntos cubren los 16.",
+    "//test3": "`prueba_reglas.mjs` cubre lo que faltaba: LAS REGLAS. Se anadieron cinco juegos en una tarde y sus pruebas vivian en una carpeta temporal. Al escribirla encontro un `Math.random()` en el rival de casa del ajedrez y del xiangqi: la misma semilla daba partidas distintas.",
+    "//calibrar": "Aparte de `test` a proposito: `test` comprueba que los juegos FUNCIONAN y `calibrar` que MIDEN, que no es lo mismo y tarda mas. Destapo con el que el ajedrez, las damas y el xiangqi no publicaban marcador —valian 0 en toda partida, jugara quien jugara— y que el rival de casa de las damas coincidia con la politica tonta en las 600 jugadas.",
+    "test": "node prueba_reglas.mjs && node check_gym_envs.mjs && node prueba_funcion.mjs && python preflight.py",
+    "calibrar": "node calibrar.mjs 120",
+    "//tabla": "La clasificacion. Las lineas base juegan MUCHAS mas semillas que los modelos porque no cuestan tokens: el metro se mide con mas partidas que lo que se mide con el. Cada partida se re-simula antes de contarse, y los juegos cuyo hueco no supera al ruido salen de la media con el motivo puesto.",
+    "tabla": "node tabla.mjs --semillas 15 --semillas-base 120 --tope 200 --md docs/clasificacion.md",
+    "//agente": "Un modelo jugando por la puerta de lenguaje. `--modelo eco` no llama a nadie: es el control del arnes y DEBE coincidir con la politica tonta de `calibrar`.",
+    "agente": "node jugar_llm.mjs --modelo eco --semillas 3 --tope 400",
+    "verificar": "node servidor_verificador.mjs",
+    "censo": "python censo.py",
+    "empaquetar": "python empaquetar.py",
+    "secretos": "python check_secretos.py",
+    "build": "vite build",
+    "serve": "python servir.py",
+    "serve:paquete": "python servir.py 8010 dist_publico"
+  },
+
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlisaSoulJar/alisa.systems.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AlisaSoulJar/alisa.systems/issues"
+  },
+  "homepage": "https://github.com/AlisaSoulJar/alisa.systems#readme",
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "three": "^0.184.0",
+    "vite": "^8.0.10"
+  },
+  "keywords": [
+    "game-engine",
+    "threejs",
+    "gym",
+    "benchmark",
+    "llm-agents",
+    "reinforcement-learning",
+    "verifiable",
+    "webgl"
+  ]
+}

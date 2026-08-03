@@ -1,0 +1,12 @@
+{
+    "name": "Gimli",
+    "role": "Conversation Gold Miner",
+    "emoji": "❔",
+    "type": "biological",
+    "skeleton": "biped",
+    "model_path": "gimli.glb",
+    "scale": 1.0,
+    "kinematics": "humanoid_walk",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED"
+}

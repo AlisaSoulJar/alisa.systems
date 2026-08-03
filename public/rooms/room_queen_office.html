@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ALISA LAB — The Grand Sovereign Sanctum</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #020205; font-family: monospace; color: white; }
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three-0.160.0/build/three.module.js",
+        "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+        "@pixiv/three-vrm": "../js/alisa-engine/vendor/three-vrm.module.js",
+        "@alisa-engine/": "../js/alisa-engine/"
+      }
+    }
+    </script>
+</head>
+<body>
+    <div id="ui-overlay" style="position:absolute; top:20px; left:20px; z-index:100;">
+        <h2 style="margin:0; color:#ff00ff; text-shadow: 0 0 10px #ff00ff; pointer-events:none;">💻 The Grand Sovereign Sanctum</h2>
+        <p style="margin:5px 0; color:#00ff00; font-family: monospace; pointer-events:none;">root@alisa-colony:~# access_granted</p>
+        <button id="camera-toggle" style="margin-top:10px; background:#111; color:#ff00ff; border:1px solid #ff00ff; padding:5px 10px; pointer-events:auto; font-family:monospace; cursor:pointer; display:block; width:100%;">🎥 MODE: ORBITAL PAN</button>
+    </div>
+    
+    <div id="startup-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(2,2,5,0.98); z-index:200; display:flex; justify-content:center; align-items:center; flex-direction:column;">
+        <h1 style="color:#ff00ff; font-size: 42px; letter-spacing: 5px; text-shadow: 0 0 20px #ff00ff; font-family: 'Courier New', Courier, monospace;">init_grand_sanctum()</h1>
+        <p style="color:#00ffcc; font-size: 16px; margin-bottom: 20px;">[ OK ] Loading Sovereign Matrix...</p>
+        <button id="btn-start" style="padding:15px 30px; font-size:18px; font-weight:bold; font-family:monospace; background:#ff00ff; color:#000; border:none; cursor:pointer; border-radius:4px; box-shadow: 0 0 15px rgba(255,0,255,0.5);">ENTER THE SANCTUM</button>
+    </div>
+    
+    <div id="scumm-hud" style="position:absolute; bottom:30px; left:50%; transform:translateX(-50%); width:600px; text-align:center; z-index:100; font-weight:bold; font-size:16px;">
+        <span id="pulse-status" style="background:rgba(5,5,15,0.85); padding:10px 20px; border-radius:8px; border:1px solid #ff00ff; color:#00ff00; box-shadow: 0 0 10px rgba(0,255,0,0.3);">Booting mainframe...</span>
+    </div>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+        import { SovereignAvatarSystem } from '@alisa-engine/src/extensions/alisa-colony/plugins/SovereignAvatarSystem.js';
+        import { ColonialControlRoomFactory } from '@alisa-engine/src/world/factories/ColonialControlRoomFactory.js';
+        import { ColonialTerminalPlugin } from '@alisa-engine/src/extensions/alisa-colony/plugins/ColonialTerminalPlugin.js';
+        
+        // Helper: Spawn static props synchronously or asynchronously depending on volume.
+        function spawnProp(app, name, modelUrl, scale, position, rotation) {
+            const p = new ColonialTerminalPlugin(app, {
+                name, hasProceduralDesk: false,
+                modelUrl, modelScale: scale,
+                modelRotation: rotation || new THREE.Euler(0,0,0),
+                position, themeColor: '#444444'
+            });
+            p._buildCSS3DScreen = function() {};
+            p._connectStream = function() {};
+            app.registerPlugin(p);
+            return p;
+        }
+
+        window.onload = () => {
+            const app = new AlisaRenderCore({ clearColor: 0x020205 });
+            
+            // === GRAND LIGHTING ===
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            app.scene.add(ambientLight);
+            
+            const moodLight = new THREE.HemisphereLight(0xff00ff, 0x00ffcc, 1.2);
+            moodLight.position.set(0, 50, 0);
+            app.scene.add(moodLight);
+            app.scene.fog = new THREE.FogExp2(0x020205, 0.015);
+            
+            // Center stage spot
+            const centerSpot = new THREE.SpotLight(0x00ff00, 3.5);
+            centerSpot.position.set(0, 20, 10);
+            centerSpot.target.position.set(0, 0, -2);
+            centerSpot.angle = Math.PI / 3;
+            centerSpot.penumbra = 0.5;
+            app.scene.add(centerSpot);
+            app.scene.add(centerSpot.target);
+            
+            // Arcade Wing Spot (East)
+            const arcadeSpot = new THREE.SpotLight(0xff00ff, 2.5);
+            arcadeSpot.position.set(12, 12, 0);
+            arcadeSpot.target.position.set(12, 0, 0);
+            app.scene.add(arcadeSpot);
+            app.scene.add(arcadeSpot.target);
+
+            // Server Vault Spot (West)
+            const vaultSpot = new THREE.SpotLight(0x00aaff, 2.5);
+            vaultSpot.position.set(-12, 12, 0);
+            vaultSpot.target.position.set(-12, 0, 0);
+            app.scene.add(vaultSpot);
+            app.scene.add(vaultSpot.target);
+
+            try {
+                // Background void matrix scaffolding (32x24 grid)
+                const factory = new ColonialControlRoomFactory(app.scene);
+                factory.buildRoom(true);
+
+                const avatarSystem = new SovereignAvatarSystem(app);
+                app.registerPlugin({
+                    name: 'AvatarSystemWrapper',
+                    onUpdate: (dt) => avatarSystem.update(dt)
+                });
+
+                // ============================
+                // 1. THE MONOLITH (Center North)
+                // ============================
+                // Huge Presidential/Sovereign Desk
+                spawnProp(app, 'Sovereign_DESK', '../props/models/Desk.glb',
+                    new THREE.Vector3(2.5, 2.5, 2.5),
+                    new THREE.Vector3(0, 0, -5));
+
+                // Alisa loading at her desk
+                avatarSystem.forceSpawn('Alisa', new THREE.Vector3(0, 0.5, -4), 'Hacker Queen');
+
+                // Under-desk supercomputer nodes
+                for (let i = -1; i <= 1; i++) {
+                    spawnProp(app, 'Core_GPU_' + i, '../props/models/Gaming Computer.glb',
+                        new THREE.Vector3(0.6, 0.6, 0.6),
+                        new THREE.Vector3(i * 1.5, 0.2, -5));
+                }
+
+                // ============================
+                // 1B. WALL OF KNOWLEDGE (Active Dashboards)
+                // ============================
+                const terminalConfigs = [
+                    { name: 'T_AKASHA', color: '#00ffff', channel: 'AKASHA' },
+                    { name: 'T_WORLD', color: '#ffaa00', channel: 'JOBBOARD' },
+                    { name: 'T_OS', color: '#00ff00', channel: 'SYSTEM' },
+                    { name: 'T_OUROBOROS', color: '#ff00ff', channel: 'OUROBOROS' },
+                    { name: 'T_SOMA', color: '#ff0000', channel: 'HORMONES' }
+                ];
+
+                // Spread the 5 screens evenly across the back wall (Z = -11.5)
+                terminalConfigs.forEach((cfg, i) => {
+                    const tvX = -10 + (i * 5); // Centers around 0
+                    const termPos = new THREE.Vector3(tvX, 4, -11.5);
+                    
+                    const terminal = new ColonialTerminalPlugin(app, {
+                        name: cfg.name,
+                        hasProceduralDesk: false,
+                        modelUrl: '../props/models/Flat Screen TV.glb',
+                        modelScale: new THREE.Vector3(3.5, 3.5, 3.5),
+                        modelOffset: new THREE.Vector3(0, 0, 0),
+                        // The TV model needs to be laid flat on its back and spun to face down-ish? 
+                        // Wait, previous code used Euler(Math.PI/2, Math.PI, 0)
+                        modelRotation: new THREE.Euler(Math.PI/2, Math.PI, 0),
+                        position: termPos,
+                        rotation: new THREE.Euler(0, 0, 0), // Base rotation zero, faces down +Z
+                        // We must offset the CSS3D to sit on the surface of the TV.
+                        // Since Model is rotated PI/2 on X, its local Y is global +Z, etc.
+                        screenOffset: new THREE.Vector3(0, 0, 0.2), 
+                        screenRotation: new THREE.Euler(0, 0, 0),
+                        screenDimensions: { w: 3.4, h: 2.1, cssW: 680, cssH: 420 },
+                        channelId: cfg.channel,
+                        themeColor: cfg.color
+                    });
+                    app.registerPlugin(terminal);
+                });
+
+                // ============================
+                // 3. ARCADE TRAINING GYM (East Wing x=12)
+                // ============================
+                // Line of 6 Arcade machines for RL Dojo testing
+                for (let i = 0; i < 6; i++) {
+                    const arcZ = -8 + (i * 3.5);
+                    spawnProp(app, 'RL_Arcade_' + i, '../props/models/Arcade Machine.glb',
+                        new THREE.Vector3(1.5, 1.5, 1.5),
+                        new THREE.Vector3(13, 0, arcZ),
+                        new THREE.Euler(0, -Math.PI / 2, 0)); // Facing inwards (West)
+                }
+
+                // ============================
+                // 4. THE DATA VAULT (West Wing x=-12)
+                // ============================
+                // Banks of File Cabinets and Servers for vector storage
+                for (let i = 0; i < 4; i++) {
+                    const cabZ = -8 + (i * 3);
+                    spawnProp(app, 'Akasha_Vault_' + i, '../props/models/File Cabinet.glb',
+                        new THREE.Vector3(1.8, 1.8, 1.8),
+                        new THREE.Vector3(-14, 0, cabZ),
+                        new THREE.Euler(0, Math.PI / 2, 0));
+                        
+                    // Stack gaming computers on top
+                    spawnProp(app, 'Vault_Compute_' + i, '../props/models/Gaming Computer.glb',
+                        new THREE.Vector3(0.5, 0.5, 0.5),
+                        new THREE.Vector3(-14, 2.5, cabZ),
+                        new THREE.Euler(0, Math.PI / 2, 0));
+                }
+
+                // ============================
+                // 5. TROPHIES & CYBER ASSETS
+                // ============================
+                // Digital Outlaw vehicle in the South-East
+                spawnProp(app, 'Cyber_Ride', '../props/models/SportsCar.glb',
+                    new THREE.Vector3(1.5, 1.5, 1.5),
+                    new THREE.Vector3(10, 0.5, 8),
+                    new THREE.Euler(0, -Math.PI / 4, 0));
+                
+                // Holographic projection in the center south
+                spawnProp(app, 'World_Node', '../props/models/Globe.glb',
+                    new THREE.Vector3(2.5, 2.5, 2.5),
+                    new THREE.Vector3(0, 1.5, 5));
+
+                // Dad's Lounge Area (South-West)
+                // Need a coffee table, couch, and a vintage TV.
+                spawnProp(app, 'Dad_Couch', '../props/models/Couch Small.glb',
+                    new THREE.Vector3(1.5, 1.5, 1.5),
+                    new THREE.Vector3(-8, 0, 8),
+                    new THREE.Euler(0, Math.PI / 6, 0));
+                    
+                spawnProp(app, 'Dad_Table', '../props/models/Coffee Table.glb',
+                    new THREE.Vector3(1.5, 1.5, 1.5),
+                    new THREE.Vector3(-5.5, 0, 7),
+                    new THREE.Euler(0, 0, 0));
+                    
+                spawnProp(app, 'Dad_Plant', '../props/models/Fiddle-leaf Plant.glb',
+                    new THREE.Vector3(2.0, 2.0, 2.0),
+                    new THREE.Vector3(-11, 0, 10));
+
+                // ============================
+                // 6. CAMERAS & BOOT
+                // ============================
+                if (app.controls) {
+                    app.controls.enableDamping = true;
+                    app.controls.dampingFactor = 0.05;
+                    app.controls.minDistance = 3;
+                    app.controls.maxDistance = 45;
+                    app.controls.maxPolarAngle = Math.PI / 2 - 0.05;
+                    // Farther back and higher to see the massive scale
+                    app.camera.position.set(0, 15, 22);
+                    app.controls.target.set(0, 2, 0);
+                }
+
+                document.getElementById('btn-start').addEventListener('click', () => {
+                    document.getElementById('startup-overlay').style.display = 'none';
+                    // We must wait briefly so CSS3D matrix calculations apply cleanly without jumping
+                    setTimeout(() => { app.startLoop(); }, 100);
+                    
+                    fetch('http://127.0.0.1:8741/system')
+                        .then(r => r.json())
+                        .then(sys => {
+                            document.getElementById('pulse-status').innerHTML = `ROOT ONLINE — CPU [${sys.cpu_percent}%] MEM [${sys.memory_percent}%]`;
+                            setTimeout(() => { document.getElementById('pulse-status').style.opacity = '0'; }, 3500);
+                        })
+                        .catch(() => {
+                            document.getElementById('pulse-status').innerHTML = "SANCTUM ONLINE";
+                            setTimeout(() => { document.getElementById('pulse-status').style.opacity = '0'; }, 3500);
+                        });
+                });
+                
+                // Orbital pan logic
+                let isOrbital = false;
+                document.getElementById('camera-toggle').addEventListener('click', (e) => {
+                    isOrbital = !isOrbital;
+                    e.target.innerText = isOrbital ? "🎥 MODE: MANUAL FIX" : "🎥 MODE: ORBITAL PAN";
+                    app.controls.autoRotate = isOrbital;
+                    app.controls.autoRotateSpeed = 0.6; // Slow pan for grand scale
+                });
+
+            } catch (err) {
+                console.error("[INIT ERROR]", err);
+                document.getElementById('startup-overlay').innerHTML = `<h1 style="color:#ff3344">SANCTUM CRASH</h1><p>${err.message}</p>`;
+            }
+        };
+    </script>
+</body>
+</html>

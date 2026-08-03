@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA Arcade — STOCHASTIC CASINO</title>
+    <link rel="stylesheet" href="css/arcade.css">
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+    <header>
+        <div class="subtitle">Probability & Variance Labs</div>
+        <h1>STOCHASTIC CASINO</h1>
+    </header>
+    <main class="arcade-grid">
+        <a href="backgammon.html" class="arcade-card" data-game="backgammon">
+            <div class="card-header">
+                <div class="game-icon">🎲</div>
+                <div class="status-badge" data-state="offline"><div class="dot"></div> querying</div>
+            </div>
+            <div class="card-body">
+                <h2>Backgammon</h2>
+                <p>Dice-driven race enforcing MDPs.</p>
+            </div>
+            <div class="card-footer">
+                <div class="api-endpoint">/arcade/backgammon/move</div>
+                <div class="players"></div>
+            </div>
+        </a>
+        <a href="poker.html" class="arcade-card" data-game="poker">
+            <div class="card-header">
+                <div class="game-icon">♠️</div>
+                <div class="status-badge" data-state="offline"><div class="dot"></div> querying</div>
+            </div>
+            <div class="card-body">
+                <h2>Texas Hold'em</h2>
+                <p>Multi-agent GTO bluffing.</p>
+            </div>
+            <div class="card-footer">
+                <div class="api-endpoint">/arcade/poker/move</div>
+                <div class="players"></div>
+            </div>
+        </a>
+        <a href="blackjack.html" class="arcade-card" data-game="blackjack">
+            <div class="card-header">
+                <div class="game-icon">🃏</div>
+                <div class="status-badge" data-state="offline"><div class="dot"></div> querying</div>
+            </div>
+            <div class="card-body">
+                <h2>Blackjack</h2>
+                <p>Card counting and risk.</p>
+            </div>
+            <div class="card-footer">
+                <div class="api-endpoint">/arcade/blackjack/move</div>
+                <div class="players"></div>
+            </div>
+        </a>
+        <a href="usura.html" class="arcade-card" data-game="usura">
+            <div class="card-header">
+                <div class="game-icon">🃏</div>
+                <div class="status-badge" data-state="offline"><div class="dot"></div> querying</div>
+            </div>
+            <div class="card-body">
+                <h2>Usura</h2>
+                <p>Roguelike deckbuilder mechanics.</p>
+            </div>
+            <div class="card-footer">
+                <div class="api-endpoint">/arcade/usura/move</div>
+                <div class="players"></div>
+            </div>
+        </a>
+        <a href="grimorio.html" class="arcade-card" data-game="grimorio">
+            <div class="card-header">
+                <div class="game-icon">🔮</div>
+                <div class="status-badge" data-state="offline"><div class="dot"></div> querying</div>
+            </div>
+            <div class="card-body">
+                <h2>Grimorio Synergy</h2>
+                <p>Complex state machine logic.</p>
+            </div>
+            <div class="card-footer">
+                <div class="api-endpoint">/arcade/grimorio/move</div>
+                <div class="players"></div>
+            </div>
+        </a>
+    </main>
+    <script src="js/arcade_core.js"></script>
+</body>
+</html>

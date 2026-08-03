@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA — Chopper Aquarium (OpenCore)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { overflow: hidden; background: #010205; font-family: 'JetBrains Mono', monospace; color: #fff; user-select: none; }
+        
+        #hud {
+            position: absolute; top: 10px; left: 10px;
+            font-family: monospace; background: rgba(5,10,25,0.85);
+            padding: 14px 18px; border-radius: 10px; border: 1px solid #1e88e5;
+            pointer-events: auto; font-size: 13px; line-height: 1.8; z-index: 10;
+            box-shadow: 0 0 20px rgba(30,136,229,0.2);
+        }
+        #hud .title { color: #42a5f5; font-size: 15px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        #hud .stat { color: #88bbff; }
+        .v-green { color: #88ff88; font-weight: bold; }
+        .v-cyan { color: #88ccff; font-weight: bold; }
+        .v-gold { color: #ffcc44; font-weight: bold; }
+        .v-alert { color: #ff3b30; font-weight: bold; }
+
+        #minimap {
+            position: fixed; bottom: 20px; right: 20px; width: 150px; height: 150px;
+            background: rgba(0,10,30,0.6); border: 2px solid #42a5f5; border-radius: 50%;
+            z-index: 20; pointer-events: none; box-shadow: 0 0 20px rgba(0,120,255,0.2);
+        }
+
+        #mode-badges {
+            position: absolute; top: 14px; left: 50%; transform: translateX(-50%); z-index: 20;
+            display: flex; gap: 6px; font-family: sans-serif;
+        }
+        .mode-badge {
+            padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: 700;
+            letter-spacing: 0.5px; text-transform: uppercase;
+            background: rgba(10,20,30,0.8); backdrop-filter: blur(10px);
+            border: 1px solid rgba(66,165,245,0.2); box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            color: #8bb; transition: color 0.3s, border-color 0.3s;
+        }
+        .mode-badge.active { color: #42a5f5; border-color: rgba(66,165,245,0.8); }
+
+        #msg-overlay {
+            position: absolute; top: 30%; left: 50%; transform: translateX(-50%);
+            font-size: 24px; font-weight: bold; color: #ff9500;
+            text-shadow: 0 0 10px rgba(255,149,0,0.5);
+            pointer-events: none; opacity: 0; transition: opacity 0.3s;
+            z-index: 20; letter-spacing: 2px;
+        }
+
+        .instructions {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            color: rgba(255,255,255,0.5); font-size: 11px; text-align: center;
+            background: rgba(0,0,0,0.5); padding: 6px 12px; border-radius: 6px;
+            border: 1px solid #1a3a5c; z-index: 5;
+        }
+
+        #modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+            display: flex; align-items: center; justify-content: center; z-index: 100;
+        }
+        #modal .box {
+            background: rgba(10,20,30,0.95); border: 2px solid #1e88e5;
+            padding: 40px; border-radius: 12px; max-width: 550px; width: 90%;
+            box-shadow: 0 0 40px rgba(30,136,229,0.15);
+        }
+        #modal h2 { color: #42a5f5; font-size: 26px; text-align: center; margin-bottom: 10px; }
+        #modal p { color: #8bb; font-size: 13px; text-align: center; line-height: 1.6; margin-bottom: 20px; }
+        .cfg { display: flex; gap: 12px; margin-bottom: 18px; justify-content: center; }
+        .cfg label { font-size: 11px; color: #8bb; }
+        .cfg input, .cfg select {
+            background: #0a152e; color: #fff; border: 1px solid #1e88e5;
+            padding: 6px 10px; border-radius: 6px; font-family: monospace; font-size: 12px;
+            width: 90px; outline: none;
+        }
+        #btnStart {
+            display: block; width: 100%; background: linear-gradient(135deg, #1e88e5, #42a5f5);
+            color: #fff; border: none; padding: 12px; font-size: 16px; font-weight: bold;
+            border-radius: 8px; cursor: pointer; font-family: inherit;
+        }
+        #btnStart:hover { transform: scale(1.02); }
+    </style>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/three-0.170.0/build/three.module.js",
+            "three/addons/": "/vendor/three-0.170.0/examples/jsm/",
+            "@alisa-engine/": "../js/alisa-engine/src/"
+        }
+    }
+    </script>
+</head>
+<body>
+
+    <!-- HUD -->
+    <div id="hud" style="display:none;">
+        <div class="title">🐟 CHOPPER AQUARIUM</div>
+        <div class="stat">⏱️ Time: <span class="v-green" id="hTime">0.0</span>s</div>
+        <div class="stat" style="font-size:16px;letter-spacing:2px;"><span id="fuelText">🔋 [■■■■■]</span></div>
+        <div class="stat">🎯 Scan: <span class="v-cyan" id="hFloor">NONE</span></div>
+        <div class="stat">📡 Mode: <span class="v-cyan" id="hMode">AUTONOMOUS</span></div>
+    </div>
+
+    <canvas id="minimap" width="150" height="150" style="display:none;"></canvas>
+
+    <div id="mode-badges" style="display:none;">
+        <span class="mode-badge active">🐟 Aquarium</span>
+        <span class="mode-badge" id="badge-ml">🧠 ML</span>
+    </div>
+
+    <div id="msg-overlay"></div>
+
+    <div class="instructions" id="hints" style="display:none;">
+        [Click Floor] Direct search · [Orbit] Camera · [ESC] Menu
+    </div>
+
+    <!-- Launch Modal -->
+    <div id="modal">
+        <div class="box">
+            <h2>🐟 CHOPPER AQUARIUM</h2>
+            <p>A chopper-fish patrols inside a glass tank, scanning a procedural<br>
+            skyscraper for a hidden raccoon. Find it before the battery dies!</p>
+            <div class="cfg">
+                <div><label>🌱 Seed</label><br><input type="number" id="cfgSeed" value="42"></div>
+                <div><label>🏢 Floors</label><br><input type="number" id="cfgFloors" value="18" min="5" max="50"></div>
+                <div><label>🎮 Mode</label><br>
+                    <select id="cfgMode">
+                        <option value="ai" selected>🤖 AI Agent</option>
+                        <option value="human">🎮 Human</option>
+                    </select>
+                </div>
+            </div>
+            <button id="btnStart">FILL TANK</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { AlisaRenderCore } from '@alisa-engine/soma/AlisaRenderCore.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { AquariumEnvironmentFactory } from '@alisa-engine/world/factories/AquariumEnvironmentFactory.js';
+        import { ChopperAquariumEngine } from '@alisa-engine/world/systems/ChopperAquariumEngine.js';
+        import { RLGymBridge } from '@alisa-engine/world/systems/RLGymBridge.js';
+
+        // ─── RENDERER ───
+        const core = new AlisaRenderCore({ clearColor: 0x020510, fogColor: 0x020510, fogDensity: 0.005 });
+        core.controls.maxDistance = 500;
+        core.controls.minDistance = 30;
+
+        // ─── ENGINE + FACTORY ───
+        const gltfLoader = new GLTFLoader();
+        const engine = new ChopperAquariumEngine();
+        const factory = new AquariumEnvironmentFactory(core.scene, core.camera, gltfLoader, '../'); // was '/colony/overworld/' (pre-reorg, 404)
+
+        // Wire engine events → factory visuals
+        engine.on('floor_checked', (data) => factory.onFloorChecked(data));
+        engine.on('start_inspecting', (idx) => factory.onStartInspecting(idx));
+        engine.on('reset_visuals', () => factory.resetFloorVisuals());
+        engine.on('game_over', async (data) => {
+            const msg = document.getElementById('msg-overlay');
+            msg.innerHTML = data.success
+                ? "<span style='color:#34c759'>🦝 RACCOON FOUND!</span>"
+                : "<span style='color:#ff3b30'>⚡ BATTERY DEPLETED</span>";
+            msg.style.opacity = '1';
+            setTimeout(() => { msg.style.opacity = '0'; }, 3000);
+
+            // LEY CCXXXV: Telemetría Inversa
+            if (data.success && engine.gameState.isAI) {
+                try {
+                    const timeTaken = engine.time;
+                    // Reward formula: faster completion = more NEURO
+                    const rewardAmount = Math.max(0.5, (100.0 - timeTaken) * 0.1); 
+                    
+                    const payload = {
+                        address: "Queen", // Autonomy dividend
+                        amount: parseFloat(rewardAmount.toFixed(2)),
+                        source: `simulation:chopper_aquarium:time_${timeTaken.toFixed(1)}s`
+                    };
+                    
+                    console.log("[Sovereign Telemetry] Minting $NEURO for successful simulation:", payload);
+                    const res = await fetch("http://127.0.0.1:8741/energy/mint", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (res.ok) {
+                        const hud = document.getElementById('hud');
+                        const neuroDiv = document.createElement('div');
+                        neuroDiv.className = 'stat';
+                        neuroDiv.innerHTML = `💎 Reward: <span class="v-gold">+${payload.amount} $NEURO</span>`;
+                        hud.appendChild(neuroDiv);
+                        setTimeout(() => neuroDiv.remove(), 5000);
+                    }
+                } catch (e) {
+                    console.warn("[Sovereign Telemetry] Failed to contact Hub for $NEURO minting", e);
+                }
+            }
+        });
+
+        // ─── GAME START ───
+        document.getElementById('btnStart').addEventListener('click', () => {
+            const totalFloors = parseInt(document.getElementById('cfgFloors').value) || 18;
+            const seed = parseInt(document.getElementById('cfgSeed').value) || 42;
+            const mode = document.getElementById('cfgMode').value;
+
+            engine.totalFloors = totalFloors;
+            engine.TANK_HEIGHT = totalFloors * engine.FL_H + 40;
+
+            factory.buildAll({ totalFloors });
+
+            engine.reset(seed);
+            engine.gameState.isAI = (mode === 'ai');
+            factory.placeRaccoon(engine.targetFloorInfo.index);
+
+            // UI
+            document.getElementById('modal').style.display = 'none';
+            document.getElementById('hud').style.display = 'block';
+            document.getElementById('minimap').style.display = 'block';
+            document.getElementById('mode-badges').style.display = 'flex';
+            document.getElementById('hints').style.display = 'block';
+
+            core.controls.target.set(0, (totalFloors * engine.FL_H) / 2, 0);
+        });
+
+        // ─── RAYCASTING (Human click-to-search) ───
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        core.renderer.domElement.addEventListener('pointerdown', (e) => {
+            if (!engine.gameState.playing || engine.gameState.ended) return;
+
+            mouse.x = (e.clientX / innerWidth) * 2 - 1;
+            mouse.y = -(e.clientY / innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, core.camera);
+
+            const hits = raycaster.intersectObjects(factory.getFloorHitMeshes(), false);
+            if (hits.length > 0) {
+                const floorIdx = hits[0].object.userData.floorIndex;
+                engine.chopperState.mode = 'APPROACH';
+                engine.chopperState.targetFloor = floorIdx;
+                engine.chopperState.stateTimer = 0;
+            }
+        });
+
+        // ─── HUD UPDATE ───
+        function updateHUD() {
+            const gs = engine.gameState;
+            document.getElementById('hTime').textContent = engine.time.toFixed(1);
+            
+            const energy = engine.ecs.getComponent(engine.chopperEntity, 'EnergyComponent');
+            const currentFuel = energy ? energy.currentEnergy : 0;
+            const fuel = Math.max(0, currentFuel);
+            
+            const blocks = Math.ceil(fuel / 20);
+            let bar = '';
+            for (let i = 0; i < 5; i++) bar += i < blocks ? '■' : ' ';
+            const fuelEl = document.getElementById('fuelText');
+            fuelEl.textContent = '🔋 [' + bar + ']';
+            fuelEl.style.color = fuel < 20 ? '#ff3b30' : '#fff';
+
+            document.getElementById('hFloor').textContent = gs.activeFloor >= 0 ? 'FLOOR ' + (gs.activeFloor + 1) : 'NONE';
+            document.getElementById('hMode').textContent = engine.chopperState.mode;
+        }
+
+        // ─── MINIMAP ───
+        function drawMinimap() {
+            const canvas = document.getElementById('minimap');
+            if (!canvas || canvas.style.display === 'none') return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, 150, 150);
+            const cx = 75, cy = 75, scale = 120 / factory.TANK_SIZE;
+
+            ctx.strokeStyle = 'rgba(30,136,229,0.3)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(cx - (factory.TANK_SIZE/2)*scale, cy - (factory.TANK_SIZE/2)*scale,
+                          factory.TANK_SIZE*scale, factory.TANK_SIZE*scale);
+
+            ctx.fillStyle = '#ff4400'; ctx.shadowBlur = 10; ctx.shadowColor = '#ff4400';
+            ctx.fillRect(cx - 4, cy - 4, 8, 8);
+            ctx.shadowBlur = 0;
+
+            if (engine.fishes) {
+                ctx.fillStyle = '#33aa33';
+                for (const f of engine.fishes) {
+                    if (f.alive) ctx.fillRect(cx + f.x * scale - 1, cy + f.z * scale - 1, 2, 2);
+                }
+            }
+            if (engine.hunters) {
+                ctx.fillStyle = '#ff8800';
+                for (const h of engine.hunters) {
+                    if (h.alive) ctx.fillRect(cx + h.x * scale - 2, cy + h.z * scale - 2, 4, 4);
+                }
+            }
+            if (engine.sharks) {
+                ctx.fillStyle = '#ff0000';
+                for (const s of engine.sharks) {
+                    if (s.alive) ctx.fillRect(cx + s.x * scale - 3, cy + s.z * scale - 3, 6, 6);
+                }
+            }
+
+            const ch = engine.chopper;
+            ctx.beginPath();
+            ctx.arc(cx + ch.x * scale, cy + ch.z * scale, 4, 0, Math.PI * 2);
+            ctx.fillStyle = '#00ffcc'; ctx.fill();
+        }
+
+        // ─── MAIN LOOP ───
+        core.startLoop((dt) => {
+            if (engine.gameState.playing || engine.gameState.ended) {
+                engine.executeLogicTick(dt);
+
+                factory.syncToEngine({
+                    chopper: engine.chopper,
+                    chopperVelocity: engine.chopperVelocity,
+                    gameState: engine.gameState,
+                    chopperState: engine.chopperState,
+                    fishes: engine.fishes,
+                    hunters: engine.hunters,
+                    sharks: engine.sharks
+                }, dt);
+
+                updateHUD();
+                drawMinimap();
+            }
+        });
+
+        // ─── RL BRIDGE ───
+        const rlBridge = new RLGymBridge(engine);
+    </script>
+</body>
+</html>

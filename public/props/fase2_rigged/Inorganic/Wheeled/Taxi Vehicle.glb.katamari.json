@@ -1,0 +1,23 @@
+{
+    "source_file": "Taxi Vehicle.glb",
+    "deduced_size_meters": 4.2,
+    "target_tier": "Tier 1: Megafauna/Vehicles",
+    "target_scale_constraint": 5.3999999999999995,
+    "voxel_grid": [
+        4,
+        3,
+        6
+    ],
+    "archetype": "wheeled",
+    "morphology": {
+        "size_m": 4.2,
+        "domain": "inorganic",
+        "cladistics": "none",
+        "mobility": "wheeled",
+        "mechanical_joints": 6
+    },
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0,
+    "mesh_scale_multiplier": 4.179616410573884,
+    "mathematical_tomography": []
+}

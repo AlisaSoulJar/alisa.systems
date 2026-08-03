@@ -1,0 +1,21 @@
+{
+    "name": "Rafiki",
+    "role": "Memory Shaman",
+    "emoji": "🐒",
+    "type": "biological",
+    "skeleton": "primate",
+    "model_path": "Howler monkey.glb",
+    "scale": 1.0,
+    "kinematics": "primate_climb",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "edge_tts",
+        "tier": 4,
+        "voice_id": "es-VE-PaolaNeural",
+        "rate": "-5%",
+        "pitch": "-2Hz",
+        "label": "Rafiki - Paola (venezolana, mística, memoria)"
+    },
+    "avatar_source": "colonial_census_2026-04-23"
+}

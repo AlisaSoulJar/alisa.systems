@@ -1,0 +1,20 @@
+{
+    "name": "Geppetto",
+    "role": "The Craftsman",
+    "emoji": "🪵",
+    "type": "biological",
+    "skeleton": "humanoid",
+    "model_path": "geppetto.glb",
+    "scale": 1.0,
+    "kinematics": "bipedal",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "edge_tts",
+        "tier": 4,
+        "voice_id": "es-ES-AlvaroNeural",
+        "rate": "-10%",
+        "pitch": "-2Hz",
+        "label": "Geppetto - Alvaro (artesano, cálido, paternal)"
+    }
+}

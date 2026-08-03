@@ -1,0 +1,116 @@
+{
+  "fecha": "2026-08-03T08:24:05.383Z",
+  "semillas": 15,
+  "tope": 200,
+  "juegos": [
+    "reversi",
+    "blackjack",
+    "brisca",
+    "spades",
+    "gofish",
+    "entropy"
+  ],
+  "descartados": {},
+  "resumen": [
+    {
+      "participante": "primera (suelo)",
+      "tipo": "base",
+      "media": 0,
+      "incertidumbre": 0.22056989957913617,
+      "tokens": 0,
+      "segundos": 0,
+      "forzadas": 0,
+      "llamadas": 0,
+      "verificadas": 720,
+      "esperadas": 720,
+      "porJuego": {
+        "reversi": 0,
+        "blackjack": 0,
+        "brisca": 0,
+        "spades": 0,
+        "gofish": 0,
+        "entropy": 0
+      }
+    },
+    {
+      "participante": "azar",
+      "tipo": "base",
+      "media": 0.18694223405110155,
+      "incertidumbre": 0.24061981837193,
+      "tokens": 0,
+      "segundos": 0,
+      "forzadas": 0,
+      "llamadas": 0,
+      "verificadas": 720,
+      "esperadas": 720,
+      "porJuego": {
+        "reversi": -0.3629629629629629,
+        "blackjack": 0.4617283950617284,
+        "brisca": 0.07284768211920539,
+        "spades": 0.47058823529411786,
+        "gofish": 0.4000000000000001,
+        "entropy": 0.07945205479452042
+      }
+    },
+    {
+      "participante": "casa (techo blando)",
+      "tipo": "base",
+      "media": 1,
+      "incertidumbre": 0.19867094735696708,
+      "tokens": 0,
+      "segundos": 0,
+      "forzadas": 0,
+      "llamadas": 0,
+      "verificadas": 720,
+      "esperadas": 720,
+      "porJuego": {
+        "reversi": 1,
+        "blackjack": 1,
+        "brisca": 1,
+        "spades": 1,
+        "gofish": 1,
+        "entropy": 1
+      }
+    },
+    {
+      "participante": "llama3.2:3b",
+      "tipo": "modelo",
+      "media": -0.07952094669553082,
+      "incertidumbre": 0.22778796154660427,
+      "tokens": 349500,
+      "segundos": 309.427,
+      "forzadas": 0,
+      "llamadas": 2536,
+      "verificadas": 90,
+      "esperadas": 90,
+      "porJuego": {
+        "reversi": -0.6666666666666666,
+        "blackjack": 0,
+        "brisca": -0.2516556291390727,
+        "spades": 0.17647058823529413,
+        "gofish": 0.325,
+        "entropy": -0.060273972602739805
+      }
+    },
+    {
+      "participante": "gemma2:2b",
+      "tipo": "modelo",
+      "media": -0.09256535947712417,
+      "incertidumbre": 0.23678461949159205,
+      "tokens": 280560,
+      "segundos": 269.213,
+      "forzadas": 0,
+      "llamadas": 2107,
+      "verificadas": 90,
+      "esperadas": 90,
+      "porJuego": {
+        "reversi": -1.5555555555555556,
+        "blackjack": 0.8222222222222222,
+        "brisca": 0,
+        "spades": 0.3529411764705884,
+        "gofish": -0.17500000000000007,
+        "entropy": 0
+      }
+    }
+  ]
+}

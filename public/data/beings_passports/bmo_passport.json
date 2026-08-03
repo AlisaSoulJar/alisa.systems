@@ -1,0 +1,21 @@
+{
+    "name": "BMO",
+    "role": "Living Game Console",
+    "emoji": "🎮",
+    "type": "mechanical",
+    "skeleton": "console_box",
+    "model_path": "bmo.glb",
+    "scale": 0.6,
+    "kinematics": "console_hop",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "synth",
+        "tier": 1,
+        "signal_type": "dtmf",
+        "signal_freq": 523,
+        "signal_duration": 0.1,
+        "label": "BMO - Synth DTMF (telephone tones, playful)",
+        "freq_label": "retro 8-bit, do agudo"
+    }
+}

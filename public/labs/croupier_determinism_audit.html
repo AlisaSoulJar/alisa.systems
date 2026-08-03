@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA LAB — Auditoría de determinismo</title>
+<style>
+  body{margin:0;background:#070a11;color:#cfe3f5;font-family:ui-monospace,monospace;padding:20px 26px 60px}
+  h1{margin:0 0 3px;font-size:18px;color:#7fd0ff;letter-spacing:1px}
+  .sub{color:#5f7a92;font-size:11.5px;line-height:1.7;margin-bottom:14px;max-width:860px}
+  table{border-collapse:collapse;font-size:11.5px;width:100%}
+  th{text-align:left;color:#5f7a92;font-weight:normal;border-bottom:1px solid #1d2b3e;padding:5px 8px}
+  td{padding:4px 8px;border-bottom:1px solid #101a26;vertical-align:top}
+  .ok{color:#7CFC98}.bad{color:#ff7b72}.warn{color:#ffd166}.k{color:#5f7a92}
+  #sum{margin:14px 0;font-size:12px;line-height:1.9}
+  code{color:#9fd}
+</style>
+<script type="importmap">
+{ "imports": { "three": "/vendor/three-0.160.0/build/three.module.js",
+               "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+               "@alisa-engine/": "../js/alisa-engine/" } }
+</script>
+</head>
+<body>
+<h1>▓ AUDITORÍA DE DETERMINISMO · ¿misma semilla ⇒ mismo mundo?</h1>
+<div class="sub">
+Sin esto no hay benchmark: para validar la puntuación de alguien hay que poder <b>volver a simular su partida</b>.<br><br>
+Cada sistema se ejecuta <b>tres veces</b>: dos con la semilla <code>1234</code> y una con <code>1235</code>.<br>
+<span class="ok">✓ determinista</span> = las dos primeras dan idéntico ·
+<span class="warn">⚠ insensible</span> = la tercera también da idéntico (no usa azar, o lo ignora) ·
+<span class="bad">✗</span> = misma semilla, resultado distinto.<br><br>
+La columna <b>sin scope</b> es el estado ACTUAL del motor. La columna <b>con scope</b> aplica
+<code>DeterministicScope</code>. La diferencia entre ambas es exactamente lo que aporta el arreglo.
+</div>
+<div id="sum">ejecutando…</div>
+<table id="t"><thead><tr>
+  <th>sistema</th><th>sin scope</th><th>con scope</th><th>sensible a la semilla</th><th>nº de azares</th><th>detalle</th>
+</tr></thead><tbody></tbody></table>
+
+<script type="module">
+import { DeterministicScope } from '@alisa-engine/src/world/core/DeterministicScope.js';
+
+const tb = document.querySelector('#t tbody');
+const results = [];
+
+// Cada caso: monta el sistema y devuelve una huella COMPARABLE de su estado.
+// Deliberadamente no comparo puntuaciones (pueden ser 0 en ambas y engañar,
+// error que ya cometí antes): comparo el estado del mundo.
+// ⚠️ NADA de `metodo?.()` aquí. La primera versión de este banco usaba
+// encadenamiento opcional "por seguridad" y el resultado fue que NO SE EJECUTÓ
+// NADA: comparaba dos resultados vacíos y cantaba 4/4 deterministas. El chivato
+// fue `draws: 0`. Ahora las llamadas son directas — si el método no existe, que
+// pete y se vea.
+const CASOS = [
+  {
+    nombre: 'CarverSystem (ciudad 24x24)',
+    mod: '@alisa-engine/src/world/systems/CarverSystem.js',
+    esperaAzar: false,   // tiene su PRNG propio, NO usa Math.random
+    correr: async (M) => {
+      const s = new M.CarverSystem(24, 24);
+      s.generate(1234);
+      return s.grid.map(r => r.join('')).join('').slice(0, 400);
+    }
+  },
+  {
+    nombre: 'AsteroidsSystem (60 ticks)',
+    mod: '@alisa-engine/src/world/systems/AsteroidsSystem.js',
+    esperaAzar: true,
+    correr: async (M) => {
+      const s = new M.AsteroidsSystem();
+      s.start({});
+      s.spawnShip();
+      for (let i = 0; i < 60; i++) { s.updateWaveLogic(1 / 60); s.updateStars(); }
+      const ast = s.asteroids.map(a => `${a.x?.toFixed(3)},${a.y?.toFixed(3)}`).join('|');
+      return `n=${s.asteroids.length}#${ast.slice(0, 250)}`;
+    }
+  },
+  {
+    nombre: 'ScummInteractionEngine',
+    mod: '@alisa-engine/src/world/systems/ScummInteractionEngine.js',
+    esperaAzar: false,   // YA usa SeededRNG — no debe depender del scope
+    correr: async (M) => {
+      const s = new M.ScummInteractionEngine();
+      const st = s.initEpisode(7, 3, 1, 2, 0, 'minesweeper');
+      return `target=${st.targetId} snakes=${st.snakeIds.join(',')} leaves=${st.partition.leaves.length}`;
+    }
+  },
+  {
+    nombre: 'ProceduralSPE (morfología)',
+    mod: '@alisa-engine/src/soma/morphology/ProceduralSPE.js',
+    esperaAzar: false,   // PRNG propio semillado
+    correr: async (M) => {
+      const e = new M.AlisaEntity({ type: 'test', tier: 4, seed: 0.375 });
+      return [e.random(), e.random(), e.random(), e.random()].map(v => v.toFixed(9)).join(',');
+    }
+  },
+];
+
+const marca = (b, txtOk = '✓', txtBad = '✗') =>
+  b ? `<span class="ok">${txtOk}</span>` : `<span class="bad">${txtBad}</span>`;
+
+for (const caso of CASOS) {
+  const r = { nombre: caso.nombre, sinScope: null, conScope: null, sensible: null, draws: 0, err: '' };
+  try {
+    const M = await import(/* @vite-ignore */ caso.mod);
+
+    // ── 1. SIN scope: ¿es determinista tal cual está hoy el motor? ──
+    const a0 = await caso.correr(M);
+    const b0 = await caso.correr(M);
+    r.sinScope = (JSON.stringify(a0) === JSON.stringify(b0));
+
+    // ── 2. CON scope ──
+    const a1 = await DeterministicScope.runAsync(1234, () => caso.correr(M));
+    const draws = DeterministicScope.draws;
+    const b1 = await DeterministicScope.runAsync(1234, () => caso.correr(M));
+    const c1 = await DeterministicScope.runAsync(1235, () => caso.correr(M));
+    r.conScope = (JSON.stringify(a1) === JSON.stringify(b1));
+    r.sensible = (JSON.stringify(a1) !== JSON.stringify(c1));
+    r.draws = draws;
+    r.muestra = String(a1).slice(0, 60);
+
+    // CHIVATO: si esperábamos que tirara de Math.random y salieron 0 azares,
+    // es que el caso no ejecutó nada. Un "determinista" así es mentira.
+    if (caso.esperaAzar && draws === 0) {
+      r.err = 'NO EJECUTÓ NADA (0 azares consumidos) — el caso de prueba está mal escrito';
+      r.sinScope = r.conScope = r.sensible = null;
+    }
+    // Y al revés: un resultado vacío tampoco prueba nada.
+    if (!r.err && (a1 === undefined || a1 === null || String(a1).length < 3)) {
+      r.err = `huella vacía o trivial ("${a1}") — no demuestra determinismo`;
+      r.sinScope = r.conScope = r.sensible = null;
+    }
+  } catch (e) {
+    r.err = e.message;
+  }
+  results.push(r);
+
+  const cellSens = r.err ? '—'
+    : r.sensible ? '<span class="ok">✓ sí</span>'
+    : '<span class="warn">⚠ no usa azar</span>';
+  tb.insertAdjacentHTML('beforeend', `<tr>
+    <td>${r.nombre}</td>
+    <td>${r.err ? '—' : marca(r.sinScope)}</td>
+    <td>${r.err ? '—' : marca(r.conScope)}</td>
+    <td>${cellSens}</td>
+    <td class="k">${r.err ? '—' : r.draws}</td>
+    <td class="k">${r.err ? '<span class="bad">' + r.err + '</span>' : (r.muestra ?? '')}</td>
+  </tr>`);
+}
+
+const validos   = results.filter(r => !r.err);
+const antes     = validos.filter(r => r.sinScope).length;
+const despues   = validos.filter(r => r.conScope).length;
+const usanAzar  = validos.filter(r => r.sensible).length;
+
+document.getElementById('sum').innerHTML =
+  `sistemas probados: <b>${validos.length}</b> (de ${results.length})<br>` +
+  `<span class="bad">deterministas HOY, sin scope: <b>${antes}</b></span><br>` +
+  `<span class="ok">deterministas CON DeterministicScope: <b>${despues}</b></span><br>` +
+  `<span class="k">de ellos, realmente sensibles a la semilla: <b>${usanAzar}</b></span>`;
+
+window.__audit = { total: results.length, validos: validos.length, antes, despues, usanAzar,
+                   detalle: results.map(r => ({ n: r.nombre, sin: r.sinScope, con: r.conScope,
+                                                sens: r.sensible, draws: r.draws, err: r.err })) };
+window.__ready = true;
+</script>
+</body>
+</html>

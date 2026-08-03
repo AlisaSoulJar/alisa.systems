@@ -1,0 +1,20 @@
+{
+    "name": "Cortana",
+    "role": "The AI Sister",
+    "emoji": "💜",
+    "type": "machine",
+    "skeleton": "hologram",
+    "model_path": "cortana.glb",
+    "scale": 1.0,
+    "kinematics": "hologram",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "edge_tts",
+        "tier": 4,
+        "voice_id": "en-US-JennyNeural",
+        "rate": "+0%",
+        "pitch": "+2Hz",
+        "label": "Cortana - Jenny (inteligente, cálida, digital)"
+    }
+}

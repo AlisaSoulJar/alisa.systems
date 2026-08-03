@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALISA — Anomalía en WebGPU + TSL</title>
+<!--
+  LA ANOMALÍA, EN WEBGPU Y TSL
+  ═══════════════════════════════════════════════════════════════════════════
+  La Sala del Huevo va en WebGL y así se queda. Esto demuestra que el camino a
+  WebGPU está abierto, portando lo ÚNICO que nos ataba a GLSL: la lente de la
+  anomalía (`AnomalyLensPlugin`).
+
+  QUÉ DEMUESTRA, PUNTO POR PUNTO
+  ------------------------------
+  1. **Backend enchufable** — el renderer sale de `RenderBackend.crearRenderer`,
+     que devuelve WebGPU si el navegador puede y WebGL si no. La página no
+     cambia; solo el motor de abajo.
+  2. **Post-proceso por nodos** — `PostProcessing` + `pass(escena, cámara)`.
+     Aquí está la diferencia de verdad con WebGL: no hay `EffectComposer` ni
+     una fila de pases, hay un ÁRBOL de nodos que se compone como una fórmula.
+  3. **Nuestro shader, en TSL** — la misma lente: tirón radial con caída
+     cuadrática, aberración cromática y anillo de fotones. Escrita en
+     JavaScript, sin una línea de GLSL, y compila a WGSL y a GLSL.
+
+  LO HONESTO
+  ----------
+  El bloom NO está en el build de WebGPU: vive en `addons/tsl/display/BloomNode`.
+  Y esta página usa un importmap DISTINTO al del resto del sitio, porque `three`
+  y `three/webgpu` son builds que no se mezclan. El salto, si algún día se hace,
+  es página a página.
+-->
+<style>
+  body { margin:0; background:#e6ebf0; overflow:hidden;
+         font-family:ui-monospace,monospace; }
+  #panel { position:fixed; top:16px; left:16px; z-index:5; background:rgba(255,255,255,.86);
+           backdrop-filter:blur(3px); border:1px solid #cfd8e2; border-radius:6px;
+           padding:14px 16px; font-size:11px; line-height:1.9; color:#39485c; max-width:390px; }
+  #panel h1 { margin:0 0 8px; font-size:11px; letter-spacing:.24em; color:#1a2230; font-weight:600; }
+  .ok { color:#1d6b45; } .mal { color:#a32020; } .dato { color:#1a2230; font-weight:600; }
+  #mandos { position:fixed; bottom:16px; left:16px; z-index:5; font-size:10px; color:#7d8b99;
+            letter-spacing:.1em; }
+</style>
+</head>
+<body>
+<div id="panel"><h1>ANOMALÍA · WEBGPU + TSL</h1><div id="salida">arrancando…</div></div>
+<div id="mandos">mueve el ratón para desplazar la anomalía · rueda para su fuerza</div>
+
+<!-- ⚠️ Importmap propio: aquí `three` ES el build de WebGPU, y `three/tsl`
+     apunta al MISMO fichero (en r170 no hay `three.tsl.js` suelto). -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "/vendor/three-0.170.0/build/three.webgpu.js",
+    "three/tsl": "/vendor/three-0.170.0/build/three.webgpu.js",
+    "three/addons/": "/vendor/three-0.170.0/examples/jsm/",
+    "@alisa-engine/": "../js/alisa-engine/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { crearRenderer } from '@alisa-engine/src/soma/RenderBackend.js';
+import { Fn, vec2, vec3, vec4, float, uv, uniform, texture, mix, length,
+         normalize, smoothstep, positionLocal, time, sin } from 'three/tsl';
+
+const salida = document.getElementById('salida');
+const linea = (t, c='') => salida.innerHTML += `<div class="${c}">${t}</div>`;
+
+// ── 1. El backend, elegido por la pieza del motor ──────────────────────────
+const { renderer, backend, pedido } = await crearRenderer(THREE, { antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setClearColor(0xe6ebf0);
+document.body.appendChild(renderer.domElement);
+linea(`three <span class="dato">r${THREE.REVISION}</span> · backend <span class="dato">${backend}</span>`
+    + (backend === 'WebGPU' ? '' : ' <i>(repliegue automático)</i>'),
+      backend === 'WebGPU' ? 'ok' : '');
+
+// ── 2. La escena: huevo, rejilla y algo detrás que se pueda DOBLAR ─────────
+const escena = new THREE.Scene();
+escena.background = new THREE.Color(0xe6ebf0);
+const camara = new THREE.PerspectiveCamera(58, innerWidth/innerHeight, 0.1, 200);
+camara.position.set(0, 3.4, 15);
+camara.lookAt(0, 2.6, 0);
+
+escena.add(new THREE.HemisphereLight(0xffffff, 0xc8d4e0, 2.2));
+const rejilla = new THREE.GridHelper(70, 70, 0x9fb0c0, 0xd4dee6);
+rejilla.material.transparent = true; rejilla.material.opacity = .55;
+escena.add(rejilla);
+
+// Columnas alrededor: sin algo detrás, una lente no se ve. Es el mismo motivo
+// por el que la sala pone el huevo delante de las máquinas y no en el vacío.
+const matCol = new THREE.MeshStandardNodeMaterial({ color: 0xffffff, roughness: .5 });
+const matOsc = new THREE.MeshStandardNodeMaterial({ color: 0x1b232e, roughness: .4 });
+for (let i = 0; i < 18; i++) {
+  const a = (i/18) * Math.PI * 2, r = 9.5;
+  const alto = 1.6 + (i % 3) * 0.9;
+  const c = new THREE.Mesh(new THREE.BoxGeometry(1.1, alto, .7), i % 4 ? matCol : matOsc);
+  c.position.set(Math.cos(a)*r, alto/2, Math.sin(a)*r);
+  c.rotation.y = -a;
+  escena.add(c);
+}
+
+// El huevo, con material de NODOS: el latido va en TSL, no en JavaScript.
+const matHuevo = new THREE.MeshStandardNodeMaterial({
+  color: 0xffffff, roughness: .16, metalness: .04, transparent: true, opacity: .93 });
+// `positionLocal.y` + `time` = respiración vertical. Esto compila a WGSL.
+matHuevo.emissiveNode = vec3(0.42, 0.72, 0.95)
+  .mul(sin(time.mul(1.1).add(positionLocal.y.mul(1.6))).mul(0.5).add(0.5).mul(0.14));
+const huevo = new THREE.Mesh(new THREE.SphereGeometry(2.6, 64, 48), matHuevo);
+huevo.scale.set(1, 1.42, 1);
+huevo.position.y = 3.4;
+escena.add(huevo);
+linea('material del huevo escrito en TSL (emisión latiendo)', 'ok');
+
+// ── 3. LA LENTE, PORTADA A TSL ─────────────────────────────────────────────
+// Esta es la parte que importa: el mismo efecto que en `AnomalyLensPlugin`,
+// sin una línea de GLSL. Los `uniform()` se actualizan desde JS como siempre.
+const uCentro  = uniform(vec2(0.5, 0.5));
+const uRadio   = uniform(float(0.30));
+const uFuerza  = uniform(float(0.11));
+const uAnillo  = uniform(float(0.45));
+const uAspecto = uniform(float(innerWidth / innerHeight));
+
+// ⚠️ La API, preguntada al propio objeto en vez de supuesta: `pass()` da un
+// PassNode, y la imagen se coge con `.getTextureNode()`. Para muestrear en unas
+// coordenadas cualesquiera se usa **`.uv(coordenada)`**, no `.sample(...)` —
+// que fue mi primer intento y dio 190 errores por fotograma.
+const escenaPass = THREE.pass(escena, camara);
+const imagen = escenaPass.getTextureNode();
+
+// `Fn` define una función de shader en JavaScript. Se lee casi igual que el
+// GLSL original, y esa es exactamente la gracia de TSL.
+const lente = Fn(() => {
+  const punto = uv();
+  const d = punto.sub(uCentro).mul(vec2(uAspecto, 1.0));
+  const dist = length(d);
+
+  // Caída cuadrática: nada en el borde, brutal en el centro.
+  const t = float(1.0).sub(dist.div(uRadio)).max(0.0);
+  const tiron = uFuerza.mul(t).mul(t);
+  const dir = normalize(d.add(vec2(1e-6, 1e-6))).mul(vec2(float(1.0).div(uAspecto), 1.0));
+
+  // Aberración cromática: cada color se desvía distinto. Es lo que separa
+  // «distorsión» de «óptica».
+  const rojo  = imagen.uv(punto.sub(dir.mul(tiron.mul(1.06)))).r;
+  const verde = imagen.uv(punto.sub(dir.mul(tiron))).g;
+  const azul  = imagen.uv(punto.sub(dir.mul(tiron.mul(0.94)))).b;
+
+  // El anillo de fotones: el filo que hace que el ojo diga «pozo» y no «lupa».
+  const borde = dist.div(uRadio);
+  const filo = smoothstep(0.86, 1.0, borde).mul(float(1.0).sub(smoothstep(0.985, 1.0, borde)));
+  const halo = vec3(0.55, 0.78, 1.0).mul(filo).mul(uAnillo);
+
+  // Fuera del radio, la imagen intacta.
+  const dentro = float(1.0).sub(smoothstep(uRadio.sub(0.002), uRadio, dist));
+  const doblada = vec3(rojo, verde, azul).add(halo);
+  return vec4(mix(imagen.uv(punto).rgb, doblada, dentro), 1.0);
+});
+
+const post = new THREE.PostProcessing(renderer);
+post.outputNode = lente();
+linea('lente de la anomalía compilada en <span class="dato">TSL</span> '
+    + '(tirón radial + aberración + anillo)', 'ok');
+linea('post-proceso por <span class="dato">nodos</span>, no por pases', 'ok');
+
+// ── 4. Interacción: que se vea que es de verdad ────────────────────────────
+addEventListener('pointermove', (e) => {
+  uCentro.value.set(e.clientX / innerWidth, 1 - e.clientY / innerHeight);
+});
+addEventListener('wheel', (e) => {
+  uFuerza.value = Math.max(0.01, Math.min(0.26, uFuerza.value + (e.deltaY > 0 ? -0.012 : 0.012)));
+}, { passive: true });
+addEventListener('resize', () => {
+  camara.aspect = innerWidth / innerHeight; camara.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  uAspecto.value = innerWidth / innerHeight;
+});
+
+let t0 = performance.now(), n = 0;
+renderer.setAnimationLoop(() => {
+  huevo.rotation.y += 0.0016;
+  post.render();
+  if (++n === 90) {
+    const fps = Math.round(1000 / ((performance.now() - t0) / n));
+    linea(`<br>corriendo a <span class="dato">~${fps} fps</span> en ${backend}`, 'ok');
+  }
+});
+
+window.__demo = { backend, pedido, revision: THREE.REVISION,
+                  uniformes: { uCentro, uRadio, uFuerza } };
+</script>
+</body>
+</html>

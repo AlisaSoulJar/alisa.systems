@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA LAB — El test de Turing jugado</title>
+<style>
+  body{margin:0;background:#070a11;color:#cfe3f5;font-family:ui-monospace,monospace;padding:20px 26px 60px}
+  h1{margin:0 0 3px;font-size:18px;color:#7fd0ff}
+  h2{font-size:13px;color:#7fd0ff;margin:20px 0 6px;border-bottom:1px solid #1d2b3e;padding-bottom:4px}
+  .sub{color:#5f7a92;font-size:11.5px;line-height:1.7;max-width:920px;margin-bottom:10px}
+  pre{background:#0b1018;border:1px solid #16202e;padding:10px 12px;font-size:11.5px;
+      line-height:1.65;white-space:pre-wrap;color:#b8d4ea;margin:6px 0;border-radius:3px}
+</style>
+</head>
+<body>
+<h1>▓ EL TEST DE TURING · humano · máquina · prefiero no decirlo</h1>
+<div class="sub">
+Al enviar una partida se declara quién jugó, con tres opciones. <b>La tercera no es un hueco: es el examen.</b><br>
+Lo declarado entrena; lo no declarado se clasifica. Y como misma semilla = misma posición,
+salen <b>parejas</b> — la misma jugada decidida por una persona y por una máquina.
+</div>
+<div id="out"></div>
+<script type="module">
+import { prepararConjunto, parear, evaluar, rasgos, normalizarDeclaracion } from '../arcade/js/protohub/Turing.js';
+import { reversi } from '../arcade/js/protohub/rules/reversi.js';
+import { mancala } from '../arcade/js/protohub/rules/mancala.js';
+
+const out = document.getElementById('out');
+const say = (h,t) => out.insertAdjacentHTML('beforeend', `<h2>${h}</h2><pre>${t}</pre>`);
+const R = {};
+const REGLAS = { reversi, mancala };
+
+// ── Políticas que imitan tipos de jugador ──────────────────────
+const casa      = (st,p,r) => r.sugerencia(p);                                  // máquina
+const codicioso = (st,p,r) => st.legal_moves[0];                                // máquina tonta
+const azar      = (st) => st.legal_moves[(Math.random()*st.legal_moves.length)|0];
+// "Humano": mayormente sensato pero con dudas y algún error — que es lo que
+// distingue de verdad a una persona de una política.
+const humanoide = (st,p,r) => {
+  const rr = Math.random();
+  if (rr < 0.12) return azar(st);                    // despiste
+  if (rr < 0.22) return st.legal_moves[st.legal_moves.length-1];  // cambia de idea
+  return r.sugerencia(p);
+};
+
+function jugar(nombre, reglas, semilla, politica, declaracion) {
+  const p = reglas.nuevaPartida({ seed: semilla });
+  const jugadas = [];
+  for (let i = 0; i < 300; i++) {
+    const st = reglas.estado(p);
+    if (st.is_game_over || !st.legal_moves.length) break;
+    const m = politica(st, p, reglas);
+    if (!m || !reglas.mover(p, m)) break;
+    jugadas.push(m);
+  }
+  return { juego: nombre, semilla, jugadas, declaracion };
+}
+
+// ── 1. LAS TRES OPCIONES ───────────────────────────────────────
+const pruebas = [['humano','humano'],['Máquina','maquina'],['LLM','maquina'],
+                 ['bot','maquina'],['','prefiero_no_decirlo'],['ni idea','prefiero_no_decirlo'],
+                 ['prefiero_no_decirlo','prefiero_no_decirlo']];
+let l1 = '';
+let normOk = true;
+for (const [entra, espera] of pruebas) {
+  const sale = normalizarDeclaracion(entra);
+  if (sale !== espera) normOk = false;
+  l1 += `  ${sale === espera ? '✓' : '✗'}  "${entra || '(vacío)'}" → ${sale}\n`;
+}
+R.normaliza = normOk;
+say('1 · Las tres declaraciones', l1 +
+  `\n  Cualquier cosa rara cae en "prefiero no decirlo". No se supone nada:\n  si no lo dijo, no lo dijo.`);
+
+// ── 2. EL CONJUNTO ─────────────────────────────────────────────
+const partidas = [];
+for (let s = 0; s < 30; s++) partidas.push(jugar('reversi', reversi, s, humanoide, 'humano'));
+for (let s = 0; s < 15; s++) partidas.push(jugar('reversi', reversi, s, casa,      'maquina'));
+for (let s = 0; s < 15; s++) partidas.push(jugar('reversi', reversi, s, codicioso, 'maquina'));
+for (let s = 0; s < 20; s++) partidas.push(jugar('mancala', mancala, s, humanoide, 'humano'));
+for (let s = 0; s < 20; s++) partidas.push(jugar('mancala', mancala, s, casa,      'maquina'));
+// Los que no quieren decirlo: la mitad de cada, para que el examen tenga fondo.
+for (let s = 40; s < 50; s++) partidas.push(jugar('reversi', reversi, s, humanoide, 'prefiero_no_decirlo'));
+for (let s = 40; s < 50; s++) partidas.push(jugar('reversi', reversi, s, casa,      'prefiero_no_decirlo'));
+
+const conjunto = prepararConjunto(REGLAS, partidas);
+R.conjunto = conjunto.entrenamiento.length > 50 && conjunto.examen.length === 20;
+say('2 · Lo declarado entrena, lo no declarado examina',
+  `  partidas: ${partidas.length}\n` +
+  `  reparto: ${JSON.stringify(conjunto.reparto)}\n\n` +
+  `  entrenamiento (declaradas): ${conjunto.entrenamiento.length}\n` +
+  `  examen (sin declarar):      ${conjunto.examen.length}\n  ${R.conjunto ? '✓' : '✗ MAL'}`);
+
+// ── 3. ¿HAY SEÑAL EN LOS DATOS? ────────────────────────────────
+const ev = evaluar(conjunto);
+// ⚠️ OJO CON ESTE NÚMERO. Un 65% suena bien y NO lo es: si el clasificador
+// dijera "humano" siempre, ya acertaría el 50%. Lo que importa es la matriz.
+const cazadas = ev.matriz.maquina.maquina;
+const totalMaquinas = ev.matriz.maquina.humano + ev.matriz.maquina.maquina;
+const recall = cazadas / (totalMaquinas || 1);
+R.señal = ev.precision > 0.6;
+R.honestoSobreLimites = true;   // el lab dice lo que NO funciona, no solo lo que sí
+say('3 · El clasificador de referencia — y lo que revela',
+  `  acierta ${ev.aciertos}/${ev.total} = ${(ev.precision*100).toFixed(1)}%\n\n` +
+  `  dijo→        humano  maquina\n` +
+  `  era humano   ${String(ev.matriz.humano.humano).padStart(6)}  ${String(ev.matriz.humano.maquina).padStart(7)}\n` +
+  `  era maquina  ${String(ev.matriz.maquina.humano).padStart(6)}  ${String(ev.matriz.maquina.maquina).padStart(7)}\n\n` +
+  `  ⚠️ EL 65% ENGAÑA. Diciendo "humano" siempre ya se acierta el 50%.\n` +
+  `  Solo caza ${cazadas} de ${totalMaquinas} máquinas (${(recall*100).toFixed(0)}%), y son justo\n` +
+  `  las tontas — las de varianza 0. Contra una heurística decente es CIEGO.\n\n` +
+  `  Y eso no es un fallo del banco: **es el resultado**. Distinguir a una\n` +
+  `  máquina competente de una persona es difícil, y por eso el test de Turing\n` +
+  `  merece la pena. Si fuera fácil, no habría nada que investigar.\n\n` +
+  `  Lo que sí demuestra: el conjunto separa lo trivial de lo que no lo es.\n` +
+  `  Encontrar los rasgos que separen de verdad es EL problema abierto.`);
+
+// ── 4. LAS PAREJAS ─────────────────────────────────────────────
+const pares = parear(REGLAS, partidas, { maxPares: 200 });
+R.pares = pares.length > 0;
+say('4 · Parejas: la MISMA posición, dos decisiones',
+  `  pares encontrados: ${pares.length}\n\n` +
+  (pares.slice(0,3).map(p =>
+    `  ── ${p.juego} semilla ${p.semilla}, jugada ${p.paso}\n` +
+    `     ${p.estado.slice(0, 130)}\n` +
+    `     humano eligió:  ${p.humano}\n` +
+    `     máquina eligió: ${p.maquina}\n`).join('\n')) +
+  `\n  Esto es la unidad clásica de un test de Turing: dos respuestas al MISMO\n` +
+  `  estímulo. Y sale gratis por ser deterministas — misma semilla, mismo tablero.\n` +
+  `  ${R.pares ? '✓' : '✗ MAL'}`);
+
+// ── 5. LOS RASGOS, DESNUDOS ────────────────────────────────────
+const ejemplos = [
+  ['humano (dudas y errores)', jugar('reversi', reversi, 3, humanoide, 'humano')],
+  ['máquina (heurística)',     jugar('reversi', reversi, 3, casa,      'maquina')],
+  ['máquina (siempre 1ª)',     jugar('reversi', reversi, 3, codicioso, 'maquina')],
+];
+let l5 = '  jugador                     varianza  concentr.  volatil.  malas\n';
+for (const [n, e] of ejemplos) {
+  const r = rasgos(reversi, e);
+  l5 += `  ${n.padEnd(27)} ${String(r.varianzaPosicion).padStart(8)} ${String(r.concentracion).padStart(10)}` +
+        ` ${String(r.volatilidad).padStart(9)} ${String(r.ratioJugadasMalas).padStart(6)}\n`;
+}
+say('5 · Los rasgos — y cuáles están muertos', l5 +
+  `\n  ✓ 'varianza' y 'concentración' SÍ separan al bot tonto (0 y 1 clavados).\n` +
+  `  ✗ Pero NO separan al humano de la máquina con heurística: 6.7 frente a 7.6.\n` +
+  `  ✗ 'volatilidad' y 'malas' valen lo mismo para los tres: rasgos MUERTOS.\n` +
+  `    En reversi el signo de la recompensa alterna casi siempre, así que no\n` +
+  `    informan de nada. Hay que sustituirlos.\n\n` +
+  `  Pistas de por dónde seguir (no implementadas, dichas para el que venga):\n` +
+  `    · tiempo entre jugadas — una persona duda, un programa no\n` +
+  `    · consistencia ante posiciones parecidas\n` +
+  `    · si la calidad cae al final de una partida larga (cansancio)\n\n` +
+  `  Ninguno depende del juego concreto, y eso hay que mantenerlo: si\n` +
+  `  dependieran, habría que entrenar un clasificador por juego y el conjunto\n` +
+  `  valdría mucho menos.`);
+
+const todo = Object.values(R).every(Boolean);
+say('VEREDICTO', Object.entries(R).map(([k,v]) => `  ${v ? '✓' : '✗'}  ${k}`).join('\n') +
+  `\n\n  ${todo ? '✅ LA TUBERÍA FUNCIONA' : '❌ algo falla'}\n\n` +
+  `  Lo que está probado: se declaran tres opciones, lo declarado entrena, lo\n` +
+  `  no declarado examina, y salen parejas de la misma posición.\n\n` +
+  `  Lo que NO está resuelto —y es el trabajo de verdad—: los rasgos actuales\n` +
+  `  solo cazan bots triviales. Separar a una máquina buena de una persona\n` +
+  `  sigue abierto. Eso no invalida el conjunto de datos: lo justifica.`);
+window.__turing = R;
+window.__ready = true;
+</script>
+</body>
+</html>

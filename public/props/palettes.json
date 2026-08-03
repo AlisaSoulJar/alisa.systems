@@ -1,0 +1,118 @@
+{
+    "_doc": "MaterialPalettes — like Guilds for props. Each palette defines color/overlay/texture pools. Props inherit by category or explicit 'palette' field.",
+
+    "industrial": {
+        "colors": ["#4a4a4a", "#5c5c5c", "#3d3d3d", "#6b6b6b", "#2e2e2e"],
+        "accents": ["#8B0000", "#FF4500", "#DAA520"],
+        "overlays": ["ov_metal", "ov_diamond", "ov_corrugated", "ov_rust"],
+        "textures": [],
+        "roughness": [0.75, 0.95]
+    },
+    "organic": {
+        "colors": ["#8B4513", "#A0522D", "#6B3A2A", "#D2691E", "#5C4033"],
+        "accents": ["#228B22", "#2E8B57", "#556B2F"],
+        "overlays": ["ov_wood", "ov_leather", "ov_fabric"],
+        "textures": [],
+        "roughness": [0.8, 1.0]
+    },
+    "luxury": {
+        "colors": ["#1a1a2e", "#16213e", "#0f3460", "#2c003e", "#3d0c02"],
+        "accents": ["#e94560", "#DAA520", "#FFD700"],
+        "overlays": ["ov_leather", "ov_fabric", "ov_wallpaper", "ov_hardwood"],
+        "textures": [],
+        "roughness": [0.6, 0.85]
+    },
+    "abandoned": {
+        "colors": ["#5c5040", "#4a4238", "#6b5d4f", "#3d3530", "#756859"],
+        "accents": ["#8B4513", "#8B0000"],
+        "overlays": ["ov_rust", "ov_concrete", "ov_corrugated", "ov_brick"],
+        "textures": [],
+        "roughness": [0.85, 1.0]
+    },
+    "military": {
+        "colors": ["#4b5320", "#556B2F", "#3b4a2a", "#6B8E23", "#2d3a1a"],
+        "accents": ["#4a4a4a", "#2e2e2e"],
+        "overlays": ["ov_metal", "ov_diamond", "ov_concrete", "ov_corrugated"],
+        "textures": [],
+        "roughness": [0.8, 0.95]
+    },
+    "medical": {
+        "colors": ["#f0f0f0", "#e8e8e8", "#d0d0d0", "#c8d8e0"],
+        "accents": ["#ff0000", "#00cc66", "#0066cc"],
+        "overlays": ["ov_tiles", "ov_concrete"],
+        "textures": [],
+        "roughness": [0.5, 0.75]
+    },
+    "cyber": {
+        "colors": ["#0a0a0a", "#1a1a2e", "#16213e", "#0d0d0d", "#121212"],
+        "accents": ["#00ffff", "#ff00ff", "#39ff14", "#ff3131"],
+        "overlays": ["ov_metal", "ov_diamond"],
+        "textures": [],
+        "roughness": [0.4, 0.7]
+    },
+    "nautical": {
+        "colors": ["#8B4513", "#A0522D", "#6B3A2A", "#4682B4", "#5F9EA0"],
+        "accents": ["#FFD700", "#F0E68C"],
+        "overlays": ["ov_wood", "ov_rust", "ov_metal", "ov_water"],
+        "textures": [],
+        "roughness": [0.75, 0.95]
+    },
+    "residential": {
+        "colors": ["#deb887", "#d2b48c", "#c4a882", "#b8a07a", "#f5deb3"],
+        "accents": ["#8B4513", "#a0522d"],
+        "overlays": ["ov_wallpaper", "ov_fabric", "ov_wood", "ov_hardwood", "ov_tiles"],
+        "textures": [],
+        "roughness": [0.7, 0.9]
+    },
+    "concrete": {
+        "colors": ["#808080", "#909090", "#707070", "#999999", "#686868"],
+        "accents": ["#505050"],
+        "overlays": ["ov_concrete", "ov_cobble", "ov_brick"],
+        "textures": [],
+        "roughness": [0.85, 1.0]
+    },
+
+    "_category_map": {
+        "slum":       ["abandoned", "industrial"],
+        "military":   ["military"],
+        "docks":      ["nautical", "industrial"],
+        "recreation": ["luxury", "organic"],
+        "decor":      ["residential", "luxury", "organic"],
+        "urban":      ["concrete", "industrial"],
+        "utility":    ["industrial"],
+        "vehicles":   ["cyber", "industrial"],
+        "rooftop":    ["industrial", "concrete"],
+        "signs":      ["cyber"],
+        "common":     ["organic", "residential", "industrial"],
+        "corp":       ["luxury", "cyber"],
+        "lab":        ["medical"]
+    },
+
+    "_condition_weights": {
+        "slum":       { "pristine": 2,  "used": 8,  "worn": 25, "damaged": 40, "ruined": 25 },
+        "military":   { "pristine": 15, "used": 35, "worn": 30, "damaged": 15, "ruined": 5  },
+        "docks":      { "pristine": 5,  "used": 20, "worn": 35, "damaged": 30, "ruined": 10 },
+        "recreation": { "pristine": 30, "used": 40, "worn": 20, "damaged": 8,  "ruined": 2  },
+        "decor":      { "pristine": 40, "used": 35, "worn": 15, "damaged": 8,  "ruined": 2  },
+        "urban":      { "pristine": 10, "used": 30, "worn": 35, "damaged": 20, "ruined": 5  },
+        "utility":    { "pristine": 15, "used": 35, "worn": 30, "damaged": 15, "ruined": 5  },
+        "vehicles":   { "pristine": 25, "used": 35, "worn": 25, "damaged": 10, "ruined": 5  },
+        "rooftop":    { "pristine": 5,  "used": 20, "worn": 35, "damaged": 30, "ruined": 10 },
+        "corp":       { "pristine": 60, "used": 30, "worn": 8,  "damaged": 2,  "ruined": 0  },
+        "lab":        { "pristine": 70, "used": 25, "worn": 5,  "damaged": 0,  "ruined": 0  },
+        "default":    { "pristine": 20, "used": 30, "worn": 25, "damaged": 15, "ruined": 10 }
+    },
+
+    "_wear_effects": {
+        "pristine": { "darken": 0.0,  "roughnessBoost": 0.0,  "wearOverlay": null,           "saturationMult": 1.0,
+                      "wallOverlay": null,           "floorOverlay": null,            "ceilOverlay": null },
+        "used":     { "darken": 0.05, "roughnessBoost": 0.05, "wearOverlay": null,           "saturationMult": 0.95,
+                      "wallOverlay": null,           "floorOverlay": null,            "ceilOverlay": null },
+        "worn":     { "darken": 0.12, "roughnessBoost": 0.1,  "wearOverlay": "ov_dirt",      "saturationMult": 0.85,
+                      "wallOverlay": "ov_wall_stain","floorOverlay": "ov_floor_wear", "ceilOverlay": null },
+        "damaged":  { "darken": 0.2,  "roughnessBoost": 0.15, "wearOverlay": "ov_scratches", "saturationMult": 0.7,
+                      "wallOverlay": "ov_wall_stain","floorOverlay": "ov_floor_wear", "ceilOverlay": "ov_ceil_damage" },
+        "ruined":   { "darken": 0.35, "roughnessBoost": 0.2,  "wearOverlay": "ov_grime",     "saturationMult": 0.5,
+                      "wallOverlay": "ov_wall_stain","floorOverlay": "ov_floor_wear", "ceilOverlay": "ov_ceil_damage" }
+    }
+}

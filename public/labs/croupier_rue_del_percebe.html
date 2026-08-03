@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA LAB — 13 Rue del Percebe (entorno LLM-nativo)</title>
+<style>
+  body{margin:0;background:#070a11;color:#cfe3f5;font-family:ui-monospace,monospace;padding:22px 28px 60px}
+  h1{margin:0 0 3px;font-size:19px;color:#7fd0ff;letter-spacing:1px}
+  .sub{color:#5f7a92;font-size:11.5px;line-height:1.7;margin-bottom:16px}
+  .sub b{color:#7CFC98}
+  #out{white-space:pre-wrap;font-size:12px;line-height:1.62;background:#0b111b;border:1px solid #1a2839;
+       border-radius:8px;padding:14px 16px;min-height:60vh}
+  .ok{color:#7CFC98}.bad{color:#ff7b72}.k{color:#5f7a92}.hl{color:#ffd166}.v{color:#e6f1fb}
+  .sec{color:#7fd0ff;border-bottom:1px solid #16222f;display:block;margin:16px 0 7px;padding-bottom:3px}
+</style>
+<script type="importmap">
+{ "imports": { "three": "/vendor/three-0.160.0/build/three.module.js",
+               "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+               "@alisa-engine/": "../js/alisa-engine/" } }
+</script>
+</head>
+<body>
+<h1>▓ 13 RUE DEL PERCEBE · deducción bajo incertidumbre</h1>
+<div class="sub">Monolito de abr-2026 (133 KB) reconstruido en <b>ECS</b> · acciones en <b>verbos</b> · el entorno donde un <b>LLM</b> compite de verdad.</div>
+<div id="out">buscando al mapache…</div>
+<script type="module">
+import { RueDelPercebeEnv } from '@alisa-engine/src/gym/envs/RueDelPercebeEnv.js';
+import { GymRecorder } from '@alisa-engine/src/gym/GymRecorder.js';
+
+const out = document.getElementById('out');
+const P = s => out.innerHTML += s + '\n';
+const S = t => P(`<span class="sec">${t}</span>`);
+const kv = (k,v,c='v') => P(`  <span class="k">${k.padEnd(26)}</span><span class="${c}">${v}</span>`);
+
+window.onload = () => {
+  out.innerHTML = '';
+  const spec = RueDelPercebeEnv.spec();
+
+  S('1 · EL ENTORNO');
+  kv('id', spec.id, 'hl');
+  kv('acciones', `${spec.actionSpace.type} — ${spec.actionSpace.verbs.join(', ')}`, 'hl');
+  kv('mide', 'deducción con presupuesto, no reflejos');
+  kv('reconstruido en', 'ECS (entidades + HidingSpotComponent)', 'ok');
+
+  S('2 · LO QUE VE UN AGENTE LLM (describe + affordances)');
+  const demo = new RueDelPercebeEnv(); demo.reset(7);
+  demo.step({ verb: 'comprobar_puerta', index: 0 });
+  demo.step({ verb: 'ir_a_planta', floor: 4 });
+  demo.step({ verb: 'comprobar_puerta', index: 1 });
+  P('  ' + demo.describe().split('\n').join('\n  '));
+  P('<span class="k">  ── verbos disponibles ahora ──</span>');
+  demo.affordances().slice(0, 5).forEach(a => P(`     <span class="hl">${a.verb.padEnd(22)}</span><span class="k">${a.label}</span>`));
+
+  // ── agentes ──
+  const azar = (env) => {                       // sin pensar: prueba a lo loco
+    const a = env.affordances(); return a[Math.floor(Math.random() * a.length)].action;
+  };
+  const barrido = (env) => {                    // sistemático: planta por planta
+    const a = env.affordances().filter(x => x.verb !== 'ir_a_planta');
+    if (a.length) return a[0].action;
+    return { verb: 'ir_a_planta', floor: (env.currentFloor + 1) % env.floors };
+  };
+  // Deductivo: mantiene un mapa de PLANTAS DESCARTADAS por las pistas y, sobre todo,
+  // COMPRUEBA donde está antes de moverse (el fallo de la v1 era vagar sin comprobar).
+  const deductivo = (env) => {
+    const libresAquí = env.affordances().filter(x => x.verb !== 'ir_a_planta');
+    const aquíComprobado = env.checks.some(c => c.floor === env.currentFloor);
+    const último = env.checks[env.checks.length - 1];
+
+    // 1) CALIENTE aquí y quedan sitios → seguir cavando en esta planta
+    if (último && último.result === 'CALIENTE' && último.floor === env.currentFloor && libresAquí.length)
+      return libresAquí[0].action;
+    // 2) Estoy en una planta sin estrenar y hay sitios → comprobar (no vagar)
+    if (!aquíComprobado && libresAquí.length) return libresAquí[0].action;
+
+    // 3) Descartar plantas con las pistas y elegir la mejor candidata
+    const posible = new Array(env.floors).fill(true);
+    for (const c of env.checks) {
+      for (let f = 0; f < env.floors; f++) {
+        const d = Math.abs(f - c.floor);
+        if (c.result === 'FRÍO'     && d <= 2) posible[f] = false;   // FRÍO ⇒ no está a ≤2
+        if (c.result === 'TIBIO'    && (d === 0 || d > 2)) posible[f] = false;
+        if (c.result === 'CALIENTE' && d !== 0) posible[f] = false;
+      }
+    }
+    const sinAgotar = f => env.spots.some(s => s.floor === f &&
+        !env.ecs.getComponent(s.id, 'HidingSpotComponent').isSearched);
+    // candidata: posible, con sitios libres, priorizando la más cercana
+    const cands = [];
+    for (let f = 0; f < env.floors; f++) if (posible[f] && sinAgotar(f)) cands.push(f);
+    if (cands.includes(env.currentFloor) && libresAquí.length) return libresAquí[0].action;
+    if (cands.length) {
+      cands.sort((a, b) => Math.abs(a - env.currentFloor) - Math.abs(b - env.currentFloor));
+      return { verb: 'ir_a_planta', floor: cands[0] };
+    }
+    // 4) sin candidatas: cualquier planta con sitios libres
+    if (libresAquí.length) return libresAquí[0].action;
+    for (let f = 0; f < env.floors; f++) if (sinAgotar(f)) return { verb: 'ir_a_planta', floor: f };
+    return { verb: 'ir_a_planta', floor: 0 };
+  };
+
+  S('3 · TRES AGENTES · 40 semillas cada uno · ¿premia razonar?');
+  const AGENTES = { 'azar': azar, 'barrido sistemático': barrido, 'deductivo (usa pistas)': deductivo };
+  const res = {};
+  for (const [nombre, pol] of Object.entries(AGENTES)) {
+    let hall = 0, comp = 0, punt = 0;
+    for (let s = 0; s < 40; s++) {
+      const env = new RueDelPercebeEnv(); env.reset(s);
+      for (let i = 0; i < 40 && !env.done; i++) env.step(pol(env));
+      const sc = env.getScore();
+      if (sc.metrics.encontrado) { hall++; comp += sc.metrics.comprobaciones; }
+      punt += sc.score;
+    }
+    res[nombre] = { tasa: Math.round(100 * hall / 40), media: hall ? (comp / hall).toFixed(1) : '—',
+                    punt: Math.round(punt / 40) };
+  }
+  const mejor = Object.entries(res).sort((a, b) => b[1].punt - a[1].punt)[0][0];
+  for (const [n, r] of Object.entries(res))
+    kv(n, `encuentra ${String(r.tasa).padStart(3)}% · ${String(r.media).padStart(4)} comprobaciones · ${r.punt} pts`,
+       n === mejor ? 'ok' : 'v');
+  const discrimina = new Set(Object.values(res).map(r => r.punt)).size > 1;
+  kv('¿premia razonar?', discrimina ? `SÍ — mejor: ${mejor}` : 'NO — todos igual', discrimina ? 'ok' : 'bad');
+
+  S('4 · UNA PARTIDA CON RECIBOS FIRMABLES');
+  const rec = new GymRecorder({ envId: spec.id, seed: 3, actor: 'demo', agentType: 'fsm' });
+  const env = new RueDelPercebeEnv({ recorder: rec }); env.reset(3);
+  for (let i = 0; i < 40 && !env.done; i++) {
+    const act = deductivo(env);
+    const r = env.step(act);
+    rec.record({ verb: act.verb, args: { floor: act.floor, index: act.index }, reward: r.reward, t: env.t });
+  }
+  env.checks.forEach((c, i) => P(`  ${String(i + 1).padStart(2)}. planta ${c.floor + 1} · ${c.kind} → <span class="hl">${c.result}</span>`));
+  const sc = env.getScore();
+  kv('resultado', sc.metrics.encontrado ? `ENCONTRADO en ${sc.metrics.comprobaciones} intentos` : 'no encontrado',
+     sc.metrics.encontrado ? 'ok' : 'bad');
+  const val = GymRecorder.validate({ run: { chain_head: rec.prevHash, steps: rec.receipts.length }, receipts: rec.receipts });
+  kv('cadena de recibos', val.valid ? `VÁLIDA (${val.checked})` : 'ROTA', val.valid ? 'ok' : 'bad');
+
+  P(`\n  <span class="ok">▓ ENTORNO OPERATIVO — el monolito, desmonolitizado</span>`);
+  window.__report = { res, discrimina, found: sc.metrics.encontrado, chain: val.valid };
+  window.__ready = true;
+};
+</script>
+</body>
+</html>

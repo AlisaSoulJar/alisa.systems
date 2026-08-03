@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ALISA LAB — LocomotionEnvironmentFactory</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #2b1d3d; font-family: 'Open Sans', sans-serif; color: white; user-select: none; }
+        
+        /* ─── WHIMSICAL HUD ─── */
+        #hud {
+            display: block; position: absolute; top: 15px; left: 15px;
+            background: rgba(255,100,180,0.85); box-shadow: 0 0 20px rgba(255,50,150,0.5);
+            padding: 18px 24px; border-radius: 20px; border: 4px solid #fff;
+            pointer-events: none; z-index: 10; transform: rotate(-2deg);
+        }
+        #hud .title { 
+            font-family: 'Fredoka One', cursive; color: #fff; font-size: 22px; 
+            margin-bottom: 10px; letter-spacing: 2px; text-shadow: 2px 2px 0px #ff3399;
+        }
+        #hud .stat { color: #fff; font-size: 14px; font-weight: bold; margin-bottom: 4px; }
+        #hud .val { background: #fff; color: #ff3399; padding: 2px 8px; border-radius: 12px; margin-left: 8px; display: inline-block;}
+        
+        .scanlines {
+            position: fixed; inset: 0; pointer-events: none; z-index: 50;
+            background: radial-gradient(circle, transparent 50%, rgba(43,29,61,0.6) 100%);
+            mix-blend-mode: multiply; opacity: 1; transition: opacity 1s;
+        }
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three-0.160.0/build/three.module.js",
+        "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+        "@alisa-engine/": "../js/alisa-engine/"
+      }
+    }
+    </script>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+    <!-- HUD Overlay -->
+    <div id="hud">
+        <div class="title">👑 CUCARACHA LOCOMOTION</div>
+        <div class="stat">Crystals Collected: <span class="val" id="hScore">0</span> / 7</div>
+    </div>
+
+    <!-- Scanlines -->
+    <div class="scanlines" id="scanlines"></div>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+        import { LocomotionEnvironmentFactory } from '@alisa-engine/src/world/factories/LocomotionEnvironmentFactory.js';
+        
+        window.onload = () => {
+            const app = new AlisaRenderCore({ clearColor: 0x2b1d3d });
+            app.setupDefaultEnvironment();
+            app.scene.fog = new THREE.FogExp2(0x2b1d3d, 0.015);
+            
+            // Bright cheerful lighting
+            app.hemiLight.color.setHex(0xffffff);
+            app.hemiLight.groundColor.setHex(0xff66b2);
+            app.spotLight.color.setHex(0xffcc00);
+            app.spotLight.intensity = 1.5;
+            
+            window.updateScore = (score) => {
+                document.getElementById('hScore').innerText = score;
+            };
+            
+            try {
+                const engine = new LocomotionEnvironmentFactory();
+                if(engine.init) engine.init(app.scene);
+                if(engine.setCore) engine.setCore(app);
+                
+                app.startLoop((dt) => {
+                    if(engine.update) engine.update(dt);
+                });
+                
+                window.__alisa_engine = engine;
+            } catch(e) {
+                console.error("ALISA Engine Launch Failed:", e);
+            }
+        };
+    </script>
+</body>
+</html>

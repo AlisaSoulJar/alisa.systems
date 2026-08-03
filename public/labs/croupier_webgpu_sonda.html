@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALISA — Sonda WebGPU + TSL</title>
+<!--
+  SONDA WebGPU / TSL — ¿es enchufable o es una migración?
+  ═══════════════════════════════════════════════════════════════════════════
+  Oscar preguntó si WebGPU y TSL serían «solo extensiones o plugins». Esta
+  página lo responde con hechos en vez de con opinión: monta un WebGPURenderer
+  de verdad, pinta un material escrito en TSL y dice qué backend acabó usando.
+
+  QUÉ SE APRENDE AQUÍ, Y POR QUÉ IMPORTA
+  --------------------------------------
+  · `three` y `three/webgpu` son BUILDS DISTINTOS. Fíjate en el importmap: esta
+    página NO puede usar el mismo que las otras 142. No se mezclan.
+  · `WebGPURenderer` cae solo a WebGL si el navegador no trae WebGPU, así que la
+    misma página sirve para los dos mundos — eso es lo que hace viable el salto.
+  · TSL se escribe en JavaScript y compila a WGSL y a GLSL. Un shader escrito
+    así vale para los dos backends; el GLSL crudo, solo para uno.
+
+  Lo que esta sonda NO resuelve: el post-proceso. `EffectComposer` y
+  `UnrealBloomPass` son de WebGL; en WebGPU la tubería es por nodos. Esa es la
+  parte cara del salto, no el renderer.
+-->
+<style>
+  body { margin:0; background:#0b0e14; color:#cfe3f5; font-family:ui-monospace,monospace; }
+  #panel { position:fixed; top:16px; left:16px; z-index:5; background:rgba(10,14,20,.86);
+           border:1px solid #24384f; border-radius:6px; padding:14px 16px; font-size:11.5px;
+           line-height:1.9; max-width:390px; }
+  #panel h1 { margin:0 0 8px; font-size:12px; letter-spacing:.22em; color:#7fd0ff; font-weight:400; }
+  .ok { color:#7CFC98; } .mal { color:#ff8080; } .dato { color:#e0b020; }
+  code { color:#9fd0ff; }
+</style>
+</head>
+<body>
+<div id="panel"><h1>SONDA WEBGPU + TSL</h1><div id="salida">probando…</div></div>
+
+<!-- ⚠️ Importmap DISTINTO al del resto del sitio: aquí `three` ES el build de
+     WebGPU. Mezclar los dos builds en una página duplica la librería y rompe
+     `instanceof`; por eso el salto se hace página a página, no a medias. -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "/vendor/three-0.170.0/build/three.webgpu.js",
+    "//": "OJO: en r170 `three/tsl` apunta AL MISMO fichero que `three/webgpu` —",
+    "///": "TSL sale del propio build de WebGPU. El `three.tsl.js` suelto llegó después.",
+    "three/tsl": "/vendor/three-0.170.0/build/three.webgpu.js",
+    "three/addons/": "/vendor/three-0.170.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+const salida = document.getElementById('salida');
+const linea = (t, clase = '') => salida.innerHTML += `<div class="${clase}">${t}</div>`;
+const resultado = { webgpu_en_navegador: !!navigator.gpu };
+
+try {
+  const THREE = await import('three');
+  linea(`three cargado · <span class="dato">r${THREE.REVISION}</span>`, 'ok');
+  resultado.revision = THREE.REVISION;
+
+  const { color, positionLocal, sin, time, mix, vec3 } = await import('three/tsl');
+  linea('TSL importado', 'ok');
+
+  const escena = new THREE.Scene();
+  const camara = new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 0.1, 100);
+  camara.position.set(0, 0.7, 3.4);
+
+  const render = new THREE.WebGPURenderer({ antialias: true });
+  render.setSize(innerWidth, innerHeight);
+  render.setClearColor(0x0b0e14);
+  document.body.appendChild(render.domElement);
+  await render.init();                       // WebGPU necesita init asíncrono
+
+  // El backend REAL, que puede no ser el que pediste: si el navegador no trae
+  // WebGPU, `WebGPURenderer` cae a WebGL solo. Eso es exactamente lo que hace
+  // viable el salto sin dejar a nadie fuera.
+  const backend = render.backend?.isWebGPUBackend ? 'WebGPU' : 'WebGL (repliegue)';
+  resultado.backend = backend;
+  linea(`backend en uso: <span class="dato">${backend}</span>`,
+        render.backend?.isWebGPUBackend ? 'ok' : '');
+
+  // Un material escrito en TSL: mismo código para los dos backends.
+  const mat = new THREE.MeshBasicNodeMaterial();
+  mat.colorNode = mix(color(0x4fd0ff), color(0xffffff),
+                      sin(time.mul(1.6).add(positionLocal.y.mul(3))).mul(0.5).add(0.5));
+  const cubo = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.3, 1.3), mat);
+  escena.add(cubo);
+  linea('material TSL compilado y en escena', 'ok');
+  resultado.tsl = true;
+
+  render.setAnimationLoop(() => {
+    cubo.rotation.x += 0.006; cubo.rotation.y += 0.009;
+    render.render(escena, camara);
+  });
+
+  linea('<br>VEREDICTO: el backend es <b>enchufable</b>. Lo que no se enchufa es'
+      + ' el post-proceso (<code>EffectComposer</code> es de WebGL) ni el GLSL crudo.', 'ok');
+} catch (e) {
+  resultado.error = String(e.message || e);
+  linea(`FALLA: ${resultado.error}`, 'mal');
+  linea('Si dice que no hay adaptador, este navegador no trae WebGPU — la sonda'
+      + ' está bien, el que no puede es él.', '');
+}
+
+resultado.navegador_gpu = !!navigator.gpu;
+window.__sonda = resultado;      // para poder leerlo desde fuera
+</script>
+</body>
+</html>

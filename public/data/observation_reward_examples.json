@@ -1,0 +1,296 @@
+{
+  "schemaVersion": "0.1.0",
+  "generatedAt": "2026-05-05T14:15:24.660Z",
+  "sourceContract": "data/observation_reward_commerce_manifest.json",
+  "sourcePlanet": "data/local_planet_manifest.json",
+  "purpose": "Deterministic examples for observe-to-render reward resolution.",
+  "examples": [
+    {
+      "node": {
+        "id": "Data/Memory",
+        "name": "Memory",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "domain": "node_city"
+      },
+      "roomArchetype": "memory_archive",
+      "visualMotif": "archive tower with crystal cabinets and search lamps",
+      "rewardIds": [
+        "memory_crystal",
+        "useful_tool",
+        "agent_job"
+      ],
+      "actions": [
+        {
+          "id": "akasha.search_here",
+          "label": "Search canon here",
+          "kind": "hub_route",
+          "requiresConsent": false,
+          "target": "/do/akasha-search"
+        },
+        {
+          "id": "korin.vectorize_here",
+          "label": "Ask Korin to vectorize this floor",
+          "kind": "being_job",
+          "requiresConsent": true,
+          "target": "Korin"
+        }
+      ],
+      "why": "Memory/canon spaces should reveal recall crystals first and offer vector work only with consent.",
+      "missingRewardIds": []
+    },
+    {
+      "node": {
+        "id": "Data/Lecciones",
+        "name": "Lecciones",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "domain": "node_city"
+      },
+      "roomArchetype": "memory_archive",
+      "visualMotif": "archive tower with crystal cabinets and search lamps",
+      "rewardIds": [
+        "memory_crystal",
+        "useful_tool",
+        "agent_job"
+      ],
+      "actions": [
+        {
+          "id": "akasha.search_here",
+          "label": "Search canon here",
+          "kind": "hub_route",
+          "requiresConsent": false,
+          "target": "/do/akasha-search"
+        },
+        {
+          "id": "korin.vectorize_here",
+          "label": "Ask Korin to vectorize this floor",
+          "kind": "being_job",
+          "requiresConsent": true,
+          "target": "Korin"
+        }
+      ],
+      "why": "Memory/canon spaces should reveal recall crystals first and offer vector work only with consent.",
+      "missingRewardIds": []
+    },
+    {
+      "node": {
+        "id": "Soma/Navi",
+        "name": "Navi",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "domain": "node_city"
+      },
+      "roomArchetype": "sensory_control_room",
+      "visualMotif": "control deck with ears, eyes, browser periscopes, and live service gauges",
+      "rewardIds": [
+        "system_health_insight",
+        "useful_tool",
+        "agent_job"
+      ],
+      "actions": [
+        {
+          "id": "hub.health",
+          "label": "Check Hub health",
+          "kind": "hub_route",
+          "requiresConsent": false,
+          "target": "/health"
+        },
+        {
+          "id": "monk.status",
+          "label": "Check vision/browser control",
+          "kind": "hub_route",
+          "requiresConsent": false,
+          "target": "/monk/status"
+        },
+        {
+          "id": "metatron.decree",
+          "label": "Ask Metatron to execute a bounded decree",
+          "kind": "being_job",
+          "requiresConsent": true,
+          "target": "Metatron"
+        }
+      ],
+      "why": "Embodied/sensory systems should expose status and safe control affordances.",
+      "missingRewardIds": []
+    },
+    {
+      "node": {
+        "id": "Soma/Sensory",
+        "name": "Sensory",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "domain": "node_city"
+      },
+      "roomArchetype": "sensory_control_room",
+      "visualMotif": "control deck with ears, eyes, browser periscopes, and live service gauges",
+      "rewardIds": [
+        "system_health_insight",
+        "useful_tool",
+        "agent_job"
+      ],
+      "actions": [
+        {
+          "id": "hub.health",
+          "label": "Check Hub health",
+          "kind": "hub_route",
+          "requiresConsent": false,
+          "target": "/health"
+        },
+        {
+          "id": "monk.status",
+          "label": "Check vision/browser control",
+          "kind": "hub_route",
+          "requiresConsent": false,
+          "target": "/monk/status"
+        },
+        {
+          "id": "metatron.decree",
+          "label": "Ask Metatron to execute a bounded decree",
+          "kind": "being_job",
+          "requiresConsent": true,
+          "target": "Metatron"
+        }
+      ],
+      "why": "Embodied/sensory systems should expose status and safe control affordances.",
+      "missingRewardIds": []
+    },
+    {
+      "node": {
+        "id": "World/Web",
+        "name": "Web",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "domain": "node_city"
+      },
+      "roomArchetype": "engine_workshop",
+      "visualMotif": "procedural workshop with navmesh tables, city seeds, and running simulation panels",
+      "rewardIds": [
+        "mini_game",
+        "hero_render",
+        "agent_job",
+        "system_health_insight"
+      ],
+      "actions": [
+        {
+          "id": "cartographer.inspect",
+          "label": "Inspect spatial state",
+          "kind": "hub_route",
+          "requiresConsent": false,
+          "target": "/overworld/state"
+        },
+        {
+          "id": "probe.smoke",
+          "label": "Ask Probe for a visual smoke test",
+          "kind": "being_job",
+          "requiresConsent": true,
+          "target": "Probe"
+        }
+      ],
+      "why": "Engine spaces are where play, simulation, testing, and visible system truth converge.",
+      "missingRewardIds": []
+    },
+    {
+      "node": {
+        "id": "World/Engines",
+        "name": "Engines",
+        "filesystemType": "directory",
+        "spatialRole": "floor",
+        "depth": 2,
+        "domain": "node_city"
+      },
+      "roomArchetype": "engine_workshop",
+      "visualMotif": "procedural workshop with navmesh tables, city seeds, and running simulation panels",
+      "rewardIds": [
+        "mini_game",
+        "hero_render",
+        "agent_job",
+        "system_health_insight"
+      ],
+      "actions": [
+        {
+          "id": "cartographer.inspect",
+          "label": "Inspect spatial state",
+          "kind": "hub_route",
+          "requiresConsent": false,
+          "target": "/overworld/state"
+        },
+        {
+          "id": "probe.smoke",
+          "label": "Ask Probe for a visual smoke test",
+          "kind": "being_job",
+          "requiresConsent": true,
+          "target": "Probe"
+        }
+      ],
+      "why": "Engine spaces are where play, simulation, testing, and visible system truth converge.",
+      "missingRewardIds": []
+    },
+    {
+      "node": {
+        "id": "C:/Program Files/ExampleApp",
+        "name": "ExampleApp",
+        "filesystemType": "directory",
+        "spatialRole": "building",
+        "depth": 1,
+        "domain": "node_city"
+      },
+      "roomArchetype": "commercial_hero_room",
+      "visualMotif": "premium branded room with a launch console and consent-gated portal surfaces",
+      "rewardIds": [
+        "hero_render",
+        "commercial_surface",
+        "useful_tool"
+      ],
+      "actions": [
+        {
+          "id": "hero.open_app",
+          "label": "Open or focus the real app",
+          "kind": "desktop_action",
+          "requiresConsent": true,
+          "target": "C:/Program Files/ExampleApp"
+        },
+        {
+          "id": "commerce.inspect_surface",
+          "label": "Inspect possible hero/commercial surface",
+          "kind": "local_contract",
+          "requiresConsent": true,
+          "target": "Q:\\alisa_project\\alisa\\World\\Web\\overworld\\data\\observation_reward_commerce_manifest.json"
+        }
+      ],
+      "why": "Commercial tools can become hero rooms, but launch/commerce actions need consent.",
+      "missingRewardIds": []
+    },
+    {
+      "node": {
+        "id": "C:/Windows/System32",
+        "name": "System32",
+        "filesystemType": "directory",
+        "spatialRole": "building",
+        "depth": 2,
+        "domain": "node_city"
+      },
+      "roomArchetype": "restricted_core",
+      "visualMotif": "sealed infrastructure core with warning lights and read-only diagnostic glass",
+      "rewardIds": [
+        "system_health_insight"
+      ],
+      "actions": [
+        {
+          "id": "system.inspect_readonly",
+          "label": "Inspect read-only health",
+          "kind": "hub_route",
+          "requiresConsent": false,
+          "target": "/system"
+        }
+      ],
+      "why": "Sensitive OS areas should be diagnostic by default, not playful mutation zones.",
+      "missingRewardIds": []
+    }
+  ]
+}

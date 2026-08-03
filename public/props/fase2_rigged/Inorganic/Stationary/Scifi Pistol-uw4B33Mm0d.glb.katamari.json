@@ -1,0 +1,23 @@
+{
+    "source_file": "Scifi Pistol-uw4B33Mm0d.glb",
+    "deduced_size_meters": 0.25,
+    "target_tier": "Tier -2: Tiny",
+    "target_scale_constraint": 0.2,
+    "voxel_grid": [
+        2,
+        4,
+        6
+    ],
+    "archetype": "prop_cube",
+    "morphology": {
+        "size_m": 0.25,
+        "domain": "inorganic",
+        "cladistics": "none",
+        "mobility": "stationary",
+        "mechanical_joints": 10
+    },
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0,
+    "mesh_scale_multiplier": 0.2020452329563405,
+    "mathematical_tomography": []
+}

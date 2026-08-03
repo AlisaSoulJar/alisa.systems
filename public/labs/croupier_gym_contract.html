@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA LAB — El contrato del Gym: tres puertas</title>
+<style>
+  body{margin:0;background:#070a11;color:#cfe3f5;font-family:ui-monospace,monospace;padding:20px 26px 60px}
+  h1{margin:0 0 3px;font-size:18px;color:#7fd0ff;letter-spacing:1px}
+  h2{font-size:13px;color:#7fd0ff;margin:22px 0 6px;border-bottom:1px solid #1d2b3e;padding-bottom:4px}
+  .sub{color:#5f7a92;font-size:11.5px;line-height:1.7;margin-bottom:6px;max-width:900px}
+  pre{background:#0b1018;border:1px solid #16202e;padding:10px 12px;font-size:11.5px;
+      line-height:1.6;white-space:pre-wrap;color:#b8d4ea;margin:6px 0;border-radius:3px}
+  .ok{color:#7CFC98}.bad{color:#ff7b72}.warn{color:#ffd166}.k{color:#5f7a92}
+  b.v{color:#ffd166}
+</style>
+<script type="importmap">
+{ "imports": { "three": "/vendor/three-0.160.0/build/three.module.js",
+               "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+               "@alisa-engine/": "../js/alisa-engine/" } }
+</script>
+</head>
+<body>
+<h1>▓ EL CONTRATO DEL GYM · un entorno, tres puertas, una métrica</h1>
+<div class="sub">
+Entorno de prueba: <b class="v">alisa/CabinetEscape-v0</b>, que envuelve <code>ScummInteractionEngine</code> —
+código que ya existía en el motor y <b>no</b> se escribió para este contrato. Si encaja aquí, el contrato sirve.
+</div>
+<div id="out"></div>
+
+<script type="module">
+import { CabinetEscapeEnv } from '@alisa-engine/src/gym/envs/CabinetEscapeEnv.js';
+import { GymBridge } from '@alisa-engine/src/gym/GymBridge.js';
+
+const out = document.getElementById('out');
+const say = (h, txt, cls = '') => {
+  out.insertAdjacentHTML('beforeend', `<h2>${h}</h2><pre class="${cls}">${txt}</pre>`);
+};
+const R = {};
+
+// ══ 1. FICHA ══════════════════════════════════════════════════════
+const spec = CabinetEscapeEnv.spec();
+say('1 · Ficha del entorno', JSON.stringify(spec, null, 2));
+
+// ══ 2. PUERTA NUMÉRICA ════════════════════════════════════════════
+const env = new CabinetEscapeEnv();
+const obs0 = env.reset(1234);
+let log = `reset(1234) → observación de ${obs0.length} números\n${JSON.stringify(obs0)}\n\n`;
+const r1 = env.step(0);
+log += `step(0) → recompensa ${r1.reward}, terminado=${r1.done}\n  info: ${JSON.stringify(r1.info)}\n`;
+say('2 · 🤖 Puerta numérica (RL)', log);
+R.numerica = { obsLen: obs0.length, primerPaso: r1.reward };
+
+// ══ 3. PUERTA DE LENGUAJE ═════════════════════════════════════════
+const env2 = new CabinetEscapeEnv();
+env2.reset(1234);
+let l = `describe():\n  "${env2.describe()}"\n\naffordances(): ${env2.affordances().length} verbos disponibles\n`;
+env2.affordances().slice(0, 3).forEach(a => { l += `  · ${a.verb}(${JSON.stringify(a.args)}) — "${a.label}"\n`; });
+const rv = env2.stepVerb('abrir_cajon', { cajon: 3 });
+l += `\nstepVerb('abrir_cajon', {cajon:3}) → recompensa ${rv.reward}\n`;
+l += `\ndescribe() DESPUÉS (esto es lo que lee el LLM en el turno siguiente):\n  "${env2.describe()}"\n`;
+say('3 · 🧠 Puerta de lenguaje (agentes LLM)', l);
+R.lenguaje = { verbos: env2.affordances().length + 1 };
+
+// ══ 4. ¿REPRODUCIBLE? ═════════════════════════════════════════════
+const t = CabinetEscapeEnv.selfTest(CabinetEscapeEnv.baseline, { seed: 1234, maxSteps: 64 });
+const veredicto =
+  (t.reproducible ? '<span class="ok">✓ REPRODUCIBLE</span>' : '<span class="bad">✗ NO reproducible</span>') +
+  '   ' +
+  (t.sensible ? '<span class="ok">✓ sensible a la semilla</span>' : '<span class="warn">⚠ ignora la semilla</span>');
+say('4 · ¿Puede entrar en el benchmark?',
+  `${veredicto}\n\n` +
+  `misma semilla, dos veces:\n` +
+  `  A → pasos=${t.a.steps} recompensa=${t.a.totalReward} puntos=${t.a.score} azares=${t.a.draws}\n` +
+  `  B → pasos=${t.b.steps} recompensa=${t.b.totalReward} puntos=${t.b.score} azares=${t.b.draws}\n`);
+R.selfTest = { reproducible: t.reproducible, sensible: t.sensible };
+
+// ══ 5. LA MÉTRICA COMPARABLE ══════════════════════════════════════
+const alAzar = (obs, e) => { const a = e.affordances(); return a.length ? a[Math.floor(Math.random() * a.length)].action : 0; };
+const corre = (pol, n = 40) => {
+  let vivos = 0, puntos = 0, pasos = 0;
+  for (let s = 0; s < n; s++) {
+    const r = new CabinetEscapeEnv().runEpisode(pol, { seed: s, maxSteps: 64 });
+    if (r.metrics.escapado) vivos++;
+    puntos += r.score; pasos += r.steps;
+  }
+  return { exito: (100 * vivos / n).toFixed(1) + '%', puntosMedios: (puntos / n).toFixed(1), pasosMedios: (pasos / n).toFixed(1) };
+};
+const azar = corre(alAzar);
+const base = corre(CabinetEscapeEnv.baseline);
+say('5 · La métrica: mismo eje para cualquier agente',
+  `40 episodios, semillas 0..39, mismo horizonte.\n\n` +
+  `  al azar   → éxito ${azar.exito}  puntos ${azar.puntosMedios}  pasos ${azar.pasosMedios}\n` +
+  `  línea base→ éxito ${base.exito}  puntos ${base.puntosMedios}  pasos ${base.pasosMedios}\n\n` +
+  `Un LLM jugando por VERBOS y una política numérica compiten en este mismo eje.\n` +
+  `Que la línea base no llegue al 100% es intencionado: tiene que quedar sitio por encima.`);
+R.bench = { azar, base };
+
+// ══ 6. EL PUENTE A PYTHON ═════════════════════════════════════════
+const api = GymBridge.attach(new CabinetEscapeEnv());
+api.reset(7);
+const puertas = {
+  'numérica  → step()':        typeof api.step,
+  'numérica  → observation()': typeof api.observation,
+  'lenguaje  → describe()':    typeof api.describe,
+  'lenguaje  → affordances()': typeof api.affordances,
+  'lenguaje  → stepVerb()':    typeof api.stepVerb,
+  'humana    → setRenderEnabled()': typeof api.setRenderEnabled,
+  'benchmark → selfTest()':    typeof api.selfTest,
+};
+let p = 'window.alisaGym expuesto. Desde Python (Playwright):\n\n';
+p += `  page.evaluate("alisaGym.reset(1234)")\n`;
+p += `  page.evaluate("alisaGym.describe()")\n     → "${api.describe().slice(0, 90)}…"\n`;
+p += `  page.evaluate("alisaGym.affordances()")\n     → ${api.affordances().length} verbos\n\n`;
+p += 'puertas expuestas:\n';
+for (const [k, v] of Object.entries(puertas)) p += `  ${v === 'function' ? '✓' : '✗'} ${k}\n`;
+p += `\nalias antiguos de RLGymBridge (para no romper nada):\n`;
+p += `  ${typeof window.resetEpisode === 'function' ? '✓' : '✗'} resetEpisode  ` +
+     `${typeof window.stepSimulation === 'function' ? '✓' : '✗'} stepSimulation  ` +
+     `${typeof window.getObservationVector === 'function' ? '✓' : '✗'} getObservationVector\n`;
+say('6 · 🐍 El puente: las tres puertas llegan a Python', p);
+R.puente = Object.fromEntries(Object.entries(puertas).map(([k, v]) => [k, v === 'function']));
+
+window.__gym = R;
+window.__ready = true;
+</script>
+</body>
+</html>

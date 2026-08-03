@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ALISA — Sala del Huevo (The Egg Room)</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #05050a; font-family: monospace; color: #fff; user-select: none; }
+        #overlay {
+            position: absolute; top: 10px; left: 10px; pointer-events: none;
+            background: rgba(10,10,15,0.8); padding: 20px; border-radius: 12px;
+            border: 1px solid #ffcc00; box-shadow: 0 0 30px rgba(255,204,0,0.2);
+            z-index: 10;
+        }
+        h1 { margin: 0 0 10px 0; color: #ffcc00; font-size: 24px; letter-spacing: 2px; }
+        p { margin: 0 0 15px 0; color: #aaa; font-size: 13px; line-height: 1.5; }
+        .instructions { font-size: 11px; color: #888; margin-top: 10px; }
+        .kbd { background: #333; padding: 2px 6px; border-radius: 4px; font-weight: bold; color: #fff; }
+        
+        #tooltip {
+            position: absolute; display: none; background: rgba(255,204,0,0.9);
+            color: #000; padding: 8px 12px; border-radius: 6px; font-weight: bold;
+            font-size: 14px; pointer-events: none; z-index: 20;
+            box-shadow: 0 0 15px rgba(255,204,0,0.5); transform: translate(-50%, -100%);
+            margin-top: -15px;
+        }
+        
+        #crosshair {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 10px; height: 10px; border: 2px solid rgba(255,255,255,0.5);
+            border-radius: 50%; pointer-events: none; z-index: 15;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+        #crosshair.active {
+            border-color: #ffcc00; transform: translate(-50%, -50%) scale(1.5);
+        }
+    </style>
+    <script type="importmap">
+    { 
+        "imports": { 
+            "three": "/vendor/three-0.170.0/build/three.module.js", 
+            "three/addons/": "/vendor/three-0.170.0/examples/jsm/",
+            "@alisa-engine/": "../js/alisa-engine/"
+        } 
+    }
+    </script>
+</head>
+<body>
+
+    <div id="overlay">
+        <h1>🥚 LA SALA DEL HUEVO</h1>
+        <p>The Nexus of the Raccoon Scape Matrioshka.<br>Select an arcade cabinet to jack into a simulation.</p>
+        <div class="instructions">
+            <span class="kbd">CLICK + DRAG</span> to look around<br>
+            <span class="kbd">MOUSE HOVER</span> to inspect arcades<br>
+            <span class="kbd">CLICK</span> on a screen to launch
+        </div>
+        <div style="margin-top: 15px; border-top: 1px solid #444; padding-top: 10px; font-size: 12px; color: #888; font-weight: bold;">
+            [COLONY BEAT]: <span id="pulse-status" style="color: #ffff00;">Sincronizando...</span>
+        </div>
+    </div>
+
+    <div id="tooltip">Simulation Name</div>
+    <div id="crosshair"></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+
+// Stages Data
+const stages = [
+    { id: 1, name: "STAGE 1: Cabinet Escape", icon: "🗄️", color: 0x4488ff, url: "../games/croupier_cabinet_escape.html" },
+    { id: 2, name: "STAGE 2: Interaction Lab", icon: "🦊", color: 0xff6600, url: "../labs/croupier_interaction_lab.html" },
+    { id: 3, name: "STAGE 3: Chopper Aquarium", icon: "🚁", color: 0x1e88e5, url: "../labs/croupier_chopper_aquarium.html" },
+    // ── La etapa recuperada ──────────────────────────────────────────────
+    // "Chopper Search (Building Floors)" existió, se jugó, y se perdió: alguien
+    // reutilizó el nombre de su fichero para una prueba del plugin BSP y lo
+    // sobrescribió. Solo quedaba constancia en el catálogo `lab_heritage.html`.
+    // Reconstruida el 2026-08-01 a partir de piezas del motor que llevaban
+    // meses escritas y sin que nadie las llamara.
+    //
+    // Va ANTES del edificio de seis plantas porque es su versión de una sola:
+    // enseña la mecánica de registrar escondites antes de escalarla en altura.
+    { id: 4, name: "STAGE 4: Registro de Planta", icon: "🦝", color: 0xffb347, url: "../games/raccoon_floor_search.html" },
+    // Estaba en `../` (la raíz de public). Vive con sus hermanos en games/.
+    { id: 5, name: "STAGE 5: Corp Building", icon: "🏢", color: 0x9933ff, url: "../games/croupier_corporate_building.html" },
+    { id: 6, name: "STAGE 6: City Sector", icon: "🏙️", color: 0xff3344, url: "../games/raccoon_city_sector.html" },
+    { id: 7, name: "STAGE 7: Planet Global", icon: "🌍", color: 0x33ffee, url: "../games/raccoon_planet.html" },
+    { id: 8, name: "STAGE 8: Interstellar", icon: "🌌", color: 0xff33ee, url: "../games/raccoon_space.html" }
+];
+
+// Initialize ALISA Render Core
+const app = new AlisaRenderCore({ clearColor: 0x050508, cameraPosition: new THREE.Vector3(0, 5, 15) });
+app.setupDefaultEnvironment();
+
+// Customize Egg Room environment
+app.floor.material.color.setHex(0x0a0a14);
+app.floor.material.metalness = 0.8;
+app.floor.material.roughness = 0.2;
+
+// Add The Egg (Central Artifact)
+const eggGeo = new THREE.SphereGeometry(3, 32, 32);
+eggGeo.scale(1, 1.3, 1);
+const eggMat = new THREE.MeshStandardMaterial({ 
+    color: 0xffcc00, metalness: 0.9, roughness: 0.1,
+    emissive: 0x443300, emissiveIntensity: 0.2, envMapIntensity: 1.0
+});
+const egg = new THREE.Mesh(eggGeo, eggMat);
+egg.position.set(0, 4, 0);
+egg.castShadow = true;
+app.add(egg);
+
+// Animate the egg floating
+let time = 0;
+let pulseIntensity = 0.2;
+const defaultUpdate = (dt) => {
+    time += dt;
+    egg.position.y = 4 + Math.sin(time * 1.5) * 0.3;
+    egg.rotation.y += dt * 0.2;
+    // Breathing Sístole/Diástole effect
+    const breath = 0.5 + Math.sin(time * 3) * 0.5;
+    eggMat.emissiveIntensity = THREE.MathUtils.lerp(eggMat.emissiveIntensity, pulseIntensity * (0.5 + breath*0.5), dt * 4.0);
+};
+
+// Sístole/Diástole Hub Hook
+const pulseStatusEl = document.getElementById('pulse-status');
+const fetchPulse = async () => {
+    try {
+        const res = await fetch('http://127.0.0.1:8741/health/ready');
+        if (res.ok) {
+            const data = await res.json();
+            pulseIntensity = 1.0;
+            const beingsCount = data.beings ? Object.keys(data.beings).length : '?';
+            pulseStatusEl.innerText = `SÍSTOLE [Hub Alive: ${beingsCount} Beings]`;
+            pulseStatusEl.style.color = '#44ff88';
+        } else {
+            throw new Error("HTTP error");
+        }
+    } catch(e) {
+        pulseIntensity = 0.1;
+        pulseStatusEl.innerText = "DIÁSTOLE [Hub Offline]";
+        pulseStatusEl.style.color = '#ff3344';
+    }
+};
+setInterval(fetchPulse, 2000);
+fetchPulse();
+
+// Create Arcade Cabinets
+const cabinets = [];
+const arcRadius = 12;
+const angleStep = Math.PI / (stages.length - 1);
+
+stages.forEach((stage, i) => {
+    // Semi-circle arrangement (from left to right)
+    const angle = Math.PI + (i * angleStep);
+    const x = Math.cos(angle) * arcRadius;
+    const z = Math.sin(angle) * arcRadius;
+
+    const group = new THREE.Group();
+    group.position.set(x, 0, z);
+    group.lookAt(0, 0, 0); // Face the egg
+
+    // Cabinet Body
+    const cabGeo = new THREE.BoxGeometry(3, 6, 2.5);
+    const cabMat = new THREE.MeshStandardMaterial({ color: 0x11111a, metalness: 0.5, roughness: 0.4 });
+    const cabMesh = new THREE.Mesh(cabGeo, cabMat);
+    cabMesh.position.y = 3;
+    cabMesh.castShadow = true;
+    cabMesh.receiveShadow = true;
+    group.add(cabMesh);
+
+    // Screen (GLOWING)
+    const screenGeo = new THREE.PlaneGeometry(2.4, 1.8);
+    const screenMat = new THREE.MeshBasicMaterial({ color: stage.color });
+    const screenMesh = new THREE.Mesh(screenGeo, screenMat);
+    screenMesh.position.set(0, 4, 1.26);
+    // Tilt screen up slightly
+    screenMesh.rotation.x = -0.15;
+    
+    // Store metadata on screen for raycasting
+    screenMesh.userData = { isScreen: true, stageData: stage };
+    group.add(screenMesh);
+    cabinets.push(screenMesh);
+
+    // Floor decal / Glow
+    const glowGeo = new THREE.CircleGeometry(2.5, 32);
+    const glowMat = new THREE.MeshBasicMaterial({ color: stage.color, transparent: true, opacity: 0.2 });
+    const glow = new THREE.Mesh(glowGeo, glowMat);
+    glow.rotation.x = -Math.PI / 2;
+    glow.position.y = 0.05;
+    group.add(glow);
+
+    app.add(group);
+});
+
+// Configure Camera Controls for First-Person Feel
+app.controls.enablePan = false;
+app.controls.minDistance = 2;
+app.controls.maxDistance = 20;
+app.controls.maxPolarAngle = Math.PI / 2 - 0.1;
+app.controls.minPolarAngle = 0.5;
+
+// Raycasting Interaction
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const tooltip = document.getElementById('tooltip');
+const crosshair = document.getElementById('crosshair');
+
+window.addEventListener('mousemove', (e) => {
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, app.camera);
+    const intersects = raycaster.intersectObjects(cabinets);
+
+    if (intersects.length > 0) {
+        const stage = intersects[0].object.userData.stageData;
+        tooltip.style.display = 'block';
+        tooltip.style.left = e.clientX + 'px';
+        tooltip.style.top = e.clientY + 'px';
+        tooltip.innerText = stage.name;
+        tooltip.style.background = '#' + stage.color.toString(16).padStart(6, '0');
+        crosshair.classList.add('active');
+        document.body.style.cursor = 'pointer';
+    } else {
+        tooltip.style.display = 'none';
+        crosshair.classList.remove('active');
+        document.body.style.cursor = 'default';
+    }
+});
+
+window.addEventListener('pointerdown', (e) => {
+    raycaster.setFromCamera(mouse, app.camera);
+    const intersects = raycaster.intersectObjects(cabinets);
+    if (intersects.length > 0) {
+        const stage = intersects[0].object.userData.stageData;
+        window.location.href = stage.url;
+    }
+});
+
+// Run
+app.startLoop((dt) => {
+    defaultUpdate(dt);
+});
+</script>
+</body>
+</html>

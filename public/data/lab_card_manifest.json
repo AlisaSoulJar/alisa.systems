@@ -1,0 +1,4811 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-05-05T13:29:46.927Z",
+  "source": {
+    "labHtml": "World\\Web\\overworld\\lab.html",
+    "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json",
+    "overrides": "World\\Web\\overworld\\data\\lab_card_manifest_overrides.json"
+  },
+  "purpose": "Canonical contract for ALISA Simulation Lab cards. A card is excellent only when it proves a living ALISA capability.",
+  "excellenceContract": "Card -> ALISA organ -> canon/paper claim -> endpoint or state -> evidence -> product experience.",
+  "requiredGates": [
+    "routeHealth",
+    "canonicalPurpose",
+    "paperClaimAlignment",
+    "liveSystemIntegration",
+    "industryPolish",
+    "observabilityTelemetry",
+    "productNarrative"
+  ],
+  "summary": {
+    "cards": 69,
+    "routePass": 69,
+    "routeDraft": 0,
+    "priorities": {
+      "P0": 46,
+      "P1": 19,
+      "P2": 4
+    },
+    "sections": {
+      "The Gigafactory Pipeline": 4,
+      "The Sovereign Nexus": 5,
+      "Rooms & Spatial Prototypes": 8,
+      "Matrix Overworld (The Cameras)": 5,
+      "Machine Learning Dojo": 5,
+      "Physics & Eco Simulations": 8,
+      "Core Mechanics": 7,
+      "Visuals & Procedural Labs": 11,
+      "Procedural Worlds": 7,
+      "Machine Learning": 1,
+      "Raccoon Escape": 8
+    },
+    "axes": {
+      "factory_pipeline": 4,
+      "world_simulation": 30,
+      "open_core_engine": 32,
+      "sovereign_governance": 20,
+      "learning_training": 44,
+      "perception_browser_control": 10,
+      "memory_identity_continuity": 3,
+      "spatial_product_surface": 4,
+      "gym_evaluation": 15
+    }
+  },
+  "cards": [
+    {
+      "index": 0,
+      "id": "card-room-arachne",
+      "section": "The Gigafactory Pipeline",
+      "dataCat": "factory",
+      "href": "rooms/room_arachne_ingestion.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/rooms/room_arachne_ingestion.html",
+      "title": "🕸️ Arachne Ingestion Area Diegetic visualization of the Python Sastre logic. Chaotic assets fall from the tube wrapped in silk, Katamari semantics are applied, and they hatch fully sized into SOMA. Sastre Ingestion NEW",
+      "line": 337,
+      "axes": [
+        "factory_pipeline",
+        "world_simulation",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Arachne",
+      "systems": [
+        "ALISA Engine",
+        "Arachne",
+        "Cartographer",
+        "Factories",
+        "Geppetto",
+        "Overworld",
+        "Plugins",
+        "Pygmalion",
+        "Simulation Systems",
+        "Systems"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:337",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    },
+    {
+      "index": 1,
+      "id": "card-room-pygmalion",
+      "section": "The Gigafactory Pipeline",
+      "dataCat": "factory",
+      "href": "rooms/room_pygmalion_gigafactory.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/rooms/room_pygmalion_gigafactory.html",
+      "title": "🦾 Pygmalion Gigafactory Sovereign operation theatre. Raw meshes are placed under the mechanical arms, where generative 3D logic deduces and physically injects a neural skeletal armature into the geometry. Surgeon Armature",
+      "line": 350,
+      "axes": [
+        "factory_pipeline",
+        "sovereign_governance",
+        "learning_training",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Pygmalion",
+      "systems": [
+        "AIO",
+        "ALISA Engine",
+        "Arachne",
+        "ColonialIRC",
+        "Factories",
+        "Geppetto",
+        "JobBoard",
+        "Neo Dojo",
+        "Plugins",
+        "Pygmalion",
+        "Queen",
+        "RL Gym",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "ALISA can expose governance, delegation and agency as inspectable system state.",
+      "endpointHints": [
+        "/beings/",
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html",
+        "/do/speak",
+        "/health",
+        "/jobboard/list"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:350",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Show command, delegation, result location and log/memory trace."
+    },
+    {
+      "index": 2,
+      "id": "card-room-geppetto",
+      "section": "The Gigafactory Pipeline",
+      "dataCat": "factory",
+      "href": "rooms/room_geppetto_choreography.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/rooms/room_geppetto_choreography.html",
+      "title": "🪆 Geppetto Choreography Stage The Marionette Stage. Assets imbued with an armature arrive here. Geppetto consults the Anima Mundi (Ollama) to deduce their mathematical Kinematics (gait, bounce, frequency). Active Learner Kinematics NEW",
+      "line": 362,
+      "axes": [
+        "factory_pipeline",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Geppetto",
+      "systems": [
+        "ALISA Engine",
+        "Arachne",
+        "Factories",
+        "Geppetto",
+        "Plugins",
+        "Pygmalion",
+        "Systems"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:362",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    },
+    {
+      "index": 3,
+      "id": "card-room-neo-dojo",
+      "section": "The Gigafactory Pipeline",
+      "dataCat": "factory",
+      "href": "labs/croupier_physics_locomotion.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_physics_locomotion.html",
+      "title": "🥋 Neo Dojo (The Kindergarten) Reinforcement Learning matrix. Surgical geometries arrive here to learn kinematics. A TensorFlow DQN injects torque across bones over 200 epochs until the mass achieves autolocomotion. Neo RL DQN NEW",
+      "line": 375,
+      "axes": [
+        "factory_pipeline",
+        "learning_training",
+        "world_simulation",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Neo",
+      "systems": [
+        "ALISA Engine",
+        "Arachne",
+        "Cartographer",
+        "Factories",
+        "Geppetto",
+        "Neo Dojo",
+        "Overworld",
+        "Plugins",
+        "Pygmalion",
+        "RL Gym",
+        "Simulation Systems",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:375",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    },
+    {
+      "index": 4,
+      "id": "card-room-queen",
+      "section": "The Sovereign Nexus",
+      "dataCat": "nexus",
+      "href": "rooms/room_core_waiting.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/rooms/room_core_waiting.html",
+      "title": "👑 Core Waiting Room The colonial antechamber. Features a complete parliamentary seating arrangement for the 10 Core Beings, waiting around the central table for the Sovereign to emerge and dispense SmartContracts. Agora Assembly NEW",
+      "line": 397,
+      "axes": [
+        "sovereign_governance",
+        "learning_training"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Queen",
+      "systems": [
+        "AIO",
+        "ColonialIRC",
+        "JobBoard",
+        "Neo Dojo",
+        "Queen",
+        "RL Gym",
+        "TFJS"
+      ],
+      "claim": "ALISA can expose governance, delegation and agency as inspectable system state.",
+      "endpointHints": [
+        "/beings/",
+        "/do/speak",
+        "/health",
+        "/jobboard/list"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:397",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Show command, delegation, result location and log/memory trace."
+    },
+    {
+      "index": 5,
+      "id": "card-room-hacker-queen",
+      "section": "The Sovereign Nexus",
+      "dataCat": "nexus",
+      "href": "rooms/room_queen_office.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/rooms/room_queen_office.html",
+      "title": "👩‍💻 Hacker Queen's Sanctum ALISA's true sovereign developer cave. Features a server cluster backbone, 5 enveloping CSS3D terminal screens, and intense matrix-cyber neon lighting where the Sovereign writes code. VRM Sovereign MToon NEW",
+      "line": 410,
+      "axes": [
+        "sovereign_governance"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Queen",
+      "systems": [
+        "AIO",
+        "ColonialIRC",
+        "JobBoard",
+        "Queen"
+      ],
+      "claim": "The Queen Office is a live sovereign command sanctum: governance, delegation, colony channels, workers, models and housekeeping are visible as system state.",
+      "endpointHints": [
+        "/health",
+        "/system",
+        "/jobboard/list",
+        "/board/worker-status",
+        "/irc/status",
+        "/fleet/status",
+        "/cogsworth/jobboard-gc-status"
+      ],
+      "evidence": {
+        "sourceLine": "World/Web/overworld/lab.html:409",
+        "smokeReport": "Data/BuilderEvidence/lab_cdp_smoke_2026-05-05_final.json",
+        "liveCdpReport": "Data/BuilderEvidence/queen_office_live_cdp_2026-05-05_fixed.json",
+        "page": "World/Web/overworld/rooms/room_queen_office.html"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "pass",
+          "note": "Inferred from Lab section and route; requires explicit canon citation.",
+          "evidence": "Owner Queen, axis sovereign_governance; the room exposes the command center of ALISA rather than a static throne scene."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "pass",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed.",
+          "evidence": "Panel reads /health, /jobboard/list, /board/worker-status, /irc/status, /fleet/status and /cogsworth/jobboard-gc-status; startup pulse reads /system."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "pass",
+          "note": "Needs trace, log, metric or reusable evidence artifact.",
+          "evidence": "CDP report captured Hub online, 0 open jobs, 15 worker reports, IRC 1 client/5 channels, 25 models, Cogsworth active, CPU and RAM percentages."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add a safe decree console that can publish a dry-run JobBoard task and display the resulting job id/evidence trace."
+    },
+    {
+      "index": 6,
+      "id": "card-room-mirror",
+      "section": "The Sovereign Nexus",
+      "dataCat": "nexus",
+      "href": "labs/croupier_digital_twin_test.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_digital_twin_test.html",
+      "title": "🪞 The Sovereign Mirror (Twin) The sensory Digital Twin of ALISA. Listens to the Hub's real-time SCUMM SSE stream and procedurally manifests Events, Ambient Endocrine Color Grading (Hormones), Camera Depth, and AudioContext Synthetic Soundscapes in real-time. SSE Live Engine + SFX NEW",
+      "line": 424,
+      "axes": [
+        "sovereign_governance",
+        "perception_browser_control",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Queen",
+      "systems": [
+        "AIO",
+        "ALISA Engine",
+        "ALISA Vision",
+        "CDP Hub",
+        "ColonialIRC",
+        "Factories",
+        "JobBoard",
+        "Monk",
+        "Motoko",
+        "Plugins",
+        "Queen",
+        "Systems"
+      ],
+      "claim": "A digital agent can observe and act through browser/desktop interfaces with human-like feedback loops.",
+      "endpointHints": [
+        "/beings/",
+        "/cdp/exec",
+        "/cdp/navigate",
+        "/cdp/status",
+        "/cdp/tabs",
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html",
+        "/do/speak",
+        "/health",
+        "/jobboard/list"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:424",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Bind the demo to Monk, ALISA Vision or CDP health and show the observe-act loop."
+    },
+    {
+      "index": 7,
+      "id": "card-room-avatar",
+      "section": "The Sovereign Nexus",
+      "dataCat": "nexus",
+      "href": "labs/croupier_avatar_integration_test.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_avatar_integration_test.html",
+      "title": "🧍 Avatar Integration Test Assigns distinct procedural geometries and color maps to Beings via SSE. Avatars are persistent, maintaining state, position, and performing kinematic animations upon receiving Hub instructions. Avatars Kinematics NEW",
+      "line": 437,
+      "axes": [
+        "sovereign_governance"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Motoko",
+      "systems": [
+        "AIO",
+        "ColonialIRC",
+        "JobBoard",
+        "Queen"
+      ],
+      "claim": "ALISA can expose governance, delegation and agency as inspectable system state.",
+      "endpointHints": [
+        "/beings/",
+        "/do/speak",
+        "/health",
+        "/jobboard/list"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:437",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Show command, delegation, result location and log/memory trace."
+    },
+    {
+      "index": 8,
+      "id": "card-room-akasha",
+      "section": "The Sovereign Nexus",
+      "dataCat": "nexus",
+      "href": "rooms/room_akasha_fractal.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/rooms/room_akasha_fractal.html",
+      "title": "💠 Akasha Vector Core Immersive 3D visualization of the Sovereign Memory vectors. Renders thousands of instances orbiting a cognitive singularity with glowing, interactive semantics. Memory Instances NEW",
+      "line": 450,
+      "axes": [
+        "memory_identity_continuity",
+        "sovereign_governance"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Korin",
+      "systems": [
+        "AIO",
+        "Akasha",
+        "ColonialIRC",
+        "JobBoard",
+        "Korin",
+        "MemoryWeaver",
+        "Queen",
+        "WarpDrive"
+      ],
+      "claim": "Akasha is not only a visual metaphor: it exposes live semantic memory status and supports recall from the rendered memory field.",
+      "endpointHints": [
+        "/akasha/status",
+        "/korin/status",
+        "/memory/status",
+        "/do/akasha-search"
+      ],
+      "evidence": {
+        "sourceLine": "World/Web/overworld/lab.html:449",
+        "smokeReport": "Data/BuilderEvidence/lab_cdp_smoke_2026-05-05_final.json",
+        "liveCdpReport": "Data/BuilderEvidence/akasha_room_live_cdp_2026-05-05.json",
+        "page": "World/Web/overworld/rooms/room_akasha_fractal.html"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "pass",
+          "note": "Inferred from Lab section and route; requires explicit canon citation.",
+          "evidence": "Owner Korin, axes memory_identity_continuity and sovereign_governance, systems Akasha/Korin/MemoryWeaver/WarpDrive."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "pass",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed.",
+          "evidence": "HUD reads /akasha/status, /korin/status and /memory/status; vector clicks call /do/akasha-search with fallback only on Hub failure."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "pass",
+          "note": "Needs trace, log, metric or reusable evidence artifact.",
+          "evidence": "CDP report captured VECTORS=1158, DIMENSIONS=768, STORE=SQLITE_WAL, QUEUE=1044 pending, RECALL=READY, STATUS=MEMORY LIVE."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add explicit paper/canon citation and a polished recall inspector that shows source, score and memory type without crowding the 3D view."
+    },
+    {
+      "index": 9,
+      "id": "card-room-art-direction",
+      "section": "Rooms & Spatial Prototypes",
+      "dataCat": "rooms",
+      "href": "rooms/room_art_direction.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/rooms/room_art_direction.html",
+      "title": "🎨 Art Direction Test Room Comparativa A/B para definir el canon estético de la colonia. Contrapone la técnica de mallas desconectadas (Rayman) con la técnica de inserción procedural (Bolas Action-Figure). A/B Test NEW",
+      "line": 472,
+      "axes": [
+        "spatial_product_surface"
+      ],
+      "priority": "P2",
+      "ownerBeing": "Queen",
+      "systems": [
+        "Overworld Lab",
+        "Product Surface"
+      ],
+      "claim": "This surface should make an ALISA capability legible as product.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:472",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add purpose, canonical claim, first interaction, telemetry and pass criteria."
+    },
+    {
+      "index": 10,
+      "id": "card-room-tenshi",
+      "section": "Rooms & Spatial Prototypes",
+      "dataCat": "rooms",
+      "href": "rooms/room_tenshi_no_tamago.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/rooms/room_tenshi_no_tamago.html",
+      "title": "🥚 Tenshi no Tamago Santuario interactivo. Origen del Huevo y selector de Cabinet. AlisaRenderCore",
+      "line": 483,
+      "axes": [
+        "sovereign_governance"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Queen",
+      "systems": [
+        "AIO",
+        "ColonialIRC",
+        "JobBoard",
+        "Queen"
+      ],
+      "claim": "ALISA can expose governance, delegation and agency as inspectable system state.",
+      "endpointHints": [
+        "/beings/",
+        "/do/speak",
+        "/health",
+        "/jobboard/list"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:483",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Show command, delegation, result location and log/memory trace."
+    },
+    {
+      "index": 11,
+      "id": "card-room-boardgames",
+      "section": "Rooms & Spatial Prototypes",
+      "dataCat": "rooms",
+      "href": "labs/croupier_table_games_arcade.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_table_games_arcade.html",
+      "title": "🎲 Table Games Node The definitive instanced blueprint for physical board games in the Overworld. Features decoupled procedural generation for Board Games (Chess, Go, Checkers) and Casino Tapestry layouts with fully stochastic Croupier kinematics. Three.js Kinematics Croupier",
+      "line": 496,
+      "axes": [
+        "learning_training",
+        "gym_evaluation",
+        "world_simulation",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Zazu",
+      "systems": [
+        "ALISA Engine",
+        "Arcade",
+        "Cartographer",
+        "Croupier",
+        "Evaluation Harness",
+        "Factories",
+        "Neo Dojo",
+        "Overworld",
+        "Plugins",
+        "RL Gym",
+        "Simulation Systems",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:496",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    },
+    {
+      "index": 12,
+      "id": "card-room-empty",
+      "section": "Rooms & Spatial Prototypes",
+      "dataCat": "rooms",
+      "href": "rooms/room_empty.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/rooms/room_empty.html",
+      "title": "🔲 Empty Blueprint Node Sterile developmental environment containing only matrix grids, basic lighting, and Orbit Controls. The designated starting point for cloning new architectures. Template Matrix",
+      "line": 510,
+      "axes": [
+        "spatial_product_surface"
+      ],
+      "priority": "P2",
+      "ownerBeing": "Queen",
+      "systems": [
+        "Overworld Lab",
+        "Product Surface"
+      ],
+      "claim": "This surface should make an ALISA capability legible as product.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:510",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add purpose, canonical claim, first interaction, telemetry and pass criteria."
+    },
+    {
+      "index": 13,
+      "id": "card-room-cabinets",
+      "section": "Rooms & Spatial Prototypes",
+      "dataCat": "rooms",
+      "href": "rooms/room_physics_sandbox.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/rooms/room_physics_sandbox.html",
+      "title": "🕹️ Universal Arcade Room Playable 3D Machine environment. Employs the \"ROM Cartridge\" technique (Iframe Emulation) to inject Asteroids, Peatón, and Katamari dynamically into the physical matrix of the arcade hardware. Three.js IFRAME ROM INTERACTIVE",
+      "line": 522,
+      "axes": [
+        "learning_training",
+        "gym_evaluation",
+        "world_simulation"
+      ],
+      "priority": "P1",
+      "ownerBeing": "Croupier",
+      "systems": [
+        "Arcade",
+        "Cartographer",
+        "Croupier",
+        "Evaluation Harness",
+        "Neo Dojo",
+        "Overworld",
+        "RL Gym",
+        "Simulation Systems",
+        "TFJS"
+      ],
+      "claim": "Embodied skills can be trained and measured in reusable gyms.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:522",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add reset, task metric, model/agent status and pass condition."
+    },
+    {
+      "index": 14,
+      "id": "card-room-arcade-hall",
+      "section": "Rooms & Spatial Prototypes",
+      "dataCat": "rooms",
+      "href": "rooms/room_arcade_hall.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/rooms/room_arcade_hall.html",
+      "title": "🕹️ Arcade Hall (Multiplayer) MMO-Ready multi-cabinet room with 5 machines in semicircle layout. Each cabinet is a serializable entity with occupancy state. Auto-facing atan2 rotation, shared iframe hologram, and network sync hooks. Three.js CSS3D MMO NEW",
+      "line": 535,
+      "axes": [
+        "learning_training",
+        "gym_evaluation"
+      ],
+      "priority": "P1",
+      "ownerBeing": "Croupier",
+      "systems": [
+        "Arcade",
+        "Croupier",
+        "Evaluation Harness",
+        "Neo Dojo",
+        "RL Gym",
+        "TFJS"
+      ],
+      "claim": "Embodied skills can be trained and measured in reusable gyms.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:535",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add reset, task metric, model/agent status and pass condition."
+    },
+    {
+      "index": 15,
+      "id": "card-room-monitor",
+      "section": "Rooms & Spatial Prototypes",
+      "dataCat": "rooms",
+      "href": "rooms/room_css3d_monitor_hub.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/rooms/room_css3d_monitor_hub.html",
+      "title": "🌐 Cyber Monitor Hub Mission Control with 8 terminals (CRT, iFruit, Flat Screen, Vintage TV). Front row desks + back wall displays. CSS3D browser projection, Office/Night/Cyber themes. Click-to-sit Zero-UI. CSS3D Holographic 8 Terminals UPGRADED",
+      "line": 549,
+      "axes": [
+        "sovereign_governance",
+        "perception_browser_control"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Queen",
+      "systems": [
+        "AIO",
+        "ALISA Vision",
+        "CDP Hub",
+        "ColonialIRC",
+        "JobBoard",
+        "Monk",
+        "Motoko",
+        "Queen"
+      ],
+      "claim": "The Monitor Hub is a live mission-control room for ALISA perception and browser/desktop agency, not only a spatial monitor showcase.",
+      "endpointHints": [
+        "/health",
+        "/cdp/status",
+        "/monk/status",
+        "/monk/vision/status",
+        "/motoko/vision"
+      ],
+      "evidence": {
+        "sourceLine": "World/Web/overworld/lab.html:548",
+        "smokeReport": "Data/BuilderEvidence/lab_cdp_smoke_2026-05-05_final.json",
+        "liveCdpReport": "Data/BuilderEvidence/monitor_hub_live_cdp_2026-05-05.json",
+        "page": "World/Web/overworld/rooms/room_css3d_monitor_hub.html"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "pass",
+          "note": "Inferred from Lab section and route; requires explicit canon citation.",
+          "evidence": "Owner Queen, axes sovereign_governance and perception_browser_control; represents the observable command surface for Hub/CDP/Monk/Vision/Motoko."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "pass",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed.",
+          "evidence": "HUD reads /health, /cdp/status, /monk/vision/status, /monk/status and /motoko/vision."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "pass",
+          "note": "Needs trace, log, metric or reusable evidence artifact.",
+          "evidence": "CDP report captured Hub online, CDP :9222 with 1 tab, Vision connected, Monk 20 frames/119kb, Motoko offline with 1 cam."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add a compact action strip for scan/tabs/read dispatch once the UI can represent command results without stealing focus from the 3D terminals."
+    },
+    {
+      "index": 16,
+      "id": "card-room-resurrection",
+      "section": "Rooms & Spatial Prototypes",
+      "dataCat": "rooms",
+      "href": "rooms/room_biolab_resurrection.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/rooms/room_biolab_resurrection.html",
+      "title": "🧪 Resurrection Lab Biolab for Agent Reconstruction. Explores Permadeath vs Cloning mechanics for RL agents. Features a procedural 3D glass incubation vat with CSS3D medical monitors. Procedural Soma CSS3D",
+      "line": 563,
+      "axes": [
+        "perception_browser_control",
+        "learning_training",
+        "world_simulation"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Monk",
+      "systems": [
+        "ALISA Vision",
+        "CDP Hub",
+        "Cartographer",
+        "Monk",
+        "Motoko",
+        "Neo Dojo",
+        "Overworld",
+        "RL Gym",
+        "Simulation Systems",
+        "TFJS"
+      ],
+      "claim": "A digital agent can observe and act through browser/desktop interfaces with human-like feedback loops.",
+      "endpointHints": [
+        "/cdp/exec",
+        "/cdp/navigate",
+        "/cdp/status",
+        "/cdp/tabs"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:563",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Bind the demo to Monk, ALISA Vision or CDP health and show the observe-act loop."
+    },
+    {
+      "index": 17,
+      "id": "card-fishtank",
+      "section": "Matrix Overworld (The Cameras)",
+      "dataCat": "all",
+      "href": "labs/croupier_camera_compiz.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_camera_compiz.html",
+      "title": "🌊 The Fish Tank (Tier 2 POV) Pure structural infinite tunnel. Employee-level camera tier. Off-axis projection boundaries are fixed natively, securing the fourth wall. Three.js Off-Axis",
+      "line": 585,
+      "axes": [
+        "perception_browser_control",
+        "learning_training",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Monk",
+      "systems": [
+        "ALISA Engine",
+        "ALISA Vision",
+        "CDP Hub",
+        "Factories",
+        "Monk",
+        "Motoko",
+        "Neo Dojo",
+        "Plugins",
+        "RL Gym",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "A digital agent can observe and act through browser/desktop interfaces with human-like feedback loops.",
+      "endpointHints": [
+        "/cdp/exec",
+        "/cdp/navigate",
+        "/cdp/status",
+        "/cdp/tabs",
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:585",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Bind the demo to Monk, ALISA Vision or CDP health and show the observe-act loop."
+    },
+    {
+      "index": 18,
+      "id": "card-compiz",
+      "section": "Matrix Overworld (The Cameras)",
+      "dataCat": "all",
+      "href": "labs/croupier_camera_compiz.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_camera_compiz.html",
+      "title": "📦 The Compiz Stage (Tier 3 POV) Rotational Stage inside a Shell. Navigational layer to swap between the 4 architectural domains (Psyche, Soma, World, Alisa) using Back-Face Culling. Three.js Architecture",
+      "line": 597,
+      "axes": [
+        "perception_browser_control",
+        "learning_training",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Monk",
+      "systems": [
+        "ALISA Engine",
+        "ALISA Vision",
+        "CDP Hub",
+        "Factories",
+        "Monk",
+        "Motoko",
+        "Neo Dojo",
+        "Plugins",
+        "RL Gym",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "A digital agent can observe and act through browser/desktop interfaces with human-like feedback loops.",
+      "endpointHints": [
+        "/cdp/exec",
+        "/cdp/navigate",
+        "/cdp/status",
+        "/cdp/tabs",
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:597",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Bind the demo to Monk, ALISA Vision or CDP health and show the observe-act loop."
+    },
+    {
+      "index": 19,
+      "id": "card-cctv",
+      "section": "Matrix Overworld (The Cameras)",
+      "dataCat": "all",
+      "href": "camera_cctv_split_vision.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/camera_cctv_split_vision.html",
+      "title": "👁️ Security CMS (Multi-Tier CCTV) Sovereign multi-stream split vision. Render distinct camera methodologies side-by-side perfectly synchronized through identical mouse inputs. Admin Split Scene",
+      "line": 609,
+      "axes": [
+        "sovereign_governance",
+        "perception_browser_control",
+        "learning_training",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Queen",
+      "systems": [
+        "AIO",
+        "ALISA Engine",
+        "ALISA Vision",
+        "CDP Hub",
+        "ColonialIRC",
+        "Factories",
+        "JobBoard",
+        "Monk",
+        "Motoko",
+        "Neo Dojo",
+        "Plugins",
+        "Queen",
+        "RL Gym",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "A digital agent can observe and act through browser/desktop interfaces with human-like feedback loops.",
+      "endpointHints": [
+        "/beings/",
+        "/cdp/exec",
+        "/cdp/navigate",
+        "/cdp/status",
+        "/cdp/tabs",
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html",
+        "/do/speak",
+        "/health",
+        "/jobboard/list"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:609",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Bind the demo to Monk, ALISA Vision or CDP health and show the observe-act loop."
+    },
+    {
+      "index": 20,
+      "id": "card-movement",
+      "section": "Matrix Overworld (The Cameras)",
+      "dataCat": "ml",
+      "href": "labs/croupier_physics_locomotion.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_physics_locomotion.html",
+      "title": "🤸 Movement Lab (Matrix Dojo) Sovereign locomotion DOJO. Full animated avatar mechanics, WASD physics vectors, Z-Targeting, Acrobatics and Simon Says simulation loop. Physics GLTF WASD",
+      "line": 621,
+      "axes": [
+        "sovereign_governance",
+        "perception_browser_control",
+        "learning_training",
+        "world_simulation",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Queen",
+      "systems": [
+        "AIO",
+        "ALISA Engine",
+        "ALISA Vision",
+        "CDP Hub",
+        "Cartographer",
+        "ColonialIRC",
+        "Factories",
+        "JobBoard",
+        "Monk",
+        "Motoko",
+        "Neo Dojo",
+        "Overworld",
+        "Plugins",
+        "Queen",
+        "RL Gym",
+        "Simulation Systems",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "A digital agent can observe and act through browser/desktop interfaces with human-like feedback loops.",
+      "endpointHints": [
+        "/beings/",
+        "/cdp/exec",
+        "/cdp/navigate",
+        "/cdp/status",
+        "/cdp/tabs",
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html",
+        "/do/speak",
+        "/health",
+        "/jobboard/list"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:621",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Bind the demo to Monk, ALISA Vision or CDP health and show the observe-act loop."
+    },
+    {
+      "index": 21,
+      "id": "card-director",
+      "section": "Matrix Overworld (The Cameras)",
+      "dataCat": "all",
+      "href": "camera_slerp_director_studio.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/camera_slerp_director_studio.html",
+      "title": "🎬 Director's Studio (Cinematography) Computational Lens UI. Seamlessly interpolate Position, Quaternions, and Lens FOV across Hollywood-grade shots: OTS, Dolly Zoom, Dutch Angle, and more. Slerp Three.js NEW",
+      "line": 634,
+      "axes": [
+        "perception_browser_control",
+        "learning_training",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Monk",
+      "systems": [
+        "ALISA Engine",
+        "ALISA Vision",
+        "CDP Hub",
+        "Factories",
+        "Monk",
+        "Motoko",
+        "Neo Dojo",
+        "Plugins",
+        "RL Gym",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "A digital agent can observe and act through browser/desktop interfaces with human-like feedback loops.",
+      "endpointHints": [
+        "/cdp/exec",
+        "/cdp/navigate",
+        "/cdp/status",
+        "/cdp/tabs",
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:634",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Bind the demo to Monk, ALISA Vision or CDP health and show the observe-act loop."
+    },
+    {
+      "index": 22,
+      "id": "card-arcade-vms",
+      "section": "Machine Learning Dojo",
+      "dataCat": "arcade",
+      "href": "vms/index.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/vms/index.html",
+      "title": "📼 Global Replay VMS Telemetry Video Management System. Load global PGNs or RL training datasets to visualize and reconstruct autonomous historic matches via Three.js projectors. Telemetry Viewer NEW",
+      "line": 656,
+      "axes": [
+        "learning_training",
+        "gym_evaluation",
+        "world_simulation",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Neo",
+      "systems": [
+        "ALISA Engine",
+        "Arcade",
+        "Cartographer",
+        "Croupier",
+        "Evaluation Harness",
+        "Factories",
+        "Neo Dojo",
+        "Overworld",
+        "Plugins",
+        "RL Gym",
+        "Simulation Systems",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:656",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    },
+    {
+      "index": 23,
+      "id": "card-arcade-det",
+      "section": "Machine Learning Dojo",
+      "dataCat": "arcade",
+      "href": "../arcade/index.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/arcade/index.html",
+      "title": "🕹️ The Deterministic Guild Master Arcade. Perfect Information environments enforcing mathematical depth and long-term MCTS (Chess, Go, Reversi). AI Gym NEW",
+      "line": 669,
+      "axes": [
+        "learning_training",
+        "gym_evaluation"
+      ],
+      "priority": "P1",
+      "ownerBeing": "Croupier",
+      "systems": [
+        "Arcade",
+        "Croupier",
+        "Evaluation Harness",
+        "Neo Dojo",
+        "RL Gym",
+        "TFJS"
+      ],
+      "claim": "Embodied skills can be trained and measured in reusable gyms.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:669",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add reset, task metric, model/agent status and pass condition."
+    },
+    {
+      "index": 24,
+      "id": "card-arcade-stoch",
+      "section": "Machine Learning Dojo",
+      "dataCat": "arcade",
+      "href": "../arcade/casino.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/arcade/casino.html",
+      "title": "🎲 Stochastic Casino Imperfect Information & Chance. Marco decision scaling optimizing Expected Value via dice and cards (Backgammon, Battleship, Poker). AI Gym NEW",
+      "line": 682,
+      "axes": [
+        "learning_training",
+        "gym_evaluation"
+      ],
+      "priority": "P1",
+      "ownerBeing": "Croupier",
+      "systems": [
+        "Arcade",
+        "Croupier",
+        "Evaluation Harness",
+        "Neo Dojo",
+        "RL Gym",
+        "TFJS"
+      ],
+      "claim": "Embodied skills can be trained and measured in reusable gyms.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:682",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add reset, task metric, model/agent status and pass condition."
+    },
+    {
+      "index": 25,
+      "id": "card-arcade-syn",
+      "section": "Machine Learning Dojo",
+      "dataCat": "arcade",
+      "href": "../arcade/synergy.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/arcade/synergy.html",
+      "title": "🃏 The Synergy Forge Combinatorial explosion and nonlinear scaling. Training grounds for combinatorial synergy and TCG Metagaming (Grimorio, Usura, Bestiario). AI Gym",
+      "line": 695,
+      "axes": [
+        "learning_training",
+        "gym_evaluation"
+      ],
+      "priority": "P1",
+      "ownerBeing": "Neo",
+      "systems": [
+        "Arcade",
+        "Croupier",
+        "Evaluation Harness",
+        "Neo Dojo",
+        "RL Gym",
+        "TFJS"
+      ],
+      "claim": "Embodied skills can be trained and measured in reusable gyms.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:695",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add reset, task metric, model/agent status and pass condition."
+    },
+    {
+      "index": 26,
+      "id": "card-arcade-tick",
+      "section": "Machine Learning Dojo",
+      "dataCat": "arcade",
+      "href": "../arcade/ticks.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/arcade/ticks.html",
+      "title": "⏱️ Ticking Grids Real-time Continuous Markov Decision Processes. Delayed causality testing and fast-heuristic induction (Tetris, Bomberman). AI Gym",
+      "line": 707,
+      "axes": [
+        "learning_training",
+        "gym_evaluation"
+      ],
+      "priority": "P1",
+      "ownerBeing": "Croupier",
+      "systems": [
+        "Arcade",
+        "Croupier",
+        "Evaluation Harness",
+        "Neo Dojo",
+        "RL Gym",
+        "TFJS"
+      ],
+      "claim": "Embodied skills can be trained and measured in reusable gyms.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:707",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add reset, task metric, model/agent status and pass condition."
+    },
+    {
+      "index": 27,
+      "id": "card-peaton-v2",
+      "section": "Physics & Eco Simulations",
+      "dataCat": "sim",
+      "href": "labs/croupier_peaton_m30.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_peaton_m30.html",
+      "title": "🐸 Peatón V2 — Tropical M-30 Dual-stage traffic simulation. Stage 1: IDM traffic with lane-changing, breakdowns, oil spills, and Raptor crawlers. Stage 2: adds ferret predators that hunt frogs across traffic. Configurable density. AI Three.js Physics Ecosystem IDM NEW",
+      "line": 728,
+      "axes": [
+        "gym_evaluation",
+        "world_simulation",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Cartographer",
+      "systems": [
+        "ALISA Engine",
+        "Arcade",
+        "Cartographer",
+        "Croupier",
+        "Evaluation Harness",
+        "Factories",
+        "Overworld",
+        "Plugins",
+        "Simulation Systems",
+        "Systems"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:728",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    },
+    {
+      "index": 28,
+      "id": "card-peaton-v1",
+      "section": "Physics & Eco Simulations",
+      "dataCat": "sim",
+      "href": "labs/croupier_tfjs_driving.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_tfjs_driving.html",
+      "title": "🚗 Peatón V1 — Original First prototype. 8-lane highway with procedural traffic. Basic forward-only movement. The foundation where it all began. Three.js Physics",
+      "line": 744,
+      "axes": [
+        "learning_training",
+        "gym_evaluation",
+        "world_simulation"
+      ],
+      "priority": "P1",
+      "ownerBeing": "Neo",
+      "systems": [
+        "Arcade",
+        "Cartographer",
+        "Croupier",
+        "Evaluation Harness",
+        "Neo Dojo",
+        "Overworld",
+        "RL Gym",
+        "Simulation Systems",
+        "TFJS"
+      ],
+      "claim": "Embodied skills can be trained and measured in reusable gyms.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:744",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add reset, task metric, model/agent status and pass condition."
+    },
+    {
+      "index": 29,
+      "id": "card-interaction",
+      "section": "Physics & Eco Simulations",
+      "dataCat": "sim",
+      "href": "labs/croupier_phantom_predator.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_phantom_predator.html",
+      "title": "🦊 Interaction Lab — Predator / Prey Fox vs Mice and 3-tier Food Chain. Stamina, hiding mechanics, cheese foraging, animated GLTF models. The origin of the fear-of-predator AI. AI Ecosystem GLTF",
+      "line": 756,
+      "axes": [
+        "world_simulation",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Cartographer",
+      "systems": [
+        "ALISA Engine",
+        "Cartographer",
+        "Factories",
+        "Overworld",
+        "Plugins",
+        "Simulation Systems",
+        "Systems"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:756",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    },
+    {
+      "index": 30,
+      "id": "card-katamari",
+      "section": "Physics & Eco Simulations",
+      "dataCat": "sim",
+      "href": "labs/croupier_katamari_swarm.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_katamari_swarm.html",
+      "title": "🌪️ Katamari Locust Swarm The Procedural Overworld engine dynamically injected via Python pipeline with the Katamari Physics controller. Features Spatial Hash Grids (Octree-Lite) for O(C) chunk culling against hundreds of dynamic city blocks. ProcGen Physics Three.js NEW",
+      "line": 773,
+      "axes": [
+        "learning_training",
+        "world_simulation",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Cartographer",
+      "systems": [
+        "ALISA Engine",
+        "Cartographer",
+        "Factories",
+        "Neo Dojo",
+        "Overworld",
+        "Plugins",
+        "RL Gym",
+        "Simulation Systems",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:773",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    },
+    {
+      "index": 31,
+      "id": "card-cucco",
+      "section": "Physics & Eco Simulations",
+      "dataCat": "sim",
+      "href": "labs/croupier_cucco_swarm.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_cucco_swarm.html",
+      "title": "🐔 Cucco Swarm Defense Wanted-level behavioral dynamics. When architectural rules are broken, the Swarm descends. Testing systemic entity-group mechanics, aggro linking, and overwhelming force. Swarm Boids NEW",
+      "line": 789,
+      "axes": [
+        "world_simulation",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Cartographer",
+      "systems": [
+        "ALISA Engine",
+        "Cartographer",
+        "Factories",
+        "Overworld",
+        "Plugins",
+        "Simulation Systems",
+        "Systems"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:789",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    },
+    {
+      "index": 32,
+      "id": "card-archetypes-behavior",
+      "section": "Physics & Eco Simulations",
+      "dataCat": "sim",
+      "href": "labs/croupier_archetype_matrix.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_archetype_matrix.html",
+      "title": "🧠 Behavioral Archetypes (Casting Room) Entity archetype behavior matrix. Defines how Beings react to buildings, machines, or social encounters based on their psychological DNA. Uses the V4 Archetypes.js Conjugator. AI Psyche NEW",
+      "line": 803,
+      "axes": [
+        "learning_training",
+        "world_simulation"
+      ],
+      "priority": "P1",
+      "ownerBeing": "Queen",
+      "systems": [
+        "Cartographer",
+        "Neo Dojo",
+        "Overworld",
+        "RL Gym",
+        "Simulation Systems",
+        "TFJS"
+      ],
+      "claim": "Embodied skills can be trained and measured in reusable gyms.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:803",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add reset, task metric, model/agent status and pass condition."
+    },
+    {
+      "index": 33,
+      "id": "card-aquarium",
+      "section": "Physics & Eco Simulations",
+      "dataCat": "sim",
+      "href": "labs/croupier_math_boids_flock.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_math_boids_flock.html",
+      "title": "🐟 Aquarium Lab — 3D Ecosystem Underwater food chain in full 3D. Fish, sharks, shrimp, plankton. Glass tank with caustics, bubbles, and corals. ML training ground for spatial awareness. AI Ecosystem 3D NEW",
+      "line": 816,
+      "axes": [
+        "learning_training",
+        "world_simulation",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Neo",
+      "systems": [
+        "ALISA Engine",
+        "Cartographer",
+        "Factories",
+        "Neo Dojo",
+        "Overworld",
+        "Plugins",
+        "RL Gym",
+        "Simulation Systems",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:816",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    },
+    {
+      "index": 34,
+      "id": "card-asteroids",
+      "section": "Physics & Eco Simulations",
+      "dataCat": "sim",
+      "href": "labs/croupier_asteroids_survival.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_asteroids_survival.html",
+      "title": "🚀 Asteroids 3D V2 — Full Shmup Parallelepiped forced auto-scroll arena. Ship features autonomous firing and evasion. Pang-style splitting asteroids, Arkanoid power-up capsules, and 6 complex enemy drone archetypes. Dynamic rank adapts to skill. AI Three.js Shmup GLTF V2",
+      "line": 830,
+      "axes": [
+        "world_simulation"
+      ],
+      "priority": "P1",
+      "ownerBeing": "Queen",
+      "systems": [
+        "Cartographer",
+        "Overworld",
+        "Simulation Systems"
+      ],
+      "claim": "Agent behavior and emergent systems can be tested in controllable procedural worlds.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:830",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add rules, knobs, metrics and captured events."
+    },
+    {
+      "index": 35,
+      "id": "card-configurator",
+      "section": "Core Mechanics",
+      "dataCat": "lab",
+      "href": "rooms/room_tool_glb_configurator.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/rooms/room_tool_glb_configurator.html",
+      "title": "🎛️ Universal Screen Configurator E3-style spatial projection tool. Dynamically searches arbitrary GLB files for physical meshes, casts a WebGL Canvas onto their bounding boxes, and provides a 4-axis calibration HUD. Exports directly to JSON. Three.js GLTF NEW",
+      "line": 854,
+      "axes": [
+        "sovereign_governance"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Queen",
+      "systems": [
+        "AIO",
+        "ColonialIRC",
+        "JobBoard",
+        "Queen"
+      ],
+      "claim": "ALISA can expose governance, delegation and agency as inspectable system state.",
+      "endpointHints": [
+        "/beings/",
+        "/do/speak",
+        "/health",
+        "/jobboard/list"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:854",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Show command, delegation, result location and log/memory trace."
+    },
+    {
+      "index": 36,
+      "id": "card-scale-metrics",
+      "section": "Core Mechanics",
+      "dataCat": "lab",
+      "href": "labs/croupier_volumetric_powers.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_volumetric_powers.html",
+      "title": "📐 Volumetric Scales Lab (\"Powers of 10\") Tier dimension standardizer based on industry practices. Interactive 3D voxel blueprints to establish character sizing tiers from tiny bugs up to mechas and bosses. Three.js Metrics NEW",
+      "line": 867,
+      "axes": [
+        "sovereign_governance"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Queen",
+      "systems": [
+        "AIO",
+        "ColonialIRC",
+        "JobBoard",
+        "Queen"
+      ],
+      "claim": "ALISA can expose governance, delegation and agency as inspectable system state.",
+      "endpointHints": [
+        "/beings/",
+        "/do/speak",
+        "/health",
+        "/jobboard/list"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:867",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Show command, delegation, result location and log/memory trace."
+    },
+    {
+      "index": 37,
+      "id": "card-aquarium-treadmill",
+      "section": "Core Mechanics",
+      "dataCat": "lab",
+      "href": "labs/croupier_lod_treadmill.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_lod_treadmill.html",
+      "title": "🌊 Treadmill Aquarium LOD Lab Infinite scrolling matrix with pure O(1) memory GC. Floating Origin rendering where world chunks transition from AutoCAD Wireframes -> Minecraft Cuboid -> Premium GLB based on focal distance, plus Katamari relativity zooming. Three.js Math LOD NEW",
+      "line": 880,
+      "axes": [
+        "memory_identity_continuity",
+        "sovereign_governance",
+        "learning_training",
+        "world_simulation",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Korin",
+      "systems": [
+        "AIO",
+        "ALISA Engine",
+        "Akasha",
+        "Cartographer",
+        "ColonialIRC",
+        "Factories",
+        "JobBoard",
+        "Korin",
+        "MemoryWeaver",
+        "Neo Dojo",
+        "Overworld",
+        "Plugins",
+        "Queen",
+        "RL Gym",
+        "Simulation Systems",
+        "Systems",
+        "TFJS",
+        "WarpDrive"
+      ],
+      "claim": "Identity and continuity are explicit, persistent and retrievable across substrates.",
+      "endpointHints": [
+        "/beings/",
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html",
+        "/do/akasha-add",
+        "/do/akasha-search",
+        "/do/speak",
+        "/health",
+        "/jobboard/list",
+        "/korin/status"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:880",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose live memory source, retrieval action and continuity evidence."
+    },
+    {
+      "index": 38,
+      "id": "card-dynamics",
+      "section": "Core Mechanics",
+      "dataCat": "lab",
+      "href": "labs/croupier_fx_voxel_glitch.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_fx_voxel_glitch.html",
+      "title": "📺 Dynamics & Transitions Animus/Inception visual effects. Features the \"Voxel Glitch Reveal\" rendering pipeline, diegetic mesh subdivision, and state machine prototyping for interactive objects (Vending Machines, Radios). Three.js FX",
+      "line": 894,
+      "axes": [
+        "sovereign_governance",
+        "perception_browser_control",
+        "learning_training"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Monk",
+      "systems": [
+        "AIO",
+        "ALISA Vision",
+        "CDP Hub",
+        "ColonialIRC",
+        "JobBoard",
+        "Monk",
+        "Motoko",
+        "Neo Dojo",
+        "Queen",
+        "RL Gym",
+        "TFJS"
+      ],
+      "claim": "A digital agent can observe and act through browser/desktop interfaces with human-like feedback loops.",
+      "endpointHints": [
+        "/beings/",
+        "/cdp/exec",
+        "/cdp/navigate",
+        "/cdp/status",
+        "/cdp/tabs",
+        "/do/speak",
+        "/health",
+        "/jobboard/list"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:894",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Bind the demo to Monk, ALISA Vision or CDP health and show the observe-act loop."
+    },
+    {
+      "index": 39,
+      "id": "card-matrioshka",
+      "section": "Core Mechanics",
+      "dataCat": "lab",
+      "href": "labs/croupier_math_matrioshka.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_math_matrioshka.html",
+      "title": "🪆 4D Matrioshka Gauntlet Playable scale jumping & camera tweening. Run a Mecha through an exponential fractal collision runway to verify ALISA's 4D Scale logic. Three.js Math NEW",
+      "line": 906,
+      "axes": [
+        "memory_identity_continuity",
+        "sovereign_governance",
+        "perception_browser_control"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Monk",
+      "systems": [
+        "AIO",
+        "ALISA Vision",
+        "Akasha",
+        "CDP Hub",
+        "ColonialIRC",
+        "JobBoard",
+        "Korin",
+        "MemoryWeaver",
+        "Monk",
+        "Motoko",
+        "Queen",
+        "WarpDrive"
+      ],
+      "claim": "Identity and continuity are explicit, persistent and retrievable across substrates.",
+      "endpointHints": [
+        "/beings/",
+        "/cdp/exec",
+        "/cdp/navigate",
+        "/cdp/status",
+        "/cdp/tabs",
+        "/do/akasha-add",
+        "/do/akasha-search",
+        "/do/speak",
+        "/health",
+        "/jobboard/list",
+        "/korin/status"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:906",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose live memory source, retrieval action and continuity evidence."
+    },
+    {
+      "index": 40,
+      "id": "card-item-catalog",
+      "section": "Core Mechanics",
+      "dataCat": "lab",
+      "href": "labs/croupier_ui_item_catalog.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_ui_item_catalog.html",
+      "title": "🎒 Item Catalog (17 Categorías) Visualizer for semantic object logic and metadata properties. Ensures correct tagging for Weapons, Food, Currencies, and Story Items. Metadata Items RECOVERED",
+      "line": 919,
+      "axes": [
+        "sovereign_governance",
+        "world_simulation"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Cartographer",
+      "systems": [
+        "AIO",
+        "Cartographer",
+        "ColonialIRC",
+        "JobBoard",
+        "Overworld",
+        "Queen",
+        "Simulation Systems"
+      ],
+      "claim": "ALISA can expose governance, delegation and agency as inspectable system state.",
+      "endpointHints": [
+        "/beings/",
+        "/do/speak",
+        "/health",
+        "/jobboard/list"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:919",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Show command, delegation, result location and log/memory trace."
+    },
+    {
+      "index": 41,
+      "id": "card-rig-vending",
+      "section": "Core Mechanics",
+      "dataCat": "lab",
+      "href": "labs/croupier_rig_vending_machine.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_rig_vending_machine.html",
+      "title": "🧬 Vending Machine Rig Injector Specific test-chamber for Prop Locomotion. Extracts Bounding Boxes of static furniture (Vending Machines, Trash Cans) and forces walk cycles upon them. Logic Animation RECOVERED",
+      "line": 932,
+      "axes": [
+        "sovereign_governance",
+        "learning_training",
+        "world_simulation"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Neo",
+      "systems": [
+        "AIO",
+        "Cartographer",
+        "ColonialIRC",
+        "JobBoard",
+        "Neo Dojo",
+        "Overworld",
+        "Queen",
+        "RL Gym",
+        "Simulation Systems",
+        "TFJS"
+      ],
+      "claim": "ALISA can expose governance, delegation and agency as inspectable system state.",
+      "endpointHints": [
+        "/beings/",
+        "/do/speak",
+        "/health",
+        "/jobboard/list"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:932",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Show command, delegation, result location and log/memory trace."
+    },
+    {
+      "index": 42,
+      "id": "card-vault",
+      "section": "Visuals & Procedural Labs",
+      "dataCat": "lab",
+      "href": "app_sqlite_cdn_vault.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/app_sqlite_cdn_vault.html",
+      "title": "🏛️ Sovereign Asset Vault The ultimate visual database. Dynmically fetches thousands of models, materials, and textures from the SQLite CDN and renders them instantly via the MatrixRoom engine. MatrixRoom CDN NEW",
+      "line": 954,
+      "axes": [
+        "sovereign_governance",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Queen",
+      "systems": [
+        "AIO",
+        "ALISA Engine",
+        "ColonialIRC",
+        "Factories",
+        "JobBoard",
+        "Plugins",
+        "Queen",
+        "Systems"
+      ],
+      "claim": "ALISA can expose governance, delegation and agency as inspectable system state.",
+      "endpointHints": [
+        "/beings/",
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html",
+        "/do/speak",
+        "/health",
+        "/jobboard/list"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:954",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Show command, delegation, result location and log/memory trace."
+    },
+    {
+      "index": 43,
+      "id": "card-animator",
+      "section": "Visuals & Procedural Labs",
+      "dataCat": "lab",
+      "href": "labs/croupier_animator_dojo.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_animator_dojo.html",
+      "title": "🕷️ Procedural Animator Dojo The Legacy Katamari Engine. Autogenerates procedural legs, arms, and bones for any semantic prop (e.g., turning a Vending Machine into a giant insect). Contains SIMON SAYS and Naruto/Zombie poses. Bones Katamari RECOVERED",
+      "line": 967,
+      "axes": [
+        "learning_training",
+        "world_simulation",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Cartographer",
+      "systems": [
+        "ALISA Engine",
+        "Cartographer",
+        "Factories",
+        "Neo Dojo",
+        "Overworld",
+        "Plugins",
+        "RL Gym",
+        "Simulation Systems",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:967",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    },
+    {
+      "index": 44,
+      "id": "card-avatar",
+      "section": "Visuals & Procedural Labs",
+      "dataCat": "lab",
+      "href": "labs/croupier_rig_avatar_archetypes.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_rig_avatar_archetypes.html",
+      "title": "👤 Avatar Archetype Lab Advanced Skeleton testing. Load Avatar categories (beast, humanoid, mech) and verify procedural Katamari rig behavior visually. GLTF Bones",
+      "line": 980,
+      "axes": [
+        "world_simulation"
+      ],
+      "priority": "P1",
+      "ownerBeing": "Motoko",
+      "systems": [
+        "Cartographer",
+        "Overworld",
+        "Simulation Systems"
+      ],
+      "claim": "Agent behavior and emergent systems can be tested in controllable procedural worlds.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:980",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add rules, knobs, metrics and captured events."
+    },
+    {
+      "index": 45,
+      "id": "card-carver",
+      "section": "Visuals & Procedural Labs",
+      "dataCat": "lab",
+      "href": "labs/croupier_procgen_carver.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_procgen_carver.html",
+      "title": "🪚 Procedural Carver Engine Headless BSP/Carver level generation. Assembles vast matrix grids in pure math, populates them with routing entities, and applies a Tensegrity bridge for 3D Bloom visuals. ProcGen Math Croupier",
+      "line": 992,
+      "axes": [
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Cartographer",
+      "systems": [
+        "ALISA Engine",
+        "Factories",
+        "Plugins",
+        "Systems"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:992",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    },
+    {
+      "index": 46,
+      "id": "card-world-builder",
+      "section": "Visuals & Procedural Labs",
+      "dataCat": "lab",
+      "href": "labs/croupier_world_builder.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_world_builder.html",
+      "title": "🌍 Croupier World Builder Master assembly matrix for the Sovereign Colony. Declaratively instantiates environments combining Planets, Katamari Towers, Cucco Swarms, and headless BSP sub-rooms seamlessly. Assembly Three.js Croupier",
+      "line": 1005,
+      "axes": [
+        "sovereign_governance",
+        "learning_training",
+        "world_simulation",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Queen",
+      "systems": [
+        "AIO",
+        "ALISA Engine",
+        "Cartographer",
+        "ColonialIRC",
+        "Factories",
+        "JobBoard",
+        "Neo Dojo",
+        "Overworld",
+        "Plugins",
+        "Queen",
+        "RL Gym",
+        "Simulation Systems",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "ALISA can expose governance, delegation and agency as inspectable system state.",
+      "endpointHints": [
+        "/beings/",
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html",
+        "/do/speak",
+        "/health",
+        "/jobboard/list"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1005",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Show command, delegation, result location and log/memory trace."
+    },
+    {
+      "index": 47,
+      "id": "card-semantic-rig",
+      "section": "Visuals & Procedural Labs",
+      "dataCat": "lab",
+      "href": "labs/croupier_archetype_matrix.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_archetype_matrix.html",
+      "title": "🦴 Semantic Morphological Rig Deep structural skeleton mapper. Identifies semantic joints from arbitrary meshes and builds proportional inverse-kinematics chains before mounting them in the DOJO. Rigging IK RECOVERED",
+      "line": 1018,
+      "axes": [
+        "learning_training",
+        "world_simulation"
+      ],
+      "priority": "P1",
+      "ownerBeing": "Neo",
+      "systems": [
+        "Cartographer",
+        "Neo Dojo",
+        "Overworld",
+        "RL Gym",
+        "Simulation Systems",
+        "TFJS"
+      ],
+      "claim": "Embodied skills can be trained and measured in reusable gyms.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1018",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add reset, task metric, model/agent status and pass condition."
+    },
+    {
+      "index": 48,
+      "id": "card-asset-calibration",
+      "section": "Visuals & Procedural Labs",
+      "dataCat": "lab",
+      "href": "labs/croupier_holographic_decal_calibration.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_holographic_decal_calibration.html",
+      "title": "🎯 Asset Calibration Tools Holographic decals, vertex palette extraction, and scale adjustment math. Decoupled from physics logic for pure visual tuning. Math Decals NEW",
+      "line": 1031,
+      "axes": [
+        "world_simulation"
+      ],
+      "priority": "P1",
+      "ownerBeing": "Cartographer",
+      "systems": [
+        "Cartographer",
+        "Overworld",
+        "Simulation Systems"
+      ],
+      "claim": "Agent behavior and emergent systems can be tested in controllable procedural worlds.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1031",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add rules, knobs, metrics and captured events."
+    },
+    {
+      "index": 49,
+      "id": "card-movement-customization",
+      "section": "Visuals & Procedural Labs",
+      "dataCat": "lab",
+      "href": "labs/croupier_physics_locomotion.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_physics_locomotion.html",
+      "title": "🏃 Movement & Customization Procedural posture interpolation (Naruto run, Zombie crawl) and cosmetic head replacement logic (Crown, Burger) without DOJO physics limits. Animation Poses NEW",
+      "line": 1044,
+      "axes": [
+        "learning_training",
+        "world_simulation"
+      ],
+      "priority": "P1",
+      "ownerBeing": "Neo",
+      "systems": [
+        "Cartographer",
+        "Neo Dojo",
+        "Overworld",
+        "RL Gym",
+        "Simulation Systems",
+        "TFJS"
+      ],
+      "claim": "Embodied skills can be trained and measured in reusable gyms.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1044",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add reset, task metric, model/agent status and pass condition."
+    },
+    {
+      "index": 50,
+      "id": "card-props",
+      "section": "Visuals & Procedural Labs",
+      "dataCat": "lab",
+      "href": "generators/gen_semantic_props.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/generators/gen_semantic_props.html",
+      "title": "🪑 Procedural Prop Lab Universal Zero-Greeble generation. Spawns semantic furniture (chairs, crates, lockers) at runtime using mathematical algorithms instead of baked geometries. ProcGen Geometry",
+      "line": 1057,
+      "axes": [
+        "spatial_product_surface"
+      ],
+      "priority": "P2",
+      "ownerBeing": "Queen",
+      "systems": [
+        "Overworld Lab",
+        "Product Surface"
+      ],
+      "claim": "This surface should make an ALISA capability legible as product.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1057",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add purpose, canonical claim, first interaction, telemetry and pass criteria."
+    },
+    {
+      "index": 51,
+      "id": "card-textures",
+      "section": "Visuals & Procedural Labs",
+      "dataCat": "lab",
+      "href": "generators/gen_canvas_textures.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/generators/gen_canvas_textures.html",
+      "title": "🖌️ Procedural Texture Lab Algorithmic Canvas Shaders. Wood grain, rust, industrial metal, and fabric generated natively via HTML5 Canvas noise algorithms without downloading external images. Shader PBR",
+      "line": 1069,
+      "axes": [
+        "spatial_product_surface"
+      ],
+      "priority": "P2",
+      "ownerBeing": "Queen",
+      "systems": [
+        "Overworld Lab",
+        "Product Surface"
+      ],
+      "claim": "This surface should make an ALISA capability legible as product.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1069",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add purpose, canonical claim, first interaction, telemetry and pass criteria."
+    },
+    {
+      "index": 52,
+      "id": "card-resonance",
+      "section": "Visuals & Procedural Labs",
+      "dataCat": "lab",
+      "href": "labs/croupier_resonance_isomorphism.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_resonance_isomorphism.html",
+      "title": "🔮 Isomorphic Resonance Calibration Sovereign signal persistence in self-organizing particle fields. Kuramoto phase coupling with emergent attractor formation. Explores whether transient signals can achieve continuity through resonance alone. Emergence Kuramoto Signal",
+      "line": 1081,
+      "axes": [
+        "sovereign_governance"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Queen",
+      "systems": [
+        "AIO",
+        "ColonialIRC",
+        "JobBoard",
+        "Queen"
+      ],
+      "claim": "ALISA can expose governance, delegation and agency as inspectable system state.",
+      "endpointHints": [
+        "/beings/",
+        "/do/speak",
+        "/health",
+        "/jobboard/list"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1081",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Show command, delegation, result location and log/memory trace."
+    },
+    {
+      "index": 53,
+      "id": "card-building-archetypes",
+      "section": "Procedural Worlds",
+      "dataCat": "gen",
+      "href": "generators/gen_building_archetypes.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/generators/gen_building_archetypes.html",
+      "title": "🏛️ Building Archetypes Viewer Architectural projection visualizer. Evaluates volumetric profiles, geometric aesthetics, and structural tiers for procedural city buildings. ProcGen Three.js",
+      "line": 1104,
+      "axes": [
+        "learning_training",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Queen",
+      "systems": [
+        "ALISA Engine",
+        "Factories",
+        "Neo Dojo",
+        "Plugins",
+        "RL Gym",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1104",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    },
+    {
+      "index": 54,
+      "id": "card-spe-lab",
+      "section": "Procedural Worlds",
+      "dataCat": "gen",
+      "href": "generators/gen_bsp_hitbox_spe.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/generators/gen_bsp_hitbox_spe.html",
+      "title": "🧬 Standard Procedural Entity (SPE) Lab The definitive SDK for organic generation perfectly aligned with mathematical Tiers. Merges visual Variance with strict Hitbox constraints and automatic BSP Identity Culling. SPE Three.js NEW",
+      "line": 1118,
+      "axes": [
+        "learning_training",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Queen",
+      "systems": [
+        "ALISA Engine",
+        "Factories",
+        "Neo Dojo",
+        "Plugins",
+        "RL Gym",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1118",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    },
+    {
+      "index": 55,
+      "id": "card-city-carver",
+      "section": "Procedural Worlds",
+      "dataCat": "gen",
+      "href": "generators/gen_city_carver.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/generators/gen_city_carver.html",
+      "title": "🏙️ Procedural City Carver Urban geometry layout engine. Defines lot sizes, zoning rules, and street networks algorithmically before rendering meshes. Voronoi Urban RECOVERED",
+      "line": 1131,
+      "axes": [
+        "learning_training",
+        "world_simulation",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Cartographer",
+      "systems": [
+        "ALISA Engine",
+        "Cartographer",
+        "Factories",
+        "Neo Dojo",
+        "Overworld",
+        "Plugins",
+        "RL Gym",
+        "Simulation Systems",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1131",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    },
+    {
+      "index": 56,
+      "id": "card-nature-props",
+      "section": "Procedural Worlds",
+      "dataCat": "gen",
+      "href": "generators/gen_nature_props.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/generators/gen_nature_props.html",
+      "title": "🌳 Nature & Scenery Lab Procedural generation of trees, rocks, and foliage using L-Systems and algorithmic branching without relying on external GLB files. Flora Math RECOVERED",
+      "line": 1144,
+      "axes": [
+        "learning_training",
+        "world_simulation",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Cartographer",
+      "systems": [
+        "ALISA Engine",
+        "Cartographer",
+        "Factories",
+        "Neo Dojo",
+        "Overworld",
+        "Plugins",
+        "RL Gym",
+        "Simulation Systems",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1144",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    },
+    {
+      "index": 57,
+      "id": "card-building-skins",
+      "section": "Procedural Worlds",
+      "dataCat": "gen",
+      "href": "generators/gen_building_skins_gif.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/generators/gen_building_skins_gif.html",
+      "title": "🏢 Building Skins & Facades Visualizer for building exterior materials and windows layout tests. Generates architectural textures on pure geometric primitives. Texturing Shaders RECOVERED",
+      "line": 1157,
+      "axes": [
+        "learning_training",
+        "world_simulation",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Cartographer",
+      "systems": [
+        "ALISA Engine",
+        "Cartographer",
+        "Factories",
+        "Neo Dojo",
+        "Overworld",
+        "Plugins",
+        "RL Gym",
+        "Simulation Systems",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1157",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    },
+    {
+      "index": 58,
+      "id": "card-procworld",
+      "section": "Procedural Worlds",
+      "dataCat": "gen",
+      "href": "labs/croupier_world_builder.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_world_builder.html",
+      "title": "🌆 Procedural Overworld Full cyberpunk city generator. Buildings, streets, neon, atmosphere. The main world engine with isometric rendering and domain zones. ProcGen Three.js",
+      "line": 1170,
+      "axes": [
+        "learning_training",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Cartographer",
+      "systems": [
+        "ALISA Engine",
+        "Factories",
+        "Neo Dojo",
+        "Plugins",
+        "RL Gym",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1170",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    },
+    {
+      "index": 59,
+      "id": "card-room",
+      "section": "Procedural Worlds",
+      "dataCat": "gen",
+      "href": "room_simulator.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/room_simulator.html",
+      "title": "🛋️ Room Simulator Interior room generator. Procedural furniture placement, material systems, interactive object selection. Closets, desks, bookshelves. ProcGen Three.js",
+      "line": 1184,
+      "axes": [
+        "learning_training",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Queen",
+      "systems": [
+        "ALISA Engine",
+        "Factories",
+        "Neo Dojo",
+        "Plugins",
+        "RL Gym",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1184",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    },
+    {
+      "index": 60,
+      "id": "card-ml-asteroids",
+      "section": "Machine Learning",
+      "dataCat": "ml",
+      "href": "labs/croupier_asteroids_survival.html?rl=true",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_asteroids_survival.html?rl=true",
+      "title": "🧠 Asteroids PPO Agent Headless gymnasium bridge using Python Playwright. Unrolls the entity matrix into a 321-float observation vector. Trained via stable-baselines3 MlpPolicy. RL PPO PYTHON",
+      "line": 1205,
+      "axes": [
+        "learning_training"
+      ],
+      "priority": "P1",
+      "ownerBeing": "Neo",
+      "systems": [
+        "Neo Dojo",
+        "RL Gym",
+        "TFJS"
+      ],
+      "claim": "Embodied skills can be trained and measured in reusable gyms.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1205",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add reset, task metric, model/agent status and pass condition."
+    },
+    {
+      "index": 61,
+      "id": "card-mat-cabinet",
+      "section": "Raccoon Escape",
+      "dataCat": "mat",
+      "href": "games/croupier_cabinet_escape.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/games/croupier_cabinet_escape.html",
+      "title": "1 🗄️ Cabinet BSP-partitioned drawer search. Area-weighted target placement. Blind mode forces the agent to learn optimal search from geometry alone — no hints, no cheats. 103-dim observation vector. RL BSP BLIND READY",
+      "line": 1240,
+      "axes": [
+        "learning_training",
+        "gym_evaluation"
+      ],
+      "priority": "P1",
+      "ownerBeing": "Neo",
+      "systems": [
+        "Arcade",
+        "Croupier",
+        "Evaluation Harness",
+        "Neo Dojo",
+        "RL Gym",
+        "TFJS"
+      ],
+      "claim": "Embodied skills can be trained and measured in reusable gyms.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1240",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add reset, task metric, model/agent status and pass condition."
+    },
+    {
+      "index": 62,
+      "id": "card-mat-room",
+      "section": "Raccoon Escape",
+      "dataCat": "mat",
+      "href": "labs/croupier_phantom_predator.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_phantom_predator.html",
+      "title": "2 🐇 Hide & Seek 3D spatial search in BSP-partitioned rooms. Agent navigates, opens doors, and hunts a hiding rabbit. Triple purpose: human dataset minigame, overworld navigation mechanics, and RL training ground for spatial search. RL THREE.JS BSP GLTF READY",
+      "line": 1256,
+      "axes": [
+        "learning_training",
+        "gym_evaluation",
+        "world_simulation",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Cartographer",
+      "systems": [
+        "ALISA Engine",
+        "Arcade",
+        "Cartographer",
+        "Croupier",
+        "Evaluation Harness",
+        "Factories",
+        "Neo Dojo",
+        "Overworld",
+        "Plugins",
+        "RL Gym",
+        "Simulation Systems",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1256",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    },
+    {
+      "index": 63,
+      "id": "card-mat-floor",
+      "section": "Raccoon Escape",
+      "dataCat": "mat",
+      "href": "labs/croupier_scanner_lab.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_scanner_lab.html",
+      "title": "3 🚁 Chopper Search (Building Floors) Multi-floor vertical structure. The agent navigates outside the building using 6DOF drone controls and learns to deduce the correct floor using X-ray spotlights before searching the interior. RL 3D READY",
+      "line": 1273,
+      "axes": [
+        "learning_training"
+      ],
+      "priority": "P1",
+      "ownerBeing": "Neo",
+      "systems": [
+        "Neo Dojo",
+        "RL Gym",
+        "TFJS"
+      ],
+      "claim": "Embodied skills can be trained and measured in reusable gyms.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1273",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add reset, task metric, model/agent status and pass condition."
+    },
+    {
+      "index": 64,
+      "id": "card-mat-building",
+      "section": "Raccoon Escape",
+      "dataCat": "mat",
+      "href": "croupier_corporate_building.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/croupier_corporate_building.html",
+      "title": "4 🏢 Corporate Building Multi-floor vertical structure 3D Aquarium. Elevator decisions, floor-level probability priors, volumetric z-axis navigation. The agent learns to think in 3D — choosing floors before rooms. RL 3D READY",
+      "line": 1288,
+      "axes": [
+        "learning_training"
+      ],
+      "priority": "P1",
+      "ownerBeing": "Neo",
+      "systems": [
+        "Neo Dojo",
+        "RL Gym",
+        "TFJS"
+      ],
+      "claim": "Embodied skills can be trained and measured in reusable gyms.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1288",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add reset, task metric, model/agent status and pass condition."
+    },
+    {
+      "index": 65,
+      "id": "card-mat-city",
+      "section": "Raccoon Escape",
+      "dataCat": "mat",
+      "href": "games/raccoon_city_sector.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/games/raccoon_city_sector.html",
+      "title": "5 🏙️ City Sector Urban grid with buildings, streets, and districts. Macro-scale search across a procedural city. District-level probability priors and street-network navigation cost. RL PROCGEN READY",
+      "line": 1303,
+      "axes": [
+        "learning_training",
+        "gym_evaluation"
+      ],
+      "priority": "P1",
+      "ownerBeing": "Neo",
+      "systems": [
+        "Arcade",
+        "Croupier",
+        "Evaluation Harness",
+        "Neo Dojo",
+        "RL Gym",
+        "TFJS"
+      ],
+      "claim": "Embodied skills can be trained and measured in reusable gyms.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1303",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add reset, task metric, model/agent status and pass condition."
+    },
+    {
+      "index": 66,
+      "id": "card-mat-planet",
+      "section": "Raccoon Escape",
+      "dataCat": "mat",
+      "href": "games/raccoon_planet.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/games/raccoon_planet.html",
+      "title": "6 🌍 Stage 6 — Planet Continental scale. Biome-aware search, population density priors, satellite reconnaissance. The agent must learn global optimization — where on a planet to even begin looking. RL BIOME READY",
+      "line": 1318,
+      "axes": [
+        "learning_training",
+        "gym_evaluation",
+        "world_simulation"
+      ],
+      "priority": "P1",
+      "ownerBeing": "Neo",
+      "systems": [
+        "Arcade",
+        "Cartographer",
+        "Croupier",
+        "Evaluation Harness",
+        "Neo Dojo",
+        "Overworld",
+        "RL Gym",
+        "Simulation Systems",
+        "TFJS"
+      ],
+      "claim": "Embodied skills can be trained and measured in reusable gyms.",
+      "endpointHints": [],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1318",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Add reset, task metric, model/agent status and pass condition."
+    },
+    {
+      "index": 67,
+      "id": "card-mat-space",
+      "section": "Raccoon Escape",
+      "dataCat": "mat",
+      "href": "games/raccoon_space.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/games/raccoon_space.html",
+      "title": "7 🌌 Stage 7 — Space Interplanetary and interstellar search. Solar system navigation, gravitational constraints, cosmic-scale probability distributions. The final frontier of autonomous search intelligence. RL ORBITAL READY",
+      "line": 1333,
+      "axes": [
+        "learning_training",
+        "gym_evaluation",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Neo",
+      "systems": [
+        "ALISA Engine",
+        "Arcade",
+        "Croupier",
+        "Evaluation Harness",
+        "Factories",
+        "Neo Dojo",
+        "Plugins",
+        "RL Gym",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1333",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    },
+    {
+      "index": 68,
+      "id": "card-crown",
+      "section": "Raccoon Escape",
+      "dataCat": "sim",
+      "href": "index.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/index.html",
+      "title": "👑 Colonial Overworld — Live World The main isometric colony connected to the ALISA Hub. Beings move autonomously, entities interact, the economy flows. Everything above feeds into this. Three.js Beings Economy GLTF",
+      "line": 1350,
+      "axes": [
+        "learning_training",
+        "world_simulation",
+        "open_core_engine"
+      ],
+      "priority": "P0",
+      "ownerBeing": "Cartographer",
+      "systems": [
+        "ALISA Engine",
+        "Cartographer",
+        "Factories",
+        "Neo Dojo",
+        "Overworld",
+        "Plugins",
+        "RL Gym",
+        "Simulation Systems",
+        "Systems",
+        "TFJS"
+      ],
+      "claim": "The same engine can render games, tools, simulations and the living ALISA system when observed.",
+      "endpointHints": [
+        "/colony/overworld/data/lab_card_manifest.json",
+        "/colony/overworld/lab.html"
+      ],
+      "evidence": {
+        "sourceLine": "World\\Web\\overworld\\lab.html:1350",
+        "smokeReport": "Data\\BuilderEvidence\\lab_cdp_smoke_2026-05-05_final.json"
+      },
+      "qualityGates": {
+        "routeHealth": {
+          "status": "pass",
+          "httpStatus": 200,
+          "hasVisualSurface": true,
+          "severeConsoleErrors": 0
+        },
+        "canonicalPurpose": {
+          "status": "draft",
+          "note": "Inferred from Lab section and route; requires explicit canon citation."
+        },
+        "paperClaimAlignment": {
+          "status": "draft",
+          "note": "Needs citation to paper, thesis note or canon law."
+        },
+        "liveSystemIntegration": {
+          "status": "draft",
+          "note": "Needs live endpoint, state, job or memory evidence where claimed."
+        },
+        "industryPolish": {
+          "status": "draft",
+          "note": "Needs visual/responsive/accessibility/product review."
+        },
+        "observabilityTelemetry": {
+          "status": "draft",
+          "note": "Needs trace, log, metric or reusable evidence artifact."
+        },
+        "productNarrative": {
+          "status": "draft",
+          "note": "Needs first interaction and user-facing reason to exist."
+        }
+      },
+      "nextUpgrade": "Expose loaded engine systems, factories and plugins with a small inspectable scene contract."
+    }
+  ]
+}

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ALISA LAB — El Constructo de Morpheus (Functional Testing Arena)</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #e0e0e0; font-family: 'Roboto Mono', monospace; color: #333; }
+        
+        /* ─── NEO'S HUD ─── */
+        #hud {
+            position: absolute; top: 20px; left: 20px;
+            background: rgba(255,255,255,0.85); box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 20px; border-radius: 8px; border-left: 5px solid #00ffcc;
+            pointer-events: none; z-index: 10;
+            backdrop-filter: blur(5px);
+            width: 300px;
+        }
+        #hud .title { 
+            font-weight: 700; color: #111; font-size: 20px; 
+            margin-bottom: 15px; letter-spacing: 1px; text-transform: uppercase;
+        }
+        #hud .stat { font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #555; display: flex; justify-content: space-between; align-items: center; }
+        #hud .val { background: #111; color: #00ffcc; padding: 2px 8px; border-radius: 4px; font-weight: normal; }
+        #hud .val.error { color: #ff3355; }
+        #hud .val.ok { color: #00ffcc; }
+        
+        #controls {
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(17,17,17,0.8); padding: 15px 30px; border-radius: 30px;
+            display: flex; gap: 15px; z-index: 10; backdrop-filter: blur(5px);
+        }
+        #controls button {
+            background: #00ffcc; color: #111; border: none; padding: 10px 20px; font-family: 'Roboto Mono';
+            font-weight: bold; cursor: pointer; border-radius: 20px; transition: 0.2s;
+        }
+        #controls button:hover { background: #fff; transform: scale(1.05); }
+        #controls select {
+            background: #333; color: #00ffcc; border: 1px solid #00ffcc; padding: 8px 15px; border-radius: 15px;
+            font-family: 'Roboto Mono'; outline: none; cursor: pointer;
+        }
+
+        #log {
+            position: absolute; right: 20px; top: 20px; width: 300px; height: 200px;
+            background: rgba(0,0,0,0.8); color: #00ffcc; font-size: 11px;
+            padding: 15px; overflow-y: auto; border-radius: 8px; border-left: 3px solid #ff0055;
+            pointer-events: none;
+        }
+    </style>
+    
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three-0.160.0/build/three.module.js",
+        "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+        "@alisa-engine/": "../js/alisa-engine/"
+      }
+    }
+    </script>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+
+    <!-- HUD Overlay -->
+    <div id="hud">
+        <div class="title">MORPHEUS CONSTRUCT <span style="font-size:12px;color:#ff0055">v2.0</span></div>
+        <div class="stat">Fase <span class="val" id="hFase">IDLE</span></div>
+        <div class="stat">Avatar <span class="val" id="hAvatar">Ninguno</span></div>
+        <div class="stat">Huesos <span class="val" id="hBones">0</span></div>
+        <div class="stat">Integridad <span class="val ok" id="hIntegrity">100%</span></div>
+        <div class="stat">Veredicto <span class="val" id="hVerdict">PENDIENTE</span></div>
+    </div>
+
+    <!-- Controls -->
+    <div id="controls">
+        <select id="avatarSelect">
+            <option value="">-- Seleccionar GLB (Fase 4) --</option>
+            <option value="test_wolf.glb">test_wolf.glb (Ejemplo)</option>
+            <option value="test_spider.glb">test_spider.glb (Ejemplo)</option>
+        </select>
+        <button id="btnLoad">Cargar Avatar</button>
+        <button id="btnTest" style="background:#ff0055;color:#fff;">Ejecutar QA Fisico</button>
+    </div>
+
+    <div id="log">=== MORPHEUS CONSTRUCT SYSTEM START ===<br></div>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js?v=2';
+        import { MorpheusEnvironmentFactory } from '@alisa-engine/src/extensions/avatar-pipeline/MorpheusEnvironmentFactory.js';
+        import { MorpheusSimulationSystem } from '@alisa-engine/src/extensions/alisa-colony/avatar-pipeline/MorpheusSimulationSystem.js';
+
+        const logPanel = document.getElementById('log');
+        function log(msg) {
+            logPanel.innerHTML += msg + "<br>";
+            logPanel.scrollTop = logPanel.scrollHeight;
+        }
+
+        const core = new AlisaRenderCore({ clearColor: 0xe0e0e0 });
+        core.setupDefaultEnvironment();
+
+        const envFactory = new MorpheusEnvironmentFactory(core.scene, core);
+        envFactory.buildAll();
+
+        const simSystem = new MorpheusSimulationSystem(core, envFactory, log);
+
+        // UI Hooks
+        document.getElementById('btnLoad').onclick = () => {
+            const file = document.getElementById('avatarSelect').value;
+            if (!file) return;
+
+            document.getElementById('hAvatar').innerText = file;
+            simSystem.loadAvatar(file);
+
+            document.getElementById('hBones').innerText = "8 (Dummy)";
+            document.getElementById('hFase').innerText = "READY";
+            document.getElementById('hIntegrity').innerText = "100%";
+            document.getElementById('hIntegrity').className = "val ok";
+            document.getElementById('hVerdict').innerText = "PENDIENTE";
+            document.getElementById('hVerdict').style.color = "#00ffcc";
+        };
+
+        document.getElementById('btnTest').onclick = () => {
+            if (simSystem.qaState !== 'READY') return;
+            document.getElementById('hFase').innerText = "TESTING";
+            simSystem.startTest();
+        };
+
+        const handleStateChange = (newState) => {
+            if (newState === 'FAILED') {
+                document.getElementById('hIntegrity').innerText = "MALLA ROTA";
+                document.getElementById('hIntegrity').className = "val error";
+                document.getElementById('hVerdict').innerText = "RECHAZADO (Devuelto a Igor)";
+                document.getElementById('hVerdict').style.color = "#ff3355";
+                document.getElementById('hFase').innerText = "FAILED";
+                const filename = document.getElementById('avatarSelect').value;
+                if (filename) simSystem.postFailureToJobBoard(filename);
+            } else if (newState === 'PASSED') {
+                document.getElementById('hVerdict').innerText = "APROBADO (Listo para Colonia)";
+                document.getElementById('hVerdict').style.color = "#00ffcc";
+                document.getElementById('hFase').innerText = "PASSED";
+            }
+        };
+
+        core.startLoop((dt) => {
+            simSystem.tick(dt, core.clock.getElapsedTime(), handleStateChange);
+        });
+    </script>
+</body>
+</html>

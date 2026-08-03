@@ -1,0 +1,32 @@
+{
+  "schema": "alisa.realizacion.montaje_lexicon.v1",
+  "note": "Single source of truth for MONTAJE — the editor. Realización directs ONE performance within a shot; Montaje COMPOSES many performances between shots: cuts, split-screen, video-call grids, phone-call alternation, rhythm. This is the exponential multiplier: N single-avatar performances -> N^2 interactions by composition. Layouts give normalized cell rects [x,y,w,h] (0..1); the JS runtime / a PIL compositor draws each performance into its cell. Art: Eisenstein (montage = drama from juxtaposition).",
+  "owner": "Eisenstein / Aris (realización: montaje)",
+
+  "layouts": {
+    "full":     { "cells": [ {"x":0.0,"y":0.0,"w":1.0,"h":1.0} ], "desc": "single full-frame shot" },
+    "split_2":  { "cells": [ {"x":0.0,"y":0.0,"w":0.5,"h":1.0}, {"x":0.5,"y":0.0,"w":0.5,"h":1.0} ], "desc": "two side by side - dialogue / phone-call feel" },
+    "split_2h": { "cells": [ {"x":0.0,"y":0.0,"w":1.0,"h":0.5}, {"x":0.0,"y":0.5,"w":1.0,"h":0.5} ], "desc": "stacked - phone call, one over the other" },
+    "grid_4":   { "cells": [ {"x":0.0,"y":0.0,"w":0.5,"h":0.5}, {"x":0.5,"y":0.0,"w":0.5,"h":0.5}, {"x":0.0,"y":0.5,"w":0.5,"h":0.5}, {"x":0.5,"y":0.5,"w":0.5,"h":0.5} ], "desc": "video-call grid of 4 (Zoom / Brady-Bunch)" },
+    "grid_6":   { "cells": [ {"x":0.0,"y":0.0,"w":0.333,"h":0.5}, {"x":0.333,"y":0.0,"w":0.334,"h":0.5}, {"x":0.667,"y":0.0,"w":0.333,"h":0.5}, {"x":0.0,"y":0.5,"w":0.333,"h":0.5}, {"x":0.333,"y":0.5,"w":0.334,"h":0.5}, {"x":0.667,"y":0.5,"w":0.333,"h":0.5} ], "desc": "video-call grid of 6" },
+    "pip":      { "cells": [ {"x":0.0,"y":0.0,"w":1.0,"h":1.0}, {"x":0.72,"y":0.66,"w":0.26,"h":0.31} ], "desc": "picture-in-picture - main + a small corner feed" },
+    "cctv_2x2": { "cells": [ {"x":0.0,"y":0.0,"w":0.5,"h":0.5}, {"x":0.5,"y":0.0,"w":0.5,"h":0.5}, {"x":0.0,"y":0.5,"w":0.5,"h":0.5}, {"x":0.5,"y":0.5,"w":0.5,"h":0.5} ], "desc": "District 9 surveillance quad (with timestamps/grain)" }
+  },
+
+  "transitions": {
+    "hard_cut":  { "ms": 0,   "desc": "dry cut (Allie: cortes secos) - the default" },
+    "fade":      { "ms": 400, "desc": "cross-fade" },
+    "dip_black": { "ms": 500, "desc": "dip to black - a beat of silence between ideas" },
+    "match_cut": { "ms": 0,   "desc": "thematic hard cut on a matching shape/motion" },
+    "whip":      { "ms": 180, "desc": "whip-pan blur cut - anime energy" }
+  },
+
+  "styles": {
+    "videocall": { "chrome": true,  "labels": true,  "border": "#3a4658", "active_border": "#7FE8C8", "bg": "#0B0E14", "desc": "Zoom-style: name labels, active-speaker highlight, mic/cam chrome" },
+    "cctv":      { "chrome": true,  "timestamp": true, "grain": true, "border": "#223", "desc": "District 9 surveillance" },
+    "clean":     { "chrome": false, "labels": false, "desc": "clean split, no UI" }
+  },
+
+  "rhythm": { "silence_beat_ms": 700, "min_shot_ms": 500, "note": "Allie: use silences and dry cuts; do not fill everything with music. Hard cuts are earned." },
+  "defaults": { "layout": "full", "transition": "hard_cut", "style": "clean" }
+}

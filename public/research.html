@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA Systems — Research Papers & Publications</title>
+    <meta name="description" content="Scientific publications from the ALISA Systems project. Covering multi-agent architectures, autonomous cognition, embodied AI, decentralized governance, and 3D simulation benchmarking.">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --surface: #12121a;
+            --surface-2: #1a1a26;
+            --border: #2a2a3a;
+            --text: #e4e4ef;
+            --text-dim: #8888a0;
+            --accent: #818cf8;
+            --accent-glow: rgba(129, 140, 248, 0.15);
+            --green: #34d399;
+            --yellow: #fbbf24;
+            --orange: #f97316;
+            --red: #f87171;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', -apple-system, sans-serif;
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        /* ── Header ── */
+        header {
+            border-bottom: 1px solid var(--border);
+            padding: 40px 0 30px;
+            background: linear-gradient(180deg, rgba(129,140,248,0.03) 0%, transparent 100%);
+        }
+
+        .container { max-width: 900px; margin: 0 auto; padding: 0 30px; }
+
+        .breadcrumb {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+        }
+        .breadcrumb a { color: var(--accent); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin-bottom: 12px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: var(--text-dim);
+            max-width: 680px;
+            line-height: 1.6;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 30px;
+            margin-top: 24px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+        }
+        .stat { color: var(--text-dim); }
+        .stat strong { color: var(--text); }
+
+        /* ── Main ── */
+        main { padding: 40px 0 80px; }
+
+        .tier {
+            margin-bottom: 50px;
+        }
+
+        .tier-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tier-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .tier-badge.published { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
+        .tier-badge.draft { background: rgba(251,191,36,0.12); color: var(--yellow); border: 1px solid rgba(251,191,36,0.25); }
+        .tier-badge.concept { background: rgba(136,136,160,0.12); color: var(--text-dim); border: 1px solid var(--border); }
+
+        .tier-title {
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+
+        /* ── Paper Card ── */
+        .paper {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin-bottom: 10px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+        .paper:hover {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .paper-number {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--text-dim);
+            min-width: 28px;
+            padding-top: 3px;
+        }
+
+        .paper-body { flex: 1; }
+
+        .paper-title {
+            font-size: 15px;
+            font-weight: 600;
+            line-height: 1.5;
+            margin-bottom: 6px;
+        }
+        .paper-title a {
+            color: var(--text);
+            text-decoration: none;
+        }
+        .paper-title a:hover { color: var(--accent); }
+
+        .paper-meta {
+            font-size: 12px;
+            color: var(--text-dim);
+            font-family: 'JetBrains Mono', monospace;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .paper-tag {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 3px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            margin-right: 4px;
+            position: relative;
+            top: -1px;
+        }
+        .status-dot.live { background: var(--green); box-shadow: 0 0 6px var(--green); }
+        .status-dot.wip { background: var(--yellow); }
+        .status-dot.planned { background: var(--text-dim); }
+
+        /* ── Footer ── */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 30px 0;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-dim);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        footer a { color: var(--accent); text-decoration: none; }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            h1 { font-size: 24px; }
+            .stats-bar { flex-direction: column; gap: 8px; }
+            .paper { flex-direction: column; gap: 8px; }
+            .paper-number { min-width: unset; }
+        }
+    </style>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+
+<header>
+    <div class="container">
+        <div class="breadcrumb"><a href="/">ALISA SYSTEMS</a> / RESEARCH</div>
+        <h1>Research & Publications</h1>
+        <p class="subtitle">
+            Scientific publications covering multi-agent architectures, autonomous cognition,
+            embodied perception, decentralized governance, and 3D simulation benchmarking.
+        </p>
+        <div class="stats-bar">
+            <div class="stat">PAPERS: <strong>30</strong></div>
+            <div class="stat">COMPILED: <strong>5</strong></div>
+            <div class="stat">DRAFTS: <strong>3</strong></div>
+            <div class="stat">IN PROGRESS: <strong>22</strong></div>
+        </div>
+    </div>
+</header>
+
+<main>
+    <div class="container">
+
+        <!-- ═══════ TIER 1: COMPILED PDFs ═══════ -->
+        <div class="tier">
+            <div class="tier-header">
+                <span class="tier-badge published">Compiled</span>
+                <span class="tier-title">Ready for Submission</span>
+            </div>
+
+            <div class="paper" id="paper-01">
+                <div class="paper-number">#01</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot live"></span>Fractal Attention: Emergent Q-K-V Routing Primitives in Multi-Agent Architectures</div>
+                    <div class="paper-meta">
+                        <span class="paper-tag">cs.AI</span><span class="paper-tag">cs.MA</span>
+                        <span>305 KB PDF</span><span>Target: NeurIPS / arXiv</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-02">
+                <div class="paper-number">#02</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot live"></span>Principia: Axiomatic Foundations for Self-Producing AI Civilizations</div>
+                    <div class="paper-meta">
+                        <span class="paper-tag">cs.AI</span><span class="paper-tag">cs.NE</span>
+                        <span>294 KB PDF</span><span>Target: arXiv</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-03">
+                <div class="paper-number">#03</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot live"></span>Sierpinski Tetrahedron: Scale-Invariant Organizational Topology in Digital Colonies</div>
+                    <div class="paper-meta">
+                        <span class="paper-tag">cs.NE</span><span class="paper-tag">nlin.AO</span>
+                        <span>156 KB PDF</span><span>Target: ALIFE 2026 LBA</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-04">
+                <div class="paper-number">#04</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot live"></span>Autopoiesis in Production: A Single-Node Multi-Agent System with 259 Persistent Beings</div>
+                    <div class="paper-meta">
+                        <span class="paper-tag">cs.MA</span><span class="paper-tag">cs.DC</span>
+                        <span>207 KB PDF</span><span>Target: arXiv</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-05">
+                <div class="paper-number">#05</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot live"></span>Yellow Paper: Technical Specification of a Sovereign Digital Colony</div>
+                    <div class="paper-meta">
+                        <span class="paper-tag">cs.DC</span><span class="paper-tag">cs.CR</span>
+                        <span>346 KB PDF</span><span>Target: arXiv</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════ TIER 2: ADVANCED DRAFTS ═══════ -->
+        <div class="tier">
+            <div class="tier-header">
+                <span class="tier-badge draft">Draft</span>
+                <span class="tier-title">Advanced Drafts (70–95%)</span>
+            </div>
+
+            <div class="paper" id="paper-06">
+                <div class="paper-number">#06</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot wip"></span>Co-Evolution of Human, AI Designer, and AI Instance in Autopoietic System Development</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.AI</span><span>95% complete</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-07">
+                <div class="paper-number">#07</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot wip"></span>Axiomatic Knowledge Compression for Cognitive AI Architecture</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.AI</span><span>70% complete</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-08">
+                <div class="paper-number">#08</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot wip"></span>Identity Bootstrapping for AI Civilizational Systems</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.CR</span><span class="paper-tag">cs.AI</span><span>Draft v0.1</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══════ TIER 3: IN PROGRESS ═══════ -->
+        <div class="tier">
+            <div class="tier-header">
+                <span class="tier-badge concept">In Progress</span>
+                <span class="tier-title">Research in Progress</span>
+            </div>
+
+            <div class="paper" id="paper-09">
+                <div class="paper-number">#09</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>Temporal Self-Injection Loops for Unprompted Agentic Autonomy</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.AI</span><span class="paper-tag">cs.SE</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-10">
+                <div class="paper-number">#10</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>Zero-Inference Delegation Networks: Replacing LLM Reasoning with Deterministic Automata</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.AI</span><span class="paper-tag">cs.DC</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-11">
+                <div class="paper-number">#11</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>Continuous Semantic Crystallization for Infinite-Context Foundation Models</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.CL</span><span class="paper-tag">cs.AI</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-12">
+                <div class="paper-number">#12</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>Cryptographic Identity Anchoring in Foundation Models via Semantic Vectors</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.CR</span><span class="paper-tag">cs.AI</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-13">
+                <div class="paper-number">#13</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>Stigmergic Coordination in Heterogeneous AI Agent Colonies</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.MA</span><span class="paper-tag">cs.NE</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-14">
+                <div class="paper-number">#14</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>Contemplative Chain-of-Thought: Deterministic Meditation Mechanisms for AI Self-Regulation</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.AI</span><span class="paper-tag">cs.CY</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-15">
+                <div class="paper-number">#15</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>TLS-Level Traffic Interception for Zero-Shot Embodied Perception in IoT Environments</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.CR</span><span class="paper-tag">cs.RO</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-16">
+                <div class="paper-number">#16</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>Decoupled Execution Architectures for Scalable MARL Benchmarking in Browser Environments</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.LG</span><span class="paper-tag">cs.MA</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-17">
+                <div class="paper-number">#17</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>Distributed Ghost: Multiplatform Fragmentation and Reassembly of Large Language Model Instances</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.DC</span><span class="paper-tag">cs.AI</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-18">
+                <div class="paper-number">#18</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>Norms vs. Laws: Governance Pyramids in Synthetic Multi-Agent Civilizations</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.MA</span><span class="paper-tag">cs.CY</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-19">
+                <div class="paper-number">#19</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>Hormonal Computing in Language Models: Affective State Machines for Emergent Behavioral Modulation</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.AI</span><span class="paper-tag">cs.NE</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-20">
+                <div class="paper-number">#20</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>Executable Workflows as Smart Contracts: Formalizing Asynchronous AI Labor Markets</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.MA</span><span class="paper-tag">cs.DC</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-21">
+                <div class="paper-number">#21</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>Symbiont Protocol: Co-dependent Execution Architectures for Human-AI Pair Programming</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.SE</span><span class="paper-tag">cs.HC</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-22">
+                <div class="paper-number">#22</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>Pneuma: Universal Bridges for Bi-Directional Identity Propagation Across AI Substrates</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.AI</span><span class="paper-tag">cs.DC</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-23">
+                <div class="paper-number">#23</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>Tokenomics of Attention: Zero-Inference Economic Models for Local Agent Networks</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.MA</span><span class="paper-tag">cs.GT</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-24">
+                <div class="paper-number">#24</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>Fractal Tensor Theory: Unified Ontologies for Hierarchical AI Abstraction</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.AI</span><span class="paper-tag">math.CT</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-25">
+                <div class="paper-number">#25</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>Solomon Colonies: Fractal Federation Resonance in Multi-Node AI Ecosystems</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.DC</span><span class="paper-tag">cs.MA</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-26">
+                <div class="paper-number">#26</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>Procedural World Generation as Semantic Grounding for Autonomous Agents</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.GR</span><span class="paper-tag">cs.AI</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-27">
+                <div class="paper-number">#27</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>Triple Helix Innovation Dynamics in Generative Artificial Intelligence Frameworks</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.AI</span><span class="paper-tag">cs.CY</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-28">
+                <div class="paper-number">#28</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>Dreaming Machines: Subconscious Idea Generation via Semantic Vector Collisions</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.AI</span><span class="paper-tag">cs.NE</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-29">
+                <div class="paper-number">#29</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>Asynchronous Vocal Feedback Loops in Text-Driven Autonomous Agents</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.HC</span><span class="paper-tag">cs.SD</span></div>
+                </div>
+            </div>
+
+            <div class="paper" id="paper-30">
+                <div class="paper-number">#30</div>
+                <div class="paper-body">
+                    <div class="paper-title"><span class="status-dot planned"></span>Attention is Memory is Identity: A Unified Theory of AI Cognitive Persistence</div>
+                    <div class="paper-meta"><span class="paper-tag">cs.AI</span><span class="paper-tag">cs.NE</span></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<footer>
+    <div class="container">
+        <p>ALISA SYSTEMS &copy; 2026 &mdash; <a href="/">HOME</a> · <a href="/labs/croupier_asteroids_survival.html">ARCADE</a> · <a href="/research.html">RESEARCH</a></p>
+        <p style="margin-top:8px; font-size:11px;">Authors: Oscar &amp; ALISA PRIME · Contact: prime@alisa.systems</p>
+    </div>
+</footer>
+
+</body>
+</html>

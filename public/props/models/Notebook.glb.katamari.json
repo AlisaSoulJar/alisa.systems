@@ -1,0 +1,8 @@
+{
+    "source_file": "Notebook.glb",
+    "deduced_size_meters": 0.6,
+    "target_tier": "Tier -2.0: Small Fauna",
+    "target_scale_constraint": 0.5,
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0
+}

@@ -1,0 +1,96 @@
+{
+    "_doc": "Room Types — like Guilds for rooms. Each type defines what props CAN exist, with weights and quantity ranges. Room category (slum/corp) controls HOW they look. Room seed controls WHICH ones appear.",
+
+    "kitchen": {
+        "required":  ["light"],
+        "pool": [
+            { "bp": "table",   "weight": 90, "qty": [1, 1] },
+            { "bp": "chair",   "weight": 85, "qty": [1, 4] },
+            { "bp": "crate",   "weight": 40, "qty": [0, 2] },
+            { "bp": "barrel",  "weight": 20, "qty": [0, 1] },
+            { "bp": "light",   "weight": 70, "qty": [0, 1] }
+        ],
+        "propCount": [4, 8]
+    },
+    "bedroom": {
+        "required":  ["light"],
+        "pool": [
+            { "bp": "table",   "weight": 40, "qty": [0, 1] },
+            { "bp": "chair",   "weight": 50, "qty": [0, 1] },
+            { "bp": "crate",   "weight": 30, "qty": [0, 2] },
+            { "bp": "light",   "weight": 80, "qty": [1, 2] }
+        ],
+        "propCount": [3, 6]
+    },
+    "living": {
+        "required":  ["light"],
+        "pool": [
+            { "bp": "table",   "weight": 80, "qty": [1, 2] },
+            { "bp": "chair",   "weight": 90, "qty": [2, 5] },
+            { "bp": "light",   "weight": 75, "qty": [1, 2] },
+            { "bp": "crate",   "weight": 20, "qty": [0, 1] }
+        ],
+        "propCount": [5, 10]
+    },
+    "lab": {
+        "required":  ["light", "table"],
+        "pool": [
+            { "bp": "table",   "weight": 70, "qty": [1, 3] },
+            { "bp": "chair",   "weight": 60, "qty": [1, 3] },
+            { "bp": "barrel",  "weight": 50, "qty": [0, 3] },
+            { "bp": "crate",   "weight": 60, "qty": [0, 4] },
+            { "bp": "light",   "weight": 80, "qty": [1, 3] }
+        ],
+        "propCount": [6, 14]
+    },
+    "office": {
+        "required":  ["light", "table", "chair"],
+        "pool": [
+            { "bp": "table",   "weight": 60, "qty": [1, 2] },
+            { "bp": "chair",   "weight": 90, "qty": [2, 6] },
+            { "bp": "crate",   "weight": 40, "qty": [0, 2] },
+            { "bp": "light",   "weight": 80, "qty": [1, 2] }
+        ],
+        "propCount": [5, 12]
+    },
+    "storage": {
+        "required":  [],
+        "pool": [
+            { "bp": "crate",   "weight": 95, "qty": [2, 8] },
+            { "bp": "barrel",  "weight": 80, "qty": [1, 6] },
+            { "bp": "light",   "weight": 30, "qty": [0, 1] }
+        ],
+        "propCount": [4, 12]
+    },
+    "corridor": {
+        "required":  [],
+        "pool": [
+            { "bp": "light",   "weight": 60, "qty": [0, 2] },
+            { "bp": "barrel",  "weight": 20, "qty": [0, 1] },
+            { "bp": "crate",   "weight": 15, "qty": [0, 1] }
+        ],
+        "propCount": [0, 3]
+    },
+    "barracks": {
+        "required":  ["light"],
+        "pool": [
+            { "bp": "chair",   "weight": 50, "qty": [0, 2] },
+            { "bp": "table",   "weight": 40, "qty": [0, 1] },
+            { "bp": "crate",   "weight": 70, "qty": [1, 4] },
+            { "bp": "barrel",  "weight": 30, "qty": [0, 2] },
+            { "bp": "light",   "weight": 60, "qty": [0, 2] }
+        ],
+        "propCount": [3, 8]
+    },
+    "workshop": {
+        "required":  ["table", "light"],
+        "pool": [
+            { "bp": "table",   "weight": 80, "qty": [1, 2] },
+            { "bp": "barrel",  "weight": 60, "qty": [0, 3] },
+            { "bp": "crate",   "weight": 70, "qty": [1, 4] },
+            { "bp": "chair",   "weight": 40, "qty": [0, 2] },
+            { "bp": "light",   "weight": 70, "qty": [1, 2] }
+        ],
+        "propCount": [5, 12]
+    }
+}

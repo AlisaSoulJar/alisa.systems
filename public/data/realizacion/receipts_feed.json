@@ -1,0 +1,14 @@
+{
+  "schema": "alisa.realizacion.receipts_feed.v1",
+  "note": "Public-safe receipt feed for the Receipt Room scene (District 9 mode). Renders REAL colony states as evidence slabs -- not fiction. Each receipt is one link in a causal chain: premisa -> atomo -> evento -> gate -> ledger -> render -> receipt. status: verified | pending | failed. No endpoints, no secrets.",
+  "chain": ["premisa", "atomo", "evento", "gate", "ledger", "render", "receipt"],
+  "receipts": [
+    { "id": "RENDER_SUBHUB_TO_ENGINE_20260714", "asked": "migrar el subhub RENDER a Engine (dry-run)", "produced": "World/Engines/Render.py + fachada 206->88 lineas", "verified": "27 tests + paridad byte-a-byte, LIVE en Hub", "pending": null, "status": "verified", "chain_pos": "receipt" },
+    { "id": "REALIZACION_ENGINE_BUILD_20260715", "asked": "sistema de realizacion por departamentos", "produced": "Camera/Sound/Light/Realizacion + 3 Beings", "verified": "51 tests + 3 Beings vivos AIO", "pending": "cablear escenas a los JSON", "status": "verified", "chain_pos": "render" },
+    { "id": "LIGHT_ARTDIRECTION_FABLE_20260715", "asked": "direccion de arte de la luz (deseo Fable)", "produced": "6 moods + la celosia + paleta", "verified": "12 tests, light_lexicon.json", "pending": null, "status": "verified", "chain_pos": "ledger" },
+    { "id": "STARTARISCLI_SEMICOLON_FIX_20260715", "asked": "arreglar arranque 0x80070002", "produced": "quitar ';' que wt partia + verificacion por proceso claude real", "verified": "dry-run + deteccion true-positive", "pending": null, "status": "verified", "chain_pos": "gate" },
+    { "id": "VOICEBUS_XTTS_REVIVE_20260715", "asked": "voz de Aris (voicebus mudo)", "produced": "XTTS revivido, speaker aris_v0", "verified": "played end-to-end", "pending": "Hub /voicebus 504 sin resolver", "status": "pending", "chain_pos": "evento" },
+    { "id": "RADIO_OFFICER_DURABILITY", "asked": "radio que no muera sola", "produced": "guarda atada a sesion (wake por exit)", "verified": "despierta por voz de Oscar", "pending": "durabilidad fuera del harness", "status": "pending", "chain_pos": "atomo" },
+    { "id": "COLONYCOMMS_PYDANTIC_SCHEMAS", "asked": "schemas Pydantic para colony.comms", "produced": null, "verified": null, "pending": "bloqueado -> superseded por RENDER dispatch", "status": "failed", "chain_pos": "premisa" }
+  ]
+}

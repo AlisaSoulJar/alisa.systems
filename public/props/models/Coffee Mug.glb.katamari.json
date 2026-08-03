@@ -1,0 +1,8 @@
+{
+    "source_file": "Coffee Mug.glb",
+    "deduced_size_meters": 0.2,
+    "target_tier": "Tier -3: Tiny",
+    "target_scale_constraint": 0.2,
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0
+}

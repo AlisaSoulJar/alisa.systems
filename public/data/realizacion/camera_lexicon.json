@@ -1,0 +1,51 @@
+{
+  "schema": "alisa.realizacion.camera_lexicon.v1",
+  "note": "Single source of truth for the ALISA camera lexicon. Distilled from camera_slerp_director_studio.html but expressed SUBJECT-RELATIVE so any scene applies a shot regardless of scale. A shot = framing x angle x move. The Camera engine (World/Engines/Camera.py) resolves (framing, angle) against a subject {center:[x,y,z], height} into {pos, look, fov, roll}; moves are hints the JS runtime animates. Both the Python engine and the browser scenes read THIS file — do not hardcode shots per scene.",
+  "owner": "Aris (realizacion/arte)",
+
+  "framings": {
+    "wide":   { "h_frame": 1.70, "y_target": 0.50, "z_pad": 0.6, "fov": 42, "desc": "establishing - subject + room" },
+    "full":   { "h_frame": 1.10, "y_target": 0.55, "z_pad": 0.4, "fov": 40, "desc": "full shot, head to toe" },
+    "cowboy": { "h_frame": 0.70, "y_target": 0.72, "z_pad": 0.3, "fov": 38, "desc": "mid-thigh up" },
+    "medium": { "h_frame": 0.55, "y_target": 0.78, "z_pad": 0.3, "fov": 36, "desc": "waist up" },
+    "mcu":    { "h_frame": 0.35, "y_target": 0.88, "z_pad": 0.25, "fov": 32, "desc": "chest up - the confessional default" },
+    "ecu":    { "h_frame": 0.12, "y_target": 0.95, "z_pad": 0.2, "fov": 28, "desc": "eyes - maximum tension" },
+    "eyes":   { "h_frame": 0.055, "y_target": 0.965, "z_pad": 0.12, "fov": 24, "desc": "anime reaction shot - just the eyes" }
+  },
+
+  "angles": {
+    "eye":   { "elevation_deg": 0,   "azimuth_deg": 0,  "roll_deg": 0,  "desc": "neutral eye-level" },
+    "low":   { "elevation_deg": -26, "azimuth_deg": 0,  "roll_deg": 0,  "fov_bias": 5,  "desc": "contrapicado - power/threat, looks up at subject" },
+    "high":  { "elevation_deg": 30,  "azimuth_deg": 0,  "roll_deg": 0,  "desc": "picado - diminishes subject, looks down" },
+    "dutch": { "elevation_deg": 0,   "azimuth_deg": 0,  "roll_deg": 10, "desc": "canted horizon - unease/tension" },
+    "ots":   { "elevation_deg": 4,   "azimuth_deg": 22, "roll_deg": 0,  "desc": "over-the-shoulder 3/4 - human empathy" },
+    "fisheye":{ "elevation_deg": 0,  "azimuth_deg": 0,  "roll_deg": 0,  "fov_bias": 42, "desc": "anime yandere fisheye - unhinged intensity, warped close" },
+    "hero":  { "elevation_deg": -34, "azimuth_deg": 0,  "roll_deg": 0,  "fov_bias": 8,  "desc": "anime hero contrapicado - power, resolve, standing tall" }
+  },
+
+  "moves": {
+    "static":     { "desc": "locked off - held frame" },
+    "orbit":      { "desc": "slow arc around the subject", "speed": 0.005 },
+    "dolly_zoom": { "desc": "vertigo - dolly out while FOV compresses (or in/expand)", "fov_target": 12, "distance_factor": 2.6 },
+    "push_in":    { "desc": "slow creep toward the subject", "distance_factor": 0.75 },
+    "pull_out":   { "desc": "slow reveal away from the subject", "distance_factor": 1.4 },
+    "snap_in":    { "desc": "anime impact - a hard snap-zoom onto the subject (the realization hits)", "distance_factor": 0.5 }
+  },
+
+  "defaults": { "framing": "mcu", "angle": "eye", "move": "static", "slerp_speed": 0.06 },
+
+  "presets": {
+    "confesion_intima":   { "framing": "mcu",    "angle": "eye",   "move": "static",  "desc": "the confessional default - intimate, honest" },
+    "confesion_dramatica":{ "framing": "mcu",    "angle": "low",   "move": "push_in", "desc": "a heavy admission - power creeps in" },
+    "revelacion":         { "framing": "ecu",    "angle": "eye",   "move": "static",  "desc": "the moment of truth in the eyes" },
+    "duda":               { "framing": "medium", "angle": "dutch", "move": "static",  "desc": "unease, something is off" },
+    "establecer":         { "framing": "wide",   "angle": "eye",   "move": "pull_out","desc": "set the room before the scene" },
+    "escucha":            { "framing": "medium", "angle": "ots",   "move": "static",  "desc": "over-the-shoulder listening beat" },
+
+    "anime_reaccion":     { "framing": "eyes",   "angle": "eye",     "move": "static",  "desc": "ANIME: the reaction shot - cut to just the eyes on a beat of shock/realisation" },
+    "anime_impacto":      { "framing": "mcu",    "angle": "eye",     "move": "snap_in", "desc": "ANIME: the impact - a hard snap-zoom when the truth lands" },
+    "anime_yandere":      { "framing": "ecu",    "angle": "fisheye", "move": "static",  "desc": "ANIME: warped fisheye intensity - the unhinged/obsessive beat" },
+    "anime_heroe":        { "framing": "full",   "angle": "hero",    "move": "pull_out","desc": "ANIME: the hero contrapicado - resolve, standing tall as the camera reveals" },
+    "anime_tension":      { "framing": "mcu",    "angle": "dutch",   "move": "static",  "desc": "ANIME: canted tension - something is deeply wrong" }
+  }
+}

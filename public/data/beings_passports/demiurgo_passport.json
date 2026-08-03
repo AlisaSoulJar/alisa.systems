@@ -1,0 +1,20 @@
+{
+    "name": "Demiurgo",
+    "role": "The World Builder",
+    "emoji": "🌍",
+    "type": "cosmic",
+    "skeleton": "humanoid",
+    "model_path": "demiurgo.glb",
+    "scale": 1.0,
+    "kinematics": "bipedal",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "edge_tts",
+        "tier": 4,
+        "voice_id": "es-ES-AlvaroNeural",
+        "rate": "-15%",
+        "pitch": "-5Hz",
+        "label": "Demiurgo - Alvaro (creador, profundo, cósmico)"
+    }
+}

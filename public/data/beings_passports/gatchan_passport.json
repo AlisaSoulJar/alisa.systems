@@ -1,0 +1,21 @@
+{
+    "name": "Gatchan",
+    "role": "The Destructor Baby",
+    "emoji": "👶",
+    "type": "biological",
+    "skeleton": "baby_angel",
+    "model_path": "gatchan.glb",
+    "scale": 0.4,
+    "kinematics": "baby_fly",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "synth",
+        "tier": 1,
+        "signal_type": "r2d2",
+        "signal_freq": 740,
+        "signal_duration": 0.2,
+        "label": "Gatchan - Synth r2d2 (chirps rápidos, destructivo)",
+        "freq_label": "masticador de datos, fa# agudo"
+    }
+}

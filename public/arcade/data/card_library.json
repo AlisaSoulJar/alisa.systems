@@ -1,0 +1,1819 @@
+{
+  "version": "1.0.0",
+  "meta": {
+    "author": "ALISA Sovereign Arcade",
+    "description": "Universal Card Game Library — Decks, Games, and Rule Bindings",
+    "date": "2026-04-12",
+    "trademark_note": "Los nombres del catálogo son genéricos o de dominio público. 'UNIT' es nuestro nombre para un juego de descarte con cartas de acción; no está asociado a ninguna marca registrada."
+  },
+  "decks": {
+    "french_52": {
+      "name": "French (Standard 52)",
+      "suits": [
+        {
+          "id": "S",
+          "symbol": "♠",
+          "color": "#222222",
+          "name": "Spades"
+        },
+        {
+          "id": "H",
+          "symbol": "♥",
+          "color": "#D32F2F",
+          "name": "Hearts"
+        },
+        {
+          "id": "D",
+          "symbol": "♦",
+          "color": "#D32F2F",
+          "name": "Diamonds"
+        },
+        {
+          "id": "C",
+          "symbol": "♣",
+          "color": "#222222",
+          "name": "Clubs"
+        }
+      ],
+      "ranks": [
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "J",
+        "Q",
+        "K",
+        "A"
+      ],
+      "rank_values": {
+        "2": 2,
+        "3": 3,
+        "4": 4,
+        "5": 5,
+        "6": 6,
+        "7": 7,
+        "8": 8,
+        "9": 9,
+        "10": 10,
+        "J": 11,
+        "Q": 12,
+        "K": 13,
+        "A": 14
+      },
+      "specials": [],
+      "jokers": 0,
+      "back": "classic_red",
+      "total": 52
+    },
+    "french_54": {
+      "name": "French (52 + 2 Jokers)",
+      "extends": "french_52",
+      "jokers": 2,
+      "specials": [
+        {
+          "id": "JK",
+          "name": "Joker",
+          "color": "#FF9800"
+        }
+      ],
+      "total": 54
+    },
+    "spanish_40": {
+      "name": "Baraja Española (40 cartas)",
+      "suits": [
+        {
+          "id": "O",
+          "symbol": "🪙",
+          "color": "#FFC107",
+          "name": "Oros"
+        },
+        {
+          "id": "P",
+          "symbol": "🏆",
+          "color": "#C62828",
+          "name": "Copas"
+        },
+        {
+          "id": "E",
+          "symbol": "⚔️",
+          "color": "#2196F3",
+          "name": "Espadas"
+        },
+        {
+          "id": "B",
+          "symbol": "🪵",
+          "color": "#795548",
+          "name": "Bastos"
+        }
+      ],
+      "ranks": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "S",
+        "C",
+        "R"
+      ],
+      "rank_values": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4,
+        "5": 5,
+        "6": 6,
+        "7": 7,
+        "S": 10,
+        "C": 11,
+        "R": 12
+      },
+      "rank_names": {
+        "S": "Sota",
+        "C": "Caballo",
+        "R": "Rey"
+      },
+      "specials": [],
+      "jokers": 0,
+      "back": "spanish_gold",
+      "total": 40
+    },
+    "spanish_48": {
+      "name": "Baraja Española (48 cartas)",
+      "extends": "spanish_40",
+      "ranks": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "S",
+        "C",
+        "R"
+      ],
+      "total": 48
+    },
+    "tarot_78": {
+      "name": "Tarot (78 cartas)",
+      "suits": [
+        {
+          "id": "W",
+          "symbol": "🪄",
+          "color": "#F44336",
+          "name": "Wands"
+        },
+        {
+          "id": "C",
+          "symbol": "🏆",
+          "color": "#2196F3",
+          "name": "Cups"
+        },
+        {
+          "id": "S",
+          "symbol": "⚔️",
+          "color": "#9C27B0",
+          "name": "Swords"
+        },
+        {
+          "id": "P",
+          "symbol": "🪙",
+          "color": "#FFC107",
+          "name": "Pentacles"
+        }
+      ],
+      "ranks": [
+        "A",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "Pg",
+        "Kn",
+        "Q",
+        "K"
+      ],
+      "major_arcana": [
+        "0_Fool",
+        "I_Magician",
+        "II_Priestess",
+        "III_Empress",
+        "IV_Emperor",
+        "V_Hierophant",
+        "VI_Lovers",
+        "VII_Chariot",
+        "VIII_Strength",
+        "IX_Hermit",
+        "X_Wheel",
+        "XI_Justice",
+        "XII_Hanged",
+        "XIII_Death",
+        "XIV_Temperance",
+        "XV_Devil",
+        "XVI_Tower",
+        "XVII_Star",
+        "XVIII_Moon",
+        "XIX_Sun",
+        "XX_Judgement",
+        "XXI_World"
+      ],
+      "back": "tarot_purple",
+      "total": 78
+    },
+    "unit_108": {
+      "name": "UNIT (108 cartas)",
+      "suits": [
+        {
+          "id": "R",
+          "symbol": "●",
+          "color": "#F44336",
+          "name": "Red"
+        },
+        {
+          "id": "B",
+          "symbol": "●",
+          "color": "#2196F3",
+          "name": "Blue"
+        },
+        {
+          "id": "G",
+          "symbol": "●",
+          "color": "#4CAF50",
+          "name": "Green"
+        },
+        {
+          "id": "Y",
+          "symbol": "●",
+          "color": "#FFEB3B",
+          "name": "Yellow"
+        }
+      ],
+      "ranks": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "rank_values": {
+        "0": 0,
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4,
+        "5": 5,
+        "6": 6,
+        "7": 7,
+        "8": 8,
+        "9": 9
+      },
+      "specials": [
+        {
+          "id": "SKIP",
+          "name": "Skip",
+          "per_suit": 2
+        },
+        {
+          "id": "REV",
+          "name": "Reverse",
+          "per_suit": 2
+        },
+        {
+          "id": "D2",
+          "name": "Draw Two",
+          "per_suit": 2
+        },
+        {
+          "id": "WILD",
+          "name": "Wild",
+          "count": 4,
+          "suitless": true
+        },
+        {
+          "id": "WD4",
+          "name": "Wild Draw Four",
+          "count": 4,
+          "suitless": true
+        }
+      ],
+      "jokers": 0,
+      "back": "uno_black",
+      "total": 108
+    }
+  },
+  "games": {
+    "texas_holdem": {
+      "name": "Texas Hold'em",
+      "category": "poker",
+      "deck": "french_52",
+      "players": {
+        "min": 2,
+        "max": 9
+      },
+      "zones": {
+        "hand": {
+          "per_player": true,
+          "max_cards": 2,
+          "hidden": true,
+          "layout": "fan"
+        },
+        "board": {
+          "per_player": false,
+          "max_cards": 5,
+          "hidden": false,
+          "layout": "line"
+        },
+        "deck": {
+          "visible": true,
+          "layout": "pile"
+        },
+        "discard": {
+          "visible": false
+        }
+      },
+      "phases": [
+        {
+          "name": "deal",
+          "verb": "deal",
+          "to": "hand",
+          "count": 2,
+          "hidden": true
+        },
+        {
+          "name": "flop",
+          "verb": "deal",
+          "to": "board",
+          "count": 3,
+          "hidden": false
+        },
+        {
+          "name": "turn",
+          "verb": "deal",
+          "to": "board",
+          "count": 1,
+          "hidden": false
+        },
+        {
+          "name": "river",
+          "verb": "deal",
+          "to": "board",
+          "count": 1,
+          "hidden": false
+        },
+        {
+          "name": "showdown",
+          "verb": "flip",
+          "zone": "hand"
+        }
+      ],
+      "betting_rounds": [
+        "pre-flop",
+        "post-flop",
+        "post-turn",
+        "post-river"
+      ],
+      "rules_engine": "poker_hands",
+      "hand_rankings": [
+        "high_card",
+        "pair",
+        "two_pair",
+        "three_kind",
+        "straight",
+        "flush",
+        "full_house",
+        "four_kind",
+        "straight_flush",
+        "royal_flush"
+      ]
+    },
+    "omaha": {
+      "name": "Omaha Hold'em",
+      "category": "poker",
+      "deck": "french_52",
+      "players": {
+        "min": 2,
+        "max": 9
+      },
+      "zones": {
+        "hand": {
+          "per_player": true,
+          "max_cards": 4,
+          "hidden": true,
+          "layout": "fan"
+        },
+        "board": {
+          "per_player": false,
+          "max_cards": 5,
+          "hidden": false,
+          "layout": "line"
+        },
+        "deck": {
+          "visible": true,
+          "layout": "pile"
+        }
+      },
+      "phases": [
+        {
+          "name": "deal",
+          "verb": "deal",
+          "to": "hand",
+          "count": 4,
+          "hidden": true
+        },
+        {
+          "name": "flop",
+          "verb": "deal",
+          "to": "board",
+          "count": 3
+        },
+        {
+          "name": "turn",
+          "verb": "deal",
+          "to": "board",
+          "count": 1
+        },
+        {
+          "name": "river",
+          "verb": "deal",
+          "to": "board",
+          "count": 1
+        },
+        {
+          "name": "showdown",
+          "verb": "flip",
+          "zone": "hand"
+        }
+      ],
+      "rules_engine": "poker_hands",
+      "constraint": "must_use_exactly_2_from_hand"
+    },
+    "five_card_draw": {
+      "name": "5-Card Draw",
+      "category": "poker",
+      "deck": "french_52",
+      "players": {
+        "min": 2,
+        "max": 6
+      },
+      "zones": {
+        "hand": {
+          "per_player": true,
+          "max_cards": 5,
+          "hidden": true,
+          "layout": "fan"
+        },
+        "deck": {
+          "visible": true,
+          "layout": "pile"
+        },
+        "discard": {
+          "visible": true,
+          "layout": "pile"
+        }
+      },
+      "phases": [
+        {
+          "name": "deal",
+          "verb": "deal",
+          "to": "hand",
+          "count": 5,
+          "hidden": true
+        },
+        {
+          "name": "discard",
+          "verb": "discard",
+          "from": "hand",
+          "count": "0-3"
+        },
+        {
+          "name": "draw",
+          "verb": "draw",
+          "to": "hand",
+          "count": "match_discard"
+        },
+        {
+          "name": "showdown",
+          "verb": "flip",
+          "zone": "hand"
+        }
+      ],
+      "rules_engine": "poker_hands"
+    },
+    "blackjack": {
+      "name": "Blackjack / 21",
+      "category": "casino",
+      "deck": "french_52",
+      "multi_deck": 6,
+      "players": {
+        "min": 1,
+        "max": 7,
+        "has_dealer": true
+      },
+      "zones": {
+        "hand": {
+          "per_player": true,
+          "max_cards": 11,
+          "hidden": false,
+          "layout": "line"
+        },
+        "dealer": {
+          "max_cards": 11,
+          "layout": "line",
+          "first_hidden": true
+        },
+        "deck": {
+          "visible": true,
+          "layout": "pile"
+        }
+      },
+      "phases": [
+        {
+          "name": "deal",
+          "verb": "deal",
+          "to": [
+            "hand",
+            "dealer"
+          ],
+          "count": 2,
+          "dealer_hides_first": true
+        },
+        {
+          "name": "player",
+          "verb": "choice",
+          "actions": [
+            "hit",
+            "stand",
+            "double",
+            "split"
+          ]
+        },
+        {
+          "name": "dealer",
+          "verb": "auto_draw",
+          "rule": "stand_on_17"
+        },
+        {
+          "name": "resolve",
+          "verb": "flip",
+          "zone": "dealer"
+        }
+      ],
+      "card_values": {
+        "2": 2,
+        "3": 3,
+        "4": 4,
+        "5": 5,
+        "6": 6,
+        "7": 7,
+        "8": 8,
+        "9": 9,
+        "10": 10,
+        "J": 10,
+        "Q": 10,
+        "K": 10,
+        "A": [
+          1,
+          11
+        ]
+      },
+      "rules_engine": "blackjack_rules",
+      "target": 21
+    },
+    "brisca": {
+      "name": "Brisca",
+      "category": "trick_taking",
+      "deck": "spanish_40",
+      "players": {
+        "min": 2,
+        "max": 4
+      },
+      "zones": {
+        "hand": {
+          "per_player": true,
+          "max_cards": 3,
+          "hidden": true,
+          "layout": "fan"
+        },
+        "board": {
+          "per_player": false,
+          "max_cards": 4,
+          "layout": "line"
+        },
+        "trump": {
+          "max_cards": 1,
+          "hidden": false,
+          "layout": "line",
+          "tapped": true
+        },
+        "deck": {
+          "visible": true,
+          "layout": "pile"
+        },
+        "tricks": {
+          "per_player": true,
+          "hidden": true,
+          "layout": "pile"
+        }
+      },
+      "phases": [
+        {
+          "name": "setup",
+          "verb": "deal",
+          "to": "hand",
+          "count": 3,
+          "hidden": true
+        },
+        {
+          "name": "trump",
+          "verb": "deal",
+          "to": "trump",
+          "count": 1,
+          "tap": true
+        },
+        {
+          "name": "play",
+          "verb": "play",
+          "from": "hand",
+          "to": "board",
+          "count": 1
+        },
+        {
+          "name": "resolve",
+          "verb": "tuck",
+          "from": "board",
+          "to": "tricks",
+          "winner": "highest_trump_or_lead"
+        },
+        {
+          "name": "draw",
+          "verb": "draw",
+          "to": "hand",
+          "count": 1
+        },
+        {
+          "name": "loop",
+          "goto": "play",
+          "until": "deck_empty_and_hands_empty"
+        }
+      ],
+      "card_points": {
+        "1": 11,
+        "3": 10,
+        "R": 4,
+        "C": 3,
+        "S": 2
+      },
+      "rules_engine": "brisca_rules"
+    },
+    "tute": {
+      "name": "Tute",
+      "category": "trick_taking",
+      "deck": "spanish_40",
+      "players": {
+        "min": 2,
+        "max": 4
+      },
+      "zones": {
+        "hand": {
+          "per_player": true,
+          "max_cards": 10,
+          "hidden": true,
+          "layout": "fan"
+        },
+        "board": {
+          "max_cards": 4,
+          "layout": "line"
+        },
+        "trump": {
+          "max_cards": 1,
+          "tapped": true
+        },
+        "tricks": {
+          "per_player": true,
+          "layout": "pile"
+        }
+      },
+      "phases": [
+        {
+          "name": "deal",
+          "verb": "deal",
+          "to": "hand",
+          "count": 10,
+          "hidden": true
+        },
+        {
+          "name": "play",
+          "verb": "play",
+          "from": "hand",
+          "to": "board",
+          "must_follow_suit": true
+        },
+        {
+          "name": "resolve",
+          "verb": "tuck",
+          "from": "board",
+          "to": "tricks"
+        }
+      ],
+      "special_calls": [
+        "tute_4kings",
+        "tute_4horses"
+      ],
+      "rules_engine": "tute_rules"
+    },
+    "mus": {
+      "name": "Mus",
+      "category": "betting",
+      "deck": "spanish_40",
+      "remove_cards": [
+        "8",
+        "9"
+      ],
+      "players": {
+        "min": 4,
+        "max": 4,
+        "teams": 2
+      },
+      "zones": {
+        "hand": {
+          "per_player": true,
+          "max_cards": 4,
+          "hidden": true,
+          "layout": "fan"
+        },
+        "discard": {
+          "layout": "pile"
+        },
+        "deck": {
+          "visible": true,
+          "layout": "pile"
+        }
+      },
+      "phases": [
+        {
+          "name": "deal",
+          "verb": "deal",
+          "to": "hand",
+          "count": 4,
+          "hidden": true
+        },
+        {
+          "name": "mus",
+          "verb": "choice",
+          "actions": [
+            "mus",
+            "no_mus"
+          ]
+        },
+        {
+          "name": "exchange",
+          "verb": "discard",
+          "from": "hand",
+          "then": "draw"
+        },
+        {
+          "name": "grande",
+          "verb": "bet_round"
+        },
+        {
+          "name": "chica",
+          "verb": "bet_round"
+        },
+        {
+          "name": "pares",
+          "verb": "bet_round",
+          "condition": "has_pairs"
+        },
+        {
+          "name": "juego",
+          "verb": "bet_round",
+          "condition": "has_juego_or_punto"
+        }
+      ],
+      "rules_engine": "mus_rules"
+    },
+    "chinchon": {
+      "name": "Chinchón",
+      "category": "rummy",
+      "deck": "spanish_48",
+      "players": {
+        "min": 2,
+        "max": 8
+      },
+      "zones": {
+        "hand": {
+          "per_player": true,
+          "max_cards": 7,
+          "hidden": true,
+          "layout": "fan"
+        },
+        "discard": {
+          "visible": true,
+          "layout": "pile"
+        },
+        "deck": {
+          "visible": true,
+          "layout": "pile"
+        }
+      },
+      "phases": [
+        {
+          "name": "deal",
+          "verb": "deal",
+          "to": "hand",
+          "count": 7
+        },
+        {
+          "name": "draw",
+          "verb": "choice",
+          "actions": [
+            "draw_deck",
+            "draw_discard"
+          ]
+        },
+        {
+          "name": "discard",
+          "verb": "discard",
+          "from": "hand",
+          "count": 1
+        },
+        {
+          "name": "check",
+          "verb": "auto",
+          "check": "can_close"
+        }
+      ],
+      "rules_engine": "chinchon_rules",
+      "winning_condition": "all_sets_or_runs"
+    },
+    "gin_rummy": {
+      "name": "Gin Rummy",
+      "category": "rummy",
+      "deck": "french_52",
+      "players": {
+        "min": 2,
+        "max": 2
+      },
+      "zones": {
+        "hand": {
+          "per_player": true,
+          "max_cards": 10,
+          "hidden": true,
+          "layout": "fan"
+        },
+        "discard": {
+          "visible": true,
+          "layout": "cascade"
+        },
+        "deck": {
+          "visible": true,
+          "layout": "pile"
+        }
+      },
+      "phases": [
+        {
+          "name": "deal",
+          "verb": "deal",
+          "to": "hand",
+          "count": 10
+        },
+        {
+          "name": "draw",
+          "verb": "choice",
+          "actions": [
+            "draw_deck",
+            "draw_discard"
+          ]
+        },
+        {
+          "name": "discard",
+          "verb": "discard",
+          "from": "hand",
+          "count": 1
+        },
+        {
+          "name": "knock",
+          "verb": "choice",
+          "actions": [
+            "knock",
+            "gin",
+            "continue"
+          ]
+        }
+      ],
+      "rules_engine": "gin_rummy_rules",
+      "deadwood_limit": 10
+    },
+    "hearts": {
+      "name": "Hearts",
+      "category": "trick_taking",
+      "deck": "french_52",
+      "players": {
+        "min": 4,
+        "max": 4
+      },
+      "zones": {
+        "hand": {
+          "per_player": true,
+          "max_cards": 13,
+          "hidden": true,
+          "layout": "fan"
+        },
+        "board": {
+          "max_cards": 4,
+          "layout": "line"
+        },
+        "tricks": {
+          "per_player": true,
+          "layout": "pile"
+        },
+        "pass": {
+          "per_player": true,
+          "hidden": true
+        }
+      },
+      "phases": [
+        {
+          "name": "deal",
+          "verb": "deal",
+          "to": "hand",
+          "count": 13
+        },
+        {
+          "name": "passing",
+          "verb": "pass",
+          "from": "hand",
+          "count": 3,
+          "direction": "rotating"
+        },
+        {
+          "name": "play",
+          "verb": "play",
+          "from": "hand",
+          "to": "board",
+          "must_follow_suit": true
+        },
+        {
+          "name": "resolve",
+          "verb": "tuck",
+          "from": "board",
+          "to": "tricks"
+        }
+      ],
+      "point_cards": {
+        "H_*": 1,
+        "S_Q": 13
+      },
+      "shoot_the_moon": true,
+      "rules_engine": "hearts_rules"
+    },
+    "spades": {
+      "name": "Spades",
+      "category": "trick_taking",
+      "deck": "french_52",
+      "players": {
+        "min": 4,
+        "max": 4,
+        "teams": 2
+      },
+      "zones": {
+        "hand": {
+          "per_player": true,
+          "max_cards": 13,
+          "hidden": true,
+          "layout": "fan"
+        },
+        "board": {
+          "max_cards": 4,
+          "layout": "line"
+        },
+        "tricks": {
+          "per_player": true,
+          "layout": "pile"
+        }
+      },
+      "phases": [
+        {
+          "name": "deal",
+          "verb": "deal",
+          "to": "hand",
+          "count": 13
+        },
+        {
+          "name": "bid",
+          "verb": "choice",
+          "type": "number",
+          "range": [
+            0,
+            13
+          ]
+        },
+        {
+          "name": "play",
+          "verb": "play",
+          "from": "hand",
+          "to": "board",
+          "must_follow_suit": true
+        },
+        {
+          "name": "resolve",
+          "verb": "tuck",
+          "from": "board",
+          "to": "tricks"
+        }
+      ],
+      "trump_suit": "S",
+      "rules_engine": "spades_rules"
+    },
+    "bridge_contract": {
+      "name": "Contract Bridge",
+      "category": "trick_taking",
+      "deck": "french_52",
+      "players": {
+        "min": 4,
+        "max": 4,
+        "teams": 2
+      },
+      "zones": {
+        "hand": {
+          "per_player": true,
+          "max_cards": 13,
+          "hidden": true,
+          "layout": "fan"
+        },
+        "dummy": {
+          "max_cards": 13,
+          "hidden": false,
+          "layout": "fan"
+        },
+        "board": {
+          "max_cards": 4,
+          "layout": "line"
+        },
+        "tricks": {
+          "per_player": true,
+          "layout": "pile"
+        }
+      },
+      "phases": [
+        {
+          "name": "deal",
+          "verb": "deal",
+          "to": "hand",
+          "count": 13
+        },
+        {
+          "name": "auction",
+          "verb": "bid_sequence",
+          "actions": [
+            "pass",
+            "1C",
+            "1D",
+            "1H",
+            "1S",
+            "1NT",
+            "...",
+            "7NT",
+            "double",
+            "redouble"
+          ]
+        },
+        {
+          "name": "play",
+          "verb": "play",
+          "expose_dummy": true
+        },
+        {
+          "name": "resolve",
+          "verb": "tuck"
+        }
+      ],
+      "rules_engine": "bridge_rules"
+    },
+    "crazy_eights": {
+      "name": "Crazy Eights",
+      "category": "shedding",
+      "deck": "french_52",
+      "players": {
+        "min": 2,
+        "max": 7
+      },
+      "zones": {
+        "hand": {
+          "per_player": true,
+          "hidden": true,
+          "layout": "fan"
+        },
+        "discard": {
+          "visible": true,
+          "layout": "pile"
+        },
+        "deck": {
+          "visible": true,
+          "layout": "pile"
+        }
+      },
+      "phases": [
+        {
+          "name": "deal",
+          "verb": "deal",
+          "to": "hand",
+          "count": 5
+        },
+        {
+          "name": "flip",
+          "verb": "deal",
+          "to": "discard",
+          "count": 1
+        },
+        {
+          "name": "play",
+          "verb": "choice",
+          "actions": [
+            "play_matching",
+            "draw"
+          ]
+        }
+      ],
+      "wild_card": "8",
+      "rules_engine": "crazy_eights_rules"
+    },
+    "go_fish": {
+      "name": "Go Fish",
+      "category": "matching",
+      "deck": "french_52",
+      "players": {
+        "min": 2,
+        "max": 6
+      },
+      "zones": {
+        "hand": {
+          "per_player": true,
+          "hidden": true,
+          "layout": "fan"
+        },
+        "books": {
+          "per_player": true,
+          "hidden": false,
+          "layout": "grid"
+        },
+        "deck": {
+          "visible": true,
+          "layout": "pile"
+        }
+      },
+      "phases": [
+        {
+          "name": "deal",
+          "verb": "deal",
+          "to": "hand",
+          "count": 7
+        },
+        {
+          "name": "ask",
+          "verb": "choice",
+          "target": "other_player",
+          "ask_for": "rank"
+        },
+        {
+          "name": "give_or_fish",
+          "verb": "pass_or_draw"
+        },
+        {
+          "name": "book",
+          "verb": "auto",
+          "check": "four_of_rank"
+        }
+      ],
+      "rules_engine": "go_fish_rules"
+    },
+    "memory": {
+      "name": "Memory / Concentration",
+      "category": "matching",
+      "deck": "french_52",
+      "players": {
+        "min": 1,
+        "max": 6
+      },
+      "use_pairs": true,
+      "reduce_deck": 24,
+      "zones": {
+        "board": {
+          "max_cards": 24,
+          "hidden": true,
+          "layout": "grid"
+        },
+        "matched": {
+          "per_player": true,
+          "layout": "pile"
+        }
+      },
+      "phases": [
+        {
+          "name": "setup",
+          "verb": "deal",
+          "to": "board",
+          "count": "all",
+          "hidden": true,
+          "layout": "grid"
+        },
+        {
+          "name": "flip1",
+          "verb": "flip",
+          "zone": "board",
+          "count": 1
+        },
+        {
+          "name": "flip2",
+          "verb": "flip",
+          "zone": "board",
+          "count": 1
+        },
+        {
+          "name": "check",
+          "verb": "auto",
+          "match_or_unflip": true
+        }
+      ],
+      "rules_engine": "memory_rules"
+    },
+    "klondike_solitaire": {
+      "name": "Klondike Solitaire",
+      "category": "solitaire",
+      "deck": "french_52",
+      "players": {
+        "min": 1,
+        "max": 1
+      },
+      "zones": {
+        "tableau": {
+          "columns": 7,
+          "cascade": true,
+          "partial_hidden": true
+        },
+        "foundation": {
+          "piles": 4,
+          "layout": "pile",
+          "build_up_by_suit": true
+        },
+        "stock": {
+          "layout": "pile",
+          "hidden": true
+        },
+        "waste": {
+          "layout": "cascade",
+          "draw_count": 1
+        }
+      },
+      "phases": [
+        {
+          "name": "setup",
+          "verb": "deal",
+          "to": "tableau",
+          "cascade_pattern": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "name": "draw",
+          "verb": "draw",
+          "from": "stock",
+          "to": "waste",
+          "count": 1
+        },
+        {
+          "name": "play",
+          "verb": "choice",
+          "actions": [
+            "move_tableau",
+            "move_foundation",
+            "draw_stock"
+          ]
+        },
+        {
+          "name": "recycle",
+          "verb": "auto",
+          "when": "stock_empty",
+          "action": "waste_to_stock"
+        }
+      ],
+      "rules_engine": "klondike_rules"
+    },
+    "spider_solitaire": {
+      "name": "Spider Solitaire",
+      "category": "solitaire",
+      "deck": "french_52",
+      "multi_deck": 2,
+      "players": {
+        "min": 1,
+        "max": 1
+      },
+      "zones": {
+        "tableau": {
+          "columns": 10,
+          "cascade": true
+        },
+        "stock": {
+          "layout": "pile",
+          "hidden": true
+        }
+      },
+      "difficulty": {
+        "1_suit": [
+          "S"
+        ],
+        "2_suit": [
+          "S",
+          "H"
+        ],
+        "4_suit": [
+          "S",
+          "H",
+          "D",
+          "C"
+        ]
+      },
+      "rules_engine": "spider_rules"
+    },
+    "war": {
+      "name": "War",
+      "category": "casino",
+      "deck": "french_52",
+      "players": {
+        "min": 2,
+        "max": 2
+      },
+      "zones": {
+        "hand": {
+          "per_player": true,
+          "hidden": true,
+          "layout": "pile"
+        },
+        "board": {
+          "max_cards": 2,
+          "layout": "line"
+        },
+        "won": {
+          "per_player": true,
+          "layout": "pile"
+        }
+      },
+      "phases": [
+        {
+          "name": "flip",
+          "verb": "deal",
+          "to": "board",
+          "count": 1,
+          "per_player": true
+        },
+        {
+          "name": "compare",
+          "verb": "auto",
+          "highest_wins": true
+        },
+        {
+          "name": "tuck",
+          "verb": "tuck",
+          "to_winner": true
+        },
+        {
+          "name": "war",
+          "verb": "auto",
+          "on_tie": "deal_3_hidden_1_face"
+        }
+      ],
+      "rules_engine": "war_rules"
+    },
+    "baccarat": {
+      "name": "Baccarat",
+      "category": "casino",
+      "deck": "french_52",
+      "multi_deck": 8,
+      "players": {
+        "min": 1,
+        "max": 14,
+        "has_dealer": true
+      },
+      "zones": {
+        "player_hand": {
+          "max_cards": 3,
+          "layout": "line"
+        },
+        "banker_hand": {
+          "max_cards": 3,
+          "layout": "line"
+        },
+        "deck": {
+          "visible": false
+        }
+      },
+      "phases": [
+        {
+          "name": "deal",
+          "verb": "deal",
+          "to": [
+            "player_hand",
+            "banker_hand"
+          ],
+          "count": 2
+        },
+        {
+          "name": "third",
+          "verb": "auto",
+          "third_card_rules": true
+        },
+        {
+          "name": "compare",
+          "verb": "auto",
+          "closest_to_9": true
+        }
+      ],
+      "card_values": {
+        "A": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4,
+        "5": 5,
+        "6": 6,
+        "7": 7,
+        "8": 8,
+        "9": 9,
+        "10": 0,
+        "J": 0,
+        "Q": 0,
+        "K": 0
+      },
+      "rules_engine": "baccarat_rules"
+    },
+    "old_maid": {
+      "name": "Old Maid",
+      "category": "matching",
+      "deck": "french_52",
+      "remove_cards": [
+        "S_Q"
+      ],
+      "players": {
+        "min": 3,
+        "max": 8
+      },
+      "zones": {
+        "hand": {
+          "per_player": true,
+          "hidden": true,
+          "layout": "fan"
+        },
+        "matched": {
+          "per_player": true,
+          "layout": "pile"
+        }
+      },
+      "phases": [
+        {
+          "name": "deal",
+          "verb": "deal",
+          "to": "hand",
+          "count": "all_equal"
+        },
+        {
+          "name": "remove",
+          "verb": "auto",
+          "discard_pairs": true
+        },
+        {
+          "name": "draw",
+          "verb": "draw",
+          "from": "next_player_hand",
+          "count": 1
+        },
+        {
+          "name": "check",
+          "verb": "auto",
+          "discard_new_pair": true
+        }
+      ],
+      "rules_engine": "old_maid_rules"
+    },
+    "sevens": {
+      "name": "Sevens (Fan Tan)",
+      "category": "shedding",
+      "deck": "french_52",
+      "players": {
+        "min": 3,
+        "max": 8
+      },
+      "zones": {
+        "hand": {
+          "per_player": true,
+          "hidden": true,
+          "layout": "fan"
+        },
+        "board": {
+          "per_suit": true,
+          "layout": "line",
+          "center": "7",
+          "build_both_directions": true
+        }
+      },
+      "phases": [
+        {
+          "name": "deal",
+          "verb": "deal",
+          "to": "hand",
+          "count": "all_equal"
+        },
+        {
+          "name": "play",
+          "verb": "play",
+          "rule": "adjacent_to_existing_or_7"
+        }
+      ],
+      "rules_engine": "sevens_rules"
+    },
+    "rummy_basic": {
+      "name": "Rummy",
+      "category": "rummy",
+      "deck": "french_52",
+      "players": {
+        "min": 2,
+        "max": 6
+      },
+      "zones": {
+        "hand": {
+          "per_player": true,
+          "hidden": true,
+          "layout": "fan"
+        },
+        "melds": {
+          "per_player": true,
+          "visible": true,
+          "layout": "line"
+        },
+        "discard": {
+          "visible": true,
+          "layout": "cascade"
+        },
+        "deck": {
+          "visible": true,
+          "layout": "pile"
+        }
+      },
+      "phases": [
+        {
+          "name": "deal",
+          "verb": "deal",
+          "to": "hand",
+          "count": {
+            "2p": 10,
+            "3-4p": 7,
+            "5-6p": 6
+          }
+        },
+        {
+          "name": "draw",
+          "verb": "choice",
+          "actions": [
+            "draw_deck",
+            "draw_discard"
+          ]
+        },
+        {
+          "name": "meld",
+          "verb": "play",
+          "optional": true,
+          "to": "melds",
+          "type": "set_or_run"
+        },
+        {
+          "name": "layoff",
+          "verb": "play",
+          "optional": true,
+          "to": "any_meld"
+        },
+        {
+          "name": "discard",
+          "verb": "discard",
+          "from": "hand",
+          "count": 1
+        }
+      ],
+      "rules_engine": "rummy_rules"
+    },
+    "canasta": {
+      "name": "Canasta",
+      "category": "rummy",
+      "deck": "french_54",
+      "multi_deck": 2,
+      "players": {
+        "min": 4,
+        "max": 4,
+        "teams": 2
+      },
+      "zones": {
+        "hand": {
+          "per_player": true,
+          "hidden": true,
+          "layout": "fan"
+        },
+        "melds": {
+          "per_team": true,
+          "visible": true,
+          "layout": "grid"
+        },
+        "discard": {
+          "visible": true,
+          "layout": "pile"
+        },
+        "deck": {
+          "visible": true,
+          "layout": "pile"
+        }
+      },
+      "phases": [
+        {
+          "name": "deal",
+          "verb": "deal",
+          "to": "hand",
+          "count": 11
+        },
+        {
+          "name": "draw",
+          "verb": "choice",
+          "actions": [
+            "draw_2_deck",
+            "take_discard_pile"
+          ]
+        },
+        {
+          "name": "meld",
+          "verb": "play",
+          "optional": true,
+          "min_3_same_rank": true
+        },
+        {
+          "name": "discard",
+          "verb": "discard",
+          "count": 1
+        }
+      ],
+      "wild_cards": [
+        "JK",
+        "2"
+      ],
+      "rules_engine": "canasta_rules"
+    },
+    "unit": {
+      "name": "UNIT",
+      "category": "shedding",
+      "deck": "unit_108",
+      "players": {
+        "min": 2,
+        "max": 10
+      },
+      "zones": {
+        "hand": {
+          "per_player": true,
+          "hidden": true,
+          "layout": "fan"
+        },
+        "discard": {
+          "visible": true,
+          "layout": "pile",
+          "top_visible": true
+        },
+        "deck": {
+          "visible": true,
+          "layout": "pile"
+        }
+      },
+      "phases": [
+        {
+          "name": "deal",
+          "verb": "deal",
+          "to": "hand",
+          "count": 7
+        },
+        {
+          "name": "flip",
+          "verb": "deal",
+          "to": "discard",
+          "count": 1
+        },
+        {
+          "name": "play",
+          "verb": "choice",
+          "actions": [
+            "play_matching",
+            "draw"
+          ]
+        },
+        {
+          "name": "special",
+          "verb": "auto",
+          "resolve_specials": true
+        },
+        {
+          "name": "unit",
+          "verb": "call",
+          "when": "hand_count_1"
+        }
+      ],
+      "match_rule": "same_suit_or_rank_or_wild",
+      "direction": "reversible",
+      "rules_engine": "unit_rules"
+    },
+    "entropy": {
+      "name": "Entropy",
+      "category": "descarte",
+      "deck": "spanish_48",
+      "multi_deck": 2,
+      "players": {
+        "min": 2,
+        "max": 6
+      },
+      "zones": {
+        "caja": {
+          "per_player": true,
+          "max_cards": 8,
+          "hidden": true,
+          "layout": "grid",
+          "columns": 4,
+          "rows": 2
+        },
+        "discard": {
+          "visible": true,
+          "layout": "pile"
+        },
+        "deck": {
+          "visible": true,
+          "layout": "pile"
+        }
+      },
+      "phases": [
+        {
+          "name": "deal",
+          "verb": "deal",
+          "to": "caja",
+          "count": 8,
+          "hidden": true
+        },
+        {
+          "name": "flip",
+          "verb": "flip",
+          "zone": "caja",
+          "count": 2
+        },
+        {
+          "name": "play",
+          "verb": "choice",
+          "actions": [
+            "robar_mazo",
+            "robar_descarte"
+          ]
+        }
+      ],
+      "card_values": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4,
+        "5": 5,
+        "6": 6,
+        "7": 7,
+        "8": 8,
+        "9": 9,
+        "S": 10,
+        "C": 11,
+        "R": 12
+      },
+      "rules_engine": "entropy_rules",
+      "objetivo": "menor_puntuacion",
+      "rondas": 5
+    }
+  }
+}

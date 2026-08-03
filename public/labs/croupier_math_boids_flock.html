@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ALISA LAB — Aquarium Ecosystem V4 (Sovereign Aesthetics)</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #010205; font-family: monospace; color: #fff; user-select: none; }
+        
+        #hud {
+            display: none; position: absolute; top: 10px; left: 10px;
+            font-family: inherit; background: rgba(5,10,25,0.85);
+            padding: 14px 18px; border-radius: 10px; border: 1px solid #1e88e5;
+            pointer-events: none; font-size: 13px; line-height: 1.8; z-index: 10;
+            box-shadow: 0 0 20px rgba(30,136,229,0.2);
+        }
+        #hud .title { color: #42a5f5; font-size: 15px; font-weight: bold; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+        #hud .stat { color: #88bbff; }
+        #hud .v-green { color: #88ff88; font-weight: bold; }
+        #hud .v-cyan { color: #88ccff; font-weight: bold; }
+        #hud .v-gold { color: #ffcc44; font-weight: bold; }
+        #hud .v-alert { color: #ff3b30; font-weight: bold; }
+
+        .fuel-container { 
+            width: 100%; height: 6px; background: #112; 
+            border-radius: 3px; margin-top: 5px; overflow: hidden;
+            border: 1px solid #1a3a5c; margin-bottom: 5px;
+        }
+        .fuel-fill { 
+            width: 100%; height: 100%; 
+            background: linear-gradient(90deg, #ff3b30, #ff9500, #34c759); 
+            transition: width 0.1s linear, background-color 0.3s;
+        }
+
+        #modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+            display: flex; align-items: center; justify-content: center; z-index: 100;
+            font-family: 'JetBrains Mono', sans-serif;
+        }
+        #modal .box {
+            background: rgba(10, 20, 30, 0.95); border: 2px solid #1e88e5;
+            padding: 40px; border-radius: 12px; max-width: 600px; width: 90%;
+            box-shadow: 0 0 40px rgba(30,136,229,0.15);
+        }
+        #modal h1 { color: #42a5f5; margin-bottom: 20px; font-size: 32px; letter-spacing: 2px; text-align: center;}
+        #modal p { color: #8bb; margin-bottom: 30px; line-height: 1.5; font-size: 14px; text-align: center;}
+        
+        #btnStart {
+            display: block; margin: 30px auto 0; background: linear-gradient(135deg, #1e88e5, #42a5f5);
+            color: #fff; border: none; padding: 12px 40px; font-size: 18px; font-weight: bold;
+            border-radius: 8px; cursor: pointer; transition: transform 0.2s; font-family: inherit; width: 100%;
+        }
+        #btnStart:hover { transform: scale(1.03); }
+
+        .modal-config { margin-top: 18px; display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+        .modal-config label { font-size: 11px; color: #8bb; font-weight: 600; display: block; text-align: left; }
+        .modal-config input, .modal-config select {
+            background: #0a152e; color: #fff; border: 1px solid #1e88e5;
+            padding: 8px 12px; border-radius: 8px; font-family: monospace; font-size: 12px;
+            width: 100%; margin-top: 4px; box-sizing: border-box; outline: none;
+        }
+        .modal-config .cfg-col { flex: 1; min-width: 120px; max-width: 160px; }
+
+        /* ─── Mode Badges ─── */
+        #mode-badges {
+            position: absolute; top: 14px; left: 50%; transform: translateX(-50%); z-index: 20;
+            display: flex; gap: 6px; font-family: sans-serif;
+        }
+        .mode-badge {
+            padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: 700;
+            letter-spacing: 0.5px; text-transform: uppercase;
+            background: rgba(10,20,30,0.8); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+            border: 1px solid rgba(66,165,245,0.2); box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            color: #8bb; transition: color 0.3s, border-color 0.3s;
+        }
+        .mode-badge.active-game { color: #ff6b6b; border-color: rgba(255,107,107,0.8); }
+        .mode-badge.active-world { color: #007aff; border-color: rgba(0,122,255,0.8); }
+        .mode-badge.active-ml { color: #af52de; border-color: rgba(175,82,222,0.8); }
+
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three-0.160.0/build/three.module.js",
+        "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+        "@alisa-engine/": "../js/alisa-engine/"
+      }
+    }
+    </script>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+
+    <!-- HUD Overlay -->
+    <div id="hud">
+        <div class="title" id="mTitleNode">🐟 TANK: SECTOR ALPHA</div>
+        <div class="stat">⏱️ Ecosystem Uptime: <span class="v-green" id="hTime">0.0</span>s</div>
+        <div class="stat" style="font-family:'JetBrains Mono',monospace;font-size:16px;letter-spacing:2px;"><div class="fuel-container"><div class="fuel-fill" id="vFuelBar" style="width:100%"></div></div></div>
+        <div class="stat">🎯 Oxygenation: <span class="v-cyan" id="hFloor">NOMINAL</span></div>
+        <div class="stat">📡 Neural Links: <span class="v-green" id="hStatus">IDLE</span></div>
+    </div>
+
+    <!-- Mode Badges -->
+    <div id="mode-badges" style="display:none;">
+        <span class="mode-badge" id="badge-game">🎮 Simulation</span>
+        <span class="mode-badge" id="badge-world" style="display:none">🌍 Overworld</span>
+        <span class="mode-badge active-ml" id="badge-ml">🧠 Flocking ECS</span>
+    </div>
+
+    <!-- LAUNCH MODAL -->
+    <div id="modal">
+        <div class="box">
+            <h1 id="mTitle">AQUARIUM ECOSYSTEM <span style="font-size:12px; color:#55aaff;">v4 (Boids Edit)</span></h1>
+            <p id="mDesc">Fully decoupled Mathematical Boids System running natively beneath the Sovereign Aesthetics Layer.<br>3D Flocking behavior governed by Headless Mathematics.</p>
+            <div class="modal-config">
+                <div class="cfg-col">
+                    <label>🐟 Fish Count</label>
+                    <input type="number" id="mFloors" value="400" min="50" max="1000">
+                </div>
+                <div class="cfg-col">
+                    <label>🌊 Max Speed</label>
+                    <input type="number" id="mSpeed" value="5" min="1" max="20">
+                </div>
+                <div class="cfg-col">
+                    <label>🎮 Mode</label>
+                    <select id="mMode">
+                        <option value="human">🎮 Manual Observation</option>
+                        <option value="ai" selected>🤖 Autonomous Swarm</option>
+                    </select>
+                </div>
+            </div>
+            <button id="btnStart">FILL TANK</button>
+        </div>
+    </div>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js?v=4';
+        import { BoidsSystem } from '@alisa-engine/src/world/systems/BoidsSystem.js?v=4';
+        import { AlisaBloomEngine } from '@alisa-engine/src/soma/plugins/AlisaBloomEngine.js?v=4';
+
+        // DOM Setup
+        const modal = document.getElementById('modal');
+        const hud = document.getElementById('hud');
+        const badges = document.getElementById('mode-badges');
+        const btnStart = document.getElementById('btnStart');
+        const hTime = document.getElementById('hTime');
+        const hStatus = document.getElementById('hStatus');
+        const vFuelBar = document.getElementById('vFuelBar');
+        
+        let core, engine, bloomPlugin;
+        let timeElapsed = 0;
+
+        btnStart.onclick = async () => {
+            modal.style.display = 'none';
+            hud.style.display = 'block';
+            badges.style.display = 'flex';
+
+            const fishCount = parseInt(document.getElementById('mFloors').value) || 200;
+            const maxSpeed = parseFloat(document.getElementById('mSpeed').value) || 4.0;
+            hStatus.innerText = fishCount + ' BOIDS';
+
+            // 1. Initialize ECS
+            core = new AlisaRenderCore({ clearColor: 0x020510 });
+            core.setupDefaultEnvironment();
+            
+            // Reconfigure Lighting for deep sea
+            core.scene.fog = new THREE.FogExp2(0x020510, 0.015);
+            core.hemiLight.color.setHex(0x445577);
+            core.hemiLight.groundColor.setHex(0x020510);
+            core.spotLight.color.setHex(0x0044aa);
+            core.spotLight.intensity = 2.0;
+            
+            // Add custom deep light
+            const deepLight = new THREE.PointLight(0x0044aa, 1.2, 200);
+            deepLight.position.set(0, 10, 0);
+            core.scene.add(deepLight);
+
+            // Water Dust (Procedural Plankton)
+            const count = 500;
+            const dustGeo = new THREE.PlaneGeometry(0.3, 0.3);
+            const dustMat = new THREE.MeshBasicMaterial({ color: 0x44bbff, transparent: true, opacity: 0.2, depthWrite: false, side: THREE.DoubleSide });
+            const dustMesh = new THREE.InstancedMesh(dustGeo, dustMat, count);
+            const matrix = new THREE.Matrix4();
+            for(let i=0; i<count; i++) {
+                matrix.setPosition((Math.random()-0.5)*80, Math.random()*40, (Math.random()-0.5)*80);
+                dustMesh.setMatrixAt(i, matrix);
+            }
+            core.scene.add(dustMesh);
+
+            // 2. Add Ambient Bloom (Subtle for water)
+            bloomPlugin = new AlisaBloomEngine(core, 0.7, 0.8, 0.3);
+
+            // 3. Initialize Mathematical Simulation
+            engine = new BoidsSystem({ maxSpeed: maxSpeed, maxForce: 0.05 });
+            const bounds = { minX: -60, maxX: 60, minY: 2, maxY: 60, minZ: -60, maxZ: 60 };
+            const meshes = [];
+            
+            // Beautiful emissive fish
+            const geo = new THREE.ConeGeometry(0.4, 1.6, 4);
+            geo.rotateX(Math.PI / 2);
+            const mat = new THREE.MeshStandardMaterial({ 
+                color: 0x00ffcc, emissive: 0x0044aa, emissiveIntensity: 0.5, roughness: 0.2 
+            });
+            
+            for(let i=0; i<fishCount; i++) {
+                const mesh = new THREE.Mesh(geo, mat);
+                core.scene.add(mesh);
+                meshes.push(mesh);
+            }
+            
+            
+            // ---- INJECTED AQUARIUM ESTHETICS (TANK & TOWER) ---- //
+            let TANK_SIZE = 120;
+            let TANK_HEIGHT = 100;
+            let glassTank;
+
+            function buildTank(height) {
+                TANK_HEIGHT = height + 40;
+                const tankGeo = new THREE.BoxGeometry(TANK_SIZE, TANK_HEIGHT, TANK_SIZE);
+                const tankMat = new THREE.MeshPhysicalMaterial({
+                    color: 0x1e88e5, transparent: true, opacity: 0.08,
+                    roughness: 0.1, metalness: 0.1, transmission: 0.9, ior: 1.2,
+                    side: THREE.BackSide, depthWrite: false
+                });
+                glassTank = new THREE.Mesh(tankGeo, tankMat);
+                glassTank.position.y = TANK_HEIGHT / 2;
+                core.scene.add(glassTank);
+
+                // Wireframe bounds
+                const edges = new THREE.EdgesGeometry(tankGeo);
+                const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x1e88e5, opacity: 0.3, transparent: true }));
+                line.position.y = TANK_HEIGHT / 2;
+                core.scene.add(line);
+            }
+
+            function createStripTex() {
+                const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 128;
+                const ctx = canvas.getContext('2d'); ctx.fillStyle = '#111'; ctx.fillRect(0, 0, 512, 128); 
+                ctx.fillStyle = '#050a15';
+                for(let i=0; i<8; i++) {
+                    ctx.fillRect(10 + i*(64), 20, 50, 88); 
+                    ctx.fillStyle = '#0a1525'; ctx.fillRect(10 + i*(64) + 5, 25, 20, 40); ctx.fillStyle = '#050a15'; 
+                }
+                const tex = new THREE.CanvasTexture(canvas); tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping; tex.repeat.set(1, 1);
+                return tex;
+            }
+
+            let buildingGroup = new THREE.Group();
+            const FL_H = 4.0; const FL_W = 20.0; const FL_D = 20.0;
+            let totalFloors = 18;
+
+            function buildSkyscraper() {
+                core.scene.add(buildingGroup);
+                const geo = new THREE.BoxGeometry(FL_W, FL_H, FL_D);
+                const uv = geo.attributes.uv;
+                for (let i = 0; i < uv.count; i++) {
+                    let u = uv.getX(i); let v = uv.getY(i); let faceIdx = Math.floor(i / 4);
+                    if (faceIdx === 4 || faceIdx===5) u = (u === 1 ? 0.25 : 0.0);       
+                    else if (faceIdx === 0) u = (u === 1 ? 0.5 : 0.25);  
+                    else if (faceIdx === 1) u = (u === 1 ? 1.0 : 0.75);  
+                    uv.setXY(i, u * 2, v);
+                }
+
+                const texStrips = createStripTex();
+                const matBody = new THREE.MeshStandardMaterial({ color: 0x888888, emissive: 0x0a1a3a, emissiveIntensity: 0.6, map: texStrips, roughness: 0.8 });
+                const matRoof = new THREE.MeshStandardMaterial({ color: 0x222225, emissive: 0x050a15, roughness: 0.9 });
+                
+                const washLight1 = new THREE.PointLight(0x00e6ff, 1.2, 100);
+                washLight1.position.set(25, totalFloors * FL_H * 0.3, 25);
+                buildingGroup.add(washLight1);
+
+                for(let i=0; i<totalFloors; i++) {
+                    let m = (i === totalFloors-1) ? [matBody, matBody, matRoof, matRoof, matBody, matBody] : [matBody, matBody, matBody, matBody, matBody, matBody];
+                    const mesh = new THREE.Mesh(geo, m);
+                    mesh.position.set(0, (i * FL_H) + (FL_H/2), 0);
+                    buildingGroup.add(mesh);
+                    
+                    const glowGeo = new THREE.BoxGeometry(FL_W + 0.1, FL_H + 0.1, FL_D + 0.1);
+                    const glowMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false, visible: false });
+                    const glowBox = new THREE.Mesh(glowGeo, glowMat);
+                    glowBox.position.copy(mesh.position);
+                    buildingGroup.add(glowBox);
+                }
+                
+                // Add the glass tank encompassing the tower
+                buildTank(totalFloors * FL_H);
+            }
+
+            buildSkyscraper();
+            // ---------------------------------------------------- //
+
+            engine.initAgents(fishCount, bounds, meshes);
+
+            // 4. Start Render/Logic Loop
+            core.startLoop((dt) => {
+                timeElapsed += dt;
+                engine.update(dt);
+                
+                hTime.innerText = timeElapsed.toFixed(1);
+                
+                // Fuel bar acts as an 'Oxygen Level' oscillating smoothly
+                const oxygen = 50 + Math.sin(timeElapsed * 0.2) * 50;
+                vFuelBar.style.width = oxygen + '%';
+                if(oxygen < 30) vFuelBar.style.background = '#ff3b30';
+                else if(oxygen < 60) vFuelBar.style.background = '#ff9500';
+                else vFuelBar.style.background = '#34c759';
+
+                // Animate dust rotation slightly to simulate current
+                dustMesh.rotation.y += dt * 0.05;
+
+            }, bloomPlugin.render.bind(bloomPlugin));
+            
+            window.__alisa_engine = engine;
+        };
+    </script>
+</body>
+</html>

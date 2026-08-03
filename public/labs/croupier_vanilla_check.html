@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA LAB — ¿El motor es vainilla?</title>
+<style>
+  body{margin:0;background:#070a11;color:#cfe3f5;font-family:ui-monospace,monospace;padding:20px 26px 60px}
+  h1{margin:0 0 3px;font-size:18px;color:#7fd0ff;letter-spacing:1px}
+  h2{font-size:13px;color:#7fd0ff;margin:22px 0 6px;border-bottom:1px solid #1d2b3e;padding-bottom:4px}
+  .sub{color:#5f7a92;font-size:11.5px;line-height:1.7;margin-bottom:6px;max-width:900px}
+  pre{background:#0b1018;border:1px solid #16202e;padding:10px 12px;font-size:11.5px;
+      line-height:1.6;white-space:pre-wrap;color:#b8d4ea;margin:6px 0;border-radius:3px}
+  .ok{color:#7CFC98}.bad{color:#ff7b72}.warn{color:#ffd166}
+</style>
+<script type="importmap">
+{ "imports": { "three": "/vendor/three-0.160.0/build/three.module.js",
+               "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+               "@alisa-engine/": "../js/alisa-engine/" } }
+</script>
+</head>
+<body>
+<h1>▓ ¿EL MOTOR ES VAINILLA? · prueba de publicación</h1>
+<div class="sub">
+Un motor que se publica libre <b>no puede</b> hablar con la colonia por su cuenta. Esta página comprueba
+las dos mitades: que el núcleo NO se conecte solo, y que la colonia SIGA pudiendo engancharse a mano.
+</div>
+<div id="out"></div>
+
+<script type="module">
+const out = document.getElementById('out');
+const say = (h, t) => out.insertAdjacentHTML('beforeend', `<h2>${h}</h2><pre>${t}</pre>`);
+const R = {};
+
+// ── Espiar la red ANTES de que el motor arranque ────────────────────────
+const llamadas = [];
+const _fetch = window.fetch;
+window.fetch = function (...a) { llamadas.push(String(a[0])); return _fetch.apply(this, a); };
+const _WS = window.WebSocket;
+window.WebSocket = function (url, ...r) { llamadas.push('WS ' + url); return new _WS(url, ...r); };
+
+const esColonia = u => /8741|8732|overworld|jobboard|\/beings|passport/i.test(u);
+
+// ══ 1. NÚCLEO A PELO ══════════════════════════════════════════════════
+const { AlisaRenderCore } = await import('@alisa-engine/src/soma/AlisaRenderCore.js');
+const core = new AlisaRenderCore({ fogColor: null });
+await new Promise(r => setTimeout(r, 700));   // margen para conexiones perezosas
+
+const sucias = llamadas.filter(esColonia);
+R.nucleoLimpio = sucias.length === 0;
+R.plugins = core.plugins.length;
+
+say('1 · El núcleo, recién construido',
+  `plugins auto-registrados: ${core.plugins.length}  ${core.plugins.length === 0 ? '(ninguno ✓)' : '← ' + core.plugins.map(p => p.name ?? '?').join(', ')}\n` +
+  `llamadas de red totales : ${llamadas.length}\n` +
+  `de ellas, a la colonia  : ${sucias.length}  ${sucias.length ? '\n   ' + sucias.join('\n   ') : ''}\n\n` +
+  (R.nucleoLimpio && core.plugins.length === 0
+    ? '✅ VAINILLA — el motor no conoce la colonia. Publicable.'
+    : '❌ TODAVÍA ACOPLADO — no se puede publicar así.'));
+
+// ══ 2. ¿SIGUE FUNCIONANDO LO BÁSICO? ══════════════════════════════════
+let l2 = `escena     : ${core.scene ? '✓' : '✗'}\n`;
+l2 += `cámara     : ${core.camera ? '✓' : '✗'}\n`;
+l2 += `renderer   : ${core.renderer ? '✓' : '✗'}\n`;
+l2 += `CSS3D      : ${core.css3dRenderer ? '✓' : '✗'}\n`;
+l2 += `controles  : ${core.controls ? '✓' : '✗'}\n`;
+l2 += `registerPlugin(): ${typeof core.registerPlugin === 'function' ? '✓' : '✗'}\n`;
+R.nucleoIntacto = !!(core.scene && core.camera && core.renderer && core.css3dRenderer && core.controls);
+say('2 · Quitar la colonia no rompió el núcleo', l2 + '\n' + (R.nucleoIntacto ? '✅ intacto' : '❌ algo se rompió'));
+
+// ══ 3. PLUGINS POR CONSTRUCTOR ════════════════════════════════════════
+let marcado = false;
+const core2 = new AlisaRenderCore({ fogColor: null, plugins: [{ name: 'DePrueba', onInit() { marcado = true; } }] });
+R.pluginsPorOpciones = marcado && core2.plugins.length === 1;
+say('3 · La app puede meter SUS plugins',
+  `new AlisaRenderCore({ plugins:[ … ] })\n` +
+  `  registrados: ${core2.plugins.length}\n  onInit llamado: ${marcado}\n\n` +
+  (R.pluginsPorOpciones ? '✅ el gancho funciona' : '❌ no se registró'));
+
+// ══ 4. LA COLONIA, A MANO ═════════════════════════════════════════════
+const antes = llamadas.length;
+const { attachColony, hayHub, HUB_URL_DEFECTO } = await import('@alisa-engine/src/extensions/alisa-colony/index.js');
+const core3 = new AlisaRenderCore({ fogColor: null });
+const res = await attachColony(core3, { passports: true });
+await new Promise(r => setTimeout(r, 700));
+const nuevas = llamadas.slice(antes).filter(esColonia);
+
+R.colonia = { registrados: res.registrados, fallidos: res.fallidos, llamadas: nuevas.length };
+say('4 · La colonia sigue enganchable (opt-in)',
+  `attachColony(core) → registrados: [${res.registrados.join(', ') || '—'}]  fallidos: [${res.fallidos.join(', ') || '—'}]\n` +
+  `plugins en ese núcleo: ${core3.plugins.length}\n` +
+  `llamadas a la colonia tras engancharla: ${nuevas.length}\n` +
+  (nuevas.length ? '   ' + nuevas.slice(0, 4).join('\n   ') + '\n' : '') +
+  `\n${res.registrados.length ? '✅ la colonia funciona cuando se pide' : '⚠ no se registró nada'}` +
+  `\n(que haya errores de red aquí es NORMAL si el hub no está levantado — lo que importa es que ahora ocurre SOLO al pedirlo)`);
+
+// ══ 5. VEREDICTO ══════════════════════════════════════════════════════
+const pasa = R.nucleoLimpio && R.nucleoIntacto && R.pluginsPorOpciones && res.registrados.length > 0;
+say('5 · Veredicto',
+  `núcleo limpio de colonia ......... ${R.nucleoLimpio ? '✓' : '✗'}\n` +
+  `núcleo intacto ................... ${R.nucleoIntacto ? '✓' : '✗'}\n` +
+  `plugins por opciones ............. ${R.pluginsPorOpciones ? '✓' : '✗'}\n` +
+  `colonia enganchable a mano ....... ${res.registrados.length > 0 ? '✓' : '✗'}\n\n` +
+  (pasa ? '✅ EL MOTOR SE PUEDE PUBLICAR' : '❌ falta trabajo antes de publicar'));
+
+R.veredicto = pasa;
+window.__vanilla = R;
+window.__ready = true;
+</script>
+</body>
+</html>

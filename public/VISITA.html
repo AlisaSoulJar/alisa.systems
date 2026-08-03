@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ALISA · La visita guiada</title>
+<style>
+  :root { color-scheme: dark; }
+  body{margin:0;background:#070a11;color:#cfe3f5;font-family:ui-monospace,SFMono-Regular,monospace;
+       padding:32px 26px 80px;line-height:1.6}
+  .wrap{max-width:820px;margin:0 auto}
+  h1{font-size:22px;color:#7fd0ff;letter-spacing:1px;margin:0 0 4px}
+  .lead{color:#5f7a92;font-size:12.5px;margin-bottom:28px}
+  h2{font-size:13px;color:#7fd0ff;margin:32px 0 4px;border-bottom:1px solid #1d2b3e;padding-bottom:6px}
+  .nota{color:#5f7a92;font-size:11.5px;margin:0 0 12px}
+  a.card{display:block;text-decoration:none;background:#0b1018;border:1px solid #16202e;
+         border-radius:6px;padding:12px 14px;margin:8px 0;transition:.15s}
+  a.card:hover{border-color:#2c4460;background:#0e141d;transform:translateX(3px)}
+  .t{color:#cfe3f5;font-weight:700;font-size:13px}
+  .d{color:#5f7a92;font-size:11.5px;margin-top:3px}
+  .tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:99px;margin-left:6px;
+       vertical-align:middle}
+  .verde{background:#123527;color:#7CFC98}
+  .azul{background:#12283a;color:#7fd0ff}
+  .ambar{background:#33280f;color:#ffd166}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>▓ ALISA · la visita guiada</h1>
+<p class="lead">Por dónde mirar, en orden. Nada de esto necesita servidor ni conexión:
+todo corre en tu navegador.</p>
+
+<h2>1 · La vitrina</h2>
+<p class="nota">Lo que demuestra que el motor hace cualquier tipo de juego.</p>
+
+<a class="card" href="arcade/index.html">
+  <div class="t">El arcade <span class="tag verde">empieza aquí</span></div>
+  <div class="d">Nueve juegos. Los que dicen «local» se juegan ya, sin backend.</div>
+</a>
+<a class="card" href="arcade/chess.html">
+  <div class="t">Ajedrez</div>
+  <div class="d">Pulsa START MATCH y déjalo jugar solo. Arriba a la izquierda: CONNECTION LOCAL.</div>
+</a>
+<a class="card" href="arcade/go.html">
+  <div class="t">Go</div>
+  <div class="d">19×19 con libertades, capturas, suicidio prohibido y ko.</div>
+</a>
+<a class="card" href="arcade/checkers.html">
+  <div class="t">Damas <span class="tag ambar">resucitada</span></div>
+  <div class="d">Su visualizador estaba a 0 bytes. Reconstruido: captura obligatoria y encadenada.</div>
+</a>
+<a class="card" href="arcade/fagocito.html">
+  <div class="t">Fagocito</div>
+  <div class="d">Célula que engulle mientras la persiguen. Imagen nuestra, no heredada.</div>
+</a>
+<a class="card" href="arcade/xiangqi.html">
+  <div class="t">Xiangqi</div>
+  <div class="d">El cañón come saltando, el caballo se traba, los generales no pueden mirarse.</div>
+</a>
+
+<h2>2 · Las pruebas</h2>
+<p class="nota">Se abren y cantan el veredicto solas. Aquí está la chicha.</p>
+
+<a class="card" href="labs/croupier_sin_hub.html">
+  <div class="t">La prueba del desconocido <span class="tag verde">la importante</span></div>
+  <div class="d">Corta el hub a propósito. Los 9 juegos arrancan y hacen 0 llamadas de red — espiando fetch, no fiándose.</div>
+</a>
+<a class="card" href="labs/croupier_ajedrez_perft.html">
+  <div class="t">Perft del ajedrez</div>
+  <div class="d">El estándar de la industria. 197.281 y Kiwipete 97.862, exactos. Tarda unos segundos.</div>
+</a>
+<a class="card" href="labs/croupier_xiangqi_test.html">
+  <div class="t">Perft del xiangqi</div>
+  <div class="d">44 · 1.920 · 79.666 contra los valores publicados.</div>
+</a>
+<a class="card" href="labs/croupier_verificador_test.html">
+  <div class="t">¿Pillamos a un tramposo?</div>
+  <div class="d">Seis formas de hacer trampa. Las seis caen. 0,58 ms por partida verificada.</div>
+</a>
+<a class="card" href="labs/croupier_turing_test.html">
+  <div class="t">El test de Turing <span class="tag azul">tu idea</span></div>
+  <div class="d">Humano · máquina · prefiero no decirlo. Y por qué el 65% del clasificador engaña.</div>
+</a>
+<a class="card" href="labs/croupier_dataset_test.html">
+  <div class="t">El conjunto de datos</div>
+  <div class="d">358 bytes → ×74. Diez mil partidas = 3,4 MB → 1,22 millones de pares.</div>
+</a>
+
+<h2>3 · El motor por dentro</h2>
+
+<a class="card" href="labs/croupier_gym_contract.html">
+  <div class="t">Las tres puertas</div>
+  <div class="d">Numérica, lenguaje y humana. Con el puente a Python.</div>
+</a>
+<a class="card" href="labs/croupier_vanilla_check.html">
+  <div class="t">¿El núcleo es vainilla?</div>
+  <div class="d">Espía fetch antes de construir el motor. 0 plugins, 0 llamadas.</div>
+</a>
+<a class="card" href="labs/croupier_factory_smoketest.html">
+  <div class="t">Las 22 factories</div>
+  <div class="d">Todas construyen. Antes eran 4.</div>
+</a>
+<a class="card" href="lab.html">
+  <div class="t">El cuaderno de laboratorios</div>
+  <div class="d">Nuestros prototipos. No es el producto, es la trastienda.</div>
+</a>
+
+</div></body>
+</html>

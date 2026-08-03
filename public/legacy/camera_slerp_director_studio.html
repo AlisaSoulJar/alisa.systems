@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA — The Director's Studio (V2)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { margin: 0; overflow: hidden; background-color: #050505; font-family: 'Inter', sans-serif; user-select: none; }
+        #canvas-container { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; }
+        
+        .overlay-top {
+            position: absolute; top: 30px; left: 30px; z-index: 10; pointer-events: none;
+            display: flex; flex-direction: column; gap: 15px;
+        }
+
+        .badge {
+            background: rgba(10, 10, 15, 0.85); backdrop-filter: blur(10px);
+            padding: 15px 25px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+            color: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-left: 4px solid #ab47bc;
+        }
+        .badge h1 { font-size: 16px; font-weight: 900; letter-spacing: 1px; color: #ab47bc; margin-bottom: 5px;}
+        .badge p { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #aaa; margin:0; }
+        #cam-metrics { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #00e5ff; font-weight: bold; margin-top: 10px;}        /* The Ultimate Dock */
+        .dock {
+            position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+            z-index: 20; display: flex; align-items: center; justify-content: center; gap: 15px;
+            background: rgba(15, 15, 20, 0.95); backdrop-filter: blur(20px);
+            padding: 10px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.1);
+            pointer-events: auto; white-space: nowrap;
+        }
+
+        .btn-panel {
+            background: rgba(255,255,255,0.05); color: #fff; border: 1px solid transparent;
+            padding: 10px 18px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+            font-weight: 700; cursor: pointer; transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .btn-panel:hover { background: rgba(255,255,255,0.15); border-color: #555; }
+        
+        /* Dropup Menus */
+        .dropup { position: relative; display: inline-block; padding-top: 15px; /* Invisible bridge above button */ }
+        .dropup-btn {
+            background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.2);
+            padding: 10px 16px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 12px;
+            font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px;
+        }
+        .dropup-btn:hover { background: rgba(255,255,255,0.1); }
+        .dropup-content {
+            display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+            background: rgba(20, 20, 25, 0.98); backdrop-filter: blur(20px);
+            min-width: 220px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.15);
+            margin-bottom: 5px; box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
+            padding: 10px; z-index: 30; flex-direction: column; gap: 6px;
+        }
+        .dropup:hover .dropup-content { display: flex; }
+
+        /* Dynamic Active Colors */
+        .btn-scale.active { background: #00e5ff; color: #000; box-shadow: 0 0 15px rgba(0,229,255,0.4); border-color: #00e5ff; }
+        .btn-tier.active { background: #4caf50; color: #fff; box-shadow: 0 0 15px rgba(76,175,80,0.4); border-color: #4caf50;}
+        .btn-shot.active { background: #ab47bc; color: #fff; box-shadow: 0 0 15px rgba(171,71,188,0.4); border-color: #ab47bc;}
+
+        #back-btn { 
+            position: absolute; top: 30px; right: 30px;
+            color: #000; text-decoration: none; font-weight: 900; font-size: 12px;
+            background: #fff; padding: 10px 20px; border-radius: 8px; z-index: 10;
+        }
+        #back-btn:hover { background: #ccc; }
+
+        #theme-btn { 
+            position: absolute; top: 30px; right: 160px;
+            color: #fff; border: 1px solid #444; font-weight: 700; font-size: 12px;
+            background: #111; padding: 10px 20px; border-radius: 8px; z-index: 10; cursor: pointer;
+        }
+        #theme-btn:hover { background: #333; }
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three-0.160.0/build/three.module.js",
+        "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+            "@alisa-engine/": "../js/alisa-engine/"
+        }
+    }
+    </script>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+    <div id="canvas-container"></div>
+    <a href="../lab.html" id="back-btn">↤ Exit Studio</a>
+    <button id="theme-btn">🌙 Gotham Theme</button>
+
+    <div class="overlay-top">
+        <div class="badge">
+            <h1 id="shot-title">DIRECTOR'S STUDIO ONLINE</h1>
+            <p id="shot-desc">Select a Scale, then choose Cinematic Lenses or Vision Tiers.</p>
+            <div id="cam-metrics">FOV: 45 | X:0 Y:0 Z:0</div>
+        </div>
+    </div>
+
+    <!-- The Dropup Dock (Auto-generated via JSON) -->
+    <div class="dock" id="director-dock"></div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+
+        const W = window.innerWidth;
+        const H = window.innerHeight;
+        
+        const gfx = new AlisaRenderCore({
+            clearColor: 0xf0f2f5,
+            fogColor: 0xf0f2f5,
+            fogDensity: 0.0005,
+            useShadows: true
+        });
+        const scene = gfx.scene;
+        const renderer = gfx.renderer;
+        let camera = gfx.camera;
+        gfx.controls.enabled = false;
+
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0xcadcfa, 0.8);
+        scene.add(hemiLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        dirLight.position.set(-200, 300, 200);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 2048; dirLight.shadow.mapSize.height = 2048;
+        dirLight.shadow.camera.left = -500; dirLight.shadow.camera.right = 500;
+        dirLight.shadow.camera.top = 500; dirLight.shadow.camera.bottom = -500;
+        dirLight.shadow.camera.far = 10000;
+        scene.add(dirLight);
+
+        // ─── Theme Toggler ───
+        let isDarkMode = false;
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            const btn = document.getElementById('theme-btn');
+            if (isDarkMode) {
+                scene.background.setHex(0x050508);
+                scene.fog.color.setHex(0x050508);
+                hemiLight.groundColor.setHex(0x444455);
+                hemiLight.intensity = 0.4;
+                dirLight.intensity = 1.5;
+                btn.innerText = "☀️ Matrix Theme";
+                btn.style.background = "#fff"; btn.style.color = "#000";
+            } else {
+                scene.background.setHex(0xf0f2f5);
+                scene.fog.color.setHex(0xf0f2f5);
+                hemiLight.groundColor.setHex(0xcadcfa);
+                hemiLight.intensity = 0.8;
+                dirLight.intensity = 1.2;
+                btn.innerText = "🌙 Gotham Theme";
+                btn.style.background = "#111"; btn.style.color = "#fff";
+            }
+        }
+        document.getElementById('theme-btn').addEventListener('click', toggleTheme);
+
+        // ─── Procedural Builders ───
+        let stageGroup = new THREE.Group();
+        let actorGroup = new THREE.Group(); // Actor Proxy to look at
+        scene.add(stageGroup);
+        scene.add(actorGroup);
+
+        const loader = new GLTFLoader();
+        let mixer, clock = new THREE.Clock();
+        let globalAvatarGroup = new THREE.Group();
+
+        // Asynchronous Avatar with Animation Locomotion
+        loader.load('../props/models/Generic Male.glb', gltf => {
+            const model = gltf.scene;
+            
+            // TIER 0 OVERRIDE: Enforce EXACTLY 1.8m height matching scale_metrics_lab
+            const box = new THREE.Box3().setFromObject(model);
+            const size = box.getSize(new THREE.Vector3());
+            const scaleF = 1.8 / (size.y || 1);
+            model.scale.set(scaleF, scaleF, scaleF);
+            
+            model.traverse(c => { if(c.isMesh) { c.castShadow = true; c.receiveShadow = true; }});
+            globalAvatarGroup.add(model);
+
+            if (gltf.animations.length > 0) {
+                mixer = new THREE.AnimationMixer(model);
+                const idle = gltf.animations.find(a => a.name.toLowerCase().includes('idle')) || gltf.animations[0];
+                mixer.clipAction(idle).play();
+            }
+        });
+
+        function clearStage() {
+            while(stageGroup.children.length > 0) stageGroup.remove(stageGroup.children[0]);
+            while(actorGroup.children.length > 0) actorGroup.remove(actorGroup.children[0]);
+            scene.fog.density = 0.0005; // Reset fog
+        }
+
+        // ─── 🪆 MATRYOSHKA FRACTAL BUILDERS ───
+
+        function createAvatar(scaleTier) {
+            const group = new THREE.Group();
+            
+            // LOD Culling: If we are at City scale, don't even add the Avatar to the memory tree
+            if (scaleTier === 'city') return group;
+
+            // LOD Culling: If building scale, add it but make it invisible to save GPU draw calls
+            if (scaleTier === 'building') globalAvatarGroup.visible = false;
+            else globalAvatarGroup.visible = true;
+
+            group.add(globalAvatarGroup);
+            return group;
+        }
+
+        function createHackerRoom(scaleTier) {
+            const group = new THREE.Group();
+            
+            // Avatar nested inside Hacker Room
+            const avatar = createAvatar(scaleTier);
+            group.add(avatar);
+
+            // LOD Culling: Completely cull room interior props at City scale
+            if (scaleTier === 'city') return group;
+
+            // Dance Floor Tiles (Dojo 10x10 meters = 1m tiles)
+            const tileGeo = new THREE.PlaneGeometry(0.99, 0.99); // 1cm grout
+            for(let i=0; i<10; i++){
+                for(let j=0; j<10; j++){
+                    const colorHex = (i+j)%2===0 ? 0xffffff : 0xaa2222;
+                    const mat = new THREE.MeshStandardMaterial({color: colorHex, roughness:0.2});
+                    const t = new THREE.Mesh(tileGeo, mat);
+                    t.position.set((i-5)*1 + 0.5, 0.01, (j-5)*1 + 0.5);
+                    t.rotation.x = -Math.PI/2;
+                    t.receiveShadow = true;
+                    group.add(t);
+                }
+            }
+
+            // Room Walls (Scale down to fit 10x10 Dojo platform)
+            const wallGeo = new THREE.BoxGeometry(10, 4, 0.2);
+            const wallMat = new THREE.MeshStandardMaterial({color: 0x1a1a1a, roughness: 0.9});
+            const backWall = new THREE.Mesh(wallGeo, wallMat); backWall.position.set(0, 2, -5); backWall.receiveShadow = true; group.add(backWall);
+            const leftWall = new THREE.Mesh(wallGeo, wallMat); leftWall.rotation.y = Math.PI / 2; leftWall.position.set(-5, 2, 0); leftWall.receiveShadow = true; group.add(leftWall);
+
+            // Load Props Async
+            loader.load('../props/models/Vending Machine.glb', (gltf) => {
+                const m = gltf.scene; m.scale.setScalar(5); m.position.set(-50, 0, -40); m.rotation.y = Math.PI / 4;
+                m.traverse(c => { if(c.isMesh) c.castShadow = true; }); group.add(m);
+            });
+            loader.load('../props/models/Gaming Computer.glb', (gltf) => {
+                const m = gltf.scene; m.scale.setScalar(8); m.position.set(40, 0, 30); m.rotation.y = -Math.PI / 1.5;
+                m.traverse(c => { if(c.isMesh) c.castShadow = true; }); group.add(m);
+            });
+
+            return group;
+        }
+
+        function createCorporateTower(scaleTier) {
+            const group = new THREE.Group();
+            
+            // Nested Hacker Room!
+            const hackerRoom = createHackerRoom(scaleTier);
+            hackerRoom.position.y = 360; // Elevated near the top
+            group.add(hackerRoom);
+
+            // LOD Culling: For very fast rendering, if Room scale, don't build the tower body
+            if (scaleTier === 'room') return group;
+
+            // Tower Body (Bottom 360m)
+            const tGeo = new THREE.BoxGeometry(120, 360, 120);
+            const tMat = new THREE.MeshStandardMaterial({color: 0x0a0a0f, roughness: 0.2, metalness: 0.8});
+            const tower = new THREE.Mesh(tGeo, tMat);
+            tower.position.y = 180; 
+            tower.castShadow = true; tower.receiveShadow = true;
+            group.add(tower);
+
+            // Glass Core (Top 40m Exposed Hacker Room)
+            const glassGeo = new THREE.BoxGeometry(120, 40, 120);
+            const glassMat = new THREE.MeshPhysicalMaterial({
+                color: 0x222222, transparent: true, opacity: 0.2, 
+                roughness: 0.1, metalness: 0.9, side: THREE.DoubleSide
+            });
+            const glassRoom = new THREE.Mesh(glassGeo, glassMat);
+            glassRoom.position.y = 380; // Encloses height 360 to 400
+            group.add(glassRoom);
+
+            return group;
+        }
+
+        // ─── SCALE INITIALIZERS ───
+
+        function buildRoom() {
+            clearStage();
+            scene.fog.density = 0.005;
+            
+            // Matryoshka: Room focuses on Avatar (Only Avatar bounds used)
+            actorGroup.add(createAvatar('room'));
+
+            // Stage matches the rest of the room props (excluding avatar)
+            stageGroup.add(createHackerRoom('room'));
+        }
+
+        function buildBuilding() {
+            clearStage();
+            scene.fog.density = 0.0015;
+
+            // Matryoshka: Building focuses on the Tower (LOD 'building' culls internals)
+            actorGroup.add(createCorporateTower('building'));
+
+            // Stage: Exterior concrete and maze
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(2000, 2000), new THREE.MeshStandardMaterial({ color: 0x111622 }));
+            floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; stageGroup.add(floor);
+
+            const wallGeo = new THREE.BoxGeometry(100, 60, 20);
+            const wallMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee, roughness: 0.9 });
+            const geometries = [];
+            for (let i = 0; i < 40; i++) {
+                const x = (Math.floor(Math.random() * 10) - 5) * 120;
+                const z = (Math.floor(Math.random() * 10) - 5) * 120;
+                if (Math.abs(x) < 150 && Math.abs(z) < 150) continue; // Keep center clear for HUGE Tower
+                const matrix = new THREE.Matrix4();
+                matrix.makeTranslation(x, 30, z);
+                if (Math.random() > 0.5) matrix.multiply(new THREE.Matrix4().makeRotationY(Math.PI/2));
+                const clone = wallGeo.clone(); clone.applyMatrix4(matrix); geometries.push(clone);
+            }
+            if (geometries.length > 0) {
+                const maze = new THREE.Mesh(mergeGeometries(geometries), wallMat);
+                maze.castShadow = true; maze.receiveShadow = true; stageGroup.add(maze);
+            }
+        }
+
+        function buildCity() {
+            clearStage();
+            scene.fog.density = 0.0002;
+
+            // Matryoshka: City focuses on the Tower (LOD 'city' deeply culls props and avatar)
+            actorGroup.add(createCorporateTower('city'));
+
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(10000, 10000), new THREE.MeshStandardMaterial({ color: 0x050811 }));
+            floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; stageGroup.add(floor);
+
+            const bGeo = new THREE.BoxGeometry(1, 1, 1);
+            const bMat = new THREE.MeshStandardMaterial({ color: 0x1a1a24, roughness: 0.8, metalness: 0.4 });
+            const instanced = new THREE.InstancedMesh(bGeo, bMat, 600);
+            instanced.castShadow = true; instanced.receiveShadow = true;
+
+            const dummy = new THREE.Object3D();
+            for (let i = 0; i < 600; i++) {
+                const x = (Math.random() - 0.5) * 6000;
+                const z = (Math.random() - 0.5) * 6000;
+                if (Math.sqrt(x*x + z*z) < 400) continue; // Massive clearing for our Hero Tower
+
+                const w = 50 + Math.random() * 100;
+                const h = 50 + Math.random() * 1000 * (1 + Math.random()); 
+                const d = 50 + Math.random() * 100;
+
+                dummy.position.set(x, h/2, z);
+                dummy.scale.set(w, h, d);
+                dummy.updateMatrix();
+                instanced.setMatrixAt(i, dummy.matrix);
+            }
+            stageGroup.add(instanced);
+        }
+
+        buildRoom(); // Native Start
+
+        // ─── Computational Camera Rig Base Variables ───
+        const FOV_BASE = 45;
+        camera.far = 50000;
+        const dummyCam = new THREE.PerspectiveCamera(FOV_BASE, window.innerWidth / window.innerHeight, 0.1, 50000);
+
+        let targetPos = new THREE.Vector3(25, 45, 60);
+        let targetLook = new THREE.Vector3(-10, 20, -50);
+        let targetFov = 60;
+        let targetRoll = 0;
+        let cameraMode = 'slerp'; 
+        let isOrbiting = false;
+        let orbitAngle = 0;
+
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', e => { mouseX = (e.clientX / window.innerWidth) - 0.5; mouseY = (e.clientY / window.innerHeight) - 0.5; });
+
+        camera.position.copy(targetPos); camera.lookAt(targetLook);
+        camera.fov = targetFov; camera.updateProjectionMatrix();
+
+        const title = document.getElementById('shot-title');
+        const desc = document.getElementById('shot-desc');
+        const metrics = document.getElementById('cam-metrics');
+
+        // ─── ALISA CAMERA LEXICON (JSON ENGINE) ───
+        const CAMERA_LEXICON = [
+            {
+                group: "1. SCALE ▴", color: "#00e5ff",
+                items: [
+                    { id: "scale-room", label: "ROOM", engine: "scale", action: "room", active: true },
+                    { id: "scale-building", label: "BUILDING", engine: "scale", action: "building" },
+                    { id: "scale-city", label: "CITY (Katamari)", engine: "scale", action: "city" }
+                ]
+            },
+            {
+                group: "2. VISION TIERS ▴", color: "#4caf50",
+                items: [
+                    { id: "tier-ant", label: "T1_ANT (Ortho)", engine: "slerp", title: "TIER 1 // ANT MODE", desc: "Extreme Z + 1.0 FOV mathematical crash.", pos: [0, 10000, 50], look: [0,0,-50], fov: 1.0, roll: 0 },
+                    { id: "tier-peasant", label: "T2_PEASANT (Hologram)", engine: "peasant", title: "TIER 2 // PEASANT", desc: "Frustum hijacked. Physical desktop illusion." },
+                    { id: "tier-god", label: "T4_GOD (Establishing)", engine: "slerp", title: "TIER 4 // GOD MODE", desc: "Wide standard observer.", pos: [0, 150, 400], look: [0,20,0], fov: 45, roll: 0 }
+                ]
+            },
+            {
+                group: "3. CINEMATIC ▴", color: "#ab47bc",
+                items: [
+                    { id: "shot-ots", label: "OTS (Shoulder)", engine: "slerp", title: "01 // OVER-THE-SHOULDER", desc: "Human empathy.", pos: [25, 40, 60], look: [-10, 20, -50], fov: 60, roll: 0, active: true },
+                    { id: "shot-low", label: "LOW ANGLE", engine: "slerp", title: "02 // LOW ANGLE", desc: "Threatening scale injection.", pos: [0, 2, 80], look: [0, 80, 0], fov: 75, roll: 0 },
+                    { id: "shot-high", label: "HIGH ANGLE", engine: "slerp", title: "03 // HIGH ANGLE", desc: "Bird's hook drop.", pos: [0, 200, 30], look: [0, 0, 0], fov: 50, roll: 0 },
+                    { id: "shot-dutch", label: "DUTCH ANGLE", engine: "slerp", title: "04 // DUTCH ANGLE", desc: "Rotational tension.", pos: [-40, 30, 80], look: [0, 20, 0], fov: 45, roll: Math.PI/5 },
+                    { id: "shot-vertigo", label: "DOLLY ZOOM (Vertigo)", engine: "slerp", title: "05 // DOLLY ZOOM", desc: "Z pushed + FOV compression.", pos: [0, 30, 600], look: [0, 20, 0], fov: 8, roll: 0 },
+                    { id: "shot-track", label: "ORBIT TRACKING", engine: "slerp", orbit: true, title: "06 // ORBIT TRACKING", desc: "Spline orbiting.", fov: 45, look: [0,20,0] }
+                ]
+            },
+            {
+                group: "4. MEMETIC TROPES ▴", color: "#ff3333",
+                items: [
+                    { id: "shot-yandere", label: "YANDERE FISHEYE", engine: "slerp", title: "07 // YANDERE FISHEYE", desc: "Massive lens distortion.", pos: [0, 20, 15], look: [0, 18, 0], fov: 130, roll: 0 },
+                    { id: "shot-shaft", label: "SHAFT TILT", engine: "slerp", title: "08 // SHAFT TILT", desc: "Absurd vertical tracking.", pos: [-20, 25, 12], look: [5, 15, -5], fov: 45, roll: Math.PI/4 },
+                    { id: "shot-omae", label: "OMAE WA MOU", engine: "slerp", title: "09 // OMAE WA MOU", desc: "Teleport to back of neck.", pos: [0, 45, -5], look: [0, -10, 30], fov: 50, roll: 0 },
+                    { id: "shot-gainax", label: "GAINAX LANDING", engine: "slerp", title: "10 // GAINAX LANDING", desc: "Buried upward camera.", pos: [0, -5, 45], look: [0, 100, -30], fov: 65, roll: 0 }
+                ]
+            },
+            {
+                group: "5. HOLLYWOOD FRAMING ▴", color: "#ffb74d",
+                items: [
+                    { id: "shot-fs", label: "FULL SHOT (1.1h)", engine: "box", title: "11 // FULL SHOT", desc: "Calculado vía BoundingBox.", fov: 45, h_frame: 1.1, y_target: 0.55, z_offset: 10 },
+                    { id: "shot-cowboy", label: "COWBOY SHOT (0.65h)", engine: "box", title: "12 // COWBOY SHOT", desc: "Cintura encuadrada.", fov: 45, h_frame: 0.70, y_target: 0.75, z_offset: 8 },
+                    { id: "shot-mcu", label: "MEDIUM CLOSE-UP (0.35h)", engine: "box", title: "13 // MEDIUM CLOSE-UP", desc: "Pecho enfocado.", fov: 45, h_frame: 0.35, y_target: 0.88, z_offset: 5 },
+                    { id: "shot-ecu", label: "EXTREME CLOSE-UP (0.08h)", engine: "box", title: "14 // EXTREME CLOSE-UP", desc: "Tensión máxima en ojos.", fov: 45, h_frame: 0.08, y_target: 0.95, z_offset: 2 }
+                ]
+            }
+        ];
+
+        function buildUIFromJson() {
+            const dock = document.getElementById('director-dock');
+            CAMERA_LEXICON.forEach(category => {
+                const dropup = document.createElement('div');
+                dropup.className = 'dropup';
+                dropup.innerHTML = `<button class="dropup-btn" style="color: ${category.color}; border-color: ${category.color};">${category.group}</button>`;
+                
+                const content = document.createElement('div');
+                content.className = 'dropup-content';
+
+                category.items.forEach(node => {
+                    const btn = document.createElement('button');
+                    let btnClass = node.engine === 'scale' ? 'btn-scale' : (node.engine === 'peasant' || category.group.includes("TIERS")) ? 'btn-tier' : 'btn-shot';
+                    btn.className = `btn-panel ${btnClass} ${node.active ? 'active' : ''}`;
+                    btn.id = node.id;
+                    btn.innerText = node.label;
+                    btn.onclick = () => dispatchAction(node, btnClass, btn);
+                    content.appendChild(btn);
+                });
+                
+                dropup.appendChild(content);
+                dock.appendChild(dropup);
+            });
+        }
+        buildUIFromJson();
+
+        function dispatchAction(node, btnClass, btnElement) {
+            // UI Toggle
+            document.querySelectorAll(`.${btnClass}`).forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+
+            if (node.engine === 'scale') {
+                if(node.action === 'room') buildRoom();
+                if(node.action === 'building') buildBuilding();
+                if(node.action === 'city') buildCity();
+                return; // Scale doesn't change camera instantly
+            }
+
+            // Update Metadata HUD
+            title.innerText = node.title || node.label;
+            desc.innerText = node.desc || "Agnostic Node.";
+
+            cameraMode = node.engine === 'peasant' ? 'peasant' : 'slerp';
+            isOrbiting = node.orbit || false;
+            targetRoll = node.roll || 0;
+
+            if (node.engine === 'slerp') {
+                if (node.pos) targetPos.set(node.pos[0], node.pos[1], node.pos[2]);
+                if (node.look) targetLook.set(node.look[0], node.look[1], node.look[2]);
+                if (node.fov) targetFov = node.fov;
+            } 
+            else if (node.engine === 'box') {
+                const box = new THREE.Box3().setFromObject(actorGroup);
+                const size = new THREE.Vector3(); box.getSize(size);
+                let h = size.y === 0 || !isFinite(size.y) ? 20 : size.y; 
+
+                targetFov = node.fov || 45;
+                const fovRad = THREE.MathUtils.degToRad(targetFov / 2);
+                const Z = node.h_frame * h / (2 * Math.tan(fovRad));
+
+                targetPos.set(0, h * node.y_target, Z + (node.z_offset || 0));
+                targetLook.set(0, h * node.y_target, 0);
+            }
+        }
+
+        let smoothHeadX = 0, smoothHeadY = 0;
+
+        gfx.startLoop((dt) => {
+            if (mixer) mixer.update(dt);
+
+            if (cameraMode === 'slerp') {
+                if (isOrbiting) {
+                    orbitAngle += 0.005; const r = 180;
+                    targetPos.set(Math.cos(orbitAngle)*r, 60 + Math.sin(orbitAngle*4)*20, Math.sin(orbitAngle)*r);
+                }
+
+                // Mathematical preparation
+                dummyCam.position.copy(targetPos);
+                dummyCam.up.set(0, 1, 0); 
+                dummyCam.lookAt(targetLook);
+                if (targetRoll !== 0) dummyCam.rotateZ(targetRoll);
+
+                const speed = 0.05; 
+                camera.position.lerp(targetPos, speed);
+                camera.quaternion.slerp(dummyCam.quaternion, speed);
+                camera.fov += (targetFov - camera.fov) * speed;
+                camera.updateProjectionMatrix(); // Return standard projection just in case it came from peasant
+                
+                metrics.innerText = `FOV: ${camera.fov.toFixed(1)} | P_X: ${Math.round(camera.position.x)} P_Y: ${Math.round(camera.position.y)} P_Z: ${Math.round(camera.position.z)}`;
+            }
+            else if (cameraMode === 'peasant') {
+                // Tier 2 Hologram Parallax hijacking
+                const W = window.innerWidth;
+                const H = window.innerHeight;
+                const baseCamZ = (H / 2) / Math.tan(THREE.MathUtils.degToRad(FOV_BASE / 2));
+                
+                smoothHeadX += (mouseX * 1.5 * W - smoothHeadX) * 0.1;
+                smoothHeadY += (mouseY * 1.5 * H - smoothHeadY) * 0.1;
+
+                camera.position.set(smoothHeadX, smoothHeadY + 50, baseCamZ + 100);
+                camera.rotation.set(0, 0, 0);
+
+                const ratio = 1.0 / baseCamZ;
+                const nL = (-W/2 - smoothHeadX) * ratio; const nR = (W/2 - smoothHeadX) * ratio;
+                const nT = (H/2 - smoothHeadY) * ratio; const nB = (-H/2 - smoothHeadY) * ratio;
+
+                // Hijack matrix!
+                camera.projectionMatrix.makePerspective(nL, nR, nT, nB, 1.0, 50000);
+                camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
+                
+                metrics.innerText = `FRUSTUM HIJACKED | Off-Axis X:${Math.round(smoothHeadX)} Y:${Math.round(smoothHeadY)}`;
+            }
+        });
+
+        // Extra resize step for the director's dummy camera
+        window.addEventListener('resize', () => {
+            if (cameraMode === 'slerp') {
+                dummyCam.aspect = window.innerWidth / window.innerHeight;
+                dummyCam.updateProjectionMatrix();
+            }
+        });
+    </script>
+</body>
+</html>

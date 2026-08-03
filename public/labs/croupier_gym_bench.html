@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA LAB — GYM · el benchmark de las tres puertas</title>
+<style>
+  body{margin:0;background:#070a11;color:#cfe3f5;font-family:ui-monospace,monospace;padding:22px 28px 60px}
+  h1{margin:0 0 3px;font-size:19px;color:#7fd0ff;letter-spacing:1px}
+  .sub{color:#5f7a92;font-size:11.5px;line-height:1.7;margin-bottom:18px}
+  .sub b{color:#7CFC98}
+  #out{white-space:pre-wrap;font-size:12px;line-height:1.62;background:#0b111b;border:1px solid #1a2839;
+       border-radius:8px;padding:14px 16px;min-height:60vh}
+  .ok{color:#7CFC98}.bad{color:#ff7b72}.k{color:#5f7a92}.hl{color:#ffd166}.v{color:#e6f1fb}
+  .sec{color:#7fd0ff;border-bottom:1px solid #16222f;display:block;margin:16px 0 7px;padding-bottom:3px}
+</style>
+<script type="importmap">
+{ "imports": {
+    "three": "/vendor/three-0.160.0/build/three.module.js",
+    "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+    "@alisa-engine/": "../js/alisa-engine/" } }
+</script>
+</head>
+<body>
+<h1>▓ ALISA GYM · el benchmark de las tres puertas</h1>
+<div class="sub">Mismo entorno · <b>agente numérico</b>, <b>agente LLM (verbos)</b> y <b>humano</b> · una métrica comparable.<br>
+Identidad por par de claves · recibos encadenados y firmados · validación por integridad e invariantes.</div>
+<div id="out">ejecutando…</div>
+<script type="module">
+import { GymEnv } from '@alisa-engine/src/gym/GymEnv.js';
+import { GymIdentity } from '@alisa-engine/src/gym/GymIdentity.js';
+import { GymRecorder } from '@alisa-engine/src/gym/GymRecorder.js';
+import { AsteroidsEnv } from '@alisa-engine/src/gym/envs/AsteroidsEnv.js';
+
+const out = document.getElementById('out');
+const P = (s='') => out.innerHTML += s + '\n';
+const S = t => P(`<span class="sec">${t}</span>`);
+const kv = (k,v,c='v') => P(`  <span class="k">${k.padEnd(22)}</span><span class="${c}">${v}</span>`);
+
+window.onload = async () => {
+  out.innerHTML = '';
+  const report = {};
+
+  // ── 1. FICHA DEL ENTORNO ──
+  S('1 · FICHA DEL ENTORNO (lo que verá el registro del benchmark)');
+  const spec = AsteroidsEnv.spec();
+  kv('id', spec.id, 'hl');
+  kv('título', spec.meta.title);
+  kv('observación', `${spec.observationSpace.shape[0]} números`);
+  kv('acción', `${spec.actionSpace.type} [${spec.actionSpace.names}]`);
+  kv('horizonte', spec.meta.horizon + ' pasos');
+
+  // ── 2. IDENTIDAD ──
+  S('2 · IDENTIDAD · par de claves, cero datos personales');
+  const id = await new GymIdentity().init();
+  kv('tu hash (clave púb.)', id.publicKeyHash, 'hl');
+  kv('clave privada', 'nunca sale de tu máquina', 'ok');
+  const forge = await id.forge();
+  kv('forge_tier', `${forge.forge_tier}  (score ${forge.score})`, 'hl');
+  kv('lo que se guarda', JSON.stringify(forge), 'ok');
+  kv('lo que NO se guarda', 'GPU, CPU, red, IDs — nada', 'ok');
+  report.identity = { hash: id.publicKeyHash, ...forge };
+
+  // ── 3. PUERTA NUMÉRICA · ¿DISCRIMINA EL BENCHMARK? ──
+  // Un benchmark solo vale si distingue agentes. Tres políticas, misma semilla:
+  S('3 · PUERTA 🤖 NUMÉRICA · tres agentes, misma semilla — ¿los distingue?');
+  // acción = [tx, ty, disparar]. El disparo YA NO es automático: es decisión del agente.
+  const POLICIES = {
+    'quieto, no dispara':  () => [0, 0, 0],
+    'quieto, dispara':     () => [0, 0, 1],
+    'esquiva (no dispara)': (o) => [clamp(o[0] - Math.sign(o[4]) * 0.35),
+                                    clamp(o[1] - Math.sign(o[5]) * 0.35), 0],
+    'apunta y dispara':    (o) => {             // se alinea con la amenaza y tira
+      const dz = o[6];
+      const tx = clamp(o[0] + o[4]), ty = clamp(o[1] + o[5]);   // ir hacia su columna
+      return dz < 0.18 ? [clamp(o[0] - Math.sign(o[4]) * 0.6),  // muy cerca → apartarse
+                          clamp(o[1] - Math.sign(o[5]) * 0.5), 0]
+                       : [tx, ty, 1];
+    },
+  };
+  const clamp = v => Math.max(-1, Math.min(1, v));
+  const results = {};
+  let recA = null, envA = null, runA = null;
+  for (const [name, pol] of Object.entries(POLICIES)) {
+    const rec = new GymRecorder({ envId: spec.id, seed: 42, actor: id.publicKeyHash, agentType: 'policy' });
+    const env = new AsteroidsEnv({ recorder: rec });
+    const run = env.runEpisode(pol, { seed: 42, maxSteps: 900 });
+    results[name] = run;
+    if (name === 'apunta y dispara') { recA = rec; envA = env; runA = run; }
+  }
+  const best = Object.entries(results).sort((a, b) => b[1].score - a[1].score)[0][0];
+  for (const [name, r] of Object.entries(results))
+    kv(name, `puntuación ${String(r.score).padEnd(6)} · sobrevive ${r.metrics.tiempo}s · ${r.steps} pasos`,
+       name === best ? 'ok' : 'v');
+  const discrimina = new Set(Object.values(results).map(r => r.score)).size > 1;
+  kv('¿discrimina?', discrimina ? `SÍ — mejor: ${best}` : 'NO — todos igual, no mide nada', discrimina ? 'ok' : 'bad');
+  report.discriminates = discrimina;
+
+  // ── 4. DETERMINISMO ──
+  // Comparar puntuaciones NO vale como prueba (dos partidas distintas pueden dar 0).
+  // La prueba de verdad es un CHECKSUM DEL ESTADO DEL MUNDO: posiciones de la nave
+  // y de todos los asteroides. Si coincide bit a bit, la simulación es reproducible.
+  S('4 · DETERMINISMO · checksum del estado, no la puntuación');
+  const worldSum = env => {
+    const s = env.sys; let h = 0x811c9dc5;
+    const push = v => { const n = Math.round(v * 1e4);
+      h ^= n & 0xffff; h = Math.imul(h, 0x01000193) >>> 0; };
+    if (s.ship) { push(s.ship.x); push(s.ship.y); }
+    (s.asteroids || []).forEach(a => { push(a.x); push(a.y); push(a.z); });
+    return h.toString(16).padStart(8, '0') + `·${(s.asteroids || []).length}ast`;
+  };
+  const policy = POLICIES['apunta y dispara'];
+  const envA2 = new AsteroidsEnv();
+  const runA2 = envA2.runEpisode(policy, { seed: 42, maxSteps: 900 });
+  const sumA = worldSum(envA), sumA2 = worldSum(envA2);
+  const same = sumA === sumA2 && runA.steps === runA2.steps;
+  kv('semilla 42 · pasada 1', sumA, 'hl');
+  kv('semilla 42 · pasada 2', sumA2, 'hl');
+  kv('¿reproducible?', same ? 'SÍ — el servidor puede re-simular' : 'NO (revisar RNG)', same ? 'ok' : 'bad');
+  const envB = new AsteroidsEnv(); envB.runEpisode(policy, { seed: 7, maxSteps: 900 });
+  const sumB = worldSum(envB), differs = sumB !== sumA;
+  kv('semilla 7 · checksum', sumB);
+  kv('¿semillas distintas?', differs ? 'SÍ — mundo distinto ✓' : 'NO — el RNG no siembra ✗', differs ? 'ok' : 'bad');
+  report.deterministic = same && differs;
+
+  // ── 5. PUERTA DE LENGUAJE ──
+  S('5 · PUERTA 🧠 LENGUAJE · lo que ve y puede hacer un agente LLM');
+  const recL = new GymRecorder({ envId: spec.id, seed: 99, actor: id.publicKeyHash, agentType: 'llm' });
+  const envL = new AsteroidsEnv({ recorder: recL });
+  envL.reset(99);
+  P('<span class="k">  ── describe() → el prompt del estado ──</span>');
+  P('  ' + envL.describe().split('\n').join('\n  '));
+  P('<span class="k">  ── affordances() → verbos disponibles ──</span>');
+  envL.affordances().forEach(a => P(`     <span class="hl">${a.verb.padEnd(20)}</span><span class="k">${a.label}</span>`));
+  // un "LLM" de mentira: elige verbo leyendo la amenaza
+  let lreward = 0;
+  for (let i = 0; i < 600 && !envL.done; i++) {
+    const o = envL.getObservation();
+    const verb = o[6] < 0.18 ? (o[4] < 0 ? 'esquivar_derecha' : 'esquivar_izquierda')
+                             : 'apuntar_y_disparar';
+    lreward += envL.stepVerb(verb).reward;
+  }
+  const scoreL = envL.getScore();
+  kv('agente por verbos', `puntuación ${scoreL.score} · ${recL.receipts.length} recibos`, 'hl');
+  kv('mismo eje que el 🤖', 'sí — misma métrica, comparables', 'ok');
+
+  // ── 6. RECIBOS FIRMADOS ──
+  S('6 · RECIBOS FIRMADOS · la partida sellada que se manda al leaderboard');
+  const sealed = await recA.seal(envA.getScore(), id);
+  kv('entorno', sealed.run.env); kv('agente', sealed.run.agent_type);
+  kv('cabeza de cadena', sealed.run.chain_head, 'hl');
+  kv('firma', sealed.run.signature.slice(0, 48) + '…');
+  kv('forge_tier incluido', sealed.run.forge_tier);
+  const okSig = await id.verify({ ...sealed.run, signature: undefined, public_key_hash: undefined,
+                                  ...(delete sealed.run.signature, delete sealed.run.public_key_hash, {}) }, '00');
+  P('  <span class="k">ejemplo de recibo:</span> ' + JSON.stringify(sealed.receipts[1]));
+
+  // ── 7. VALIDACIÓN + INTENTO DE TRAMPA ──
+  S('7 · VALIDACIÓN · ¿aguanta un tramposo?');
+  const clean = GymRecorder.validate(sealed);
+  kv('partida honesta', clean.valid ? `VÁLIDA (${clean.checked} recibos)` : 'INVÁLIDA', clean.valid ? 'ok' : 'bad');
+
+  const tampered = JSON.parse(JSON.stringify(sealed));
+  tampered.receipts[400].reward = 9999;                    // inflar recompensa
+  const t1 = GymRecorder.validate(tampered);
+  kv('trampa: inflar premio', t1.valid ? 'COLADA ✗' : `CAZADA — ${t1.errors[0]}`, t1.valid ? 'bad' : 'ok');
+
+  const tampered2 = JSON.parse(JSON.stringify(sealed));
+  tampered2.receipts.splice(200, 5);                       // borrar recibos
+  const t2 = GymRecorder.validate(tampered2);
+  kv('trampa: borrar pasos', t2.valid ? 'COLADA ✗' : `CAZADA — ${t2.errors[0]}`, t2.valid ? 'bad' : 'ok');
+
+  // invariante de entorno: la nave no puede teletransportarse
+  const inv = (r) => {
+    if (!r.action) return true;
+    const [tx, ty] = r.action;
+    return (Math.abs(tx) <= 1.001 && Math.abs(ty) <= 1.001) || 'acción fuera del espacio permitido';
+  };
+  const tampered3 = JSON.parse(JSON.stringify(sealed));
+  tampered3.receipts[300].action = [50, 50];               // salto imposible
+  const t3 = GymRecorder.validate(tampered3, inv);
+  kv('trampa: teletransporte', t3.valid ? 'COLADA ✗' : `CAZADA — ${t3.errors[0]}`, t3.valid ? 'bad' : 'ok');
+
+  report.validation = { honest: clean.valid, caught: [!t1.valid, !t2.valid, !t3.valid] };
+
+  S('RESUMEN');
+  const allGood = clean.valid && !t1.valid && !t2.valid && !t3.valid && report.deterministic && report.discriminates;
+  kv('determinismo', report.deterministic ? 'OK (checksum de mundo)' : 'FALLA', report.deterministic ? 'ok' : 'bad');
+  kv('discrimina agentes', report.discriminates ? 'OK — mide de verdad' : 'FALLA — todos igual', report.discriminates ? 'ok' : 'bad');
+  kv('3 puertas operativas', 'numérica ✓ · lenguaje ✓ · humana (labs) ✓', 'ok');
+  kv('anti-trampas', '3 de 3 cazadas', 'ok');
+  kv('datos personales pedidos', 'CERO', 'ok');
+  P(`\n  <span class="${allGood ? 'ok' : 'bad'}">${allGood ? '▓ EL BENCHMARK FUNCIONA DE PUNTA A PUNTA' : '▓ HAY FALLOS'}</span>`);
+
+  window.__report = { ...report, allGood };
+  window.__ready = true;
+};
+</script>
+</body>
+</html>

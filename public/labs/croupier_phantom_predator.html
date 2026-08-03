@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA — Sala del Huevo (FPS Mode)</title>
+    <style>
+        body { 
+            margin: 0; 
+            background: #ffffff; 
+            overflow: hidden; 
+            font-family: 'Courier New', Courier, monospace; 
+            color: #111;
+        }
+        canvas { display: block; }
+        
+        #hud { 
+            position: fixed; top: 0; left: 0; width: 100%; z-index: 10;
+            pointer-events: none;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        
+        .top-bar {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(5px);
+            border-bottom: 1px solid #ddd;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        }
+        
+        .title {
+            font-weight: bold;
+            font-size: 16px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 40px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #555;
+        }
+        
+        .val { color: #000; font-weight: bold; }
+        
+        .progress-container {
+            width: 50%;
+            max-width: 600px;
+            height: 4px;
+            background: #eee;
+            margin-top: 40px;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            width: 12.5%;
+            background: #000;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            transition: width 1s linear;
+        }
+        
+        .status-text {
+            margin-top: 10px;
+            font-size: 11px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #777;
+        }
+        
+        .pulse { animation: pulsing 2s infinite; }
+        
+        @keyframes pulsing {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
+        }
+        
+        #overlay-instruction {
+            position: fixed; bottom: 30px; width: 100%; text-align: center;
+            font-size: 11px; letter-spacing: 2px; color: #888;
+        }
+        
+    </style>
+    <!-- Import Map para Three.js r160 -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/three-0.160.0/build/three.module.js",
+            "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+            "@alisa-engine/": "../js/alisa-engine/"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div id="hud">
+        <div class="top-bar">
+            <div class="title">SALA DEL HUEVO</div>
+            <div class="stats">
+                <div>INCUBATION: <span class="val">12.5%</span></div>
+                <div>DUST MINED: <span class="val">4,050 NEURO</span></div>
+                <div>WORLD JIT: <span class="val pulse">STANDBY</span></div>
+            </div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-fill"></div>
+        </div>
+        <div class="status-text pulse">Awaiting Critical Mathematical Mass</div>
+    </div>
+    
+    <!-- CSS3D Container under WebGL layer -->
+    <div id="css-container" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; pointer-events:auto;"></div>
+    
+    <div id="crosshair"></div>
+    <div id="target-label"></div>
+    
+    <div id="overlay-instruction">INTERACT WITH TERMINALS TO MINE DUST</div>
+
+    <style>
+        #crosshair {
+            position: fixed; top: 50%; left: 50%;
+            width: 4px; height: 4px; background: white;
+            border-radius: 50%; transform: translate(-50%, -50%);
+            z-index: 100; pointer-events: none; mix-blend-mode: difference;
+        }
+        #target-label {
+            position: fixed; top: 55%; left: 50%;
+            transform: translateX(-50%);
+            color: #818cf8; font-family: monospace; font-size: 16px;
+            z-index: 100; pointer-events: none; text-shadow: 0 0 5px #0b0b14;
+            text-align: center; white-space: pre-wrap;
+        }
+    </style>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+        import { AssetManager } from '@alisa-engine/src/soma/AssetManager.js';
+        import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+        import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
+        import { NavMeshExtractionEngine } from '@alisa-engine/src/world/systems/NavMeshExtractionEngine.js';
+        import { ECSWorld, TransformComponent, VelocityComponent, RenderProxyComponent } from '@alisa-engine/src/world/OverworldECS.js';
+        import { NavMeshAgentSystem, NavMeshAgentComponent } from '@alisa-engine/src/world/systems/NavMeshAgentSystem.js';
+        import { PhantomFSMSystem, PhantomComponent } from '@alisa-engine/src/world/systems/PhantomFSMSystem.js';
+
+        // 1. Inicializar Core con entorno "Clínico / Blanco" y Alpha Transparency
+        const gfx = new AlisaRenderCore({ antialias: true, autoRender: true, alpha: true, clearColor: 0xffffff });
+        const ecs = new ECSWorld();
+        const navAgentSystem = new NavMeshAgentSystem();
+        const phantomSystem = new PhantomFSMSystem();
+        ecs.addSystem(navAgentSystem.update.bind(navAgentSystem), ['TransformComponent', 'NavMeshAgentComponent']);
+        ecs.addSystem(phantomSystem.update.bind(phantomSystem), ['PhantomComponent', 'NavMeshAgentComponent', 'TransformComponent']);
+        
+        // El background WebGL debe ser transparente para que se vea la capa CSS3D debajo
+        // gfx.scene.background = new THREE.Color(0xffffff); // ¡DESACTIVADO!
+        gfx.renderer.setClearColor(0xffffff, 0); // Totalmente transparente
+        gfx.scene.fog = new THREE.FogExp2(0xffffff, 0.005); // Niebla ambiental exp2 envuelve todo
+
+        // Inicializar Capa CSS3D Holográfica
+        const cssScene = new THREE.Scene();
+        const cssRenderer = new CSS3DRenderer();
+        cssRenderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('css-container').appendChild(cssRenderer.domElement);
+        // Sincronizar re-escala
+        window.addEventListener('resize', () => cssRenderer.setSize(window.innerWidth, window.innerHeight));
+        
+        // Ajustar la cámara para POV humano en el horizonte
+        gfx.camera.position.set(0, 2, 90);
+        gfx.camera.lookAt(0, 20, 0);
+
+        // Desactivamos OrbitControls por defecto si el core lo crea
+        if(gfx.controls) { gfx.controls.dispose(); gfx.controls = null; }
+
+        // Inicializamos PointerLockControls
+        const fpsControls = new PointerLockControls(gfx.camera, document.body);
+        let audioCtx = null;
+        document.body.addEventListener('click', () => { 
+            fpsControls.lock(); 
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Low Ambience Drone (Cyberpunk hum)
+                const osc1 = audioCtx.createOscillator();
+                const osc2 = audioCtx.createOscillator();
+                const filter = audioCtx.createBiquadFilter();
+                const gain = audioCtx.createGain();
+
+                osc1.type = 'sine'; osc1.frequency.value = 55.0; // Low hum
+                osc2.type = 'triangle'; osc2.frequency.value = 55.6; // Detuning beat
+
+                filter.type = 'lowpass'; filter.frequency.value = 150;
+                gain.gain.value = 0.5;
+
+                osc1.connect(filter);
+                osc2.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                osc1.start(); osc2.start();
+            }
+        });
+
+        const keys = { KeyW:false, KeyA:false, KeyS:false, KeyD:false };
+        document.addEventListener('keydown', e => {
+            if(keys.hasOwnProperty(e.code)) keys[e.code] = true;
+        });
+        document.addEventListener('keyup', e => {
+            if(keys.hasOwnProperty(e.code)) keys[e.code] = false;
+        });
+        
+        // Instrucción visual
+        const uiText = document.getElementById('overlay-instruction');
+        uiText.innerHTML = "CLICK ANYWHERE TO ENTER THE MATRIX [WASD TO MOVE / MOUSE TO LOOK]";
+
+        // Limpiar luces por defecto del Core y crear un set clínico
+        gfx.scene.children = gfx.scene.children.filter(c => !(c instanceof THREE.Light));
+        
+        const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+        gfx.scene.add(ambient);
+        
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(10, 50, 20);
+        dirLight.castShadow = true;
+        // Suavizar las sombras para un look más "difuso" y limpio
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
+        dirLight.shadow.camera.near = 0.5;
+        dirLight.shadow.camera.far = 150;
+        dirLight.shadow.camera.left = -40;
+        dirLight.shadow.camera.right = 40;
+        dirLight.shadow.camera.top = 40;
+        dirLight.shadow.camera.bottom = -40;
+        gfx.scene.add(dirLight);
+
+        // 2. El Terreno Infinito (Suelo blanco que recibe sombras muy suaves)
+        const floorGeo = new THREE.PlaneGeometry(500, 500);
+        // Usamos un Material estándar blanco que apenas refleja
+        const floorMat = new THREE.MeshStandardMaterial({ 
+            color: 0xffffff, 
+            roughness: 0.8, 
+            metalness: 0.1 
+        });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        gfx.scene.add(floor);
+        
+        // Grid procedural pero muy leve (apenas visible, gris muy claro)
+        const grid = new THREE.GridHelper(200, 200, 0xeeeeee, 0xf5f5f5);
+        grid.position.y = 0.01;
+        gfx.scene.add(grid);
+
+        // 3. Variables de Animación y Luces
+        let tamagoRef = null;
+        const eggLight = new THREE.PointLight(0xffaaaa, 5, 40);
+        eggLight.position.set(0, 15, 0);
+        gfx.scene.add(eggLight);
+
+        // 4. Cargar El Huevo Gigante Principal
+        AssetManager.loadModelAsync('../props/models/Egg.glb').then((scene) => {
+            tamagoRef = scene.clone();
+            
+            // Escalarlo a tamaño "Edificio"
+            const bbox = new THREE.Box3().setFromObject(tamagoRef);
+            const size = bbox.getSize(new THREE.Vector3());
+            const targetHeight = 35; // 35 metros de alto (un edificio de 10 pisos)
+            const scaleF = targetHeight / (size.y || 1);
+            tamagoRef.scale.set(scaleF, scaleF * 1.2, scaleF); // Ligeramente estirado
+            
+            const adjBox = new THREE.Box3().setFromObject(tamagoRef);
+            tamagoRef.position.y = -adjBox.min.y; // Apoyado en el suelo
+            
+            // Forzar material místico espacial
+            tamagoRef.traverse(c => {
+                if(c.isMesh) {
+                    c.castShadow = true;
+                    c.receiveShadow = true;
+                    // Preserve geometry, but force our Pearl material
+                    c.material = new THREE.MeshPhysicalMaterial({
+                        color: 0xffffff,
+                        metalness: 0.1,
+                        roughness: 0.1,
+                        clearcoat: 1.0,
+                        clearcoatRoughness: 0.1,
+                        emissive: 0x221111,
+                        emissiveIntensity: 0.5
+                    });
+                }
+            });
+            
+            gfx.scene.add(tamagoRef);
+            eggLight.position.y = tamagoRef.position.y + targetHeight/2;
+            
+        });
+
+        // 5. Cargar las Estaciones (Arcades y Mesas)
+        const arcades = [];
+        
+        // Catálogo OpenCore — Arcades (juegos complejos con motores modulares)
+        const arcadeSimulations = [
+            '../rooms/room_narrative_cabinet_escape.html',
+            '../labs/croupier_shmup_survival.html',
+            '../labs/croupier_chopper_aquarium.html',
+            '../labs/croupier_katamari_swarm.html',
+            '../labs/croupier_peaton_m30.html',
+            '../games/raccoon_city_sector.html',
+            '../games/raccoon_planet.html',
+            '../games/raccoon_space.html',
+            '../sim_asteroids_v3.html',
+            '../corporate_building_horror_base.html',
+            '../rooms/room_biolab_resurrection.html',
+            '../labs/croupier_cucco_swarm.html'
+        ];
+        
+        // Catálogo OpenCore — Mesas (visualizaciones y labs interactivos)
+        const tableEnvironments = [
+            '../rooms/room_empty_table_games_node.html',
+            '../labs/croupier_fx_voxel_glitch.html',
+            '../labs/croupier_procgen_carver.html',
+            '../labs/croupier_world_builder.html',
+            '../labs/croupier_animator_dojo.html',
+            '../labs/croupier_physics_locomotion.html',
+            '../labs/croupier_rig_avatar_archetypes.html',
+            '../labs/croupier_resonance_isomorphism.html',
+            '../labs/croupier_camera_compiz.html',
+            '../labs/croupier_scumm_overworld.html',
+            '../labs/croupier_tfjs_driving.html',
+            '../labs/croupier_ui_item_catalog.html'
+        ];
+
+        AssetManager.loadModelAsync('../props/models/Arcade Machine.glb').then((scene) => {
+            const baseArcade = scene.clone();
+            const bbox = new THREE.Box3().setFromObject(baseArcade);
+            const size = bbox.getSize(new THREE.Vector3());
+            const scaleF = 2.0 / (size.y || 1); // 2 metros de alto
+            baseArcade.scale.set(scaleF, scaleF, scaleF);
+            
+            const adjBox = new THREE.Box3().setFromObject(baseArcade);
+            baseArcade.position.y = -adjBox.min.y;
+            baseArcade.traverse(c => {
+                if(c.isMesh) { 
+                    c.castShadow = true; c.receiveShadow = true; 
+                    if(c.name === 'GameScreen_Plane' || c.material.name === 'Screen') {
+                        // Perforar Mesh WebGL para ver CSS
+                        c.material = new THREE.MeshBasicMaterial({ 
+                            color: 0x000000, 
+                            side: THREE.FrontSide, blending: THREE.NoBlending,
+                            opacity: 0, colorWrite: false 
+                        });
+                    }
+                }
+            });
+
+            AssetManager.loadModelAsync('../props/models/Table.glb').then((sceneTable) => {
+                const baseTable = sceneTable.clone();
+                const bbox2 = new THREE.Box3().setFromObject(baseTable);
+                const size2 = bbox2.getSize(new THREE.Vector3());
+                const scaleF2 = 1.0 / (size2.y || 1); // 1 metro de alto
+                baseTable.scale.set(scaleF2, scaleF2, scaleF2);
+                
+                const adjBox2 = new THREE.Box3().setFromObject(baseTable);
+                baseTable.position.y = -adjBox2.min.y;
+                baseTable.traverse(c => {
+                    if(c.isMesh) { c.castShadow = true; c.receiveShadow = true; 
+                        // Hacer la mesa de Casino verde
+                        if(c.material.name && c.material.name.toLowerCase().includes("cloth") || !c.material.map) {
+                            c.material.color.setHex(0x006622); 
+                        }
+                    }
+                });
+
+                // Spawnear en círculo
+                const numStations = 24;
+                const radius = 70; // Distancia desde el huevo gigante para efecto pirámide
+                
+                let arcadeIdx = 0;
+                let tableIdx = 0;
+                
+                for (let i = 0; i < numStations; i++) {
+                    const angle = (i / numStations) * Math.PI * 2;
+                    const x = Math.cos(angle) * radius;
+                    const z = Math.sin(angle) * radius;
+                    
+                    // Alternar entre Arcade y Mesa de Casino
+                    const station = (i % 2 === 0) ? baseArcade.clone() : baseTable.clone();
+                    
+                    station.position.set(x, station.position.y, z);
+                    
+                    // Mirar al centro
+                    const center = new THREE.Vector3(0, station.position.y, 0);
+                    station.lookAt(center);
+
+                    const isArcade = (i % 2 === 0);
+                    let gameSrc = '../lab.html';
+                    
+                    if (isArcade) {
+                        gameSrc = arcadeSimulations[arcadeIdx % arcadeSimulations.length];
+                        arcadeIdx++;
+                    } else {
+                        gameSrc = tableEnvironments[tableIdx % tableEnvironments.length];
+                        tableIdx++;
+                    }
+                    
+                    const niceName = gameSrc.split('/').pop().replace('croupier_','').replace('room_','').replace('.html','').toUpperCase();
+                    station.userData.simName = niceName;
+
+                    // Añadir decoraciones físicas a la mesa original
+                    if (!isArcade) {
+                        const decoType = (tableIdx % 2 === 0) ? 'cards' : 'chips';
+                        if (decoType === 'cards') {
+                            const deckGroup = new THREE.Group();
+                            const cardGeo = new THREE.BoxGeometry(0.088, 0.001, 0.123); 
+                            const cMatBack = new THREE.MeshStandardMaterial({color: 0xb91c1c, roughness: 0.7});
+                            const cMatEdge = new THREE.MeshStandardMaterial({color: 0xf8fafc, roughness: 0.9});
+                            const fullCardMat = [cMatEdge, cMatEdge, cMatBack, cMatEdge, cMatEdge, cMatEdge];
+                            
+                            for(let j=0; j < 52; j++) {
+                                const cardMesh = new THREE.Mesh(cardGeo, fullCardMat);
+                                cardMesh.position.y = j * 0.0015; 
+                                cardMesh.rotation.y = (Math.random() - 0.5) * 0.1; 
+                                cardMesh.castShadow = true;
+                                deckGroup.add(cardMesh);
+                            }
+                            // Local coords of Table.glb
+                            deckGroup.position.set(0.3, 0.76, 0.1); 
+                            station.add(deckGroup);
+                        } else {
+                            const chipGroup = new THREE.Group();
+                            const chipGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.004, 16);
+                            const chipMat = new THREE.MeshStandardMaterial({color: 0x3b82f6, roughness: 0.5, metalness: 0.2});
+                            for(let j=0; j < 25; j++) {
+                                const chip = new THREE.Mesh(chipGeo, chipMat);
+                                chip.position.y = j * 0.004;
+                                chip.rotation.y = Math.random();
+                                chip.castShadow = true;
+                                chipGroup.add(chip);
+                            }
+                            chipGroup.position.set(-0.3, 0.76, -0.2);
+                            station.add(chipGroup);
+                        }
+                    }
+
+                    // A TODAS las estaciones les inyectamos el Standby de ALISA
+                    const iframe = document.createElement('iframe');
+                    iframe.style.width = '1024px'; iframe.style.height = '1024px';
+                    iframe.style.border = 'none'; 
+                    iframe.src = '../rooms/standby_terminal.html?target=' + encodeURIComponent(gameSrc);
+                    
+                    const cssObj = new CSS3DObject(iframe);
+                    cssObj.position.copy(station.position);
+                    cssObj.rotation.set(0,0,0);
+                    cssObj.rotation.copy(station.rotation);
+                    
+                    if (isArcade) {
+                        cssObj.rotateX(-0.2); 
+                        cssObj.scale.set(0.0011, 0.0011, 0.0011);
+                        cssObj.translateY(2.2); 
+                        cssObj.translateZ(0.7); 
+                    } else {
+                        // Mesas de casino, proyectar holograma interactivo cenital flotante inclinado hacia el jugador
+                        cssObj.rotateX(-Math.PI / 5); 
+                        cssObj.scale.set(0.001, 0.001, 0.001);
+                        cssObj.translateZ(-1.0);
+                        cssObj.translateY(0.5); 
+                    }
+                    
+                    cssScene.add(cssObj);
+                    
+                    gfx.scene.add(station);
+                    arcades.push(station);
+                }
+                
+                // --- ALISA V4: AUTONOMOUS NAVMESH EXTRACTION ---
+                setTimeout(() => {
+                    const Extractor = new NavMeshExtractionEngine(gfx.scene, { gridSize: 1.0, maxHeight: 2.0 });
+                    const bounds = new THREE.Box3(
+                        new THREE.Vector3(-100, 0, -100), 
+                        new THREE.Vector3(100, 100, 100)
+                    );
+                    
+                    document.querySelector('.status-text').innerHTML = "SCANNING GEOMETRY... (JIT NAVMESH)";
+                    document.querySelector('.progress-fill').style.width = '35%';
+                    
+                    // Allow UI to repaint
+                    setTimeout(() => {
+                        window.globalNavMesh = Extractor.extract(bounds);
+                        
+                        document.querySelector('.status-text').innerHTML = "[V4] NAVMESH EXTRACTED - READY FOR PROTOCOL EXPORT";
+                        document.querySelector('.status-text').classList.remove('pulse');
+                        document.querySelector('.status-text').style.color = "#00bb00";
+                        document.querySelector('.progress-fill').style.width = '100%';
+                        document.querySelector('.val.pulse').innerHTML = "ONLINE";
+                        document.querySelector('.val.pulse').classList.remove('pulse');
+                        
+                        initPhantomECS();
+                        
+                        console.log("NavMesh successfully written to window.globalNavMesh for Hub ingestion.");
+                        
+                        // Save to Backend Persistent Storage
+                        fetch('http://127.0.0.1:8741/overworld/navmesh/save', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(window.globalNavMesh)
+                        }).then(res => res.json()).then(data => {
+                            console.log("[NavMesh] Hub persistence response:", data);
+                            document.querySelector('.status-text').innerHTML += `<br><span style='color:#0ff'>[HUB SAVED: ${data.status}]</span>`;
+                        }).catch(err => {
+                            console.error("[NavMesh] Error persisting to Hub:", err);
+                            document.querySelector('.status-text').innerHTML += `<br><span style='color:#f00'>[HUB SAVE FAILED]</span>`;
+                        });
+                    }, 100);
+                }, 3000); // Wait 3s for physics/materials to settle
+            });
+        });
+
+        const raycaster = new THREE.Raycaster();
+        const centerCoords = new THREE.Vector2(0, 0);
+        const targetLabel = document.getElementById('target-label');
+
+        // Agent interactions decoupled -- Phantom relies purely on player tracking.
+
+        function initPhantomECS() {
+            // Player Proxy Entity
+            const proxyPlayerEntity = ecs.createEntity();
+            ecs.addComponent(proxyPlayerEntity, 'TransformComponent', TransformComponent(gfx.camera.position.x, gfx.camera.position.y, gfx.camera.position.z));
+            console.log("[V4 ECS] Player Proxy spawned");
+
+            // Phantom Entity
+            const phantomEntity = ecs.createEntity();
+            const phantomMesh = new THREE.Mesh(
+                new THREE.BoxGeometry( 1.5, 3.0, 1.5 ),
+                new THREE.MeshStandardMaterial({ color: 0x000000, roughness: 0.1, transparent: true, opacity: 1.0 })
+            );
+            gfx.scene.add(phantomMesh);
+            
+            ecs.addComponent(phantomEntity, 'TransformComponent', TransformComponent(0, 0, 0));
+            ecs.addComponent(phantomEntity, 'VelocityComponent', VelocityComponent());
+            ecs.addComponent(phantomEntity, 'NavMeshAgentComponent', NavMeshAgentComponent(5.5));
+            ecs.addComponent(phantomEntity, 'PhantomComponent', PhantomComponent({targetEntityId: proxyPlayerEntity}));
+            ecs.addComponent(phantomEntity, 'RenderProxyComponent', RenderProxyComponent(phantomMesh));
+            
+            window.__playerProxy = proxyPlayerEntity;
+            window.__phantomEntity = phantomEntity;
+            console.log("[V4 ECS] Phantom Predator spawned targeting player.");
+        }
+        
+        // Add Flashlight to Camera
+        const flashlight = new THREE.SpotLight(0xffffff, 10.0);
+        flashlight.angle = Math.PI / 8;
+        flashlight.penumbra = 0.5;
+        flashlight.distance = 60;
+        flashlight.castShadow = true;
+        flashlight.target.position.set(0, 0, -1);
+        gfx.camera.add(flashlight);
+        gfx.camera.add(flashlight.target);
+        gfx.scene.add(gfx.camera);
+
+        // Atmospheric Dust System
+        const DUST_COUNT = 3000;
+        const dustGeo = new THREE.BufferGeometry();
+        const dustPositions = new Float32Array(DUST_COUNT * 3);
+        const dustVelocities = [];
+
+        for(let i=0; i<DUST_COUNT; i++) {
+            dustPositions[i*3] = (Math.random() - 0.5) * 80;
+            dustPositions[i*3+1] = Math.random() * 40;
+            dustPositions[i*3+2] = (Math.random() - 0.5) * 80;
+            dustVelocities.push({
+                x: (Math.random() - 0.5) * 0.2,
+                y: (Math.random() - 0.5) * 0.2 + 0.1,
+                z: (Math.random() - 0.5) * 0.2
+            });
+        }
+        dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPositions, 3));
+        const dustMat = new THREE.PointsMaterial({
+            color: 0xffffff,
+            size: 0.15,
+            transparent: true,
+            opacity: 0.3,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+        const dustSystem = new THREE.Points(dustGeo, dustMat);
+        gfx.scene.add(dustSystem);
+
+        // 6. Lifecycle Loop (Latido + POV + Raycaster)
+        gfx.startLoop((dt) => {
+            const time = performance.now() / 1000;
+            
+            // Update Dust
+            const positions = dustGeo.attributes.position.array;
+            for(let i = 0; i < DUST_COUNT; i++) {
+                positions[i*3]   += dustVelocities[i].x * dt;
+                positions[i*3+1] += dustVelocities[i].y * dt;
+                positions[i*3+2] += dustVelocities[i].z * dt;
+                if (positions[i*3+1] > 40) positions[i*3+1] = 0; // Wrap around bottom
+            }
+            dustGeo.attributes.position.needsUpdate = true;
+            
+            // Respiración del huevo (Scale pulsing)
+            if (tamagoRef) {
+                const breath = Math.sin(time * 2); 
+                const scaleBase = tamagoRef.userData.scaleBase || tamagoRef.scale.clone();
+                if(!tamagoRef.userData.scaleBase) tamagoRef.userData.scaleBase = scaleBase;
+                
+                // Variación entre 1.0 y 1.01 de escala para dar sensación de masa latiente masiva
+                const mult = 1 + breath * 0.01;
+                tamagoRef.scale.set(scaleBase.x * mult, scaleBase.y * (1 - breath * 0.005), scaleBase.z * mult);
+                
+                eggLight.intensity = 15 + breath * 10;
+            }
+            
+            // Movimiento y Raycast
+            if (fpsControls.isLocked) {
+                const speed = 25 * dt; // 25 metros por segundo (correr)
+                if(keys.KeyW) fpsControls.moveForward(speed);
+                if(keys.KeyS) fpsControls.moveForward(-speed);
+                if(keys.KeyA) fpsControls.moveRight(-speed);
+                if(keys.KeyD) fpsControls.moveRight(speed);
+                
+                // Forzar la cámara a mantener siempre la altura humana de 2 metros
+                gfx.camera.position.y = 2;
+                
+                // Raycaster logic
+                raycaster.setFromCamera(centerCoords, gfx.camera);
+                const intersects = raycaster.intersectObjects(arcades, true);
+                let hitTarget = null;
+                
+                if (intersects.length > 0 && intersects[0].distance < 12) {
+                    let obj = intersects[0].object;
+                    while(obj && obj.parent) {
+                        if(obj.userData.simName) { hitTarget = obj; break; }
+                        obj = obj.parent;
+                    }
+                }
+                
+                if (hitTarget) {
+                    targetLabel.innerHTML = `[ NODE: ${hitTarget.userData.simName} ]\nPress ESC to free pointer\nClick screen to compile`;
+                } else {
+                    targetLabel.innerHTML = "";
+                }
+            } else {
+                targetLabel.innerHTML = "";
+            }
+
+            // 5. ECS & Phantom Logic Sync
+            if (window.__playerProxy !== undefined) {
+                // Sync player proxy
+                const ptrns = ecs.getComponent(window.__playerProxy, 'TransformComponent');
+                if (ptrns) {
+                    ptrns.x = gfx.camera.position.x;
+                    ptrns.y = gfx.camera.position.y;
+                    ptrns.z = gfx.camera.position.z;
+                }
+                
+                // Illumination check simulation
+                if (window.__phantomEntity !== undefined) {
+                    const pComp = ecs.getComponent(window.__phantomEntity, 'PhantomComponent');
+                    const tComp = ecs.getComponent(window.__phantomEntity, 'TransformComponent');
+                    const proxyComp = ecs.getComponent(window.__phantomEntity, 'RenderProxyComponent');
+                    const phantomMesh = proxyComp ? proxyComp.object3d : null;
+                    
+                    // Simple angle-based flashlight illumination
+                    if (phantomMesh && pComp) {
+                        const dirToPhantom = new THREE.Vector3(tComp.x, 2.0, tComp.z).sub(gfx.camera.position).normalize();
+                        const camDir = new THREE.Vector3();
+                        gfx.camera.getWorldDirection(camDir);
+                        const dp = camDir.dot(dirToPhantom);
+                        
+                        // If Phantom is in front of camera within light cone
+                        if (dp > 0.85) {
+                            pComp.isIlluminated = true;
+                        } else {
+                            pComp.isIlluminated = false;
+                        }
+
+                        // Apply rendering properties computed by ECS Phantom System
+                        phantomMesh.visible = (pComp.visibility > 0);
+                        if(phantomMesh.material) {
+                            phantomMesh.material.opacity = pComp.visibility;
+                        }
+                    }
+                }
+            }
+
+            // [V4] ALISA JIT ECS Tick
+            ecs.tick(dt);
+            
+            // RenderProxy Synchronization
+            for (const entityId of ecs.query(['TransformComponent', 'RenderProxyComponent'])) {
+                const transform = ecs.getComponent(entityId, 'TransformComponent');
+                const proxy = ecs.getComponent(entityId, 'RenderProxyComponent');
+                if (proxy.object3d) {
+                    const py = ecs.getComponent(entityId, 'PhantomComponent');
+                    proxy.object3d.position.x = transform.x;
+                    proxy.object3d.position.z = transform.z;
+                    // Retain bobbing hover dynamically if it's a phantom
+                    if (py) {
+                        proxy.object3d.position.y = 2.0 + py.hoverY;
+                        proxy.object3d.lookAt(gfx.camera.position.x, 2.0, gfx.camera.position.z);
+                    }
+                }
+            }
+            
+        }, () => {
+            // Callback de Render Customizado (Sobrescribe autoRender para integrar CSS3D)
+            gfx.renderer.render(gfx.scene, gfx.camera);
+            cssRenderer.render(cssScene, gfx.camera);
+        });
+
+    </script>
+</body>
+</html>

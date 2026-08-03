@@ -1,0 +1,225 @@
+{
+  "schemaVersion": "0.1.0",
+  "id": "alisa.observation_reward_commerce",
+  "title": "Observation-Gated Rewards and Hero Commerce",
+  "purpose": "Define how the local node city turns observed filesystem/building spaces into useful rooms, rewards, live actions, and commercial hero render opportunities.",
+  "coreThesis": "The node is not a 3D file manager. It is a situational, observable city. Unobserved spaces stay cheap and abstract; observed floors materialize as rooms with utility, play, insight, narrative, or commerce.",
+  "renderPolicy": {
+    "name": "observe_to_materialize",
+    "rules": [
+      "Only render expensive interiors when a human, Alison, camera, or agent explicitly observes a building/floor/room.",
+      "Keep distant city geometry symbolic: district, building, health lights, activity windows, and alert beacons.",
+      "Use 2D/HTML overlays for reading and operating; use 3D for situated meaning, emotion, discovery, and spatial memory.",
+      "Cache observed rooms by deterministic seed so revisiting feels continuous without scanning the whole machine again."
+    ]
+  },
+  "filesystemIsomorphism": {
+    "drive": "district",
+    "topLevelFolder": "building",
+    "subfolder": "floor",
+    "nestedSubfolder": "room",
+    "fileGroup": "cabinet_or_drawer",
+    "largeFolder": "tall_or_wide_building",
+    "recentlyModifiedFolder": "lit_or_blinking_windows",
+    "systemAlert": "beacon_smoke_fire_or_warning_light",
+    "heavyUsefulWork": "resource_node_or_workbench"
+  },
+  "observationLoop": [
+    {
+      "step": "select_target",
+      "trigger": "click, gaze, voice command, agent patrol, or notification tap",
+      "example": "Alison enters the Q: district and observes Data/Memory."
+    },
+    {
+      "step": "bounded_scan",
+      "trigger": "Hub filesystem anatomy or cached manifest lookup",
+      "example": "Read shallow metadata, size, modification time, tags, and known ALISA roles without deep blocking recursion."
+    },
+    {
+      "step": "semantic_classify",
+      "trigger": "local rules first, optional light LLM pass only when value is high",
+      "example": "Memory folder becomes Archive Tower; tests folder becomes Probe Gym; vendor app becomes branded hero room."
+    },
+    {
+      "step": "materialize_room",
+      "trigger": "camera/agent actually enters the floor",
+      "example": "Render a memory archive, game table, tool bench, market stall, or commercial hero showroom."
+    },
+    {
+      "step": "offer_reward",
+      "trigger": "room inspected or task completed",
+      "example": "Useful tool, cleanup quest, memory crystal, mini-game, product portal, or live action."
+    },
+    {
+      "step": "write_back_truth",
+      "trigger": "accepted user/agent action",
+      "example": "JobBoard task, Akasha crystal, WorldChain event, filesystem change, or commerce telemetry."
+    }
+  ],
+  "rewardClasses": [
+    {
+      "id": "useful_tool",
+      "description": "A real local capability exposed as a prop or workbench.",
+      "examples": ["open_terminal_here", "search_folder", "vectorize_folder", "run_probe", "create_backup"],
+      "requiresConsent": true
+    },
+    {
+      "id": "mini_game",
+      "description": "A lightweight training/game layer that maps play to safe computation or testing.",
+      "examples": ["cleanup_challenge", "probe_arcade", "memory_sorting_game", "hash_mining_room"],
+      "requiresConsent": false
+    },
+    {
+      "id": "memory_crystal",
+      "description": "A found piece of canon, lesson, diary, or research surfaced at the place where it matters.",
+      "examples": ["akasha_recall", "lesson_card", "diary_fragment", "paper_excerpt"],
+      "requiresConsent": false
+    },
+    {
+      "id": "system_health_insight",
+      "description": "A visual diagnosis of disk, process, queue, vector store, hub, or service health.",
+      "examples": ["hot_cpu_building", "full_disk_district", "stalled_queue_beacon", "dead_service_ruin"],
+      "requiresConsent": false
+    },
+    {
+      "id": "commercial_surface",
+      "description": "A visible surface that can become rent, portal, product passport, or transaction point.",
+      "examples": ["billboard", "shop_window", "cinema_screen", "gallery_wall", "vehicle_wrap"],
+      "requiresConsent": true
+    },
+    {
+      "id": "hero_render",
+      "description": "A premium representation of a real component, app, device, service, or brand inside the node city.",
+      "examples": ["gpu_temple", "vscode_workshop", "steam_arcade", "photoshop_studio", "browser_observatory"],
+      "requiresConsent": true
+    },
+    {
+      "id": "agent_job",
+      "description": "A task that can be posted to JobBoard or delegated to a Being, turning discovery into work.",
+      "examples": ["Korin vectorizes this floor", "Probe tests this service", "Metatron drafts a decree", "Zazu reports queue state"],
+      "requiresConsent": true
+    }
+  ],
+  "heroRenderTargets": [
+    {
+      "targetType": "hardware_component",
+      "canonicalExamples": ["cpu", "gpu", "ram", "disk", "network_adapter"],
+      "renderValue": "Make invisible machine state emotionally legible: heat, load, pressure, bottlenecks, resource abundance."
+    },
+    {
+      "targetType": "operating_system_service",
+      "canonicalExamples": ["hub", "kikiriki", "ouroboros", "cochlea", "monk", "motoko"],
+      "renderValue": "Turn daemon health into characters, buildings, towers, and patrol routes."
+    },
+    {
+      "targetType": "commercial_program",
+      "canonicalExamples": ["browser", "ide", "creative_suite", "game_launcher", "office_suite"],
+      "renderValue": "Create branded hero rooms that explain, celebrate, and launch real tools."
+    },
+    {
+      "targetType": "alisa_domain",
+      "canonicalExamples": ["Akasha", "Korin", "WarpDrive", "JobBoard", "Cartographer", "IRealWorld"],
+      "renderValue": "Expose ALISA internal systems as navigable civic infrastructure."
+    },
+    {
+      "targetType": "filesystem_building",
+      "canonicalExamples": ["Data/Memory", "World/Web", "Soma/Navi", "Data/Lecciones"],
+      "renderValue": "Let each folder become a place with affordances instead of a passive path string."
+    }
+  ],
+  "businessModels": [
+    {
+      "id": "ad_surface_rent",
+      "source": "props/commercial_surfaces.json",
+      "description": "Rent visible in-world surfaces such as billboards, shop windows, screens, gallery walls, or wraps."
+    },
+    {
+      "id": "l3_portal_fee",
+      "source": "props/commercial_surfaces.json",
+      "description": "A surface opens an L3 service: VOD, NFT gallery, ecommerce, food delivery, music, ebooks, or partner app."
+    },
+    {
+      "id": "nft_deed_transaction",
+      "source": "props/commercial_surfaces.json",
+      "description": "Virtual purchase can mint a deed/passport; real product purchase can spawn a matching digital prop."
+    },
+    {
+      "id": "digital_product_passport",
+      "source": "Data/Product/ALISA_Commercial_Strategy.md",
+      "description": "Brands issue product passports and earn status inside the city under ALISA karma/verification rules."
+    },
+    {
+      "id": "branded_hero_room",
+      "source": "local synthesis",
+      "description": "Commercial programs, hardware, or partner services can sponsor canonical hero renderizations."
+    },
+    {
+      "id": "proof_of_useful_work_sponsorship",
+      "source": "alisa_gamified_pow.md",
+      "description": "Play and care become bounded useful computation, with rewards tied to work and transparency."
+    }
+  ],
+  "existingEvidence": [
+    {
+      "path": "World/Web/overworld/OldBackups/js/alisa-engine/src/world/systems/FileSystemDioramaSystem.js",
+      "role": "Existing renderer fetches /system/filesystem, maps filesystem nodes to buildings, stores buildingData, and supports raycast inspection."
+    },
+    {
+      "path": "Soma/Navi/hub/filesystem.py",
+      "role": "Existing bounded filesystem anatomy endpoint with cache and exclusion rules."
+    },
+    {
+      "path": "World/Web/overworld/data/local_planet_manifest.json",
+      "role": "Current local planet/city contract with drives, domains, and bounded ALISA nodes."
+    },
+    {
+      "path": "World/Web/overworld/props/commercial_surfaces.json",
+      "role": "Canon for commercial surfaces, L3 rooms, NFT deeds, and revenue categories."
+    },
+    {
+      "path": "Data/Memory/sovereign_conversations/b61e944e-9b43-4d9c-9c77-1ef5399b7712/webresearch_qr_filesystem.md",
+      "role": "Research on FSN/fsv failures, QR city geometry, and ALISA's situational-dashboard advantage."
+    },
+    {
+      "path": "Data/Memory/sovereign_conversations/c2db9bee-ab79-4582-a76f-0612704595f1/alisa_gamified_pow.md",
+      "role": "Canon for play as computation and local work as visible resource gathering."
+    },
+    {
+      "path": "Data/Memory/sovereign_conversations/c2db9bee-ab79-4582-a76f-0612704595f1/irealworld_maniac_mansion_vision.md",
+      "role": "Canon for SCUMM-like semantic interaction: objects, Beings, tools, drama, and WorldChain events."
+    },
+    {
+      "path": "Data/Memory/sovereign_conversations/1e235a25-c3b5-4e87-9e2f-3b81e04332c9/alisa_commercial_architecture.md",
+      "role": "Four-layer product architecture: engine, framework, portal, data/Souljar."
+    },
+    {
+      "path": "Data/Product/ALISA_Commercial_Strategy.md",
+      "role": "B2B strategy for DPPs, brand/status economy, and product-market bridge."
+    }
+  ],
+  "designGuardrails": [
+    "Do not recreate the failed 3D file explorer pattern: search, grep, and 2D lists remain faster for file operations.",
+    "Never scan the full machine synchronously from a visual interaction.",
+    "Render symbols first, details on observation, and actions only with explicit consent or known safe automation policy.",
+    "Commercial rendering must be clearly separated from system truth and must not obscure health/security signals.",
+    "Every generated room should answer at least one of these questions: what is here, what changed, what can help me, what can I safely do, why does this matter."
+  ],
+  "nextMilestones": [
+    {
+      "id": "room_reward_resolver",
+      "description": "Create a resolver that maps a filesystem node plus observed depth to rewardClasses and room archetypes."
+    },
+    {
+      "id": "filesystem_click_reward_panel",
+      "description": "Extend FileSystemDioramaSystem click inspection so a building can show rewards/actions from this manifest."
+    },
+    {
+      "id": "hero_render_registry",
+      "description": "Add a registry where apps/hardware/services declare preferred hero-room art direction and allowed actions."
+    },
+    {
+      "id": "commercial_surface_contract",
+      "description": "Unify commercial_surfaces.json with live lab cards and IRealWorld portal telemetry."
+    }
+  ]
+}

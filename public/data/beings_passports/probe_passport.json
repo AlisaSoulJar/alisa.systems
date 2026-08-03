@@ -1,0 +1,20 @@
+{
+    "name": "Probe",
+    "role": "Neural Test Runner",
+    "emoji": "🔬",
+    "type": "mechanical",
+    "skeleton": "probe_scanner",
+    "model_path": "probe.glb",
+    "scale": 0.5,
+    "kinematics": "probe_scan",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "espeak",
+        "tier": 2,
+        "voice_id": "en",
+        "speed": 180,
+        "pitch": "55",
+        "label": "Probe - eSpeak (rápido, test reports, mecánico)"
+    }
+}

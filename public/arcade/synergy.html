@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Synergy Forge</title>
+    <link rel="stylesheet" href="css/arcade.css">
+</head>
+<body>
+
+    <header>
+        <div class="subtitle">Combinatorial Explosion Labs</div>
+        <h1>THE SYNERGY FORGE</h1>
+    </header>
+
+    <main class="arcade-grid">
+        
+        <a href="grimorio.html" class="arcade-card" data-game="grimorio">
+            <div class="card-header">
+                <div class="game-icon">⚛️</div>
+                <div class="status-badge" data-state="offline"><div class="dot"></div> querying</div>
+            </div>
+            <div class="card-body">
+                <h2>Grimorio TCG Sandbox</h2>
+                <p>Turing Complete card interactions. The ultimate combinatorial optimization.</p>
+            </div>
+            <div class="card-footer">
+                <div class="api-endpoint">/arcade/grimorio/move</div>
+                <div class="players"></div>
+            </div>
+        </a>
+
+        <a href="bestiario.html" class="arcade-card" data-game="bestiario">
+            <div class="card-header">
+                <div class="game-icon">⚡</div>
+                <div class="status-badge" data-state="offline"><div class="dot"></div> querying</div>
+            </div>
+            <div class="card-body">
+                <h2>Bestiario Bestiario</h2>
+                <p>Simultaneous turn-based Yomi. Predict enemy predictions via Nash Equilibria.</p>
+            </div>
+            <div class="card-footer">
+                <div class="api-endpoint">/arcade/bestiario/move</div>
+                <div class="players"></div>
+            </div>
+        </a>
+
+        <a href="usura.html" class="arcade-card" data-game="usura">
+            <div class="card-header">
+                <div class="game-icon">🃏</div>
+                <div class="status-badge" data-state="offline"><div class="dot"></div> querying</div>
+            </div>
+            <div class="card-body">
+                <h2>Usura Engine</h2>
+                <p>Multiplicative scaling rogue-like. Optimizing compound exponential interest.</p>
+            </div>
+            <div class="card-footer">
+                <div class="api-endpoint">/arcade/usura/move</div>
+                <div class="players"></div>
+            </div>
+        </a>
+
+        <a href="poker.html" class="arcade-card" data-game="poker">
+            <div class="card-header">
+                <div class="game-icon">♠️</div>
+                <div class="status-badge" data-state="offline"><div class="dot"></div> querying</div>
+            </div>
+            <div class="card-body">
+                <h2>Texas Hold'em</h2>
+                <p>Multi-agent GTO bluffing. Inject intentional noise to balance exploitation.</p>
+            </div>
+            <div class="card-footer">
+                <div class="api-endpoint">/arcade/poker/move</div>
+                <div class="players"></div>
+            </div>
+        </a>
+
+    </main>
+
+    <script src="js/arcade_core.js"></script>
+</body>
+</html>

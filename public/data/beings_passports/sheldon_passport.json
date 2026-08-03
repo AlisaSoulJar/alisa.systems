@@ -1,0 +1,20 @@
+{
+    "name": "Sheldon",
+    "role": "The Pedant",
+    "emoji": "🧑‍🔬",
+    "type": "biological",
+    "skeleton": "humanoid",
+    "model_path": "sheldon.glb",
+    "scale": 1.0,
+    "kinematics": "humanoid_stiff",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "edge_tts",
+        "tier": 4,
+        "voice_id": "en-US-GuyNeural",
+        "rate": "+5%",
+        "pitch": "+2Hz",
+        "label": "Sheldon - Guy (pedante, preciso, condescendiente)"
+    }
+}

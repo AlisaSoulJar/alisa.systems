@@ -1,0 +1,79 @@
+{
+    "alien_computer": {
+        "type": "glb",
+        "url": "props/models/Alien Computer.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "butter_robot": {
+        "type": "glb",
+        "url": "props/models/Butter Robot.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "eye_summoner": {
+        "type": "glb",
+        "url": "props/models/Eye Summoner.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "r2_d2": {
+        "type": "glb",
+        "url": "props/models/R2-D2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "ramen_bot": {
+        "type": "glb",
+        "url": "props/models/Ramen Bot.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "robo_henk": {
+        "type": "glb",
+        "url": "props/models/Robo Henk!.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "robot_arm_1": {
+        "type": "glb",
+        "url": "props/models/Robot Arm (1).glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "robot_arm": {
+        "type": "glb",
+        "url": "props/models/Robot Arm.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "robot_enemy_flying": {
+        "type": "glb",
+        "url": "props/models/Robot Enemy Flying.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "robot_enemy": {
+        "type": "glb",
+        "url": "props/models/Robot Enemy.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "mech_robot": {
+        "type": "glb",
+        "url": "props/models/mech_robot.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    }
+}

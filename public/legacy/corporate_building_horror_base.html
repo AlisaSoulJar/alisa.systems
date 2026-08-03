@@ -1,0 +1,2658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA — Corporate Building (13 Rue del Percebe)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { overflow: hidden; background: #0b0e18; font-family: 'Segoe UI', sans-serif; color: #ccc; }
+
+        /* ─── LAUNCH MODAL ─── */
+        #scenarioModal {
+            position: fixed; inset: 0; z-index: 200;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.92);
+            transition: opacity 0.4s;
+        }
+        .modal-box {
+            background: #12141e; border: 2px solid #ff9500;
+            border-radius: 16px; padding: 35px 45px; max-width: 520px; width: 90%;
+            box-shadow: 0 0 80px rgba(255,149,0,0.12);
+        }
+        .modal-box h1 { text-align: center; color: #ff9500; font-size: 26px; margin-bottom: 20px; letter-spacing: 2px; }
+        .config-section h4 { color: #aa8844; margin-bottom: 12px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+        .slider-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .slider-row label { min-width: 100px; font-size: 13px; color: #bbb; }
+        .slider-row input[type=range] { flex: 1; accent-color: #ff9500; }
+        .slider-row .val { min-width: 30px; text-align: right; color: #ff9500; font-weight: bold; }
+        #btnStart {
+            display: block; margin: 25px auto 0; padding: 14px 50px;
+            font-size: 18px; font-weight: bold; background: #ff9500; color: #000;
+            border: none; border-radius: 8px; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255,149,0,0.3); transition: all 0.2s; letter-spacing: 1px;
+        }
+        #btnStart:hover { background: #ffaa33; transform: scale(1.04); }
+
+        /* ─── HUD ─── */
+        #hud {
+            display: none; position: absolute; top: 10px; left: 10px;
+            font-family: 'JetBrains Mono', monospace; background: rgba(0,0,0,0.82);
+            padding: 12px 16px; border-radius: 8px; border: 1px solid #444;
+            pointer-events: none; font-size: 13px; line-height: 1.7; z-index: 10;
+        }
+        #hud .title { color: #ff9500; font-size: 15px; font-weight: bold; margin-bottom: 4px; }
+        #hud .stat { color: #aaa; }
+        #hud .val { color: #ff9500; font-weight: bold; }
+        
+        #hud .stat-mt { margin-top: 8px; }
+        #valStatus { color: #8855ff; }
+
+        #mMode { flex: 1; background: #111; color: #0f0; border: 1px solid #333; padding: 4px 6px; }
+
+        #controlsHelp {
+            display: none; position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
+            font-family: monospace; background: rgba(0,0,0,0.7); color: #888;
+            padding: 8px 16px; border-radius: 8px; font-size: 11px; z-index: 10; pointer-events: none;
+        }
+        
+        /* ─── Immersive Camcorder HUD ─── */
+        .immersive-camcorder {
+            position: fixed; top: 18px; right: 24px; z-index: 999;
+            color: #fff; font-family: 'JetBrains Mono', monospace; font-weight: 700;
+            font-size: 26px; text-shadow: 0 0 10px rgba(0,0,0,0.8);
+            display: flex; flex-direction: column; align-items: flex-end;
+            pointer-events: none; letter-spacing: 2px;
+        }
+        #cam-batt { font-size: 24px; color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.6); font-weight: 400; letter-spacing: 4px; }
+        #cam-batt.low-batt { color: #ff3b30; text-shadow: 0 0 10px rgba(255,59,48,0.8); animation: batBlink 0.5s infinite alternate; }
+        @keyframes batBlink { 0% { opacity: 1; } 100% { opacity: 0; } }
+    </style>
+</head>
+<body>
+
+<div id="scenarioModal">
+    <div class="modal-box">
+        <h1>🏢 13, RUE DEL PERCEBE</h1>
+        <div class="config-section">
+            <h4>⚙️ Building Config</h4>
+            <div class="slider-row">
+                <label title="Number of floors">🏗️ Floors</label>
+                <input type="range" min="3" max="12" value="6" id="sFloors" title="Number of floors" oninput="this.nextElementSibling.textContent=this.value">
+                <span class="val">6</span>
+            </div>
+            <div class="slider-row">
+                <label title="Doors per floor">🚪 Doors/Floor</label>
+                <input type="range" min="1" max="6" value="2" id="sDoors" title="Doors per floor" oninput="this.nextElementSibling.textContent=this.value">
+                <span class="val">2</span>
+            </div>
+            <div class="slider-row">
+                <label title="Simulation Mode">🎮 Mode</label>
+                <select id="mMode">
+                    <option value="human">🎮 Human (Manager)</option>
+                    <option value="ai" selected>🤖 AI Agent (Gym)</option>
+                </select>
+                <span class="val"></span>
+            </div>
+            <div class="slider-row">
+                <label title="Lights Out">💡 Lights Out</label>
+                <input type="checkbox" id="mLightsOut" onchange="toggleGlobalLights(this.checked)" style="accent-color: #ff9500; transform: scale(1.2); margin-left: 5px;">
+            </div>
+            <div class="slider-row">
+                <label title="Simulation Speed">⏩ Speed</label>
+                <input type="range" min="1" max="10" value="1" id="mSpeed" title="Sim Speed" oninput="this.nextElementSibling.textContent=this.value+'x'">
+                <span class="val">1x</span>
+            </div>
+        </div>
+        <button id="btnStart" onclick="startSimulation()">▶ ENTER BUILDING</button>
+    </div>
+</div>
+
+<div id="hud">
+    <div class="title" id="hudTitle">🏢 Corporate Building</div>
+    <div class="stat">Floor: <span id="valFloor" class="val">1</span> / <span id="valTotalFloors" class="val">6</span></div>
+    <div class="stat">Mode: <span id="valMode" class="val">Walking</span></div>
+    <div class="stat stat-mt">Searches: <span id="valSearches" class="val">0</span></div>
+    <div class="stat">Status: <span id="valStatus" class="val">Hunting</span></div>
+    <div class="stat stat-mt" id="aiPhaseRow" style="display:none">🧠 AI: <span id="valAIPhase" class="val">PICK_FLOOR</span></div>
+    <div class="stat" id="aiBeliefsRow" style="display:none;font-size:11px;letter-spacing:1px;">
+        <span id="valBeliefs" style="color:#666"></span>
+    </div>
+</div>
+
+<!-- ─── Immersive Camcorder HUD ─── -->
+<div id="camcorder" class="immersive-camcorder" style="display:none">
+    <div id="cam-batt">[■■■■]</div>
+    <div id="cam-flash" style="font-size: 16px; margin-top: 5px; cursor: pointer; color: #ffeb3b;" onclick="toggleFlashlight()">🔦 ON (F)</div>
+    <div id="cam-global" style="font-size: 12px; margin-top: 8px; cursor: pointer; color: #aaddff;" onclick="manuallyToggleGlobalLights()">👁️ GLOBAL LIGHTS</div>
+</div>
+
+<div id="controlsHelp">
+    A/D: Walk · W/S: Stairs · E: Call Elev · SPACE: Elev action · F: Flashlight · T: Minutero (Switch)
+</div>
+
+<!-- Import map mapped to alisa-engine -->
+<script type="importmap">
+{
+    "imports": {
+        "three": "/vendor/three-0.160.0/build/three.module.js",
+        "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+        "@alisa-engine/": "./js/alisa-engine/"
+    }
+}
+</script>
+
+<script src="../alisa_sim_sdk.js"></script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+
+window.THREE = Object.assign({}, THREE, { OrbitControls, GLTFLoader });
+
+// ═══════════════════════════════════════════════════════════
+//  13, RUE DEL PERCEBE — Cross-Section Diorama Building
+//
+//  Camera: fixed orthographic side view, all floors visible.
+//  Each floor = corridor with doors, stair-portal, elevator.
+//  Movement: left/right on corridor, portals for vertical.
+// ═══════════════════════════════════════════════════════════
+
+// ─── Scene Setup ───
+const gfx = new AlisaRenderCore({
+    clearColor: 0x000000,
+    cameraPosition: new THREE.Vector3(0, 15, 55),
+    autoRender: true
+});
+const scene = gfx.scene;
+const cam = gfx.camera;
+const renderer = gfx.renderer;
+const controls = gfx.controls;
+
+controls.target.set(0, 15, -10);
+controls.maxPolarAngle = Math.PI / 2 + 0.1; // allow slight under-view
+
+// Remove default AlisaRenderCore lights
+gfx.scene.children = gfx.scene.children.filter(c => !(c instanceof THREE.Light));
+
+// Lighting for the diorama (Starts off in Lights Out mode)
+const ambient = new THREE.AmbientLight(0xffffff, 0.0);
+scene.add(ambient);
+
+const dirLight = new THREE.DirectionalLight(0xffeedd, 0.0);
+dirLight.position.set(20, 40, 50);
+scene.add(dirLight);
+
+const clock = new THREE.Clock();
+
+// ═══════════════════════════════════════════════════════════
+//  CONFIGURATION
+// ═══════════════════════════════════════════════════════════
+let totalFloors = 6;
+let doorsPerFloor = 2;
+let simulationRunning = false;
+let simTime = 0;
+let autoPlaying = false;
+let autoInterval = null;
+let simSpeedMultiplier = 1.0;
+let episodeDataset = [];
+window.alisaDataset = window.alisaDataset || []; // Global export
+
+
+// ─── GAME STATE (Hide & Seek / Cabinet Logic) ───
+let targetFloor = -1;
+let targetDoor = -1;
+let searches = 0;
+let gameStatus = 'Hunting'; // 'Hunting', 'Found'
+let doorChecks = []; // Array of tracking data for SDK
+
+// ─── CÓRTEX TIBURÓN — Intelligent Seeker AI (ported from H&S + Chopper) ───
+let seekerAI = {
+    phase: 'PICK_FLOOR',        // FSM: PICK_FLOOR → TRAVEL → EXPLORE → PICK_FLOOR
+    aiTargetFloor: -1,          // Which floor the AI wants to visit next
+    exploredFloors: new Set(),  // Spatial memory: floors fully swept
+    beliefs: [],                // Bayesian posterior P(raccoon on floor i)
+    sweepIndex: 0,              // Current door/spot index being targeted
+    stuckTimer: 0,              // Anti-stuck watchdog (seconds)
+    lastX: 0, lastFloor: 0,    // Previous position for stuck detection
+    travelMode: 'elevator',    // 'elevator' or 'stairs'
+    baseSpeed: 12.0,
+    // ─── Smooth movement (H&S-style continuous frame walk) ───
+    moveTarget: null,           // {x, z} — where to walk this frame
+    pendingAction: null,        // action to fire on arrival (e.g. 'stairs_up', 'search_door')
+    arrivalRadius: 0.8,         // how close = "arrived"
+};
+
+
+const FL_H = 5.0;       // floor height
+const CORRIDOR_W = 28;  // corridor width (visible slice)
+const CORRIDOR_DEPTH = 5.0; // The depth of the 3D Aquarium
+const BUILDING_DEPTH = 30.0; // Total volume (corridor + hidden empty room space)
+const WALL_D = 0.5;     // wall depth (structural thickness)
+
+// Palette: warm interior colors per floor
+const FLOOR_COLORS = [
+    0xd4a574, 0xb8c4a0, 0xa8b8d0, 0xd0b8a8, 0xc4d0b8, 0xb0a8c4,
+    0xd0c4a0, 0xa8c4b8, 0xc4a8b0, 0xd0b0a8, 0xb8d0c4, 0xa8b0d0
+];
+const DOOR_COLORS = [0x885522, 0x664411, 0x553311, 0x774422, 0x886633, 0x665533];
+
+// ═══════════════════════════════════════════════════════════
+//  BUILDING DATA
+// ═══════════════════════════════════════════════════════════
+let buildingGroup = null;
+let floors = []; // Array of floor data
+
+// Elevator state
+let elevator = {
+    cabin: null,
+    currentFloor: 1, // Start on the first floor, not the basement
+    targetFloor: -1,
+    y: 0,
+    moving: false,
+    speed: 12.0,
+    indicator: null
+};
+
+// Cinematic State
+let gamePhase = 'cinematic'; // 'cinematic' | 'seeking'
+let cinematicPhase = 'walking_to_elevator'; 
+let cinematicTimer = 0;
+let cinematicTargetDoor = -1;
+
+let isLightsOut = true;
+let floorLights = [];      // One PointLight per floor
+let floorLightTimers = []; // Timers matching floorLights
+let batteryPickups = [];   // Array of meshes
+
+let flashLightOn = true;
+let hudEnergy = 100.0;
+let flashLight = null;
+let volumetricBeam = null;
+
+window.toggleFlashlight = function() {
+    if (hudEnergy <= 0 && !flashLightOn) return;
+    flashLightOn = !flashLightOn;
+    document.getElementById('cam-flash').innerText = flashLightOn ? '🔦 ON (F)' : '🔦 OFF (F)';
+};
+
+window.toggleGlobalLights = function(checked) {
+    isLightsOut = checked;
+    // We assume `ambient`, `dirLight`, and `scene` exist.
+    if (typeof ambient !== 'undefined') ambient.intensity = isLightsOut ? 0.000 : 0.5;
+    if (typeof dirLight !== 'undefined') dirLight.intensity = isLightsOut ? 0.000 : 0.7;
+    
+    if (typeof scene !== 'undefined') {
+        scene.background = new THREE.Color(isLightsOut ? 0x000000 : 0x0b0e18);
+    }
+    
+    for (let f = 0; f < floorLightTimers.length; f++) {
+        floorLightTimers[f] = isLightsOut ? 0 : 9999;
+    }
+};
+
+window.manuallyToggleGlobalLights = function() {
+    let cb = document.getElementById('mLightsOut');
+    if (cb) {
+        cb.checked = !cb.checked;
+        toggleGlobalLights(cb.checked);
+    }
+};
+
+window.toggleMinutero = function(f) {
+    if (f >= 0 && f < floorLightTimers.length && isLightsOut) {
+        floorLightTimers[f] = 13.0; // 13 seconds of light
+    }
+};
+
+// Raccoon (Hiding Target)
+let rabbit = {
+    mesh: null,
+    visualModel: null,
+    floor: 0,
+    x: -18,
+    z: 0,
+    speed: 6.0,
+    mode: 'walking',
+    inElevator: false,
+    animPhase: 0
+};
+
+// Seeker
+let seeker = {
+    mesh: null,
+    visualModel: null,
+    floor: 0,
+    x: 0,            // horizontal position on corridor
+    z: 0,            // depth position in aquarium
+    speed: 12.0,
+    mode: 'walking',  // walking | elevator
+    animPhase: 0,
+    inElevator: false
+};
+
+// ─── MODEL LOADING STATE ───
+let modelsLoaded = 0;
+
+function createApplianceBeam(type) {
+    const configs = {
+        'fridge': { shape: 'box', color: [0.7, 0.9, 1.0], w: 1.6, h: 5.0, d: 3.0, opacity: 0.45 }
+    };
+    const cfg = configs[type] || configs['fridge'];
+    
+    const canvas = document.createElement('canvas');
+    canvas.width = 16; canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    const grad = ctx.createLinearGradient(0, 0, 0, 256);
+    const [r, g, b] = cfg.color;
+    
+    grad.addColorStop(0, `rgba(${r*255|0}, ${g*255|0}, ${b*255|0}, 0.85)`); 
+    grad.addColorStop(0.5, `rgba(${r*255|0}, ${g*255|0}, ${b*255|0}, 0.25)`);
+    grad.addColorStop(1, `rgba(${r*255|0}, ${g*255|0}, ${b*255|0}, 0)`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 16, 256);
+    
+    let geo = new THREE.BoxGeometry(cfg.w, cfg.h, cfg.d);
+    geo.translate(0, 0, cfg.d/2);
+        
+    const uvs = geo.attributes.uv.array;
+    const pos = geo.attributes.position.array;
+    for (let i = 0; i < uvs.length; i += 2) {
+        const vIdx = i / 2;
+        const z = pos[vIdx * 3 + 2];
+        uvs[i + 1] = 1.0 - (z / cfg.d);
+    }
+    
+    const mat = new THREE.MeshBasicMaterial({
+        map: new THREE.CanvasTexture(canvas),
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        transparent: true,
+        opacity: cfg.opacity,
+        side: THREE.BackSide
+    });
+    
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.visible = false;
+    mesh.userData.isBeam = true;
+    mesh.userData.maxOpacity = cfg.opacity;
+    return mesh;
+}
+const loader = new GLTFLoader();
+
+let rabbitModel = null;
+let rabbitMixer = null, rabbitAnimMap = {}, rabbitCurAnim = '';
+
+let seekerModel = null;
+let seekerMixer = null, seekerAnimMap = {}, seekerCurAnim = '';
+
+function mapAnimations(gltf, mixer) {
+    const animMap = {};
+    if (!gltf.animations || gltf.animations.length === 0) return animMap;
+    gltf.animations.forEach((clip, idx) => {
+        const name = clip.name.toLowerCase();
+        const action = mixer.clipAction(clip);
+        if (name.includes('idle') || name.includes('stand')) animMap.idle = action;
+        else if (name.includes('run') || name.includes('sprint') || name.includes('walk')) animMap.run = action;
+        animMap['anim_' + idx] = action;
+    });
+    if (!animMap.idle) animMap.idle = animMap.anim_0 || animMap.run;
+    if (!animMap.run)  animMap.run  = animMap.anim_0 || animMap.idle;
+    return animMap;
+}
+
+function playCharAnim(mixer, animMap, curAnimRef, stateName) {
+    if (!mixer || !animMap) return curAnimRef;
+    if (curAnimRef === stateName) return curAnimRef;
+    if (curAnimRef && animMap[curAnimRef]) animMap[curAnimRef].fadeOut(0.3);
+    if (animMap[stateName]) { 
+        animMap[stateName].reset().fadeIn(0.3).play(); 
+        return stateName; 
+    }
+    if (animMap['anim_0']) {
+        animMap['anim_0'].reset().fadeIn(0.3).play();
+        return 'anim_0';
+    }
+    return curAnimRef;
+}
+
+function loadModels(callback) {
+    modelsLoaded = 0;
+    // Raccoon
+    loader.load('../props/models/Raccoon.glb', (gltf) => {
+        rabbitModel = gltf.scene;
+        rabbitModel.scale.set(0.4, 0.4, 0.4); // Double size
+        rabbitModel.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+        if (gltf.animations && gltf.animations.length > 0) {
+            rabbitMixer = new THREE.AnimationMixer(rabbitModel);
+            rabbitAnimMap = mapAnimations(gltf, rabbitMixer);
+            playCharAnim(rabbitMixer, rabbitAnimMap, '', 'idle');
+            rabbitCurAnim = 'idle';
+        }
+        modelsLoaded++;
+        if (modelsLoaded >= 2 && callback) callback();
+    }, undefined, () => {
+        const geo = new THREE.SphereGeometry(0.3);
+        const mat = new THREE.MeshStandardMaterial({ color: 0x999999 });
+        rabbitModel = new THREE.Mesh(geo, mat);
+        modelsLoaded++;
+        if (modelsLoaded >= 2 && callback) callback();
+    });
+
+    // Seeker
+    loader.load('../props/models/Generic Male.glb', (gltf) => {
+        seekerModel = gltf.scene;
+        const targetScale = 1.815; // 0.605 * 3 as requested
+        seekerModel.scale.set(targetScale, targetScale, targetScale);
+        seekerModel.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+        if (gltf.animations && gltf.animations.length > 0) {
+            seekerMixer = new THREE.AnimationMixer(seekerModel);
+            seekerAnimMap = mapAnimations(gltf, seekerMixer);
+            playCharAnim(seekerMixer, seekerAnimMap, '', 'idle');
+            seekerCurAnim = 'idle';
+        }
+        modelsLoaded++;
+        if (modelsLoaded >= 2 && callback) callback();
+    }, undefined, () => {
+        loader.load('../props/models/Crypto Bro.glb', (gltf2) => {
+            seekerModel = gltf2.scene;
+            seekerModel.scale.set(0.45, 0.45, 0.45);
+            seekerModel.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+            modelsLoaded++;
+            if (modelsLoaded >= 2 && callback) callback();
+        }, undefined, () => {
+             const geo = new THREE.BoxGeometry(0.5, 1.0, 0.5);
+             const mat = new THREE.MeshStandardMaterial({ color: 0xff8844 });
+             seekerModel = new THREE.Mesh(geo, mat);
+             modelsLoaded++;
+             if (modelsLoaded >= 2 && callback) callback();
+        });
+    });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MODAL
+// ═══════════════════════════════════════════════════════════
+function startSimulation() {
+    const modal = document.getElementById('scenarioModal');
+    modal.style.opacity = '0';
+    setTimeout(() => {
+        modal.style.display = 'none';
+        document.getElementById('hud').style.display = 'block';
+        document.getElementById('controlsHelp').style.display = 'block';
+        document.getElementById('hudTitle').innerText = '🏢 LOADING...';
+    }, 400);
+
+    totalFloors = parseInt(document.getElementById('sFloors').value || '6');
+    doorsPerFloor = parseInt(document.getElementById('sDoors').value || '4');
+    document.getElementById('valTotalFloors').textContent = totalFloors;
+    
+    loadModels(() => {
+        document.getElementById('hudTitle').innerText = '🏢 Corporate Building';
+        autoPlaying = document.getElementById('mMode').value === 'ai';
+        simSpeedMultiplier = parseFloat(document.getElementById('mSpeed').value || '1.0');
+
+        buildBuilding();
+        resetEpisode();
+        simulationRunning = true;
+
+        if (autoPlaying && !autoInterval) {
+            document.getElementById('valMode').innerHTML = '<span style="color:#00ffcc">🤖 AI Auto</span>';
+            autoInterval = null; // Synchronous aiTickTimer used instead // Base decision interval
+        }
+    });
+}
+window.startSimulation = startSimulation;
+
+function resetEpisode() {
+    // All floors are valid targets — doors OR hidingSpots
+    let possibleFloors = [];
+    for (let i = 0; i < floors.length; i++) {
+        if (floors[i].doors.length > 0 || (floors[i].hidingSpots && floors[i].hidingSpots.length > 0)) {
+            possibleFloors.push(i);
+        }
+    }
+    if (possibleFloors.length === 0) possibleFloors = [1]; // fallback
+
+    let fMatch = possibleFloors[Math.floor(Math.random() * possibleFloors.length)];
+    let fd = floors[fMatch];
+    
+    if (fd.doors.length > 0) {
+        targetDoor = Math.floor(Math.random() * fd.doors.length);
+    } else {
+        // Hiding on a special floor — targetDoor indexes into hidingSpots
+        targetDoor = Math.floor(Math.random() * fd.hidingSpots.length);
+    }
+    
+    targetFloor = fMatch;
+    searches = 0;
+    gameStatus = 'Hunting';
+    doorChecks = [];
+    episodeDataset = []; // fresh trajectory
+    
+    // Reset seeker to Planta Baja (floor 1)
+    if (seeker.mesh) {
+        seeker.floor = 1;
+        seeker.x = 0;
+        seeker.mode = 'walking';
+        seeker.inElevator = false;
+    }
+}
+
+// window.onload is intentionally removed so the modal demands ENTER BUILDING always
+
+// ═══════════════════════════════════════════════════════════
+//  BUILD THE DIORAMA
+// ═══════════════════════════════════════════════════════════
+let DOOR_ZONE_START = 0;
+let DOOR_ZONE_W = 0;
+
+function buildBuilding() {
+    if (buildingGroup) scene.remove(buildingGroup);
+    buildingGroup = new THREE.Group();
+    floors = [];
+
+    const totalH = totalFloors * FL_H;
+    // Center building vertically
+    buildingGroup.position.y = -totalH / 2 + FL_H / 2;
+
+    const halfW = CORRIDOR_W / 2;
+    const STAIR_DOOR_W = 2.2; // width of each stair door
+    const STAIR_GAP = 0.6;    // gap between the two stair doors
+    const STAIR_TOTAL = STAIR_DOOR_W * 2 + STAIR_GAP + 1.5; // total stair zone
+    const ELEV_ZONE = 3.0;  // width of elevator zone on right
+    DOOR_ZONE_START = -halfW + STAIR_TOTAL + 0.5;
+    const DOOR_ZONE_END = halfW - ELEV_ZONE - 1.5;
+    DOOR_ZONE_W = DOOR_ZONE_END - DOOR_ZONE_START;
+
+    // ─── Exterior shell (back wall + sides) ───
+    const shellMat = new THREE.MeshStandardMaterial({ color: 0x222233, roughness: 0.9, transparent: true, opacity: 0.85 });
+
+    // Total building volume center Z
+    const bCenterZ = -BUILDING_DEPTH/2 + CORRIDOR_DEPTH/2; // for BUILDING=30, CORRIDOR=5: CenterZ is -12.5
+
+    // Left exterior wall (side of the aquarium)
+    const leftWall = new THREE.Mesh(
+        new THREE.BoxGeometry(WALL_D, totalH + FL_H, BUILDING_DEPTH + WALL_D),
+        shellMat
+    );
+    leftWall.position.set(-halfW - WALL_D/2, totalH/2, bCenterZ);
+    buildingGroup.add(leftWall);
+
+    // Right exterior wall
+    const rightWall = new THREE.Mesh(
+        new THREE.BoxGeometry(WALL_D, totalH + FL_H, BUILDING_DEPTH + WALL_D),
+        shellMat
+    );
+    rightWall.position.set(halfW + WALL_D/2, totalH/2, bCenterZ);
+    buildingGroup.add(rightWall);
+
+    // Back wall (behind everything, the far end of the rooms)
+    const backWall = new THREE.Mesh(
+        new THREE.BoxGeometry(CORRIDOR_W + WALL_D * 2, totalH + FL_H, WALL_D),
+        shellMat
+    );
+    backWall.position.set(0, totalH/2, -BUILDING_DEPTH + CORRIDOR_DEPTH/2 - WALL_D/2);
+    buildingGroup.add(backWall);
+
+    // Roof (Azotea Walkable Surface)
+    const roofMat = new THREE.MeshStandardMaterial({ color: 0x333344, roughness: 0.8 });
+    const roof = new THREE.Mesh(
+        new THREE.BoxGeometry(CORRIDOR_W + WALL_D * 4, 0.4, BUILDING_DEPTH + WALL_D*2),
+        roofMat
+    );
+    // Align top surface exactly at totalH so seeker glides on it
+    roof.position.set(0, totalH - 0.2, bCenterZ);
+    buildingGroup.add(roof);
+
+    // ─── ELEVATOR SHAFT (GLOBAL BOX) ───
+    const ELEV_X = halfW - ELEV_ZONE / 2;
+    const shaftMat = new THREE.MeshStandardMaterial({ color: 0x2a2a35, roughness: 0.7 });
+    
+    // Front shaft wall (starts at Planta Baja)
+    const shaftFront = new THREE.Mesh(new THREE.BoxGeometry(ELEV_ZONE, totalH - FL_H, 0.4), shaftMat);
+    shaftFront.position.set(ELEV_X, (totalH + FL_H)/2, CORRIDOR_DEPTH/2 - 0.2); 
+    buildingGroup.add(shaftFront);
+
+    // Back shaft wall (starts at Planta Baja)
+    const shaftBack = new THREE.Mesh(new THREE.BoxGeometry(ELEV_ZONE, totalH - FL_H, 0.4), shaftMat);
+    shaftBack.position.set(ELEV_X, (totalH + FL_H)/2, -CORRIDOR_DEPTH/2 - 0.05);
+    buildingGroup.add(shaftBack);
+
+    // ─── Per-floor construction ───
+    for (let f = 0; f <= totalFloors; f++) {
+        const baseY = f * FL_H;
+        
+        if (f === totalFloors) {
+            const roofGroup = new THREE.Group();
+            let stairX = -halfW + 1.0 + (1.6*1.5) / 2;
+            
+            const shackW = (1.6*1.5) + 1.5;
+            const shackD = 3.5;
+            const shackH = FL_H * 0.8;
+            const sMat = new THREE.MeshStandardMaterial({ color: 0x444455, roughness: 0.9 });
+            
+            // Back wall of shack
+            const sBack = new THREE.Mesh(new THREE.BoxGeometry(shackW, shackH, 0.2), sMat);
+            sBack.position.set(stairX, baseY + shackH/2, -CORRIDOR_DEPTH/2 - 0.1);
+            roofGroup.add(sBack);
+            
+            // Left wall
+            const sLeft = new THREE.Mesh(new THREE.BoxGeometry(0.2, shackH, shackD), sMat);
+            sLeft.position.set(stairX - shackW/2 + 0.1, baseY + shackH/2, -CORRIDOR_DEPTH/2 - 0.1 + shackD/2);
+            roofGroup.add(sLeft);
+            
+            // Right wall
+            const sRight = new THREE.Mesh(new THREE.BoxGeometry(0.2, shackH, shackD), sMat);
+            sRight.position.set(stairX + shackW/2 - 0.1, baseY + shackH/2, -CORRIDOR_DEPTH/2 - 0.1 + shackD/2);
+            roofGroup.add(sRight);
+            
+            // Roof of shack
+            const sRoof = new THREE.Mesh(new THREE.BoxGeometry(shackW, 0.2, shackD), sMat);
+            sRoof.position.set(stairX, baseY + shackH + 0.1, -CORRIDOR_DEPTH/2 - 0.1 + shackD/2);
+            roofGroup.add(sRoof);
+            
+            // Door Arrow Down
+            const arrowCanvas = document.createElement('canvas'); arrowCanvas.width = 64; arrowCanvas.height = 64;
+            const actx = arrowCanvas.getContext('2d'); actx.fillStyle = 'transparent'; actx.fillRect(0,0,64,64);
+            actx.fillStyle = '#cc7722'; actx.font = 'bold 40px monospace'; actx.textAlign='center'; actx.textBaseline='middle';
+            actx.fillText('▼', 32, 32);
+            const arrowTex = new THREE.CanvasTexture(arrowCanvas);
+            const arrowMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.8), new THREE.MeshBasicMaterial({map: arrowTex, transparent:true}));
+            arrowMesh.position.set(stairX, baseY + shackH/2 + 0.5, -CORRIDOR_DEPTH/2 + 0.1);
+            roofGroup.add(arrowMesh);
+            
+            // Hiding spots on the roof — place AC unit to the RIGHT of shack
+            let rSpots = [];
+            let acX = stairX + shackW/2 + 2.0;
+            if (acX > halfW - 2.0) acX = halfW - 2.0;
+            const rMat = new THREE.MeshStandardMaterial({color: 0x445566, roughness: 0.9});
+            const rMesh = new THREE.Mesh(new THREE.BoxGeometry(2.0, 1.5, 2.0), rMat);
+            rMesh.position.set(acX, baseY + 1.5/2, -1.0);
+            rMesh.castShadow = true;
+            roofGroup.add(rMesh);
+            
+            rSpots.push({ x: acX, label: 'AC', mesh: rMesh, isSearched: false, hasRaccoon: false, originalColor: 0x445566 });
+            
+            // Additional random roof clutter (1-2 extra items)
+            const roofLabels = ['VNT', 'PIP', 'TNK'];
+            const numRoofExtra = 1 + Math.floor(Math.random() * 2);
+            for (let ri = 0; ri < numRoofExtra; ri++) {
+                let rx;
+                for (let tries = 0; tries < 15; tries++) {
+                    rx = -halfW + 2.0 + Math.random() * (CORRIDOR_W - 4.0);
+                    let ok = true;
+                    for (const sp of rSpots) { if (Math.abs(rx - sp.x) < 3.0) { ok = false; break; } }
+                    if (Math.abs(rx - stairX) < shackW) { ok = false; }
+                    if (ok) break;
+                }
+                const rlbl = roofLabels[Math.floor(Math.random() * roofLabels.length)];
+                const riMat = new THREE.MeshStandardMaterial({color: 0x556655, roughness: 0.9});
+                const riW = 1.0 + Math.random() * 1.2;
+                const riH = 0.8 + Math.random() * 1.0;
+                const riMesh = new THREE.Mesh(new THREE.BoxGeometry(riW, riH, riW), riMat);
+                riMesh.position.set(rx, baseY + riH/2, -3.0 + Math.random() * 6.0);
+                riMesh.castShadow = true;
+                roofGroup.add(riMesh);
+                rSpots.push({ x: rx, label: rlbl, mesh: riMesh, isSearched: false, hasRaccoon: false, originalColor: 0x556655 });
+            }
+
+            // Front Perimetral Railing/Parapet
+            const parapetMat = new THREE.MeshStandardMaterial({ color: 0x222233, roughness: 0.9 });
+            const pFront = new THREE.Mesh(new THREE.BoxGeometry(CORRIDOR_W + WALL_D*2, 1.2, 0.4), parapetMat);
+            pFront.position.set(0, baseY + 0.6, CORRIDOR_DEPTH/2 + 0.2);
+            roofGroup.add(pFront);
+            
+            buildingGroup.add(roofGroup);
+            floors.push({
+                group: roofGroup, baseY: baseY,
+                doors: [], hidingSpots: rSpots,
+                stairX: stairX,
+                elevX: halfW - 3.0 / 2, elevDoorX: undefined,
+                edoorL: null, edoorR: null, edoorW: 1.6, indicator: null
+            });
+            continue;
+        }
+
+        // Deterministic coloring per floor
+        const rngSeed = f * 1337 + 42;
+        const floorHsl = `hsl(${(rngSeed * 37) % 360}, ${20 + (rngSeed % 10)}%, ${40 + (rngSeed % 20)}%)`;
+        const wallHsl = 0xded8cc; // Beige / dirty corporate white
+        
+        const floorGroup = new THREE.Group();
+
+        // 1. Thick Floor Slab (Concrete base) spanning entire depth
+        const slabMat = new THREE.MeshStandardMaterial({ color: 0x333333, roughness: 0.9 });
+        const slab = new THREE.Mesh(new THREE.BoxGeometry(CORRIDOR_W, 0.3, BUILDING_DEPTH), slabMat);
+        slab.position.set(0, baseY - 0.15, bCenterZ); // flush under the base line
+        floorGroup.add(slab);
+
+        // B&W Checkerboard Carpet
+        const checkCanvas = document.createElement('canvas'); checkCanvas.width=64; checkCanvas.height=64;
+        const cctx = checkCanvas.getContext('2d');
+        cctx.fillStyle='#dddddd'; cctx.fillRect(0,0,64,64); // White tiles
+        cctx.fillStyle='#222222'; cctx.fillRect(0,0,32,32); cctx.fillRect(32,32,32,32); // Black tiles
+        const checkTex = new THREE.CanvasTexture(checkCanvas);
+        checkTex.wrapS = THREE.RepeatWrapping; checkTex.wrapT = THREE.RepeatWrapping;
+        checkTex.repeat.set(CORRIDOR_W / 2, BUILDING_DEPTH / 2);
+        
+        const carpetMat = new THREE.MeshStandardMaterial({ map: checkTex, roughness: 0.95 });
+        const carpet = new THREE.Mesh(new THREE.BoxGeometry(CORRIDOR_W - 0.1, 0.1, BUILDING_DEPTH - 0.2), carpetMat);
+        carpet.position.set(0, baseY + 0.05, bCenterZ);
+        carpet.receiveShadow = true;
+        floorGroup.add(carpet);
+
+        // Ceiling of this floor (the roof slab is added after the loop, but inter-floor slabs here)
+        if (f < totalFloors) {
+            const ceilMat = new THREE.MeshStandardMaterial({ color: 0xdddddf, roughness: 1.0 });
+            const ceiling = new THREE.Mesh(new THREE.BoxGeometry(CORRIDOR_W, 0.1, BUILDING_DEPTH), ceilMat);
+            ceiling.position.set(0, baseY + FL_H - 0.05, bCenterZ);
+            floorGroup.add(ceiling);
+        }
+
+        // 2. Back Corridor Wall (Inner boundary - partitioned dynamically in door loop)
+        const innerWallMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(wallHsl), roughness: 0.8 });
+
+        // 3. Skirting boards (Zócalos) and Cornice (Cornisa)
+        const woodMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6 });
+        const skirting = new THREE.Mesh(new THREE.BoxGeometry(CORRIDOR_W, 0.15, 0.1), woodMat);
+        skirting.position.set(0, baseY + 0.1 + 0.075, -CORRIDOR_DEPTH/2 + 0.15); // right above carpet
+        floorGroup.add(skirting);
+
+        const cornice = new THREE.Mesh(new THREE.BoxGeometry(CORRIDOR_W, 0.12, 0.08), woodMat);
+        cornice.position.set(0, baseY + FL_H - 0.1 - 0.06, -CORRIDOR_DEPTH/2 + 0.15);
+        floorGroup.add(cornice);
+
+        // Floor interior light (warm yellow, or 'Minutero')
+        const fLight = new THREE.PointLight(0xffddaa, 0.4, FL_H * 3.5);
+        fLight.position.set(0, baseY + FL_H - 0.4, 1.5);
+        fLight.castShadow = true;
+        floorGroup.add(fLight);
+        floorLights[f] = fLight;
+        floorLightTimers[f] = isLightsOut ? 0 : 9999;
+
+        // Floor number label (on back wall)
+        const labelCanvas = document.createElement('canvas');
+        labelCanvas.width = 64; labelCanvas.height = 32;
+        const lctx = labelCanvas.getContext('2d');
+        lctx.fillStyle = '#111'; lctx.fillRect(0, 0, 64, 32);
+        lctx.fillStyle = '#ff9500'; lctx.font = 'bold 22px monospace';
+        lctx.textAlign = 'center'; lctx.textBaseline = 'middle';
+        
+        let floorName = String(f);
+        if (f === 0) floorName = "S";      // Sótano
+        if (f === 1) floorName = "PB";     // Planta Baja
+        if (f === totalFloors) floorName = "AZ"; // Caseta Azotea
+        lctx.fillText(floorName, 32, 16);
+
+        const labelTex = new THREE.CanvasTexture(labelCanvas);
+        const label = new THREE.Mesh(
+            new THREE.PlaneGeometry(1.5, 0.8),
+            new THREE.MeshBasicMaterial({ map: labelTex })
+        );
+        label.position.set(-halfW + 1.2, baseY + FL_H - 0.8, -CORRIDOR_DEPTH/2 + 0.14);
+        floorGroup.add(label);
+
+        // ─── DOORS (Hide&Seek Style Frames) ───
+        const doorData = [];
+        const frameColor = 0xc0c0c8; // standard metallic/white frame
+        const frameMat = new THREE.MeshStandardMaterial({ color: frameColor, roughness: 0.6, metalness: 0.2 });
+
+        // halfW already defined in outer scope (line 406)
+        const STAIR_DOOR_W = 1.6 * 1.5;
+        const STAIR_GAP = 1.2;
+        
+        let stairX = -halfW + 1.0 + STAIR_DOOR_W / 2;
+        let doorX = null;
+        let doorW = 1.6 * 1.5;
+        const fThickness = 0.15; const fDepth = 0.15;
+        const fBaseZ = -CORRIDOR_DEPTH/2 + 0.1 + fDepth/2;
+        const frameMatInst = new THREE.MeshStandardMaterial({ color: 0x332211, roughness: 0.8 });
+        
+        const holes = [];
+
+        let stairType = 'stairs';
+        if (f === 0) stairType = 'up';
+        
+        holes.push({ x: stairX, w: STAIR_DOOR_W, type: stairType });
+
+        if (f === 0) { // Sótano labyrinth
+            const bStartX = stairX + STAIR_DOOR_W + 0.4;
+            const spaceW = (halfW - bStartX - 1.0);
+            if (spaceW > 6.0) {
+                const stepW = spaceW / 3;
+                holes.push({ x: bStartX + stepW*0.5, w: 2.0, type: 'machine_red' });
+                holes.push({ x: bStartX + stepW*1.5, w: 2.0, type: 'machine_green' });
+                holes.push({ x: bStartX + stepW*2.5, w: 2.0, type: 'machine_archive' });
+            }
+        } else if (f === 1) { // Planta Baja
+            const boilerX = stairX + STAIR_DOOR_W + 0.4;
+            holes.push({ x: boilerX, w: STAIR_DOOR_W, type: 'boiler_hall' });
+        } else if (f > 0) { // Normal floors (1..totalFloors-1 are habitable)
+            doorX = DOOR_ZONE_START + 0.5 * DOOR_ZONE_W;
+            holes.push({ x: doorX, w: doorW, type: 'door' });
+        }
+
+        holes.sort((a,b) => a.x - b.x);
+        let currentX = -CORRIDOR_W / 2;
+
+        holes.forEach(hole => {
+            const isDoor = (hole.type === 'door');
+            const holeH = isDoor ? (FL_H * 0.7) : (FL_H * 0.65);
+            
+            // Wall segment before the hole
+            const spanW = (hole.x - hole.w/2) - currentX;
+            if (spanW > 0.01) {
+                const w = new THREE.Mesh(new THREE.BoxGeometry(spanW, FL_H, 0.4), innerWallMat);
+                w.position.set(currentX + spanW/2, baseY + FL_H/2, -CORRIDOR_DEPTH/2 - 0.1);
+                w.receiveShadow = true; floorGroup.add(w);
+            }
+            
+            // Wall piece above the hole
+            const topH = FL_H - holeH;
+            const wTop = new THREE.Mesh(new THREE.BoxGeometry(hole.w, topH, 0.4), innerWallMat);
+            wTop.position.set(hole.x, baseY + holeH + topH/2, -CORRIDOR_DEPTH/2 - 0.1);
+            wTop.receiveShadow = true; floorGroup.add(wTop);
+
+            // Room behind the hole
+            let isMachine = hole.type.startsWith('machine_');
+            let roomW = isDoor ? 3.6 : (isMachine ? hole.w + 0.4 : hole.w + 0.4);
+            let roomD = isDoor ? 4.0 : (isMachine ? 3.5 : 2.5); 
+            let roomCenterX = hole.x;
+            
+            if (hole.type === 'boiler_hall') {
+                const startX = hole.x - hole.w/2;
+                roomW = halfW - startX - 2.0; // Extend to the right end
+                roomD = 3.5;
+                roomCenterX = startX + roomW/2;
+            }
+
+            let roomColor = 0x334455;
+            if (hole.type === 'up' || hole.type === 'roof') roomColor = 0x224433;
+            if (hole.type === 'down' || hole.type === 'down_basement' || hole.type === 'chute') roomColor = 0x442222;
+            if (hole.type === 'boiler_hall' || isMachine) roomColor = 0x111111; // Very dark
+
+            const aqMat = new THREE.MeshStandardMaterial({ color: roomColor, side: THREE.BackSide, roughness: 0.9 });
+            const aquarium = new THREE.Mesh(new THREE.BoxGeometry(roomW, FL_H, roomD), aqMat);
+            aquarium.position.set(roomCenterX, baseY + FL_H/2, -CORRIDOR_DEPTH/2 - 0.1 - roomD/2);
+            floorGroup.add(aquarium);
+            
+            // Light inside Aquarium (very tight, physical decay)
+            let lColor = hole.type === 'boiler_hall' ? 0xff4422 : 0xaaccff;
+            if (hole.type === 'machine_red') lColor = 0xff2211;
+            if (hole.type === 'machine_green') lColor = 0x11ffaa;
+            if (hole.type === 'machine_archive') lColor = 0xffcc77;
+            const aqLight = new THREE.PointLight(lColor, isDoor ? 0.2 : 0.4, (hole.type === 'boiler_hall' || isMachine) ? 1.5 : 2.0, 2.0);
+            aqLight.position.set(hole.x, baseY + FL_H - 1.0, -CORRIDOR_DEPTH/2 - 0.1 - roomD/2);
+            floorGroup.add(aqLight);
+
+            // Boiler hall inner light far along the corridor
+            if (hole.type === 'boiler_hall') {
+                const boilerEndLight = new THREE.PointLight(0xffaa55, 0.3, 2.0, 2.0);
+                boilerEndLight.position.set(roomCenterX + roomW/4, baseY + FL_H - 1.0, -CORRIDOR_DEPTH/2 - 0.1 - roomD/2);
+                floorGroup.add(boilerEndLight);
+            }
+
+            // Frame for the hole
+            const fTopMesh = new THREE.Mesh(new THREE.BoxGeometry(hole.w + 0.1, fThickness, fDepth + 0.05), frameMatInst);
+            fTopMesh.position.set(hole.x, baseY + holeH + fThickness/2 + 0.05, fBaseZ);
+            fTopMesh.castShadow = true; floorGroup.add(fTopMesh);
+
+            // Hide&Seek arrow for stairs inside the room
+            if (!isDoor && hole.type !== 'boiler_hall') {
+                const arrowCanvas = document.createElement('canvas'); arrowCanvas.width = 64; arrowCanvas.height = 64;
+                const actx = arrowCanvas.getContext('2d'); actx.fillStyle = 'transparent'; actx.fillRect(0,0,64,64);
+                
+                let textColor = '#fff';
+                let sym = '';
+                if (hole.type === 'up') { textColor = '#44cc88'; sym = '▲'; }
+                if (hole.type === 'down') { textColor = '#cc7722'; sym = '▼'; }
+                if (hole.type === 'stairs') { textColor = '#ddaa33'; sym = '▲▼'; } 
+                if (hole.type === 'roof') { textColor = '#88aabb'; sym = '##'; }
+                if (hole.type === 'chute') { textColor = '#ff2222'; sym = '!!'; }
+
+                actx.fillStyle = textColor;
+                actx.font = 'bold 40px monospace'; actx.textAlign='center'; actx.textBaseline='middle';
+                actx.fillText(sym, 32, 32);
+                const arrowTex = new THREE.CanvasTexture(arrowCanvas);
+                const arrowMesh = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.8), new THREE.MeshBasicMaterial({map: arrowTex, transparent:true}));
+                arrowMesh.position.set(hole.x, baseY + holeH + 0.7, -CORRIDOR_DEPTH/2 - 0.12);
+                floorGroup.add(arrowMesh);
+            }
+
+            // Standard door mesh for the main door only
+            if (isDoor) {
+                const doorColor = DOOR_COLORS[(f * doorsPerFloor) % DOOR_COLORS.length];
+                const doorMat = new THREE.MeshStandardMaterial({ color: 0x995533, roughness: 0.6, metalness: 0.1 });
+                const dMesh = new THREE.Mesh(new THREE.BoxGeometry(doorW - 0.1, holeH - 0.1, 0.08), doorMat);
+                dMesh.position.set(hole.x, baseY + holeH/2 - 0.05, -CORRIDOR_DEPTH/2 + 0.12);
+                dMesh.castShadow = true; floorGroup.add(dMesh);
+
+                const numCanvas = document.createElement('canvas'); numCanvas.width = 32; numCanvas.height = 32;
+                const nctx = numCanvas.getContext('2d'); nctx.fillStyle = doorColor > 0x777777 ? '#222' : '#ddd';
+                nctx.font = 'bold 20px serif'; nctx.textAlign = 'center'; nctx.textBaseline = 'middle';
+                nctx.fillText(String(f) + "A", 16, 16);
+                const numTex = new THREE.CanvasTexture(numCanvas);
+                const numPlate = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.5), new THREE.MeshBasicMaterial({ map: numTex, transparent: true }));
+                numPlate.position.set(hole.x, baseY + holeH + 0.4, -CORRIDOR_DEPTH/2 + 0.18);
+                floorGroup.add(numPlate);
+
+                const logicalFrameGroup = new THREE.Group(); logicalFrameGroup.add(fTopMesh);
+                
+                // Yellow Square "Battery" Applique for normal doors
+                const indMat = new THREE.MeshBasicMaterial({ 
+                    color: 0xffdd55, transparent: true, opacity: 0.08, blending: THREE.AdditiveBlending 
+                });
+                const dSphere = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.1, 0.05), indMat);
+                dSphere.position.set(hole.x - 0.1, baseY + holeH + 0.8, -CORRIDOR_DEPTH/2 + 0.2); 
+                
+                // Random super faint glow, physical decay
+                const randIntensity = 0.01 + Math.random() * 0.04;
+                const sqLight = new THREE.PointLight(0xffaa22, randIntensity, 0.8, 2.0);
+                dSphere.add(sqLight);
+
+                dSphere.userData.isGlowSphere = true;
+                dSphere.userData.twinkleOffset = Math.random() * 100;
+                floorGroup.add(dSphere);
+                
+                doorData.push({ x: hole.x, mesh: dMesh, frame: logicalFrameGroup, sphere: dSphere });
+            }
+
+            currentX = hole.x + hole.w/2;
+        });
+
+        // Wall segment after the last hole
+        const endW = (CORRIDOR_W / 2) - currentX;
+        if (endW > 0.01) {
+            const wEnd = new THREE.Mesh(new THREE.BoxGeometry(endW, FL_H, 0.4), innerWallMat);
+            wEnd.position.set(currentX + endW/2, baseY + FL_H/2, -CORRIDOR_DEPTH/2 - 0.1);
+            wEnd.receiveShadow = true; floorGroup.add(wEnd);
+        }
+
+        let elevX = halfW - ELEV_ZONE / 2;
+        let elevDoorX = undefined;
+        let switchX = (f > 0 && f < totalFloors) ? (halfW - ELEV_ZONE - 1.2) : (stairX + (isLightsOut ? 1.5 : 1.5));
+        if (f === 1) switchX = stairX + 3.0; // Avoid boiler room door
+        
+        // ─── MINUTERO SWITCH (INTERRUPTOR) ───
+        const switchMat = new THREE.MeshStandardMaterial({ color: 0x992222, roughness: 0.9 });
+        const pSwitch = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.25, 0.05), switchMat);
+        pSwitch.position.set(switchX, baseY + 1.2, -CORRIDOR_DEPTH/2 + 0.15);
+        floorGroup.add(pSwitch);
+
+        let edoorL = null;
+        let edoorR = null;
+        let edoorW = 1.6;
+        let ind = null;
+
+        if (f > 0 && f < totalFloors) {
+            // ─── ELEVATOR SHAFT DOORS & SEPARATOR (right side) ───
+            elevX = halfW - ELEV_ZONE / 2;
+            elevDoorX = halfW - ELEV_ZONE; // Left wall of the shaft where doors are at
+
+            // Separator wall (faces the corridor) -> This is where the door goes!
+            const sepMat = new THREE.MeshStandardMaterial({ color: 0x444450, roughness: 0.8 });
+        
+            // Split the separator wall into two pieces to leave a hole for the doors
+            edoorW = 1.6; // Width of the doors
+        
+        // Wall left (front of doors)
+            const sepW1 = (CORRIDOR_DEPTH - edoorW) / 2;
+            const sepFront = new THREE.Mesh(new THREE.BoxGeometry(0.4, FL_H, sepW1), sepMat);
+            sepFront.position.set(elevDoorX, baseY + FL_H/2, CORRIDOR_DEPTH/2 - sepW1/2);
+        
+            // Wall right (back of doors)
+            const sepBack = new THREE.Mesh(new THREE.BoxGeometry(0.4, FL_H, sepW1), sepMat);
+            sepBack.position.set(elevDoorX, baseY + FL_H/2, -CORRIDOR_DEPTH/2 + sepW1/2);
+            floorGroup.add(sepFront, sepBack);
+
+            // Elevator doors (two panels that slide open along the Z axis!)
+            const edoorH = FL_H * 0.75;
+            const edoorMat = new THREE.MeshStandardMaterial({ color: 0x556677, roughness: 0.3, metalness: 0.7 });
+
+            // Left door (front)
+            edoorL = new THREE.Mesh(new THREE.BoxGeometry(0.1, edoorH, edoorW/2), edoorMat);
+            edoorL.position.set(elevDoorX - 0.05, baseY + edoorH/2 + 0.15, edoorW/4);
+            floorGroup.add(edoorL);
+
+            // Right door (back)
+            edoorR = new THREE.Mesh(new THREE.BoxGeometry(0.1, edoorH, edoorW/2), edoorMat);
+            edoorR.position.set(elevDoorX - 0.05, baseY + edoorH/2 + 0.15, -edoorW/4);
+            floorGroup.add(edoorR);
+
+            // Elevator Indicator Block (BoxGeometry instead of sphere)
+            const indMat = new THREE.MeshBasicMaterial({ color: 0x002244 });
+            ind = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.35, 0.8), indMat);
+            ind.position.set(elevDoorX - 0.06, baseY + edoorH + 0.6, 0); // At Z=0
+            floorGroup.add(ind);
+        }
+        buildingGroup.add(floorGroup);
+
+        let hidingSpots = [];
+        if (f === 0) {
+            // Sótano: hide near the stair cubicle
+            hidingSpots.push({ x: stairX, label: 'Stair Cubicle' });
+            holes.forEach(h => {
+                if (h.type === 'machine_red') hidingSpots.push({ x: h.x, label: 'Caldera' });
+                if (h.type === 'machine_green') hidingSpots.push({ x: h.x, label: 'Generadores' });
+                if (h.type === 'machine_archive') {
+                    hidingSpots.push({ x: h.x - 0.5, label: 'Archivos L' });
+                    hidingSpots.push({ x: h.x + 0.5, label: 'Archivos R' });
+                }
+            });
+        }
+
+        floors.push({
+            group: floorGroup,
+            baseY: baseY,
+            doors: doorData,
+            hidingSpots: hidingSpots,
+            stairX: stairX,
+            elevX: elevX,
+            elevDoorX: elevDoorX,
+            switchX: switchX,
+            edoorL: edoorL,
+            edoorR: edoorR,
+            edoorW: edoorW,
+            indicator: ind
+        });
+    }
+
+    // ─── Elevator cabin (moves through the shaft) ───
+    const cabinH = FL_H * 0.7;
+    const cabinW = ELEV_ZONE - 0.8;
+    const cabinD = CORRIDOR_DEPTH - 0.8;
+    const cabinMat = new THREE.MeshStandardMaterial({
+        color: 0x556677, roughness: 0.3, metalness: 0.6,
+        transparent: true, opacity: 0.9
+    });
+    elevator.cabin = new THREE.Mesh(
+        new THREE.BoxGeometry(cabinW, cabinH, cabinD),
+        cabinMat
+    );
+    elevator.cabin.position.set(floors[1].elevX, cabinH/2 + 0.15, 0);
+    buildingGroup.add(elevator.cabin);
+
+    // Cabin interior light + Fridge effect
+    const cabLight = new THREE.PointLight(0xffeecc, 0.4, 6);
+    cabLight.position.set(0, cabinH/2 - 0.3, 0.3);
+    elevator.cabin.add(cabLight);
+    
+    // The Fridge Light Box (illuminates the dark corridor when doors open)
+    const fridgeLight = createApplianceBeam('fridge');
+    fridgeLight.position.set(-cabinW/2, cabinH/2 - 1.0, 0); 
+    fridgeLight.rotation.y = -Math.PI / 2; 
+    elevator.cabin.add(fridgeLight);
+    elevator.fridgeLight = fridgeLight;
+
+    elevator.y = 0;
+    elevator.currentFloor = 0;
+    elevator.doorTimer = 0;
+
+    // Procedural Volumetric Beam Texture (H&S standard)
+    function createVolumetricTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 16;
+        canvas.height = 256;
+        const ctx = canvas.getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 256);
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 0.65)'); // Hot core
+        gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.15)');
+        gradient.addColorStop(1, 'rgba(255, 255, 255, 0)'); // Fade edge
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 16, 256);
+        return new THREE.CanvasTexture(canvas);
+    }
+
+    // ─── Seeker character ───
+    seeker.mesh = new THREE.Group();
+    if (seekerModel) {
+        seeker.mesh.add(seekerModel);
+        seeker.visualModel = seekerModel;
+        seekerModel.rotation.y = Math.PI; // Face outwards
+    }
+    
+    // ─── Flashlight Setup (Face Mounted) ───
+    seeker.flashLightGroup = new THREE.Group();
+
+    // The character mesh's scale is 1.815. Head height is ~3.2m, face height ~2.9m.
+    // Z=0.3 pushes it out just in front of the nose.
+    const fY = 2.9;
+    const fZ = 0.35;
+    
+    flashLight = new THREE.SpotLight(0xffeedd, 1.2, 15, Math.PI / 10, 0.6, 1.2);
+    flashLight.position.set(0, fY, fZ); 
+
+    const targetObj = new THREE.Object3D();
+    // Revert target Y to a stable floor intersection angle (1.5) so the beam actually draws the floor
+    const targetY = 1.5;
+    targetObj.position.set(0, targetY, 4.0); 
+    seeker.flashLightGroup.add(targetObj);
+    flashLight.target = targetObj;
+    seeker.flashLightGroup.add(flashLight);
+    
+    // Volumetric Beam (Amnesia Fake Cone)
+    const bGeo = new THREE.ConeGeometry(3.5, 15, 32, 1, true);
+    bGeo.translate(0, -7.5, 0); // Put tip at origin
+    bGeo.rotateX(-Math.PI / 2); // Point along +Z
+    const bMat = new THREE.MeshBasicMaterial({
+        map: createVolumetricTexture(),
+        blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, side: THREE.DoubleSide
+    });
+    volumetricBeam = new THREE.Mesh(bGeo, bMat);
+    volumetricBeam.position.set(0, fY, fZ);
+    // Tilt the beam down by exactly the Y difference.
+    volumetricBeam.rotation.x = Math.atan2(fY - targetY, 4.0 - fZ);
+    seeker.flashLightGroup.add(volumetricBeam);
+
+    // Flashlight Dust Particles
+    const dustGeo = new THREE.BufferGeometry();
+    const dustCount = 60;
+    const dustPos = new Float32Array(dustCount * 3);
+    for(let i=0; i<dustCount; i++) {
+        dustPos[i*3] = (Math.random() - 0.5) * 2.0;
+        dustPos[i*3+1] = (Math.random() - 0.5) * 2.0;
+        dustPos[i*3+2] = Math.random() * 12 + 1.0; 
+    }
+    dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+    const dustMat = new THREE.PointsMaterial({
+        color: 0xffffee, size: 0.04, transparent: true, opacity: 0.6,
+        blending: THREE.AdditiveBlending, depthWrite: false
+    });
+    window.flashDust = new THREE.Points(dustGeo, dustMat);
+    flashDust.position.set(0, fY, fZ);
+    flashDust.rotation.x = volumetricBeam.rotation.x;
+    flashDust.userData.velocities = new Float32Array(dustCount * 3);
+    for(let i=0; i<dustCount; i++) {
+        flashDust.userData.velocities[i*3] = (Math.random() - 0.5) * 0.2;
+        flashDust.userData.velocities[i*3+1] = Math.random() * 0.2 + 0.1;
+        flashDust.userData.velocities[i*3+2] = Math.random() * 0.5 + 0.2; // Move dynamically forward
+    }
+    seeker.flashLightGroup.add(flashDust);
+
+    // Add flashlight group to the seeker mesh (it will rotate via logic)
+    seeker.mesh.add(seeker.flashLightGroup);
+
+    seeker.floor = 1; seeker.x = 0; seeker.z = 0;
+    seeker.mesh.position.set(0, floors[1].baseY + 0.12, seeker.z);
+    buildingGroup.add(seeker.mesh);
+    
+    // ─── Rabbit character (Raccoon) ───
+    rabbit.mesh = new THREE.Group();
+    if (rabbitModel) {
+        rabbit.mesh.add(rabbitModel);
+        rabbit.visualModel = rabbitModel;
+    }
+    rabbit.floor = 1; rabbit.x = -exteriorDistance(); rabbit.z = 0; 
+    rabbit.mesh.position.set(rabbit.x, floors[1].baseY + 0.12, rabbit.z);
+    buildingGroup.add(rabbit.mesh);
+    
+    scene.add(buildingGroup);
+
+    // Frame the camera gracefully over the whole building to see basement to roof
+    const distanceToFit = (totalH * 0.55) / Math.tan(THREE.MathUtils.degToRad(cam.fov / 2));
+    cam.position.set(0, 0, distanceToFit);
+    controls.target.set(0, 0, bCenterZ);
+    controls.update();
+
+    // Initial State override
+    gamePhase = 'cinematic';
+    cinematicPhase = 'walking_to_elevator';
+    cinematicTimer = 0;
+
+    // Pick a cinematic target floor (Sotano, Azotea, or Cuarto de Escobas)
+    let cinematicScenarios = [
+        { floor: 0, door: 0 }, 
+        { floor: totalFloors - 1, door: 0 }
+    ];
+    if (floors[1].doors.length > 1) {
+        cinematicScenarios.push({ floor: 1, door: 1 }); // Broom closet on Ground Floor
+    }
+    let scent = cinematicScenarios[Math.floor(Math.random() * cinematicScenarios.length)];
+    targetFloor = scent.floor;
+    targetDoor = scent.door;
+    seeker.mesh.visible = false; // Hide seeker during cinematic
+
+    // ─── Reset Córtex Tiburón AI ───
+    seekerAI.phase = 'PICK_FLOOR';
+    seekerAI.aiTargetFloor = -1;
+    seekerAI.exploredFloors.clear();
+    seekerAI.sweepIndex = 0;
+    seekerAI.stuckTimer = 0;
+    seekerAI.lastX = 0;
+    seekerAI.lastFloor = 0;
+    seekerAI.travelMode = 'elevator';
+    // Initialize uniform Bayesian beliefs
+    seekerAI.beliefs = [];
+    for (let i = 0; i < floors.length; i++) {
+        const hasSearchables = floors[i].doors.length > 0 || (floors[i].hidingSpots && floors[i].hidingSpots.length > 0);
+        seekerAI.beliefs.push(hasSearchables ? 1.0 : 0.0);
+    }
+    // Normalize
+    const beliefSum = seekerAI.beliefs.reduce((a, b) => a + b, 0);
+    if (beliefSum > 0) seekerAI.beliefs = seekerAI.beliefs.map(b => b / beliefSum);
+
+    // Center camera on the building
+    const bldgCenterY = totalFloors * FL_H / 2;
+    cam.position.set(0, 0, 60);
+    cam.lookAt(0, 0, 0);
+    buildingGroup.position.y = -bldgCenterY + FL_H * 0.3;
+
+    spawnBatteries();
+}
+
+function spawnBatteries() {
+    for (let i = 0; i < batteryPickups.length; i++) {
+        if(batteryPickups[i].mesh.parent) batteryPickups[i].mesh.parent.remove(batteryPickups[i].mesh);
+    }
+    batteryPickups = [];
+    
+    for (let f = 1; f < totalFloors; f++) { // Skip basement (f=0) just in case
+        if (Math.random() < 0.7) { // 70% chance to have a battery
+            const bMat = new THREE.MeshStandardMaterial({color: 0x34c759, emissive: 0x34c759, emissiveIntensity: 0.8, roughness: 0.2, metalness: 0.8});
+            const batt = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.45, 8), bMat);
+            batt.rotation.x = Math.PI / 2;
+            
+            // Add actual glowing light, physical decay
+            const bLight = new THREE.PointLight(0x34c759, 1.0, 1.2, 2.0);
+            batt.add(bLight);
+            
+            const bx = (Math.random() - 0.5) * (CORRIDOR_W - 6);
+            batt.position.set(bx, floors[f].baseY + 0.1, (Math.random() - 0.5) * 2.0);
+            buildingGroup.add(batt);
+            batteryPickups.push({mesh: batt, floor: f, x: bx, z: batt.position.z});
+        }
+    }
+}
+
+function exteriorDistance() {
+    return CORRIDOR_W / 2 + 5; 
+}
+
+// Arrow indicator helper
+function _makeArrow(char, color) {
+    const c = document.createElement('canvas');
+    c.width = 32; c.height = 32;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#' + color.toString(16).padStart(6, '0');
+    ctx.font = 'bold 26px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(char, 16, 16);
+    const tex = new THREE.CanvasTexture(c);
+    return new THREE.Mesh(
+        new THREE.PlaneGeometry(1.0, 1.0),
+        new THREE.MeshBasicMaterial({ map: tex, transparent: true })
+    );
+}
+
+// ═══════════════════════════════════════════════════════════
+//  INPUT
+// ═══════════════════════════════════════════════════════════
+const keys = {};
+const keysJustPressed = {};
+document.addEventListener('keydown', e => {
+    const k = e.key.toLowerCase();
+    
+    if (k === 't' && isLightsOut && gamePhase === 'seeking') {
+        toggleMinutero(seeker.floor);
+    }
+    
+    if (!keys[k]) keysJustPressed[k] = true;
+    keys[k] = true;
+});
+document.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+
+function consumeKey(k) {
+    if (keysJustPressed[k]) { keysJustPressed[k] = false; return true; }
+    return false;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  DOOR SEARCH LOGIC
+// ═══════════════════════════════════════════════════════════
+function checkDoor(doorIndex, fd) {
+    if (gameStatus === 'Found') return;
+
+    const doorData = fd.doors[doorIndex];
+    searches++;
+
+    let distFloor = Math.abs(seeker.floor - targetFloor);
+    let distDoor = Math.abs(doorIndex - targetDoor);
+    let totalDist = distFloor * 2 + distDoor; // Floor diff is higher weight
+
+    let result = '';
+    let flashColor = 0xffffff;
+
+    if (distFloor === 0 && distDoor === 0) {
+        result = 'FOUND!';
+        flashColor = 0x00ff44;
+        gameStatus = 'Found';
+    } else if (distFloor === 0 && distDoor <= 1) {
+        result = 'HOT';
+        flashColor = 0xff3300;
+    } else if (distFloor === 0) {
+        result = 'WARM';
+        flashColor = 0xffaa00;
+    } else {
+        result = 'COLD';
+        flashColor = 0x4488ff;
+    }
+
+    _flashDoor(doorData.mesh, flashColor, doorData.frame);
+    gameStatus = (gameStatus === 'Found') ? 'FOUND!' : result;
+
+    doorChecks.push({
+        floor: seeker.floor + 1,
+        door: String.fromCharCode(65 + doorIndex),
+        x: doorData.x,
+        result: result,
+        distance: totalDist
+    });
+
+    episodeDataset.push({ action: 'check_door', door: doorIndex, floor: seeker.floor, result: result, status: gameStatus });
+
+    if (gameStatus === 'FOUND!') {
+        // Save dataset
+        window.alisaDataset.push({
+            floors: totalFloors, doors: doorsPerFloor,
+            target_floor: targetFloor, target_door: targetDoor,
+            searches: searches,
+            trajectory: [...episodeDataset]
+        });
+        
+        // Auto-restart if in AI mode
+        if (autoPlaying) {
+            setTimeout(() => {
+                // Curriculum Learning: Incrementar plantas para aumentar la dificultad
+                if (totalFloors < 12) {
+                    totalFloors++;
+                    document.getElementById('sFloors').value = totalFloors;
+                    document.getElementById('sFloors').nextElementSibling.textContent = totalFloors;
+                    document.getElementById('valTotalFloors').textContent = totalFloors;
+                    buildBuilding();
+                }
+
+                resetEpisode();
+                // Move seeker mesh immediately to start
+                const baseFloorY = floors[0].baseY;
+                seeker.mesh.position.set(0, baseFloorY + 0.12, seeker.z);
+            }, 1500 / simSpeedMultiplier); // Acelerar el timeout de reinicio si estamos acelerados
+        }
+    }
+}
+
+function _flashDoor(mesh, colorHex, frameGroup = null) {
+    const originalColor = mesh.material.color.getHex();
+    mesh.material.color.setHex(colorHex);
+    mesh.material.emissive.setHex(colorHex);
+    mesh.material.emissiveIntensity = 0.8;
+    
+    // Also flash the frame lightly
+    if (frameGroup) {
+        frameGroup.children.forEach(c => {
+            if (c.material) {
+                c.material.emissive.setHex(colorHex);
+                c.material.emissiveIntensity = 0.3;
+            }
+        });
+    }
+
+    setTimeout(() => {
+        mesh.material.color.setHex(originalColor);
+        mesh.material.emissive.setHex(0x000000);
+        mesh.material.emissiveIntensity = 0.0;
+        
+        if (frameGroup) {
+            frameGroup.children.forEach(c => c.material.emissiveIntensity = 0.0);
+        }
+    }, 800);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  HIDING SPOT SEARCH (for doorless floors)
+// ═══════════════════════════════════════════════════════════
+function checkHidingSpot(spotIndex, fd) {
+    if (gameStatus === 'Found') return;
+    searches++;
+
+    let distFloor = Math.abs(seeker.floor - targetFloor);
+    let result = '';
+    let flashColor = 0xffffff;
+
+    if (distFloor === 0 && spotIndex === targetDoor) {
+        result = 'FOUND!';
+        flashColor = 0x00ff44;
+        gameStatus = 'Found';
+    } else if (distFloor === 0) {
+        result = 'HOT';  // right floor, wrong spot
+        flashColor = 0xff3300;
+    } else {
+        result = 'COLD';
+        flashColor = 0x4488ff;
+    }
+
+    _flashSeeker(flashColor);
+    gameStatus = (gameStatus === 'Found') ? 'FOUND!' : result;
+
+    const spotLabel = fd.hidingSpots[spotIndex] ? fd.hidingSpots[spotIndex].label : 'Spot';
+    doorChecks.push({
+        floor: seeker.floor + 1,
+        door: spotLabel,
+        x: fd.hidingSpots[spotIndex] ? fd.hidingSpots[spotIndex].x : 0,
+        result: result,
+        distance: distFloor
+    });
+
+    episodeDataset.push({ action: 'check_spot', spot: spotIndex, floor: seeker.floor, result: result, status: gameStatus });
+
+    if (gameStatus === 'FOUND!') {
+        window.alisaDataset.push({
+            floors: totalFloors, doors: doorsPerFloor,
+            target_floor: targetFloor, target_door: targetDoor,
+            searches: searches,
+            trajectory: [...episodeDataset]
+        });
+        
+        if (autoPlaying) {
+            setTimeout(() => {
+                if (totalFloors < 12) {
+                    totalFloors++;
+                    document.getElementById('sFloors').value = totalFloors;
+                    document.getElementById('sFloors').nextElementSibling.textContent = totalFloors;
+                    document.getElementById('valTotalFloors').textContent = totalFloors;
+                    buildBuilding();
+                }
+                resetEpisode();
+                const baseFloorY = floors[1].baseY;
+                seeker.mesh.position.set(0, baseFloorY + 0.12, seeker.z);
+            }, 1500 / simSpeedMultiplier);
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SEEKER UPDATE
+// ═══════════════════════════════════════════════════════════
+function updateSeeker(dt) {
+    if (gamePhase === 'cinematic') return;
+
+    if (seeker.mode.startsWith('stairs_') || seeker.mode.startsWith('chute') || seeker.mode.startsWith('roof')) {
+        const fd = floors[seeker.floor];
+        let isExiting = seeker.mode.endsWith('_out');
+        let walkSpeed = seeker.speed * (seeker.mode.includes('chute') ? 1.0 : 0.6); // slightly faster than 0.4 for smooth portal flow
+        
+        if (!isExiting) {
+            // Fase 1: Walking IN (away from camera)
+            seeker.z -= dt * walkSpeed; 
+            
+            // Fix moonwalk: dx=0, dz=-1
+            let targetRotWalkIn = Math.atan2(0, -1); 
+            if (seeker.visualModel) seeker.visualModel.rotation.y = targetRotWalkIn;
+            if (seeker.flashLightGroup) seeker.flashLightGroup.rotation.y = targetRotWalkIn;
+            
+            // When deep enough inside the portal volume, snap to destination and switch to OUT phase
+            if (seeker.z <= -4.5) {
+                if (seeker.mode === 'stairs_up') seeker.floor++;
+                else if (seeker.mode === 'stairs_down') seeker.floor--;
+                else if (seeker.mode === 'chute') seeker.floor = 1; // 1 is Planta Baja
+                
+                // Add _out suffix
+                seeker.mode += '_out';
+                
+                const nfd = floors[seeker.floor];
+                if (seeker.mode.startsWith('chute')) {
+                    seeker.x = DOOR_ZONE_START + 0.5 * DOOR_ZONE_W;
+                } else if (seeker.mode.startsWith('stairs_')) {
+                    seeker.x = nfd.stairX !== null ? nfd.stairX : 0;
+                }
+                
+                // Teleport Y and keep Z deep inside the new room
+                seeker.mesh.position.y = nfd.baseY + 0.12;
+            }
+        } else {
+            // Fase 2: Walking OUT (towards camera)
+            seeker.z += dt * walkSpeed;
+            
+            // Fix moonwalk: dx=0, dz=1
+            let targetRotWalkOut = Math.atan2(0, 1); 
+            if (seeker.visualModel) seeker.visualModel.rotation.y = targetRotWalkOut;
+            if (seeker.flashLightGroup) seeker.flashLightGroup.rotation.y = targetRotWalkOut;
+            
+            // Reached corridor
+            if (seeker.z >= -CORRIDOR_DEPTH/2 + 0.2) {
+                seeker.z = -CORRIDOR_DEPTH/2 + 0.2;
+                seeker.mode = 'walking';
+                if (seeker.floor === totalFloors - 1) { // Wait, totalFloors is roof, but array starts at 0. So roof is totalFloors-1? Actually we don't need gameStatus='ROOF EXPLORATION' here because we can let AI navigate normally.
+                }
+            }
+        }
+        
+        seekerCurAnim = playCharAnim(seekerMixer, seekerAnimMap, seekerCurAnim, 'run');
+        seeker.mesh.position.set(seeker.x, floors[seeker.floor].baseY + 0.12, seeker.z);
+        return; 
+    }
+
+    if (!seeker.mesh || seeker.inElevator) return;
+
+    let prevX = seeker.x; // store before modifying
+    let prevZ = seeker.z;
+
+    const fd = floors[seeker.floor];
+    if (!fd) return;
+    
+    // Limits of the Aquarium Tank
+    const halfW = CORRIDOR_W / 2 - 0.8;
+    const halfD = CORRIDOR_DEPTH / 2 - 0.4;
+    
+    // Aquarium Omnidirectional Movement (WASD)
+    let moved = false;
+    let dx = 0, dz = 0;
+
+    if (keys['a'] || keys['arrowleft']) dx -= 1;
+    if (keys['d'] || keys['arrowright']) dx += 1;
+    if (keys['w'] || keys['arrowup']) dz -= 1; // into screen (back wall)
+    if (keys['s'] || keys['arrowdown']) dz += 1; // towards glass
+
+    // Normalize diagonal movement
+    if (dx !== 0 || dz !== 0) {
+        const len = Math.hypot(dx, dz);
+        dx /= len; dz /= len;
+        
+        seeker.x += dx * seeker.speed * dt;
+        seeker.z += dz * seeker.speed * dt;
+        moved = true;
+    }
+
+    // Clamp inside Aquarium Glass
+    // If we are on f=1 and go past stairDownX, we can enter the boiler corridor
+    let inBoiler = false;
+    
+    if (seeker.floor === 1) {
+        const boilerDoorX = fd.stairDownX + 1.6*1.5 + 0.4;
+        if (seeker.x > boilerDoorX - 1.0 && seeker.z < -halfD) {
+            inBoiler = true;
+        }
+    } else if (seeker.floor === 0) {
+        inBoiler = true;
+    }
+
+    if (seeker.floor === totalFloors) {
+        // Azotea is fully walkable!
+        const rHalfW = CORRIDOR_W/2 + WALL_D*2 - 0.5;
+        const rHalfD = (BUILDING_DEPTH + WALL_D*2)/2 - 0.5;
+        const bCZ = -BUILDING_DEPTH/2 + CORRIDOR_DEPTH/2;
+        seeker.x = Math.max(-rHalfW, Math.min(rHalfW, seeker.x));
+        seeker.z = Math.max(bCZ - rHalfD, Math.min(bCZ + rHalfD, seeker.z));
+    } else if (inBoiler) {
+        seeker.x = Math.max(-halfW, Math.min(halfW, seeker.x));
+        seeker.z = Math.max(-CORRIDOR_DEPTH/2 - 3.5, Math.min(halfD, seeker.z));
+    } else {
+        seeker.x = Math.max(-halfW, Math.min(halfW, seeker.x));
+        seeker.z = Math.max(-halfD, Math.min(halfD, seeker.z));
+    }
+
+    // Dynamic rotation handling
+    // IF AI IS MOVING, skip resolving rotation and animation here so they don't fight.
+    if (!(autoPlaying && seekerAI.moveTarget)) {
+        if (moved) {
+            // Both model and flashlight now use Math.atan2(dx, dz)
+            let targetRotModel = Math.atan2(dx, dz);
+            let targetRotLight = Math.atan2(dx, dz);
+            
+            if (seeker.visualModel) {
+                seeker.visualModel.rotation.y = targetRotModel; 
+            }
+            if (seeker.flashLightGroup) {
+                seeker.flashLightGroup.rotation.y = targetRotLight;
+            }
+            
+            seekerCurAnim = playCharAnim(seekerMixer, seekerAnimMap, seekerCurAnim, 'run');
+        } else {
+            seekerCurAnim = playCharAnim(seekerMixer, seekerAnimMap, seekerCurAnim, 'idle');
+        }
+    }
+
+    if (!seekerMixer && seeker.mesh.children[0]) {
+        if (moved) {
+            seeker.animPhase += dt * 10;
+            seeker.mesh.children[0].rotation.z = Math.sin(seeker.animPhase) * 0.1; // simple body sway fallback
+        } else {
+            seeker.mesh.children[0].rotation.z = 0;
+        }
+    }
+
+    // ─── PROXIMITY INTERACTIONS ───
+    const backWallZ = -CORRIDOR_DEPTH/2 + 0.2; // roughly where doors/stairs trigger
+    
+    // ─── STAIR DOOR (Dual interaction: Space=UP, Shift/C=DOWN) ───
+    if (fd.stairX !== null) {
+        const dist = Math.hypot(seeker.x - fd.stairX, seeker.z - backWallZ);
+        if (dist < 1.0) {
+            // Priority 1: Up
+            if (consumeKey(' ') || consumeKey('arrowup') || consumeKey('w')) {
+                if (seeker.floor < totalFloors) { // Roof is totalFloors
+                    seeker.mode = 'stairs_up';
+                    return;
+                }
+            }
+            // Priority 2: Down
+            if (consumeKey('shift') || consumeKey('c') || consumeKey('arrowdown') || consumeKey('s')) {
+                if (seeker.floor > 0) { // Basement is 0
+                    seeker.mode = 'stairs_down';
+                    return;
+                }
+            }
+        }
+    }
+
+    // ─── CHUTE (Space key on Top Floor) ───
+    if (seeker.floor === totalFloors - 1) {
+        // Find chute hole X
+        const chuteX = DOOR_ZONE_START + 0.5 * DOOR_ZONE_W;
+        if (Math.hypot(seeker.x - chuteX, seeker.z - backWallZ) < 1.5 && consumeKey(' ')) {
+            seeker.mode = 'chute';
+            return;
+        }
+        
+        const roofX = fd.stairDownX + 1.2 + 0.4 + 1.2; // roughly
+        if (Math.hypot(seeker.x - roofX, seeker.z - backWallZ) < 1.5 && consumeKey(' ')) {
+            seeker.mode = 'roof';
+            return;
+        }
+    }
+
+    // ─── SEARCH DOOR (Enter key) ───
+    if (consumeKey('enter') && gamePhase === 'seeking') {
+        let nearestDoor = -1;
+        let minDist = 1.2; // strict proximity radius to use the door
+        for (let i = 0; i < fd.doors.length; i++) {
+            let dist = Math.hypot(seeker.x - fd.doors[i].x, seeker.z - backWallZ);
+            if (dist < minDist) {
+                minDist = dist;
+                nearestDoor = i;
+            }
+        }
+        if (nearestDoor !== -1) {
+            // Re-orient model mathematically towards the door
+            if (seeker.visualModel) seeker.visualModel.rotation.y = Math.PI; 
+            checkDoor(nearestDoor, fd);
+        } else if (fd.hidingSpots && fd.hidingSpots.length > 0) {
+            // Search hiding spots on special floors (Sótano, Azotea)
+            let nearestSpot = -1;
+            let minSpotDist = 1.8; // slightly wider radius for cubicles
+            for (let i = 0; i < fd.hidingSpots.length; i++) {
+                let dist = Math.hypot(seeker.x - fd.hidingSpots[i].x, seeker.z - backWallZ);
+                if (dist < minSpotDist) {
+                    minSpotDist = dist;
+                    nearestSpot = i;
+                }
+            }
+            if (nearestSpot !== -1) {
+                if (seeker.visualModel) seeker.visualModel.rotation.y = Math.PI;
+                checkHidingSpot(nearestSpot, fd);
+            }
+        }
+    }
+    // ─── ELEVATOR ───
+    const elevDist = Math.hypot(seeker.x - fd.elevDoorX, seeker.z - 0); // proximity to doors facing the corridor
+
+    // E = call elevator to this floor
+    if (consumeKey('e')) {
+        if (!elevator.moving && seeker.floor > 0) { // Sótano (0) has no elevator!
+            elevator.targetFloor = seeker.floor;
+            if (elevator.currentFloor === seeker.floor) {
+                elevator.doorTimer = 4.0;
+            } else {
+                elevator.moving = true;
+            }
+        }
+    }
+
+    // SPACE = enter elevator (if it's here and doors are open)
+    if (consumeKey(' ')) {
+        if (elevator.currentFloor === seeker.floor && !elevator.moving && elevDist < 2.0) {
+            seeker.inElevator = true;
+            seeker.mode = 'elevator';
+            seeker.x = fd.elevX;
+            _flashSeeker(0x4488ff);
+        }
+    }
+
+    // Update position
+    const floorBaseY = floors[seeker.floor].baseY;
+    seeker.mesh.position.set(seeker.x, floorBaseY + 0.12, seeker.z);
+}
+
+// ─── ELEVATOR UPDATE ───
+
+function updateSeekerInElevator(dt) {
+    if (!seeker.inElevator) return;
+
+    // Number keys select floor (1 to totalFloors-1 allowed, basically 1..5 if 6 total)
+    for (let n = 1; n < totalFloors; n++) {
+        if (consumeKey(String(n))) {
+            elevator.targetFloor = n;
+            elevator.moving = true;
+        }
+    }
+
+    // SPACE = exit elevator
+    if (consumeKey(' ') && !elevator.moving) {
+        seeker.inElevator = false;
+        seeker.floor = elevator.currentFloor;
+        seeker.mode = 'walking';
+        seeker.x = floors[seeker.floor].elevDoorX - 1.2; // step out to the left
+        seeker.z = 0;
+    }
+
+    // Update idle animation
+    seekerCurAnim = playCharAnim(seekerMixer, seekerAnimMap, seekerCurAnim, 'idle');
+    if (!seekerMixer && seeker.mesh.children[0]) {
+        seeker.mesh.children[0].rotation.z = 0;
+    }
+
+    // Ride with elevator
+    seeker.mesh.position.x = floors[1].elevX;
+    seeker.mesh.position.y = elevator.y + 0.12;
+    seeker.mesh.position.z = 0;
+}
+
+function _flashSeeker(color) {
+    if (!seeker.visualModel) return;
+    seeker.visualModel.traverse(c => {
+        if (c.isMesh && c.material) {
+            if (!c.userData.origEmissive) c.userData.origEmissive = c.material.emissive.clone();
+            c.material.emissive.setHex(color);
+            c.material.emissiveIntensity = 0.8;
+        }
+    });
+    setTimeout(() => {
+        if (seeker.visualModel) {
+            seeker.visualModel.traverse(c => {
+                if (c.isMesh && c.material && c.userData.origEmissive) {
+                    c.material.emissive.copy(c.userData.origEmissive);
+                    c.material.emissiveIntensity = 0.0;
+                }
+            });
+        }
+    }, 300);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ELEVATOR UPDATE
+// ═══════════════════════════════════════════════════════════
+function updateElevator(dt) {
+    if (!elevator.cabin) return;
+
+    if (elevator.moving && elevator.targetFloor >= 0) {
+        const targetY = elevator.targetFloor * FL_H;
+        const diff = targetY - elevator.y;
+        if (Math.abs(diff) > 0.1) {
+            elevator.y += Math.sign(diff) * elevator.speed * dt;
+        } else {
+            elevator.y = targetY;
+            elevator.currentFloor = elevator.targetFloor;
+            elevator.moving = false;
+            elevator.doorTimer = 4.0; // keep open 4s upon arrival
+        }
+    }
+
+    if (!elevator.moving && elevator.doorTimer > 0) {
+        if (seeker.inElevator || rabbit.inElevator) {
+            elevator.doorTimer = 3.0; // Hold door
+        } else {
+            elevator.doorTimer -= dt;
+        }
+    }
+
+    elevator.cabin.position.y = elevator.y + FL_H * 0.38 + 0.15;
+
+    // Door animation: open on current floor when stopped
+    let fridgeFactor = 0;
+    floors.forEach((fd, i) => {
+        if (!fd.edoorL || !fd.edoorR || !fd.indicator) return; // Skip floors without elevator (e.g. Sótano)
+        const shouldOpen = (elevator.currentFloor === i && !elevator.moving && elevator.doorTimer > 0);
+        const amt = fd.edoorL.userData.openAmt || 0;
+        const target = shouldOpen ? fd.edoorW * 0.55 : 0;
+        const newAmt = THREE.MathUtils.lerp(amt, target, dt * 5);
+        fd.edoorL.userData.openAmt = newAmt;
+
+        fd.edoorL.position.z = fd.edoorW/4 + newAmt;
+        fd.edoorR.position.z = -fd.edoorW/4 - newAmt;
+
+        // Indicator logic
+        if (shouldOpen) {
+            fd.indicator.material.color.setHex(0x00ff44);
+            fridgeFactor = Math.max(0, newAmt / (fd.edoorW * 0.55));
+        } else {
+            fd.indicator.material.color.setHex(0x002244);
+        }
+    });
+
+    if (elevator.fridgeLight) {
+        elevator.fridgeLight.visible = (fridgeFactor > 0.05 && isLightsOut);
+        if (elevator.fridgeLight.visible) {
+            elevator.fridgeLight.scale.x = Math.max(0.01, fridgeFactor); // Match opening width exactly!
+            elevator.fridgeLight.material.opacity = (fridgeFactor * elevator.fridgeLight.userData.maxOpacity);
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  HUD UPDATE
+// ═══════════════════════════════════════════════════════════
+function updateHUD() {
+    document.getElementById('valFloor').textContent = seeker.floor + 1;
+    const modeIcons = {
+        walking: '🚶 Walking',
+        elevator: '🛗 Elevator',
+        stairs_up: '🪜 Stairs ▲',
+        stairs_down: '🪜 Stairs ▼',
+        chute: '⚡ Chute',
+        roof: '🏗️ Roof'
+    };
+    document.getElementById('valMode').textContent = modeIcons[seeker.mode] || seeker.mode;
+    document.getElementById('valSearches').textContent = searches;
+
+    const stElem = document.getElementById('valStatus');
+    stElem.textContent = gameStatus;
+    if (gameStatus === 'FOUND!') stElem.style.color = '#00ff44';
+    else if (gameStatus === 'HOT') stElem.style.color = '#ff3300';
+    else if (gameStatus === 'WARM') stElem.style.color = '#ffaa00';
+    else if (gameStatus === 'COLD') stElem.style.color = '#4488ff';
+    else stElem.style.color = '#aaddff';
+
+    // ─── Córtex Tiburón AI HUD ───
+    const isAI = autoPlaying || (document.getElementById('mMode') && document.getElementById('mMode').value === 'ai');
+    const aiRow = document.getElementById('aiPhaseRow');
+    const belRow = document.getElementById('aiBeliefsRow');
+    if (aiRow) aiRow.style.display = isAI ? '' : 'none';
+    if (belRow) belRow.style.display = isAI ? '' : 'none';
+    if (isAI) {
+        const phaseIcons = {
+            PICK_FLOOR: '🎯 PICKING',
+            TRAVEL: '🚀 TRAVEL→F' + (seekerAI.aiTargetFloor + 1),
+            EXPLORE: '🔍 SWEEP F' + (seekerAI.aiTargetFloor + 1),
+        };
+        const aiPhaseElem = document.getElementById('valAIPhase');
+        if (aiPhaseElem) {
+            aiPhaseElem.textContent = phaseIcons[seekerAI.phase] || seekerAI.phase;
+            aiPhaseElem.style.color = seekerAI.phase === 'EXPLORE' ? '#ff9500' : seekerAI.phase === 'TRAVEL' ? '#00aaff' : '#aaddff';
+        }
+        // Posterior beliefs bar: [■■□□□□] per floor
+        const belElem = document.getElementById('valBeliefs');
+        if (belElem && seekerAI.beliefs.length > 0) {
+            const maxB = Math.max(...seekerAI.beliefs);
+            let bar = '';
+            for (let i = 0; i < seekerAI.beliefs.length; i++) {
+                const b = seekerAI.beliefs[i];
+                const isExplored = seekerAI.exploredFloors.has(i);
+                const isCurrent = (i === seeker.floor);
+                if (isExplored) bar += '<span style="color:#333">✗</span>';
+                else if (b >= maxB * 0.9 && b > 0) bar += '<span style="color:#ff3300">■</span>';
+                else if (b > 0.01) bar += '<span style="color:#ffaa00">□</span>';
+                else bar += '<span style="color:#333">·</span>';
+                if (isCurrent) bar += '<span style="color:#fff">▲</span>';
+            }
+            belElem.innerHTML = bar;
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CÓRTEX TIBURÓN — Intelligent Seeker AI
+//  Ported from Hide & Seek (room exploration, spatial memory)
+//  + Chopper Search (vertical navigation, temperature narrowing)
+// ═══════════════════════════════════════════════════════════
+
+// ─── Bayesian Belief Update (from Chopper temperature system) ───
+function updateBeliefs(checkedFloor, result) {
+    const n = seekerAI.beliefs.length;
+    for (let i = 0; i < n; i++) {
+        if (result === 'FOUND!') {
+            seekerAI.beliefs[i] = (i === checkedFloor) ? 1.0 : 0.0;
+            return;
+        }
+        const dist = Math.abs(i - checkedFloor);
+        let likelihood = 1.0;
+        if (result === 'COLD') {
+            if (dist <= 1) likelihood = 0.0;
+            else if (dist <= 2) likelihood = 0.15;
+            else likelihood = 1.2;
+        } else if (result === 'HOT') {
+            if (dist === 0) likelihood = 5.0;
+            else if (dist <= 1) likelihood = 1.5;
+            else likelihood = 0.3;
+        } else if (result === 'WARM') {
+            if (dist === 0) likelihood = 3.0;
+            else if (dist <= 2) likelihood = 1.2;
+            else likelihood = 0.5;
+        }
+        seekerAI.beliefs[i] *= likelihood;
+    }
+    seekerAI.exploredFloors.forEach(ef => { seekerAI.beliefs[ef] = 0; });
+    const sum = seekerAI.beliefs.reduce((a, b) => a + b, 0);
+    if (sum > 0) seekerAI.beliefs = seekerAI.beliefs.map(b => b / sum);
+}
+
+// ─── Pick best floor by posterior (Chopper's intelligent floor selection) ───
+function pickBestFloor() {
+    let bestFloor = -1, bestP = -1;
+    for (let i = 0; i < seekerAI.beliefs.length; i++) {
+        if (seekerAI.exploredFloors.has(i)) continue;
+        const hasSearchables = floors[i] && (floors[i].doors.length > 0 || (floors[i].hidingSpots && floors[i].hidingSpots.length > 0));
+        if (!hasSearchables) continue;
+        if (seekerAI.beliefs[i] > bestP) {
+            bestP = seekerAI.beliefs[i];
+            bestFloor = i;
+        }
+    }
+    return bestFloor;
+}
+
+// ─── Has this floor been fully swept? ───
+function isFloorFullyChecked(floorIdx) {
+    const fd = floors[floorIdx];
+    if (!fd) return true;
+    if (fd.doors.length > 0) {
+        for (let i = 0; i < fd.doors.length; i++) {
+            const checked = doorChecks.some(c => c.floor === floorIdx + 1 && c.door === String.fromCharCode(65 + i));
+            if (!checked) return false;
+        }
+        return true;
+    } else if (fd.hidingSpots && fd.hidingSpots.length > 0) {
+        for (let i = 0; i < fd.hidingSpots.length; i++) {
+            const checked = doorChecks.some(c => c.floor === floorIdx + 1 && c.door === fd.hidingSpots[i].label);
+            if (!checked) return false;
+        }
+        return true;
+    }
+    return true;
+}
+
+// ─── Main AI Loop (Córtex Tiburón FSM) ───
+// Split into BRAIN (autoAgentStep, setInterval 300ms) and BODY (aiMovement, every frame)
+// Mirrors H&S pattern: aiTick() picks targets → moveSeeker() walks smoothly per-frame
+
+// Action dispatcher for non-movement actions (stairs, elevator, search)
+function _aiAction(intent) {
+    intent = intent.toLowerCase().trim();
+    if (intent === 'stairs_up') { keysJustPressed[' '] = true; }
+    else if (intent === 'stairs_down') { keysJustPressed['s'] = true; }
+    else if (intent === 'call_elevator') { keysJustPressed['e'] = true; }
+    else if (intent === 'enter_elevator' || intent === 'exit_elevator') { keysJustPressed[' '] = true; }
+    else if (intent === 'search_door') { keysJustPressed['enter'] = true; }
+    else if (intent === 'toggle_minutero') { toggleMinutero(seeker.floor); }
+    else if (intent.startsWith('goto_floor_')) {
+        const n = parseInt(intent.split('_')[2]);
+        if (n && n <= totalFloors) keysJustPressed[String(n)] = true;
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  AI BODY — Smooth continuous movement (called every frame from animate)
+//  Ported from H&S moveSeeker + animateSeeker pattern
+// ═══════════════════════════════════════════════════════════
+function aiMovement(dt) {
+    if (!autoPlaying || gamePhase !== 'seeking') return;
+    if (seeker.mode !== 'walking' || seeker.inElevator) return;
+    if (!seekerAI.moveTarget) return;
+
+    const tx = seekerAI.moveTarget.x;
+    const tz = seekerAI.moveTarget.z;
+    const dx = tx - seeker.x;
+    const dz = tz - seeker.z;
+    const dist = Math.hypot(dx, dz);
+
+    const arriveR = seekerAI.arrivalRadius;
+
+    if (dist > arriveR) {
+        // ─── Smooth walk toward target (H&S moveSeeker pattern) ───
+        const nx = dx / dist;
+        const nz = dz / dist;
+
+        seeker.x += nx * seeker.speed * dt;
+        seeker.z += nz * seeker.speed * dt;
+
+        // ─── Smooth rotation interpolation ───
+        let targetRotModel = Math.atan2(nx, nz);
+        let targetRotLight = Math.atan2(nx, nz);
+        
+        if (seeker.visualModel) {
+            let diff = targetRotModel - seeker.visualModel.rotation.y;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            seeker.visualModel.rotation.y += diff * 8 * dt;
+        }
+        
+        if (seeker.flashLightGroup) {
+            let diff2 = targetRotLight - seeker.flashLightGroup.rotation.y;
+            while (diff2 > Math.PI) diff2 -= Math.PI * 2;
+            while (diff2 < -Math.PI) diff2 += Math.PI * 2;
+            seeker.flashLightGroup.rotation.y += diff2 * 12 * dt;
+        }
+
+        // ─── Walk animation ───
+        seekerCurAnim = playCharAnim(seekerMixer, seekerAnimMap, seekerCurAnim, 'run');
+        if (!seekerMixer && seeker.mesh && seeker.mesh.children[0]) {
+            seeker.animPhase += dt * 10;
+            seeker.mesh.children[0].rotation.z = Math.sin(seeker.animPhase) * 0.1;
+        }
+
+        // ─── Clamp inside corridor ───
+        const fd = floors[seeker.floor];
+        if (!fd) return;
+        const halfW = CORRIDOR_W / 2 - 0.8;
+        const halfD = CORRIDOR_DEPTH / 2 - 0.4;
+
+        // Boiler corridor extension on floor 1
+        let inBoiler = false;
+        if (seeker.floor === 1) {
+            const boilerDoorX = fd.stairDownX + 1.6*1.5 + 0.4;
+            if (seeker.x > boilerDoorX - 1.0 && seeker.z < -halfD) {
+                inBoiler = true;
+            }
+        }
+        if (seeker.floor === totalFloors) {
+            const rHalfW = CORRIDOR_W/2 + WALL_D*2 - 0.5;
+            const rHalfD = (BUILDING_DEPTH + WALL_D*2)/2 - 0.5;
+            const bCZ = -BUILDING_DEPTH/2 + CORRIDOR_DEPTH/2;
+            seeker.x = Math.max(-rHalfW, Math.min(rHalfW, seeker.x));
+            seeker.z = Math.max(bCZ - rHalfD, Math.min(bCZ + rHalfD, seeker.z));
+        } else if (inBoiler) {
+            seeker.x = Math.max(-halfW, Math.min(halfW, seeker.x));
+            seeker.z = Math.max(-CORRIDOR_DEPTH/2 - 3.5, Math.min(halfD, seeker.z));
+        } else {
+            seeker.x = Math.max(-halfW, Math.min(halfW, seeker.x));
+            seeker.z = Math.max(-halfD, Math.min(halfD, seeker.z));
+        }
+
+        // ─── Update mesh position ───
+        if (seeker.mesh) {
+            seeker.mesh.position.x = seeker.x;
+            seeker.mesh.position.z = seeker.z;
+        }
+    } else {
+        // ─── Arrived at target — fire pendingAction ───
+        if (seekerAI.pendingAction) {
+            _aiAction(seekerAI.pendingAction);
+            seekerAI.pendingAction = null;
+        }
+        seekerAI.moveTarget = null;
+        
+        // Stop animation when arrived
+        seekerCurAnim = playCharAnim(seekerMixer, seekerAnimMap, seekerCurAnim, 'idle');
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  AI BRAIN — Decision logic (called via setInterval 300ms)
+//  Sets seekerAI.moveTarget + pendingAction for the BODY
+// ═══════════════════════════════════════════════════════════
+function autoAgentStep() {
+    if (!simulationRunning || gameStatus === 'FOUND!' || !floors[seeker.floor]) return;
+    if (gamePhase !== 'seeking') return;
+    if (seeker.mode !== 'walking' && seeker.mode !== 'elevator') return;
+
+    const fd = floors[seeker.floor];
+    const targetZ = -CORRIDOR_DEPTH / 2 + 0.2;
+
+    // ─── Survive the darkness! Let the AI turn on the minutero ───
+    if (isLightsOut && floorLightTimers[seeker.floor] <= 0 && seeker.mode === 'walking') {
+        _aiAction('toggle_minutero');
+        return; // wait a tick
+    }
+
+    // ─── Urgency Speed Gradient (from H&S + Chopper) ───
+    const urgency = Math.min(2.0, 1.0 + searches * 0.08);
+    seeker.speed = seekerAI.baseSpeed * urgency;
+
+    // Helper: set walk target (body will smoothly walk there)
+    function walkTo(x, z, action) {
+        seekerAI.moveTarget = { x: x, z: z };
+        seekerAI.pendingAction = action || null;
+    }
+
+    // ─── Anti-Stuck Watchdog (from H&S wander reset) ───
+    if (Math.abs(seeker.x - seekerAI.lastX) < 0.1 && seeker.floor === seekerAI.lastFloor) {
+        seekerAI.stuckTimer += 0.3; // AI ticks every 300ms
+    } else {
+        seekerAI.stuckTimer = 0;
+    }
+    seekerAI.lastX = seeker.x;
+    seekerAI.lastFloor = seeker.floor;
+
+    if (seekerAI.stuckTimer > 3.0) {
+        seekerAI.phase = 'PICK_FLOOR';
+        seekerAI.stuckTimer = 0;
+        seekerAI.moveTarget = null;
+        if (seeker.inElevator) _aiAction('exit_elevator');
+    }
+
+    // Don't override a walk-in-progress (let the body finish walking)
+    if (seekerAI.moveTarget) return;
+
+    // ════════════════════════════════════════════
+    //  PHASE 1: PICK_FLOOR (Bayesian selection)
+    // ════════════════════════════════════════════
+    if (seekerAI.phase === 'PICK_FLOOR') {
+        if (isFloorFullyChecked(seeker.floor)) {
+            seekerAI.exploredFloors.add(seeker.floor);
+            seekerAI.beliefs[seeker.floor] = 0;
+            const sum = seekerAI.beliefs.reduce((a, b) => a + b, 0);
+            if (sum > 0) seekerAI.beliefs = seekerAI.beliefs.map(b => b / sum);
+        }
+
+        const best = pickBestFloor();
+        if (best === -1) return;
+
+        seekerAI.aiTargetFloor = best;
+        seekerAI.sweepIndex = 0;
+
+        const dist = Math.abs(seeker.floor - best);
+        if (dist === 1) {
+            seekerAI.travelMode = (fd.stairX !== null && fd.stairX !== undefined) ? 'stairs' : 'elevator';
+        } else {
+            seekerAI.travelMode = 'elevator';
+        }
+
+        seekerAI.phase = (seeker.floor === best) ? 'EXPLORE' : 'TRAVEL';
+        seekerAI.switchToggled = (seeker.floor === best); // If already on floor, assume handled
+        return;
+    }
+
+    // ════════════════════════════════════════════
+    //  PHASE 2: TRAVEL (navigate to target floor)
+    // ════════════════════════════════════════════
+    if (seekerAI.phase === 'TRAVEL') {
+        if (seeker.floor === seekerAI.aiTargetFloor) {
+            if (!seekerAI.switchToggled) {
+                const sx = floors[seeker.floor].switchX;
+                walkTo(sx, targetZ, 'toggle_minutero');
+                seekerAI.switchToggled = true;
+            } else {
+                seekerAI.phase = 'EXPLORE';
+                seekerAI.sweepIndex = 0;
+            }
+            return;
+        }
+        seekerAI.switchToggled = false;
+
+        // --- Dynamic pathfinding hop for floors without elevator
+        if (seeker.floor === 1 && seekerAI.aiTargetFloor === 0) seekerAI.travelMode = 'stairs';
+        if (seeker.floor === totalFloors - 1 && seekerAI.aiTargetFloor === totalFloors) seekerAI.travelMode = 'stairs';
+
+        if (seekerAI.travelMode === 'stairs') {
+            const goUp = seekerAI.aiTargetFloor > seeker.floor;
+            if (fd.stairX !== null && fd.stairX !== undefined) {
+                walkTo(fd.stairX, targetZ, goUp ? 'stairs_up' : 'stairs_down');
+            } else {
+                seekerAI.travelMode = 'elevator';
+            }
+        } else {
+            if (!seeker.inElevator) {
+                if (fd.elevDoorX !== undefined) {
+                    const distToElev = Math.hypot(seeker.x - fd.elevDoorX, seeker.z - 0);
+                    if (distToElev > 1.2) {
+                        walkTo(fd.elevDoorX, 0, null);
+                    } else {
+                        if (elevator.currentFloor !== seeker.floor || elevator.moving) {
+                            _aiAction('call_elevator');
+                        } else {
+                            _aiAction('enter_elevator');
+                        }
+                    }
+                } else {
+                    seekerAI.travelMode = 'stairs';
+                }
+            } else {
+                let elevTargetFloor = seekerAI.aiTargetFloor;
+                if (elevTargetFloor === 0) elevTargetFloor = 1;
+                if (elevTargetFloor === totalFloors) elevTargetFloor = totalFloors - 1;
+
+                if (elevator.currentFloor === elevTargetFloor) {
+                    if (!elevator.moving) _aiAction('exit_elevator');
+                } else if (!elevator.moving && elevator.currentFloor !== elevTargetFloor) {
+                    _aiAction('goto_floor_' + elevTargetFloor);
+                }
+            }
+        }
+        return;
+    }
+
+    // ════════════════════════════════════════════
+    //  PHASE 3: EXPLORE (Sonar Sweep — from H&S)
+    // ════════════════════════════════════════════
+    if (seekerAI.phase === 'EXPLORE') {
+        if (seeker.floor !== seekerAI.aiTargetFloor) {
+            seekerAI.phase = 'PICK_FLOOR';
+            return;
+        }
+
+        if (fd.doors.length > 0) {
+            let unsearchedDoor = -1;
+            for (let i = seekerAI.sweepIndex; i < fd.doors.length; i++) {
+                const checked = doorChecks.some(c => c.floor === seeker.floor + 1 && c.door === String.fromCharCode(65 + i));
+                if (!checked) { unsearchedDoor = i; break; }
+            }
+
+            if (unsearchedDoor !== -1) {
+                seekerAI.sweepIndex = unsearchedDoor;
+                const tx = fd.doors[unsearchedDoor].x;
+                walkTo(tx, targetZ, 'search_door');
+            } else {
+                seekerAI.exploredFloors.add(seeker.floor);
+                seekerAI.beliefs[seeker.floor] = 0;
+                const sum = seekerAI.beliefs.reduce((a, b) => a + b, 0);
+                if (sum > 0) seekerAI.beliefs = seekerAI.beliefs.map(b => b / sum);
+                seekerAI.phase = 'PICK_FLOOR';
+            }
+        } else if (fd.hidingSpots && fd.hidingSpots.length > 0) {
+            let unsearchedSpot = -1;
+            for (let i = seekerAI.sweepIndex; i < fd.hidingSpots.length; i++) {
+                const checked = doorChecks.some(c => c.floor === seeker.floor + 1 && c.door === fd.hidingSpots[i].label);
+                if (!checked) { unsearchedSpot = i; break; }
+            }
+
+            if (unsearchedSpot !== -1) {
+                seekerAI.sweepIndex = unsearchedSpot;
+                const tx = fd.hidingSpots[unsearchedSpot].x;
+                walkTo(tx, targetZ, 'search_door');
+            } else {
+                seekerAI.exploredFloors.add(seeker.floor);
+                seekerAI.beliefs[seeker.floor] = 0;
+                const sum = seekerAI.beliefs.reduce((a, b) => a + b, 0);
+                if (sum > 0) seekerAI.beliefs = seekerAI.beliefs.map(b => b / sum);
+                seekerAI.phase = 'PICK_FLOOR';
+            }
+        } else {
+            seekerAI.exploredFloors.add(seeker.floor);
+            seekerAI.phase = 'PICK_FLOOR';
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  CINEMATIC LOGIC
+// ═══════════════════════════════════════════════════════════
+function updateCinematic(dt) {
+    if (gamePhase !== 'cinematic' || !rabbit.mesh) return;
+    
+    // Raccoon entry cinematic sequence
+    const fd = floors[rabbit.floor];
+    if (!fd) return;
+    
+    if (cinematicPhase === 'walking_to_elevator') {
+        rabbitCurAnim = playCharAnim(rabbitMixer, rabbitAnimMap, rabbitCurAnim, 'run');
+        if (rabbit.visualModel) rabbit.visualModel.rotation.y = Math.PI / 2; // Face right
+        
+        let tx = fd.stairX || 0;
+
+        if (targetFloor === 1) {
+            // Target is on this floor! Skip stairs entirely.
+            cinematicPhase = 'walking_to_door';
+            return;
+        }
+
+        if (rabbit.x < tx - 0.2) {
+            rabbit.x += rabbit.speed * 0.8 * dt; // walk right
+        } else if (rabbit.x > tx + 0.2) {
+            rabbit.x -= rabbit.speed * 0.8 * dt; // walk left
+            if (rabbit.visualModel) rabbit.visualModel.rotation.y = -Math.PI / 2;
+        } else {
+            // Arrived at stairs
+            rabbit.mesh.visible = false;
+            cinematicPhase = 'riding_elevator'; // repurpose this phase for stair traversal
+            cinematicTimer = 0;
+        }
+    } else if (cinematicPhase === 'riding_elevator') {
+        cinematicTimer += dt;
+        if (cinematicTimer > 1.0) {
+            rabbit.floor = targetFloor;
+            const tFd = floors[targetFloor];
+            // Azotea (totalFloors-1) uses stairDownX, Sotano uses stairUpX
+            let tx = 0;
+            if (targetFloor === totalFloors - 1) tx = tFd.stairDownX || 0;
+            else if (targetFloor === 0) tx = tFd.stairUpX || 0;
+            
+            rabbit.x = tx;
+            rabbit.mesh.position.set(rabbit.x, tFd.baseY + 0.12, 0);
+            rabbit.mesh.visible = true;
+            cinematicPhase = 'walking_to_door';
+            cinematicTimer = 0;
+        }
+    } else if (cinematicPhase === 'walking_to_door') {
+        rabbitCurAnim = playCharAnim(rabbitMixer, rabbitAnimMap, rabbitCurAnim, 'run');
+        const tFd = floors[targetFloor];
+        
+        // Determine target X: use door if available, else hiding spot
+        let targetX;
+        if (tFd.doors.length > 0 && targetDoor < tFd.doors.length) {
+            targetX = tFd.doors[targetDoor].x;
+        } else if (tFd.hidingSpots && tFd.hidingSpots.length > 0) {
+            const spotIdx = Math.min(targetDoor, tFd.hidingSpots.length - 1);
+            targetX = tFd.hidingSpots[spotIdx].x;
+        } else {
+            targetX = 0; // fallback center
+        }
+        
+        if (rabbit.x > targetX + 0.2) {
+            rabbit.x -= rabbit.speed * 0.8 * dt; // walk left
+            if (rabbit.visualModel) rabbit.visualModel.rotation.y = -Math.PI / 2;
+        } else if (rabbit.x < targetX - 0.2) {
+            rabbit.x += rabbit.speed * 0.8 * dt; // walk right
+            if (rabbit.visualModel) rabbit.visualModel.rotation.y = Math.PI / 2;
+        } else {
+            // Reached door/spot -> walk IN to hide (like portal mechanic)
+            rabbitCurAnim = playCharAnim(rabbitMixer, rabbitAnimMap, rabbitCurAnim, 'run');
+            let targetRotWalkIn = Math.atan2(0, -1);
+            if (rabbit.visualModel) rabbit.visualModel.rotation.y = targetRotWalkIn; // Face backwards (-Z)
+            
+            rabbit.z -= rabbit.speed * 0.5 * dt; // Walk into the volume
+            
+            if (rabbit.z <= -4.5) {
+                // Disappear deep inside
+                rabbit.mesh.visible = false;
+                gamePhase = 'seeking';
+                document.getElementById('hudTitle').innerText = '🏢 Corporate Building';
+                document.getElementById('camcorder').style.display = 'flex';
+                if (seeker.mesh) {
+                    seeker.mesh.visible = true; // Reveal player!
+                    _flashSeeker(0xffeedd);
+                }
+            }
+        }
+    }
+    
+    if (!rabbit.inElevator && floors[rabbit.floor]) {
+        let yHop = 0;
+        if (cinematicPhase.includes('walking')) {
+            const time = performance.now() * 0.015;
+            yHop = Math.abs(Math.sin(time)) * 0.25;
+        }
+        rabbit.mesh.position.set(rabbit.x, floors[rabbit.floor].baseY + 0.12 + yHop, rabbit.z);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  MAIN LOOP
+// ═══════════════════════════════════════════════════════════
+
+window.RLMode = false;
+window.setRLMode = function(enabled) {
+    window.RLMode = enabled;
+    const modeBadge = document.getElementById('aiBadgeMode');
+    if (modeBadge) {
+        modeBadge.innerText = enabled ? '🤖 ML Training' : '🧍 User Mode';
+        modeBadge.classList.toggle('minigame-badge', !enabled);
+        modeBadge.classList.toggle('training-badge', enabled);
+    }
+    if (enabled && !simulationRunning) {
+        const sm = document.getElementById('startModal');
+        if (sm) sm.style.display = 'none';
+        else {
+            const im = document.getElementById('introModal');
+            if (im) im.style.display = 'none';
+        }
+        if (typeof startSimulation === 'function') startSimulation();
+    }
+};
+
+window.getObservationVector = function() {
+    let s=0, r=0, rx=0, rz=0;
+    if (typeof seeker !== 'undefined' && seeker) s = (seeker.floor||0) / (typeof totalFloors !== 'undefined' ? totalFloors : 10);
+    if (typeof rabbit !== 'undefined' && rabbit) {
+        r = (rabbit.floor||0) / (typeof totalFloors !== 'undefined' ? totalFloors : 10);
+        rx = rabbit.x / 100;
+        rz = rabbit.z / 100;
+    }
+    return {
+        obs: [
+            s,
+            (typeof seeker !== 'undefined' && seeker ? seeker.x / 100 : 0),
+            (typeof seeker !== 'undefined' && seeker ? seeker.z / 100 : 0),
+            (typeof hudEnergy !== 'undefined' ? hudEnergy / 100 : 0),
+            (typeof rabbit !== 'undefined' && rabbit && rabbit.mesh && rabbit.mesh.visible ? 1.0 : 0.0),
+            r, rx, rz
+        ],
+        meta: { phase: (typeof gamePhase !== 'undefined' ? gamePhase : ''), energy: (typeof hudEnergy !== 'undefined' ? hudEnergy : 0) }
+    };
+};
+
+window.resetEpisode = function(seed) { 
+    if(seed !== undefined && typeof Math !== 'undefined' && typeof Math.seedrandom === 'function') Math.seedrandom(seed);
+    if(typeof startSimulation === 'function') startSimulation();
+    return window.getObservationVector(); 
+};
+
+window.stepSimulation = function(actionIdx, dt) {
+    if(typeof simulationRunning !== 'undefined' && !simulationRunning) return { obs: window.getObservationVector(), reward: 0, done: true };
+    if(typeof gamePhase !== 'undefined' && (gamePhase === 'gameover' || gamePhase === 'victory')) {
+        return { obs: window.getObservationVector(), reward: 0, done: true };
+    }
+    
+    // RL Action Mapping to targetWalkSpot for simple WASD ML overriding
+    if(typeof seeker !== 'undefined') {
+        if (actionIdx === 1) targetWalkSpot = { x: seeker.x, z: seeker.z - 4 }; // North
+        if (actionIdx === 2) targetWalkSpot = { x: seeker.x, z: seeker.z + 4 }; // South
+        if (actionIdx === 3) targetWalkSpot = { x: seeker.x - 4, z: seeker.z }; // West
+        if (actionIdx === 4) targetWalkSpot = { x: seeker.x + 4, z: seeker.z }; // East
+    }
+    
+    if(typeof executeLogicTick === 'function') executeLogicTick(dt);
+    
+    let reward = -0.01;
+    if (typeof gamePhase !== 'undefined') {
+        if (gamePhase === 'victory') reward += 10.0;
+        if (gamePhase === 'gameover') reward -= 5.0;
+    }
+    return {  obs: window.getObservationVector(), reward: reward, done: typeof gamePhase !== 'undefined' && (gamePhase === 'gameover' || gamePhase === 'victory') };
+};
+
+let aiTickTimer = 0;
+function executeLogicTick(dt) {
+    if (!simulationRunning) return;
+    
+    simTime += dt;
+    updateCinematic(dt);
+    
+    // Synchronous AI Tick replaces setInterval(300ms)
+    aiTickTimer += dt;
+    if (aiTickTimer >= 0.3) {
+        autoAgentStep();
+        aiTickTimer = 0;
+    }
+    
+    aiMovement(dt);
+    updateSeeker(dt);
+    updateSeekerInElevator(dt);
+    updateElevator(dt);
+    updateHUD();
+    if(typeof updatePhantomDeath === 'function') updatePhantomDeath(dt);
+}
+
+gfx.startLoop((engineDt) => {
+    let dt = Math.min(engineDt, 0.1);
+    dt *= simSpeedMultiplier;
+
+    if (rabbitMixer) rabbitMixer.update(dt);
+    if (seekerMixer) seekerMixer.update(dt * (seekerCurAnim === 'run' ? 1.5 : 1.0));
+
+    // Battery Logic
+    if (simulationRunning && gamePhase === 'seeking') {
+        if (flashLightOn) {
+            hudEnergy -= dt * 1.5; // Consume battery at 1.5 units per second
+            if (hudEnergy < 0) {
+                hudEnergy = 0;
+                flashLightOn = false;
+                document.getElementById('cam-flash').innerText = '🔦 DEAD';
+            }
+        }
+        
+        let visualIntensity = flashLightOn ? 1.2 : 0.0;
+        let isLowBatt = (hudEnergy < 20 && hudEnergy > 0);
+        
+        if (flashLightOn && isLowBatt) {
+            if (Math.random() < 0.2) visualIntensity *= (Math.random() * 0.5 + 0.2); // Flickering
+            document.getElementById('cam-batt').classList.add('low-batt');
+        } else {
+            document.getElementById('cam-batt').classList.remove('low-batt');
+        }
+        
+        if (flashLight) flashLight.intensity = visualIntensity;
+        if (volumetricBeam) volumetricBeam.material.opacity = flashLightOn ? (visualIntensity / 1.2) * 1.0 : 0;
+        
+        let chunks = Math.ceil(hudEnergy / 25);
+        let bar = '[' + '■'.repeat(chunks) + '□'.repeat(4 - chunks) + ']';
+        document.getElementById('cam-batt').innerText = bar;
+
+        // --- Minuteros Logic ---
+        if (isLightsOut) {
+            for (let f = 0; f < floorLightTimers.length; f++) {
+                if (floorLightTimers[f] > 0 && floorLightTimers[f] < 9999) {
+                    floorLightTimers[f] -= dt;
+                    if (floorLightTimers[f] < 0) floorLightTimers[f] = 0;
+                }
+                
+                if (floorLights[f]) {
+                    // Start dimming strongly when under 2 seconds, otherwise bright warm yellow
+                    let t = floorLightTimers[f];
+                    if (t >= 9999) floorLights[f].intensity = 0.4;
+                    else if (t > 2.0) floorLights[f].intensity = 0.4;
+                    else if (t > 0) {
+                        // Flickering right before light turns completely off
+                        let flicker = Math.random() > 0.3 ? 1.0 : 0.2;
+                        floorLights[f].intensity = (t / 2.0) * 0.4 * flicker;
+                    }
+                    else floorLights[f].intensity = 0;
+                }
+            }
+        } else {
+            // Keep all fLights on
+            for (let f = 0; f < floorLights.length; f++) {
+                if (floorLights[f]) floorLights[f].intensity = 0.4;
+            }
+        }
+        
+        // --- Battery Pickups Logic ---
+        for (let i = batteryPickups.length - 1; i >= 0; i--) {
+            let p = batteryPickups[i];
+            if (p.floor === seeker.floor) {
+                let dist = Math.hypot(seeker.x - p.x, seeker.z - p.z);
+                if (dist < 1.0) {
+                    // Collect!
+                    hudEnergy = Math.min(100.0, hudEnergy + 60.0);
+                    if (p.mesh.parent) p.mesh.parent.remove(p.mesh);
+                    batteryPickups.splice(i, 1);
+                    document.getElementById('cam-flash').innerText = flashLightOn ? '🔦 ON (F)' : '🔦 OFF (F)';
+                    _flashSeeker(0x34c759); // Flash green!
+                }
+            }
+        }
+    }
+
+    // Animate Flashlight Dust
+    if (window.flashDust && flashDust.userData.velocities && flashLightOn) {
+        const dPos = flashDust.geometry.attributes.position.array;
+        const dVel = flashDust.userData.velocities;
+        for (let i = 0; i < dPos.length / 3; i++) {
+            dPos[i*3] += dVel[i*3] * dt;
+            dPos[i*3+1] += dVel[i*3+1] * dt;
+            dPos[i*3+2] += dVel[i*3+2] * dt;
+            // Wrap particles when they float too far inside the cone
+            if (dPos[i*3+2] > 12) {
+                dPos[i*3+2] = 0.5; // Reset near lens
+                dPos[i*3] = (Math.random() - 0.5) * 1.5;
+                dPos[i*3+1] = (Math.random() - 0.5) * 1.5;
+            }
+        }
+        flashDust.geometry.attributes.position.needsUpdate = true;
+    }
+    if (window.flashDust) flashDust.visible = flashLightOn;
+
+    if (!window.RLMode) {
+        executeLogicTick(dt);
+    }
+
+    // Clear just-pressed keys at end of frame
+    for (const k in keysJustPressed) keysJustPressed[k] = false;
+});
+
+document.addEventListener('keydown', e => {
+    if (e.key.toLowerCase() === 'f' && gamePhase === 'seeking') {
+        toggleFlashlight();
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
+//  ALISA SDK
+// ═══════════════════════════════════════════════════════════
+ALISA_SDK.register({
+    sim: 'corporate_building',
+    getSemanticState: () => ({
+        status: simulationRunning ? 'running' : 'menu',
+        time: +simTime.toFixed(1),
+        game_status: gameStatus,
+        searches_made: searches,
+        seeker_floor: seeker.floor + 1,
+        seeker_x: +seeker.x.toFixed(1),
+        seeker_mode: seeker.mode,
+        seeker_in_elevator: seeker.inElevator,
+        elevator_floor: elevator.currentFloor + 1,
+        elevator_moving: elevator.moving,
+        total_floors: totalFloors,
+        doors_per_floor: doorsPerFloor,
+        recent_checks: doorChecks.slice(-3) // return last 3 feedbacks
+    }),
+    getAvailableActions: () => {
+        if (!simulationRunning) return ['wait'];
+        if (gameStatus === 'Found' || gameStatus === 'FOUND!') return ['wait'];
+
+        const acts = ['move_left', 'move_right', 'move_in', 'move_out', 'wait'];
+        if (!seeker.inElevator) {
+            acts.push('stairs_up', 'stairs_down', 'call_elevator', 'enter_elevator');
+            
+            // Allow search if near any door
+            const fd = floors[seeker.floor];
+            if (fd) {
+                let nearDoor = false;
+                for (let i = 0; i < fd.doors.length; i++) {
+                    if (Math.hypot(seeker.x - fd.doors[i].x, seeker.z - (-CORRIDOR_DEPTH/2 + 0.2)) < 1.2) nearDoor = true;
+                }
+                if (nearDoor) acts.push('search_door');
+            }
+        } else {
+            for (let i = 1; i <= totalFloors; i++) acts.push('goto_floor_' + i);
+            acts.push('exit_elevator');
+        }
+        return acts;
+    },
+    executeAction: (intentStr) => {
+        const intent = intentStr.toLowerCase().trim();
+        if (intent === 'move_left') { keys['a'] = true; setTimeout(() => keys['a']=false, 150); }
+        else if (intent === 'move_right') { keys['d'] = true; setTimeout(() => keys['d']=false, 150); }
+        else if (intent === 'move_in') { keys['w'] = true; setTimeout(() => keys['w']=false, 150); }
+        else if (intent === 'move_out') { keys['s'] = true; setTimeout(() => keys['s']=false, 150); }
+        else if (intent === 'stairs_up' || intent === 'stairs_down') { keysJustPressed[' '] = true; }
+        else if (intent === 'call_elevator') { keysJustPressed['e'] = true; }
+        else if (intent === 'enter_elevator' || intent === 'exit_elevator') { keysJustPressed[' '] = true; }
+        else if (intent === 'search_door') { keysJustPressed['enter'] = true; }
+        else if (intent.startsWith('goto_floor_')) {
+            const n = parseInt(intent.split('_')[2]);
+            if (n && n <= totalFloors) keysJustPressed[String(n)] = true;
+        }
+        return {success: true, msg: 'Dispatched: ' + intent};
+    },
+    getScore: () => ({
+        score: (gameStatus === 'Found' || gameStatus === 'FOUND!') ? Math.max(100 - searches*5, 10) : 0,
+        searches: searches,
+        time: simTime,
+        found: gameStatus === 'Found' || gameStatus === 'FOUND!'
+    })
+});
+
+</script>
+</body>
+</html>

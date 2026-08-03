@@ -1,0 +1,8 @@
+{
+    "source_file": "Boat.glb",
+    "deduced_size_meters": 44000.0,
+    "target_tier": "Tier 3.0: Mega-Structure",
+    "target_scale_constraint": 40.0,
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0
+}

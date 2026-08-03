@@ -1,0 +1,20 @@
+{
+    "name": "Igor",
+    "role": "The Bone Stitcher",
+    "emoji": "❔",
+    "type": "mechanical",
+    "skeleton": "igor_surgical",
+    "model_path": "igor_arm.glb",
+    "scale": 3.8,
+    "kinematics": "igor_surgical",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "xtts",
+        "tier": 5,
+        "voice_id": "alisa_igor",
+        "rate": "-5%",
+        "pitch": "-2Hz",
+        "label": "Igor - Marty Feldman (castellano, XTTS cloned)"
+    }
+}

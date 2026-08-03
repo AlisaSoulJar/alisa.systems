@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA Arcade — THE DETERMINISTIC GUILD</title>
+    <link rel="stylesheet" href="css/arcade.css">
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+    <header>
+        <div class="subtitle">Sovereign Simulation Gateway</div>
+        <h1>THE DETERMINISTIC GUILD</h1>
+    </header>
+    <main class="arcade-grid">
+        <a href="chess.html" class="arcade-card" data-game="chess">
+            <div class="card-header">
+                <div class="game-icon">♟️</div>
+                <div class="status-badge" data-state="offline"><div class="dot"></div> querying</div>
+            </div>
+            <div class="card-body">
+                <h2>Chess Matrix</h2>
+                <p>Classic 8x8 determinism.</p>
+            </div>
+            <div class="card-footer">
+                <div class="api-endpoint">/arcade/chess/move</div>
+                <div class="players"></div>
+            </div>
+        </a>
+        <a href="reversi.html" class="arcade-card" data-game="reversi">
+            <div class="card-header">
+                <div class="game-icon">☯️</div>
+                <div class="status-badge" data-state="offline"><div class="dot"></div> querying</div>
+            </div>
+            <div class="card-body">
+                <h2>Othello / Reversi</h2>
+                <p>Extreme volatility 8x8 matrix.</p>
+            </div>
+            <div class="card-footer">
+                <div class="api-endpoint">/arcade/reversi/move</div>
+                <div class="players"></div>
+            </div>
+        </a>
+        <a href="checkers.html" class="arcade-card" data-game="checkers">
+            <div class="card-header">
+                <div class="game-icon">🔴</div>
+                <div class="status-badge" data-state="offline"><div class="dot"></div> querying</div>
+            </div>
+            <div class="card-body">
+                <h2>Checkers Forge</h2>
+                <p>Fast-paced heuristic testing.</p>
+            </div>
+            <div class="card-footer">
+                <div class="api-endpoint">/arcade/checkers/move</div>
+                <div class="players"></div>
+            </div>
+        </a>
+        <a href="go.html" class="arcade-card" data-game="go">
+            <div class="card-header">
+                <div class="game-icon">⚪</div>
+                <div class="status-badge" data-state="offline"><div class="dot"></div> querying</div>
+            </div>
+            <div class="card-body">
+                <h2>Go Node</h2>
+                <p>19x19 territory control.</p>
+            </div>
+            <div class="card-footer">
+                <div class="api-endpoint">/arcade/go/move</div>
+                <div class="players"></div>
+            </div>
+        </a>
+        <a href="mancala.html" class="arcade-card" data-game="mancala">
+            <div class="card-header">
+                <div class="game-icon">🕳️</div>
+                <div class="status-badge" data-state="offline"><div class="dot"></div> querying</div>
+            </div>
+            <div class="card-body">
+                <h2>Mancala (Oware)</h2>
+                <p>Pit sowing sequence strategy.</p>
+            </div>
+            <div class="card-footer">
+                <div class="api-endpoint">/arcade/mancala/move</div>
+                <div class="players"></div>
+            </div>
+        </a>
+        <a href="xiangqi.html" class="arcade-card" data-game="xiangqi">
+            <div class="card-header">
+                <div class="game-icon">🀄</div>
+                <div class="status-badge" data-state="offline"><div class="dot"></div> querying</div>
+            </div>
+            <div class="card-body">
+                <h2>Xiangqi (Chinese Chess)</h2>
+                <p>River and Palace deterministic grid.</p>
+            </div>
+            <div class="card-footer">
+                <div class="api-endpoint">/arcade/xiangqi/move</div>
+                <div class="players"></div>
+            </div>
+        </a>
+        <a href="fagocito.html" class="arcade-card" data-game="fagocito">
+            <div class="card-header">
+                <div class="game-icon">🟡</div>
+                <div class="status-badge" data-state="offline"><div class="dot"></div> querying</div>
+            </div>
+            <div class="card-body">
+                <h2>Fagocito</h2>
+                <p>Ticking chase heuristics.</p>
+            </div>
+            <div class="card-footer">
+                <div class="api-endpoint">/arcade/fagocito/move</div>
+                <div class="players"></div>
+            </div>
+        </a>
+        <a href="snake.html" class="arcade-card" data-game="snake">
+            <div class="card-header">
+                <div class="game-icon">🐍</div>
+                <div class="status-badge" data-state="offline"><div class="dot"></div> querying</div>
+            </div>
+            <div class="card-body">
+                <h2>Snake Node</h2>
+                <p>Growth mechanics & collisions.</p>
+            </div>
+            <div class="card-footer">
+                <div class="api-endpoint">/arcade/snake/move</div>
+                <div class="players"></div>
+            </div>
+        </a>
+    </main>
+    <script src="js/arcade_core.js"></script>
+</body>
+</html>

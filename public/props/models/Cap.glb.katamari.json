@@ -1,0 +1,8 @@
+{
+    "source_file": "Cap.glb",
+    "deduced_size_meters": 3.6,
+    "target_tier": "Tier 1.0: Megafauna",
+    "target_scale_constraint": 3.5,
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0
+}

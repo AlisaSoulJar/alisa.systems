@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA - Arachne Ingestion Chamber</title>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/three-0.160.0/build/three.module.js",
+            "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+            "@alisa-engine/": "../js/alisa-engine/"
+        }
+    }
+    </script>
+
+    <link href="../css/style.css" rel="stylesheet">
+
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #030308;
+        }
+
+        .hud-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            pointer-events: none;
+            color: #b042ff;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 0 10px #b042ff;
+            z-index: 100;
+        }
+
+        .hud-overlay h1 {
+            font-size: 22px;
+            margin: 0 0 8px 0;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .hud-status {
+            font-size: 13px;
+            opacity: 0.7;
+        }
+
+        .ingestion-log {
+            margin-top: 12px;
+            font-size: 13px;
+            border-left: 2px solid #b042ff44;
+            padding-left: 10px;
+            max-height: 220px;
+            overflow-y: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .log-entry {
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        .highlight {
+            color: #00ffcc;
+            text-shadow: 0 0 8px #00ffcc;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .tier-readout {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            pointer-events: none;
+            font-family: 'Courier New', monospace;
+            color: #00ffcc;
+            font-size: 16px;
+            text-align: right;
+            text-shadow: 0 0 12px #00ffcc;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .tier-readout.visible {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="hud-overlay">
+        <h1>🕸️ Arachne Ingestion Chamber</h1>
+        <div class="hud-status">SYSTEM: Arachne.py Active</div>
+        <div class="hud-status">TUBE: <span id="tubeStatus" style="color:#00ffcc">STANDBY</span></div>
+        <div class="hud-status" style="margin-top: 6px;">🧠 ARACHNE.FSM: <span id="brainStatus"
+                style="color:#ffaa00">BOOTING</span></div>
+        <div class="ingestion-log" id="ingestionLog"></div>
+    </div>
+
+    <div class="tier-readout" id="tierReadout">
+        <div id="tierName">—</div>
+        <div id="tierDims" style="font-size:12px; opacity:0.6;">—</div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { AlisaRenderCore } from '@alisa-engine/soma/AlisaRenderCore.js';
+        import { ArachneEnvironmentFactory } from '@alisa-engine/extensions/avatar-pipeline/ArachneEnvironmentFactory.js';
+        import { ArachneSoftBodyPhysics } from '@alisa-engine/extensions/avatar-pipeline/ArachneSoftBodyPhysics.js';
+        import { ArachneIngestionSystem } from '@alisa-engine/extensions/avatar-pipeline/ArachneIngestionSystem.js';
+
+        // ══════════════════════════════════════
+        //  ENGINE
+        // ══════════════════════════════════════
+        const engine = new AlisaRenderCore({
+            clearColor: 0x030308,
+            fogColor: 0x030308,
+            fogDensity: 0.006,
+            cameraPosition: new THREE.Vector3(0, 20, 32)
+        });
+        engine.controls.target.set(0, 1, 0);
+
+        // ══════════════════════════════════════
+        //  DLC MODULES INITIALIZATION
+        // ══════════════════════════════════════
+        const envFactory = new ArachneEnvironmentFactory(engine.scene, engine);
+        envFactory.setupLighting();
+        envFactory.setupDust();
+
+        const physics = new ArachneSoftBodyPhysics(engine.scene);
+
+        const uiConfig = {
+            logElement: document.getElementById('ingestionLog'),
+            tubeElement: document.getElementById('tubeStatus'),
+            brainElement: document.getElementById('brainStatus'),
+            showTier: (name, dims) => {
+                const el = document.getElementById('tierReadout');
+                document.getElementById('tierName').textContent = name;
+                document.getElementById('tierDims').textContent = dims;
+                el.classList.add('visible');
+                setTimeout(() => el.classList.remove('visible'), 4000);
+            }
+        };
+
+        const ingestionSys = new ArachneIngestionSystem(engine, envFactory, physics, uiConfig);
+        ingestionSys.initialize();
+
+        // ══════════════════════════════════════
+        //  RENDER LOOP
+        // ══════════════════════════════════════
+        let elapsed = 0;
+        engine.startLoop((dt) => {
+            elapsed += dt;
+            physics.onUpdate(dt);
+            ingestionSys.onUpdate(dt, elapsed);
+        });
+    </script>
+</body>
+
+</html>

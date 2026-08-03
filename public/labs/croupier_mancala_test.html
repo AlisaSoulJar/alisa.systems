@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA LAB — ¿son correctas las reglas de Mancala?</title>
+<style>
+  body{margin:0;background:#070a11;color:#cfe3f5;font-family:ui-monospace,monospace;padding:20px 26px 60px}
+  h1{margin:0 0 3px;font-size:18px;color:#7fd0ff}
+  h2{font-size:13px;color:#7fd0ff;margin:20px 0 6px;border-bottom:1px solid #1d2b3e;padding-bottom:4px}
+  pre{background:#0b1018;border:1px solid #16202e;padding:10px 12px;font-size:11.5px;
+      line-height:1.65;white-space:pre-wrap;color:#b8d4ea;margin:6px 0;border-radius:3px}
+</style>
+</head>
+<body>
+<h1>▓ MANCALA (Kalah) · reglas del ProtoHub</h1>
+<div id="out"></div>
+<script type="module">
+import { mancala, HUECOS, GRANERO } from '../arcade/js/protohub/rules/mancala.js';
+
+const out = document.getElementById('out');
+const say = (h, t) => out.insertAdjacentHTML('beforeend', `<h2>${h}</h2><pre>${t}</pre>`);
+const R = {};
+const total = (b) => b.reduce((a, x) => a + x, 0);
+
+// ── 1. INICIO ──────────────────────────────────────────────────
+const p0 = mancala.nuevaPartida();
+const st0 = mancala.estado(p0);
+R.inicio = total(p0.board) === 48 && p0.board[6] === 0 && p0.board[13] === 0
+        && st0.legal_moves.join(',') === '0,1,2,3,4,5';
+say('1 · Reparto inicial',
+  `  tablero: [${p0.board.join(',')}]\n  semillas: ${total(p0.board)} (esperado 48)\n` +
+  `  graneros: ${p0.board[6]} y ${p0.board[13]} (esperado 0 y 0)\n` +
+  `  legales: ${st0.legal_moves.join(',')} (esperado 0,1,2,3,4,5)\n  ${R.inicio ? '✓' : '✗ MAL'}`);
+
+// ── 2. REPETIR TURNO ───────────────────────────────────────────
+// Sembrar el hueco 2 (4 semillas) llega justo al granero → repites.
+const p1 = mancala.nuevaPartida();
+mancala.mover(p1, '2');
+R.repite = p1.turno === 0 && p1.board[6] === 1;
+say('2 · Caer en tu granero da otro turno',
+  `  siembro el hueco 2 (4 semillas → 3,4,5,GRANERO)\n` +
+  `  granero: ${p1.board[6]} (esperado 1)   sigue mi turno: ${p1.turno === 0}\n  ${R.repite ? '✓' : '✗ MAL'}`);
+
+// ── 3. CAPTURA ─────────────────────────────────────────────────
+// Montamos a mano: última semilla cae en hueco vacío propio, con carga enfrente.
+const p2 = mancala.nuevaPartida();
+p2.board = [0,0,0,0,1,0, 0, 5,0,0,0,0,0, 0];   // hueco 4 tiene 1; el 5 está vacío; enfrente (7) tiene 5
+p2.turno = 0;
+const antesTotal = total(p2.board);
+mancala.mover(p2, '4');    // 4 → siembra 1 en el hueco 5, que estaba vacío → captura el 7
+R.captura = p2.board[6] === 6 && p2.board[7] === 0 && p2.board[5] === 0
+         && total(p2.board) === antesTotal;
+say('3 · Captura en hueco vacío propio',
+  `  antes:   [0,0,0,0,1,0 | 0 | 5,0,0,0,0,0 | 0]\n  después: [${p2.board.slice(0,6).join(',')} | ${p2.board[6]} | ${p2.board.slice(7,13).join(',')} | ${p2.board[13]}]\n` +
+  `  mi granero: ${p2.board[6]} (esperado 6 = 1 mía + 5 de enfrente)\n` +
+  `  semillas totales: ${total(p2.board)} (antes ${antesTotal})\n  ${R.captura ? '✓' : '✗ MAL'}`);
+
+// ── 4. NUNCA SE SIEMBRA EN EL GRANERO DEL RIVAL ────────────────
+const p3 = mancala.nuevaPartida();
+p3.board = new Array(14).fill(0);
+p3.board[5] = 10;   // desde el 5, diez semillas dan la vuelta larga
+p3.turno = 0;
+mancala.mover(p3, '5');
+R.saltaGranero = p3.board[13] === 0;
+say('4 · Se salta el granero del rival',
+  `  10 semillas desde el hueco 5\n  granero del RIVAL: ${p3.board[13]} (tiene que seguir a 0)\n` +
+  `  tablero: [${p3.board.join(',')}]\n  ${R.saltaGranero ? '✓' : '✗ MAL'}`);
+
+// ── 5. 500 PARTIDAS AL AZAR ────────────────────────────────────
+let fallos = 0, atascos = 0, terminadas = 0, mal = '';
+const finales = [];
+for (let s = 0; s < 500; s++) {
+  const p = mancala.nuevaPartida();
+  let pasos = 0;
+  while (true) {
+    const st = mancala.estado(p);
+    if (st.is_game_over || !st.legal_moves.length) break;
+    if (++pasos > 500) { atascos++; break; }
+    const m = st.legal_moves[(Math.random() * st.legal_moves.length) | 0];
+    if (!mancala.mover(p, m)) { fallos++; mal += `  rechazó su propia jugada legal '${m}'\n`; break; }
+    // INVARIANTE DURA: las semillas ni se crean ni se destruyen
+    if (total(p.board) !== 48) { fallos++; mal += `  semilla ${s}: ${total(p.board)} semillas en vez de 48\n`; break; }
+    if (p.board.some(x => x < 0)) { fallos++; mal += `  hueco negativo\n`; break; }
+  }
+  const st = mancala.estado(p);
+  if (st.is_game_over) terminadas++;
+  finales.push(st.score.white + st.score.black);
+}
+const repartoOk = finales.every(x => x === 48);
+R.partidas = fallos === 0 && atascos === 0 && repartoOk;
+say('5 · 500 partidas al azar — las semillas no desaparecen',
+  `  terminadas: ${terminadas}/500\n  atascos: ${atascos}\n  fallos: ${fallos}\n` +
+  `  al acabar, granero1+granero2 = 48 siempre: ${repartoOk}\n` + mal +
+  `  ${R.partidas ? '✓ las 48 semillas se conservan en todas las partidas' : '✗ MAL'}`);
+
+// ── 6. DESHACER ────────────────────────────────────────────────
+const p4 = mancala.nuevaPartida();
+const snap = p4.board.join(',');
+mancala.mover(p4, '0'); mancala.mover(p4, '1');
+mancala.deshacer(p4); mancala.deshacer(p4);
+R.deshacer = p4.board.join(',') === snap && p4.turno === 0;
+say('6 · Deshacer', `  antes:   ${snap}\n  después: ${p4.board.join(',')}\n  ${R.deshacer ? '✓' : '✗ MAL'}`);
+
+// ── 7. EL RIVAL DE CASA ────────────────────────────────────────
+let gana = 0, empata = 0;
+for (let i = 0; i < 200; i++) {
+  const p = mancala.nuevaPartida();
+  for (let k = 0; k < 500; k++) {
+    const st = mancala.estado(p);
+    if (st.is_game_over || !st.legal_moves.length) break;
+    const m = p.turno === 0 ? mancala.sugerencia(p)
+                            : st.legal_moves[(Math.random() * st.legal_moves.length) | 0];
+    if (!m || !mancala.mover(p, m)) break;
+  }
+  const st = mancala.estado(p);
+  if (st.result === 'white') gana++; else if (st.result === 'draw') empata++;
+}
+R.rival = gana > 55;
+say('7 · El rival de casa contra el azar (200 partidas)',
+  `  la casa gana ${gana / 2}%, empata ${empata / 2}%\n  ${R.rival ? '✓' : '✗ flojo'}`);
+
+const todo = Object.values(R).every(Boolean);
+say('VEREDICTO', Object.entries(R).map(([k, v]) => `  ${v ? '✓' : '✗'}  ${k}`).join('\n') +
+  `\n\n  ${todo ? '✅ MANCALA CORRECTO' : '❌ hay algo mal'}`);
+window.__mancala = R;
+window.__ready = true;
+</script>
+</body>
+</html>

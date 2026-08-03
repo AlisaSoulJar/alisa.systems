@@ -1,0 +1,53 @@
+{
+    "source_file": "Bird (3).glb",
+    "deduced_size_meters": 0.2,
+    "target_tier": "Tier -2: Tiny",
+    "target_scale_constraint": 0.2,
+    "voxel_grid": [
+        2,
+        4,
+        6
+    ],
+    "archetype": "prop_cube",
+    "morphology": {
+        "size_m": 0.2,
+        "domain": "inorganic",
+        "cladistics": "none",
+        "mobility": "stationary",
+        "mechanical_joints": 0
+    },
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0,
+    "ai_armature": [
+        {
+            "name": "Core Anchor X",
+            "parent": null,
+            "pos": [
+                -12.676361083984375,
+                120.7128677368164,
+                76.58231544494629
+            ]
+        },
+        {
+            "name": "Base Mount",
+            "parent": null,
+            "pos": [
+                -12.676361083984375,
+                12.06481513977051,
+                76.58231544494629
+            ]
+        }
+    ],
+    "mesh_scale_multiplier": 0.0008283627533922966,
+    "kinematics": {
+        "base_gait": "static",
+        "cycle_frequency_hz": 0.0,
+        "step_amplitude": 0.0,
+        "vertical_bounce": 0.0,
+        "spine_flexion": 0.0,
+        "idle_sway_hz": 0.0,
+        "locomotion_states": [
+            "idle"
+        ]
+    }
+}

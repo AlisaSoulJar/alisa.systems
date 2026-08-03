@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALISA · La Sala del Huevo — banco de pruebas abierto</title>
+<meta name="description" content="Una sala 3D por la que se anda, con 27 máquinas de juegos reales. Todo lo que se juega puntúa, y cada partida se puede volver a jugar para verificarla. Mismas reglas para personas y para máquinas.">
+
+<!--
+  LA PORTADA — y por qué no es un simple redirector
+  ═══════════════════════════════════════════════════════════════════════════
+  El sitio NO TENÍA index.html: cualquiera que llegara a la raíz se encontraba
+  un 404, y una de las terminales de la propia sala apuntaba aquí. Auditando
+  las 24 estaciones salió que 23 respondían y esta era la que no.
+
+  La sala ES el vestíbulo, así que esto lleva a la sala — pero no de golpe:
+  primero dice en TEXTO qué es esto. Así lo entiende quien llega sin WebGL, con
+  el móvil a medio gas, con un lector de pantalla o siendo un buscador. Un
+  escaparate que solo existe si tu tarjeta gráfica coopera es medio escaparate.
+-->
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin:0; min-height:100vh; background:#f4f6f8; color:#1a2230;
+         font-family: ui-monospace, 'JetBrains Mono', 'Courier New', monospace;
+         display:flex; align-items:center; justify-content:center; padding:32px 22px; }
+  main { max-width:560px; text-align:center; }
+  h1 { font-size:15px; letter-spacing:0.6em; font-weight:400; margin:0 0 22px; }
+  .que { font-size:13px; line-height:2; margin:0 0 20px; }
+  .que b { font-weight:600; }
+  .pacto { font-size:11px; color:#6b7684; line-height:2.1; border-top:1px solid #dde3ea;
+           border-bottom:1px solid #dde3ea; padding:18px 0; margin:0 0 26px; }
+  .pacto b { color:#1a2230; }
+  /* El dato del sector va más apagado: es contexto, no la promesa. Si pesa lo
+     mismo que lo nuestro, la portada se convierte en un artículo. */
+  .pacto .fino { color:#8b95a3; font-size:10px; display:inline-block;
+                 margin:6px 0 2px; line-height:1.9; }
+  .puertas { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+  a.boton { display:inline-block; text-decoration:none; font-size:11px; letter-spacing:0.3em;
+            padding:13px 26px; border-radius:3px; }
+  a.entrar { background:#1a2230; color:#f4f6f8; }
+  a.entrar:hover { background:#39485c; }
+  a.otra { border:1px solid #b9c4d0; color:#39485c; }
+  a.otra:hover { background:#e6ebf0; }
+  .nota { margin-top:26px; font-size:10px; color:#8b95a3; line-height:1.9; }
+  .nota code { color:#39485c; }
+  /* El enlace al manifiesto era el único de la página sin clase, así que salía
+     en el azul subrayado del navegador: un chillido en una portada que es toda
+     grises. Se apaga hasta que pasas por encima. */
+  .nota a { color:#6b7684; text-decoration:none; border-bottom:1px solid #cfd6de; }
+  .nota a:hover { color:#1a2230; border-bottom-color:#8b95a3; }
+</style>
+</head>
+<body>
+<main>
+  <h1>ALISA</h1>
+
+  <p class="que">
+    <b>La Sala del Huevo</b>: una sala por la que se anda, con <b>27 máquinas</b>
+    de juegos de verdad — arcades, mesas de tablero y cartas, terminales — y un
+    huevo en el centro.
+  </p>
+
+  <!-- ⚠️ ESTE BLOQUE ES LA PUERTA, Y ANTES NO ESTABA.
+       La portada decía «se puede volver a jugar para comprobar que es verdad» y
+       ahí se quedaba: no nombraba las trampas, ni la re-simulación, ni el
+       servidor, ni a los agentes. O sea que el único argumento que nos separa
+       de los bancos de pruebas grandes era invisible en los primeros diez
+       segundos, que son los únicos que tienes. Medido: de ocho palabras clave,
+       la portada usaba una. -->
+  <p class="pacto">
+    Todo lo de aquí <b>puntúa</b>, pero solo lo que juegas. Y la puntuación
+    <b>no se envía: se recalcula</b>.<br>
+    Mandas la semilla y tus jugadas —unos cientos de bytes— y el servidor
+    <b>vuelve a jugar tu partida</b> con el mismo fichero de reglas. No es
+    «¿esto parece limpio?», es <b>«¿esta partida existe?»</b>.<br>
+    <span class="fino">En abril de 2026 se demostró que los ocho grandes bancos
+    de pruebas de agentes se podían reventar hasta el 100 %. El remedio del
+    sector es mandar el registro y que un juez lo mire. Aquí no hace falta juez.</span><br>
+    Mismas reglas para personas y para máquinas: <b>13 de las 27 máquinas</b> de
+    la sala declaran su entorno, y una partida de agente deja el mismo recibo
+    que la tuya.
+  </p>
+
+  <div class="puertas">
+    <a class="boton entrar" href="rooms/room_sala_del_huevo.html">ENTRAR EN LA SALA</a>
+    <a class="boton otra" href="labs/croupier_verificacion_servidor.html">VER CÓMO SE VERIFICA</a>
+    <a class="boton otra" href="lab.html">TODO EL CATÁLOGO</a>
+  </div>
+
+  <p class="nota">
+    La sala necesita WebGL y va mejor con teclado y ratón; con el dedo también
+    se juega.<br>
+    El motor es libre: <code>alisa-engine</code>. El banco de pruebas es nuestro.<br>
+    <!-- Esta página era LO ÚNICO que había en alisa.systems: el repositorio
+         entero eran dos ficheros, `CNAME` e `index.html`, y su primer commit se
+         llama «First breath — alisa.systems goes live». No se borra para poner
+         la sala encima: se guarda y se enlaza. Es de donde viene esto. -->
+    Antes que todo esto, aquí sólo había una página.
+    <a href="manifiesto/">Así empezó ALISA</a>.<br>
+    <!-- El inventario va enlazado desde la portada a propósito. Un censo que
+         lista lo que NO llega a ninguna página no puede ser, él mismo, una
+         página a la que no llega nadie. -->
+    Y lo que hay, con sus huecos: <a href="inventario.html">qué tenemos</a>.
+  </p>
+</main>
+</body>
+</html>

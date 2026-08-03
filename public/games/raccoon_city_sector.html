@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ALISA — Raccoon Scape: Stage 5 — City Sector</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #010205; font-family: monospace; color: #fff; user-select: none; }
+        
+        #hud {
+            display: none; position: absolute; top: 10px; left: 10px;
+            font-family: monospace; background: rgba(5,10,25,0.85);
+            padding: 14px 18px; border-radius: 10px; border: 1px solid #ff6600;
+            pointer-events: auto; font-size: 13px; line-height: 1.8; z-index: 10;
+            box-shadow: 0 0 20px rgba(255,102,0,0.2);
+        }
+        #hud .title { color: #ff8844; font-size: 15px; font-weight: bold; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+        #hud .stat { color: #ffbb88; }
+        #hud .v-green { color: #88ff88; font-weight: bold; }
+        #hud .v-cyan { color: #88ccff; font-weight: bold; }
+        #hud .v-gold { color: #ffcc44; font-weight: bold; }
+        #hud .v-alert { color: #ff3b30; font-weight: bold; }
+
+        .fuel-container { 
+            width: 100%; height: 6px; background: #112; 
+            border-radius: 3px; margin-top: 5px; overflow: hidden;
+            border: 1px solid #3a2a1c; margin-bottom: 5px;
+        }
+        .fuel-fill { 
+            width: 100%; height: 100%; 
+            background: linear-gradient(90deg, #ff3b30, #ff9500, #34c759); 
+            transition: width 0.1s linear;
+        }
+
+        #minimap {
+            position: fixed; bottom: 20px; right: 20px; width: 180px; height: 180px;
+            background: rgba(0,10,20,0.7); border: 2px solid #ff6600; border-radius: 10px;
+            z-index: 20; display: none; pointer-events: none; box-shadow: 0 0 20px rgba(255,100,0,0.2);
+        }
+
+        #modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+            display: flex; align-items: center; justify-content: center; z-index: 100;
+        }
+        #modal .box {
+            background: rgba(10, 15, 20, 0.95); border: 2px solid #ff6600;
+            padding: 40px; border-radius: 12px; max-width: 600px; width: 90%;
+            box-shadow: 0 0 40px rgba(255,102,0,0.15);
+        }
+        #modal h1 { color: #ff8844; margin-bottom: 10px; font-size: 28px; letter-spacing: 2px; text-align: center;}
+        #modal h1 .emoji { font-size: 48px; display: block; margin-bottom: 10px; }
+        #modal p { color: #8aa; margin-bottom: 20px; line-height: 1.6; font-size: 13px; text-align: center;}
+        
+        #btnStart {
+            display: block; margin: 20px auto 0; background: linear-gradient(135deg, #ff6600, #ff8844);
+            color: #fff; border: none; padding: 12px 40px; font-size: 18px; font-weight: bold;
+            border-radius: 8px; cursor: pointer; transition: transform 0.2s; font-family: inherit; width: 100%;
+        }
+        #btnStart:hover { transform: scale(1.03); }
+
+        .modal-config { margin-top: 18px; display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+        .modal-config label { font-size: 11px; color: #8aa; font-weight: 600; display: block; }
+        .modal-config select, .modal-config input { 
+            background: #0a0f18; color: #ff8844; border: 1px solid #333; 
+            padding: 6px 10px; border-radius: 4px; font-family: inherit; font-size: 13px; width: 80px; 
+        }
+
+        #messages {
+            position: fixed; bottom: 45%; left: 50%; transform: translateX(-50%);
+            font-size: 22px; font-weight: bold; text-shadow: 0 0 20px rgba(0,0,0,0.8);
+            z-index: 30; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none;
+        }
+        
+        #hintBox {
+            position: fixed; bottom: 20px; left: 20px;
+            background: rgba(5,10,25,0.8); border: 1px solid #444; border-radius: 8px;
+            padding: 10px 14px; font-size: 11px; color: #8aa; z-index: 20; display: none;
+            max-width: 250px; line-height: 1.5;
+        }
+
+        .mode-badge { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; margin-right: 5px; }
+        .badge-world { background: #221100; color: #ff6600; border: 1px solid #ff6600; }
+        #mode-badges { position: fixed; top: 10px; right: 10px; z-index: 20; display: none; }
+        #ai-data-layer { display: none; }
+    </style>
+    <script type="importmap">
+    { 
+        "imports": { 
+            "three": "/vendor/three-0.160.0/build/three.module.js",
+            "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+            "@alisa-engine/": "../js/alisa-engine/"
+        } 
+    }
+    </script>
+</head>
+<body>
+
+    <div id="modal">
+        <div class="box">
+            <h1 id="mTitle"><span class="emoji">🦝🏙️</span>RACCOON SCAPE — CITY SECTOR</h1>
+            <p id="mDesc">The raccoon is hiding in one of the buildings across the city.<br><br>
+            Fly your drone over the rooftops and <b>scan each building</b>. The thermal scanner shows: 🟢 HOT → 🔴 COLD.<br><br>
+            Powered by ALISA <b>RaccoonCitySystem</b> y <b>RaccoonEnvironmentFactory</b> ECS.</p>
+            
+            <div class="modal-config">
+                <div><label>MODE</label><select id="mMode"><option value="human">👤 HUMAN</option><option value="ai">🤖 AI</option></select></div>
+                <div><label>BUILDINGS</label><input type="number" id="mBuildings" value="12" min="4" max="36" step="1"></div>
+                <div><label>SEED</label><input type="number" id="mSeed" value="42" min="1"></div>
+            </div>
+            
+            <button id="btnStart" onclick="initGame()">START: 🏙️ CITY SCAN</button>
+        </div>
+    </div>
+
+    <div id="hud">
+        <div class="title">🦝 CITY SECTOR — STAGE 5</div>
+        <span class="stat">SCANNED:</span> <span id="hScanned" class="v-cyan">0/12</span><br>
+        <span class="stat">BATTERY:</span> <span id="hFuel" class="v-green">100</span>%
+        <div class="fuel-container"><div class="fuel-fill" id="vFuelBar"></div></div>
+        <span class="stat">BUILDING:</span> <span id="hBuilding" class="v-cyan">—</span><br>
+        <span class="stat">STATUS:</span> <span id="hStatus" class="v-cyan">PATROLLING</span><br>
+        <span class="stat">SCORE:</span> <span id="hScore" class="v-gold">0</span>
+    </div>
+
+    <div id="messages"></div>
+    <canvas id="minimap" width="180" height="180"></canvas>
+    <div id="mode-badges"><span class="mode-badge badge-world">🌍 ECS Powered</span></div>
+    <div id="hintBox">🎮 <b>WASD</b> Move drone · <b>Q/E</b> Up/Down · <b>Click</b> Scan</div>
+    <div id="ai-data-layer"></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RaccoonEnvironmentFactory } from '@alisa-engine/src/world/factories/RaccoonEnvironmentFactory.js';
+import { RaccoonCitySystem } from '@alisa-engine/src/world/systems/RaccoonCitySystem.js';
+import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+
+const gfx = new AlisaRenderCore({
+    clearColor: 0x020408,
+    fogColor: 0x020408,
+    fogDensity: 0.004,
+    cameraPosition: new THREE.Vector3(80, 60, 80),
+    useShadows: true
+});
+const scene = gfx.scene;
+const camera = gfx.camera;
+const renderer = gfx.renderer;
+const controls = gfx.controls;
+controls.maxPolarAngle = Math.PI / 2 - 0.05;
+
+scene.add(new THREE.HemisphereLight(0x1a1a2e, 0x0a0a15, 0.3));
+const moonLight = new THREE.DirectionalLight(0x4466aa, 0.4);
+moonLight.position.set(50, 80, -30);
+moonLight.castShadow = true;
+scene.add(moonLight);
+
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(500, 500), new THREE.MeshStandardMaterial({ color: 0x0a0c12, roughness: 0.9 }));
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+const grid = new THREE.GridHelper(500, 50, 0x111828, 0x080c14);
+grid.position.y = 0.02;
+scene.add(grid);
+
+// Setup ECS
+const factory = new RaccoonEnvironmentFactory();
+const system = new RaccoonCitySystem({ maxSpeed: 60 });
+
+let buildings = [];
+let targetBuildingIdx = -1;
+let targetMarker = null;
+let totalBuildings = 12;
+let CITY_RADIUS = 80;
+let droneRig = null;
+
+let gameState = { ended: false, score: 0 };
+let scannedCount = 0;
+
+const keys = {};
+window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+system.setKeys(keys);
+
+window.initGame = function() {
+    let seed = parseInt(document.getElementById('mSeed').value) || 42;
+    factory.seedRandom(seed);
+    totalBuildings = parseInt(document.getElementById('mBuildings').value) || 12;
+    window.RLMode = document.getElementById('mMode').value === 'ai';
+    
+    // Cleanup old meshes dynamically
+    buildings.forEach(b => {
+        scene.remove(b.mesh); scene.remove(b.glow); scene.remove(b.hit);
+    });
+    if (droneRig) scene.remove(droneRig.root);
+    if (targetMarker) scene.remove(targetMarker);
+    
+    const generation = factory.generateCity(scene, CITY_RADIUS, totalBuildings);
+    buildings = generation.buildings;
+    targetBuildingIdx = generation.targetBuildingIdx;
+    targetMarker = generation.targetMarker;
+    
+    droneRig = factory.createDrone(scene);
+    droneRig.root.position.set(0, 45, 0);
+    
+    system.init(droneRig.root, droneRig.inner, droneRig.propellers, droneRig.volBeam);
+    system.onPowerDrain = () => {
+        gameState.ended = true;
+        const msg = document.getElementById('messages');
+        msg.style.opacity = '1';
+        msg.innerHTML = "<span style='color:#ff3b30'>⚡ BATTERY DEPLETED!</span>";
+        setTimeout(() => location.reload(), 3000);
+    };
+
+    gameState = { ended: false, score: 0 };
+    scannedCount = 0;
+    
+    camera.position.set(80, 60, 80);
+    controls.target.set(0, 20, 0);
+    
+    document.getElementById('modal').style.display = 'none';
+    document.getElementById('hud').style.display = 'block';
+    document.getElementById('minimap').style.display = 'block';
+    document.getElementById('mode-badges').style.display = 'flex';
+    document.getElementById('hintBox').style.display = 'block';
+};
+
+function getBuildingTemperature(buildingIdx) {
+    const bPos = buildings[buildingIdx].pos;
+    const tPos = buildings[targetBuildingIdx].pos;
+    const dist = bPos.distanceTo(tPos);
+    const maxDist = CITY_RADIUS * 2;
+    const normDist = dist / maxDist;
+    
+    if (buildingIdx === targetBuildingIdx) return { level: 'FOUND', color: 0x34c759, cssColor: '#34c759', label: '🎯 FOUND', dist: 0 };
+    if (normDist < 0.1) return { level: 'HOT', color: 0x34c759, cssColor: '#34c759', label: '🟢 HOT', dist };
+    if (normDist < 0.25) return { level: 'WARM', color: 0xaacc00, cssColor: '#aacc00', label: '🟡 WARM', dist };
+    if (normDist < 0.45) return { level: 'COOL', color: 0xffcc00, cssColor: '#ffcc00', label: '🟠 COOL', dist };
+    if (normDist < 0.65) return { level: 'CHILLY', color: 0xff8800, cssColor: '#ff8800', label: '🟠 CHILLY', dist };
+    return { level: 'COLD', color: 0xff2200, cssColor: '#ff2200', label: '🔴 COLD', dist };
+}
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+window.addEventListener('pointerdown', (e) => {
+    if (!system.playing || gameState.ended) return;
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(buildings.map(b => b.hit), false);
+    if (intersects.length > 0) scanBuilding(intersects[0].object.userData.buildingIndex);
+});
+
+function scanBuilding(idx) {
+    if (gameState.ended || buildings[idx].scanned) return;
+    buildings[idx].scanned = true;
+    scannedCount++;
+    
+    const temp = getBuildingTemperature(idx);
+    const b = buildings[idx];
+    const msg = document.getElementById('messages');
+    msg.style.opacity = '1';
+    
+    b.mesh.material = b.mesh.material.clone();
+    b.mesh.material.emissive = new THREE.Color(temp.color);
+    b.mesh.material.emissiveIntensity = 0.6;
+    b.glow.material.color.setHex(temp.color);
+    b.glow.material.opacity = 0.7;
+    
+    if (idx === targetBuildingIdx) {
+        b.glow.material.opacity = 1.0;
+        if (targetMarker) targetMarker.visible = true;
+        gameState.score += Math.floor(system.fuel) + (totalBuildings - scannedCount) * 10;
+        msg.innerHTML = "<span style='color:#34c759'>🎯🦝 RACCOON FOUND IN THIS BUILDING!</span>";
+        winSequence();
+    } else {
+        system.fuel -= 5;
+        msg.innerHTML = `${temp.label} <span style='color:${temp.cssColor}'>(${Math.floor(temp.dist)}m away)</span>`;
+        if (system.fuel <= 0) system.onPowerDrain();
+    }
+    
+    setTimeout(() => { msg.style.opacity = '0'; }, 1500);
+    updateHUD();
+}
+
+function winSequence() {
+    system.playing = false;
+    gameState.ended = true;
+    
+    const target = buildings[targetBuildingIdx].pos.clone();
+    target.y += buildings[targetBuildingIdx].height + 5;
+    
+    const winLoop = setInterval(() => {
+        droneRig.root.position.lerp(target, 0.03);
+        if (droneRig.root.position.distanceTo(target) < 2) {
+            clearInterval(winLoop);
+            const msg = document.getElementById('messages');
+            msg.style.opacity = '1';
+            msg.innerHTML = `<span style='color:#34c759'>🏆 STAGE 5 CLEAR! SCORE: ${gameState.score}</span>`;
+            setTimeout(() => location.reload(), 4000);
+        }
+    }, 16);
+}
+
+function updateHUD() {
+    document.getElementById('hScanned').textContent = `${scannedCount}/${totalBuildings}`;
+    document.getElementById('hFuel').textContent = Math.floor(system.fuel);
+    document.getElementById('vFuelBar').style.width = system.fuel + '%';
+    document.getElementById('hScore').textContent = gameState.score;
+    
+    const p = system.fuel;
+    if (p < 20) document.getElementById('vFuelBar').style.background = '#ff3b30';
+    else if (p < 50) document.getElementById('vFuelBar').style.background = '#ff9500';
+    else document.getElementById('vFuelBar').style.background = 'linear-gradient(90deg, #ff3b30, #ff9500, #34c759)';
+}
+
+function drawMinimap() {
+    const canvas = document.getElementById('minimap');
+    if (!canvas || canvas.style.display === 'none' || !droneRig) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, 180, 180);
+    const cx = 90, cy = 90;
+    const scale = 80 / CITY_RADIUS;
+    
+    buildings.forEach(b => {
+        const bx = cx + b.pos.x * scale;
+        const bz = cy + b.pos.z * scale;
+        ctx.fillStyle = b.scanned ? getBuildingTemperature(b.index).cssColor : '#334';
+        ctx.fillRect(bx - 2, bz - 2, 4, 4);
+    });
+    
+    const dx = cx + droneRig.root.position.x * scale;
+    const dz = cy + droneRig.root.position.z * scale;
+    ctx.beginPath();
+    ctx.arc(dx, dz, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#ff6600';
+    ctx.fill();
+    ctx.strokeStyle = '#ff8844';
+    ctx.stroke();
+}
+
+gfx.startLoop((dt) => {
+    if (system.playing && !gameState.ended) {
+        system.update(dt);
+        
+        let nearestIdx = -1, nearestDist = Infinity;
+        buildings.forEach((b, i) => {
+            const d = droneRig.root.position.distanceTo(b.pos);
+            if (d < nearestDist) { nearestDist = d; nearestIdx = i; }
+        });
+        document.getElementById('hBuilding').textContent = nearestDist < 25 ? `B-${nearestIdx} (${Math.floor(nearestDist)}m)` : '—';
+        
+        updateHUD();
+    }
+    
+    if (system.playing && droneRig) {
+        controls.target.lerp(droneRig.root.position, 0.05);
+    }
+    
+    drawMinimap();
+});
+
+// RL Bridge exposed to Metatron
+window.getObservationVector = function() {
+    if (!droneRig) return { obs: [], meta: {} };
+    const obs = [
+        system.fuel / 100, droneRig.root.position.x / CITY_RADIUS, droneRig.root.position.y / 60,
+        droneRig.root.position.z / CITY_RADIUS, scannedCount / totalBuildings
+    ];
+    buildings.forEach(b => {
+        obs.push(b.scanned ? 1 : 0);
+        obs.push(droneRig.root.position.distanceTo(b.pos) / (CITY_RADIUS * 2));
+    });
+    return { obs, meta: { fuel: system.fuel, scanned: scannedCount, target: targetBuildingIdx } };
+};
+
+window.stepSimulation = function(actionIdx, dt) {
+    if (gameState.ended) return { obs: window.getObservationVector(), reward: 0, done: true };
+    const thrust = new THREE.Vector3();
+    if (actionIdx === 1) thrust.z = -1;
+    if (actionIdx === 2) thrust.z = 1;
+    if (actionIdx === 3) thrust.x = -1;
+    if (actionIdx === 4) thrust.x = 1;
+    if (actionIdx === 5) thrust.y = 1;
+    if (actionIdx === 6) thrust.y = -1;
+    if (actionIdx === 7 && !gameState.ended) {
+        let nearIdx = -1, nearDist = Infinity;
+        buildings.forEach((b, i) => {
+            if (!b.scanned) {
+                let d = droneRig.root.position.distanceTo(b.pos);
+                if (d < nearDist) { nearDist = d; nearIdx = i; }
+            }
+        });
+        if (nearIdx !== -1 && nearDist < 25) scanBuilding(nearIdx);
+    }
+    system.droneVelocity.add(thrust.normalize().multiplyScalar(35 * dt));
+    return { obs: window.getObservationVector(), reward: 0, done: gameState.ended };
+};
+</script>
+</body>
+</html>

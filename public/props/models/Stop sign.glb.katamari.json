@@ -1,0 +1,8 @@
+{
+    "source_file": "Stop sign.glb",
+    "deduced_size_meters": 0.9,
+    "target_tier": "Tier -1.5: Large Fauna",
+    "target_scale_constraint": 0.8,
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0
+}

@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA — Overworld</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --pixel-font: 'Press Start 2P', monospace;
+            --ui-font: 'Inter', system-ui, sans-serif;
+        }
+
+        body {
+            background: #0a0a0f;
+            overflow: hidden;
+            font-family: var(--ui-font);
+            color: #e0e0e0;
+            cursor: default;
+            user-select: none;
+        }
+
+        /* ═══ LOADING SCREEN ═══ */
+        #loading {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: radial-gradient(ellipse at center, #1a0a2e, #050510);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease-out;
+        }
+
+        #loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .load-title {
+            font-family: var(--pixel-font);
+            font-size: 28px;
+            background: linear-gradient(135deg, #bf7fff, #ff69b4, #ffd700);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+            text-align: center;
+            animation: pulse-glow 2s infinite alternate;
+        }
+
+        .load-sub {
+            color: #888;
+            font-size: 13px;
+            margin-top: 15px;
+            font-family: var(--pixel-font);
+            font-size: 9px;
+        }
+
+        .load-bar {
+            width: 300px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .load-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #bf7fff, #ff69b4);
+            transition: width 0.3s;
+        }
+
+        @keyframes pulse-glow {
+            from {
+                filter: brightness(1);
+            }
+
+            to {
+                filter: brightness(1.3) drop-shadow(0 0 20px rgba(191, 127, 255, 0.5));
+            }
+        }
+
+        /* ═══ MAIN CANVAS ═══ */
+        #game {
+            position: fixed;
+            inset: 0;
+        }
+
+        canvas {
+            display: block;
+            image-rendering: auto;
+        }
+
+        /* ═══ HUD ═══ */
+        #hud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .hud-left,
+        .hud-right {
+            pointer-events: auto;
+        }
+
+        .hud-domain {
+            font-family: var(--pixel-font);
+            font-size: 16px;
+            text-shadow: 0 0 15px currentColor, 0 2px 4px rgba(0, 0, 0, 0.8);
+            margin-bottom: 4px;
+        }
+
+        .hud-desc {
+            font-size: 11px;
+            opacity: 0.6;
+            font-style: italic;
+        }
+
+        .hud-stats {
+            font-family: var(--pixel-font);
+            font-size: 8px;
+            text-align: right;
+            line-height: 2;
+        }
+
+        .hud-stats .stray {
+            color: #ff4444;
+        }
+
+        /* ═══ WORLD DOTS ═══ */
+        #world-dots {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 100;
+        }
+
+        .world-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+            pointer-events: auto;
+        }
+
+        .world-dot.active {
+            transform: scale(1.4);
+            border-color: white;
+        }
+
+        .world-dot:hover {
+            transform: scale(1.3);
+        }
+
+        /* ═══ ARROW HINTS ═══ */
+        .arrow-hint {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 36px;
+            opacity: 0.15;
+            z-index: 90;
+            font-family: var(--pixel-font);
+            animation: arrow-pulse 1.5s infinite alternate;
+            pointer-events: none;
+        }
+
+        .arrow-hint.left {
+            left: 15px;
+        }
+
+        .arrow-hint.right {
+            right: 15px;
+        }
+
+        @keyframes arrow-pulse {
+            from {
+                opacity: 0.07;
+            }
+
+            to {
+                opacity: 0.25;
+            }
+        }
+
+        /* ═══ ROOM PANEL ═══ */
+        #room-panel {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: rgba(5, 5, 15, 0.92);
+            backdrop-filter: blur(10px);
+            display: none;
+            flex-direction: column;
+            padding: 30px 40px;
+            animation: room-in 0.3s ease-out;
+        }
+
+        #room-panel.open {
+            display: flex;
+        }
+
+        @keyframes room-in {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .room-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 12px;
+        }
+
+        .room-title {
+            font-family: var(--pixel-font);
+            font-size: 14px;
+        }
+
+        .room-close {
+            font-family: var(--pixel-font);
+            font-size: 10px;
+            background: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ccc;
+            padding: 6px 14px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .room-close:hover {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .room-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 10px;
+            overflow-y: auto;
+            flex: 1;
+            padding: 10px 0;
+        }
+
+        .room-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 6px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            cursor: default;
+            transition: all 0.2s;
+        }
+
+        .room-item:hover {
+            background: rgba(255, 255, 255, 0.07);
+            transform: translateY(-2px);
+        }
+
+        .room-item.stray {
+            border-color: rgba(255, 50, 50, 0.4);
+            background: rgba(255, 30, 30, 0.08);
+            animation: stray-glow 1.5s infinite alternate;
+        }
+
+        .room-item.dir {
+            border-color: rgba(100, 200, 255, 0.2);
+        }
+
+        @keyframes stray-glow {
+            from {
+                box-shadow: 0 0 5px rgba(255, 50, 50, 0.1);
+            }
+
+            to {
+                box-shadow: 0 0 15px rgba(255, 50, 50, 0.3);
+            }
+        }
+
+        .room-item-icon {
+            font-size: 28px;
+            margin-bottom: 6px;
+        }
+
+        .room-item-name {
+            font-size: 9px;
+            font-family: var(--pixel-font);
+            text-align: center;
+            word-break: break-all;
+            line-height: 1.4;
+            max-width: 100%;
+        }
+
+        .room-item-meta {
+            font-size: 10px;
+            opacity: 0.4;
+            margin-top: 3px;
+        }
+
+        /* ═══ BEINGS PANEL ═══ */
+        #beings-bar {
+            position: fixed;
+            bottom: 50px;
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            pointer-events: auto;
+        }
+
+        .being-chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: rgba(20, 20, 30, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 11px;
+            backdrop-filter: blur(5px);
+        }
+
+        .being-state {
+            font-size: 8px;
+            font-family: var(--pixel-font);
+        }
+
+        .being-state.thinking {
+            color: #ffd700;
+        }
+
+        .being-state.acting {
+            color: #00ff88;
+        }
+
+        .being-state.resting {
+            color: #666;
+        }
+
+        /* ═══ EVENT TICKER ═══ */
+        #event-log {
+            position: fixed;
+            bottom: 50px;
+            left: 20px;
+            width: 380px;
+            max-height: 200px;
+            overflow: hidden;
+            z-index: 100;
+            font-family: var(--pixel-font);
+            font-size: 7px;
+            pointer-events: none;
+            background: linear-gradient(to top, rgba(5, 5, 15, 0.85) 60%, transparent);
+            padding: 12px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .log-line {
+            margin: 3px 0;
+            color: #7a9;
+            line-height: 1.6;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            animation: ticker-in 0.3s ease-out;
+        }
+
+        .log-line .log-time {
+            color: #556;
+            margin-right: 6px;
+        }
+
+        .log-line .log-being {
+            color: #ffd700;
+            margin-right: 4px;
+        }
+
+        .log-line.warning {
+            color: #f84;
+        }
+
+        .log-line.dissonance {
+            color: #f44;
+            text-shadow: 0 0 6px rgba(255, 50, 50, 0.4);
+        }
+
+        @keyframes ticker-in {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #ticker-status {
+            position: fixed;
+            bottom: 255px;
+            left: 20px;
+            font-family: var(--pixel-font);
+            font-size: 7px;
+            color: #444;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        #ticker-status.connected {
+            color: #4a8;
+        }
+
+        #ticker-status.disconnected {
+            color: #a44;
+        }
+    </style>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+
+<body>
+    <!-- Loading -->
+    <div id="loading">
+        <div class="load-title">🎮 ALISA OVERWORLD</div>
+        <div class="load-bar">
+            <div class="load-fill" id="load-fill"></div>
+        </div>
+        <div class="load-sub" id="load-text">Scanning domains...</div>
+    </div>
+
+    <!-- Main Canvas -->
+    <div id="game"><canvas id="canvas"></canvas></div>
+
+    <!-- HUD -->
+    <div id="hud">
+        <div class="hud-left">
+            <div class="hud-domain" id="hud-domain">SOMA</div>
+            <div class="hud-desc" id="hud-desc">The Body</div>
+        </div>
+        <div class="hud-right">
+            <div class="hud-stats" id="hud-stats"></div>
+        </div>
+    </div>
+
+    <!-- World navigation dots -->
+    <div id="world-dots" id="dots"></div>
+
+    <!-- Arrow hints -->
+    <div class="arrow-hint left" id="arrow-left">◀</div>
+    <div class="arrow-hint right" id="arrow-right">▶</div>
+
+    <!-- Room panel (overlay) -->
+    <div id="room-panel">
+        <div class="room-header">
+            <div class="room-title" id="room-title">Room</div>
+            <button class="room-close" id="room-close">✕ ESC</button>
+        </div>
+        <div class="room-grid" id="room-grid"></div>
+    </div>
+
+    <!-- Beings bar -->
+    <div id="beings-bar" id="beings"></div>
+
+    <!-- Event ticker -->
+    <div id="ticker-status">● CONNECTING...</div>
+    <div id="event-log"></div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // ALISA OVERWORLD — SNES-Style World Navigator
+        // ═══════════════════════════════════════════════════════════════
+
+        const API = window.location.origin;
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // ── State ────────────────────────────────────────────────────
+        let worlds = [];          // World data from API
+        let currentWorld = 0;     // Index into worlds[]
+        let scrollX = 0;          // Smooth scroll offset
+        let targetScrollX = 0;    // Target scroll position
+        let hoveredNode = null;   // Currently hovered map node
+        let roomOpen = false;     // Is room panel open?
+        let beings = [];          // ALISON states
+        let mouseX = 0, mouseY = 0;
+
+        // ── Node layout cache ────────────────────────────────────────
+        let nodeCache = new Map(); // worldIdx -> [{name, x, y, w, h, children, isStray}]
+
+        // ── Live dog state ───────────────────────────────────────────
+        let dogDomain = null;     // Which domain GoodBoy is in right now
+        let dogNodeName = null;   // Which estancia he's sniffing
+        let dogX = 0, dogY = 0;   // Current sprite position (smooth)
+        let dogTargetX = 0, dogTargetY = 0;
+        let dogWorldIdx = -1;
+        let dogVisible = false;
+        let tickerLines = [];     // Event log lines for the ticker
+        const MAX_TICKER = 20;
+        let domainPulse = {};     // {domainName: pulseEndTime}
+
+        // ── Colors per domain ────────────────────────────────────────
+        const PALETTES = {
+            Genesis: {
+                bg1: '#1a1510', bg2: '#2a1f15', accent: '#ffd700', node: '#ffefd5',
+                nodeBg: '#3a2a10', path: '#5a4a20', glow: 'rgba(255,215,0,0.15)',
+                stars: '#ffd70044',
+            },
+            Soma: {
+                bg1: '#1a0808', bg2: '#2a0f0f', accent: '#ff6b6b', node: '#ff9999',
+                nodeBg: '#3a1515', path: '#5a2020', glow: 'rgba(255,100,100,0.15)',
+                stars: '#ff6b6b44',
+            },
+            Psyche: {
+                bg1: '#150a28', bg2: '#200f3a', accent: '#bf7fff', node: '#d9b3ff',
+                nodeBg: '#2a1545', path: '#4a2a6a', glow: 'rgba(191,127,255,0.15)',
+                stars: '#bf7fff44',
+            },
+            World: {
+                bg1: '#081520', bg2: '#0f2030', accent: '#3498db', node: '#7ec8e3',
+                nodeBg: '#152535', path: '#204060', glow: 'rgba(52,152,219,0.15)',
+                stars: '#3498db44',
+            },
+        };
+
+        // ═══ INIT ════════════════════════════════════════════════════
+        async function init() {
+            resize();
+            window.addEventListener('resize', resize);
+
+            setLoad(20, 'Fetching worlds...');
+            try {
+                const res = await fetch(`${API}/api/worlds`);
+                const data = await res.json();
+                worlds = data.worlds;
+            } catch (e) {
+                // Fallback: generate from known domains
+                worlds = ['Genesis', 'Soma', 'Psyche', 'World'].map(d => ({
+                    domain: d, meta: { emoji: '🌍' }, description: d,
+                    rooms: [], stray_count: 0, total_dirs: 0, total_files: 0,
+                }));
+            }
+
+            setLoad(50, 'Loading beings...');
+            try {
+                const res = await fetch(`${API}/api/beings`);
+                beings = (await res.json()).beings || [];
+            } catch (e) { beings = []; }
+
+            setLoad(70, 'Building maps...');
+            await buildNodeCaches();
+
+            setLoad(90, 'Spawning dots...');
+            buildDots();
+            buildBeingsBar();
+            updateHUD();
+
+            setLoad(95, 'Connecting event stream...');
+            connectSSE();
+
+            setLoad(100, 'Welcome to ALISA');
+            setTimeout(() => document.getElementById('loading').classList.add('hidden'), 400);
+
+            // Controls
+            window.addEventListener('keydown', onKey);
+            canvas.addEventListener('mousemove', onMouse);
+            canvas.addEventListener('click', onClick);
+
+            // Start game loop
+            requestAnimationFrame(loop);
+        }
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        function setLoad(pct, txt) {
+            document.getElementById('load-fill').style.width = pct + '%';
+            document.getElementById('load-text').textContent = txt;
+        }
+
+        // ═══ NODE LAYOUT ═════════════════════════════════════════════
+        async function buildNodeCaches() {
+            for (let i = 0; i < worlds.length; i++) {
+                const w = worlds[i];
+                let detail;
+                try {
+                    const res = await fetch(`${API}/api/world/${w.domain}`);
+                    detail = await res.json();
+                } catch (e) {
+                    detail = { dirs: [], files: [] };
+                }
+
+                const dirs = detail.dirs || [];
+                const nodes = [];
+                const cw = canvas.width;
+                const ch = canvas.height;
+
+                // Layout nodes in a circle-like grid
+                const count = dirs.length;
+                const cols = Math.ceil(Math.sqrt(count * 1.5));
+                const rows = Math.ceil(count / cols);
+                const nodeW = 120;
+                const nodeH = 54;
+                const gapX = 30;
+                const gapY = 26;
+                const totalW = cols * (nodeW + gapX) - gapX;
+                const totalH = rows * (nodeH + gapY) - gapY;
+                const startX = (cw - totalW) / 2;
+                const startY = (ch - totalH) / 2 + 20;
+
+                for (let j = 0; j < dirs.length; j++) {
+                    const d = dirs[j];
+                    const col = j % cols;
+                    const row = Math.floor(j / cols);
+                    nodes.push({
+                        name: d.name,
+                        x: startX + col * (nodeW + gapX),
+                        y: startY + row * (nodeH + gapY),
+                        w: nodeW,
+                        h: nodeH,
+                        children: d.children,
+                        isStray: d.is_stray,
+                    });
+                }
+                nodeCache.set(i, nodes);
+            }
+        }
+
+        // ═══ DOTS ════════════════════════════════════════════════════
+        function buildDots() {
+            const container = document.getElementById('world-dots');
+            container.innerHTML = '';
+            worlds.forEach((w, i) => {
+                const dot = document.createElement('div');
+                dot.className = 'world-dot' + (i === currentWorld ? ' active' : '');
+                const pal = PALETTES[w.domain] || PALETTES.World;
+                dot.style.background = i === currentWorld ? pal.accent : 'transparent';
+                dot.style.borderColor = pal.accent;
+                dot.title = `${w.meta?.emoji || ''} ${w.domain}`;
+                dot.addEventListener('click', () => goToWorld(i));
+                container.appendChild(dot);
+            });
+        }
+
+        function buildBeingsBar() {
+            const bar = document.getElementById('beings-bar');
+            bar.innerHTML = '';
+            beings.forEach(b => {
+                const chip = document.createElement('div');
+                chip.className = 'being-chip';
+                const stateClass = b.state || 'resting';
+                const stateIcon = { thinking: '🧠', acting: '⚡', resting: '💤' }[stateClass] || '💤';
+                chip.innerHTML = `
+                <span>${b.emoji}</span>
+                <span>${b.name}</span>
+                <span class="being-state ${stateClass}">${stateIcon} ${stateClass.toUpperCase()}</span>
+            `;
+                bar.appendChild(chip);
+            });
+        }
+
+        // ═══ NAVIGATION ══════════════════════════════════════════════
+        function goToWorld(idx) {
+            if (idx < 0 || idx >= worlds.length) return;
+            currentWorld = idx;
+            targetScrollX = -idx * canvas.width;
+            updateHUD();
+            buildDots();
+        }
+
+        function updateHUD() {
+            const w = worlds[currentWorld];
+            if (!w) return;
+            const pal = PALETTES[w.domain] || PALETTES.World;
+            const domEl = document.getElementById('hud-domain');
+            domEl.textContent = `${w.meta?.emoji || ''} ${w.domain}`;
+            domEl.style.color = pal.accent;
+            document.getElementById('hud-desc').textContent = w.description || w.domain;
+
+            const stats = document.getElementById('hud-stats');
+            stats.innerHTML = `
+            ROOMS: ${w.total_dirs || 0}<br>
+            FILES: ${w.total_files || 0}<br>
+            ${w.stray_count > 0 ? `<span class="stray">⚠ STRAYS: ${w.stray_count}</span>` : '✅ CLEAN'}
+        `;
+
+            // Arrow visibility
+            document.getElementById('arrow-left').style.display = currentWorld > 0 ? '' : 'none';
+            document.getElementById('arrow-right').style.display = currentWorld < worlds.length - 1 ? '' : 'none';
+        }
+
+        // ═══ CONTROLS ════════════════════════════════════════════════
+        function onKey(e) {
+            if (roomOpen) {
+                if (e.key === 'Escape') closeRoom();
+                return;
+            }
+            switch (e.key) {
+                case 'ArrowLeft': goToWorld(currentWorld - 1); break;
+                case 'ArrowRight': goToWorld(currentWorld + 1); break;
+                case 'Enter': if (hoveredNode) openRoom(hoveredNode); break;
+            }
+        }
+
+        function onMouse(e) {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        }
+
+        function onClick(e) {
+            if (roomOpen) return;
+            // Check if clicked on a node
+            const nodes = nodeCache.get(currentWorld) || [];
+            const offsetX = scrollX + currentWorld * canvas.width;
+            for (const n of nodes) {
+                const nx = n.x + offsetX;
+                if (e.clientX >= nx && e.clientX <= nx + n.w &&
+                    e.clientY >= n.y && e.clientY <= n.y + n.h) {
+                    openRoom(n);
+                    return;
+                }
+            }
+        }
+
+        // ═══ ROOM PANEL ══════════════════════════════════════════════
+        async function openRoom(node) {
+            roomOpen = true;
+            const panel = document.getElementById('room-panel');
+            const w = worlds[currentWorld];
+            const pal = PALETTES[w.domain] || PALETTES.World;
+
+            document.getElementById('room-title').textContent = `${w.meta?.emoji} ${w.domain} / ${node.name}`;
+            document.getElementById('room-title').style.color = pal.accent;
+
+            const grid = document.getElementById('room-grid');
+            grid.innerHTML = '<div style="opacity:0.4; font-family: var(--pixel-font); font-size:9px;">Loading...</div>';
+            panel.classList.add('open');
+
+            try {
+                const res = await fetch(`${API}/api/room/${w.domain}/${node.name}`);
+                const data = await res.json();
+                grid.innerHTML = '';
+
+                // Subdirectories first
+                (data.subdirs || []).forEach(d => {
+                    const el = document.createElement('div');
+                    el.className = 'room-item dir';
+                    el.innerHTML = `
+                    <div class="room-item-icon">📁</div>
+                    <div class="room-item-name">${d.name}</div>
+                    <div class="room-item-meta">${d.children} files</div>
+                `;
+                    grid.appendChild(el);
+                });
+
+                // Files
+                (data.files || []).forEach(f => {
+                    const el = document.createElement('div');
+                    el.className = 'room-item' + (f.is_stray ? ' stray' : '');
+                    const sizeStr = f.size > 1024 ? `${(f.size / 1024).toFixed(1)}KB` : `${f.size}B`;
+                    el.innerHTML = `
+                    <div class="room-item-icon">${f.icon || '📄'}</div>
+                    <div class="room-item-name">${f.name}</div>
+                    <div class="room-item-meta">${sizeStr}</div>
+                `;
+                    grid.appendChild(el);
+                });
+
+                if (grid.children.length === 0) {
+                    grid.innerHTML = '<div style="opacity:0.3;font-family:var(--pixel-font);font-size:9px;">Empty room</div>';
+                }
+            } catch (e) {
+                grid.innerHTML = `<div style="color:#f44">Error: ${e.message}</div>`;
+            }
+        }
+
+        function closeRoom() {
+            roomOpen = false;
+            document.getElementById('room-panel').classList.remove('open');
+        }
+
+        document.getElementById('room-close').addEventListener('click', closeRoom);
+
+        // ═══ RENDER ══════════════════════════════════════════════════
+        const starField = [];
+        for (let i = 0; i < 200; i++) {
+            starField.push({
+                x: Math.random(), y: Math.random(),
+                s: Math.random() * 2 + 0.5,
+                speed: Math.random() * 0.3 + 0.1,
+                phase: Math.random() * Math.PI * 2,
+            });
+        }
+
+        let time = 0;
+
+        function loop(ts) {
+            time = ts / 1000;
+            // Smooth scroll
+            scrollX += (targetScrollX - scrollX) * 0.12;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw each visible world
+            for (let i = 0; i < worlds.length; i++) {
+                const worldX = i * canvas.width + scrollX;
+                // Only draw if visible
+                if (worldX > canvas.width + 100 || worldX < -canvas.width - 100) continue;
+                drawWorld(i, worldX);
+                drawDomainPulse(worldX, i);
+                drawDog(worldX, i);
+            }
+
+            // Check hover
+            checkHover();
+
+            requestAnimationFrame(loop);
+        }
+
+        function drawWorld(idx, offsetX) {
+            const w = worlds[idx];
+            const pal = PALETTES[w.domain] || PALETTES.World;
+            const cw = canvas.width;
+            const ch = canvas.height;
+
+            // ── Background gradient ──
+            const grad = ctx.createRadialGradient(
+                offsetX + cw / 2, ch / 2, 0,
+                offsetX + cw / 2, ch / 2, cw * 0.7
+            );
+            grad.addColorStop(0, pal.bg2);
+            grad.addColorStop(1, pal.bg1);
+            ctx.fillStyle = grad;
+            ctx.fillRect(offsetX, 0, cw, ch);
+
+            // ── Stars ──
+            starField.forEach(s => {
+                const sx = offsetX + s.x * cw;
+                const sy = s.y * ch;
+                const brightness = 0.3 + 0.7 * Math.sin(time * s.speed + s.phase);
+                ctx.globalAlpha = brightness * 0.6;
+                ctx.fillStyle = pal.accent;
+                ctx.beginPath();
+                ctx.arc(sx, sy, s.s, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+
+            // ── World title (big, faded) ──
+            ctx.globalAlpha = 0.04;
+            ctx.font = 'bold 180px Inter, sans-serif';
+            ctx.fillStyle = pal.accent;
+            ctx.textAlign = 'center';
+            ctx.fillText(w.domain.toUpperCase(), offsetX + cw / 2, ch / 2 + 60);
+            ctx.globalAlpha = 1;
+
+            // ── Nodes (estancias) ──
+            const nodes = nodeCache.get(idx) || [];
+
+            // Draw paths between adjacent nodes
+            ctx.strokeStyle = pal.path;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([4, 6]);
+            for (let i = 0; i < nodes.length - 1; i++) {
+                const a = nodes[i], b = nodes[i + 1];
+                ctx.beginPath();
+                ctx.moveTo(offsetX + a.x + a.w / 2, a.y + a.h / 2);
+                ctx.lineTo(offsetX + b.x + b.w / 2, b.y + b.h / 2);
+                ctx.stroke();
+            }
+            ctx.setLineDash([]);
+
+            // Draw each node
+            nodes.forEach(n => {
+                const nx = offsetX + n.x;
+                const ny = n.y;
+                const isHover = hoveredNode === n && idx === currentWorld;
+
+                // Stray glow
+                if (n.isStray) {
+                    ctx.shadowColor = '#ff3333';
+                    ctx.shadowBlur = 10 + 5 * Math.sin(time * 3);
+                }
+
+                // Node background
+                const r = 6;
+                ctx.fillStyle = isHover ? pal.accent + '40' : pal.nodeBg;
+                ctx.strokeStyle = n.isStray ? '#ff444488' : (isHover ? pal.accent : pal.path);
+                ctx.lineWidth = isHover ? 2 : 1;
+                roundRect(ctx, nx, ny, n.w, n.h, r);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.shadowColor = 'transparent';
+                ctx.shadowBlur = 0;
+
+                // Node name
+                ctx.font = '600 11px Inter, sans-serif';
+                ctx.fillStyle = isHover ? '#fff' : pal.node;
+                ctx.textAlign = 'center';
+                ctx.fillText(n.name, nx + n.w / 2, ny + 22);
+
+                // File count badge
+                ctx.font = '9px Inter, sans-serif';
+                ctx.fillStyle = pal.accent + 'aa';
+                ctx.fillText(`${n.children} files`, nx + n.w / 2, ny + 38);
+
+                // Stray warning
+                if (n.isStray) {
+                    ctx.font = '12px sans-serif';
+                    ctx.fillText('⚠', nx + n.w - 14, ny + 14);
+                }
+
+                // Sniffing indicator — dog is at this node
+                if (dogVisible && dogWorldIdx === idx && dogNodeName === n.name) {
+                    ctx.save();
+                    ctx.strokeStyle = '#ffd700';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([3, 3]);
+                    ctx.globalAlpha = 0.4 + 0.3 * Math.sin(time * 4);
+                    roundRect(ctx, nx - 3, ny - 3, n.w + 6, n.h + 6, 8);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.globalAlpha = 1;
+                    ctx.restore();
+                }
+            });
+        }
+
+        function roundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.arcTo(x + w, y, x + w, y + r, r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+            ctx.lineTo(x + r, y + h);
+            ctx.arcTo(x, y + h, x, y + h - r, r);
+            ctx.lineTo(x, y + r);
+            ctx.arcTo(x, y, x + r, y, r);
+            ctx.closePath();
+        }
+
+        function checkHover() {
+            if (roomOpen) { hoveredNode = null; return; }
+            const nodes = nodeCache.get(currentWorld) || [];
+            const offsetX = scrollX + currentWorld * canvas.width;
+            hoveredNode = null;
+            for (const n of nodes) {
+                const nx = n.x + offsetX;
+                if (mouseX >= nx && mouseX <= nx + n.w &&
+                    mouseY >= n.y && mouseY <= n.y + n.h) {
+                    hoveredNode = n;
+                    canvas.style.cursor = 'pointer';
+                    return;
+                }
+            }
+            canvas.style.cursor = 'default';
+        }
+
+        // ═══ SSE EVENT STREAM ═════════════════════════════════════════
+        function connectSSE() {
+            const statusEl = document.getElementById('ticker-status');
+            try {
+                const es = new EventSource(`${API}/api/events`);
+                es.onopen = () => {
+                    statusEl.textContent = '● LIVE';
+                    statusEl.className = 'connected';
+                };
+                es.onmessage = (e) => {
+                    try {
+                        const evt = JSON.parse(e.data);
+                        onLiveEvent(evt);
+                    } catch (err) { }
+                };
+                es.onerror = () => {
+                    statusEl.textContent = '● RECONNECTING...';
+                    statusEl.className = 'disconnected';
+                };
+            } catch (err) {
+                statusEl.textContent = '● OFFLINE';
+                statusEl.className = 'disconnected';
+            }
+        }
+
+        function onLiveEvent(evt) {
+            // === Update ticker ===
+            let cssClass = '';
+            const text = evt.text || '';
+            if (text.toLowerCase().includes('dissonance')) cssClass = 'dissonance';
+            else if (text.toLowerCase().includes('woof') || text.toLowerCase().includes('stray')) cssClass = 'warning';
+
+            const beingTag = evt.being ? `<span class="log-being">${evt.being}</span>` : '';
+            const timeTag = evt.time ? `<span class="log-time">${evt.time}</span>` : '';
+
+            tickerLines.push({ html: `${timeTag}${beingTag}${text}`, css: cssClass });
+            if (tickerLines.length > MAX_TICKER) tickerLines.shift();
+            renderTicker();
+
+            // === Track GoodBoy position ===
+            if (evt.being === 'GoodBoy' || text.includes('GoodBoy')) {
+                // Parse domain from text
+                for (let i = 0; i < worlds.length; i++) {
+                    const d = worlds[i].domain;
+                    if (text.includes(d)) {
+                        dogDomain = d;
+                        dogWorldIdx = i;
+                        dogVisible = true;
+                        // Find the first node in that domain to position the dog
+                        const nodes = nodeCache.get(i) || [];
+                        if (nodes.length > 0) {
+                            // Try to find specific estancia mentioned
+                            let target = nodes[0];
+                            for (const n of nodes) {
+                                if (text.includes(n.name)) { target = n; break; }
+                            }
+                            dogTargetX = target.x + target.w / 2;
+                            dogTargetY = target.y - 20;
+                            dogNodeName = target.name;
+                        }
+                        // Pulse that domain
+                        domainPulse[d] = time + 2.0;
+                        break;
+                    }
+                }
+                // If patrol started/clean → update visibility
+                if (text.includes('clean') || text.includes('happy')) {
+                    setTimeout(() => { dogVisible = false; }, 3000);
+                }
+            }
+        }
+
+        function renderTicker() {
+            const logEl = document.getElementById('event-log');
+            logEl.innerHTML = tickerLines.map(l =>
+                `<div class="log-line ${l.css}">${l.html}</div>`
+            ).join('');
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        // ═══ DOG SPRITE ═══════════════════════════════════════════════
+        function drawDog(offsetX, worldIdx) {
+            if (!dogVisible || dogWorldIdx !== worldIdx) return;
+
+            // Smooth movement
+            dogX += (dogTargetX - dogX) * 0.08;
+            dogY += (dogTargetY - dogY) * 0.08;
+
+            const x = offsetX + dogX;
+            const y = dogY;
+
+            // Dog body (pixel art style)
+            const bounce = Math.sin(time * 6) * 3;
+            const tailWag = Math.sin(time * 10) * 8;
+
+            ctx.save();
+            ctx.translate(x, y + bounce);
+
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.beginPath();
+            ctx.ellipse(0, 18, 10, 3, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Body
+            ctx.fillStyle = '#c8a050';
+            roundRect(ctx, -10, 0, 20, 14, 4);
+            ctx.fill();
+
+            // Head
+            ctx.fillStyle = '#d4ad60';
+            roundRect(ctx, -7, -10, 14, 12, 5);
+            ctx.fill();
+
+            // Eyes
+            ctx.fillStyle = '#222';
+            ctx.beginPath();
+            ctx.arc(-3, -5, 1.5, 0, Math.PI * 2);
+            ctx.arc(3, -5, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Nose
+            ctx.fillStyle = '#333';
+            ctx.beginPath();
+            ctx.arc(0, -2, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Ears
+            ctx.fillStyle = '#a08040';
+            ctx.beginPath();
+            ctx.ellipse(-8, -8, 4, 6, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(8, -8, 4, 6, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Tail
+            ctx.strokeStyle = '#c8a050';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(10, 5);
+            ctx.quadraticCurveTo(18 + tailWag * 0.3, 0, 16 + tailWag * 0.5, -6);
+            ctx.stroke();
+
+            // Legs (animated)
+            const legPhase = Math.sin(time * 8);
+            ctx.fillStyle = '#b09040';
+            // Front legs
+            roundRect(ctx, -7 + legPhase, 12, 4, 6, 1); ctx.fill();
+            roundRect(ctx, 3 - legPhase, 12, 4, 6, 1); ctx.fill();
+
+            // Label
+            ctx.font = '600 8px "Press Start 2P", monospace';
+            ctx.fillStyle = '#ffd700';
+            ctx.textAlign = 'center';
+            ctx.fillText('GoodBoy', 0, -18);
+
+            ctx.restore();
+        }
+
+        // ═══ DOMAIN PULSE EFFECT ══════════════════════════════════════
+        function drawDomainPulse(offsetX, worldIdx) {
+            const w = worlds[worldIdx];
+            const pulseEnd = domainPulse[w.domain];
+            if (!pulseEnd || time > pulseEnd) return;
+
+            const progress = 1 - (pulseEnd - time) / 2.0;
+            const alpha = (1 - progress) * 0.15;
+            const pal = PALETTES[w.domain] || PALETTES.World;
+
+            ctx.fillStyle = pal.accent;
+            ctx.globalAlpha = alpha * Math.sin(time * 6);
+            ctx.fillRect(offsetX, 0, canvas.width, canvas.height);
+            ctx.globalAlpha = 1;
+        }
+
+        // ═══ LAUNCH ══════════════════════════════════════════════════
+        // Start on Soma (index 1) by default
+        currentWorld = 1;
+        targetScrollX = -1 * window.innerWidth;
+        scrollX = targetScrollX;
+
+        init();
+    </script>
+</body>
+
+</html>

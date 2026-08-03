@@ -1,0 +1,23 @@
+{
+    "dragon_surveying": {
+        "type": "glb",
+        "url": "props/models/Dragon Surveying.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "spider": {
+        "type": "glb",
+        "url": "props/models/Spider.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "wasp": {
+        "type": "glb",
+        "url": "props/models/Wasp.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    }
+}

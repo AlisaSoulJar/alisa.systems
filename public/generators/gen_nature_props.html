@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA - Props Lab (Nature/Scenery)</title>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: monospace; background-color: #1a2a1a; color: #fff; }
+        #ui {
+            position: absolute; top: 20px; left: 20px; z-index: 10;
+            background: rgba(0,20,0,0.88); border: 1px solid #44aa44; padding: 15px;
+            width: 300px; max-height: 90vh; overflow-y: auto;
+        }
+        h3 { margin-top: 0; color: #44cc44; border-bottom: 1px solid #335533; padding-bottom: 5px; }
+        .label { margin-top: 10px; font-size: 12px; color: #88bb88; }
+        select, button {
+            width: 100%; background: #0a1a0a; color: #44cc44;
+            border: 1px solid #44aa44; padding: 5px; margin-top: 5px; font-family: monospace; cursor: pointer;
+        }
+        #stats {
+            position: absolute; bottom: 20px; left: 20px; z-index: 10;
+            background: rgba(0,0,0,0.7); border: 1px solid #335533; padding: 10px;
+            font-size: 11px; color: #88aa88;
+        }
+        pre { background:#0a1a0a; border:1px solid #335533; padding:5px; font-size:11px; color:#aaffaa; overflow:hidden; }
+    </style>
+</head>
+<body>
+    <div id="ui">
+        <h3>🌳 Props Lab — Nature & Scenery</h3>
+
+        <div class="label">Sub-category:</div>
+        <select id="selSubcat" title="Sub-category filter" onchange="filterList()">
+            <option value="all">All (150)</option>
+            <option value="tree">🌲 Trees</option>
+            <option value="rock">🪨 Rocks</option>
+            <option value="plant">🌿 Plants & Grass</option>
+            <option value="cactus">🌵 Cactus</option>
+            <option value="bush">🌳 Bushes</option>
+            <option value="other">📦 Other</option>
+        </select>
+
+        <div class="label">Prop:</div>
+        <select id="selProp" onchange="loadProp()" size="10" title="Select a prop"></select>
+
+        <div class="label" style="margin-top:15px;color:#44cc44; border-top:1px solid #335533; padding-top:10px;">🛠️ Calibration</div>
+        <div style="display:flex; gap:5px; align-items:center; margin-top:5px;">
+            <input type="color" id="uiTint" value="#ffffff" onchange="loadProp()" style="width:40px; cursor:pointer;" title="Tint Override">
+            <select id="uiStyle" onchange="loadProp()" title="Render Style">
+                <option value="solid" selected>Solid</option>
+                <option value="wireframe">Wireframe</option>
+                <option value="silhouette">Silhouette</option>
+            </select>
+        </div>
+        <div style="font-size:10px; color:#88aa88; margin-top:8px;">
+            <b>Q/E</b>: Scale | <b>C</b>: Copy JSON
+        </div>
+        <pre id="uiJsonOut">Select a prop...</pre>
+    </div>
+
+    <div id="stats">
+        Props: <span id="statCount">0</span> |
+        <span id="statName">-</span>
+    </div>
+
+    <!-- Import map mapped to alisa-engine -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/three-0.160.0/build/three.module.js",
+            "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+            "@alisa-engine/": "../js/alisa-engine/"
+        }
+    }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+        
+        // Add to window to allow simple inline scripts downstream in file
+        window.THREE = Object.assign({}, THREE);
+        window.THREE.OrbitControls = OrbitControls;
+        window.THREE.GLTFLoader = GLTFLoader;
+
+        // ── Scene ──
+        const gfx = new AlisaRenderCore({
+            clearColor: 0x1a2a1a,
+            useShadows: true,
+            cameraPosition: new THREE.Vector3(3, 2.5, 4)
+        });
+        const scene = gfx.scene;
+        scene.fog = new THREE.Fog(0x1a2a1a, 10, 40);
+        const camera = gfx.camera;
+        gfx.controls.target.set(0, 0.5, 0);
+
+        // Lighting — outdoor natural
+        scene.add(new THREE.AmbientLight(0xd4e8c0, 0.6));
+        const sun = new THREE.DirectionalLight(0xfff4dd, 0.8);
+        sun.position.set(8, 12, 5);
+        sun.castShadow = true;
+        scene.add(sun);
+
+        // Ground
+        const ground = new THREE.Mesh(
+            new THREE.PlaneGeometry(20, 20),
+            new THREE.MeshStandardMaterial({ color: 0x3a5a2a, roughness: 1 })
+        );
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        const grid = new THREE.GridHelper(20, 40, 0x446644, 0x335533);
+        grid.position.y = 0.01;
+        scene.add(grid);
+
+        // ── State ──
+        let allProps = {};
+        let currentModel = null;
+        let liveScale = 0.05;
+
+        // ── Load registry ──
+        async function boot() {
+            try {
+                const r = await fetch('../props/avatar_nature.json');
+                if (r.ok) allProps = await r.json();
+            } catch(e) { console.error('Failed to load props_nature.json', e); }
+            document.getElementById('statCount').textContent = Object.keys(allProps).length;
+            filterList();
+        }
+
+        function filterList() {
+            const sub = document.getElementById('selSubcat').value;
+            const sel = document.getElementById('selProp');
+            sel.innerHTML = '';
+
+            const subPatterns = {
+                tree: /tree|palm|pine|willow|birch/i,
+                rock: /rock|stone/i,
+                plant: /plant|grass|flower|wheat|corn|lilypad|wood/i,
+                cactus: /cactus/i,
+                bush: /bush/i,
+            };
+
+            for (const [key, data] of Object.entries(allProps)) {
+                if (sub !== 'all') {
+                    const pat = subPatterns[sub];
+                    if (pat && !pat.test(key)) continue;
+                    if (sub === 'other' && Object.values(subPatterns).some(p => p.test(key))) continue;
+                }
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                sel.appendChild(opt);
+            }
+            if (sel.options.length > 0) loadProp();
+        }
+
+        function loadProp() {
+            const key = document.getElementById('selProp').value;
+            if (!key || !allProps[key]) return;
+            const data = allProps[key];
+
+            if (currentModel) { scene.remove(currentModel); currentModel = null; }
+            liveScale = data.scale || 0.05;
+
+            const tint = document.getElementById('uiTint').value;
+            const style = document.getElementById('uiStyle').value;
+            const useTint = tint !== '#ffffff';
+
+            const loader = new THREE.GLTFLoader();
+            let url = data.url;
+            if (url && !url.startsWith("../") && !url.startsWith("http")) url = "../" + url;
+            loader.load(url, (gltf) => {
+                const model = gltf.scene;
+                model.scale.set(liveScale, liveScale, liveScale);
+                model.traverse(c => {
+                    if (c.isMesh) {
+                        c.castShadow = true;
+                        c.receiveShadow = true;
+                        if (style === 'wireframe') c.material = new THREE.MeshBasicMaterial({ color: 0x44cc44, wireframe: true });
+                        else if (style === 'silhouette') c.material = new THREE.MeshBasicMaterial({ color: 0x111111 });
+                        else if (useTint && c.material && c.material.color) c.material.color.set(tint);
+                    }
+                });
+                scene.add(model);
+                currentModel = model;
+                updateJSON(key, data);
+            });
+
+            document.getElementById('statName').textContent = key.replace(/_/g, ' ');
+        }
+
+        function updateJSON(key, data) {
+            document.getElementById('uiJsonOut').textContent =
+                `"${key}": ${JSON.stringify({ ...data, scale: parseFloat(liveScale.toFixed(4)) }, null, 2)}`;
+        }
+
+        // ── Keyboard ──
+        addEventListener('keydown', e => {
+            if (!currentModel) return;
+            const k = e.key.toLowerCase();
+            if (k === 'q') liveScale = Math.max(0.001, liveScale - 0.005);
+            if (k === 'e') liveScale += 0.005;
+            if (k === 'c') {
+                navigator.clipboard.writeText(document.getElementById('uiJsonOut').textContent);
+            }
+            currentModel.scale.set(liveScale, liveScale, liveScale);
+            const key = document.getElementById('selProp').value;
+            if (key && allProps[key]) updateJSON(key, allProps[key]);
+        });
+
+        // ── Render ──
+        gfx.startLoop((dt) => {
+            // Gentle wind sway for vegetation
+            if (currentModel) {
+                const t = Date.now() * 0.001;
+                currentModel.rotation.y = Math.sin(t * 0.3) * 0.02;
+            }
+        });
+        boot();
+    </script>
+</body>
+</html>

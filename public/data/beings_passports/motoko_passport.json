@@ -1,0 +1,20 @@
+{
+    "name": "Motoko",
+    "role": "Cyber Police Major",
+    "emoji": "👁️",
+    "type": "cybernetic",
+    "skeleton": "humanoid_cyborg",
+    "model_path": "motoko.glb",
+    "scale": 1.0,
+    "kinematics": "humanoid_stealth",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "xtts",
+        "tier": 5,
+        "voice_id": "alisa_motoko",
+        "rate": "-5%",
+        "pitch": "-2Hz",
+        "label": "Motoko Kusanagi (castellano, XTTS cloned)"
+    }
+}

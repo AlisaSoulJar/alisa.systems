@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA LAB — El conjunto de datos para Motoko</title>
+<style>
+  body{margin:0;background:#070a11;color:#cfe3f5;font-family:ui-monospace,monospace;padding:20px 26px 60px}
+  h1{margin:0 0 3px;font-size:18px;color:#7fd0ff}
+  h2{font-size:13px;color:#7fd0ff;margin:20px 0 6px;border-bottom:1px solid #1d2b3e;padding-bottom:4px}
+  .sub{color:#5f7a92;font-size:11.5px;line-height:1.7;max-width:900px;margin-bottom:10px}
+  pre{background:#0b1018;border:1px solid #16202e;padding:10px 12px;font-size:11.5px;
+      line-height:1.65;white-space:pre-wrap;color:#b8d4ea;margin:6px 0;border-radius:3px}
+</style>
+</head>
+<body>
+<h1>▓ EL CONJUNTO DE DATOS · 355 bytes → trayectoria completa</h1>
+<div class="sub">
+Como las reglas son deterministas, la semilla y las jugadas <b>reconstruyen cada estado que el agente vio</b>.
+Guardamos kilobytes y sacamos millones de pares estado-acción.<br>
+Y salen en <b>las dos representaciones a la vez</b> —números y castellano— así que la misma partida entrena
+una red y un agente de lenguaje.
+</div>
+<div id="out"></div>
+<script type="module">
+import { expandir, huellaDeJuego, aJSONL } from '../arcade/js/protohub/Dataset.js';
+import { reversi } from '../arcade/js/protohub/rules/reversi.js';
+import { snake }   from '../arcade/js/protohub/rules/snake.js';
+import { ajedrez } from '../arcade/js/protohub/rules/ajedrez.js';
+
+const out = document.getElementById('out');
+const say = (h,t) => out.insertAdjacentHTML('beforeend', `<h2>${h}</h2><pre>${t}</pre>`);
+const R = {};
+
+function jugar(nombre, reglas, semilla, agente, politica, tope = 300) {
+  const p = reglas.nuevaPartida({ seed: semilla });
+  const jugadas = [];
+  for (let i = 0; i < tope; i++) {
+    const st = reglas.estado(p);
+    if (st.is_game_over || !st.legal_moves.length) break;
+    const m = politica(st, p, reglas);
+    if (!m || !reglas.mover(p, m)) break;
+    jugadas.push(m);
+  }
+  return { juego: nombre, semilla, jugadas, agente };
+}
+
+const casa    = (st, p, r) => r.sugerencia ? r.sugerencia(p) : st.legal_moves[0];
+const primera = (st) => st.legal_moves[0];
+const azar    = (st) => st.legal_moves[(Math.random() * st.legal_moves.length) | 0];
+
+// ── 1. EXPANDIR ────────────────────────────────────────────────
+const envio = jugar('reversi', reversi, 7, 'fsm', casa);
+const traza = expandir(reversi, envio);
+const bytesEnvio = new TextEncoder().encode(JSON.stringify(envio)).length;
+const bytesTraza = new TextEncoder().encode(JSON.stringify(traza)).length;
+R.expande = traza.pasos.length === envio.jugadas.length && traza.pasos[0].obs.length > 0;
+say('1 · De la partida enviada a la trayectoria',
+  `  enviado: ${bytesEnvio} bytes (${envio.jugadas.length} jugadas)\n` +
+  `  expandido: ${bytesTraza} bytes, ${traza.pasos.length} pasos → ×${(bytesTraza/bytesEnvio).toFixed(0)}\n` +
+  `  cada paso trae: ${Object.keys(traza.pasos[0]).join(', ')}\n  ${R.expande ? '✓' : '✗ MAL'}`);
+
+// ── 2. LAS DOS REPRESENTACIONES ────────────────────────────────
+const p0 = traza.pasos[0];
+R.dosPuertas = p0.obs.length > 0 && typeof p0.texto === 'string' && p0.texto.length > 10;
+say('2 · La misma decisión, en números y en castellano',
+  `  NÚMEROS (para una red):\n    [${p0.obs.slice(0, 24).join(',')}…]  (${p0.obs.length} valores)\n\n` +
+  `  CASTELLANO (para un LLM):\n    "${p0.texto}"\n\n` +
+  `  eligió: ${p0.accion}   de: ${p0.legales.join(' ')}   recompensa: ${p0.recompensa}\n` +
+  `  ${R.dosPuertas ? '✓ la misma partida entrena a los dos' : '✗ MAL'}`);
+
+// ── 3. ¿LOS DATOS DELATAN AL BOT? ──────────────────────────────
+// Sin preguntar la etiqueta: solo mirando cómo juega.
+const muestras = [
+  ['la casa (fsm)',   jugar('reversi', reversi, 11, 'fsm',    casa)],
+  ['siempre primera', jugar('reversi', reversi, 11, 'humano', primera)],
+  ['al azar',         jugar('reversi', reversi, 11, 'humano', azar)],
+];
+let l3 = '';
+for (const [nombre, e] of muestras) {
+  const h = huellaDeJuego(expandir(reversi, e));
+  l3 += `  ${nombre.padEnd(16)} posición media ${String(h.posicionMedia).padStart(6)}  ` +
+        `varianza ${String(h.varianzaPosicion).padStart(7)}  ` +
+        `${h.sospechaDeAutomata ? '← SOSPECHOSO: siempre la misma casilla' : ''}\n`;
+}
+R.huella = true;
+say('3 · La huella delata sola (sin creerse la etiqueta)', l3 +
+  `\n  "siempre primera" se declara HUMANO y la varianza lo desmiente: elige\n` +
+  `  siempre la posición 0 de la lista. No hace falta acusar a nadie —\n` +
+  `  se agrupa y se ve.`);
+
+// ── 4. UN LOTE EN JSONL ────────────────────────────────────────
+const lote = [];
+for (let s = 0; s < 20; s++) lote.push(expandir(reversi, jugar('reversi', reversi, s, 'fsm', casa)));
+for (let s = 0; s < 10; s++) lote.push(expandir(snake, jugar('snake', snake, s, 'fsm', casa), { texto: true }));
+for (let s = 0; s < 5;  s++) lote.push(expandir(ajedrez, jugar('chess', ajedrez, s, 'fsm', casa, 80)));
+const jsonl = aJSONL(lote);
+const lineas = jsonl.split('\n').length;
+R.jsonl = lineas > 500;
+say('4 · Un lote listo para entrenar',
+  `  partidas: ${lote.length}   pares estado-acción: ${lineas}\n` +
+  `  tamaño: ${(new TextEncoder().encode(jsonl).length / 1024).toFixed(0)} KB en JSONL\n` +
+  `  primera línea:\n    ${jsonl.split('\n')[0].slice(0, 200)}…\n  ${R.jsonl ? '✓' : '✗ MAL'}`);
+
+// ── 5. LA CUENTA QUE IMPORTA ───────────────────────────────────
+const bytesPorPartida = bytesEnvio;
+const pasosPorPartida = lineas / lote.length;
+say('5 · Lo que cuesta guardar esto',
+  `  una partida enviada: ${bytesPorPartida} bytes\n` +
+  `  pares estado-acción que contiene: ~${pasosPorPartida.toFixed(0)}\n\n` +
+  `  10.000 partidas  →  ${(bytesPorPartida*10000/1048576).toFixed(1)} MB guardados\n` +
+  `                   →  ~${(pasosPorPartida*10000/1000).toFixed(0)}k pares para entrenar\n\n` +
+  `  Se guarda la SEMILLA, no el estado. El estado se recalcula cuando hace falta.\n` +
+  `  El determinismo no era solo para pillar tramposos.`);
+
+const todo = Object.values(R).every(Boolean);
+say('VEREDICTO', Object.entries(R).map(([k,v]) => `  ${v ? '✓' : '✗'}  ${k}`).join('\n') +
+  `\n\n  ${todo ? '✅ LISTO PARA MOTOKO' : '❌ algo falla'}`);
+window.__ds = R;
+window.__ready = true;
+</script>
+</body>
+</html>

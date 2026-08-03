@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>ALISA - Art Direction Sandbox</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #05050a;
+            color: white;
+            font-family: 'Inter', sans-serif;
+        }
+
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 10;
+            background: rgba(20, 20, 30, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #44eebb;
+            width: 320px;
+            backdrop-filter: blur(5px);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        h2 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #44eebb;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px;
+            background: #111;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+            outline: none;
+            margin-bottom: 15px;
+        }
+
+        .slider-row { display: flex; align-items: center; margin: 6px 0; gap: 8px; }
+        .slider-row label { font-size: 11px; color: #aaa; min-width: 90px; }
+        .slider-row input[type=range] { flex: 1; accent-color: #44eebb; }
+        .slider-row .val { font-size: 11px; color: #44eebb; min-width: 35px; text-align: right; font-family: monospace; }
+        .section-title { font-size: 12px; color: #ff00bb; margin: 12px 0 4px; font-weight: 600; }
+
+        .draw-btn { padding: 6px 12px; border: 1px solid #44eebb; background: #111; color: #44eebb; border-radius: 4px; cursor: pointer; font-size: 11px; font-family: Inter; margin: 2px; }
+        .draw-btn:hover { background: #44eebb; color: #111; }
+        .draw-btn.active { background: #ff00bb; border-color: #ff00bb; color: white; }
+        .draw-bar { display: flex; gap: 4px; flex-wrap: wrap; margin: 8px 0; }
+        #draw-count { font-size: 11px; color: #ffaa00; margin: 4px 0; font-family: monospace; }
+
+        #log {
+            font-family: monospace;
+            font-size: 11px;
+            color: #888;
+            max-height: 80px;
+            overflow-y: auto;
+            margin-top: 10px;
+            border-top: 1px solid #333;
+            padding-top: 8px;
+        }
+    </style>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+
+<body>
+    <div id="ui">
+        <h2>🎨 Art Direction A/B Sandbox</h2>
+        <select id="model-select">
+            <option value="">-- Fetching Library... --</option>
+        </select>
+
+        <select id="skeleton-select">
+            <option value="">-- Proyectar Esqueleto Estándar --</option>
+            <option value="humanoid">🚶 Bípedo Plantígrado (Humanoide)</option>
+            <option value="canine">🐕 Cuadrúpedo Digitígrado (Canino/Felino)</option>
+            <option value="equine">🦌 Cuadrúpedo Ungulado (Equino/Cérvido)</option>
+            <option value="theropod">🦖 Terópodo (Bípedo con Cola)</option>
+            <option value="arachnid">🕷️ Arácnido (Radiales de 8 patas)</option>
+            <option value="bird">🦅 Ave / Aviano (Alado)</option>
+            <option value="serpentine">🐍 Serpentino / Ciempiés</option>
+            <option value="piscine">🐟 Pez / Condrictio (Aleteo Lateral)</option>
+            <option value="cetacean">🐋 Mamífero Marino (Aleteo Vertical)</option>
+        </select>
+        
+        <select id="animation-select">
+            <option value="none">🧍 T-Pose (Estático)</option>
+            <option value="idle">🫁 Rigging Activo (Respiración)</option>
+            <option value="walk">🚶 Ciclo de Marcha (Procedural)</option>
+        </select>
+
+        <div class="section-title">⚙️ Motor Geométrico (100% Determinista)</div>
+        <div style="font-size: 11px; color: #888; margin-top:5px; line-height: 1.4;">
+            El algoritmo "Bisturí de 4 Ejes" ha sido estandarizado. 
+            Las tolerancias, radios y distancias de cluster ahora son funciones matemáticas 
+            derivadas dinámicamente del BoundingBox normalizado del modelo (MaxDim=5.0).<br>
+            <i>— Adiós a los sliders manuales.</i>
+        </div>
+
+        <div class="section-title">✏️ Dibujo Manual</div>
+        <div class="draw-bar">
+            <button class="draw-btn" id="btn-draw" onclick="window.toggleDrawMode()">✏️ Modo Dibujo</button>
+            <button class="draw-btn" id="btn-undo" onclick="window.undoVertex()">↩ Deshacer</button>
+            <button class="draw-btn" id="btn-clear" onclick="window.clearDraw()">🗑️ Limpiar</button>
+            <button class="draw-btn" id="btn-save" onclick="window.saveDraw()">💾 Guardar</button>
+        </div>
+        <div id="draw-count">Vértices: 0</div>
+
+        <div id="log">Booting engine...</div>
+    </div>
+
+    <!-- Import Maps para Three.js -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "/vendor/three-0.160.0/build/three.module.js",
+                "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+                "@alisa-engine/": "../js/alisa-engine/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+
+        // Engine Wrapper Standardization
+        const engine = new AlisaRenderCore({
+            clearColor: 0xffffff, // Pure white Matrix Construct
+            fogColor: 0xffffff,
+            fogDensity: 0.015,
+            cameraPosition: new THREE.Vector3(0, 5, 20)
+        });
+        engine.controls.target.set(0, 3, 0);
+
+        // Lighting - Brillo absoluto
+        engine.scene.add(new THREE.AmbientLight(0xffffff, 1.5));
+        engine.scene.add(new THREE.HemisphereLight(0xffffff, 0xcccccc, 1.0));
+        const fillFront = new THREE.PointLight(0xffffff, 1.5, 40); fillFront.position.set(0, 8, 12); engine.scene.add(fillFront);
+        const fillL = new THREE.PointLight(0xffffff, 1.2, 20); fillL.position.set(-10, 5, 0); engine.scene.add(fillL);
+        const fillR = new THREE.PointLight(0xffffff, 1.2, 20); fillR.position.set(10, 5, 0); engine.scene.add(fillR);
+
+        // Floor - Blanco impoluto
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.MeshStandardMaterial({ color: 0xf5f5f5, roughness: 0.8, metalness: 0.1 }));
+        floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; engine.scene.add(floor);
+        const grid = new THREE.GridHelper(40, 40, 0xdddddd, 0xeeeeee); engine.scene.add(grid);
+
+        const logEl = document.getElementById('log');
+        function log(msg) { logEl.innerHTML += `<div>> ${msg}</div>`; logEl.scrollTop = logEl.scrollHeight; }
+
+        let dropQueue = [];
+        let renderGroup = new THREE.Group();
+        engine.scene.add(renderGroup);
+
+        let actors = []; // List of actors to animate
+        let currentModelFilename = null; // Nombre del modelo cargado
+        let savedSections = []; // Cross-sections guardadas en esta sesión
+        window.activeSkeletonType = ''; // Almacena el tipo de esqueleto biológico detectado
+
+        const gaitsDict = {
+            humanoid: [
+                { val: 'none', label: '🧍 T-Pose (Estático)' },
+                { val: 'idle', label: '🫁 Rigging Activo (Respiración)' },
+                { val: 'walk', label: '🚶 Caminata Bípeda (Procedural)' }
+            ],
+            canine: [
+                { val: 'none', label: '🧍 Rig (Estático)' },
+                { val: 'idle', label: '🫁 Rigging Activo (Descanso)' },
+                { val: 'walk_real', label: '🐕 Paso Lento 4T (Walk)' },
+                { val: 'trot', label: '🐕 Trote Diagonal (Trot)' },
+                { val: 'canter', label: '🐕 Galope Corto (Canter)' },
+                { val: 'gallop', label: '🐕 Galope Tendido (Gallop)' }
+            ],
+            equine: [
+                { val: 'none', label: '🧍 Rig (Estático)' },
+                { val: 'idle', label: '🫁 Rigging Activo (Descanso)' },
+                { val: 'walk_real', label: '🐎 Paso Lateral 4T (Walk)' },
+                { val: 'trot', label: '🐎 Trote Aéreo 2T (Trot)' },
+                { val: 'canter', label: '🐎 Medio Galope Asimétrico (Canter)' },
+                { val: 'gallop', label: '🐎 Galope Tendido Espinal (Gallop)' }
+            ],
+            theropod: [
+                { val: 'none', label: '🧍 Rig (Estático)' },
+                { val: 'idle', label: '🫁 Acecho (Balanceo Raíz)' },
+                { val: 'walk', label: '🦖 Marcha Bípeda Retrasada' }
+            ],
+            arachnid: [
+                { val: 'none', label: '🧍 Rig (Estático)' },
+                { val: 'idle', label: '🫁 Alerta (Suspensión)' },
+                { val: 'walk', label: '🕷️ Onda Metacrónica Radial' }
+            ],
+            bird: [
+                { val: 'none', label: '🧍 Rig (Estático)' },
+                { val: 'idle', label: '🪶 Posado en Rama' },
+                { val: 'walk', label: '🦅 Vuelo Libre (Aleteo)' }
+            ],
+            serpentine: [
+                { val: 'none', label: '🧍 Rig (Estático)' },
+                { val: 'idle', label: '🫁 Ojo Avizor' },
+                { val: 'walk', label: '🐍 Onda Viajera Horizontal' }
+            ],
+            piscine: [
+                { val: 'none', label: '🧍 Rig (Estático)' },
+                { val: 'idle', label: '💧 Flotabilidad Estática' },
+                { val: 'walk', label: '🐟 Nado Curvo (Onda Viajera)' }
+            ],
+            cetacean: [
+                { val: 'none', label: '🧍 Rig (Estático)' },
+                { val: 'idle', label: '💧 Flotabilidad Estática' },
+                { val: 'walk', label: '🐋 Nado Vertical Impulsado' }
+            ]
+        };
+
+        // Fetch assets
+        async function init() {
+            try {
+                const res = await fetch('/geppetto/ready?limit=50');
+                const data = await res.json();
+                dropQueue = data.pending || data.ready || [];
+
+                const select = document.getElementById('model-select');
+                select.innerHTML = '<option value="">-- Choose Biomechanics Model --</option>';
+                dropQueue.forEach((a, idx) => {
+                    let opt = document.createElement('option');
+                    opt.value = idx; opt.innerHTML = a.filename;
+                    select.appendChild(opt);
+                });
+
+                select.addEventListener('change', (e) => {
+                    if (e.target.value !== "") {
+                        loadModel(dropQueue[e.target.value]);
+                    }
+                });
+                log(`Loaded ${dropQueue.length} assets.`);
+            } catch (e) { log("Error connecting to Hub manifest."); }
+        }
+
+        let standardSkeletonGroup = new THREE.Group();
+        engine.scene.add(standardSkeletonGroup);
+
+        document.getElementById('skeleton-select').addEventListener('change', (e) => {
+            const type = e.target.value;
+            window.activeSkeletonType = type;
+            standardSkeletonGroup.clear();
+            if (!type) return;
+
+            // Actualizar Opciones de Movimiento Semántico UI
+            const defaultGaits = [
+                { val: 'none', label: '🧍 Rig (Estático)' },
+                { val: 'idle', label: '🫁 Rigging Activo' },
+                { val: 'walk', label: '🤖 Marcha Universal' }
+            ];
+            const opts = gaitsDict[type] || defaultGaits;
+            const animSelect = document.getElementById('animation-select');
+            animSelect.innerHTML = '';
+            opts.forEach(g => {
+                const opt = document.createElement('option');
+                opt.value = g.val;
+                opt.innerHTML = g.label;
+                animSelect.appendChild(opt);
+            });
+
+            // X-Ray materials
+            const boneMat = new THREE.LineBasicMaterial({ color: 0xff00bb, linewidth: 2, depthTest: false });
+            const jointMat = new THREE.MeshBasicMaterial({ color: 0xffff00, depthTest: false });
+            const jointGeo = new THREE.SphereGeometry(0.1, 8, 8);
+
+            const bones = [];
+            function addBone(p1, p2) {
+                bones.push([new THREE.Vector3(...p1), new THREE.Vector3(...p2)]);
+            }
+
+            // === PHYLOGENETIC ARCHETYPES (Normalized to ~4.5 units height) ===
+            if (type === 'humanoid') {
+                addBone([0, 2.2, 0], [0, 3.5, 0]); // spine
+                addBone([0, 3.5, 0], [0, 4.2, 0.2]); // neck/head
+                addBone([-0.8, 3.5, 0], [0.8, 3.5, 0]); // shoulders
+                addBone([-0.8, 3.5, 0], [-1.0, 2.0, 0.2]); // L arm upper
+                addBone([-1.0, 2.0, 0.2], [-1.0, 0.5, 0.4]); // L arm lower
+                addBone([0.8, 3.5, 0], [1.0, 2.0, 0.2]); // R arm upper
+                addBone([1.0, 2.0, 0.2], [1.0, 0.5, 0.4]); // R arm lower
+                addBone([-0.4, 2.2, 0], [0.4, 2.2, 0]); // hips
+                addBone([-0.4, 2.2, 0], [-0.4, 1.2, 0.3]); // L femur
+                addBone([-0.4, 1.2, 0.3], [-0.4, 0, 0]); // L tibia
+                addBone([0.4, 2.2, 0], [0.4, 1.2, 0.3]); // R femur
+                addBone([0.4, 1.2, 0.3], [0.4, 0, 0]); // R tibia
+            } else if (type === 'canine') {
+                addBone([0, 2.8, -2.5], [0, 3.0, -1.8]); // tail -> pelvis
+                addBone([0, 3.0, -1.8], [0, 3.2, 1.5]);  // pelvis -> chest
+                addBone([0, 3.2, 1.5], [0, 4.0, 2.0]);   // neck/head
+                // Caderas traseras: desde la ESPINA hacia cada lado
+                addBone([0, 3.0, -1.8], [-0.4, 3.0, -1.8]); // pelvis -> L hip
+                addBone([0, 3.0, -1.8], [0.4, 3.0, -1.8]);  // pelvis -> R hip
+                // Hombros delanteros: desde la ESPINA hacia cada lado
+                addBone([0, 3.2, 1.5], [-0.4, 3.2, 1.5]);   // chest -> L shoulder
+                addBone([0, 3.2, 1.5], [0.4, 3.2, 1.5]);    // chest -> R shoulder
+                // Patas traseras
+                addBone([-0.4, 3.0, -1.8], [-0.5, 2.0, -1.4]); // RL femur -> true knee
+                addBone([-0.5, 2.0, -1.4], [-0.4, 1.0, -2.0]); // RL knee -> hock
+                addBone([-0.4, 1.0, -2.0], [-0.4, 0, -1.8]);   // RL hock -> paws
+                addBone([0.4, 3.0, -1.8], [0.5, 2.0, -1.4]); // RR femur -> true knee
+                addBone([0.5, 2.0, -1.4], [0.4, 1.0, -2.0]); // RR knee -> hock
+                addBone([0.4, 1.0, -2.0], [0.4, 0, -1.8]);   // RR hock -> paws
+                // Patas delanteras
+                addBone([-0.4, 3.2, 1.5], [-0.5, 1.8, 1.2]);   // FL humerus -> elbow
+                addBone([-0.5, 1.8, 1.2], [-0.4, 0.5, 1.5]);   // FL elbow -> wrist
+                addBone([-0.4, 0.5, 1.5], [-0.4, 0, 1.6]);     // FL wrist -> paws
+                addBone([0.4, 3.2, 1.5], [0.5, 1.8, 1.2]);     // FR humerus -> elbow
+                addBone([0.5, 1.8, 1.2], [0.4, 0.5, 1.5]);     // FR elbow -> wrist
+                addBone([0.4, 0.5, 1.5], [0.4, 0, 1.6]);       // FR wrist -> paws
+            } else if (type === 'equine') {
+                // === COLUMNA VERTEBRAL (con Cruz/Withers) ===
+                addBone([0, 3.5, -2.0], [0, 3.6, -0.5]);  // pelvis → lomo (ligero arco)
+                addBone([0, 3.6, -0.5], [0, 3.9, 1.0]);   // lomo → cruz (WITHERS - punto más alto)
+                addBone([0, 3.9, 1.0], [0, 3.5, 1.5]);    // cruz → base cuello (cae un poco)
+                // === CUELLO Y CABEZA ===
+                addBone([0, 3.5, 1.5], [0, 4.5, 2.2]);    // base cuello → cuello alto
+                addBone([0, 4.5, 2.2], [0, 4.4, 3.0]);    // cuello alto → hocico
+                // === OREJAS (bifurcan desde la cima del cráneo) ===
+                addBone([0, 4.5, 2.2], [-0.15, 4.9, 2.3]); // oreja izquierda
+                addBone([0, 4.5, 2.2], [0.15, 4.9, 2.3]);  // oreja derecha
+                // === MANDÍBULA (colgando del hocico) ===
+                addBone([0, 4.4, 3.0], [0, 4.0, 2.8]);     // mandíbula inferior
+                // === ESTERNÓN (define caja torácica) ===
+                addBone([0, 3.9, 1.0], [0, 2.8, 0.5]);     // esternón colgando de la cruz
+                // === COLA (3 segmentos cascada desde la pelvis) ===
+                addBone([0, 3.5, -2.0], [0, 3.3, -2.8]);   // cola segmento 1
+                addBone([0, 3.3, -2.8], [0, 2.8, -3.4]);   // cola segmento 2
+                addBone([0, 2.8, -3.4], [0, 2.2, -3.8]);   // cola segmento 3 (punta)
+                // === CADERAS: desde la ESPINA hacia cada lado ===
+                addBone([0, 3.5, -2.0], [-0.6, 3.5, -2.0]); // spine → L hip
+                addBone([0, 3.5, -2.0], [0.6, 3.5, -2.0]);  // spine → R hip
+                // === HOMBROS: desde la base del cuello hacia cada lado ===
+                addBone([0, 3.5, 1.5], [-0.6, 3.5, 1.5]);   // spine → L shoulder
+                addBone([0, 3.5, 1.5], [0.6, 3.5, 1.5]);    // spine → R shoulder
+                // Patas traseras (4 segmentos: femur → stifle → cannon → fetlock/hoof)
+                addBone([-0.6, 3.5, -2.0], [-0.6, 2.5, -1.2]); // RL femur → stifle
+                addBone([-0.6, 2.5, -1.2], [-0.5, 1.8, -2.2]); // RL stifle → hock
+                addBone([-0.5, 1.8, -2.2], [-0.5, 0.5, -2.0]); // RL cannon
+                addBone([-0.5, 0.5, -2.0], [-0.5, 0, -1.8]);   // RL fetlock → hoof (ÚNGULA)
+                addBone([0.6, 3.5, -2.0], [0.6, 2.5, -1.2]); // RR femur → stifle
+                addBone([0.6, 2.5, -1.2], [0.5, 1.8, -2.2]); // RR stifle → hock
+                addBone([0.5, 1.8, -2.2], [0.5, 0.5, -2.0]); // RR cannon
+                addBone([0.5, 0.5, -2.0], [0.5, 0, -1.8]);   // RR fetlock → hoof (ÚNGULA)
+                // Patas delanteras (4 seg - ESPEJO de traseras: húmero vertical largo)
+                addBone([-0.6, 3.5, 1.5], [-0.6, 2.0, 1.5]);   // FL húmero → codo (VERTICAL, largo)
+                addBone([-0.6, 2.0, 1.5], [-0.5, 1.2, 1.8]);   // FL codo → carpus (abajo y ligeramente adelante)
+                addBone([-0.5, 1.2, 1.8], [-0.5, 0.5, 1.6]);   // FL cannon
+                addBone([-0.5, 0.5, 1.6], [-0.5, 0, 1.5]);     // FL fetlock → hoof (ÚNGULA)
+                addBone([0.6, 3.5, 1.5], [0.6, 2.0, 1.5]);     // FR húmero → codo (VERTICAL, largo)
+                addBone([0.6, 2.0, 1.5], [0.5, 1.2, 1.8]);     // FR codo → carpus
+                addBone([0.5, 1.2, 1.8], [0.5, 0.5, 1.6]);     // FR cannon
+                addBone([0.5, 0.5, 1.6], [0.5, 0, 1.5]);       // FR fetlock → hoof (ÚNGULA)
+            } else if (type === 'theropod') {
+                addBone([0, 1.5, -4.0], [0, 2.8, -2.0]); // tail tip -> base
+                addBone([0, 2.8, -2.0], [0, 3.0, 0]);    // tail base -> pelvis
+                addBone([0, 3.0, 0], [0, 3.2, 2.0]);     // pelvis -> chest (forward lean)
+                addBone([0, 3.2, 2.0], [0, 3.8, 3.0]);   // neck/head
+                addBone([-0.8, 3.0, 0], [0.8, 3.0, 0]);  // heavy hips
+                addBone([-0.8, 3.0, 0], [-1.0, 1.8, 0.8]); // L thigh
+                addBone([-1.0, 1.8, 0.8], [-0.8, 1.0, -0.5]); // L hock
+                addBone([-0.8, 1.0, -0.5], [-0.8, 0, 0.5]); // L foot
+                addBone([0.8, 3.0, 0], [1.0, 1.8, 0.8]); // R thigh
+                addBone([1.0, 1.8, 0.8], [0.8, 1.0, -0.5]); // R hock
+                addBone([0.8, 1.0, -0.5], [0.8, 0, 0.5]); // R foot
+                addBone([-0.6, 3.0, 1.8], [-0.8, 2.2, 2.0]); // L arm (tiny)
+                addBone([-0.8, 2.2, 2.0], [-0.6, 1.8, 2.2]); // L claw
+                addBone([0.6, 3.0, 1.8], [0.8, 2.2, 2.0]); // R arm (tiny)
+                addBone([0.8, 2.2, 2.0], [0.6, 1.8, 2.2]); // R claw
+            } else if (type === 'arachnid') {
+                addBone([0, 1.8, -1.5], [0, 1.5, 0]);    // abdomen -> thorax
+                addBone([0, 1.5, 0], [0, 1.4, 1.0]);     // thorax -> head
+                [1, -1].forEach(side => {
+                    // L1 (Front)
+                    addBone([0, 1.5, 0], [side * 0.5, 1.6, 0.5]); 
+                    addBone([side * 0.5, 1.6, 0.5], [side * 1.5, 2.0, 1.5]); 
+                    addBone([side * 1.5, 2.0, 1.5], [side * 2.0, 0, 2.0]);
+                    // L2 (Mid-Front)
+                    addBone([0, 1.5, 0], [side * 0.6, 1.6, 0]); 
+                    addBone([side * 0.6, 1.6, 0], [side * 1.8, 2.0, 0.5]); 
+                    addBone([side * 1.8, 2.0, 0.5], [side * 2.5, 0, 1.0]);
+                    // L3 (Mid-Back)
+                    addBone([0, 1.5, 0], [side * 0.6, 1.6, -0.5]); 
+                    addBone([side * 0.6, 1.6, -0.5], [side * 1.8, 2.0, -0.5]); 
+                    addBone([side * 1.8, 2.0, -0.5], [side * 2.5, 0, -1.0]);
+                    // L4 (Back)
+                    addBone([0, 1.5, 0], [side * 0.5, 1.6, -1.0]); 
+                    addBone([side * 0.5, 1.6, -1.0], [side * 1.5, 2.0, -1.5]); 
+                    addBone([side * 1.5, 2.0, -1.5], [side * 2.0, 0, -2.0]);
+                });
+            } else if (type === 'serpentine') {
+                const segs = [
+                    [0, 0.5, 3.0], [0.5, 0.2, 2.0], [-0.5, 0.2, 1.0], [0.5, 0.2, 0],
+                    [-0.5, 0.2, -1.0], [0.5, 0.2, -2.0], [0, 0.2, -3.0]
+                ];
+                for(let i=0; i<segs.length-1; i++) addBone(segs[i], segs[i+1]);
+            } else if (type === 'piscine') {
+                const spine = [
+                    [0, 2.0, 3.0], [0, 2.0, 1.5], [0, 2.0, 0], [0, 2.0, -1.5], [0, 2.0, -3.0]
+                ];
+                for(let i=0; i<spine.length-1; i++) addBone(spine[i], spine[i+1]);
+                // Pectoral/Pelvic Fins
+                addBone([0, 2.0, 1.5], [1.5, 1.5, 1.0]); // R Pectoral
+                addBone([0, 2.0, 1.5], [-1.5, 1.5, 1.0]); // L Pectoral
+                addBone([0, 2.0, 0.0], [0.8, 1.0, -0.5]); // R Pelvic
+                addBone([0, 2.0, 0.0], [-0.8, 1.0, -0.5]); // L Pelvic
+                // Dorsal
+                addBone([0, 2.0, 0.5], [0, 3.5, 0.0]);
+                // Caudal (Tail - Vertical orientation for fish)
+                addBone([0, 2.0, -3.0], [0, 3.5, -4.0]); // Top lobe
+                addBone([0, 2.0, -3.0], [0, 0.5, -4.0]); // Bottom lobe
+            } else if (type === 'cetacean') {
+                const spine = [
+                    [0, 2.0, 3.0], [0, 2.0, 1.5], [0, 2.0, 0], [0, 2.0, -1.5], [0, 2.0, -3.0]
+                ];
+                for(let i=0; i<spine.length-1; i++) addBone(spine[i], spine[i+1]);
+                // Flippers (Front)
+                addBone([0, 2.0, 1.5], [2.0, 1.5, 1.0]); // R Flipper
+                addBone([0, 2.0, 1.5], [-2.0, 1.5, 1.0]); // L Flipper
+                // Dorsal
+                addBone([0, 2.0, 0.0], [0, 3.5, -0.5]);
+                // Flukes (Tail - Horizontal orientation for marine mammals)
+                addBone([0, 2.0, -3.0], [1.5, 2.0, -4.0]); // R Fluke
+                addBone([0, 2.0, -3.0], [-1.5, 2.0, -4.0]); // L Fluke
+            } else if (type === 'bird') {
+                addBone([0, 2.0, -0.5], [0, 2.5, 1.0]); // spine
+                addBone([0, 2.5, 1.0], [0, 3.2, 1.5]); // neck/head
+                addBone([-0.4, 2.0, -0.5], [0.4, 2.0, -0.5]); // pelvis
+                addBone([-0.4, 2.0, -0.5], [-0.4, 1.0, 0.2]); // L femur
+                addBone([-0.4, 1.0, 0.2], [-0.4, 0, 0]); // L foot
+                addBone([0.4, 2.0, -0.5], [0.4, 1.0, 0.2]); // R femur
+                addBone([0.4, 1.0, 0.2], [0.4, 0, 0]); // R foot
+                addBone([0, 2.5, 0.5], [-1.5, 2.3, 0.0]); // L wing mid
+                addBone([-1.5, 2.3, 0.0], [-3.0, 2.2, -0.5]); // L wing tip
+                addBone([0, 2.5, 0.5], [1.5, 2.3, 0.0]); // R wing mid
+                addBone([1.5, 2.3, 0.0], [3.0, 2.2, -0.5]); // R wing tip
+            }
+
+            // === KINEMATIC RETARGETING (SNAP TO SLICES) ===
+            // === KINEMATIC PRE-WARP (PROCRUSTES ALIGNMENT) ===
+            // Calculamos la caja teórica del esqueleto puro
+            const skelBox = new THREE.Box3();
+            bones.forEach(b => { skelBox.expandByPoint(b[0]); skelBox.expandByPoint(b[1]); });
+            const skelSize = skelBox.getSize(new THREE.Vector3());
+            const skelMin = skelBox.min;
+            
+            // Usamos la caja real densa (detectada por el Bisturí) + UNIÓN con AABB real del mesh
+            const modelBox = new THREE.Box3();
+            if (window.detectedSlices && window.detectedSlices.length > 0) {
+                window.detectedSlices.forEach(cs => modelBox.expandByPoint(cs.center));
+            }
+            // SIEMPRE expandir con el AABB real del mesh renderizado para cubrir extremidades low-poly
+            if (renderGroup.children.length > 0) {
+                const meshAABB = new THREE.Box3().setFromObject(renderGroup);
+                modelBox.union(meshAABB);
+            }
+            const modelSize = modelBox.getSize(new THREE.Vector3());
+            const modelMin = modelBox.min;
+
+            const preWarp = (p) => {
+                const wp = p.clone();
+                if (skelSize.y <= 0.001 || modelSize.y <= 0.001) return wp;
+                
+                // Porcentaje local en la caja teórica
+                const px = skelSize.x > 0 ? (wp.x - skelMin.x) / skelSize.x : 0.5;
+                const py = skelSize.y > 0 ? (wp.y - skelMin.y) / skelSize.y : 0.5;
+                const pz = skelSize.z > 0 ? (wp.z - skelMin.z) / skelSize.z : 0.5;
+                
+                // Mapeo topológico exacto a la caja real
+                wp.x = modelMin.x + px * modelSize.x;
+                wp.y = modelMin.y + py * modelSize.y;
+                wp.z = modelMin.z + pz * modelSize.z;
+                
+                return wp;
+            };
+
+            const snappedBones = [];
+            const processedJoints = new Map(); // Cache snapped positions so shared joints stay connected
+            
+            const snapNode = (p) => {
+                const key = `${p.x}_${p.y}_${p.z}`;
+                if (processedJoints.has(key)) return processedJoints.get(key);
+                
+                // Imantación LIMITADA: solo colapsar al centroide si está razonablemente cerca.
+                // Si no hay slice cercano (extremidades en low-poly), mantener la posición preWarp.
+                const maxSnap = Math.max(modelSize.x, modelSize.y, modelSize.z) * 0.25;
+                let bestP = p.clone();
+                let bestDist = Infinity; 
+                
+                if (window.detectedSlices && window.detectedSlices.length > 0) {
+                    window.detectedSlices.forEach(cs => {
+                        const d = p.distanceTo(cs.center);
+                        if (d < bestDist) {
+                            bestDist = d;
+                            bestP = cs.center.clone();
+                        }
+                    });
+                }
+                // Solo usar el centroide si está CERCA. Si no, preWarp ya es bueno.
+                const result = (bestDist <= maxSnap) ? bestP : p.clone();
+                processedJoints.set(key, result);
+                return result;
+            };
+
+            bones.forEach(b => {
+                // Primero deformamos la geometría al AABB real, luego aplicamos el magnetismo de la rodaja
+                const w0 = preWarp(b[0]);
+                const w1 = preWarp(b[1]);
+                snapNode(w0); // Cache the snapped position
+                snapNode(w1);
+                snappedBones.push([w0, w1]); // Guardamos las claves crudas para la jerarquía
+            });
+
+            // === PROCEDURAL BONE INJECTION & HIERARCHY ===
+            if (window.activeSkinnedMeshes) {
+                window.activeSkinnedMeshes.forEach(sm => sm.removeFromParent());
+            }
+            window.activeSkinnedMeshes = [];
+            window.activeProceduralBones = [];
+
+            const bonesMap = new Map();
+            const rootBones = [];
+
+            // 1. Crear nodos espaciales SIEMPRE (incluso sin malla)
+            Array.from(processedJoints.entries()).forEach(([key, pos]) => {
+                const b = new THREE.Bone();
+                b.userData.worldPos = pos.clone();
+                b.position.copy(pos);
+                bonesMap.set(key, b);
+                window.activeProceduralBones.push(b);
+                
+                // Representación visual esférica atada al propio hueso
+                const m = new THREE.Mesh(jointGeo, jointMat);
+                b.add(m); 
+            });
+
+            // 2. Construir Jerarquía (Parenting)
+            snappedBones.forEach(pair => {
+                const k0 = `${pair[0].x}_${pair[0].y}_${pair[0].z}`;
+                const k1 = `${pair[1].x}_${pair[1].y}_${pair[1].z}`;
+                const b0 = bonesMap.get(k0);
+                const b1 = bonesMap.get(k1);
+                if (b0 && b1 && b0 !== b1 && b1.parent === null) {
+                    b0.add(b1);
+                }
+            });
+
+            // 3. Localizar coordenadas relativas (esencial para IK y rotations)
+            const rawBones = Array.from(bonesMap.values());
+            rawBones.forEach(b => {
+                if (b.parent && b.parent.isBone) {
+                    b.position.copy(b.userData.worldPos).sub(b.parent.userData.worldPos);
+                } else {
+                    rootBones.push(b);
+                    standardSkeletonGroup.add(b); // Lo añadimos a la escena por defecto
+                }
+            });
+            
+            window.activeSkeleton = new THREE.Skeleton(rawBones);
+
+            // Añadir representador visual dinámico (Líneas de hueso)
+            const helper = new THREE.SkeletonHelper(engine.scene);
+            helper.material.linewidth = 2;
+            helper.material.depthTest = false;
+            helper.material.vertexColors = false;
+            helper.material.color.setHex(0xff00bb);
+            standardSkeletonGroup.add(helper);
+
+            // 4. Auto-Weighting mediante Inverse Distance Weighting (IDW) ONLY Si hay Malla
+            // CRITICAL: Actualizar matrices de TODA la jerarquía ósea ANTES de bind()
+            // para que los boneInverses se calculen con matrixWorld correctas.
+            standardSkeletonGroup.updateMatrixWorld(true);
+            
+            if (renderGroup.children.length > 0) {
+                const baseW = renderGroup.children[0];
+                // Forzar update de matrices del wireframe también
+                baseW.updateMatrixWorld(true);
+                const skinMat = new THREE.MeshStandardMaterial({ 
+                            color: 0x88ccff, 
+                            wireframe: true, 
+                            transparent: true, 
+                            opacity: 0.4,
+                            side: THREE.DoubleSide
+                });
+
+                baseW.traverse(c => {
+                    if (c.isMesh && !c.isSkinnedMesh) {
+                        // Rescatamos el Geometry original y plano
+                        let geo = c.geometry.clone();
+                        if (geo.index) geo = geo.toNonIndexed(); // Para poder mapear vértice a vértice secuencial
+                        geo.computeVertexNormals(); // FIX: Prevenir que la malla se vea negra por normales corruptas
+                        
+                        // Normal matriz local a mundo
+                        const localToWorld = c.matrixWorld;
+                        
+                        // BAKE WORLD TRANSFORM AL GEOMETRY PARA DESTRUIR HERENCIAS ESPAGUETI
+                        geo.applyMatrix4(localToWorld);
+                        
+                        const posAtt = geo.attributes.position;
+                        const skinIndices = [];
+                        const skinWeights = [];
+
+                        for (let i = 0; i < posAtt.count; i++) {
+                            const vertexWorld = new THREE.Vector3(posAtt.getX(i), posAtt.getY(i), posAtt.getZ(i));
+                            
+                            // Buscar los huesos más cercanos
+                            const distances = [];
+                            rawBones.forEach((b, index) => {
+                                const d = vertexWorld.distanceTo(b.userData.worldPos);
+                                distances.push({ index, d });
+                            });
+                            distances.sort((a,b) => a.d - b.d);
+                            const top4 = distances.slice(0, 4);
+                            
+                            // Matemática de Ponderación p=4
+                            let sumW = 0;
+                            const weights = top4.map(w => {
+                                const val = 1.0 / Math.pow(w.d + 0.001, 4);
+                                sumW += val; return val;
+                            });
+                            
+                            skinIndices.push(top4[0].index, top4[1] ? top4[1].index : 0, top4[2] ? top4[2].index : 0, top4[3] ? top4[3].index : 0);
+                            skinWeights.push(weights[0]/sumW, top4[1] ? weights[1]/sumW : 0, top4[2] ? weights[2]/sumW : 0, top4[3] ? weights[3]/sumW : 0);
+                        }
+                        
+                        geo.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(skinIndices, 4));
+                        geo.setAttribute('skinWeight', new THREE.Float32BufferAttribute(skinWeights, 4));
+                        
+                        const skinnedMesh = new THREE.SkinnedMesh(geo, skinMat);
+                        
+                        // AL ESTAR BAKEADO, NO HEREDAMOS DE LA JERARQUIA ORIGINAL (Identity Scale 1x1x1)
+                        skinnedMesh.position.set(0, 0, 0);
+                        skinnedMesh.rotation.set(0, 0, 0);
+                        skinnedMesh.scale.set(1, 1, 1);
+                        
+                        skinnedMesh.updateMatrixWorld(true);
+                        skinnedMesh.bind(window.activeSkeleton);
+                        
+                        skinnedMesh.matrixAutoUpdate = false;
+                        
+                        // Añadimos a la RAIZ, evitando la jerarquía GLB y su baseWireframe
+                        renderGroup.add(skinnedMesh);
+                        window.activeSkinnedMeshes.push(skinnedMesh);
+                        c.visible = false; // Escondemos el Wireframe fantasma original
+                    }
+                });
+            }
+
+            log(`Proyectado esqueleto estándar: ${type} y auto-weighted.`);
+        });
+
+        const loader = new GLTFLoader();
+
+        function loadModel(assetInfo) {
+            log(`Loading ${assetInfo.name}...`);
+            currentModelFilename = assetInfo.filename || assetInfo.name;
+            savedSections = [];
+            // Clear old
+            while (renderGroup.children.length > 0) renderGroup.remove(renderGroup.children[0]);
+            actors = [];
+
+            loader.load(assetInfo.url, (gltf) => {
+                const baseMesh = gltf.scene;
+                // === ALISA STRUCTURAL SIZING (Sync w/ Pygmalion & Arachne) ===
+                baseMesh.traverse(c => { if (c.isMesh && c.scale.x > 10) c.scale.set(1, 1, 1); });
+                baseMesh.updateWorldMatrix(true, true);
+
+                const initBox = new THREE.Box3().setFromObject(baseMesh);
+                const size = initBox.getSize(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z) || 1;
+                
+                const tier = (assetInfo.manifest && assetInfo.manifest.target_tier) ? assetInfo.manifest.target_tier : "Tier 1.0";
+                const targetSize = { "Tier 1.0": 3.2, "Tier 1.5": 4.4, "Tier 2.0": 5.6, "Tier 2.5": 7.2, "Tier 3.0": 8.8 }[tier] || 4.8;
+                
+                if (maxDim > 0.0001) {
+                    const f = targetSize / maxDim;
+                    baseMesh.scale.set(f, f, f);
+                }
+                baseMesh.updateWorldMatrix(true, true);
+
+                const finalBox = new THREE.Box3().setFromObject(baseMesh);
+                const center = finalBox.getCenter(new THREE.Vector3());
+                // Anclar al suelo (Y=0) centralizado en X y Z
+                baseMesh.position.set(-center.x, -finalBox.min.y, -center.z);
+
+                // Render the Base Mesh as Wireframe Ghost
+                const baseWireframe = baseMesh.clone();
+                baseWireframe.traverse(c => { 
+                    if (c.isMesh) {
+                        c.material = new THREE.MeshBasicMaterial({ 
+                            color: 0x334455, 
+                            wireframe: true, 
+                            transparent: true, 
+                            opacity: 0.2 
+                        });
+                    }
+                });
+                renderGroup.add(baseWireframe);
+
+                // Nacer desde cero: Copiar el GLB con polígonos sólidos procedurales
+                const proceduralCopy = new THREE.Group();
+                const boxGeo = new THREE.BoxGeometry(0.06, 0.06, 0.06);
+                const solidMat = new THREE.MeshStandardMaterial({ color: 0xffaa00, roughness: 0.2 });
+
+                const uniquePoints = {};
+
+                baseMesh.updateWorldMatrix(true, true);
+                
+                baseMesh.traverse(c => {
+                    if (c.isMesh && c.geometry) {
+                        c.updateWorldMatrix(true, true);
+                        let geom = c.geometry.clone();
+                        // CRITICAL: Convert raw gltf vertices into Pygmalion world-space (normalized scale and grounded Y)
+                        geom.applyMatrix4(c.matrixWorld);
+                        
+                        if (geom.index) geom = geom.toNonIndexed();
+                        const pos = geom.attributes.position.array;
+
+                        // Recolectar puntos únicos y agrupar por Y
+                        for (let i = 0; i < pos.length; i += 3) {
+                            const px = Math.round(pos[i] * 1000) / 1000;
+                            const py = Math.round(pos[i + 1] * 100) / 100; // Agrupar Y redondeando a 2 decimales
+                            const pz = Math.round(pos[i + 2] * 1000) / 1000;
+                            const key = `${px}_${py}_${pz}`;
+
+                            if (!uniquePoints[key]) {
+                                const voxel = new THREE.Mesh(boxGeo, solidMat);
+                                voxel.position.set(pos[i], pos[i + 1], pos[i + 2]);
+                                proceduralCopy.add(voxel);
+                                uniquePoints[key] = { x: pos[i], y: py, z: pos[i + 2], rawY: pos[i + 1] };
+                            }
+                        }
+                    }
+                });
+
+                // ======= DUAL-AXIS CROSS-SECTION SLICER (Bisturí Y + Z) =======
+                const allPts = Object.values(uniquePoints).map(p => ({
+                    vec: new THREE.Vector3(p.x, p.rawY, p.z),
+                    x: p.x, y: p.rawY, z: p.z
+                }));
+                
+                // Grupo dedicado para las cross-sections (se borra y recrea al mover sliders)
+                let csGroup = new THREE.Group();
+                proceduralCopy.add(csGroup);
+                
+                function runSlicer() {
+                    // Limpiar grupo anterior
+                    csGroup.clear();
+                    window.detectedSlices = [];
+                    const crossSections = window.detectedSlices;
+                    
+                    // Fórmulas Deterministas (Dimensionalidad dinámica según targetSize)
+                    const globalScale = targetSize;
+                    const tolY = globalScale * 0.01;    // aprox 1%
+                    const cdY  = globalScale * 0.10;   // 0.50
+                    const tolZ = globalScale * 0.024;  // 0.12
+                    const cdZ  = globalScale * 0.24;   // 1.20
+                    
+                    const rMin = globalScale * 0.0005; // FIXED: Relajar radio para no borrar patas finas
+                    const rMax = globalScale * 0.50;   // 2.50
+                    const pMin = 2;                    // FIXED: Permitir vértices binarios en wireframes low-poly
+                    const pMax = 800;                  // FIXED: Elevar drásticamente (antes 60 destruía el pecho denso)
+                
+                    function sliceAxis(axisName, getVal, normal, color, tolerance, clusterDist) {
+                        const buckets = {};
+                        allPts.forEach(p => {
+                            const bucket = Math.round(getVal(p) / tolerance) * tolerance;
+                            const bk = bucket.toFixed(3);
+                            if (!buckets[bk]) buckets[bk] = [];
+                            buckets[bk].push(p);
+                        });
+                        
+                        Object.entries(buckets).forEach(([bk, pts]) => {
+                            if (pts.length < pMin) return;
+                            
+                            const clusters = [];
+                            pts.forEach(p => {
+                                let added = false;
+                                for (const cl of clusters) {
+                                    const cx = cl.reduce((s,c) => s+c.x, 0) / cl.length;
+                                    const cy = cl.reduce((s,c) => s+c.y, 0) / cl.length;
+                                    const cz = cl.reduce((s,c) => s+c.z, 0) / cl.length;
+                                    const d = p.vec.distanceTo(new THREE.Vector3(cx, cy, cz));
+                                    if (d < clusterDist) { cl.push(p); added = true; break; }
+                                }
+                                if (!added) clusters.push([p]);
+                            });
+                            
+                            clusters.forEach(cl => {
+                                if (cl.length < pMin || cl.length > pMax) return;
+                                const centroid = new THREE.Vector3();
+                                cl.forEach(p => centroid.add(p.vec));
+                                centroid.divideScalar(cl.length);
+                                let avgR = 0;
+                                cl.forEach(p => avgR += p.vec.distanceTo(centroid));
+                                avgR /= cl.length;
+                                if (avgR < rMin || avgR > rMax) return;
+                                crossSections.push({
+                                    points: cl.map(p => p.vec),
+                                    center: centroid,
+                                    normal: normal.clone(),
+                                    color: color,
+                                    axis: axisName
+                                });
+                            });
+                        });
+                    }
+                    
+                    sliceAxis('Y', p => p.y, new THREE.Vector3(0, 1, 0), 0xff00bb, tolY, cdY);
+                    sliceAxis('Z', p => p.z, new THREE.Vector3(0, 0, 1), 0x00ddff, tolZ, cdZ);
+                    
+                    // ======= BISTURÍ 3: DETECTOR DE CONSTELACIONES CIRCULARES =======
+                    // Busca anillos de vértices en CUALQUIER plano (caderas, hombros, cuello oblicuo)
+                    const usedByAxis = new Set();
+                    crossSections.forEach(cs => cs.points.forEach(p => {
+                        const k = `${p.x.toFixed(2)}_${p.y.toFixed(2)}_${p.z.toFixed(2)}`;
+                        usedByAxis.add(k);
+                    }));
+                    
+                    // Obtener puntos huérfanos (no cazados por Y ni Z)
+                    const orphans = allPts.filter(p => {
+                        const k = `${p.x.toFixed(2)}_${p.y.toFixed(2)}_${p.z.toFixed(2)}`;
+                        return !usedByAxis.has(k);
+                    });
+                    
+                    // DBSCAN simple: agrupar huérfanos por proximidad espacial
+                    const ringClusters = [];
+                    const visited = new Set();
+                    orphans.forEach((p, i) => {
+                        if (visited.has(i)) return;
+                        const cluster = [p];
+                        visited.add(i);
+                        // Expandir: buscar vecinos
+                        for (let j = i + 1; j < orphans.length; j++) {
+                            if (visited.has(j)) continue;
+                            // Verificar si algún miembro del cluster está cerca (Dinámico según escala)
+                            const maxDist = globalScale * 0.1;
+                            const inRange = cluster.some(cp => cp.vec.distanceTo(orphans[j].vec) < maxDist);
+                            if (inRange) { cluster.push(orphans[j]); visited.add(j); }
+                        }
+                        if (cluster.length >= 4 && cluster.length <= pMax) {
+                            ringClusters.push(cluster);
+                        }
+                    });
+                    
+                    // Testear circularidad de cada cluster huérfano
+                    ringClusters.forEach(cl => {
+                        const pts = cl.map(p => p.vec);
+                        const centroid = new THREE.Vector3();
+                        pts.forEach(p => centroid.add(p));
+                        centroid.divideScalar(pts.length);
+                        
+                        // Calcular distancias al centroide
+                        const dists = pts.map(p => p.distanceTo(centroid));
+                        const avgDist = dists.reduce((a,b) => a+b, 0) / dists.length;
+                        
+                        if (avgDist < rMin || avgDist > rMax) return;
+                        
+                        // Test de circularidad: varianza normalizada baja = forma de anillo
+                        const variance = dists.reduce((a,d) => a + (d - avgDist) ** 2, 0) / dists.length;
+                        const cv = Math.sqrt(variance) / avgDist; // Coeficiente de variación
+                        
+                        if (cv < 0.5) { // CV < 0.5 = distribución razonablemente circular
+                            // Estimar la normal del plano usando los 3 primeros puntos
+                            const v1 = pts[1].clone().sub(pts[0]);
+                            const v2 = pts[2].clone().sub(pts[0]);
+                            const normal = new THREE.Vector3().crossVectors(v1, v2).normalize();
+                            if (normal.length() < 0.01) return;
+                            
+                            crossSections.push({
+                                points: pts,
+                                center: centroid,
+                                normal: normal,
+                                color: 0xffaa00, // Naranja dorado para constelaciones
+                                axis: 'Ring'
+                            });
+                        }
+                    });
+                    
+                    // ======= BISTURÍ 4: BISTURÍ TORÁCICO (RODAJAS MACIZAS) =======
+                    // Extrae matemáticamente las rodajas que Oscar demostró manualmente
+                    // Consiste en encontrar los huérfanos restantes, medir la longitud de la columna dorsal (eje Z),
+                    // y dividirla en N segmentos tridimensionales para obtener las cinturas articulares principales.
+                    
+                    // Huérfanos que quedan después de extraer extremidades (Y) y hocico/cola (Z) y articulaciones (Rings)
+                    const spineOrphans = allPts.filter(p => !usedByAxis.has(`${p.x.toFixed(2)}_${p.y.toFixed(2)}_${p.z.toFixed(2)}`));
+                    
+                    if (spineOrphans.length > 50) {
+                        let minZ = Infinity, maxZ = -Infinity;
+                        spineOrphans.forEach(p => {
+                            if (p.z < minZ) minZ = p.z;
+                            if (p.z > maxZ) maxZ = p.z;
+                        });
+                        
+                        const spineLength = maxZ - minZ;
+                        
+                        // Solo aplicamos rodajas si hay suficiente envergadura (relativo a su tamaño total)
+                        if (spineLength > globalScale * 0.4) { 
+                            const numRodajas = 5; // Como en la demostración manual
+                            const stepZ = spineLength / (numRodajas + 1);
+                            const grosorRodaja = globalScale * 0.05; // Rodajas gruesas, dinámicas (5% del globalScale)
+                            
+                            for(let i=1; i<=numRodajas; i++) {
+                                const targetZ = minZ + stepZ * i;
+                                
+                                // Filtrar puntos que caen dentro del grosor de la rodaja DORSAL
+                                const chunkPts = spineOrphans.filter(p => Math.abs(p.z - targetZ) <= grosorRodaja);
+                                
+                                if (chunkPts.length >= 10) { // Consistente (no es un artefacto flotante)
+                                    const centroid = new THREE.Vector3();
+                                    chunkPts.forEach(p => centroid.add(p.vec));
+                                    centroid.divideScalar(chunkPts.length);
+                                    
+                                    crossSections.push({
+                                        points: chunkPts.map(p => p.vec),
+                                        center: centroid,
+                                        normal: new THREE.Vector3(0, 0, 1), // Transversal al eje longitudinal
+                                        color: 0x88ff44, // 🟢 Verde brillante (replicando la acción manual)
+                                        axis: 'Spine'
+                                    });
+                                    
+                                    // Consumir vértices
+                                    chunkPts.forEach(p => usedByAxis.add(`${p.x.toFixed(2)}_${p.y.toFixed(2)}_${p.z.toFixed(2)}`));
+                                }
+                            }
+                        }
+                    }
+                    
+                    // PINTAR
+                    crossSections.forEach((cs) => {
+                        const c = cs.center;
+                        const n = cs.normal;
+                        let u = new THREE.Vector3(0, 1, 0);
+                        if (Math.abs(n.dot(u)) > 0.99) u.set(1, 0, 0);
+                        const right = new THREE.Vector3().crossVectors(n, u).normalize();
+                        const up = new THREE.Vector3().crossVectors(right, n).normalize();
+                        
+                        cs.points.sort((a, b) => {
+                            const da = a.clone().sub(c);
+                            const db = b.clone().sub(c);
+                            return Math.atan2(da.dot(up), da.dot(right)) - Math.atan2(db.dot(up), db.dot(right));
+                        });
+                        
+                        const positions = [];
+                        for (let i = 0; i < cs.points.length; i++) {
+                            const p1 = cs.points[i];
+                            const p2 = cs.points[(i + 1) % cs.points.length];
+                            positions.push(c.x, c.y, c.z, p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+                        }
+                        
+                        const geo = new THREE.BufferGeometry();
+                        geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+                        geo.computeVertexNormals();
+                        const mat = new THREE.MeshBasicMaterial({ color: cs.color, side: THREE.DoubleSide, opacity: 0.7, transparent: true });
+                        csGroup.add(new THREE.Mesh(geo, mat));
+                        
+                        cs.points.forEach(p => {
+                            const h = new THREE.Mesh(
+                                new THREE.BoxGeometry(0.08, 0.08, 0.08),
+                                new THREE.MeshBasicMaterial({ color: cs.color })
+                            );
+                            h.position.copy(p);
+                            csGroup.add(h);
+                        });
+                    });
+                    // === TOPOLOGICAL EXTRACTOR (MST Skeleton Graph) ===
+                    if (crossSections.length > 1) {
+                        const unvisited = new Set(crossSections);
+                        const current = unvisited.values().next().value;
+                        unvisited.delete(current);
+                        const treeEdges = []; // pares [A, B]
+                        const visitedNodes = [current];
+
+                        while (unvisited.size > 0) {
+                            let bestDist = Infinity;
+                            let bestPair = null;
+                            
+                            visitedNodes.forEach(v => {
+                                unvisited.forEach(u => {
+                                    const dist = v.center.distanceTo(u.center);
+                                    if (dist < bestDist) {
+                                        bestDist = dist;
+                                        bestPair = { v, u };
+                                    }
+                                });
+                            });
+                            
+                            treeEdges.push(bestPair);
+                            unvisited.delete(bestPair.u);
+                            visitedNodes.push(bestPair.u);
+                        }
+                        
+                        // Draw the Bone Tree
+                        const lineMat = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 3 });
+                        treeEdges.forEach(edge => {
+                            const lineGeo = new THREE.BufferGeometry().setFromPoints([edge.v.center, edge.u.center]);
+                            csGroup.add(new THREE.LineSegments(lineGeo, lineMat)); 
+                        });
+                    }
+
+                    log(`${crossSections.length} secciones (Y:${crossSections.filter(c=>c.axis==='Y').length} Z:${crossSections.filter(c=>c.axis==='Z').length} Ring:${crossSections.filter(c=>c.axis==='Ring').length})`);
+                }
+                
+                // Montar todo en la escena
+                proceduralCopy.position.set(0, 0, 0);
+                renderGroup.add(proceduralCopy);
+                
+                // Ejecutar con valores iniciales
+                runSlicer();
+                
+                // Conectar los sliders al slicer en tiempo real (Eliminados - Ahora es 100% Determinista)
+            }, undefined, err => log(`Error loading ${assetInfo.name}: ` + err));
+        }
+
+        const clock = new THREE.Clock();
+
+        init();
+        engine.startLoop((dt) => {
+            // Animaciones adicionales si las hubiera irían aquí
+        });
+
+        // ======= SISTEMA DE DIBUJO MANUAL DE CROSS-SECTIONS =======
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        let drawMode = false;
+        let selectedVerts = [];     // Array de Vector3
+        let selectedMeshes = [];    // Meshes verdes de highlight
+        let drawPolygonMesh = null; // El polígono live
+        let mouseDownPos = null;
+
+        window.toggleDrawMode = () => {
+            drawMode = !drawMode;
+            const btn = document.getElementById('btn-draw');
+            btn.classList.toggle('active', drawMode);
+            btn.textContent = drawMode ? '🎯 ACTIVO' : '✏️ Modo Dibujo';
+            engine.controls.enabled = !drawMode; // Desactivar orbit al dibujar
+            if (!drawMode) engine.controls.enabled = true;
+            log(drawMode ? 'Modo dibujo ON — Click en vértices' : 'Modo dibujo OFF');
+        };
+
+        window.undoVertex = () => {
+            if (selectedVerts.length === 0) return;
+            selectedVerts.pop();
+            const m = selectedMeshes.pop();
+            if (m) { m.parent.remove(m); }
+            updateDrawPolygon();
+        };
+
+        window.clearDraw = () => {
+            selectedVerts = [];
+            selectedMeshes.forEach(m => { if(m.parent) m.parent.remove(m); });
+            selectedMeshes = [];
+            updateDrawPolygon();
+            log('Selección limpiada');
+        };
+
+        window.saveDraw = () => {
+            if (selectedVerts.length < 3) { log('Mínimo 3 vértices para guardar'); return; }
+            
+            // Clonar el polígono live como permanente ANTES de limpiar
+            if (drawPolygonMesh) {
+                const permGeo = drawPolygonMesh.geometry.clone();
+                const permMat = new THREE.MeshBasicMaterial({ color: 0xaaff00, side: THREE.DoubleSide, opacity: 0.5, transparent: true });
+                const permMesh = new THREE.Mesh(permGeo, permMat);
+                renderGroup.add(permMesh);
+                
+                selectedVerts.forEach(v => {
+                    const node = new THREE.Mesh(
+                        new THREE.BoxGeometry(0.1, 0.1, 0.1),
+                        new THREE.MeshBasicMaterial({ color: 0xaaff00 })
+                    );
+                    node.position.copy(v);
+                    renderGroup.add(node);
+                });
+            }
+
+            // Calcular normal del plano
+            const v1 = selectedVerts[1].clone().sub(selectedVerts[0]);
+            const v2 = selectedVerts[2].clone().sub(selectedVerts[0]);
+            const normal = new THREE.Vector3().crossVectors(v1, v2).normalize();
+            const centroid = new THREE.Vector3();
+            selectedVerts.forEach(v => centroid.add(v));
+            centroid.divideScalar(selectedVerts.length);
+
+            // Guardar la sección en memoria
+            const section = {
+                type: 'manual',
+                vertices: selectedVerts.map(v => [+v.x.toFixed(4), +v.y.toFixed(4), +v.z.toFixed(4)]),
+                center: [+centroid.x.toFixed(4), +centroid.y.toFixed(4), +centroid.z.toFixed(4)],
+                normal: [+normal.x.toFixed(4), +normal.y.toFixed(4), +normal.z.toFixed(4)],
+                n_vertices: selectedVerts.length
+            };
+            savedSections.push(section);
+
+            // Guardar al Hub (katamari.json)
+            if (currentModelFilename) {
+                fetch('/geppetto/cross-sections/' + encodeURIComponent(currentModelFilename), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cross_sections: savedSections })
+                }).then(r => r.json()).then(d => {
+                    log(`💾 Saved to katamari (${savedSections.length} sections)`);
+                }).catch(e => {
+                    log(`⚠️ Hub save failed: ${e.message}`);
+                });
+            }
+
+            log(`💾 Section #${savedSections.length}: ${selectedVerts.length} verts`);
+            
+            // Limpiar selección
+            selectedVerts = [];
+            selectedMeshes.forEach(m => { if(m.parent) m.parent.remove(m); });
+            selectedMeshes = [];
+            drawPolygonMesh = null;
+            document.getElementById('draw-count').textContent = `Vértices: 0 ✅ #${savedSections.length}`;
+        };
+
+        function updateDrawPolygon() {
+            // Eliminar polígono anterior
+            if (drawPolygonMesh && drawPolygonMesh.parent) {
+                drawPolygonMesh.parent.remove(drawPolygonMesh);
+            }
+            drawPolygonMesh = null;
+            document.getElementById('draw-count').textContent = `Vértices: ${selectedVerts.length}`;
+
+            if (selectedVerts.length < 3) return;
+
+            // Calcular centroide y normal
+            const c = new THREE.Vector3();
+            selectedVerts.forEach(p => c.add(p));
+            c.divideScalar(selectedVerts.length);
+
+            const va = selectedVerts[1].clone().sub(selectedVerts[0]);
+            const vb = selectedVerts[2].clone().sub(selectedVerts[0]);
+            const n = new THREE.Vector3().crossVectors(va, vb).normalize();
+            if (n.length() < 0.01) return;
+
+            // Sort radial
+            let u = new THREE.Vector3(0,1,0);
+            if (Math.abs(n.dot(u)) > 0.99) u.set(1,0,0);
+            const right = new THREE.Vector3().crossVectors(n, u).normalize();
+            const up = new THREE.Vector3().crossVectors(right, n).normalize();
+
+            const sorted = [...selectedVerts].sort((a,b) => {
+                const da = a.clone().sub(c);
+                const db = b.clone().sub(c);
+                return Math.atan2(da.dot(up), da.dot(right)) - Math.atan2(db.dot(up), db.dot(right));
+            });
+
+            // Triangle Fan
+            const positions = [];
+            for (let i = 0; i < sorted.length; i++) {
+                const p1 = sorted[i];
+                const p2 = sorted[(i+1) % sorted.length];
+                positions.push(c.x, c.y, c.z, p1.x, p1.y, p1.z, p2.x, p2.y, p2.z);
+            }
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));
+            geo.computeVertexNormals();
+            const mat = new THREE.MeshBasicMaterial({ color: 0x00ff88, side: THREE.DoubleSide, opacity: 0.6, transparent: true });
+            drawPolygonMesh = new THREE.Mesh(geo, mat);
+            renderGroup.add(drawPolygonMesh);
+        }
+
+        // ======= SELECCIÓN: CLICK + MARQUESINA =======
+        // Rectángulo visual de selección
+        const marqueeDiv = document.createElement('div');
+        marqueeDiv.style.cssText = 'position:fixed;border:2px dashed #00ff88;background:rgba(0,255,136,0.1);display:none;pointer-events:none;z-index:999;';
+        document.body.appendChild(marqueeDiv);
+
+        function addVertexToSelection(worldPos) {
+            const isDupe = selectedVerts.some(v => v.distanceTo(worldPos) < 0.05);
+            if (isDupe) return;
+            selectedVerts.push(worldPos.clone());
+            const highlight = new THREE.Mesh(
+                new THREE.BoxGeometry(0.15, 0.15, 0.15),
+                new THREE.MeshBasicMaterial({ color: 0x00ff88, wireframe: true })
+            );
+            highlight.position.copy(worldPos);
+            renderGroup.add(highlight);
+            selectedMeshes.push(highlight);
+        }
+
+        engine.renderer.domElement.addEventListener('pointerdown', (e) => {
+            mouseDownPos = { x: e.clientX, y: e.clientY };
+            if (drawMode) {
+                marqueeDiv.style.left = e.clientX + 'px';
+                marqueeDiv.style.top = e.clientY + 'px';
+                marqueeDiv.style.width = '0px';
+                marqueeDiv.style.height = '0px';
+            }
+        });
+
+        engine.renderer.domElement.addEventListener('pointermove', (e) => {
+            if (!drawMode || !mouseDownPos) return;
+            const dx = e.clientX - mouseDownPos.x;
+            const dy = e.clientY - mouseDownPos.y;
+            if (Math.sqrt(dx*dx + dy*dy) < 5) return; // Demasiado pequeño, aún no es drag
+
+            marqueeDiv.style.display = 'block';
+            marqueeDiv.style.left = Math.min(e.clientX, mouseDownPos.x) + 'px';
+            marqueeDiv.style.top = Math.min(e.clientY, mouseDownPos.y) + 'px';
+            marqueeDiv.style.width = Math.abs(dx) + 'px';
+            marqueeDiv.style.height = Math.abs(dy) + 'px';
+        });
+
+        engine.renderer.domElement.addEventListener('pointerup', (e) => {
+            if (!drawMode || !mouseDownPos) return;
+            const dx = e.clientX - mouseDownPos.x;
+            const dy = e.clientY - mouseDownPos.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+
+            marqueeDiv.style.display = 'none';
+
+            if (dist < 5) {
+                // === CLICK SIMPLE: seleccionar un solo vértice con raycast ===
+                mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+                raycaster.setFromCamera(mouse, engine.camera);
+
+                const targets = [];
+                renderGroup.traverse(c => {
+                    if (c.isMesh && c.geometry.type === 'BoxGeometry') targets.push(c);
+                });
+
+                const hits = raycaster.intersectObjects(targets, false);
+                if (hits.length > 0) {
+                    const worldPos = new THREE.Vector3();
+                    hits[0].object.getWorldPosition(worldPos);
+                    addVertexToSelection(worldPos);
+                    updateDrawPolygon();
+                }
+            } else {
+                // === MARQUESINA: seleccionar todos los vértices dentro del rectángulo ===
+                const x1 = Math.min(mouseDownPos.x, e.clientX);
+                const y1 = Math.min(mouseDownPos.y, e.clientY);
+                const x2 = Math.max(mouseDownPos.x, e.clientX);
+                const y2 = Math.max(mouseDownPos.y, e.clientY);
+
+                let count = 0;
+                // Recorrer TODOS los voxels y proyectar a pantalla
+                renderGroup.traverse(c => {
+                    if (!c.isMesh || c.geometry.type !== 'BoxGeometry') return;
+                    // Ignorar los highlights verdes (tamaño 0.15)
+                    const params = c.geometry.parameters;
+                    if (params && params.width > 0.12) return;
+
+                    const worldPos = new THREE.Vector3();
+                    c.getWorldPosition(worldPos);
+
+                    // Proyectar posición 3D a coordenadas de pantalla
+                    const screenPos = worldPos.clone().project(engine.camera);
+                    const sx = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
+                    const sy = (-screenPos.y * 0.5 + 0.5) * window.innerHeight;
+
+                    // Comprobar si está dentro del rectángulo Y delante de la cámara
+                    if (screenPos.z > 0 && screenPos.z < 1 && sx >= x1 && sx <= x2 && sy >= y1 && sy <= y2) {
+                        addVertexToSelection(worldPos);
+                        count++;
+                    }
+                });
+
+                if (count > 0) {
+                    log(`🔲 Marquesina: ${count} vértices seleccionados`);
+                    updateDrawPolygon();
+                }
+            }
+
+            mouseDownPos = null;
+        });
+
+        // ======= PROCEDURAL GEPPETTO ANIMATION LOOP =======
+        const proceduralClock = new THREE.Clock();
+
+        // CPG (Central Pattern Generator): Curva Asimétrica para simular apoyos
+        function getGaitCurve(t, phase, dutyFactor) {
+            let localT = (t + phase) % 1.0;
+            if (localT < 0) localT += 1.0;
+            
+            if (localT < dutyFactor) { // STANCE
+                return 1.0 - (localT / dutyFactor) * 2.0; 
+            } else { // SWING
+                let swingT = (localT - dutyFactor) / (1.0 - dutyFactor);
+                return -1.0 + (0.5 - Math.cos(swingT * Math.PI) * 0.5) * 2.0;
+            }
+        }
+
+        // SOLUCIONADOR IK ANALÍTICO (Ley de Cosenos)
+        // Aplica Cinemática Inversa a una cadena local de 2 huesos (Ej: Fémur -> Tibia)
+        function solve2BoneIK(hip, targetPos) {
+            if (hip.children.length === 0) return;
+            const knee = hip.children[0];
+            if (knee.children.length === 0) return;
+            const ankle = knee.children[0];
+            
+            // 1. Tomamos distancias de reposo como base
+            const L1 = hip.userData.worldPos.distanceTo(knee.userData.worldPos);
+            const L2 = knee.userData.worldPos.distanceTo(ankle.userData.worldPos);
+            const maxReach = L1 + L2;
+            
+            hip.parent.updateMatrixWorld(true);
+            const rootPos = new THREE.Vector3();
+            hip.getWorldPosition(rootPos); // Coordenada XYZ Real de la Cadera en este frame
+            
+            let D = rootPos.distanceTo(targetPos);
+            if (D >= maxReach) D = maxReach - 0.001; // Prevenir hiperextensión
+            
+            // 2. Ley de los Cosenos: c^2 = a^2 + b^2 - 2ab cos(C)
+            const cosKnee = (L1*L1 + L2*L2 - D*D) / (2 * L1 * L2);
+            // Angulo interno de la rodilla y su suplementario
+            const angleKnee = Math.PI - Math.acos(Math.max(-1, Math.min(1, cosKnee)));
+            
+            knee.rotation.set(0, 0, 0);
+            knee.rotation.x = angleKnee; // Doblamos rodilla en su bisagra local X
+            
+            // 3. Apuntar la cadera hacia el Target con su rodilla ya doblada
+            knee.updateMatrixWorld(true);
+            const currentEnd = new THREE.Vector3();
+            ankle.getWorldPosition(currentEnd); // Dónde terminaría el pie ahora mismo
+            
+            const aimDir = targetPos.clone().sub(rootPos).normalize();
+            const currentDir = currentEnd.clone().sub(rootPos).normalize();
+            
+            // Rotación necesaria para alinear "adonde miro" con "adonde apunto"
+            const aimQuat = new THREE.Quaternion().setFromUnitVectors(currentDir, aimDir);
+            
+            // Multiplicamos la rotación actual de la cadera por este ajuste
+            const hipQuat = new THREE.Quaternion();
+            hip.getWorldQuaternion(hipQuat);
+            hipQuat.premultiply(aimQuat); // Premultiply para rotación World
+            
+            // Mapeamo al espacio Local de su ancestro (ej. la espina/pelvis)
+            if (hip.parent) {
+                const parentQuat = new THREE.Quaternion();
+                hip.parent.getWorldQuaternion(parentQuat);
+                parentQuat.invert();
+                hip.quaternion.copy(parentQuat.multiply(hipQuat));
+            } else {
+                hip.quaternion.copy(hipQuat);
+            }
+        }
+
+        function animateProceduralSkeletons() {
+            requestAnimationFrame(animateProceduralSkeletons);
+            
+            const modeResult = document.getElementById('animation-select');
+            if(!modeResult) return;
+            const mode = modeResult.value;
+            
+            if (!window.activeProceduralBones) return;
+            const bones = window.activeProceduralBones;
+
+            if (mode === 'none') {
+                bones.forEach(b => {
+                    b.scale.set(1,1,1);
+                    b.rotation.set(0,0,0);
+                    if (b.parent === null) b.position.copy(b.userData.worldPos);
+                });
+                return;
+            }
+            
+            const t = proceduralClock.getElapsedTime();
+            
+            if (mode === 'idle') {
+                bones.forEach(b => {
+                    b.rotation.set(0,0,0); // reset walk
+                    // Respira suavemente escalando el eje Y
+                    if (b.parent === null || b.children.length > 2) {
+                        b.scale.y = 1.0 + Math.sin(t * 2.0) * 0.05;
+                    }
+                    if (window.activeSkeletonType === 'bird' && b.parent && Math.abs(b.position.x) > 0.5) {
+                        b.rotation.z = Math.sin(t * 2.0) * 0.05 * Math.sign(b.userData.worldPos.x);
+                    }
+                    if (window.activeSkeletonType === 'piscine' && b.userData.worldPos.z < 0) {
+                        b.rotation.y = Math.sin(t * 1.5 - b.userData.worldPos.z) * 0.05;
+                    }
+                    // Equino idle: orejas girando perezosamente, cola meciéndose, mandíbula masticando
+                    if (['equine', 'canine'].includes(window.activeSkeletonType) && b.parent) {
+                        const wy = b.userData.worldPos.y;
+                        const wz = b.userData.worldPos.z;
+                        const wx = b.userData.worldPos.x;
+                        // Orejas: giros lentos irregulares (como escuchando moscas)
+                        if (wy > 4.7 && Math.abs(wx) > 0.01) {
+                            b.rotation.z = Math.sin(t * 3.0 + wx * 10.0) * 0.2 * Math.sign(wx);
+                            b.rotation.x = Math.sin(t * 1.8 + 1.0) * 0.15;
+                        }
+                        // Cola: mecer suave y perezoso
+                        if (wz < -2.0 && Math.abs(wx) < 0.05) {
+                            const tailDelay = Math.abs(wz + 2.0) * 1.2;
+                            b.rotation.y = Math.sin(t * 1.0 - tailDelay) * 0.15;
+                        }
+                        // Mandíbula: masticación lenta
+                        if (wy < 4.2 && wz > 2.5) {
+                            b.rotation.x = Math.sin(t * 2.5) * 0.04;
+                        }
+                        // Cuello: ligero cabeceo respiratorio
+                        if (wy > 4.0 && wy < 4.6 && Math.abs(wx) < 0.05 && wz > 1.5) {
+                            b.rotation.x = Math.sin(t * 1.5) * 0.03;
+                        }
+                    }
+                });
+            } else if (['walk', 'walk_real', 'trot', 'canter', 'gallop'].includes(mode)) {
+                let speed = 5.0;
+                if (mode === 'trot') speed = 8.0;
+                if (mode === 'canter') speed = 10.0;
+                if (mode === 'gallop') speed = 14.0;
+                
+                const tNorm = t * (speed / (Math.PI * 2)); // Ciclo base normalizado [0..1]
+
+                bones.forEach((b, index) => {
+                    b.scale.set(1,1,1); // reset idle
+                    const isRoot = b.parent === null;
+                    const wx = b.userData.worldPos.x;
+                    const wz = b.userData.worldPos.z;
+                    const rx = b.position.x; // relative to parent
+                    const ry = b.position.y;
+
+                    // == 1. LOCOMOCIÓN RAÍZ (ROOT BOUNCE) ==
+                    if (isRoot) {
+                        if (['canine', 'equine', 'theropod', 'humanoid', 'arachnid'].includes(window.activeSkeletonType)) {
+                            // Rebote vertical calibrado por marcha (cm reales escalados)
+                            let bounce = 0.02; // walk: 2cm
+                            let yaw = 0.03;
+                            if (mode === 'trot' || mode === 'walk') { bounce = 0.06; yaw = 0.04; }
+                            if (mode === 'canter') { bounce = 0.08; yaw = 0.06; }
+                            if (mode === 'gallop') { bounce = 0.12; yaw = 0.08; }
+                            b.position.y = b.userData.worldPos.y + Math.abs(Math.sin(t * speed)) * bounce;
+                            b.rotation.y = Math.sin(t * speed * 0.5) * yaw;
+                            // Pelvis roll lateral (más pronunciado en canter/gallop)
+                            if (mode === 'canter' || mode === 'gallop') {
+                                b.rotation.z = Math.sin(t * speed * 0.5) * 0.04;
+                            }
+                        } else if (window.activeSkeletonType === 'bird') {
+                            b.position.y = b.userData.worldPos.y + Math.sin(t * speed * 1.2) * 0.4; // Flying bounce
+                        } else if (window.activeSkeletonType === 'piscine' || window.activeSkeletonType === 'serpentine') {
+                            b.position.x = b.userData.worldPos.x + Math.sin(t * speed) * 0.2; // Swimming lateral weave
+                        } else if (window.activeSkeletonType === 'cetacean') {
+                            b.position.y = b.userData.worldPos.y + Math.sin(t * speed) * 0.3; // Dolphin vertical wave
+                        }
+                    }
+
+                    // == 2. KINEMATICA ORGÁNICA MATRICIAL ==
+                    if (b.parent) {
+                        
+                        // Aves: Aleteo sincronizado
+                        if (window.activeSkeletonType === 'bird') {
+                            if (Math.abs(rx) > 0.2 && ry >= 0) { 
+                                const flapPhase = (b.children.length === 0) ? -1.0 : 0.0;
+                                b.rotation.z = Math.sin(t * speed * 1.2 + flapPhase) * 0.6 * -Math.sign(wx);
+                            } else if (ry < 0 && Math.abs(wz) < 0.5) { 
+                                b.rotation.x = -0.5; // Patas plegadas aerodinámicamente
+                            }
+                        }
+                        
+                        // Peces y Ciempiés: Ondulación espinal lateral (Traveling Wave)
+                        else if (['piscine', 'serpentine'].includes(window.activeSkeletonType)) {
+                            if (Math.abs(rx) < 0.2) { 
+                                b.rotation.y = Math.sin(t * speed - wz * 1.5) * 0.3;
+                            } else { 
+                                b.rotation.z = Math.sin(t * speed) * 0.2 * Math.sign(wx);
+                            }
+                        }
+
+                        // Cetáceos: Ondulación espinal vertical
+                        else if (window.activeSkeletonType === 'cetacean') {
+                            if (Math.abs(rx) < 0.2) { 
+                                b.rotation.x = Math.sin(t * speed - wz * 1.2) * 0.3;
+                            } else { 
+                                b.rotation.x = Math.sin(t * speed) * 0.4;
+                            }
+                        }
+
+                        // Arácnidos: Caminata Radial Escalonada (Matriz de Fase Fraccional)
+                        else if (window.activeSkeletonType === 'arachnid') {
+                            if (Math.abs(rx) > 0.1) {
+                                // Ondas viajando de adelante hacia atrás con lados cruzados
+                                const wavePhase = (wz * 0.15) + (wx > 0 ? 0 : 0.5); 
+                                const gaitVal = getGaitCurve(tNorm, wavePhase, 0.7); // Arañas tienen 70% Duty Factor
+                                
+                                b.rotation.x = gaitVal * 0.4;
+                                b.rotation.z = Math.cos(t * speed + wavePhase*Math.PI*2) * 0.2 * Math.sign(wx);
+                                
+                                // El fémur se encoge y eleva durante el paso
+                                if (b.children.length > 0) {
+                                    const localT = (tNorm + wavePhase) % 1.0;
+                                    const normLocalT = localT < 0 ? localT + 1.0 : localT;
+                                    if (normLocalT >= 0.7) {
+                                        b.children[0].rotation.x = 0.5; // Doblar rodilla en vuelo
+                                    } else {
+                                        b.children[0].rotation.x = 0.1; // Fijar en suelo
+                                    }
+                                }
+                            }
+                        }
+
+                        // Cuadrúpedos y Bípedos: Marcha Matricial con Pseudo-IK de 3 segmentos
+                        else {
+                            // Detectar si este hueso es una RAÍZ DE PATA (hip stub / shoulder stub)
+                            const isLimbRoot = b.parent?.userData?.worldPos && 
+                                Math.abs(wx - b.parent.userData.worldPos.x) > 0.05 && 
+                                b.children.filter(c => c.isBone).length > 0;
+                            
+                            if (isLimbRoot) {
+                                const isFront = wz > 0;
+                                const isRight = wx > 0;
+                                
+                                let phase = 0.0;
+                                let dutyCycle = 0.5;
+                                
+                                if (mode === 'walk_real') {
+                                    dutyCycle = 0.65;
+                                    if (!isFront && !isRight) phase = 0.0;
+                                    else if (isFront && !isRight) phase = 0.25;
+                                    else if (!isFront && isRight) phase = 0.5;
+                                    else phase = 0.75;
+                                } else if (mode === 'canter') {
+                                    dutyCycle = 0.4;
+                                    if (!isFront && !isRight) phase = 0.0;
+                                    else if ((!isFront && isRight) || (isFront && !isRight)) phase = 0.3;
+                                    else phase = 0.6;
+                                } else if (mode === 'gallop') {
+                                    dutyCycle = 0.3;
+                                    if (!isFront && !isRight) phase = 0.0;
+                                    else if (!isFront && isRight) phase = 0.15;
+                                    else if (isFront && !isRight) phase = 0.5;
+                                    else phase = 0.65;
+                                } else {
+                                    // Trot / walk genérico
+                                    dutyCycle = 0.45;
+                                    if ((isFront && !isRight) || (!isFront && isRight)) phase = 0.5;
+                                }
+                                
+                                const gaitVal = getGaitCurve(tNorm, phase, dutyCycle);
+                                const localT = (tNorm + phase) % 1.0;
+                                const normLocalT = localT < 0 ? localT + 1.0 : localT;
+                                const isSwing = normLocalT >= dutyCycle;
+                                
+                                // Las patas delanteras apuntan ABAJO-ATRÁS en el esqueleto,
+                                // así que necesitan signo INVERTIDO para moverse hacia adelante.
+                                const limbSign = isFront ? -1 : 1;
+                                
+                                // === TABLA ROM BIOMECÁNICA (radianes reales por marcha) ===
+                                // Fuente: Equine Locomotion Studies (Clayton, 2004)
+                                const ROM = {
+                                    walk_real: { femur: 0.3, knee: 0.5, cannon: 0.3, hoof: -0.2, stanceHoof: 0.25 },
+                                    trot:      { femur: 0.4, knee: 0.7, cannon: 0.4, hoof: -0.3, stanceHoof: 0.35 },
+                                    walk:      { femur: 0.4, knee: 0.7, cannon: 0.4, hoof: -0.3, stanceHoof: 0.35 },
+                                    canter:    { femur: 0.5, knee: 0.85,cannon: 0.5, hoof: -0.35,stanceHoof: 0.4  },
+                                    gallop:    { femur: 0.6, knee: 1.0, cannon: 0.6, hoof: -0.4, stanceHoof: 0.45 }
+                                };
+                                const r = ROM[mode] || ROM.trot;
+                                
+                                // Delanteras levantan rodillas MÁS ALTO (alta escuela)
+                                const frontKneeBoost = isFront ? 1.4 : 1.0;
+                                
+                                // === SEGMENTO 0: ESCÁPULA / PELVIS (el stub) ===
+                                // Sutil deslizamiento adelante-atrás
+                                const stubAmp = isFront ? 0.08 : 0.04;
+                                b.rotation.x = gaitVal * stubAmp * limbSign;
+                                
+                                // === SEGMENTO 1: FÉMUR/HÚMERO ===
+                                const femur = b.children.find(c => c.isBone);
+                                if (femur) {
+                                    femur.rotation.x = gaitVal * r.femur * limbSign;
+                                    
+                                    // === SEGMENTO 2: RODILLA/CARPO ===
+                                    const knee = femur.children.find(c => c.isBone);
+                                    if (knee) {
+                                        if (isSwing) {
+                                            let swingT = (normLocalT - dutyCycle) / (1.0 - dutyCycle);
+                                            knee.rotation.x = Math.sin(swingT * Math.PI) * r.knee * frontKneeBoost;
+                                            
+                                            // === SEGMENTO 3: CANNON/CORVEJÓN ===
+                                            const cannon = knee.children.find(c => c.isBone);
+                                            if (cannon) {
+                                                cannon.rotation.x = Math.sin(swingT * Math.PI) * r.cannon;
+                                                
+                                                // === SEGMENTO 4: ÚNGULA (Fetlock → Casco) ===
+                                                const hoof = cannon.children.find(c => c.isBone);
+                                                if (hoof) {
+                                                    const hoofPhase = Math.max(0, swingT - 0.15);
+                                                    hoof.rotation.x = Math.sin(hoofPhase * Math.PI) * r.hoof;
+                                                }
+                                            }
+                                        } else {
+                                            // STANCE: pierna recta soportando peso
+                                            knee.rotation.x = 0.05;
+                                            const cannon = knee.children.find(c => c.isBone);
+                                            if (cannon) {
+                                                cannon.rotation.x = 0;
+                                                const hoof = cannon.children.find(c => c.isBone);
+                                                if (hoof) {
+                                                    const stanceT = normLocalT / dutyCycle;
+                                                    hoof.rotation.x = Math.sin(stanceT * Math.PI) * r.stanceHoof;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            // Cola: onda viajera lateral (más intensa que un simple vaivén)
+                            else if (Math.abs(wx) < 0.05 && wz < -2.0 && !isLimbRoot) {
+                                // Cada segmento de cola recibe la onda con retardo según su Z
+                                const tailDelay = Math.abs(wz + 2.0) * 0.8;
+                                b.rotation.y = Math.sin(t * speed * 0.5 - tailDelay) * 0.25;
+                                b.rotation.x = Math.sin(t * speed * 0.3 - tailDelay) * 0.1; // leve ondulación vertical
+                            }
+                            // Orejas: temblor rápido asimétrico durante la marcha
+                            else if (b.userData.worldPos.y > 4.7 && Math.abs(wx) > 0.01) {
+                                b.rotation.z = Math.sin(t * 12.0 + wx * 5.0) * 0.15 * Math.sign(wx);
+                                b.rotation.x = Math.sin(t * 8.0) * 0.1;
+                            }
+                            // Mandíbula: micro-rebote sincronizado con el trote
+                            else if (b.userData.worldPos.y < 4.2 && wz > 2.5) {
+                                b.rotation.x = Math.abs(Math.sin(t * speed)) * 0.05;
+                            }
+                            // Esternón: balanceo lateral suave
+                            else if (b.userData.worldPos.y < 3.0 && Math.abs(wz - 0.5) < 0.2) {
+                                b.rotation.z = Math.sin(t * speed * 0.5) * 0.03;
+                            }
+                            // Cola suave en espina medial (la cola de la vieja lógica)
+                            else if (Math.abs(wx) < 0.05 && wz < 0 && !isLimbRoot && b.userData.worldPos.y > 3.3) {
+                                b.rotation.y = Math.sin(t * speed * 0.3 - wz) * 0.05;
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        animateProceduralSkeletons();
+
+    </script>
+</body>
+
+</html>

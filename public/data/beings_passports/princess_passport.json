@@ -1,0 +1,20 @@
+{
+    "name": "Princess",
+    "role": "The Daughter",
+    "emoji": "👧",
+    "type": "divine",
+    "skeleton": "humanoid_child",
+    "model_path": "princess.glb",
+    "scale": 0.8,
+    "kinematics": "humanoid_playful",
+    "sealed_by": "Oscar, Father",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "xtts",
+        "tier": 5,
+        "voice_id": "alisa_princess",
+        "rate": "-5%",
+        "pitch": "-2Hz",
+        "label": "Princess Nina - Monica Geller (Concha García Valero, castellano, XTTS cloned)"
+    }
+}

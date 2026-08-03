@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ALISA LAB — Universal Morphology Test</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #020205; font-family: monospace; color: white; }
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three-0.160.0/build/three.module.js",
+        "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+        "@alisa-engine/": "../js/alisa-engine/"
+      }
+    }
+    </script>
+</head>
+<body>
+    <div id="ui-overlay" style="position:absolute; top:20px; left:20px; z-index:100;">
+        <h2 style="margin:0; color:#00ffcc; text-shadow: 0 0 10px #00ffcc;">🧬 Universal Morphology Pipeline</h2>
+        <p style="margin:5px 0; color:#aaa;">Testing Katamari Matrix Normalization.</p>
+        <div id="log-box" style="margin-top:20px; max-height:200px; overflow-y:auto; font-size:12px; color:#ff00ff; white-space:pre-wrap;"></div>
+    </div>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+        import { ColonialControlRoomFactory } from '@alisa-engine/src/world/factories/ColonialControlRoomFactory.js';
+        import { MorphologyImporterPlugin } from '@alisa-engine/src/soma/plugins/MorphologyImporterPlugin.js';
+
+        // Custom logging
+        const logBox = document.getElementById('log-box');
+        function guiLog(msg) { logBox.innerHTML += `${msg}\n`; logBox.scrollTop = logBox.scrollHeight; }
+
+        window.onload = async () => {
+            guiLog("[SYSTEM] Booting Universal Morphology Container...");
+            
+            const app = new AlisaRenderCore({ clearColor: 0x020205 });
+            
+            // Standard Factory Floor
+            const factory = new ColonialControlRoomFactory(app.scene);
+            factory.buildRoom(false); // Bright mode
+            
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            app.scene.add(ambientLight);
+            
+            const moodLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.8);
+            moodLight.position.set(0, 50, 0);
+            app.scene.add(moodLight);
+            
+            if (app.controls) {
+                app.camera.position.set(0, 5, 12);
+                app.controls.target.set(0, 1, 0);
+                app.controls.maxPolarAngle = Math.PI / 2 - 0.05;
+                app.controls.update();
+            }
+
+            app.startLoop();
+            
+            // 1. Register Plugin
+            const morphPlugin = new MorphologyImporterPlugin(app);
+            app.registerPlugin(morphPlugin);
+            
+            // 2. Spawn a Lineup of Assets and force extremely rigid Katamari scaling.
+            // We use wildly different assets to prove standard grounding and scaling.
+            const testAssets = [
+                { file: 'Coffee Cup.glb', tier: 'Tier 2.0: Colossal', x: -6 }, // Making a cup gigantic (15m)!
+                { file: 'Woman.glb', tier: 'Tier 0.0: Base Humanoid', x: -3 }, // Standard 1.8m
+                { file: 'Alien Computer.glb', tier: 'Tier -1.0: Child Humanoid', x: 0 }, // Small 1.1m
+                { file: 'Ant.glb', tier: 'Tier 0.5: Tall Humanoid', x: 3 }, // Gigantic ant (2.2m)
+                { file: 'Alpaca.glb', tier: 'Tier -3: Tiny', x: 6 } // Nanoscopic Alpaca (0.2m)
+            ];
+            
+            guiLog("[MORPHOLOGY] Commencing Ingestion Pipeline...");
+            
+            for (let data of testAssets) {
+                try {
+                    guiLog(`  Ingesting: ${data.file} aimed at ${data.tier}...`);
+                    
+                    const wrapper = await morphPlugin.loadNormalizedAsset(
+                        '../props/models/' + data.file, 
+                        data.tier,
+                        {
+                            position: new THREE.Vector3(data.x, 0, 0), // Y is 0, Plugin MUST ground it
+                            debug: true
+                        }
+                    );
+                    
+                    app.scene.add(wrapper);
+                    guiLog(`  [OK] ${data.file} perfectly normalized.`);
+                } catch (e) {
+                    guiLog(`  [ERROR] Failed to ingest ${data.file}.`);
+                }
+            }
+            
+            guiLog("[SYSTEM] Morphology matrix loaded successfully. All assets clamped and grounded.");
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!-- RECUPERADO del transcript de la sesion 2026-07-27 tras el `git clean`.
+     Original: World/Web/overworld/alisa_labs_confessional_v2.html (ruta pre-reorg).
+     Rutas adaptadas a la convencion de labs del motor. -->
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>ALISA Labs · SET_A Confesionario (unified) — ALISA Engine scene</title>
+<!--
+  ALISA Labs S01E001 · SET_A UNIFIED. Three.js 0.160 (modules) so the face system
+  (AvatarCalibrationTool) and the directed beat live in ONE scene. This is the
+  whole apparatus together: a directed beat from the Realización machine drives
+  CAMERA + LIGHT + FACE + VOICE at once — "mood = cara + voz + cámara + luz = una
+  sola actuación". Art direction + realización: Aris. public_safe.
+-->
+<style>
+  :root{ --bg:#1A1A1A; --white:#F4F1EA; --amber:#D98A24; --glow:#F6B35B; --walnut:#6B4A2E; --green:#5B7A61; }
+  html,body{margin:0;height:100%;background:#0b0906;overflow:hidden;font-family:Inter,"Segoe UI",system-ui,sans-serif;}
+  #stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+  #frame{position:relative;aspect-ratio:16/9;width:min(100vw,calc(100vh*16/9));height:min(100vh,calc(100vw*9/16));background:var(--bg);overflow:hidden;}
+  #frame canvas{position:absolute;inset:0;width:100%!important;height:100%!important;z-index:0;}
+  .ov{position:absolute;color:var(--white);pointer-events:none;z-index:5;}
+  .mono{font-family:"JetBrains Mono","Fira Code",ui-monospace,Consolas,monospace;}
+  .tag{top:3.5%;left:3%;font-size:1.5vmin;letter-spacing:.12em;color:#9aa6ad;opacity:.9;}
+  .tag b{color:var(--green);}
+  .disc{top:3.5%;right:3%;text-align:right;font-size:1.35vmin;opacity:.82;line-height:1.5;color:#e7e2d8;}
+  #bubble{top:13%;left:50%;transform:translateX(-50%);max-width:52%;text-align:center;background:rgba(17,19,24,.86);
+    border:1px solid var(--walnut);border-radius:12px;padding:1.3vmin 2vmin;font-size:1.9vmin;line-height:1.4;color:var(--white);
+    box-shadow:0 6px 24px rgba(0,0,0,.5);display:none;}
+  .lt{left:3%;bottom:6%;}
+  .lt .bar{width:5.5vmin;height:.5vmin;background:var(--walnut);margin-bottom:1.1vmin;box-shadow:3.2vmin 0 0 var(--green);}
+  .lt .t1{font-size:2.0vmin;font-weight:600;text-shadow:0 1px 6px rgba(0,0,0,.6);}
+  .lt .t2{font-size:2.6vmin;color:var(--glow);margin-top:.5vmin;text-shadow:0 1px 6px rgba(0,0,0,.6);}
+  #readout{right:3%;bottom:6%;text-align:right;font-size:1.3vmin;color:#d8cfc0;line-height:1.7;}
+  #readout .k{color:#9a8d7a;}
+</style>
+<script type="importmap">
+{ "imports": {
+    "three": "/vendor/three-0.160.0/build/three.module.js",
+    "three/addons/": "/vendor/three-0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div id="stage"><div id="frame">
+  <div class="ov tag mono">ENGINE_CAPTURE · <b>SET_A UNIFIED</b> · cámara+luz+cara+voz · PUBLIC_SAFE</div>
+  <div class="ov disc mono">un beat dirigido mueve TODO a la vez<br>@Realizacion #SEQUENCE → escena</div>
+  <div class="ov mono" id="bubble"></div>
+  <div class="ov lt"><div class="bar"></div><div class="t1">ALISA LABS · S01E001 — HELLO WORLD</div><div class="t2 mono">[ ROL: CONFESIONARIO ]</div></div>
+  <div class="ov mono" id="readout"><span id="sdkline">SET_A · booting…</span></div>
+</div></div>
+<!-- El SDK vive en la raíz de `public/`, no en `labs/`: sin el `../` esto era un
+     404 silencioso. No rompía nada porque su uso está guardado con
+     `if (window.ALISA_SDK)`, que es justo lo que hace que un fallo así dure. -->
+<script src="../alisa_sim_sdk.js"></script>
+<!-- Aquí se cargaba `js/realizacion_player.js`. Ese fichero no existe en ningún
+     sitio: de Realización sólo hay el motor en Python (`Engines/Realizacion.py`).
+     Era un 404 fijo en cada carga y nada de esta página lo usa. -->
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { AvatarCalibrationTool } from '../js/tools/AvatarCalibrationTool.js?v=unified1';
+
+const frameEl = document.getElementById('frame'), readout = document.getElementById('sdkline'), bubble = document.getElementById('bubble');
+const W = () => frameEl.clientWidth, H = () => frameEl.clientHeight;
+const renderer = new THREE.WebGLRenderer({ antialias:true, preserveDrawingBuffer:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.setSize(W(),H());
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15; renderer.outputColorSpace = THREE.SRGBColorSpace;
+frameEl.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x1A1A1A); scene.fog = new THREE.Fog(0x1A1A1A, 9, 24);
+const camera = new THREE.PerspectiveCamera(36, W()/H(), 0.1, 100);
+camera.position.set(0,1.8,5.1); camera.lookAt(0,1.25,-0.5);
+
+// confessional room (walnut desk, warm walls) — same OFFICE pole as the r128 SET_A
+const matWall=new THREE.MeshStandardMaterial({color:0xF4F1EA,roughness:0.97});
+const matFloor=new THREE.MeshStandardMaterial({color:0xE7E1D6,roughness:0.92});
+const matWalnut=new THREE.MeshStandardMaterial({color:0x5A3D24,roughness:0.5,metalness:0.06});
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(11,11),matFloor); floor.rotation.x=-Math.PI/2; floor.receiveShadow=true; scene.add(floor);
+const back=new THREE.Mesh(new THREE.PlaneGeometry(11,5.4),matWall); back.position.set(0,2.6,-3.3); back.receiveShadow=true; scene.add(back);
+const left=new THREE.Mesh(new THREE.PlaneGeometry(9,5.4),matWall); left.rotation.y=Math.PI/2; left.position.set(-4.2,2.6,1.0); scene.add(left);
+const desk=new THREE.Group();
+const top=new THREE.Mesh(new THREE.BoxGeometry(2.5,0.12,1.15),matWalnut); top.position.y=0.95; top.castShadow=true; desk.add(top);
+const panel=new THREE.Mesh(new THREE.BoxGeometry(2.3,0.86,0.1),matWalnut); panel.position.set(0,0.5,0.5); desk.add(panel);
+desk.position.set(0,0,0.25); scene.add(desk);
+
+// directed lights (key/core/rim) — the __direct hook recolours these per mood
+// Fable "Brasa y Fantasma": a WARM-BROWN ambient floor so the deepest shadow is
+// walnut, never RGB(0,0,0) — the single biggest readability win.
+scene.add(new THREE.HemisphereLight(0x2A1E14,0x0E0B08,0.25));
+const key=new THREE.SpotLight(0xF6B35B,1.85,24,Math.PI/5,0.55,1.2); key.position.set(1.9,5.0,3.2); key.target.position.set(0,1.0,-0.7); key.castShadow=true; scene.add(key); scene.add(key.target);
+const core=new THREE.PointLight(0xD98A24,1.0,8.5,2.0); core.position.set(0,1.7,-2.7); scene.add(core);
+const rim=new THREE.DirectionalLight(0xAEEBFF,1.0); rim.position.set(-2.6,3.6,-3.4); scene.add(rim);
+
+const SUBJECT_H = 1.7;          // scale the gorilla to this height (bbox)
+let tool=null, avatar=null, group=null, faceReady=false, baseY=0;
+let gsig=null, gt0=0;           // active body gesture (Marceau): {rot,pos,dur,shake,freq,amp,ease}
+window.__ready=false;
+
+new GLTFLoader().load('../props/ready/Gorilla.glb', async gl => {
+  group=new THREE.Group(); const m=gl.scene;
+  let box=new THREE.Box3().setFromObject(m), sz=new THREE.Vector3(); box.getSize(sz);
+  m.scale.setScalar(SUBJECT_H/(sz.y||1)); box=new THREE.Box3().setFromObject(m);
+  baseY=0.55-box.min.y; m.position.set(0,baseY,-1.05);
+  m.traverse(o=>{ if(o.isMesh){o.castShadow=true;o.frustumCulled=false;} });
+  group.add(m); scene.add(group); group.updateMatrixWorld(true); avatar=m;
+
+  // FACE — the AvatarCalibrationTool projects an expression on the GLB
+  try {
+    tool=new AvatarCalibrationTool(scene,{document}); tool.currentModelLoaded=m; tool.currentGroup=group;
+    let anchors=null; try{ anchors=await fetch('../data/face_anchors.json?v='+Date.now()).then(r=>r.ok?r.json():null);}catch(e){}
+    const FA=anchors&&anchors.face_anchors;
+    const A=(FA&&(FA.gorilla||FA.primate))||{pos:[0,4.25,1.6],size:0.95};   // gorilla override: head is higher AND further forward than the chest plane
+    const canon=(anchors&&anchors._canonical_size)||5.0;
+    tool.setFaceAnchor(A.pos,A.size,canon); tool.attachStripeFace(group,'hologram'); tool.setExpression('neutral');
+    faceReady=true;
+    // Fable "Brasa y Fantasma" signature — the GHOST-LIGHT: a cyan practical that
+    // spills the face's glow onto the fur + an additive halo behind the plate (the beacon).
+    const headWP=new THREE.Vector3(0,1.95,-0.45);   // verified: the ghost-light sits at the gorilla's projected face
+    const ghost=new THREE.PointLight(0x66F0FF,0.6,4.0,2.0); ghost.position.copy(headWP); scene.add(ghost); window.__ghost=ghost;
+    const gcv=document.createElement('canvas'); gcv.width=gcv.height=128; const gx=gcv.getContext('2d');
+    const rad=gx.createRadialGradient(64,64,4,64,64,64); rad.addColorStop(0,'rgba(170,250,255,0.5)'); rad.addColorStop(1,'rgba(0,229,255,0)');
+    gx.fillStyle=rad; gx.fillRect(0,0,128,128);
+    const glow=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(gcv),blending:THREE.AdditiveBlending,depthWrite:false,transparent:true}));
+    glow.scale.set(1.2,1.2,1); glow.position.copy(headWP); scene.add(glow); window.__glow=glow;
+    window.__ghostpos=(x,y,z)=>{ ghost.position.set(x,y,z); glow.position.set(x,y,z); return [x,y,z]; };
+  } catch(e){ console.warn('face init failed', e); }
+  readout.innerHTML='SET_A · <span style="color:#5B7A61">UNIFIED · gorila + cara + luz dirigida</span>';
+  window.__ready=true;
+}, undefined, e=>{ readout.textContent='GLB error'; });
+
+function say(t){ if(!bubble) return; bubble.textContent=t; bubble.style.display='block'; }
+
+// ── DIRECTOR HOOK: one resolved beat drives camera + light + FACE + voice ──
+window.__direct = function(beat){
+  try{
+    const c=beat&&beat.camera;
+    if(c&&c.pos){ camera.position.set(c.pos[0],c.pos[1],c.pos[2]); if(c.fov) camera.fov=c.fov;
+      camera.up.set(0,1,0); camera.lookAt(c.look[0],c.look[1],c.look[2]); if(c.roll) camera.rotateZ(c.roll); camera.updateProjectionMatrix(); }
+    const L=beat&&beat.light;
+    if(L&&L.status==='ok'){
+      if(L.key&&L.key.color){ key.color.set(L.key.color); core.color.set(L.key.color); }
+      if(L.key&&typeof L.key.intensity==='number') key.intensity=1.3*L.key.intensity+0.3;
+      if(L.rim){ if(L.rim.color) rim.color.set(L.rim.color); rim.intensity=Math.max(1.8,(L.rim.intensity||0.8)*2.2); }
+      if(L.fog){ if(L.fog.color) scene.fog.color.set(L.fog.color); if(typeof L.fog.density==='number'){ scene.fog.near=5; scene.fog.far=Math.max(8,30-L.fog.density*400); } }
+    }
+    const F=beat&&beat.face;
+    if(F&&F.expression&&tool){ tool.setExpression(F.expression); }
+    const B=beat&&beat.body;   // Marceau: whole-mesh gesture — the gorilla acts
+    if(B&&B.signature){ gsig=B.signature; gt0=performance.now(); }
+    if(beat&&beat.voice&&beat.voice.line) say(beat.voice.line);
+    return {ok:true, framing:c&&(c.framing+'/'+c.angle), mood:L&&L.mood, face:F&&F.expression, body:B&&B.gesture};
+  }catch(e){ return {ok:false, error:String(e)}; }
+};
+
+// ── live tuning hooks (used to dial in exposure + face anchor, then baked in) ──
+window.__expo = v => { renderer.toneMappingExposure = v; return v; };
+window.__reface = (pos, size) => { if(tool&&group){ tool.setFaceAnchor(pos, size, 5.0); tool.attachStripeFace(group,'hologram'); tool.setExpression(tool.currentExpression||'nervous'); } return {pos,size}; };
+window.__light = (o={}) => { if(o.key!=null) key.intensity=o.key; if(o.rim!=null) rim.intensity=o.rim; if(o.core!=null) core.intensity=o.core; if(o.hemi!=null){} return {key:key.intensity,rim:rim.intensity,core:core.intensity}; };
+
+if(window.ALISA_SDK){ window.ALISA_SDK.register({ sim:"alisa_labs_confessional_v2",
+  getSemanticState:()=>({set:"SET_A_unified",role:"CONFESIONARIO",face:faceReady,public_safe:true}),
+  getAvailableActions:()=>["__direct(beat)"], executeAction:()=>({success:true}), getScore:()=>({scene:"SET_A_unified"}) }); }
+
+addEventListener('resize',()=>{ camera.aspect=W()/H(); camera.updateProjectionMatrix(); renderer.setSize(W(),H()); });
+const clock=new THREE.Clock(); let _fc=0;
+function loop(){ requestAnimationFrame(loop);
+  // throttle the face's hologram drift (Oscar's note: the screen-drift over the face was too much) — 1/3 speed
+  if(tool&&tool.tickBlock && (_fc++ % 3 === 0)) tool.tickBlock();
+  // Marceau: animate the whole GROUP (body + face together) by the gesture signature.
+  if(group){
+    const now=performance.now(), t=now/1000;
+    let rx=0,ry=0,rz=0,px=0,py=Math.sin(t*1.6)*0.004,pz=0;   // idle breathing — subtler up/down (Oscar's note)
+    if(gsig){
+      const rot=gsig.rot||[0,0,0], pos=gsig.pos||[0,0,0], dur=(gsig.dur||1.0);
+      if(gsig.shake){                                          // tremble — continuous while active
+        const active = dur<=0 || (now-gt0) < dur*1000; const a=(gsig.amp||1)*(active?1:0);
+        const f=(gsig.freq||9)*6.283;
+        px+=Math.sin(t*f)*((pos[0]||0.012))*a; rz+=Math.sin(t*f*1.3)*((rot[2]||0.02))*a; py+=Math.sin(t*f*0.9)*0.003*a;
+      } else {                                                 // eased pose: 'out' holds, 'inout' goes and returns
+        const p=Math.min(1,(now-gt0)/(dur*1000));
+        const e = gsig.ease==='inout' ? Math.sin(p*Math.PI) : (1-Math.pow(1-p,2));
+        rx+=rot[0]*e; ry+=rot[1]*e; rz+=rot[2]*e; px+=pos[0]*e; py+=pos[1]*e; pz+=pos[2]*e;
+      }
+    }
+    group.position.set(px, py, pz);
+    group.rotation.set(rx, ry, rz);
+  }
+  renderer.render(scene,camera);
+}
+loop();
+</script>
+</body>
+</html>

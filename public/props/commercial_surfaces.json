@@ -1,0 +1,34 @@
+{
+    "_doc": "Commercial surfaces — every visible surface is a revenue point. Three modes: ad space (rent), L3 portal (service fee), NFT commerce (transaction %).",
+
+    "_surface_types": {
+        "billboard":     { "faces": ["front"], "size": "large",  "god": "static brand logo",         "room": "rotating ad strip",         "card": "L3 advertiser page" },
+        "shop_window":   { "faces": ["front"], "size": "medium", "god": "lit storefront icon",        "room": "product display animation", "card": "L3 actual shop" },
+        "cinema_screen": { "faces": ["front"], "size": "xlarge", "god": "glowing rectangle",          "room": "movie trailer strip",       "card": "L3 Netflix/YouTube/VOD" },
+        "gallery_wall":  { "faces": ["front"], "size": "medium", "god": "colored art thumbnail",      "room": "AI frame + artwork",        "card": "L3 NFT marketplace" },
+        "vehicle_wrap":  { "faces": ["front","side","back"],      "god": "branded vehicle color",      "room": "textured brand livery",     "card": "brand info card" }
+    },
+
+    "_commerce_room_types": {
+        "cinema":     { "screens": [1,3], "seats": [6,30], "l3": "vod_player",     "bias": { "corp":50, "slum":10 } },
+        "gallery":    { "walls": [4,12],  "seats": [0,4],  "l3": "nft_gallery",    "bias": { "corp":40, "lab":30  } },
+        "shop":       { "shelves": [2,8], "counter": 1,    "l3": "ecommerce",      "bias": { "corp":60, "docks":30} },
+        "restaurant": { "tables": [2,8],  "counter": 1,    "l3": "food_delivery",  "bias": { "corp":50, "slum":20 } },
+        "club":       { "stage": 1, "speakers": [2,6],     "l3": "music_stream",   "bias": { "slum":40, "corp":30 } },
+        "library":    { "shelves": [4,16],"desks": [1,4],   "l3": "ebook_platform", "bias": { "corp":40, "lab":40  } }
+    },
+
+    "_nft_as_deed": {
+        "_doc": "NFT = título de propiedad real. Comprar en ALISA = comprar IRL. El NFT otorga titularidad.",
+        "buy_virtual": "buy in-game → NFT minted → partner ships real product → WorldChain records",
+        "buy_real":    "buy real product → scan code → NFT in inventory → prop spawns in city",
+        "nft_fields":  ["product_id", "brand", "rarity", "serial", "redemption_url", "expiry"]
+    },
+
+    "_ad_revenue": {
+        "billboard":    { "monthly": 100, "impressions_tracked": true },
+        "shop_window":  { "monthly": 50,  "clicks_tracked": true },
+        "vehicle_wrap": { "monthly": 30,  "visibility_radius": 5 },
+        "cinema_preroll":{ "per_play": 5, "seconds": 15 }
+    }
+}

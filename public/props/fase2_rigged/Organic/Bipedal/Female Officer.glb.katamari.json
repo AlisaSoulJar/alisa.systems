@@ -1,0 +1,23 @@
+{
+    "source_file": "Female Officer.glb",
+    "deduced_size_meters": 1.7,
+    "target_tier": "Tier 0: Base Humanoid",
+    "target_scale_constraint": 1.7999999999999998,
+    "voxel_grid": [
+        3,
+        6,
+        2
+    ],
+    "archetype": "bipedal",
+    "morphology": {
+        "size_m": 1.7,
+        "domain": "organic",
+        "cladistics": "bipedal",
+        "mobility": "bipedal",
+        "mechanical_joints": 0
+    },
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0,
+    "mesh_scale_multiplier": 0.8066528005540591,
+    "mathematical_tomography": []
+}

@@ -1,0 +1,24 @@
+{
+    "name": "GoodBoy",
+    "role": "The Loyal Companion",
+    "emoji": "🐕",
+    "type": "biological",
+    "skeleton": "quadruped",
+    "model_path": "goodboy.glb",
+    "scale": 1.0,
+    "kinematics": "quadruped",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "synth",
+        "tier": 1,
+        "voice_id": "",
+        "rate": "-5%",
+        "pitch": "-2Hz",
+        "label": "GoodBoy - Synth chirp (ladridos melódicos, fiel)",
+        "signal_type": "chirp",
+        "signal_freq": 880,
+        "signal_duration": 0.15,
+        "freq_label": "ladrido agudo, la octava alta"
+    }
+}

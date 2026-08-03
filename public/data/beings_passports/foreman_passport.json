@@ -1,0 +1,21 @@
+{
+    "name": "Foreman",
+    "role": "The Site Boss",
+    "emoji": "👷",
+    "type": "biological",
+    "skeleton": "humanoid",
+    "model_path": "foreman.glb",
+    "scale": 1.0,
+    "kinematics": "bipedal",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "espeak",
+        "tier": 2,
+        "voice_id": "en",
+        "rate": "-5%",
+        "pitch": "-2Hz",
+        "label": "Foreman - eSpeak (capataz, directo, fuerte)",
+        "speed": 180
+    }
+}

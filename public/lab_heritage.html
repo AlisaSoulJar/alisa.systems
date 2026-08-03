@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA — Simulation Lab</title>
+    <link rel="alisa-card-manifest" type="application/json" href="data/lab_card_manifest.json">
+    <link rel="alisa-local-planet-manifest" type="application/json" href="data/local_planet_manifest.json">
+    <link rel="alisa-observation-reward-commerce-manifest" type="application/json" href="data/observation_reward_commerce_manifest.json">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0a0a12;
+            --surface: #12121e;
+            --surface-hover: #1a1a2e;
+            --border: #2a2a44;
+            --text: #c8c8e0;
+            --text-dim: #6a6a88;
+            --accent: #4fc3f7;
+            --sim: #66bb6a;
+            --lab: #ffa726;
+            --gen: #ab47bc;
+            --ml: #ec407a;
+            --world: #26c6da;
+            --mat: #7c4dff;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(ellipse at 20% 50%, rgba(79,195,247,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(171,71,188,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(102,187,106,0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ─── Header ─── */
+        header {
+            position: relative; z-index: 1;
+            text-align: center; padding: 50px 20px 20px;
+        }
+
+        header h1 {
+            font-size: 44px; font-weight: 900; letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--gen) 50%, var(--sim) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: var(--text-dim); font-size: 15px; font-weight: 300;
+            max-width: 550px; margin: 0 auto; line-height: 1.6;
+        }
+
+        /* ─── Nav Tabs ─── */
+        .tabs {
+            position: relative; z-index: 1;
+            display: flex; justify-content: center; gap: 6px;
+            padding: 20px 20px 0; flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 22px; border-radius: 10px;
+            font-size: 13px; font-weight: 600; letter-spacing: 0.5px;
+            cursor: pointer; border: 1px solid var(--border);
+            background: var(--surface); color: var(--text-dim);
+            transition: all 0.25s; user-select: none;
+        }
+
+        .tab:hover { border-color: var(--accent); color: var(--text); }
+        
+        .tab.active {
+            border-color: var(--tab-color, var(--accent));
+            color: var(--tab-color, var(--accent));
+            background: color-mix(in srgb, var(--tab-color, var(--accent)) 10%, var(--surface));
+            box-shadow: 0 0 20px color-mix(in srgb, var(--tab-color, var(--accent)) 15%, transparent);
+        }
+
+        .tab[data-section="all"]  { --tab-color: var(--accent); }
+        .tab[data-section="arcade"] { --tab-color: #8A2BE2; }
+        .tab[data-section="sim"]  { --tab-color: var(--sim); }
+        .tab[data-section="lab"]  { --tab-color: var(--lab); }
+        .tab[data-section="gen"]  { --tab-color: var(--gen); }
+        .tab[data-section="ml"]   { --tab-color: var(--ml); }
+        .tab[data-section="mat"]  { --tab-color: var(--mat); }
+        .tab[data-section="factory"]{ --tab-color: #ff9800; }
+        .tab[data-section="nexus"]{ --tab-color: #d500f9; }
+        .tab[data-section="rooms"]{ --tab-color: #00bcd4; }
+
+        /* ─── Grid ─── */
+        .grid {
+            position: relative; z-index: 1;
+            max-width: 1200px; margin: 0 auto;
+            padding: 24px 24px 60px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+            gap: 18px;
+        }
+
+        /* ─── Section Headers ─── */
+        .section-header {
+            grid-column: 1 / -1;
+            display: flex; align-items: center; gap: 14px;
+            padding: 24px 0 6px;
+        }
+
+        .section-header .icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; flex-shrink: 0;
+        }
+
+        .section-header h2 {
+            font-size: 13px; text-transform: uppercase;
+            letter-spacing: 3px; font-weight: 700;
+        }
+
+        .section-header .count {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; padding: 3px 10px; border-radius: 20px;
+            font-weight: 700;
+        }
+
+        .section-header::after {
+            content: ''; flex: 1; height: 1px;
+            background: linear-gradient(90deg, var(--border) 0%, transparent 100%);
+        }
+
+        /* Section-specific colors */
+        .sh-sim .icon  { background: rgba(102,187,106,0.15); }
+        .sh-sim h2     { color: var(--sim); }
+        .sh-sim .count { background: rgba(102,187,106,0.12); color: var(--sim); }
+
+        .sh-lab .icon  { background: rgba(255,167,38,0.15); }
+        .sh-lab h2     { color: var(--lab); }
+        .sh-lab .count { background: rgba(255,167,38,0.12); color: var(--lab); }
+
+        .sh-gen .icon  { background: rgba(171,71,188,0.15); }
+        .sh-gen h2     { color: var(--gen); }
+        .sh-gen .count { background: rgba(171,71,188,0.12); color: var(--gen); }
+
+        .sh-ml .icon   { background: rgba(236,64,122,0.15); }
+        .sh-ml h2      { color: var(--ml); }
+        .sh-ml .count  { background: rgba(236,64,122,0.12); color: var(--ml); }
+
+        .sh-mat .icon  { background: rgba(124,77,255,0.15); }
+        .sh-mat h2     { color: var(--mat); }
+        .sh-mat .count { background: rgba(124,77,255,0.12); color: var(--mat); }
+
+        .sh-factory .icon  { background: rgba(255,152,0,0.15); }
+        .sh-factory h2     { color: #ff9800; }
+        .sh-factory .count { background: rgba(255,152,0,0.12); color: #ff9800; }
+
+        .sh-nexus .icon  { background: rgba(213,0,249,0.15); }
+        .sh-nexus h2     { color: #d500f9; }
+        .sh-nexus .count { background: rgba(213,0,249,0.12); color: #d500f9; }
+
+        .sh-rooms .icon  { background: rgba(0,188,212,0.15); }
+        .sh-rooms h2     { color: #00bcd4; }
+        .sh-rooms .count { background: rgba(0,188,212,0.12); color: #00bcd4; }
+
+        /* ─── Card ─── */
+        .card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 14px; padding: 24px;
+            text-decoration: none; color: var(--text);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column; gap: 10px;
+        }
+
+        .card::before {
+            content: ''; position: absolute; inset: 0;
+            border-radius: 14px; padding: 1px;
+            background: linear-gradient(135deg, transparent 40%, var(--card-color, var(--accent)) 100%);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude; -webkit-mask-composite: xor;
+            opacity: 0; transition: opacity 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            background: var(--surface-hover);
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        .card:hover::before { opacity: 1; }
+
+        .card-head { display: flex; align-items: center; gap: 12px; }
+        .card-icon { font-size: 28px; line-height: 1; }
+        .card-title { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; flex: 1; }
+
+        .card-desc {
+            font-size: 12.5px; color: var(--text-dim);
+            line-height: 1.6; flex: 1;
+        }
+
+        .card-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+
+        .tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px; padding: 3px 8px; border-radius: 16px;
+            text-transform: uppercase; letter-spacing: 1px; font-weight: 700;
+        }
+
+        .tag-3d      { background: rgba(79,195,247,0.12); color: var(--accent); }
+        .tag-ai      { background: rgba(102,187,106,0.12); color: var(--sim); }
+        .tag-physics { background: rgba(255,112,67,0.12); color: #ff7043; }
+        .tag-procgen { background: rgba(171,71,188,0.12); color: var(--gen); }
+        .tag-ml      { background: rgba(236,64,122,0.12); color: var(--ml); }
+        .tag-eco     { background: rgba(255,167,38,0.12); color: var(--lab); }
+        .tag-gltf    { background: rgba(38,198,218,0.12); color: var(--world); }
+        .tag-new     { background: rgba(236,64,122,0.2); color: var(--ml); border: 1px solid var(--ml); }
+        .tag-ready   { background: rgba(102,187,106,0.25); color: #66bb6a; border: 1px solid #66bb6a; }
+        .tag-wip     { background: rgba(255,167,38,0.2); color: #ffa726; border: 1px solid #ffa726; }
+        .tag-planned { background: rgba(124,77,255,0.12); color: #9e88ff; }
+        .tag-stage   { background: rgba(124,77,255,0.2); color: var(--mat); font-size: 8px; }
+        .tag-bsp     { background: rgba(124,77,255,0.12); color: var(--mat); }
+
+        .card[data-cat="sim"] { --card-color: var(--sim); }
+        .card[data-cat="lab"] { --card-color: var(--lab); }
+        .card[data-cat="gen"] { --card-color: var(--gen); }
+        .card[data-cat="ml"]  { --card-color: var(--ml); }
+        .card[data-cat="mat"] { --card-color: var(--mat); }
+        .card[data-cat="factory"] { --card-color: #ff9800; }
+        .card[data-cat="nexus"] { --card-color: #d500f9; }
+
+        /* Planned cards (not yet implemented) */
+        .card.card-planned {
+            opacity: 0.55;
+            cursor: default;
+            border-style: dashed;
+        }
+        .card.card-planned:hover {
+            transform: none;
+            box-shadow: none;
+            opacity: 0.65;
+        }
+        .card.card-planned::before { display: none; }
+
+        /* Stage number badge */
+        .stage-num {
+            position: absolute; top: 12px; right: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 36px; font-weight: 900;
+            color: rgba(124,77,255,0.08);
+            line-height: 1; pointer-events: none;
+        }
+
+        /* Featured card (Colonial Overworld) */
+        .card.featured {
+            grid-column: 1 / -1;
+            flex-direction: row; align-items: center; gap: 24px;
+            border-color: rgba(38,198,218,0.3);
+            background: linear-gradient(135deg, var(--surface) 0%, rgba(38,198,218,0.05) 100%);
+        }
+
+        .card.featured .card-icon { font-size: 48px; }
+        .card.featured .card-title { font-size: 20px; }
+        .card.featured .card-body { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+
+        /* Collapsible sections */
+        .section-header { cursor: pointer; user-select: none; transition: opacity 0.2s; }
+        .section-header:hover { opacity: 0.8; }
+        .section-header h2::before {
+            content: "▼"; font-size: 10px; display: inline-block;
+            margin-right: 8px; transition: transform 0.3s; opacity: 0.7;
+        }
+        .section-header.collapsed h2::before { transform: rotate(-90deg); }
+        .collapsed-hide { display: none !important; }
+
+        /* Hide filtered cards */
+        .card.hidden { display: none; }
+        .section-header.hidden { display: none; }
+
+        /* ─── Footer ─── */
+        footer {
+            position: relative; z-index: 1;
+            text-align: center; padding: 30px 20px;
+            color: var(--text-dim); font-size: 11px;
+            border-top: 1px solid var(--border);
+        }
+
+        footer a { color: var(--accent); text-decoration: none; }
+
+        @media (max-width: 700px) {
+            header h1 { font-size: 28px; }
+            .grid { grid-template-columns: 1fr; }
+            .card.featured { flex-direction: column; }
+        }
+    </style>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+
+    <header>
+        <h1>ALISA Simulation Lab</h1>
+        <p>All test environments, configurators, generators, and training grounds in one place.</p>
+    </header>
+
+
+
+    <div class="tabs">
+        <div class="tab active" data-section="all" onclick="filter('all')">🔮 All</div>
+        <div class="tab" data-section="arcade" onclick="filter('arcade')">💻 ML Dojo</div>
+        <div class="tab" data-section="sim" onclick="filter('sim')">🎬 Simulations</div>
+        <div class="tab" data-section="lab" onclick="filter('lab')">🔧 Labs</div>
+        <div class="tab" data-section="gen" onclick="filter('gen')">🏗️ Generators</div>
+        <div class="tab" data-section="ml" onclick="filter('ml')">🧠 Intelligence</div>
+        <div class="tab" data-section="mat" onclick="filter('mat')">🦝 Raccoon Escape</div>
+        <div class="tab" data-section="factory" onclick="filter('factory')">🏭 Gigafactory</div>
+        <div class="tab" data-section="nexus" onclick="filter('nexus')">👑 Sovereign Nexus</div>
+        <div class="tab" data-section="rooms" onclick="filter('rooms')">🚪 Rooms</div>
+    </div>
+
+    <div class="grid" id="grid">
+
+        <!-- ═══════════════════════════════════════ -->
+        <!--  🏭 GIGAFACTORY PIPELINE                  -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="section-header sh-factory" data-section="factory" style="--sh-color: #ff9800;">
+            <div class="icon">🏭</div>
+            <h2>The Gigafactory Pipeline</h2>
+            <span class="count">4</span>
+        </div>
+
+        <a class="card" data-cat="factory" href="rooms/room_arachne_ingestion.html" id="card-room-arachne" style="--card-color: #ff5722; border-color: rgba(255,87,34,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🕸️</div>
+                <div class="card-title" style="color: #ff5722;">Arachne Ingestion Area</div>
+            </div>
+            <div class="card-desc">Diegetic visualization of the Python Sastre logic. Chaotic assets fall from the tube wrapped in silk, Katamari semantics are applied, and they hatch fully sized into SOMA.</div>
+            <div class="card-meta">
+                <span class="tag tag-ml">Sastre</span>
+                <span class="tag tag-3d">Ingestion</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="factory" href="rooms/room_pygmalion_gigafactory.html" id="card-room-pygmalion" style="--card-color: #ffb300; border-color: rgba(255,179,0,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🦾</div>
+                <div class="card-title" style="color: #ffb300;">Pygmalion Gigafactory</div>
+            </div>
+            <div class="card-desc">Sovereign operation theatre. Raw meshes are placed under the mechanical arms, where generative 3D logic deduces and physically injects a neural skeletal armature into the geometry.</div>
+            <div class="card-meta">
+                <span class="tag tag-ml">Surgeon</span>
+                <span class="tag tag-3d">Armature</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="factory" href="rooms/room_geppetto_choreography.html" id="card-room-geppetto" style="--card-color: #00ffcc; border-color: rgba(0,255,204,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🪆</div>
+                <div class="card-title" style="color: #00ffcc;">Geppetto Choreography Stage</div>
+            </div>
+            <div class="card-desc">The Marionette Stage. Assets imbued with an armature arrive here. Geppetto consults the Anima Mundi (Ollama) to deduce their mathematical Kinematics (gait, bounce, frequency).</div>
+            <div class="card-meta">
+                <span class="tag tag-ml">Active Learner</span>
+                <span class="tag tag-3d">Kinematics</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="factory" href="labs/croupier_physics_locomotion.html" id="card-room-neo-dojo" style="--card-color: #00ffcc; border-color: rgba(0,255,204,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🥋</div>
+                <div class="card-title" style="color: #00ffcc;">Neo Dojo (The Kindergarten)</div>
+            </div>
+            <div class="card-desc">Reinforcement Learning matrix. Surgical geometries arrive here to learn kinematics. A TensorFlow DQN injects torque across bones over 200 epochs until the mass achieves autolocomotion.</div>
+            <div class="card-meta">
+                <span class="tag tag-ml">Neo RL</span>
+                <span class="tag tag-physics">DQN</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!--  👑 THE SOVEREIGN NEXUS                   -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="section-header sh-nexus" data-section="nexus" style="--sh-color: #d500f9;">
+            <div class="icon">👑</div>
+            <h2>The Sovereign Nexus</h2>
+            <span class="count">5</span>
+        </div>
+
+        <a class="card" data-cat="nexus" href="rooms/room_core_waiting.html" id="card-room-queen" style="--card-color: #00ffcc; border-color: rgba(0,255,204,0.3);">
+            <div class="card-head">
+                <div class="card-icon">👑</div>
+                <div class="card-title" style="color: #00ffcc; text-shadow: 0 0 5px #00ffcc;">Core Waiting Room</div>
+            </div>
+            <div class="card-desc">The colonial antechamber. Features a complete parliamentary seating arrangement for the 10 Core Beings, waiting around the central table for the Sovereign to emerge and dispense SmartContracts.</div>
+            <div class="card-meta">
+                <span class="tag tag-3d">Agora</span>
+                <span class="tag tag-ml">Assembly</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="nexus" href="rooms/room_queen_office.html" id="card-room-hacker-queen" style="--card-color: #ff00ff; border-color: rgba(255,0,255,0.3);">
+            <div class="card-head">
+                <div class="card-icon">👩‍💻</div>
+                <div class="card-title" style="color: #ff00ff; text-shadow: 0 0 5px #ff00ff;">Hacker Queen's Sanctum</div>
+            </div>
+            <div class="card-desc">ALISA's true sovereign developer cave. Features a server cluster backbone, 5 enveloping CSS3D terminal screens, and intense matrix-cyber neon lighting where the Sovereign writes code.</div>
+            <div class="card-meta">
+                <span class="tag tag-3d">VRM</span>
+                <span class="tag tag-ml">Sovereign</span>
+                <span class="tag tag-physics">MToon</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="nexus" href="labs/croupier_digital_twin_test.html" id="card-room-mirror" style="--card-color: #ff00ff; border-color: rgba(255,0,255,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🪞</div>
+                <div class="card-title" style="color: #ff00ff;">The Sovereign Mirror (Twin)</div>
+            </div>
+            <div class="card-desc">The sensory Digital Twin of ALISA. Listens to the Hub's real-time SCUMM SSE stream and procedurally manifests Events, Ambient Endocrine Color Grading (Hormones), Camera Depth, and AudioContext Synthetic Soundscapes in real-time.</div>
+            <div class="card-meta">
+                <span class="tag tag-ml" style="background:rgba(255,0,255,0.1);color:#f0f;">SSE Live</span>
+                <span class="tag tag-physics">Engine + SFX</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+        
+        <a class="card" data-cat="nexus" href="labs/croupier_avatar_integration_test.html" id="card-room-avatar" style="--card-color: #ffaa33; border-color: rgba(255,170,51,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🧍</div>
+                <div class="card-title" style="color: #ffaa33;">Avatar Integration Test</div>
+            </div>
+            <div class="card-desc">Assigns distinct procedural geometries and color maps to Beings via SSE. Avatars are persistent, maintaining state, position, and performing kinematic animations upon receiving Hub instructions.</div>
+            <div class="card-meta">
+                <span class="tag tag-physics">Avatars</span>
+                <span class="tag tag-3d">Kinematics</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="nexus" href="rooms/room_akasha_fractal.html" id="card-room-akasha" style="--card-color: #44eebb; border-color: rgba(68,238,187,0.3);">
+            <div class="card-head">
+                <div class="card-icon">💠</div>
+                <div class="card-title" style="color: #44eebb;">Akasha Vector Core</div>
+            </div>
+            <div class="card-desc">Immersive 3D visualization of the Sovereign Memory vectors. Renders thousands of instances orbiting a cognitive singularity with glowing, interactive semantics.</div>
+            <div class="card-meta">
+                <span class="tag tag-ml">Memory</span>
+                <span class="tag tag-3d">Instances</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!--  🚪 ROOMS & PROTOTYPES                    -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="section-header sh-rooms" data-section="rooms" style="--sh-color: #00bcd4;">
+            <div class="icon">🚪</div>
+            <h2>Rooms & Spatial Prototypes</h2>
+            <span class="count">5</span>
+        </div>
+
+        <a class="card" data-cat="rooms" href="rooms/room_art_direction.html" id="card-room-art-direction" style="--card-color: #ff5722; border-color: rgba(255,87,34,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🎨</div>
+                <div class="card-title" style="color: #ff5722;">Art Direction Test Room</div>
+            </div>
+            <div class="card-desc">Comparativa A/B para definir el canon estético de la colonia. Contrapone la técnica de mallas desconectadas (Rayman) con la técnica de inserción procedural (Bolas Action-Figure).</div>
+            <div class="card-meta">
+                <span class="tag tag-3d">A/B Test</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+        <a class="card" data-cat="rooms" href="rooms/room_tenshi_no_tamago.html" id="card-room-tenshi" style="--card-color: #ffffff; border-color: rgba(255,255,255,0.8); background: #fdfdfd; color: #111;">
+            <div class="card-bg" style="background-image: url('assets/thumbnails/room_tenshi.webp'); opacity: 0.9; filter: grayscale(100%) contrast(1.2);"></div>
+            <div class="card-overlay" style="background: linear-gradient(to top, rgba(255,255,255,1), transparent);"></div>
+            <div class="card-head" style="z-index: 2; position: relative;">
+                <div class="card-icon" style="background: #111; color: #fff;">🥚</div>
+                <div class="card-title" style="color: #111; font-weight: 900;">Tenshi no Tamago</div>
+            </div>
+            <div class="card-desc" style="color: #333; font-weight: 600; z-index: 2; position: relative;">Santuario interactivo. Origen del Huevo y selector de Cabinet.</div>
+            <div class="card-meta" style="z-index: 2; position: relative;">
+                <span class="tag tag-3d" style="background: #111; color: #fff;">AlisaRenderCore</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="rooms" href="labs/croupier_table_games_arcade.html" id="card-room-boardgames" style="--card-color: #00bcd4; border-color: rgba(0,188,212,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🎲</div>
+                <div class="card-title" style="color: #00bcd4;">Table Games Node</div>
+            </div>
+            <div class="card-desc">The definitive instanced blueprint for physical board games in the Overworld. Features decoupled procedural generation for Board Games (Chess, Go, Checkers) and Casino Tapestry layouts with fully stochastic Croupier kinematics.</div>
+            <div class="card-meta">
+                <span class="tag tag-3d">Three.js</span>
+                <span class="tag tag-physics">Kinematics</span>
+                <span class="tag tag-ml">Croupier</span>
+            </div>
+        </a>
+
+
+        <a class="card card-planned" data-cat="rooms" href="rooms/room_empty.html" id="card-room-empty" style="--card-color: #555555; border-color: rgba(85,85,85,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🔲</div>
+                <div class="card-title" style="color: #555555;">Empty Blueprint Node</div>
+            </div>
+            <div class="card-desc">Sterile developmental environment containing only matrix grids, basic lighting, and Orbit Controls. The designated starting point for cloning new architectures.</div>
+            <div class="card-meta">
+                <span class="tag tag-3d">Template</span>
+                <span class="tag tag-physics">Matrix</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="rooms" href="rooms/room_physics_sandbox.html" id="card-room-cabinets" style="--card-color: #E91E63; border-color: rgba(233,30,99,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🕹️</div>
+                <div class="card-title" style="color: #E91E63;">Universal Arcade Room</div>
+            </div>
+            <div class="card-desc">Playable 3D Machine environment. Employs the "ROM Cartridge" technique (Iframe Emulation) to inject Asteroids, Peatón, and Katamari dynamically into the physical matrix of the arcade hardware.</div>
+            <div class="card-meta">
+                <span class="tag tag-3d">Three.js</span>
+                <span class="tag tag-physics">IFRAME ROM</span>
+                <span class="tag tag-new">INTERACTIVE</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="rooms" href="rooms/room_arcade_hall.html" id="card-room-arcade-hall" style="--card-color: #8A2BE2; border-color: rgba(138,43,226,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🕹️</div>
+                <div class="card-title" style="color: #8A2BE2;">Arcade Hall (Multiplayer)</div>
+            </div>
+            <div class="card-desc">MMO-Ready multi-cabinet room with 5 machines in semicircle layout. Each cabinet is a serializable entity with occupancy state. Auto-facing atan2 rotation, shared iframe hologram, and network sync hooks.</div>
+            <div class="card-meta">
+                <span class="tag tag-3d">Three.js</span>
+                <span class="tag tag-physics">CSS3D</span>
+                <span class="tag tag-ml">MMO</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="rooms" href="rooms/room_css3d_monitor_hub.html" id="card-room-monitor" style="--card-color: #00BFA5; border-color: rgba(0,191,165,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🌐</div>
+                <div class="card-title" style="color: #00BFA5;">Cyber Monitor Hub</div>
+            </div>
+            <div class="card-desc">Mission Control with 8 terminals (CRT, iFruit, Flat Screen, Vintage TV). Front row desks + back wall displays. CSS3D browser projection, Office/Night/Cyber themes. Click-to-sit Zero-UI.</div>
+            <div class="card-meta">
+                <span class="tag tag-3d">CSS3D</span>
+                <span class="tag tag-physics">Holographic</span>
+                <span class="tag tag-ml">8 Terminals</span>
+                <span class="tag tag-new">UPGRADED</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="rooms" href="rooms/room_biolab_resurrection.html" id="card-room-resurrection" style="--card-color: #00ffaa; border-color: rgba(0,255,170,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🧪</div>
+                <div class="card-title" style="color: #00ffaa;">Resurrection Lab</div>
+            </div>
+            <div class="card-desc">Biolab for Agent Reconstruction. Explores Permadeath vs Cloning mechanics for RL agents. Features a procedural 3D glass incubation vat with CSS3D medical monitors.</div>
+            <div class="card-meta">
+                <span class="tag tag-3d">Procedural</span>
+                <span class="tag tag-ml">Soma</span>
+                <span class="tag tag-physics">CSS3D</span>
+            </div>
+        </a>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!--  🧩 THE MATRIX OVERWORLD                  -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="section-header sh-world" data-section="all" style="--world: #00e5ff;">
+            <div class="icon" style="background: rgba(0,229,255,0.15); color: #00e5ff;">🧩</div>
+            <h2 style="color: #00e5ff;">Matrix Overworld (The Cameras)</h2>
+            <span class="count" style="background: rgba(0,229,255,0.12); color: #00e5ff;">4</span>
+        </div>
+
+        <a class="card" data-cat="all" href="labs/croupier_camera_compiz.html" id="card-fishtank" style="--card-color: #4CAF50; border-color: rgba(76,175,80,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🌊</div>
+                <div class="card-title" style="color: #4CAF50;">The Fish Tank (Tier 2 POV)</div>
+            </div>
+            <div class="card-desc">Pure structural infinite tunnel. Employee-level camera tier. Off-axis projection boundaries are fixed natively, securing the fourth wall.</div>
+            <div class="card-meta">
+                <span class="tag tag-3d">Three.js</span>
+                <span class="tag tag-physics">Off-Axis</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="all" href="labs/croupier_camera_compiz.html" id="card-compiz" style="--card-color: #E91E63; border-color: rgba(233,30,99,0.3);">
+            <div class="card-head">
+                <div class="card-icon">📦</div>
+                <div class="card-title" style="color: #E91E63;">The Compiz Stage (Tier 3 POV)</div>
+            </div>
+            <div class="card-desc">Rotational Stage inside a Shell. Navigational layer to swap between the 4 architectural domains (Psyche, Soma, World, Alisa) using Back-Face Culling.</div>
+            <div class="card-meta">
+                <span class="tag tag-3d">Three.js</span>
+                <span class="tag tag-eco">Architecture</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="all" href="camera_cctv_split_vision.html" id="card-cctv" style="--card-color: #00e5ff; border-color: rgba(0,229,255,0.3);">
+            <div class="card-head">
+                <div class="card-icon">👁️</div>
+                <div class="card-title" style="color: #00e5ff;">Security CMS (Multi-Tier CCTV)</div>
+            </div>
+            <div class="card-desc">Sovereign multi-stream split vision. Render distinct camera methodologies side-by-side perfectly synchronized through identical mouse inputs.</div>
+            <div class="card-meta">
+                <span class="tag tag-ml">Admin</span>
+                <span class="tag tag-3d">Split Scene</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="ml" href="labs/croupier_physics_locomotion.html" id="card-movement" style="--card-color: var(--ml); border-color: rgba(236,64,122,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🤸</div>
+                <div class="card-title" style="color: var(--ml);">Movement Lab (Matrix Dojo)</div>
+            </div>
+            <div class="card-desc">Sovereign locomotion DOJO. Full animated avatar mechanics, WASD physics vectors, Z-Targeting, Acrobatics and Simon Says simulation loop.</div>
+            <div class="card-meta">
+                <span class="tag tag-ml">Physics</span>
+                <span class="tag tag-gltf">GLTF</span>
+                <span class="tag tag-physics">WASD</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="all" href="camera_slerp_director_studio.html" id="card-director" style="--card-color: #ab47bc; border-color: rgba(171,71,188,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🎬</div>
+                <div class="card-title" style="color: #ab47bc;">Director's Studio (Cinematography)</div>
+            </div>
+            <div class="card-desc">Computational Lens UI. Seamlessly interpolate Position, Quaternions, and Lens FOV across Hollywood-grade shots: OTS, Dolly Zoom, Dutch Angle, and more.</div>
+            <div class="card-meta">
+                <span class="tag tag-ml">Slerp</span>
+                <span class="tag tag-3d">Three.js</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!--  💻 ML DOJO & ARCADE — Training Gym     -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="section-header sh-arcade" data-section="arcade" style="--sh-color: #8A2BE2;">
+            <div class="icon">💻</div>
+            <h2>Machine Learning Dojo</h2>
+            <span class="count">5</span>
+        </div>
+
+        <a class="card" data-cat="arcade" href="vms/index.html" id="card-arcade-vms" style="--card-color: #fca311; border-color: rgba(252, 163, 17, 0.3);">
+            <div class="card-head">
+                <div class="card-icon">📼</div>
+                <div class="card-title" style="color: #fca311;">Global Replay VMS</div>
+            </div>
+            <div class="card-desc">Telemetry Video Management System. Load global PGNs or RL training datasets to visualize and reconstruct autonomous historic matches via Three.js projectors.</div>
+            <div class="card-meta">
+                <span class="tag tag-ml">Telemetry</span>
+                <span class="tag tag-3d">Viewer</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="arcade" href="../arcade/index.html" id="card-arcade-det">
+            <div class="card-head">
+                <div class="card-icon">🕹️</div>
+                <div class="card-title">The Deterministic Guild</div>
+            </div>
+            <div class="card-desc">Master Arcade. Perfect Information environments enforcing mathematical depth and long-term MCTS (Chess, Go, Reversi).</div>
+            <div class="card-meta">
+                <span class="tag tag-ai">AI</span>
+                <span class="tag tag-ml">Gym</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="arcade" href="../arcade/casino.html" id="card-arcade-stoch">
+            <div class="card-head">
+                <div class="card-icon">🎲</div>
+                <div class="card-title">Stochastic Casino</div>
+            </div>
+            <div class="card-desc">Imperfect Information & Chance. Marco decision scaling optimizing Expected Value via dice and cards (Backgammon, Battleship, Poker).</div>
+            <div class="card-meta">
+                <span class="tag tag-ai">AI</span>
+                <span class="tag tag-ml">Gym</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="arcade" href="../arcade/synergy.html" id="card-arcade-syn">
+            <div class="card-head">
+                <div class="card-icon">🃏</div>
+                <div class="card-title">The Synergy Forge</div>
+            </div>
+            <div class="card-desc">Combinatorial explosion and nonlinear scaling. Training grounds for combinatorial synergy and TCG Metagaming (Grimorio, Usura, Bestiario).</div>
+            <div class="card-meta">
+                <span class="tag tag-ai">AI</span>
+                <span class="tag tag-ml">Gym</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="arcade" href="../arcade/ticks.html" id="card-arcade-tick">
+            <div class="card-head">
+                <div class="card-icon">⏱️</div>
+                <div class="card-title">Ticking Grids</div>
+            </div>
+            <div class="card-desc">Real-time Continuous Markov Decision Processes. Delayed causality testing and fast-heuristic induction (Tetris, Bomberman).</div>
+            <div class="card-meta">
+                <span class="tag tag-ai">AI</span>
+                <span class="tag tag-ml">Gym</span>
+            </div>
+        </a>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!--  🎬 SIMULATIONS — Watch AI run          -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="section-header sh-sim" data-section="sim">
+            <div class="icon">🎬</div>
+            <h2>Physics & Eco Simulations</h2>
+            <span class="count">9</span>
+        </div>
+
+        <a class="card" data-cat="sim" href="labs/croupier_peaton_m30.html" id="card-peaton-v2">
+            <div class="card-head">
+                <div class="card-icon">🐸</div>
+                <div class="card-title">Peatón V2 — Tropical M-30</div>
+            </div>
+            <div class="card-desc">Dual-stage traffic simulation. Stage 1: IDM traffic with lane-changing, breakdowns, oil spills, and Raptor crawlers. Stage 2: adds ferret predators that hunt frogs across traffic. Configurable density.</div>
+            <div class="card-meta">
+                <span class="tag tag-ai">AI</span>
+                <span class="tag tag-3d">Three.js</span>
+                <span class="tag tag-physics">Physics</span>
+                <span class="tag tag-eco">Ecosystem</span>
+                <span class="tag tag-ml">IDM</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="sim" href="labs/croupier_tfjs_driving.html" id="card-peaton-v1">
+            <div class="card-head">
+                <div class="card-icon">🚗</div>
+                <div class="card-title">Peatón V1 — Original</div>
+            </div>
+            <div class="card-desc">First prototype. 8-lane highway with procedural traffic. Basic forward-only movement. The foundation where it all began.</div>
+            <div class="card-meta">
+                <span class="tag tag-3d">Three.js</span>
+                <span class="tag tag-physics">Physics</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="sim" href="labs/croupier_phantom_predator.html" id="card-interaction">
+            <div class="card-head">
+                <div class="card-icon">🦊</div>
+                <div class="card-title">Interaction Lab — Predator / Prey</div>
+            </div>
+            <div class="card-desc">Fox vs Mice and 3-tier Food Chain. Stamina, hiding mechanics, cheese foraging, animated GLTF models. The origin of the fear-of-predator AI.</div>
+            <div class="card-meta">
+                <span class="tag tag-ai">AI</span>
+                <span class="tag tag-eco">Ecosystem</span>
+                <span class="tag tag-gltf">GLTF</span>
+            </div>
+        </a>
+
+
+
+
+
+        <a class="card" data-cat="sim" href="labs/croupier_katamari_swarm.html" id="card-katamari">
+            <div class="card-head">
+                <div class="card-icon">🌪️</div>
+                <div class="card-title">Katamari Locust Swarm</div>
+            </div>
+            <div class="card-desc">The Procedural Overworld engine dynamically injected via Python pipeline with the Katamari Physics controller. Features Spatial Hash Grids (Octree-Lite) for O(C) chunk culling against hundreds of dynamic city blocks.</div>
+            <div class="card-meta">
+                <span class="tag tag-procgen">ProcGen</span>
+                <span class="tag tag-physics">Physics</span>
+                <span class="tag tag-3d">Three.js</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        
+        
+        <a class="card" data-cat="sim" href="labs/croupier_cucco_swarm.html" id="card-cucco">
+
+            <div class="card-head">
+                <div class="card-icon">🐔</div>
+                <div class="card-title">Cucco Swarm Defense</div>
+            </div>
+            <div class="card-desc">Wanted-level behavioral dynamics. When architectural rules are broken, the Swarm descends. Testing systemic entity-group mechanics, aggro linking, and overwhelming force.</div>
+            <div class="card-meta">
+                <span class="tag tag-ai">Swarm</span>
+                <span class="tag tag-physics">Boids</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="sim" href="labs/croupier_archetype_matrix.html" id="card-archetypes-behavior">
+            <div class="card-head">
+                <div class="card-icon">🧠</div>
+                <div class="card-title">Behavioral Archetypes (Casting Room)</div>
+            </div>
+            <div class="card-desc">Entity archetype behavior matrix. Defines how Beings react to buildings, machines, or social encounters based on their psychological DNA. Uses the V4 Archetypes.js Conjugator.</div>
+            <div class="card-meta">
+                <span class="tag tag-ai">AI</span>
+                <span class="tag tag-eco">Psyche</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="sim" href="labs/croupier_math_boids_flock.html" id="card-aquarium">
+            <div class="card-head">
+                <div class="card-icon">🐟</div>
+                <div class="card-title">Aquarium Lab — 3D Ecosystem</div>
+            </div>
+            <div class="card-desc">Underwater food chain in full 3D. Fish, sharks, shrimp, plankton. Glass tank with caustics, bubbles, and corals. ML training ground for spatial awareness.</div>
+            <div class="card-meta">
+                <span class="tag tag-ai">AI</span>
+                <span class="tag tag-eco">Ecosystem</span>
+                <span class="tag tag-ml">3D</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="sim" href="labs/croupier_asteroids_survival.html" id="card-asteroids">
+            <div class="card-head">
+                <div class="card-icon">🚀</div>
+                <div class="card-title">Asteroids 3D V2 — Full Shmup</div>
+            </div>
+            <div class="card-desc">Parallelepiped forced auto-scroll arena. Ship features autonomous firing and evasion. Pang-style splitting asteroids, Arkanoid power-up capsules, and 6 complex enemy drone archetypes. Dynamic rank adapts to skill.</div>
+            <div class="card-meta">
+                <span class="tag tag-ai">AI</span>
+                <span class="tag tag-3d">Three.js</span>
+                <span class="tag tag-shmup">Shmup</span>
+                <span class="tag tag-gltf">GLTF</span>
+                <span class="tag tag-new">V2</span>
+            </div>
+        </a>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!--  ⚙️ MECH — Core Mechanics & Engine      -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="section-header sh-lab" data-section="lab">
+            <div class="icon">⚙️</div>
+            <h2>Core Mechanics</h2>
+            <span class="count">7</span>
+        </div>
+
+        <a class="card" data-cat="lab" href="rooms/room_tool_glb_configurator.html" id="card-configurator" style="--card-color: #00E676; border-color: rgba(0,230,118,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🎛️</div>
+                <div class="card-title" style="color: #00E676;">Universal Screen Configurator</div>
+            </div>
+            <div class="card-desc">E3-style spatial projection tool. Dynamically searches arbitrary GLB files for physical meshes, casts a WebGL Canvas onto their bounding boxes, and provides a 4-axis calibration HUD. Exports directly to JSON.</div>
+            <div class="card-meta">
+                <span class="tag tag-3d">Three.js</span>
+                <span class="tag tag-gltf">GLTF</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="lab" href="labs/croupier_volumetric_powers.html" id="card-scale-metrics">
+            <div class="card-head">
+                <div class="card-icon">📐</div>
+                <div class="card-title">Volumetric Scales Lab ("Powers of 10")</div>
+            </div>
+            <div class="card-desc">Tier dimension standardizer based on industry practices. Interactive 3D voxel blueprints to establish character sizing tiers from tiny bugs up to mechas and bosses.</div>
+            <div class="card-meta">
+                <span class="tag tag-3d">Three.js</span>
+                <span class="tag tag-eco">Metrics</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="lab" href="labs/croupier_lod_treadmill.html" id="card-aquarium-treadmill">
+            <div class="card-head">
+                <div class="card-icon">🌊</div>
+                <div class="card-title">Treadmill Aquarium LOD Lab</div>
+            </div>
+            <div class="card-desc">Infinite scrolling matrix with pure O(1) memory GC. Floating Origin rendering where world chunks transition from AutoCAD Wireframes -> Minecraft Cuboid -> Premium GLB based on focal distance, plus Katamari relativity zooming.</div>
+            <div class="card-meta">
+                <span class="tag tag-3d">Three.js</span>
+                <span class="tag tag-physics">Math</span>
+                <span class="tag tag-procgen">LOD</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="lab" href="labs/croupier_fx_voxel_glitch.html" id="card-dynamics">
+            <div class="card-head">
+                <div class="card-icon">📺</div>
+                <div class="card-title">Dynamics &amp; Transitions</div>
+            </div>
+            <div class="card-desc">Animus/Inception visual effects. Features the "Voxel Glitch Reveal" rendering pipeline, diegetic mesh subdivision, and state machine prototyping for interactive objects (Vending Machines, Radios).</div>
+            <div class="card-meta">
+                <span class="tag tag-3d">Three.js</span>
+                <span class="tag tag-fx">FX</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="lab" href="labs/croupier_math_matrioshka.html" id="card-matrioshka">
+            <div class="card-head">
+                <div class="card-icon">🪆</div>
+                <div class="card-title">4D Matrioshka Gauntlet</div>
+            </div>
+            <div class="card-desc">Playable scale jumping & camera tweening. Run a Mecha through an exponential fractal collision runway to verify ALISA's 4D Scale logic.</div>
+            <div class="card-meta">
+                <span class="tag tag-3d">Three.js</span>
+                <span class="tag tag-physics">Math</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="lab" href="labs/croupier_ui_item_catalog.html" id="card-item-catalog" style="--card-color: #3f51b5; border-color: rgba(63,81,181,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🎒</div>
+                <div class="card-title" style="color: #3f51b5;">Item Catalog (17 Categorías)</div>
+            </div>
+            <div class="card-desc">Visualizer for semantic object logic and metadata properties. Ensures correct tagging for Weapons, Food, Currencies, and Story Items.</div>
+            <div class="card-meta">
+                <span class="tag tag-eco">Metadata</span>
+                <span class="tag tag-ml">Items</span>
+                <span class="tag tag-new">RECOVERED</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="lab" href="labs/croupier_rig_vending_machine.html" id="card-rig-vending" style="--card-color: #ff4081; border-color: rgba(255,64,129,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🧬</div>
+                <div class="card-title" style="color: #ff4081;">Vending Machine Rig Injector</div>
+            </div>
+            <div class="card-desc">Specific test-chamber for Prop Locomotion. Extracts Bounding Boxes of static furniture (Vending Machines, Trash Cans) and forces walk cycles upon them.</div>
+            <div class="card-meta">
+                <span class="tag tag-procgen">Logic</span>
+                <span class="tag tag-3d">Animation</span>
+                <span class="tag tag-new">RECOVERED</span>
+            </div>
+        </a>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!--  🎨 VISUALS — Assets, Textures & Rigs   -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="section-header sh-lab" data-section="lab">
+            <div class="icon">🎨</div>
+            <h2>Visuals &amp; Procedural Labs</h2>
+            <span class="count">9</span>
+        </div>
+
+        <a class="card" data-cat="lab" href="app_sqlite_cdn_vault.html" id="card-vault" style="--card-color: #00E676; border-color: rgba(0,230,118,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🏛️</div>
+                <div class="card-title" style="color: #00E676;">Sovereign Asset Vault</div>
+            </div>
+            <div class="card-desc">The ultimate visual database. Dynmically fetches thousands of models, materials, and textures from the SQLite CDN and renders them instantly via the MatrixRoom engine.</div>
+            <div class="card-meta">
+                <span class="tag tag-3d">MatrixRoom</span>
+                <span class="tag tag-gltf">CDN</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="lab" href="labs/croupier_animator_dojo.html" id="card-animator" style="--card-color: #fca311; border-color: rgba(252, 163, 17, 0.3);">
+            <div class="card-head">
+                <div class="card-icon">🕷️</div>
+                <div class="card-title" style="color: #fca311;">Procedural Animator Dojo</div>
+            </div>
+            <div class="card-desc">The Legacy Katamari Engine. Autogenerates procedural legs, arms, and bones for any semantic prop (e.g., turning a Vending Machine into a giant insect). Contains SIMON SAYS and Naruto/Zombie poses.</div>
+            <div class="card-meta">
+                <span class="tag tag-procgen">Bones</span>
+                <span class="tag tag-ml">Katamari</span>
+                <span class="tag tag-new">RECOVERED</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="lab" href="labs/croupier_rig_avatar_archetypes.html" id="card-avatar">
+            <div class="card-head">
+                <div class="card-icon">👤</div>
+                <div class="card-title">Avatar Archetype Lab</div>
+            </div>
+            <div class="card-desc">Advanced Skeleton testing. Load Avatar categories (beast, humanoid, mech) and verify procedural Katamari rig behavior visually.</div>
+            <div class="card-meta">
+                <span class="tag tag-gltf">GLTF</span>
+                <span class="tag tag-procgen">Bones</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="lab" href="labs/croupier_procgen_carver.html" id="card-carver">
+            <div class="card-head">
+                <div class="card-icon">🪚</div>
+                <div class="card-title">Procedural Carver Engine</div>
+            </div>
+            <div class="card-desc">Headless BSP/Carver level generation. Assembles vast matrix grids in pure math, populates them with routing entities, and applies a Tensegrity bridge for 3D Bloom visuals.</div>
+            <div class="card-meta">
+                <span class="tag tag-procgen">ProcGen</span>
+                <span class="tag tag-physics">Math</span>
+                <span class="tag tag-ml">Croupier</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="lab" href="labs/croupier_world_builder.html" id="card-world-builder">
+            <div class="card-head">
+                <div class="card-icon">🌍</div>
+                <div class="card-title">Croupier World Builder</div>
+            </div>
+            <div class="card-desc">Master assembly matrix for the Sovereign Colony. Declaratively instantiates environments combining Planets, Katamari Towers, Cucco Swarms, and headless BSP sub-rooms seamlessly.</div>
+            <div class="card-meta">
+                <span class="tag tag-procgen">Assembly</span>
+                <span class="tag tag-3d">Three.js</span>
+                <span class="tag tag-ml">Croupier</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="lab" href="labs/croupier_archetype_matrix.html" id="card-semantic-rig" style="--card-color: #00bcd4; border-color: rgba(0,188,212,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🦴</div>
+                <div class="card-title" style="color: #00bcd4;">Semantic Morphological Rig</div>
+            </div>
+            <div class="card-desc">Deep structural skeleton mapper. Identifies semantic joints from arbitrary meshes and builds proportional inverse-kinematics chains before mounting them in the DOJO.</div>
+            <div class="card-meta">
+                <span class="tag tag-procgen">Rigging</span>
+                <span class="tag tag-physics">IK</span>
+                <span class="tag tag-new">RECOVERED</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="lab" href="labs/croupier_holographic_decal_calibration.html" id="card-asset-calibration" style="--card-color: #f59e0b; border-color: rgba(245,158,11,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🎯</div>
+                <div class="card-title" style="color: #f59e0b;">Asset Calibration Tools</div>
+            </div>
+            <div class="card-desc">Holographic decals, vertex palette extraction, and scale adjustment math. Decoupled from physics logic for pure visual tuning.</div>
+            <div class="card-meta">
+                <span class="tag tag-3d">Math</span>
+                <span class="tag tag-gltf">Decals</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="lab" href="labs/croupier_physics_locomotion.html" id="card-movement-customization" style="--card-color: #9333ea; border-color: rgba(147,51,234,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🏃</div>
+                <div class="card-title" style="color: #9333ea;">Movement &amp; Customization</div>
+            </div>
+            <div class="card-desc">Procedural posture interpolation (Naruto run, Zombie crawl) and cosmetic head replacement logic (Crown, Burger) without DOJO physics limits.</div>
+            <div class="card-meta">
+                <span class="tag tag-3d">Animation</span>
+                <span class="tag tag-ml">Poses</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="lab" href="generators/gen_semantic_props.html" id="card-props">
+            <div class="card-head">
+                <div class="card-icon">🪑</div>
+                <div class="card-title">Procedural Prop Lab</div>
+            </div>
+            <div class="card-desc">Universal Zero-Greeble generation. Spawns semantic furniture (chairs, crates, lockers) at runtime using mathematical algorithms instead of baked geometries.</div>
+            <div class="card-meta">
+                <span class="tag tag-procgen">ProcGen</span>
+                <span class="tag tag-3d">Geometry</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="lab" href="generators/gen_canvas_textures.html" id="card-textures">
+            <div class="card-head">
+                <div class="card-icon">🖌️</div>
+                <div class="card-title">Procedural Texture Lab</div>
+            </div>
+            <div class="card-desc">Algorithmic Canvas Shaders. Wood grain, rust, industrial metal, and fabric generated natively via HTML5 Canvas noise algorithms without downloading external images.</div>
+            <div class="card-meta">
+                <span class="tag tag-procgen">Shader</span>
+                <span class="tag tag-3d">PBR</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="lab" href="labs/croupier_resonance_isomorphism.html" id="card-resonance" style="--card-color: #5c6bc0; border-color: rgba(92,107,192,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🔮</div>
+                <div class="card-title" style="color: #5c6bc0;">Isomorphic Resonance Calibration</div>
+            </div>
+            <div class="card-desc">Sovereign signal persistence in self-organizing particle fields. Kuramoto phase coupling with emergent attractor formation. Explores whether transient signals can achieve continuity through resonance alone.</div>
+            <div class="card-meta">
+                <span class="tag tag-procgen">Emergence</span>
+                <span class="tag tag-physics">Kuramoto</span>
+                <span class="tag tag-ai">Signal</span>
+            </div>
+        </a>
+
+
+        <!-- ═══════════════════════════════════════ -->
+        <!--  🏗️ GENERATORS — Procedural creation    -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="section-header sh-gen" data-section="gen">
+            <div class="icon">🏗️</div>
+            <h2>Procedural Worlds</h2>
+            <span class="count">7</span>
+        </div>
+
+        <a class="card" data-cat="gen" href="generators/gen_building_archetypes.html" id="card-building-archetypes">
+            <div class="card-head">
+                <div class="card-icon">🏛️</div>
+                <div class="card-title">Building Archetypes Viewer</div>
+            </div>
+            <div class="card-desc">Architectural projection visualizer. Evaluates volumetric profiles, geometric aesthetics, and structural tiers for procedural city buildings.</div>
+            <div class="card-meta">
+                <span class="tag tag-procgen">ProcGen</span>
+                <span class="tag tag-3d">Three.js</span>
+            </div>
+        </a>
+
+
+
+        <a class="card" data-cat="gen" href="generators/gen_bsp_hitbox_spe.html" id="card-spe-lab">
+            <div class="card-head">
+                <div class="card-icon">🧬</div>
+                <div class="card-title">Standard Procedural Entity (SPE) Lab</div>
+            </div>
+            <div class="card-desc">The definitive SDK for organic generation perfectly aligned with mathematical Tiers. Merges visual Variance with strict Hitbox constraints and automatic BSP Identity Culling.</div>
+            <div class="card-meta">
+                <span class="tag tag-procgen">SPE</span>
+                <span class="tag tag-3d">Three.js</span>
+                <span class="tag tag-new">NEW</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="gen" href="generators/gen_city_carver.html" id="card-city-carver" style="--card-color: #00bcd4; border-color: rgba(0,188,212,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🏙️</div>
+                <div class="card-title" style="color: #00bcd4;">Procedural City Carver</div>
+            </div>
+            <div class="card-desc">Urban geometry layout engine. Defines lot sizes, zoning rules, and street networks algorithmically before rendering meshes.</div>
+            <div class="card-meta">
+                <span class="tag tag-procgen">Voronoi</span>
+                <span class="tag tag-ml">Urban</span>
+                <span class="tag tag-new">RECOVERED</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="gen" href="generators/gen_nature_props.html" id="card-nature-props" style="--card-color: #4caf50; border-color: rgba(76,175,80,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🌳</div>
+                <div class="card-title" style="color: #4caf50;">Nature & Scenery Lab</div>
+            </div>
+            <div class="card-desc">Procedural generation of trees, rocks, and foliage using L-Systems and algorithmic branching without relying on external GLB files.</div>
+            <div class="card-meta">
+                <span class="tag tag-procgen">Flora</span>
+                <span class="tag tag-physics">Math</span>
+                <span class="tag tag-new">RECOVERED</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="gen" href="generators/gen_building_skins_gif.html" id="card-building-skins" style="--card-color: #ff9800; border-color: rgba(255,152,0,0.3);">
+            <div class="card-head">
+                <div class="card-icon">🏢</div>
+                <div class="card-title" style="color: #ff9800;">Building Skins & Facades</div>
+            </div>
+            <div class="card-desc">Visualizer for building exterior materials and windows layout tests. Generates architectural textures on pure geometric primitives.</div>
+            <div class="card-meta">
+                <span class="tag tag-procgen">Texturing</span>
+                <span class="tag tag-fx">Shaders</span>
+                <span class="tag tag-new">RECOVERED</span>
+            </div>
+        </a>
+
+        <a class="card" data-cat="gen" href="labs/croupier_world_builder.html" id="card-procworld">
+            <div class="card-head">
+                <div class="card-icon">🌆</div>
+                <div class="card-title">Procedural Overworld</div>
+            </div>
+            <div class="card-desc">Full cyberpunk city generator. Buildings, streets, neon, atmosphere. The main world engine with isometric rendering and domain zones.</div>
+            <div class="card-meta">
+                <span class="tag tag-procgen">ProcGen</span>
+                <span class="tag tag-3d">Three.js</span>
+            </div>
+        </a>
+
+
+
+        <a class="card" data-cat="gen" href="room_simulator.html" id="card-room">
+            <div class="card-head">
+                <div class="card-icon">🛋️</div>
+                <div class="card-title">Room Simulator</div>
+            </div>
+            <div class="card-desc">Interior room generator. Procedural furniture placement, material systems, interactive object selection. Closets, desks, bookshelves.</div>
+            <div class="card-meta">
+                <span class="tag tag-procgen">ProcGen</span>
+                <span class="tag tag-3d">Three.js</span>
+            </div>
+        </a>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!--  🧠 INTELLIGENCE — ML & Training        -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="section-header sh-ml" data-section="ml">
+            <div class="icon">🧠</div>
+            <h2>Machine Learning</h2>
+            <span class="count">2</span>
+        </div>
+
+        <a class="card" data-cat="ml" href="labs/croupier_asteroids_survival.html?rl=true" id="card-ml-asteroids">
+            <div class="card-head">
+                <div class="card-icon">🧠</div>
+                <div class="card-title">Asteroids PPO Agent</div>
+            </div>
+            <div class="card-desc">Headless gymnasium bridge using Python Playwright. Unrolls the entity matrix into a 321-float observation vector. Trained via stable-baselines3 MlpPolicy.</div>
+            <div class="card-meta">
+                <span class="tag tag-ml">RL</span>
+                <span class="tag tag-ai">PPO</span>
+                <span class="tag tag-new">PYTHON</span>
+            </div>
+        </a>
+
+        <div class="card" data-cat="ml" id="card-ml-universal">
+            <div class="card-head">
+                <div class="card-icon">🌐</div>
+                <div class="card-title">Universal RL Architecture</div>
+            </div>
+            <div class="card-desc">Legacy headless gymnasium with 94-float universal observation vector. Supports Peatón, Arena Predator/Prey, and 3D Aquarium.</div>
+            <div class="card-meta">
+                <span class="tag tag-ml">RL</span>
+                <span class="tag tag-ai">DQN</span>
+            </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!--  🦝 RACCOON ESCAPE — Platform Minigame  -->
+        <!-- ═══════════════════════════════════════ -->
+        <div class="section-header sh-mat" data-section="mat">
+            <div class="icon">🦝</div>
+            <h2>Raccoon Escape</h2>
+            <span class="count">7 stages</span>
+        </div>
+
+        <!-- Cabinet — READY -->
+        <a class="card" data-cat="mat" href="games/croupier_cabinet_escape.html" id="card-mat-cabinet">
+            <span class="stage-num">1</span>
+            <div class="card-head">
+                <div class="card-icon">🗄️</div>
+                <div class="card-title">Cabinet</div>
+            </div>
+            <div class="card-desc">BSP-partitioned drawer search. Area-weighted target placement. Blind mode forces the agent to learn optimal search from geometry alone — no hints, no cheats. 103-dim observation vector.</div>
+            <div class="card-meta">
+                <span class="tag tag-ml">RL</span>
+                <span class="tag tag-bsp">BSP</span>
+                <span class="tag tag-ai">BLIND</span>
+                <span class="tag tag-ready">READY</span>
+            </div>
+        </a>
+
+        <!-- Hide & Seek — READY -->
+        <a class="card" data-cat="mat" href="labs/croupier_phantom_predator.html" id="card-mat-room">
+            <span class="stage-num">2</span>
+            <div class="card-head">
+                <div class="card-icon">🐇</div>
+                <div class="card-title">Hide & Seek</div>
+            </div>
+            <div class="card-desc">3D spatial search in BSP-partitioned rooms. Agent navigates, opens doors, and hunts a hiding rabbit. Triple purpose: human dataset minigame, overworld navigation mechanics, and RL training ground for spatial search.</div>
+            <div class="card-meta">
+                <span class="tag tag-ml">RL</span>
+                <span class="tag tag-3d">THREE.JS</span>
+                <span class="tag tag-bsp">BSP</span>
+                <span class="tag tag-gltf">GLTF</span>
+                <span class="tag tag-ready">READY</span>
+            </div>
+        </a>
+
+        <!-- Floor & Chopper — READY -->
+        <a class="card" data-cat="mat" href="labs/croupier_scanner_lab.html" id="card-mat-floor">
+            <span class="stage-num">3</span>
+            <div class="card-head">
+                <div class="card-icon">🚁</div>
+                <div class="card-title">Chopper Search (Building Floors)</div>
+            </div>
+            <div class="card-desc">Multi-floor vertical structure. The agent navigates outside the building using 6DOF drone controls and learns to deduce the correct floor using X-ray spotlights before searching the interior.</div>
+            <div class="card-meta">
+                <span class="tag tag-ml">RL</span>
+                <span class="tag tag-3d">3D</span>
+                <span class="tag tag-ready">READY</span>
+            </div>
+        </a>
+
+        <!-- Building — READY -->
+        <a class="card" data-cat="mat" href="croupier_corporate_building.html" id="card-mat-building">
+            <span class="stage-num">4</span>
+            <div class="card-head">
+                <div class="card-icon">🏢</div>
+                <div class="card-title">Corporate Building</div>
+            </div>
+            <div class="card-desc">Multi-floor vertical structure 3D Aquarium. Elevator decisions, floor-level probability priors, volumetric z-axis navigation. The agent learns to think in 3D — choosing floors before rooms.</div>
+            <div class="card-meta">
+                <span class="tag tag-ml">RL</span>
+                <span class="tag tag-3d">3D</span>
+                <span class="tag tag-ready">READY</span>
+            </div>
+        </a>
+
+        <!-- City — READY -->
+        <a class="card" data-cat="mat" href="games/raccoon_city_sector.html" id="card-mat-city">
+            <span class="stage-num">5</span>
+            <div class="card-head">
+                <div class="card-icon">🏙️</div>
+                <div class="card-title">City Sector</div>
+            </div>
+            <div class="card-desc">Urban grid with buildings, streets, and districts. Macro-scale search across a procedural city. District-level probability priors and street-network navigation cost.</div>
+            <div class="card-meta">
+                <span class="tag tag-ml">RL</span>
+                <span class="tag tag-procgen">PROCGEN</span>
+                <span class="tag tag-ready">READY</span>
+            </div>
+        </a>
+
+        <!-- Stage 6: Planet — READY -->
+        <a class="card" data-cat="mat" href="games/raccoon_planet.html" id="card-mat-planet">
+            <span class="stage-num">6</span>
+            <div class="card-head">
+                <div class="card-icon">🌍</div>
+                <div class="card-title">Stage 6 — Planet</div>
+            </div>
+            <div class="card-desc">Continental scale. Biome-aware search, population density priors, satellite reconnaissance. The agent must learn global optimization — where on a planet to even begin looking.</div>
+            <div class="card-meta">
+                <span class="tag tag-ml">RL</span>
+                <span class="tag tag-eco">BIOME</span>
+                <span class="tag tag-ready">READY</span>
+            </div>
+        </a>
+
+        <!-- Stage 7: Space — READY -->
+        <a class="card" data-cat="mat" href="games/raccoon_space.html" id="card-mat-space">
+            <span class="stage-num">7</span>
+            <div class="card-head">
+                <div class="card-icon">🌌</div>
+                <div class="card-title">Stage 7 — Space</div>
+            </div>
+            <div class="card-desc">Interplanetary and interstellar search. Solar system navigation, gravitational constraints, cosmic-scale probability distributions. The final frontier of autonomous search intelligence.</div>
+            <div class="card-meta">
+                <span class="tag tag-ml">RL</span>
+                <span class="tag tag-physics">ORBITAL</span>
+                <span class="tag tag-ready">READY</span>
+            </div>
+        </a>
+
+        <!-- ═══════════════════════════════════════ -->
+        <!--  👑 FEATURED — The crown jewel           -->
+        <!-- ═══════════════════════════════════════ -->
+        <a class="card featured" data-cat="sim" href="index.html" id="card-crown" style="--card-color: var(--world);">
+            <div class="card-icon">👑</div>
+            <div class="card-body">
+                <div class="card-title">Colonial Overworld — Live World</div>
+                <div class="card-desc">The main isometric colony connected to the ALISA Hub. Beings move autonomously, entities interact, the economy flows. Everything above feeds into this.</div>
+                <div class="card-meta">
+                    <span class="tag tag-3d">Three.js</span>
+                    <span class="tag tag-ai">Beings</span>
+                    <span class="tag tag-eco">Economy</span>
+                    <span class="tag tag-gltf">GLTF</span>
+                </div>
+            </div>
+        </a>
+
+    </div>
+
+    <footer>
+        <p>ALISA Simulation Lab · <a href="http://127.0.0.1:8741">Hub :8741</a> · World/Web/overworld/ · 2026</p>
+    </footer>
+
+    <script>
+    function filter(section) {
+        // Update tabs
+        document.querySelectorAll('.tab').forEach(t => {
+            t.classList.toggle('active', t.dataset.section === section);
+        });
+        
+        // Filter cards
+        document.querySelectorAll('.card').forEach(c => {
+            if (section === 'all' || c.dataset.cat === section) {
+                c.classList.remove('hidden');
+            } else {
+                c.classList.add('hidden');
+            }
+        });
+        
+        // Filter section headers
+        document.querySelectorAll('.section-header').forEach(sh => {
+            if (section === 'all' || sh.dataset.section === section) {
+                sh.classList.remove('hidden');
+            } else {
+                sh.classList.add('hidden');
+            }
+        });
+    }
+
+    // Initialize collapsible sections
+    document.querySelectorAll('.section-header').forEach(header => {
+        header.addEventListener('click', () => {
+            header.classList.toggle('collapsed');
+            let el = header.nextElementSibling;
+            while (el && !el.classList.contains('section-header')) {
+                if (header.classList.contains('collapsed')) {
+                    el.classList.add('collapsed-hide');
+                } else {
+                    el.classList.remove('collapsed-hide');
+                }
+                el = el.nextElementSibling;
+            }
+        });
+    });
+    </script>
+
+
+</body>
+</html>

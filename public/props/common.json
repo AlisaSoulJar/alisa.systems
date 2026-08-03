@@ -1,0 +1,137 @@
+{
+    "chair_wood_basic": [
+        {"shape": "box", "size": [0.5, 0.06, 0.5], "pos": [0, 0.4, 0], "radius": 0.015, "type": "base"},
+        {"shape": "box", "size": [0.5, 0.5, 0.06], "pos": [0, 0.68, -0.22], "radius": 0.015, "type": "base"},
+        {"shape": "cylinder", "size": [0.02, 0.02, 0.38, 6], "pos": [-0.21, 0.19, 0.21], "type": "dark"},
+        {"shape": "cylinder", "size": [0.02, 0.02, 0.38, 6], "pos": [0.21, 0.19, 0.21], "type": "dark"},
+        {"shape": "cylinder", "size": [0.02, 0.02, 0.38, 6], "pos": [-0.21, 0.19, -0.21], "type": "dark"},
+        {"shape": "cylinder", "size": [0.02, 0.02, 0.38, 6], "pos": [0.21, 0.19, -0.21], "type": "dark"}
+    ],
+    "table_wood_basic": [
+        {"shape": "box", "size": [1.4, 0.06, 0.8], "pos": [0, 0.85, 0], "radius": 0.02, "type": "base"},
+        {"shape": "box", "size": [1.4, 0.04, 0.04], "pos": [0, 0.88, -0.38], "type": "dark"},
+        {"shape": "cylinder", "size": [0.025, 0.025, 0.82, 6], "pos": [-0.65, 0.42, -0.35], "type": "dark"},
+        {"shape": "cylinder", "size": [0.025, 0.025, 0.82, 6], "pos": [0.65, 0.42, -0.35], "type": "dark"},
+        {"shape": "cylinder", "size": [0.025, 0.025, 0.82, 6], "pos": [-0.65, 0.42, 0.35], "type": "dark"},
+        {"shape": "cylinder", "size": [0.025, 0.025, 0.82, 6], "pos": [0.65, 0.42, 0.35], "type": "dark"}
+    ],
+    "bed_standard": [
+        {"shape": "box", "size": [1.1, 0.3, 2.1], "pos": [0, 0.15, 0], "radius": 0.02, "type": "dark"},
+        {"shape": "box", "size": [1.0, 0.1, 2.0], "pos": [0, 0.35, 0], "radius": 0.04, "type": "base"},
+        {"shape": "box", "size": [1.1, 0.35, 0.06], "pos": [0, 0.48, -1.03], "type": "dark"},
+        {"shape": "box", "size": [0.45, 0.06, 0.25], "pos": [-0.3, 0.42, -0.85], "radius": 0.03, "type": "base"},
+        {"shape": "box", "size": [0.45, 0.06, 0.25], "pos": [0.3, 0.42, -0.85], "radius": 0.03, "type": "base"},
+        {"shape": "box", "size": [0.3, 0.25, 0.4], "pos": [0, 0.04, 0.8], "type": "container", "name": "Caja Bajo la Cama"}
+    ],
+    "bookshelf_tall": {
+        "generator": "bsp_shelf",
+        "size": [1.2, 2.2, 0.4],
+        "cuts": 4
+    },
+    "fridge_domestic": [
+        {"shape": "box", "size": [0.8, 1.3, 0.7], "pos": [0, 0.65, 0], "radius": 0.03, "type": "dark"},
+        {"shape": "box", "size": [0.8, 0.5, 0.7], "pos": [0, 1.55, 0], "radius": 0.03, "type": "container", "name": "Congelador"},
+        {"shape": "box", "size": [0.04, 0.04, 0.15], "pos": [0.35, 1.0, 0.37], "type": "dark"},
+        {"shape": "box", "size": [0.04, 0.04, 0.15], "pos": [0.35, 1.6, 0.37], "type": "dark"}
+    ],
+    "tv_crt_old": [
+        {"shape": "box", "size": [0.9, 0.7, 0.6], "pos": [0, 0.35, 0], "radius": 0.04, "type": "dark"},
+        {"shape": "box", "size": [0.5, 0.5, 0.4], "pos": [0, 0.35, -0.3], "radius": 0.04, "type": "dark"},
+        {"shape": "sphere", "size": [0.6, 12, 12], "scale": [0.7, 0.55, 0.2], "pos": [0, 0.35, 0.3], "type": "l3_screen", "name": "Canal de Emergencia"}
+    ],
+    "chest_wooden": [
+        {"shape": "box", "size": [0.9, 0.5, 0.6], "pos": [0, 0.25, 0], "radius": 0.02, "type": "container", "name": "Cofre de Madera"},
+        {"shape": "cylinder", "size": [0.3, 0.3, 0.9, 8], "pos": [0, 0.5, 0], "rot": [0, 0, 1.5708], "type": "dark"},
+        {"shape": "box", "size": [0.08, 0.08, 0.04], "pos": [0, 0.45, 0.32], "type": "base"}
+    ],
+    "locker_gym": {
+        "generator": "grid_lockers",
+        "size": [0.5, 2.0, 0.5],
+        "cols": 1,
+        "rows": 3
+    },
+    "cardboard_box_sealed": [
+        {"shape": "box", "size": [0.6, 0.5, 0.6], "pos": [0, 0.25, 0], "radius": 0.015, "type": "container", "name": "Caja de Cartón"},
+        {"shape": "wedge", "size": [0.58, 0.6, 0.08], "pos": [0, 0.54, 0], "type": "base"}
+    ],
+    "shopping_cart": [
+        {"shape": "wedge", "size": [0.8, 0.6, 0.5], "pos": [0, 0.65, 0], "type": "container", "name": "Carro de Compra"},
+        {"shape": "cylinder", "size": [0.03, 0.03, 0.7, 6], "pos": [0, 1.0, 0.35], "rot": [0, 0, 1.5708], "type": "dark"},
+        {"shape": "cylinder", "size": [0.03, 0.03, 0.65], "pos": [0.35, 0.65, 0.35], "type": "dark"},
+        {"shape": "cylinder", "size": [0.03, 0.03, 0.65], "pos": [-0.35, 0.65, 0.35], "type": "dark"},
+        {"shape": "cylinder", "size": [0.03, 0.03, 0.5], "pos": [0.32, 0.25, 0.25], "type": "dark"},
+        {"shape": "cylinder", "size": [0.03, 0.03, 0.5], "pos": [-0.32, 0.25, 0.25], "type": "dark"},
+        {"shape": "cylinder", "size": [0.03, 0.03, 0.5], "pos": [0.2, 0.25, -0.2], "type": "dark"},
+        {"shape": "cylinder", "size": [0.03, 0.03, 0.5], "pos": [-0.2, 0.25, -0.2], "type": "dark"},
+        {"shape": "cylinder", "size": [0.06, 0.06, 0.05, 8], "pos": [-0.32, 0.06, 0.25], "rot": [0, 0, 1.5708], "type": "dark"},
+        {"shape": "cylinder", "size": [0.06, 0.06, 0.05, 8], "pos": [0.32, 0.06, 0.25], "rot": [0, 0, 1.5708], "type": "dark"},
+        {"shape": "cylinder", "size": [0.06, 0.06, 0.05, 8], "pos": [-0.2, 0.06, -0.2], "rot": [0, 0, 1.5708], "type": "dark"},
+        {"shape": "cylinder", "size": [0.06, 0.06, 0.05, 8], "pos": [0.2, 0.06, -0.2], "rot": [0, 0, 1.5708], "type": "dark"}
+    ],
+    "coat_rack": [
+        {"shape": "cylinder", "size": [0.2, 0.2, 0.03, 5], "pos": [0, 0.015, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.03, 0.03, 1.5, 4], "pos": [0, 0.78, 0], "type": "dark"},
+        {"shape": "box", "size": [0.4, 0.04, 0.04], "pos": [0, 1.52, 0], "type": "dark"},
+        {"shape": "box", "size": [0.04, 0.04, 0.4], "pos": [0, 1.52, 0], "type": "dark"}
+    ],
+    "mirror_wall": [
+        {"shape": "box", "size": [0.8, 1.2, 0.03], "pos": [0, 1.5, -0.4], "type": "glass"},
+        {"shape": "box", "size": [0.84, 0.04, 0.05], "pos": [0, 0.88, -0.4], "type": "dark"},
+        {"shape": "box", "size": [0.84, 0.04, 0.05], "pos": [0, 2.12, -0.4], "type": "dark"}
+    ],
+    "plant_pot_floor": [
+        {"shape": "wedge", "size": [0.35, 0.2, 0.35], "pos": [0, 0.175, 0], "type": "container", "name": "Maceta"},
+        {"shape": "box", "size": [0.36, 0.04, 0.36], "pos": [0, 0.37, 0], "type": "dark"},
+        {"shape": "box", "size": [0.6, 0.8, 0.01], "pos": [0, 0.8, 0], "rot": [0, 0.7854, 0], "type": "sprite"},
+        {"shape": "box", "size": [0.6, 0.8, 0.01], "pos": [0, 0.8, 0], "rot": [0, -0.7854, 0], "type": "sprite"}
+    ],
+    "umbrella_stand": [
+        {"shape": "wedge", "size": [0.25, 0.15, 0.5], "pos": [0, 0.25, 0], "type": "container", "name": "Paragüero"},
+        {"shape": "box", "size": [0.26, 0.04, 0.26], "pos": [0, 0.52, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.02, 0.02, 0.35, 4], "pos": [0.05, 0.7, 0], "rot": [0, 0, 0.1], "type": "base"}
+    ],
+    "wall_clock": [
+        {"shape": "cylinder", "size": [0.25, 0.25, 0.04, 8], "pos": [0, 2.0, -0.4], "rot": [1.5708, 0, 0], "type": "base"},
+        {"shape": "box", "size": [0.02, 0.18, 0.02], "pos": [0, 2.0, -0.37], "rot": [0, 0, 0.3], "type": "dark"}
+    ],
+    "waste_basket": [
+        {"shape": "wedge", "size": [0.35, 0.25, 0.3], "pos": [0, 0.15, 0], "type": "container", "name": "Papelera"},
+        {"shape": "box", "size": [0.36, 0.03, 0.36], "pos": [0, 0.32, 0], "type": "dark"}
+    ],
+    "suitcase": [
+        {"shape": "box", "size": [0.5, 0.6, 0.2], "pos": [0, 0.3, 0], "radius": 0.03, "type": "container", "name": "Maleta Pequeña"},
+        {"shape": "box", "size": [0.2, 0.03, 0.03], "pos": [0, 0.615, 0], "type": "dark"}
+    ],
+    "suitcase_large": [
+        {"shape": "box", "size": [0.65, 0.8, 0.3], "pos": [0, 0.4, 0], "radius": 0.05, "type": "container", "name": "Maleta Grande"},
+        {"shape": "cylinder", "size": [0.02, 0.02, 0.25, 4], "pos": [0, 0.82, 0], "rot": [0, 0, 1.5708], "type": "dark"}
+    ],
+    "backpack_travel": [
+        {"shape": "box", "size": [0.4, 0.6, 0.25], "pos": [0, 0.3, 0], "radius": 0.1, "type": "container", "name": "Mochila de Viaje"},
+        {"shape": "box", "size": [0.3, 0.4, 0.1], "pos": [0, 0.2, 0.15], "radius": 0.05, "type": "dark"}
+    ],
+    "duffel_bag": [
+        {"shape": "cylinder", "size": [0.25, 0.25, 0.7, 8], "pos": [0, 0.25, 0], "rot": [0, 0, 1.5708], "type": "container", "name": "Bolsón de Deporte"},
+        {"shape": "cylinder", "size": [0.02, 0.02, 0.5, 6], "pos": [0, 0.55, 0], "rot": [0, 0, 1.5708], "type": "dark"}
+    ],
+    "handbag_leather": [
+        {"shape": "box", "size": [0.25, 0.2, 0.1], "pos": [0, 0.1, 0], "radius": 0.05, "type": "container", "name": "Bolso de Mano"},
+        {"shape": "cylinder", "size": [0.01, 0.01, 0.2, 4], "pos": [0, 0.25, 0], "rot": [0, 0, 1.5708], "type": "dark"}
+    ],
+    "messenger_bag": [
+        {"shape": "box", "size": [0.35, 0.3, 0.1], "pos": [0, 0.15, 0], "radius": 0.04, "type": "container", "name": "Bandolera"},
+        {"shape": "box", "size": [0.36, 0.04, 0.11], "pos": [0, 0.32, 0], "radius": 0.02, "type": "dark"},
+        {"shape": "cylinder", "size": [0.01, 0.01, 0.3, 4], "pos": [0, 0.35, 0.05], "rot": [0.8, 0, 0], "type": "dark"}
+    ],
+    "toolbox_metal": [
+        {"shape": "box", "size": [0.4, 0.2, 0.2], "pos": [0, 0.1, 0], "radius": 0.02, "type": "container", "name": "Caja de Herramientas"},
+        {"shape": "box", "size": [0.3, 0.03, 0.03], "pos": [0, 0.22, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.02, 0.02, 0.06, 4], "pos": [0.18, 0.12, 0.1], "type": "base"}
+    ],
+    "ceiling_fan": [
+        {"shape": "cylinder", "size": [0.08, 0.08, 0.12, 8], "pos": [0, 2.87, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.04, 0.04, 0.15, 4], "pos": [0, 2.93, 0], "type": "dark"},
+        {"shape": "box", "size": [1.4, 0.02, 0.12], "pos": [0, 2.78, 0], "rot": [0.03, 0, 0], "type": "base"},
+        {"shape": "box", "size": [0.12, 0.02, 1.4], "pos": [0, 2.78, 0], "rot": [0, 0, 0.03], "type": "base"}
+    ]
+}

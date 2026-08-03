@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA - Retro Arcade Node</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { margin: 0; overflow: hidden; background: #e0e5ec; font-family: 'Inter', sans-serif; user-select: none; }
+        
+
+
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; padding: 30px; z-index: 10;
+        }
+
+        .hud-panel {
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.1); border-radius: 12px;
+            padding: 20px; pointer-events: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); color: #1a1a2e; width: 350px;
+        }
+
+        h1 { font-size: 24px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 5px; color: #E91E63; }
+        .subtitle { font-size: 13px; color: #666; font-family: 'JetBrains Mono', monospace; }
+
+        .btn-exit {
+            display: inline-block; margin-top: 15px; text-decoration: none;
+            border: 1px solid #1976D2; background: rgba(33, 150, 243, 0.1);
+            color: #1976D2; cursor: pointer; padding: 8px 12px; font-weight: 700;
+            font-family: 'JetBrains Mono', monospace; border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .btn-exit:hover { background: rgba(33, 150, 243, 0.2); }
+        
+        .toggle-btn {
+            width: 100%; border: 1px solid #fde047; background: rgba(244, 239, 136, 0.1);
+            color: #fca311; cursor:pointer; padding: 8px; margin-top: 10px;
+            font-family: 'JetBrains Mono', monospace; border-radius: 4px; font-weight: bold;
+        }
+
+        #romCartridge {
+            /* We will dynamically style this when injected into CSS3D */
+            width: 1024px; height: 768px; border: none;
+            background: #000;
+        }
+
+    </style>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+
+    <div id="css-container" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; overflow:hidden;"></div>
+    
+    <!-- THE GAME ROM (IFrame) -->
+    <div id="iframe-hide-container" style="display:none;">
+        <iframe id="romCartridge" src="about:blank"></iframe>
+    </div>
+
+    <div id="ui-layer">
+        <div class="hud-panel">
+            <h1>🕹️ RETRO ARCADE NODE</h1>
+            <div class="subtitle">Sovereign Physical Cabinets</div>
+            
+            <div style="margin-top: 15px; display:flex; flex-direction:column; gap:5px;">
+                <span style="color:#E91E63;font-size:12px;font-weight:bold;">LOAD DOJO GAME:</span>
+                <select id="gameSelect" onchange="window.loadMachine(this.value)" style="pointer-events:auto;background: rgba(233,30,99,0.1); color: #E91E63; border: 1px solid #E91E63; padding: 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 13px; outline:none; cursor:pointer; margin-bottom:5px;">
+                    <option value="none" selected>-- No Game Mounted --</option>
+                    <option value="asteroids">Asteroids 3D (V2)</option>
+                    <option value="peaton">Peatón V2 (Tropical)</option>
+                    <option value="katamari">Katamari (Procedural)</option>
+                    <option value="cucco">Cucco Swarm Defense</option>
+                    <option value="boids">Aquarium (Ecosystem)</option>
+                </select>
+            </div>
+
+            <hr style="border: 0; border-top: 1px dashed rgba(0,0,0,0.1); margin: 15px 0;">
+            
+            <div id="game-status" style="color:#666; font-size:12px; font-family:'JetBrains Mono', monospace; min-height: 40px;">
+                Ready. Select a game to mount it into the physical machine.
+            </div>
+
+            <a href="../lab.html" class="btn-exit" style="width: 100%; text-align: center; margin-top: 20px;">⮌ EXIT TO OVERWORLD</a>
+            
+            <div id="env-controls" style="margin-top: 15px; display:flex; flex-direction:column; gap:5px;">
+                <span style="color:#fca311;font-size:12px;font-weight:bold;">ENVIRONMENT:</span>
+                <select id="lightSelect" onchange="window.setLighting(this.value)" style="pointer-events:auto;background: rgba(252, 163, 17, 0.1); color: #fca311; border: 1px solid #fca311; padding: 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 13px; outline:none; cursor:pointer;">
+                    <option value="day" selected>☀️ Day / Office</option>
+                    <option value="night">🌙 Night / Dark</option>
+                    <option value="neon">🟣 Cyberpunk Neon</option>
+                </select>
+                <button class="toggle-btn" onclick="toggleXRay()" style="border-color: #0ed; color: #0ed; background: rgba(0, 238, 221, 0.1); margin-top:5px;">🩻 Toggle X-Ray</button>
+            </div>        </div>
+    </div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/three-0.160.0/build/three.module.js",
+            "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+            "@alisa-engine/": "../js/alisa-engine/src/"
+        }
+    }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { AlisaRenderCore } from '@alisa-engine/soma/AlisaRenderCore.js';
+        import { ArcadeDojoFactory } from '@alisa-engine/world/factories/ArcadeDojoFactory.js';
+        import { CSS3DHologramPlugin } from '@alisa-engine/soma/plugins/CSS3DHologramPlugin.js';
+        import { ArcadeFXPlugin } from '@alisa-engine/soma/plugins/ArcadeFXPlugin.js';
+
+        // ═══════════════════════════════════════════════════
+        //  CORE INITIALIZATION
+        // ═══════════════════════════════════════════════════
+        window.gfx = new AlisaRenderCore();
+        let scene = window.gfx.scene;
+        let camera = window.gfx.camera;
+        camera.position.set(4, 3, 6);
+
+        // Alias for compatibility
+        window.scene = scene;
+        window.camera = camera;
+
+        // ═══════════════════════════════════════════════════
+        //  MODULAR COMPOSITION
+        // ═══════════════════════════════════════════════════
+        window.dojo = new ArcadeDojoFactory(scene, window.gfx);
+        window.hologram = new CSS3DHologramPlugin(window.gfx);
+        
+        window.hologram.setTiedLight(window.dojo.screenLight);
+        window.gfx.plugins.push(window.hologram);
+        window.gfx.plugins.push(new ArcadeFXPlugin(window.hologram));
+
+        window.dojo.setLighting('day');
+
+        // ═══════════════════════════════════════════════════
+        //  UI PROXY BINDINGS
+        // ═══════════════════════════════════════════════════
+        let isXRay = false;
+        window.toggleXRay = () => {
+            isXRay = !isXRay;
+            window.dojo.toggleXRay(isXRay);
+        };
+        
+        window.setLighting = (mode) => window.dojo.setLighting(mode);
+
+        const statusDiv = document.getElementById('game-status');
+        window.hologram.setStatusCallback((msg) => statusDiv.innerHTML = msg);
+
+        window.loadMachine = function(gameId) {
+            const gameFiles = {
+                'asteroids': '../labs/croupier_asteroids_survival.html',
+                'peaton': '../labs/croupier_peaton_m30.html',
+                'katamari': '../labs/croupier_katamari_swarm.html',
+                'cucco': '../labs/croupier_cucco_swarm.html',
+                'boids': '../labs/croupier_math_boids_flock.html'
+            };
+            const romUrl = gameFiles[gameId] || 'none';
+            // Wait for factory to map the mesh if it exists
+            if (!window.dojo.screenMesh) {
+                statusDiv.innerHTML = "<span style='color:red'>ERROR: Model not fully loaded.</span>";
+                return;
+            }
+            window.hologram.loadMachine(romUrl, window.dojo.screenMesh, window.dojo.cabinetMesh.rotation.y);
+        };
+
+        // ═══════════════════════════════════════════════════
+        //  CINEMATIC CAMERA (UI Tied)
+        // ═══════════════════════════════════════════════════
+        let targetCamPos = new THREE.Vector3(4, 3, 6);
+        let targetCamLook = new THREE.Vector3(0, 0, 0);
+
+        // Bind the ESC stand up hook from the Hologram plugin
+        window.hologram.setStandUpCallback(() => {
+            window.setCamera('iso');
+        });
+
+        window.setCamera = function(mode) {
+            const uiStatus = document.getElementById('game-status');
+            const uiEnv = document.getElementById('env-controls');
+            const loadDojoGameDiv = document.getElementById('gameSelect').parentElement;
+            
+            if (mode === 'iso') {
+                targetCamLook.set(0, 0, 0);
+                targetCamPos.set(4, 3, 6);
+                uiEnv.style.display = 'flex';
+                loadDojoGameDiv.style.display = 'flex';
+                window.hologram.setSeated(false);
+                uiStatus.innerHTML = "Standing. Select a game to mount, then click the Arcade to sit.";
+            } else if (mode === 'front') {
+                targetCamLook.set(0, 1.25, 0);
+                targetCamPos.set(0, 1.55, 2.7);
+                uiEnv.style.display = 'none';
+                loadDojoGameDiv.style.display = 'none'; // Immersive: Hide world controls when seated
+                window.hologram.setSeated(true);
+                
+                if (document.getElementById('gameSelect').value === 'none') {
+                     uiStatus.innerHTML = "Seated. (Machine Unplugged). <br><span style='color:#fca311'>[ESC] Stand Up</span>";
+                }
+            }
+        };
+
+        // ═══════════════════════════════════════════════════
+        //  ZERO-UI HOVER & RAYCASTER (Click to Sit / Interact)
+        // ═══════════════════════════════════════════════════
+        const globalRaycaster = new THREE.Raycaster();
+        const globalMouse = new THREE.Vector2();
+        
+        // Neon Border BoxHelper for Hover Effects
+        const hoverBox = new THREE.BoxHelper(camera, 0xff00ff);
+        hoverBox.visible = false;
+        hoverBox.material.transparent = true;
+        hoverBox.material.opacity = 0.8;
+        hoverBox.material.depthTest = false; // Always visible on top
+        scene.add(hoverBox);
+
+        window.addEventListener('pointermove', (e) => {
+            // If projected/fullscreen, mouse interacts natively with iframe
+            if (window.hologram.screenMode !== 'MOUNTED') {
+                document.body.style.cursor = 'default';
+                hoverBox.visible = false;
+                return;
+            }
+
+            globalMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+            globalMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            globalRaycaster.setFromCamera(globalMouse, camera);
+
+            let isHovering = false;
+            let targetObj = null;
+
+            if (!window.hologram.isSeated && window.dojo.cabinetGroup) {
+                // Standing: Can we click the cabinet?
+                const intersects = globalRaycaster.intersectObject(window.dojo.cabinetGroup, true);
+                if (intersects.length > 0) {
+                    isHovering = true;
+                    targetObj = window.dojo.cabinetGroup;
+                }
+            } else if (window.hologram.isSeated && document.getElementById('gameSelect').value !== 'none') {
+                // Seated and game loaded: Can we click the screen?
+                if (window.hologram.currentDebugScreen) {
+                    const intersects = globalRaycaster.intersectObject(window.hologram.currentDebugScreen, false);
+                    if (intersects.length > 0) {
+                        isHovering = true;
+                        targetObj = window.hologram.currentDebugScreen;
+                    }
+                }
+            }
+
+            if (isHovering && targetObj) {
+                document.body.style.cursor = 'pointer';
+                hoverBox.setFromObject(targetObj);
+                hoverBox.visible = true;
+            } else {
+                document.body.style.cursor = 'default';
+                hoverBox.visible = false;
+            }
+        });
+
+        window.addEventListener('pointerdown', (e) => {
+             // Robust direct raycast fallback to guarantee clicking works natively
+             if (!window.hologram.isSeated && window.dojo.cabinetGroup) {
+                 globalMouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+                 globalMouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+                 globalRaycaster.setFromCamera(globalMouse, camera);
+                 const intersects = globalRaycaster.intersectObject(window.dojo.cabinetGroup, true);
+                 if (intersects.length > 0) {
+                     window.setCamera('front');
+                 }
+             }
+        });
+
+        // ═══════════════════════════════════════════════════
+        //  RENDER PIPELINE
+        // ═══════════════════════════════════════════════════
+        window.dojo.loadCabinet().then(() => {
+            window.gfx.startLoop(null, (dt) => {
+                 // GPU Suspension Protocol: If the DOM iframe completely eclipses
+                 // the screen, stop wasting GPU cycles drawing WebGL pixels.
+                 // But we still need to hide the HUD.
+                 if (window.hologram.screenMode === 'FULLSCREEN') {
+                     document.getElementById('ui-layer').style.display = 'none';
+                     return;
+                 } else {
+                     document.getElementById('ui-layer').style.display = '';
+                 }
+
+                 // Camera smoothing
+                 camera.position.lerp(targetCamPos, dt * 4.0);
+                 window.gfx.controls.target.lerp(targetCamLook, dt * 4.0);
+                 
+                 // Render WebGL Layer
+                 window.gfx.renderer.render(scene, camera);
+            });
+        });
+    </script>
+</body>
+</html>

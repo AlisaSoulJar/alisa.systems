@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA — Prop Texture Lab v7 (Ultra-Optimization & Backface Culling)</title>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: monospace; background: #fff; color: #000; }
+        #ui {
+            position: absolute; top: 20px; left: 20px; z-index: 10;
+            background: rgba(255,255,255,0.95); border: 1px solid #000; padding: 15px; width: 340px;
+        }
+        h3 { margin-top: 0; border-bottom: 2px solid #000; padding-bottom: 5px; }
+        .label { margin-top: 8px; font-size: 12px; color: #555; }
+        select { width: 100%; border: 1px solid #000; padding: 5px; margin-top: 5px; font-family: monospace; cursor: pointer; }
+        .info { font-size: 11px; color: #666; margin-top: 8px; padding: 6px; background: #f8f8f8; border: 1px solid #ddd; }
+        #atlasRow {
+            position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 6px; z-index: 10; background: rgba(255,255,255,0.9);
+            padding: 8px; border: 1px solid #000; flex-wrap: wrap; justify-content: center; max-width: 80%;
+        }
+        #atlasRow canvas, #atlasRow img { border: 1px solid #999; image-rendering: pixelated; width: 48px; height: 48px; }
+        #atlasRow .atlasLabel { font-size: 9px; text-align: center; font-family: monospace; }
+        #loading { position: absolute; inset: 0; background: #fff; display: flex; align-items: center; justify-content: center; z-index: 99; font-size: 20px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <div id="loading">Loading Baseline Hero Textures...</div>
+    <div id="ui" style="display:none;">
+        <h3>🎨 Texture Lab v7</h3>
+        <div class="label">Demo Prop:</div>
+        <select id="selDemo" onchange="loadDemo()">
+            <option value="locker_green">Locker (Green + Invisible Faces Solid + Aspect Fix)</option>
+            <option value="locker_blue">Locker (Navy Blue + Invisible Faces Solid + Aspect Fix)</option>
+            <option value="locker_red">Locker (Crimson + Invisible Faces Solid + Aspect Fix)</option>
+            <option value="bsp_shelf">Procedural BSP Bookshelf (Infinite Variations)</option>
+            <option value="bsp_wardrobe">Deterministic BSP Closet (Fixed Layout)</option>
+            <option value="grid_lockers">Industrial Locker Array (Grid Partitioning)</option>
+            <option value="sofa_teal">Sofa (Teal Hero + Solid Legs)</option>
+            <option value="sofa_yellow">Sofa (Mustard Hero Tint + Solid Legs)</option>
+            <option value="crate">Crate (Pine Wood + Correct Aspect Tiling)</option>
+            <option value="chair">Chair (Solid Legs + Procedural Fabric)</option>
+        </select>
+        <div class="info">
+            • <b>Auto-Tint:</b> AI Textures are converted to greyscale and multiplied by base hex color.<br>
+            • <b>Tiling & Aspect Ratio:</b> Tall objects correct image stretching mathematically in canvas.<br>
+            • <b>Optimization Culling:</b> Top, bottom and rear faces are pure Solid Colors (0 texel cost).
+        </div>
+    </div>
+    <div id="atlasRow"></div>
+
+    <div id="render-container" style="position:absolute; inset:0; z-index:1;"></div>
+
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three-0.160.0/build/three.module.js",
+        "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+        "@alisa-engine/": "../js/alisa-engine/"
+      }
+    }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+        import { ProceduralTexture } from '@alisa-engine/src/soma/morphology/ProceduralTexture.js';
+        import { BspPropSystem } from '@alisa-engine/src/world/BspPropSystem.js';
+        
+        // Ensure THREE is globally available for plugins
+        window.THREE = Object.assign({}, THREE);
+        window.THREE.OrbitControls = OrbitControls;
+        window.THREE.RoundedBoxGeometry = RoundedBoxGeometry;
+
+        // Initialize Native Core
+        const gfx = new AlisaRenderCore('render-container', { 
+            autoGrid: true, 
+            cameraY: 1.4, 
+            cameraZ: 2.2, 
+            background: 0xf4f4f4 
+        });
+        
+        // Register Plugins
+        const texPlugin = new ProceduralTexture();
+        gfx.registerPlugin(texPlugin);
+
+        gfx.camera.position.set(1.8, 1.4, 2.2);
+        
+        let currentGroup = null;
+
+        function buildProp(def) {
+            const g = new THREE.Group();
+            for (const p of def.parts) {
+                let geo = p.radius && p.shape === 'box' ? new RoundedBoxGeometry(p.size[0], p.size[1], p.size[2], 2, p.radius) :
+                          (p.shape === 'box' ? new THREE.BoxGeometry(...p.size) : new THREE.CylinderGeometry(...p.size));
+
+                // Resolve Materials via Plugin
+                let mat;
+                if (p.matArray) {
+                    mat = p.matArray.map(f => f(texPlugin));
+                } else if (p.call) {
+                    mat = p.call(texPlugin);
+                } else {
+                    // Auto-resolve based on partType if defined by BspPropSystem
+                    mat = texPlugin.getAutoMaterial('industrial', 'bsp', Math.random()*100, p.partType, 42);
+                }
+
+                const mesh = new THREE.Mesh(geo, mat);
+                mesh.position.set(...p.pos);
+                if(p.rot) mesh.rotation.set(...p.rot);
+                mesh.castShadow = true; mesh.receiveShadow = true;
+
+                if (p.shape === 'box') {
+                    const edges = new THREE.EdgesGeometry(geo);
+                    const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.08 }));
+                    mesh.add(line);
+                }
+                if (p.isInteractable) {
+                    mesh.userData.isInteractable = true;
+                }
+                g.add(mesh);
+            }
+            return g;
+        }
+
+        // --- Demo Data Adapter ---
+        const DEMOS = {
+            locker_green: {
+                parts: [
+                    { shape: 'box', size: [0.35, 1.0, 0.3], pos: [0, 0.5, 0], radius: 0.01, 
+                      matArray: [
+                          (p)=>p.getCompositeMat('#4b5320', 'ov_metal', 0.8, [1, 3]), // Left 
+                          (p)=>p.getCompositeMat('#4b5320', 'ov_metal', 0.8, [1, 3]), // Right 
+                          (p)=>p.getSolidMat('#4b5320'), // Top
+                          (p)=>p.getSolidMat('#4b5320'), // Bottom
+                          (p)=>p.getTintedHeroMat('hero_locker_bw', '#4b5320', true), // Front
+                          (p)=>p.getSolidMat('#4b5320') // Back
+                      ] }
+                ]
+            },
+            locker_blue: {
+                parts: [
+                    { shape: 'box', size: [0.35, 1.0, 0.3], pos: [0, 0.5, 0], radius: 0.01, 
+                      matArray: [
+                          (p)=>p.getCompositeMat('#203353', 'ov_metal', 0.8, [1, 3]),
+                          (p)=>p.getCompositeMat('#203353', 'ov_metal', 0.8, [1, 3]),
+                          (p)=>p.getSolidMat('#203353'),
+                          (p)=>p.getSolidMat('#203353'),
+                          (p)=>p.getTintedHeroMat('hero_locker_bw', '#2b4f8a', true),
+                          (p)=>p.getSolidMat('#203353')
+                      ] }
+                ]
+            },
+            bsp_shelf: {
+                isDynamic: true,
+                generator: () => BspPropSystem.generateBspShelf(0.8, 1.4, 0.3, 5, Math.random()*10000)
+            },
+            bsp_wardrobe: {
+                isDynamic: true, 
+                generator: () => BspPropSystem.generateBspShelf(1.2, 1.8, 0.4, 5, 42)
+            },
+            grid_lockers: {
+                isDynamic: true,
+                generator: () => BspPropSystem.generateGridStorage(1.5, 1.0, 0.3, 4, 3)
+            },
+            crate: {
+                parts: [
+                    { shape: 'box', size: [0.4, 0.3, 0.3], pos: [0, 0.15, 0], radius: 0.005, call: (p)=>p.getCompositeMat('#C59364', 'ov_wood', 0.5, [1.5,1]) },
+                    { shape: 'box', size: [0.41, 0.018, 0.31], pos: [0, 0.08, 0], radius: 0.005, call: (p)=>p.getCompositeMat('#4d555c', 'ov_metal', 0.7, [1.5, 0.1]) },
+                    { shape: 'box', size: [0.41, 0.018, 0.31], pos: [0, 0.22, 0], radius: 0.005, call: (p)=>p.getCompositeMat('#4d555c', 'ov_metal', 0.7, [1.5, 0.1]) }
+                ]
+            },
+            sofa_teal: {
+                parts: [
+                    { shape: 'box', size: [0.8, 0.15, 0.35], pos: [0, 0.075, 0], radius: 0.01, call: (p)=>p.getCompositeMat('#B8885B', 'ov_wood', 0.5) },
+                    { shape: 'box', size: [0.75, 0.15, 0.3], pos: [0, 0.22, 0.02], radius: 0.04, 
+                      matArray: [ (p)=>p.getCompositeMat('#3B6B6B', 'ov_fabric', 0.6), (p)=>p.getCompositeMat('#3B6B6B', 'ov_fabric', 0.6), 
+                      (p)=>p.getTintedHeroMat('hero_sofa_seat', '#3B6B6B'), (p)=>p.getCompositeMat('#3B6B6B', 'ov_fabric', 0.6), (p)=>p.getCompositeMat('#3B6B6B', 'ov_fabric', 0.6), (p)=>p.getCompositeMat('#3B6B6B', 'ov_fabric', 0.6) ] },
+                    { shape: 'box', size: [0.75, 0.3, 0.1], pos: [0, 0.3, -0.12], radius: 0.04, 
+                      matArray: [ (p)=>p.getCompositeMat('#3B6B6B', 'ov_fabric', 0.6), (p)=>p.getCompositeMat('#3B6B6B', 'ov_fabric', 0.6), (p)=>p.getCompositeMat('#3B6B6B', 'ov_fabric', 0.6), (p)=>p.getCompositeMat('#3B6B6B', 'ov_fabric', 0.6), 
+                      (p)=>p.getTintedHeroMat('hero_sofa_seat', '#3B6B6B'), (p)=>p.getCompositeMat('#3B6B6B', 'ov_fabric', 0.6) ] },
+                    
+                    { shape: 'cylinder', size: [0.03, 0.02, 0.08, 4], pos: [-0.35, 0.04, -0.12], rot: [0, Math.PI/4, 0], call: (p)=>p.getSolidMat('#4a3b2b') },
+                    { shape: 'cylinder', size: [0.03, 0.02, 0.08, 4], pos: [0.35, 0.04, -0.12], rot: [0, Math.PI/4, 0], call: (p)=>p.getSolidMat('#4a3b2b') },
+                    { shape: 'cylinder', size: [0.03, 0.02, 0.08, 4], pos: [-0.35, 0.04, 0.12], rot: [0, Math.PI/4, 0], call: (p)=>p.getSolidMat('#4a3b2b') },
+                    { shape: 'cylinder', size: [0.03, 0.02, 0.08, 4], pos: [0.35, 0.04, 0.12], rot: [0, Math.PI/4, 0], call: (p)=>p.getSolidMat('#4a3b2b') }
+                ]
+            }
+        };
+
+        function loadDemo() {
+            if (currentGroup) gfx.scene.remove(currentGroup);
+            const key = document.getElementById('selDemo').value;
+            if(!DEMOS[key]) return;
+            
+            let def = DEMOS[key];
+            if (def.isDynamic) def = { parts: def.generator() };
+            
+            currentGroup = buildProp(def);
+            gfx.scene.add(currentGroup);
+
+            const box = new THREE.Box3().setFromObject(currentGroup);
+            const center = box.getCenter(new THREE.Vector3());
+            const maxD = Math.max(...box.getSize(new THREE.Vector3()).toArray());
+            gfx.camera.position.set(center.x + maxD*1.0, center.y + maxD * 0.5, center.z + maxD * 1.2);
+            if (gfx.controls) gfx.controls.target.copy(center);
+        }
+
+        window.loadDemo = loadDemo;
+        
+        // Load Textures through the plugin
+        texPlugin.preloadAssets('../textures/props', ['hero_locker_bw', 'hero_sofa_seat', 'hero_mattress_top'], () => {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('ui').style.display = 'block';
+            
+            // Replaces MatrixRoom init
+            gfx.startLoop();
+            
+            loadDemo();
+        });
+    </script>
+</body>
+</html>

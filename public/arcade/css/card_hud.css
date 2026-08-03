@@ -1,0 +1,22 @@
+/* Sovereign Card Engine HUD Styles */
+body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #05050A; }
+#canvas-container { width: 100vw; height: 100vh; position: absolute; z-index: 1; }
+.overlay { position: absolute; z-index: 10; pointer-events: none; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
+.hud-panel {
+    background: rgba(12, 12, 22, 0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 14px; padding: 18px; color: #E2E2F0;
+    font-family: 'JetBrains Mono', monospace; box-shadow: 0 8px 32px rgba(0,0,0,0.6), inset 0 0 30px rgba(138, 43, 226, 0.03);
+    max-width: 320px; pointer-events: auto;
+}
+.hud-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; user-select: none; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; margin-bottom: 10px; }
+.hud-header h1 { font-family: 'Inter', sans-serif; margin: 0; font-size: 18px; background: linear-gradient(135deg, #c8b8ff, #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; letter-spacing: -0.5px; }
+.collapse-btn { background: none; border: none; color: rgba(138,43,226,0.7); cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: bold; transition: color 0.2s; }
+.collapse-btn:hover { color: #fff; }
+#hud-content { transition: max-height 0.35s ease-out, opacity 0.25s ease-out; overflow: hidden; max-height: 600px; opacity: 1; }
+.collapsed #hud-content { max-height: 0; opacity: 0; }
+.hud-panel .status-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; color: #8a8a9e; }
+.hud-panel .val { color: #fff; font-weight: bold; }
+.val.turn-white { color: #a180ff; }
+.val.turn-black { color: #FF4081; }
+.legal-moves { margin-top: 10px; font-size: 9px; color: rgba(255,255,255,0.3); max-height: 60px; overflow-y: auto; word-wrap: break-word; line-height: 1.5; }
+body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 50% 50%, rgba(138,43,226,0.04) 0%, transparent 60%); z-index: 0; pointer-events: none; }

@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA - Cyber Monitor Hub</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { margin: 0; overflow: hidden; background: #1e293b; font-family: 'Inter', sans-serif; user-select: none; }
+
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; padding: 20px; z-index: 10;
+        }
+
+        .hud-panel {
+            background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 191, 165, 0.25); border-radius: 14px;
+            padding: 20px; pointer-events: auto; width: 260px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4); color: #e2e8f0;
+        }
+
+        h1 {
+            font-size: 20px; font-weight: 900; letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #00BFA5, #4fc3f7);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 11px; color: #64748b; font-family: 'JetBrains Mono', monospace;
+            margin-top: 2px;
+        }
+
+        .divider {
+            border: 0; border-top: 1px solid rgba(100,116,139,0.2); margin: 12px 0;
+        }
+
+        #game-status {
+            color: #94a3b8; font-size: 11px; font-family: 'JetBrains Mono', monospace;
+            min-height: 30px; line-height: 1.5;
+        }
+
+        .btn-exit {
+            display: block; text-align: center; margin-top: 12px; text-decoration: none;
+            border: 1px solid rgba(0,191,165,0.4); background: rgba(0,191,165,0.08);
+            color: #00BFA5; cursor: pointer; padding: 10px; font-weight: 700;
+            font-family: 'JetBrains Mono', monospace; border-radius: 8px;
+            transition: all 0.2s; font-size: 12px;
+        }
+        .btn-exit:hover { background: rgba(0,191,165,0.18); }
+
+        /* Environment controls */
+        select {
+            width: 100%; background: rgba(30,41,59,0.9); color: #e2e8f0;
+            border: 1px solid rgba(100,116,139,0.3); padding: 8px;
+            border-radius: 6px; font-family: 'JetBrains Mono', monospace;
+            font-size: 12px; cursor: pointer; outline: none;
+        }
+
+        /* Bottom HUD */
+        .context-hud {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,191,165,0.2); border-radius: 10px;
+            padding: 8px 24px; font-family: 'JetBrains Mono', monospace;
+            font-size: 12px; color: #94a3b8; z-index: 20; pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .context-hud .key { color: #00BFA5; font-weight: 700; }
+
+        /* Hidden iframe container */
+        #romCartridge {
+            width: 1024px; height: 768px; border: none; background: #0f172a;
+        }
+    </style>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+
+    <div id="css-container" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; overflow:hidden;"></div>
+
+    <!-- THE TARGET PORTAL (IFrame) -->
+    <div id="iframe-hide-container" style="display:none;">
+        <iframe id="romCartridge" src="about:blank"></iframe>
+    </div>
+
+    <div id="ui-layer">
+        <div class="hud-panel">
+            <h1>🌐 CYBER MONITOR HUB</h1>
+            <div class="subtitle">Multi-Terminal · Interactive</div>
+            <hr class="divider">
+
+            <div id="game-status">Walk around. Click any terminal to connect.</div>
+
+            <hr class="divider">
+
+            <div id="env-controls" style="display:flex; flex-direction:column; gap:6px;">
+                <span style="color:#00BFA5;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:1px;">Environment</span>
+                <select id="lightSelect" onchange="window.setLighting(this.value)">
+                    <option value="office" selected>☀️ Office / Day</option>
+                    <option value="night">🌙 Night Mode</option>
+                    <option value="cyber">🔮 Cyberpunk</option>
+                </select>
+            </div>
+
+            <a href="../lab.html" class="btn-exit">⮌ EXIT TO LAB</a>
+        </div>
+    </div>
+
+    <!-- Context HUD (shown when seated) -->
+    <div class="context-hud" id="contextHud" style="opacity:0;">
+        <span class="key">CLICK</span> Screen · <span class="key">ESC</span> Stand Up
+    </div>
+
+    <!-- Scripts -->
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three-0.160.0/build/three.module.js",
+        "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+        "@alisa-engine/": "../js/alisa-engine/src/"
+      }
+    }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { AlisaRenderCore } from '@alisa-engine/soma/AlisaRenderCore.js';
+        import { ArcadeRoomManager } from '@alisa-engine/world/factories/ArcadeRoomManager.js';
+        import { ProceduralPropsFactory } from '@alisa-engine/world/factories/ProceduralPropsFactory.js';
+        import { CSS3DHologramPlugin } from '@alisa-engine/soma/plugins/CSS3DHologramPlugin.js';
+        import { SpatialAudioPlugin } from '@alisa-engine/soma/plugins/SpatialAudioPlugin.js';
+
+        window.THREE = THREE;
+
+        // ═══════════════════════════════════════════════════
+        //  TERMINAL CONFIGURATIONS — Mission Control Semicircle
+        // ═══════════════════════════════════════════════════
+        const FOCAL = [0, 0, 6]; // Player spawn zone
+
+        // Front row: 5 desk monitors in arc
+        // Back row: 3 wall-mounted displays (higher, behind front row)
+        const TERMINAL_CONFIGS = [
+            // ── FRONT ROW (desk-mounted) ──
+            {
+                id: 'term-1', glb: '../props/models/Monitor.glb',
+                position: [-5, 0, -1], height: 0.5, surfaceY: 0.82,
+                baseRotation: Math.PI, faceToward: FOCAL, cssRotationOffset: Math.PI,
+                sitDistance: 1.6, eyeHeight: 1.25,
+                gameUrl: 'http://127.0.0.1:8741/docs',
+                gameName: 'Hub API'
+            },
+            {
+                id: 'term-2', glb: '../props/models/CRT Monitor.glb',
+                position: [-2.5, 0, -2.2], height: 0.45, surfaceY: 0.82,
+                baseRotation: Math.PI, faceToward: FOCAL, cssRotationOffset: Math.PI,
+                sitDistance: 1.5, eyeHeight: 1.2,
+                gameUrl: 'http://127.0.0.1:8741/colony/dashboard/index.html',
+                gameName: 'Colony Vitals'
+            },
+            {
+                id: 'term-3', glb: '../props/models/iFruit Vintage Computer.glb',
+                position: [0, 0, -3], height: 0.45, surfaceY: 0.82,
+                baseRotation: Math.PI, faceToward: FOCAL, cssRotationOffset: Math.PI,
+                sitDistance: 1.5, eyeHeight: 1.2,
+                gameUrl: 'http://127.0.0.1:8741/colony/index.html',
+                gameName: 'Master Gateway'
+            },
+            {
+                id: 'term-4', glb: '../props/models/Simple Computer Monitor.glb',
+                position: [2.5, 0, -2.2], height: 0.5, surfaceY: 0.82,
+                baseRotation: Math.PI, faceToward: FOCAL, cssRotationOffset: Math.PI,
+                sitDistance: 1.5, eyeHeight: 1.2,
+                gameUrl: '../apps/jobboard/terminal_jobboard.html',
+                gameName: 'JobBoard SC-012'
+            },
+            {
+                id: 'term-5', glb: '../props/models/Alien Computer.glb',
+                position: [5, 0, -1], height: 0.4, surfaceY: 0.82,
+                baseRotation: Math.PI, faceToward: FOCAL, cssRotationOffset: Math.PI,
+                sitDistance: 1.5, eyeHeight: 1.2,
+                gameUrl: 'http://127.0.0.1:8741/mcp/system_processes_system_processes_get',
+                gameName: 'MCP Tools'
+            },
+            // ── BACK ROW (wall-mounted / tall stands) ──
+            {
+                id: 'term-6', glb: '../props/models/Flat Screen TV.glb',
+                position: [-3.5, 0, -5], height: 1.0, surfaceY: 1.2,
+                baseRotation: Math.PI, faceToward: FOCAL, cssRotationOffset: Math.PI,
+                sitDistance: 2.5, eyeHeight: 1.6,
+                gameUrl: 'http://127.0.0.1:8741/colony/overworld/rooms/room_arcade_hall.html',
+                gameName: 'Arcade CCTV'
+            },
+            {
+                id: 'term-7', glb: '../props/models/Television Vintage.glb',
+                position: [0, 0, -6], height: 0.7, surfaceY: 0.9,
+                baseRotation: Math.PI, faceToward: FOCAL, cssRotationOffset: Math.PI,
+                sitDistance: 2.5, eyeHeight: 1.4,
+                gameUrl: '../labs/croupier_asteroids_survival.html',
+                gameName: 'Asteroids 3D'
+            },
+            {
+                id: 'term-8', glb: '../props/models/old tv.glb',
+                position: [3.5, 0, -5], height: 0.7, surfaceY: 0.9,
+                baseRotation: Math.PI, faceToward: FOCAL, cssRotationOffset: Math.PI,
+                sitDistance: 2.5, eyeHeight: 1.4,
+                gameUrl: '../games/croupier_math_boids_flock.html',
+                gameName: 'Boids Lab'
+            }
+        ];
+
+        // ═══════════════════════════════════════════════════
+        //  CORE INITIALIZATION
+        // ═══════════════════════════════════════════════════
+        const gfx = new AlisaRenderCore();
+        const scene = gfx.scene;
+        const camera = gfx.camera;
+        camera.position.set(0, 3.5, 8);
+
+        // ═══════════════════════════════════════════════════
+        //  MODULAR COMPOSITION
+        // ═══════════════════════════════════════════════════
+        // sync:true — esta sala ES de la colonia y quiere el multijugador.
+        // Ya no viene activado por defecto: el motor tiene que poder correr suelto.
+        const room = new ArcadeRoomManager(scene, gfx, { sync: true });
+        const hologram = new CSS3DHologramPlugin(gfx);
+        const audio = new SpatialAudioPlugin(gfx);
+
+        gfx.plugins.push(hologram, audio);
+
+        // Office-specific lighting
+        room.setLighting('day');
+
+        // Override lighting for office themes
+        window.setLighting = (mode) => {
+            if (mode === 'office') {
+                room.hemiLight.color.setHex(0xffffff);
+                room.hemiLight.groundColor.setHex(0xcccccc);
+                room.hemiLight.intensity = 1.2;
+                scene.background = new THREE.Color(0xe8ecf1);
+                room.floor.material.color.setHex(0x8899aa);
+                room.cabinets.forEach(c => c.screenLight.intensity = 0);
+            } else if (mode === 'night') {
+                room.hemiLight.color.setHex(0x334466);
+                room.hemiLight.groundColor.setHex(0x111122);
+                room.hemiLight.intensity = 0.15;
+                scene.background = new THREE.Color(0x060810);
+                room.floor.material.color.setHex(0x0a0e18);
+                room.cabinets.forEach(c => { c.screenLight.color.setHex(0x66aaff); c.screenLight.intensity = 12; });
+            } else if (mode === 'cyber') {
+                room.hemiLight.color.setHex(0x00BFA5);
+                room.hemiLight.groundColor.setHex(0x003344);
+                room.hemiLight.intensity = 0.5;
+                scene.background = new THREE.Color(0x040810);
+                room.floor.material.color.setHex(0x020408);
+                room.cabinets.forEach(c => { c.screenLight.color.setHex(0x00ffcc); c.screenLight.intensity = 20; });
+            }
+        };
+
+        // ── Procedural Desks ──
+        // Create desks only for front-row terminals (surfaceY = 0.82)
+        TERMINAL_CONFIGS.forEach(cfg => {
+            if (cfg.surfaceY <= 0.82) {
+                const desk = ProceduralPropsFactory.createDesk();
+                desk.position.set(cfg.position[0], 0, cfg.position[2]);
+                scene.add(desk);
+            }
+        });
+
+        // ── Back Wall (behind back-row displays) ──
+        const wallGeo = new THREE.BoxGeometry(14, 4, 0.15);
+        const wallMat = new THREE.MeshStandardMaterial({ color: 0x1a2332, roughness: 0.9 });
+        const backWall = new THREE.Mesh(wallGeo, wallMat);
+        backWall.position.set(0, 2, -7);
+        backWall.receiveShadow = true;
+        scene.add(backWall);
+
+        // ── TV Stands for back-row (pedestal style) ──
+        TERMINAL_CONFIGS.forEach(cfg => {
+            if (cfg.surfaceY > 0.82) {
+                const stand = ProceduralPropsFactory.createTVStand(cfg.surfaceY);
+                stand.position.set(cfg.position[0], 0, cfg.position[2]);
+                scene.add(stand);
+            }
+        });
+
+        // ── Procedural Office Chair ──
+        function spawnChair(x, z, faceAngle) {
+            const chair = ProceduralPropsFactory.createChair();
+            chair.position.set(x, 0, z);
+            chair.rotation.y = faceAngle;
+            scene.add(chair);
+        }
+
+        // ── Additional Directional Light ──
+        const dirLight = new THREE.DirectionalLight(0xddeeff, 0.8);
+        dirLight.position.set(5, 8, 5);
+        dirLight.castShadow = true;
+        scene.add(dirLight);
+
+        // ═══════════════════════════════════════════════════
+        //  LOAD TERMINALS
+        // ═══════════════════════════════════════════════════
+        const statusDiv = document.getElementById('game-status');
+        const contextHud = document.getElementById('contextHud');
+
+        // ═══════════════════════════════════════════════════
+        //  INTERACTION: Zero-UI Click System
+        // ═══════════════════════════════════════════════════
+        let activeCabinet = null;
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        const targetCamPos = new THREE.Vector3().copy(camera.position);
+        const targetCamLook = new THREE.Vector3(0, 1, 0);
+
+        // Hologram bindings
+        hologram.setStatusCallback((msg) => { statusDiv.innerHTML = msg; });
+        hologram.setStandUpCallback(() => standUp());
+
+        window.addEventListener('pointerdown', (event) => {
+            if (activeCabinet) return; // Already seated
+
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            const allGroups = room.getAllGroups();
+            const intersects = raycaster.intersectObjects(allGroups, true);
+
+            if (intersects.length > 0) {
+                const cabinet = room.getCabinetFromIntersect(intersects[0].object);
+                if (cabinet && !cabinet.occupiedBy) {
+                    sitAt(cabinet);
+                }
+            }
+        });
+
+        function sitAt(cabinet) {
+            if (!cabinet || cabinet.occupiedBy) return;
+            activeCabinet = cabinet;
+            cabinet.occupiedBy = 'local';
+            
+            // Broadcast occupancy to MMO 
+            if (room.ws && room.ws.readyState === WebSocket.OPEN) {
+                room.ws.send(JSON.stringify({ type: 'occupy', terminal_id: cabinet.id, player: 'ALISA' }));
+            }
+
+            // Compute camera: place in front of the screen
+            const cx = cabinet.cabPosition[0];
+            const cz = cabinet.cabPosition[2];
+            const fx = cabinet.focalPoint[0];
+            const fz = cabinet.focalPoint[2];
+            const dx = fx - cx;
+            const dz = fz - cz;
+            const dist = Math.sqrt(dx * dx + dz * dz);
+            const nx = dx / dist;
+            const nz = dz / dist;
+
+            // Adaptive sit distance + eye height from config
+            const sitDist = cabinet.sitDistance || 1.8;
+            const eyeH = cabinet.eyeHeight || 1.35;
+            const lookY = cabinet.surfaceY ? cabinet.surfaceY + cabinet.modelHeight * 0.5 : 1.1;
+
+            targetCamPos.set(cx + nx * sitDist, eyeH, cz + nz * sitDist);
+            targetCamLook.set(cx, lookY, cz);
+
+            hologram.setSeated(true);
+            hologram.setTiedLight(cabinet.screenLight);
+
+            if (cabinet.gameUrl && cabinet.screenMesh) {
+                hologram.loadMachine(cabinet.gameUrl, cabinet.screenMesh, cabinet.cssRotation);
+                statusDiv.innerHTML = `Connected to <b>${cabinet.gameName}</b>`;
+                
+                // Bind Spatial Audio
+                bindTerminalKeyboard(cabinet);
+            } else {
+                statusDiv.innerHTML = `Terminal offline. <span style="color:#fca311">(No link)</span>`;
+            }
+
+            document.getElementById('env-controls').style.display = 'none';
+            contextHud.style.opacity = '1';
+        }
+
+        // Spatial Audio Event Hook
+        window._termKeydown = null;
+        function bindTerminalKeyboard(cabinet) {
+            const iframe = document.getElementById('romCartridge');
+            
+            if (window._termKeydown) {
+                window.removeEventListener('keydown', window._termKeydown);
+                window._termKeydown = null;
+            }
+
+            const playClack = (e) => {
+                if (['Shift', 'Control', 'Alt', 'Meta'].includes(e.key)) return;
+                audio.playPositionalSound("typing", cabinet.mesh, 0.4, false, 2.0);
+            };
+
+            if (iframe) {
+                iframe.addEventListener('load', () => {
+                    try {
+                        iframe.contentWindow.document.addEventListener('keydown', playClack);
+                    } catch(e) {} // Ignore cross-origin error if any
+                }, {once: true});
+            }
+
+            window._termKeydown = playClack;
+            window.addEventListener('keydown', window._termKeydown);
+        }
+
+        function standUp() {
+            if (activeCabinet) {
+                // Broadcast release to MMO 
+                if (room.ws && room.ws.readyState === WebSocket.OPEN) {
+                    room.ws.send(JSON.stringify({ type: 'release', terminal_id: activeCabinet.id, player: 'ALISA' }));
+                }
+                activeCabinet.occupiedBy = null;
+                activeCabinet = null;
+            }
+            if (window._termKeydown) {
+                window.removeEventListener('keydown', window._termKeydown);
+                window._termKeydown = null;
+            }
+            hologram.disconnect();
+            hologram.setSeated(false);
+            hologram.setTiedLight(null);
+            targetCamPos.set(0, 3.5, 8);
+            targetCamLook.set(0, 1, -2);
+            document.getElementById('env-controls').style.display = 'flex';
+            contextHud.style.opacity = '0';
+            statusDiv.innerHTML = 'Walk around. Click any terminal to connect.';
+        }
+
+        // ═══════════════════════════════════════════════════
+        //  RENDER PIPELINE
+        // ═══════════════════════════════════════════════════
+        room.loadCabinets(TERMINAL_CONFIGS).then(() => {
+            console.log('Cyber Monitor Hub: All terminals loaded.');
+            statusDiv.innerHTML = 'Walk around. Click any terminal to connect.';
+
+            // Create chairs in front of front-row terminals only (desks)
+            room.cabinets.forEach(cab => {
+                if (cab.surfaceY <= 0.82) {
+                    const cx = cab.cabPosition[0];
+                    const cz = cab.cabPosition[2];
+                    const fx = cab.focalPoint[0];
+                    const fz = cab.focalPoint[2];
+                    const dx = fx - cx;
+                    const dz = fz - cz;
+                    const dist = Math.sqrt(dx * dx + dz * dz);
+                    spawnChair(cx + (dx/dist) * 1.2, cz + (dz/dist) * 1.2, cab.rotation);
+                }
+            });
+
+            // Apply initial lighting
+            window.setLighting('office');
+
+            gfx.startLoop(null, (dt) => {
+                if (hologram.screenMode === 'FULLSCREEN') {
+                    document.getElementById('ui-layer').style.display = 'none';
+                    contextHud.style.opacity = '0';
+                    return;
+                }
+                document.getElementById('ui-layer').style.display = '';
+
+                // Smooth camera movement
+                camera.position.lerp(targetCamPos, dt * 4.0);
+                gfx.controls.target.lerp(targetCamLook, dt * 4.0);
+
+                // Context HUD
+                if (activeCabinet) {
+                    contextHud.style.opacity = '1';
+                    if (hologram.screenMode === 'PROJECTED') {
+                        contextHud.innerHTML = '<span class="key">CLICK</span> Fullscreen · <span class="key">ESC</span> Retract';
+                    } else {
+                        contextHud.innerHTML = '<span class="key">CLICK</span> Screen · <span class="key">ESC</span> Stand Up';
+                    }
+                }
+
+                gfx.renderer.render(scene, camera);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA Arcade — Casino Blackjack</title>
+    <link rel="stylesheet" href="css/arcade.css">
+    
+    <script src="/vendor/three-r128/three.min.js"></script>
+    <script src="/vendor/three-r128/OrbitControls.js"></script>
+    <script src="/vendor/tween/tween.umd.js"></script>
+    
+    <link rel="stylesheet" href="css/card_hud.css">
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+    <div id="canvas-container"></div>
+    <div id="hud-container"></div>
+
+    <!-- Las reglas, dentro del navegador. Mismo gesto que chess.html: el
+         ProtoHub habla el idioma del hub de la colonia, así que conectarse a
+         ALISA cambia el endpoint y nada más. Este módulo va ANTES que el
+         visualizador para que `window.ALISA_PROTOHUB` ya exista cuando el
+         motor lo busque. -->
+    <script type="module">
+        import { ProtoHub }      from './js/protohub/ProtoHub.js';
+        import { crearBlackjack } from './js/protohub/rules/blackjack.js';
+        // `await` porque las reglas se leen de `data/card_library.json`, la
+        // misma ficha que usa el motor Python. Una sola verdad sobre las normas.
+        window.ALISA_PROTOHUB = new ProtoHub().registrar('blackjack', await crearBlackjack());
+    </script>
+    <script src="js/arcade_mats.js"></script>
+    <script src="js/SovereignCardEngine.js"></script>
+    <script src="js/blackjack_visualizer.js"></script>
+</body>
+</html>

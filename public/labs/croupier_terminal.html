@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA Colonial Overworld</title>
+    <!-- Modern Typography -->
+    
+    <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+    <!-- Scanline CRT Effect -->
+    <div class="scanlines"></div>
+    <!-- Cinematic Vignette -->
+    <div class="vignette-overlay"></div>
+
+    <!-- Main Viewport Canvas -->
+    <canvas id="viewport"></canvas>
+
+    <!-- Global HUD Toggle -->
+    <button id="hud-toggle-btn" class="cyber-btn">👁️ HUD</button>
+    
+    <!-- Top-Left HUD (Header & Breadcrumbs) -->
+    <div id="hud-top-left" class="glass-panel">
+        <h1 class="cyber-title">ALISA <span class="accent-red">OS</span></h1>
+        <div class="subtitle">AUTONOMOUS GAMIFIED COLONY</div>
+        
+        <div id="breadcrumb-container" class="cyber-box">
+            <span class="pulse-dot"></span>
+            <span id="breadcrumb-text">root.overworld</span>
+            <button id="btn-ascend" class="cyber-btn">[ ASCEND ]</button>
+        </div>
+    </div>
+
+    <!-- Bottom-Left HUD (Vitals & Stats) -->
+    <div id="hud-bottom-left" class="glass-panel">
+        <div class="panel-title">SYSTEM CARTOGRAPHY</div>
+        <div class="stats" id="stats-panel">
+            <div class="loading-matrix">Syncing via Hub Cartographer...</div>
+        </div>
+        
+        <hr class="action-sep" style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:10px 0;">
+        <div class="time-control mt-10">
+            <div style="display:flex; justify-content: space-between; font-size: 10px; color:#aaa; margin-bottom:5px;">
+                <span>00:00</span>
+                <span id="time-display" style="color:#00ffff; font-weight:bold;">SOLAR CYCLE</span>
+                <span>24:00</span>
+            </div>
+            <input type="range" id="time-slider" min="0" max="24" step="0.1" value="12" style="width:100%; cursor:pointer;">
+        </div>
+    </div>
+    
+    <!-- Top-Right HUD (Entity Inspector) -->
+    <div id="inspector-panel" class="glass-panel">
+        <div class="panel-title">ENTITY <span class="accent-red">INSPECTOR</span></div>
+        <div class="cyber-box mb-10">
+            <span class="pulse-dot insp-pulse"></span>
+            <span id="insp-id">N/A</span>
+        </div>
+        <div class="stats" id="insp-stats">
+            <div>Type: <span id="insp-type" class="highlight">---</span></div>
+            <div>Action: <span id="insp-action" class="highlight">---</span></div>
+            <div>Coords: [<span id="insp-coords" class="highlight">0, 0</span>]</div>
+            <div id="insp-extra"></div>
+        </div>
+        <div id="insp-actions"></div>
+        <button id="btn-follow" class="cyber-btn btn-block mt-10">[ LOCK CAMERA ]</button>
+        <button id="btn-close-insp" class="cyber-btn btn-block mt-5 btn-danger">[ CLOSE ]</button>
+    </div>
+
+    <!-- Bottom-Right HUD (Minimap) -->
+    <div id="minimap-container" class="glass-panel cyber-border">
+        <div class="minimap-header">RADAR SIGNAL</div>
+        <canvas id="minimap"></canvas>
+    </div>
+
+    <!-- Bottom-Center HUD (Multi-Tab Terminal) -->
+    <div id="drama-log" class="glass-panel">
+        <div class="terminal-header">
+            <button class="tab-btn active" data-tab="drama">SCUMM <span class="accent-red">DRAMA</span></button>
+            <button class="tab-btn" data-tab="logs">HUB <span class="accent-red">RAW</span></button>
+            <button class="tab-btn" data-tab="irc">COLONIAL <span class="accent-red">IRC</span></button>
+        </div>
+        
+        <div id="tab-content-drama" class="tab-content active">
+            <div id="drama-entries"></div>
+        </div>
+        
+        <div id="tab-content-logs" class="tab-content">
+            <pre id="hub-log-entries" class="terminal-pre">Establishing link to Hub telemetry...</pre>
+        </div>
+        
+        <div id="tab-content-irc" class="tab-content">
+            <div class="irc-header">Connected to <strong>#colonial</strong> via ALISA IRC Adapter</div>
+            <div id="irc-chat-entries"></div>
+            <div class="irc-input-area">
+                <span class="irc-prompt">&gt;</span>
+                <input type="text" id="irc-chat-input" placeholder="Broadcast to Colony..." autocomplete="off" spellcheck="false">
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Menu (Maniac Mansion Context Verbs) -->
+    <div id="action-menu" class="action-menu-hidden glass-panel">
+        <div class="action-header" id="action-target-name">Target</div>
+        <div class="action-body">
+            <button class="action-btn" data-verb="inspect"><span class="icon">👁️</span> Inspect</button>
+            <button class="action-btn" data-verb="enter"><span class="icon">🚪</span> Enter Portal</button>
+            <button class="action-btn" data-verb="follow"><span class="icon">🎥</span> Follow</button>
+            <button class="action-btn" data-verb="talk"><span class="icon">💬</span> Ouroboros</button>
+            <button class="action-btn" data-verb="wake"><span class="icon">⚡</span> Ping (Wake)</button>
+            <hr class="action-sep" style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin:4px 0;">
+            <button class="action-btn" data-verb="spawn"><span class="icon">🚀</span> System Spawn</button>
+            <button class="action-btn action-danger" data-verb="kill"><span class="icon">☠️</span> Hard Kill (OS)</button>
+        </div>
+    </div>
+    
+    <!-- Chat Modal for Ouroboros -->
+    <div id="chat-modal" class="chat-modal-hidden glass-panel">
+        <div class="chat-header">Direct comms to <span id="chat-target-name" class="accent-red">N/A</span></div>
+        <input type="text" id="chat-input" placeholder="Type your message..." autocomplete="off" spellcheck="false">
+        <div class="chat-footer mt-10" id="chat-footer">
+            <button id="btn-chat-close" class="cyber-btn btn-danger">[ CANCEL ]</button>
+            <button id="btn-chat-send" class="cyber-btn custom-chat-send">[ SEND ]</button>
+        </div>
+    </div>
+
+    <!-- Click-to-move feedback -->
+    <div id="click-marker" class="click-marker-hidden">
+        <div class="click-marker-dot"></div>
+    </div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/three-0.160.0/build/three.module.js",
+            "three/addons/": "/vendor/three-0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module">
+        import { TerminalUIEngine } from '../js/alisa-engine/src/extensions/alisa-colony/psyche/TerminalUIEngine.js';
+        import { TerminalInteractionEngine } from '../js/alisa-engine/src/extensions/alisa-colony/psyche/TerminalInteractionEngine.js';
+        import { EntityCardSystem } from '../js/alisa-engine/src/extensions/alisa-colony/psyche/EntityCardSystem.js';
+        import { FileSystemDioramaSystem } from '../js/alisa-engine/src/world/systems/FileSystemDioramaSystem.js';
+        import { HubCartographerSystem } from '../js/alisa-engine/src/extensions/alisa-colony/systems/HubCartographerSystem.js';
+        import { TelemetryBridge } from '../js/alisa-engine/src/world/systems/TelemetryBridge.js';
+        
+        // Boot Sequence
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('[croupier_terminal] Booting ALISA OS via @alisa-engine...');
+            
+            // Assuming FileSystemDioramaSystem has an init or we load AlisaRenderCore here
+            if (FileSystemDioramaSystem.init) {
+                FileSystemDioramaSystem.init();
+            }
+
+            TerminalUIEngine.init && TerminalUIEngine.init();
+            TerminalInteractionEngine.init && TerminalInteractionEngine.init();
+            EntityCardSystem.init && EntityCardSystem.init();
+            
+            // Connect
+            const telemetry = new TelemetryBridge('http://localhost:8741', 'localhost');
+            telemetry.connectAll();
+            
+            const cartographer = new HubCartographerSystem('ALISA');
+            setInterval(() => cartographer.pollState(), 1000);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ALISA LAB — VolumetricsPlugin</title>
+    <style>body { margin: 0; overflow: hidden; background: #050508; font-family: monospace; color: white; }</style>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three-0.160.0/build/three.module.js",
+        "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+        "@alisa-engine/": "../js/alisa-engine/"
+      }
+    }
+    </script>
+</head>
+<body>
+    <div id="ui-overlay" style="position:absolute; top:20px; left:20px; z-index:100; pointer-events:none;">
+        <h2 style="margin:0; color:#00ffcc;">VolumetricsPlugin</h2>
+        <p style="margin:5px 0; color:#888;">Powered by <code>@alisa-engine/src/soma/plugins/VolumetricsPlugin.js</code></p>
+    </div>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+        import { VolumetricsPlugin } from '@alisa-engine/src/soma/plugins/VolumetricsPlugin.js';
+        
+        window.onload = () => {
+            const app = new AlisaRenderCore();
+            app.setupDefaultEnvironment();
+            
+            try {
+                const engine = new VolumetricsPlugin();
+                if(engine.init) engine.init(app.scene);
+                if(engine.setCore) engine.setCore(app);
+                
+                app.startLoop((dt) => {
+                    if(engine.update) engine.update(dt);
+                });
+                
+                window.__alisa_engine = engine;
+            } catch(e) {
+                console.error("ALISA Engine Launch Failed:", e);
+                document.getElementById('ui-overlay').innerHTML += `<p style='color:red'>Crash: ${e.message}</p>`;
+            }
+        };
+    </script>
+</body>
+</html>

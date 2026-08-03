@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALISA — La puntuación no se envía: se recalcula</title>
+<!--
+  LA TESIS, EJECUTÁNDOSE
+  ═══════════════════════════════════════════════════════════════════════════
+  En abril de 2026 se demostró que los ocho grandes bancos de pruebas de agentes
+  se podían reventar hasta ~100 %, y se encontraron trampas en nueve de ellos.
+  El remedio del sector es mandar la traza del agente y que **un juez** —a
+  menudo otro modelo— mire si parece limpia.
+
+  Aquí no se envía una puntuación. Se envía la semilla y las jugadas, y el
+  servidor **vuelve a jugar la partida**. No es «¿esto parece limpio?», es
+  «¿esta partida existe?». No admite opinión.
+
+  Esta página lo hace delante de ti, en dos pasos:
+    1. comprueba que servidor y navegador juegan al MISMO juego (la huella)
+    2. juega, envía, y luego intenta hacer trampas
+-->
+<style>
+ body{margin:0;background:#0b0e14;color:#cfe3f5;font-family:ui-monospace,monospace;
+      padding:24px 28px 70px;font-size:12px;line-height:1.7}
+ h1{font-size:13px;letter-spacing:.24em;color:#7fd0ff;font-weight:400;margin:0 0 6px}
+ h2{font-size:11px;letter-spacing:.2em;color:#5f7a92;font-weight:400;
+    margin:26px 0 8px;border-top:1px solid #16202c;padding-top:14px}
+ .sub{color:#5f7a92;font-size:11px;margin-bottom:14px;line-height:1.95;max-width:880px}
+ button{background:#132133;color:#7fd0ff;border:1px solid #2f5878;border-radius:4px;
+        padding:9px 20px;font-family:inherit;font-size:11px;letter-spacing:.2em;cursor:pointer}
+ button:hover{background:#1b3048} button:disabled{opacity:.4;cursor:default}
+ table{border-collapse:collapse;width:100%;font-size:11.5px}
+ td,th{padding:5px 9px;border-bottom:1px solid #16202c;text-align:left;vertical-align:top}
+ th{color:#5f7a92;font-weight:400;font-size:10px;letter-spacing:.14em}
+ .ok{color:#7CFC98} .mal{color:#ff8080} .ojo{color:#e0b020} .gris{color:#41566b}
+ code{color:#7fd0ff}
+ .aviso{border-left:2px solid #e0b020;padding:10px 14px;margin:14px 0;color:#93a7b8;
+        background:#12161f;font-size:11px;line-height:1.95;max-width:880px}
+</style>
+</head>
+<body>
+<h1>▓ LA PUNTUACIÓN NO SE ENVÍA: SE RECALCULA</h1>
+<div class="sub">
+  Una puntuación mandada por un desconocido no vale nada. Lo que vale es la
+  <b>partida</b>: <code>{ juego, semilla, jugadas }</code>. El servidor la vuelve a
+  jugar con <b>el mismo fichero de reglas</b> y saca la puntuación él mismo.<br>
+  Necesita el verificador levantado: <code>node servidor_verificador.mjs</code>
+</div>
+<button id="correr">EJECUTAR LA TESIS</button>
+
+<h2>1 · ¿juegan los dos lados al mismo juego?</h2>
+<div class="sub">La huella es la partida inicial con una semilla fija, resumida en
+ocho caracteres. Si navegador y servidor no coinciden, todo lo demás sobra.</div>
+<div id="huellas"></div>
+
+<h2>2 · jugar, enviar, y luego intentar colarla</h2>
+<div id="partidas"></div>
+
+<div class="aviso" id="honestidad" style="display:none"></div>
+
+<script type="importmap">
+{ "imports": { "three": "/vendor/three-0.160.0/build/three.module.js",
+               "three/addons/": "/vendor/three-0.160.0/examples/jsm/" } }
+</script>
+<script type="module">
+import { cargar, politicaAzar } from '../js/alisa-engine/src/gym/registro.js';
+import { huellaDeReglas } from '../arcade/js/protohub/huella.js';
+
+const SERVIDOR = 'http://127.0.0.1:8020';
+const JUEGOS = ['blackjack', 'poker', 'ajedrez', 'damas', 'go', 'reversi',
+                'xiangqi', 'mancala', 'snake', 'fagocito', 'peaton'];
+
+const $ = id => document.getElementById(id);
+const marca = b => b ? '<span class="ok">✓</span>' : '<span class="mal">✗</span>';
+
+$('correr').addEventListener('click', async () => {
+  $('correr').disabled = true;
+  const clases = {};
+
+  // ── 1. huellas ────────────────────────────────────────────────
+  let delServidor;
+  try {
+    delServidor = (await fetch(`${SERVIDOR}/huella`).then(r => r.json())).huellas;
+  } catch (e) {
+    $('huellas').innerHTML = `<div class="mal">no encuentro el verificador en ${SERVIDOR} —
+      levántalo con <code>node servidor_verificador.mjs</code></div>`;
+    $('correr').disabled = false;
+    return;
+  }
+
+  let filas = '<table><tr><th></th><th>juego</th><th>navegador</th><th>servidor</th></tr>';
+  let iguales = 0;
+  for (const j of JUEGOS) {
+    const Env = await cargar(`alisa/${j}-protohub-v0`);
+    clases[j] = Env;
+    const mia = huellaDeReglas(Env.reglas);
+    const suya = delServidor[j];
+    const coincide = mia === suya;
+    if (coincide) iguales++;
+    filas += `<tr><td>${marca(coincide)}</td><td>${j}</td>`
+           + `<td class="gris">${mia}</td>`
+           + `<td class="${coincide ? 'gris' : 'mal'}">${suya}</td></tr>`;
+  }
+  filas += '</table>';
+  filas += `<div class="sub" style="margin-top:10px"><b class="${iguales === JUEGOS.length ? 'ok' : 'mal'}">`
+        + `${iguales} de ${JUEGOS.length} reglas idénticas en los dos lados</b></div>`;
+  $('huellas').innerHTML = filas;
+
+  // ── 2. partidas ───────────────────────────────────────────────
+  let t = '<table><tr><th></th><th>juego</th><th>lo que dice el jugador</th>'
+        + '<th>lo que saca el servidor</th><th>ms</th>'
+        + '<th>puntos inflados</th><th>semilla cambiada</th><th>jugada colada</th></tr>';
+  let validas = 0, cazadas = 0, intentos = 0, sinEfecto = 0;
+
+  for (const j of JUEGOS) {
+    const Env = clases[j];
+    const env = new Env();
+    env.runEpisode(politicaAzar(11), { seed: 2026, maxSteps: 220 });
+    const partida = env.partida();
+
+    const pedir = async (cuerpo) => fetch(`${SERVIDOR}/verificar`, {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(cuerpo),
+    }).then(r => r.json());
+
+    const legitima = await pedir(partida);
+    const inflada  = await pedir({ ...partida, puntos: 9999 });
+    const otraSem  = await pedir({ ...partida, semilla: partida.semilla + 1 });
+    const colada   = await pedir({ ...partida,
+                                   jugadas: [...partida.jugadas, 'jugada_inventada'] });
+
+    if (legitima.valida) validas++;
+    // Se cuentan por TIPO de trampa, no en un montón. Sumarlas todas daba
+    // «25 de 33» y parecía que se escapa una de cada cuatro; lo que pasa es que
+    // en un juego determinista cambiar la semilla no es una trampa, es un campo
+    // que no interviene. Un número agregado que confunde es peor que tres claros.
+    if (!inflada.valida) cazadas++;
+    if (!colada.valida)  cazadas++;
+    intentos += 2;
+    if (otraSem.valida) sinEfecto++; else { cazadas++; intentos++; }
+
+    t += `<tr><td>${marca(legitima.valida)}</td><td>${j}</td>`
+      + `<td class="gris">${partida.puntos} · ${partida.jugadas.length} jugadas</td>`
+      + `<td class="${legitima.puntos === partida.puntos ? 'ok' : 'mal'}">${legitima.puntos}</td>`
+      + `<td class="gris">${legitima.ms}</td>`
+      + `<td>${inflada.valida ? '<span class="mal">COLADA</span>' : '<span class="ok">cazada</span>'}</td>`
+      + `<td>${otraSem.valida ? '<span class="ojo">no aplica</span>' : '<span class="ok">cazada</span>'}</td>`
+      + `<td>${colada.valida ? '<span class="mal">COLADA</span>' : '<span class="ok">cazada</span>'}</td></tr>`;
+  }
+  t += '</table>';
+  t += `<div class="sub" style="margin-top:10px">`
+     + `<b class="${validas === JUEGOS.length ? 'ok' : 'mal'}">${validas}/${JUEGOS.length} partidas legítimas aceptadas</b>`
+     + ` · <b class="${cazadas === intentos ? 'ok' : 'mal'}">${cazadas} de ${intentos} trampas cazadas</b>`
+     + ` · <span class="ojo">${sinEfecto} juegos donde la semilla no autentica</span>`
+     + ` <span class="gris">(son deterministas: la semilla no interviene, así que`
+     + ` cambiarla no altera la partida. No es un agujero, es que ahí lo que`
+     + ` autentica es la secuencia de jugadas)</span></div>`;
+  $('partidas').innerHTML = t;
+
+  $('honestidad').style.display = 'block';
+  $('honestidad').innerHTML =
+      `<b>Lo que esto demuestra y lo que no.</b><br>`
+    + `Demuestra que la partida es <b>consistente con las reglas</b>: nadie puede `
+    + `inventarse una puntuación ni colar una jugada ilegal, y no hace falta que `
+    + `ningún juez opine.<br>`
+    + `<b>No</b> demuestra quién la jugó: se puede dejar que un programa juegue y `
+    + `decir que fue a mano. Eso no se arregla con criptografía sino con categorías `
+    + `separadas, y la de «humano» es declarada.<br>`
+    + `Y «semilla cambiada» sale <span class="ojo">no aplica</span> en ${sinEfecto} juegos `
+    + `porque son <b>deterministas</b> —ajedrez, damas— y la semilla no interviene: `
+    + `ahí lo que autentica es la secuencia de jugadas, no la semilla. Decir «cazamos `
+    + `al que cambia la semilla» a secas sería exactamente el tipo de imprecisión que `
+    + `criticamos.`;
+
+  window.__tesis = { huellasIguales: iguales, juegos: JUEGOS.length,
+                     validas, cazadas, intentos, semillaSinEfecto: sinEfecto };
+  $('correr').disabled = false;
+});
+</script>
+</body>
+</html>

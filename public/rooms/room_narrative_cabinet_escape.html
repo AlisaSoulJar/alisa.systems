@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA Lab - Narrative Cabinet Escape</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #0b1016; font-family: monospace; color: #fff; }
+        #hud { position: absolute; top: 20px; left: 20px; z-index: 10; pointer-events: none; }
+        .hud-panel { background: rgba(0,20,40,0.8); border: 1px solid #7700ff; padding: 15px; margin-bottom: 10px; box-shadow: 0 0 10px rgba(119,0,255,0.2); }
+        h3 { margin: 0 0 10px 0; color: #7700ff; }
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 10px; height: 10px; border: 2px solid white; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 20; transition: border-color 0.2s, transform 0.2s; }
+        #crosshair.interactable { border-color: #00ffaa; transform: translate(-50%, -50%) scale(1.5); }
+        #narrativeBox { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); width: 80%; background: rgba(0,0,0,0.8); border: 1px solid #555; padding: 20px; text-align: center; font-size: 18px; line-height: 1.5; display: none; z-index: 15; text-shadow: 0 0 5px #000; }
+        .battery-ui { position: absolute; top: 20px; right: 20px; font-size: 24px; color: #34c759; text-shadow: 0 0 10px rgba(52,199,89, 0.5); }
+        .battery-ui.low { color: #ff3b30; animation: blink 1s infinite alternate; }
+        @keyframes blink { 0% { opacity: 1; } 100% { opacity: 0; } }
+    </style>
+</head>
+<body>
+    <div id="hud">
+        <div class="hud-panel">
+            <h3>🗄️ NARRATIVE ESCAPE ROOM</h3>
+            <div>[WASD] Move</div>
+            <div>[Mouse] Look</div>
+            <div>[LMB] Interact</div>
+            <div>[F] Toggle Flashlight</div>
+            <div id="status" style="color:#00ffaa; margin-top:10px;">Objective: Find the key and escape.</div>
+        </div>
+    </div>
+    <div id="crosshair"></div>
+    <div id="narrativeBox">It's too dark. I need to find my flashlight.</div>
+    <div class="battery-ui" id="batteryUI">[■■■■]</div>
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/three-0.160.0/build/three.module.js",
+            "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+            "@alisa-engine/": "../js/alisa-engine/src/"
+        }
+    }
+    </script>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+        import { AlisaRenderCore } from '@alisa-engine/soma/AlisaRenderCore.js';
+        import { CabinetEnvironmentFactory } from '@alisa-engine/world/factories/CabinetEnvironmentFactory.js';
+        import { BspPropSystem } from '@alisa-engine/world/BspPropSystem.js';
+        import { ProceduralPropsFactory } from '@alisa-engine/world/factories/ProceduralPropsFactory.js';
+        import { VolumetricsPlugin } from '@alisa-engine/soma/plugins/VolumetricsPlugin.js';
+        import { ECSWorld } from '@alisa-engine/world/OverworldECS.js';
+        import { EnergySystem, EnergyComponent } from '@alisa-engine/world/systems/EnergySystem.js';
+
+        // 1. Initialize core
+        const gfx = new AlisaRenderCore();
+        const { scene, camera, renderer } = gfx.setupDefaultEnvironment();
+        
+        // Remove default lights since it's an escape room
+        scene.children.forEach(c => {
+            if (c.isLight) scene.remove(c);
+            if (c.isMesh && c.geometry.type === 'PlaneGeometry') scene.remove(c); // Remove default floor
+        });
+        
+        // 2. Room Setup via Factory
+        const envFactory = new CabinetEnvironmentFactory(scene);
+        envFactory.buildRoom(true); // isDarkMode = true
+        
+        const partition = { planks:[{x:0.5, y:0.25, w:1, h:0.02}, {x:0.5, y:0.5, w:1, h:0.02}, {x:0.5, y:0.75, w:1, h:0.02}, {x:0.25, y:0.5, w:0.02, h:1}, {x:0.75, y:0.5, w:0.02, h:1}], leaves:[] };
+        // Generate random drawers
+        for(let x=0; x<4; x++) {
+            for(let y=0; y<4; y++) {
+                partition.leaves.push({x:0.125 + x*0.25, y:0.125 + y*0.25, w:0.25, h:0.25});
+            }
+        }
+        
+        const lockedDrawers = {};
+        lockedDrawers[15] = 'padlock'; // Top right has the exit switch
+        envFactory.build3DCabinet(partition, lockedDrawers);
+        
+        // Create BSP Shelf to the side
+        const shelfGroup = ProceduralPropsFactory.createBspShelf(2, 3, 0.8, 4, 42, { color: 0x4a3a2a, roughness: 0.9 });
+        shelfGroup.position.set(-6, 0, -2);
+        shelfGroup.rotation.y = Math.PI/4;
+        scene.add(shelfGroup);
+
+        // Flashlight object setup (to be picked up)
+        const flGeo = new THREE.CylinderGeometry(0.05, 0.05, 0.3, 16);
+        const flMat = new THREE.MeshStandardMaterial({color: 0x222222, metalness: 0.8});
+        envFactory.flashlightTemplate = new THREE.Mesh(flGeo, flMat);
+        envFactory.flashlightTemplate.rotation.x = Math.PI/2;
+        
+        const floorItems = envFactory.populateFloorItems(1, 1, 'box');
+        
+        // 3. Player / Controls
+        const controls = new PointerLockControls(camera, document.body);
+        camera.position.set(0, 1.6, 3);
+        
+        const blocker = document.createElement('div');
+        blocker.style.position = 'absolute'; blocker.style.width = '100%'; blocker.style.height = '100%';
+        blocker.style.backgroundColor = 'rgba(0,0,0,0.5)'; blocker.style.zIndex = '50';
+        blocker.style.display = 'flex'; blocker.style.justifyContent = 'center'; blocker.style.alignItems = 'center';
+        blocker.innerHTML = '<div style="color:white; font-size:24px;">Click to Play</div>';
+        document.body.appendChild(blocker);
+        
+        blocker.addEventListener('click', () => controls.lock());
+        controls.addEventListener('lock', () => blocker.style.display = 'none');
+        controls.addEventListener('unlock', () => blocker.style.display = 'flex');
+
+        // Player Light (Flashlight)
+        const flashLight = new THREE.SpotLight(0xffffff, 0, 15, Math.PI / 6, 0.5, 1);
+        flashLight.position.set(0, 0, 0);
+        flashLight.target.position.set(0, 0, -1);
+        const volumetricBeam = VolumetricsPlugin.createFlashlightBeam();
+        const flashDust = VolumetricsPlugin.createFlashlightDust(80);
+        
+        camera.add(flashLight);
+        camera.add(flashLight.target);
+        camera.add(volumetricBeam);
+        camera.add(flashDust);
+        scene.add(camera);
+        
+        // Register Volumetrics as a plugin
+        const volumetrics = new VolumetricsPlugin();
+        volumetrics.registerDust(flashDust);
+        gfx.registerPlugin(volumetrics);
+        
+        // Initial state
+        // Setup ECS
+        const ecs = new ECSWorld();
+        const energySys = new EnergySystem();
+        ecs.addSystem(energySys.update.bind(energySys), ['EnergyComponent']);
+        
+        const playerEntity = ecs.createEntity();
+        ecs.addComponent(playerEntity, 'EnergyComponent', EnergyComponent({
+            maxEnergy: 100, currentEnergy: 100, drainRate: 2.0, hasDevice: false, isOn: false
+        }));
+
+        let narrativeTimer = 0;
+        
+        flashLight.intensity = 0;
+        volumetricBeam.visible = false;
+        flashDust.visible = false;
+
+        const keys = { w:false, a:false, s:false, d:false };
+        window.addEventListener('keydown', e => { 
+            if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = true; 
+            if(e.key.toLowerCase() === 'f') toggleFlashlight();
+        });
+        window.addEventListener('keyup', e => { if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = false; });
+
+        function updateFlashlightVisuals(energy) {
+            flashLight.intensity = energy.isOn && energy.currentEnergy > 0 ? 1.5 : 0;
+            volumetricBeam.visible = energy.isOn && energy.currentEnergy > 0;
+            flashDust.visible = energy.isOn && energy.currentEnergy > 0;
+        }
+
+        function toggleFlashlight() {
+            const energy = ecs.getComponent(playerEntity, 'EnergyComponent');
+            if (energy && energy.hasDevice && energy.currentEnergy > 0) {
+                energy.isOn = !energy.isOn;
+                updateFlashlightVisuals(energy);
+            }
+        }
+
+        const narrativeBox = document.getElementById('narrativeBox');
+        function showNarrative(text, duration = 4) {
+            narrativeBox.innerText = text;
+            narrativeBox.style.display = 'block';
+            narrativeTimer = duration;
+        }
+
+        const interactObjs = [];
+        // Add drawers to interactable
+        envFactory.drawerMeshes.forEach(d => {
+            d.userData.type = 'drawer';
+            interactObjs.push(d);
+        });
+        
+        envFactory.cabinetGroup.children.forEach(c => {
+            if (c.userData && c.userData.isLock) interactObjs.push(c);
+        });
+
+        const raycaster = new THREE.Raycaster();
+        const center = new THREE.Vector2(0, 0);
+        const crosshair = document.getElementById('crosshair');
+        
+        window.addEventListener('mousedown', () => {
+            if (!controls.isLocked) return;
+            raycaster.setFromCamera(center, camera);
+            let intersects = raycaster.intersectObjects(interactObjs, false);
+            // Also check floor items
+            const itemIntersects = raycaster.intersectObjects(envFactory.floorItemsGroup.children, true);
+            
+            if (itemIntersects.length > 0 && itemIntersects[0].distance < 3) {
+                const item = itemIntersects[0].object;
+                if (item.userData && item.userData.iType === 'flashlight') {
+                    envFactory.floorItemsGroup.remove(item);
+                    const energy = ecs.getComponent(playerEntity, 'EnergyComponent');
+                    if (energy) energy.hasDevice = true;
+                    showNarrative("Picked up Flashlight. Press 'F' to toggle.");
+                    return;
+                }
+            }
+
+            if (intersects.length > 0 && intersects[0].distance < 3) {
+                const obj = intersects[0].object;
+                if (obj.userData.type === 'drawer') {
+                    if (obj.userData.closed) {
+                        envFactory.openDrawer3D(obj.userData.drawerIdx);
+                        showNarrative("The drawer was empty.");
+                    }
+                } else if (obj.userData.isLock) {
+                    if (obj.userData.drawerIdx === 15) {
+                        showNarrative("It's a padlock. I need to find the key first.");
+                    }
+                }
+            }
+        });
+
+        // 4. Game Loop
+        const vel = new THREE.Vector3();
+        const dir = new THREE.Vector3();
+
+        gfx.startLoop((dt) => {
+            ecs.update(dt);
+            const energy = ecs.getComponent(playerEntity, 'EnergyComponent');
+            
+            if (controls.isLocked) {
+                // Movement
+                dir.z = Number(keys.w) - Number(keys.s);
+                dir.x = Number(keys.d) - Number(keys.a);
+                dir.normalize();
+                
+                const speed = (energy && energy.hasDevice) ? 4.0 : 1.5;
+                if (keys.w || keys.s) controls.moveForward(dir.z * speed * dt);
+                if (keys.a || keys.d) controls.moveRight(dir.x * speed * dt);
+
+                // Interaction Crosshair update
+                raycaster.setFromCamera(center, camera);
+                const allInteractables = [...interactObjs, ...envFactory.floorItemsGroup.children];
+                let intersects = raycaster.intersectObjects(allInteractables, true);
+                if (intersects.length > 0 && intersects[0].distance < 3) {
+                    crosshair.classList.add('interactable');
+                } else {
+                    crosshair.classList.remove('interactable');
+                }
+
+                // Flashlight UI & Feedback synced from ECS
+                if (energy && energy.hasDevice) {
+                    if (energy.currentEnergy <= 0 && energy.isOn) {
+                        energy.isOn = false;
+                        updateFlashlightVisuals(energy);
+                        showNarrative("Battery died...");
+                    }
+                    
+                    const battUI = document.getElementById('batteryUI');
+                    if (energy.currentEnergy > 75) battUI.innerText = "[■■■■]";
+                    else if (energy.currentEnergy > 50) battUI.innerText = "[■■■_]";
+                    else if (energy.currentEnergy > 25) battUI.innerText = "[■■__]";
+                    else if (energy.currentEnergy > 0) battUI.innerText = "[■___]";
+                    
+                    if (energy.currentEnergy < 25 && energy.isOn) {
+                        battUI.classList.add('low');
+                        flashLight.intensity = 0.5 + Math.random(); // Flickering visual override
+                    } else {
+                        battUI.classList.remove('low');
+                    }
+                }
+            }
+
+            // Narrative Timer
+            if (narrativeTimer > 0) {
+                narrativeTimer -= dt;
+                if (narrativeTimer <= 0) narrativeBox.style.display = 'none';
+            }
+
+            // Sync visual effects (dust is now handled automatically by the VolumetricsPlugin inside gfx.startLoop)
+            if (energy && energy.isOn) {
+                // Flashlight logic already updated in updateFlashlightVisuals
+            }
+        });
+    </script>
+</body>
+</html>

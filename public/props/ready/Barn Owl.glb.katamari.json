@@ -1,0 +1,107 @@
+{
+    "source_file": "Barn Owl.glb",
+    "deduced_size_meters": 0.9,
+    "target_tier": "Tier -1: Small Fauna",
+    "target_scale_constraint": 0.6,
+    "voxel_grid": [
+        2,
+        4,
+        6
+    ],
+    "archetype": "ungulate",
+    "morphology": {
+        "size_m": 0.9,
+        "domain": "organic",
+        "cladistics": "ungulate",
+        "mobility": "digitigrade",
+        "mechanical_joints": 0
+    },
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0,
+    "ai_armature": [
+        {
+            "name": "Spine Core",
+            "parent": null,
+            "pos": [
+                0.0007981710067331461,
+                9.874679429418412,
+                -0.24846761260292083
+            ]
+        },
+        {
+            "name": "Neck Base",
+            "parent": null,
+            "pos": [
+                0.0007981710067331461,
+                10.915107865220872,
+                3.3493408676598353
+            ]
+        },
+        {
+            "name": "Snout",
+            "parent": null,
+            "pos": [
+                0.0007981710067331461,
+                11.955536301023333,
+                5.508025955817489
+            ]
+        },
+        {
+            "name": "Hindquarters",
+            "parent": null,
+            "pos": [
+                0.0007981710067331461,
+                9.874679429418412,
+                -4.565837788918229
+            ]
+        },
+        {
+            "name": "Leg FL",
+            "parent": null,
+            "pos": [
+                1.4938802175155221,
+                4.672537250406115,
+                3.3493408676598353
+            ]
+        },
+        {
+            "name": "Leg FR",
+            "parent": null,
+            "pos": [
+                -1.492283875502056,
+                4.672537250406115,
+                3.3493408676598353
+            ]
+        },
+        {
+            "name": "Leg RL",
+            "parent": null,
+            "pos": [
+                1.4938802175155221,
+                4.672537250406115,
+                -3.8462760928656774
+            ]
+        },
+        {
+            "name": "Leg RR",
+            "parent": null,
+            "pos": [
+                -1.492283875502056,
+                4.672537250406115,
+                -3.8462760928656774
+            ]
+        }
+    ],
+    "mesh_scale_multiplier": 0.05766855070019622,
+    "kinematics": {
+        "base_gait": "static",
+        "cycle_frequency_hz": 0.0,
+        "step_amplitude": 0.0,
+        "vertical_bounce": 0.0,
+        "spine_flexion": 0.0,
+        "idle_sway_hz": 0.0,
+        "locomotion_states": [
+            "idle"
+        ]
+    }
+}

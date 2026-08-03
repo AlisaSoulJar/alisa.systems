@@ -1,0 +1,783 @@
+{
+    "_doc": "Las matem\u00e1ticas del movimiento puro. Frecuencias, amplitudes, rangos de movimiento (ROM) y animaciones (gaits) estructurados por Arquetipo.",
+    "humanoid": {
+        "base_gait": "bipedal",
+        "cycle_frequency_hz": 1.2,
+        "step_amplitude": 0.4,
+        "vertical_bounce": 0.1,
+        "spine_flexion": 0.15,
+        "idle_sway_hz": 0.4,
+        "locomotion_states": [
+            "idle",
+            "walk",
+            "interact",
+            "stunned"
+        ],
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd T-Pose (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udec1 Rigging Activo (Respiraci\u00f3n)"
+            },
+            {
+                "val": "walk",
+                "label": "\ud83d\udeb6 Caminata B\u00edpeda (Procedural)"
+            }
+        ]
+    },
+    "canine": {
+        "base_gait": "quadrupedal",
+        "cycle_frequency_hz": 1.8,
+        "step_amplitude": 0.5,
+        "vertical_bounce": 0.2,
+        "spine_flexion": 0.3,
+        "idle_sway_hz": 0.8,
+        "locomotion_states": [
+            "idle",
+            "walk_real",
+            "trot",
+            "canter",
+            "gallop"
+        ],
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Rig (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udec1 Rigging Activo (Descanso)"
+            },
+            {
+                "val": "walk_real",
+                "label": "\ud83d\udc15 Paso Lento 4T (Walk)"
+            },
+            {
+                "val": "trot",
+                "label": "\ud83d\udc15 Trote Diagonal (Trot)"
+            },
+            {
+                "val": "canter",
+                "label": "\ud83d\udc15 Galope Corto (Canter)"
+            },
+            {
+                "val": "gallop",
+                "label": "\ud83d\udc15 Galope Tendido (Gallop)"
+            }
+        ]
+    },
+    "feline_house": {
+        "base_gait": "quadrupedal",
+        "cycle_frequency_hz": 2.0,
+        "step_amplitude": 0.45,
+        "vertical_bounce": 0.15,
+        "spine_flexion": 0.5,
+        "idle_sway_hz": 0.6,
+        "locomotion_states": [
+            "idle",
+            "walk_real",
+            "trot",
+            "canter",
+            "gallop"
+        ],
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Rig (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udec1 Rigging Activo (Descanso)"
+            },
+            {
+                "val": "walk_real",
+                "label": "\ud83d\udc08 Paso Sigiloso 4T (Walk)"
+            },
+            {
+                "val": "trot",
+                "label": "\ud83d\udc08 Trote El\u00e1stico (Trot)"
+            },
+            {
+                "val": "canter",
+                "label": "\ud83d\udc08 Galope Corto (Canter)"
+            },
+            {
+                "val": "gallop",
+                "label": "\ud83d\udc08 Bound Hiperflexible (Gallop)"
+            }
+        ]
+    },
+    "feline_medium": {
+        "base_gait": "quadrupedal",
+        "cycle_frequency_hz": 1.9,
+        "step_amplitude": 0.5,
+        "vertical_bounce": 0.2,
+        "spine_flexion": 0.45,
+        "idle_sway_hz": 0.7,
+        "locomotion_states": [
+            "idle",
+            "walk_real",
+            "trot",
+            "canter",
+            "gallop"
+        ],
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Rig (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udec1 Rigging Activo (Descanso)"
+            },
+            {
+                "val": "walk_real",
+                "label": "\ud83d\udc06 Paso Largo 4T (Walk)"
+            },
+            {
+                "val": "trot",
+                "label": "\ud83d\udc06 Trote Atl\u00e9tico (Trot)"
+            },
+            {
+                "val": "canter",
+                "label": "\ud83d\udc06 Galope Medio (Canter)"
+            },
+            {
+                "val": "gallop",
+                "label": "\ud83d\udc06 Zancada de Caza (Gallop)"
+            }
+        ]
+    },
+    "feline_big": {
+        "base_gait": "quadrupedal",
+        "cycle_frequency_hz": 1.5,
+        "step_amplitude": 0.55,
+        "vertical_bounce": 0.25,
+        "spine_flexion": 0.35,
+        "idle_sway_hz": 0.5,
+        "locomotion_states": [
+            "idle",
+            "walk_real",
+            "trot",
+            "canter",
+            "gallop"
+        ],
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Rig (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udec1 Rigging Activo (Descanso)"
+            },
+            {
+                "val": "walk_real",
+                "label": "\ud83d\udc05 Paso Pesado 4T (Walk)"
+            },
+            {
+                "val": "trot",
+                "label": "\ud83d\udc05 Trote Poderoso (Trot)"
+            },
+            {
+                "val": "canter",
+                "label": "\ud83d\udc05 Galope Pesado (Canter)"
+            },
+            {
+                "val": "gallop",
+                "label": "\ud83d\udc05 Carga Frontal (Gallop)"
+            }
+        ]
+    },
+    "equine": {
+        "base_gait": "quadrupedal",
+        "cycle_frequency_hz": 1.6,
+        "step_amplitude": 0.6,
+        "vertical_bounce": 0.15,
+        "spine_flexion": 0.1,
+        "idle_sway_hz": 0.3,
+        "locomotion_states": [
+            "idle",
+            "walk_real",
+            "trot",
+            "canter",
+            "gallop"
+        ],
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Rig (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udec1 Rigging Activo (Descanso)"
+            },
+            {
+                "val": "walk_real",
+                "label": "\ud83d\udc0e Paso Lateral 4T (Walk)"
+            },
+            {
+                "val": "trot",
+                "label": "\ud83d\udc0e Trote A\u00e9reo 2T (Trot)"
+            },
+            {
+                "val": "canter",
+                "label": "\ud83d\udc0e Medio Galope Asim\u00e9trico (Canter)"
+            },
+            {
+                "val": "gallop",
+                "label": "\ud83d\udc0e Galope Tendido Espinal (Gallop)"
+            }
+        ]
+    },
+    "arachnid": {
+        "base_gait": "octopedal",
+        "cycle_frequency_hz": 3.0,
+        "step_amplitude": 0.3,
+        "vertical_bounce": 0.05,
+        "spine_flexion": 0.0,
+        "idle_sway_hz": 0.2,
+        "locomotion_states": [
+            "idle",
+            "walk"
+        ],
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Rig (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udec1 Alerta (Suspensi\u00f3n)"
+            },
+            {
+                "val": "walk",
+                "label": "\ud83d\udd77\ufe0f Onda Metacr\u00f3nica Radial"
+            }
+        ]
+    },
+    "insecta": {
+        "base_gait": "hexapedal",
+        "cycle_frequency_hz": 4.0,
+        "step_amplitude": 0.25,
+        "vertical_bounce": 0.05,
+        "spine_flexion": 0.0,
+        "idle_sway_hz": 0.3,
+        "locomotion_states": [
+            "idle",
+            "walk",
+            "trot"
+        ],
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Rig (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udec1 Limpieza Antenas"
+            },
+            {
+                "val": "walk",
+                "label": "\ud83d\udc1c Tripod Gait (R\u00e1pido)"
+            },
+            {
+                "val": "trot",
+                "label": "\ud83d\udc1c Metachronal Wave (Lento)"
+            }
+        ]
+    },
+    "bird": {
+        "base_gait": "bipedal",
+        "cycle_frequency_hz": 2.5,
+        "step_amplitude": 0.3,
+        "vertical_bounce": 0.1,
+        "spine_flexion": 0.0,
+        "idle_sway_hz": 0.5,
+        "locomotion_states": [
+            "idle",
+            "walk"
+        ],
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Rig (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udeb6 Posado en Rama"
+            },
+            {
+                "val": "walk",
+                "label": "\ud83e\udd85 Vuelo Libre (Aleteo)"
+            }
+        ]
+    },
+    "serpentine": {
+        "base_gait": "slither",
+        "cycle_frequency_hz": 0.8,
+        "step_amplitude": 0.0,
+        "vertical_bounce": 0.0,
+        "spine_flexion": 1.0,
+        "idle_sway_hz": 0.3,
+        "locomotion_states": [
+            "idle",
+            "walk"
+        ],
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Rig (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udec1 Ojo Avizor"
+            },
+            {
+                "val": "walk",
+                "label": "\ud83d\udc0d Onda Viajera Horizontal"
+            }
+        ]
+    },
+    "piscine": {
+        "base_gait": "swim",
+        "cycle_frequency_hz": 1.5,
+        "step_amplitude": 0.0,
+        "vertical_bounce": 0.0,
+        "spine_flexion": 0.8,
+        "idle_sway_hz": 0.4,
+        "locomotion_states": [
+            "idle",
+            "walk"
+        ],
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Rig (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83d\udca7 Flotabilidad Est\u00e1tica"
+            },
+            {
+                "val": "walk",
+                "label": "\ud83d\udc1f Nado Curvo (Onda Viajera)"
+            }
+        ]
+    },
+    "wheeled": {
+        "base_gait": "wheels",
+        "cycle_frequency_hz": 0.0,
+        "step_amplitude": 0.0,
+        "vertical_bounce": 0.05,
+        "spine_flexion": 0.0,
+        "idle_sway_hz": 0.0,
+        "locomotion_states": [
+            "idle",
+            "walk",
+            "gallop"
+        ],
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Estacionado (Motor apagado)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udec1 Ralent\u00ed (Vibraci\u00f3n motor)"
+            },
+            {
+                "val": "walk",
+                "label": "\ud83d\ude97 Conducci\u00f3n (Crucero)"
+            },
+            {
+                "val": "gallop",
+                "label": "\ud83c\udfce\ufe0f Aceleraci\u00f3n m\u00e1xima"
+            }
+        ]
+    },
+    "hovering": {
+        "base_gait": "hover",
+        "cycle_frequency_hz": 0.0,
+        "step_amplitude": 0.0,
+        "vertical_bounce": 0.1,
+        "spine_flexion": 0.0,
+        "idle_sway_hz": 0.8,
+        "locomotion_states": [
+            "idle",
+            "walk"
+        ],
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Aterrizado / Apagado"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udec1 Sustentaci\u00f3n (Hover)"
+            },
+            {
+                "val": "walk",
+                "label": "\ud83d\udef8 Traslaci\u00f3n Vectorial"
+            }
+        ]
+    },
+    "prop_cube": {
+        "base_gait": "static",
+        "cycle_frequency_hz": 0.0,
+        "step_amplitude": 0.0,
+        "vertical_bounce": 0.0,
+        "spine_flexion": 0.0,
+        "idle_sway_hz": 0.0,
+        "locomotion_states": [
+            "idle"
+        ]
+    },
+    "theropod": {
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Rig (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udec1 Acecho (Balanceo Ra\u00edz)"
+            },
+            {
+                "val": "walk",
+                "label": "\ud83e\udd96 Marcha B\u00edpeda Retrasada"
+            }
+        ]
+    },
+    "cetacean": {
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Rig (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83d\udca7 Flotabilidad Est\u00e1tica"
+            },
+            {
+                "val": "walk",
+                "label": "\ud83d\udc0b Nado Vertical Impulsado"
+            }
+        ]
+    },
+    "primate": {
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Rig (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udec1 Respiraci\u00f3n en Reposo"
+            },
+            {
+                "val": "walk",
+                "label": "\ud83e\udd8d Knuckle-Walk Cuadrumano"
+            },
+            {
+                "val": "walk_real",
+                "label": "\ud83e\udd8d Marcha B\u00edpeda Erguida"
+            }
+        ]
+    },
+    "lacertilian": {
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Rig (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udec1 Acecho Solar"
+            },
+            {
+                "val": "walk",
+                "label": "\ud83e\udd8e Sprawling Walk (Lateral)"
+            }
+        ]
+    },
+    "pachyderm": {
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Rig (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udec1 Balanceo Est\u00e1tico"
+            },
+            {
+                "val": "walk_real",
+                "label": "\ud83d\udc18 Paso Columnar 4T"
+            },
+            {
+                "val": "walk",
+                "label": "\ud83d\udc18 Marcha Amble (P\u00e9ndulo)"
+            }
+        ]
+    },
+    "mustelid": {
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Rig (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udec1 Alerta Erguida"
+            },
+            {
+                "val": "walk",
+                "label": "\ud83e\udda6 Galope Ondulante (Bound)"
+            },
+            {
+                "val": "walk_real",
+                "label": "\ud83e\udda6 Trote Espinal"
+            }
+        ]
+    },
+    "crocodilian": {
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Rig (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udec1 Emboscada Sumergida"
+            },
+            {
+                "val": "walk",
+                "label": "\ud83d\udc0a High Walk Semi-Erguido"
+            },
+            {
+                "val": "walk_real",
+                "label": "\ud83d\udc0a Belly Crawl (Sprawl)"
+            }
+        ]
+    },
+    "anuran": {
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Rig (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udec1 Crouch Respiratorio"
+            },
+            {
+                "val": "walk",
+                "label": "\ud83d\udc38 Salto Bal\u00edstico"
+            }
+        ]
+    },
+    "chelonian": {
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Rig (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udec1 Retracci\u00f3n Craneal"
+            },
+            {
+                "val": "walk",
+                "label": "\ud83d\udc22 Marcha Tortuga (Lenta)"
+            }
+        ]
+    },
+    "lagomorph": {
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Rig (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udec1 Alerta / Limpieza"
+            },
+            {
+                "val": "walk",
+                "label": "\ud83d\udc07 Half-Bound (Salto)"
+            }
+        ]
+    },
+    "crustacean": {
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\uddcd Rig (Est\u00e1tico)"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udec1 Oteo de Pinzas"
+            },
+            {
+                "val": "walk",
+                "label": "\ud83e\udd80 Marcha Dec\u00e1podo"
+            }
+        ]
+    },
+    "_shared_biological_rom": {
+        "walk_real": {
+            "femur": 0.3,
+            "knee": 0.5,
+            "cannon": 0.3,
+            "hoof": -0.2,
+            "stanceHoof": 0.25
+        },
+        "trot": {
+            "femur": 0.4,
+            "knee": 0.7,
+            "cannon": 0.4,
+            "hoof": -0.3,
+            "stanceHoof": 0.35
+        },
+        "walk": {
+            "femur": 0.4,
+            "knee": 0.7,
+            "cannon": 0.4,
+            "hoof": -0.3,
+            "stanceHoof": 0.35
+        },
+        "canter": {
+            "femur": 0.5,
+            "knee": 0.85,
+            "cannon": 0.5,
+            "hoof": -0.35,
+            "stanceHoof": 0.4
+        },
+        "gallop": {
+            "femur": 0.6,
+            "knee": 1.0,
+            "cannon": 0.6,
+            "hoof": -0.4,
+            "stanceHoof": 0.45
+        }
+    },
+    "igor_surgical": {
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83e\udd16 Apagado"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83e\udd16 Plegado"
+            },
+            {
+                "val": "hover",
+                "label": "\ud83e\udd16 Escucha (Hover)"
+            },
+            {
+                "val": "weld",
+                "label": "\ud83e\udd16 Cirug\u00eda"
+            }
+        ],
+        "rom": {
+            "idle": {
+                "targetLeftX": -8.0,
+                "targetLeftY": -0.4,
+                "targetLeftZ": -20.0,
+                "targetRightX": 8.0,
+                "targetRightY": -0.4,
+                "targetRightZ": -20.0
+            },
+            "hover": {
+                "targetLeftX": -0.5,
+                "targetLeftY": 0.6,
+                "targetLeftZ": -21.5,
+                "targetRightX": 0.5,
+                "targetRightY": 0.6,
+                "targetRightZ": -18.5
+            }
+        }
+    },
+    "pygmalion_scanner": {
+        "gaits": [
+            {
+                "val": "none",
+                "label": "\ud83d\udd2d Apagado"
+            },
+            {
+                "val": "idle",
+                "label": "\ud83d\udd2d Retra\u00eddo en techo"
+            },
+            {
+                "val": "scan",
+                "label": "\ud83d\udd2d Extensi\u00f3n Tomogr\u00e1fica"
+            }
+        ],
+        "rom": {
+            "idle": {
+                "upperArmX": -2.8,
+                "elbowX": 2.8,
+                "lookY": 11
+            },
+            "scan": {
+                "upperArmSub": -0.8,
+                "upperArmMul": 0.5,
+                "elbowAdd": 1.6,
+                "elbowMul": 0.4
+            }
+        }
+    },
+    "plantigrade": {
+        "base_gait": "quadrupedal",
+        "cycle_frequency_hz": 1.0,
+        "step_amplitude": 0.3,
+        "vertical_bounce": 0.1,
+        "spine_flexion": 0.1,
+        "idle_sway_hz": 0.3,
+        "locomotion_states": [
+            "idle",
+            "walk"
+        ]
+    },
+    "ungulate": {
+        "base_gait": "bipedal",
+        "cycle_frequency_hz": 1.0,
+        "step_amplitude": 0.3,
+        "vertical_bounce": 0.1,
+        "spine_flexion": 0.1,
+        "idle_sway_hz": 0.3,
+        "locomotion_states": [
+            "idle",
+            "walk"
+        ]
+    },
+    "digitigrade": {
+        "base_gait": "bipedal",
+        "cycle_frequency_hz": 1.0,
+        "step_amplitude": 0.3,
+        "vertical_bounce": 0.1,
+        "spine_flexion": 0.1,
+        "idle_sway_hz": 0.3,
+        "locomotion_states": [
+            "idle",
+            "walk"
+        ]
+    },
+    "bipedal": {
+        "base_gait": "bipedal",
+        "cycle_frequency_hz": 1.0,
+        "step_amplitude": 0.3,
+        "vertical_bounce": 0.1,
+        "spine_flexion": 0.1,
+        "idle_sway_hz": 0.3,
+        "locomotion_states": [
+            "idle",
+            "walk"
+        ]
+    }
+}

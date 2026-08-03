@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>alisa-engine — el motor, en una página</title>
+<meta name="description" content="Motor 3D ligero con una puerta al gym: el mismo entorno se juega con una política numérica, con un LLM que razona en verbos, o con las manos. Sin backend.">
+<!--
+  ⚠️ POR QUÉ EXISTE ESTA PÁGINA
+  Una terminal de la sala apuntaba a `lab_heritage.html`, que el manifiesto
+  público EXCLUYE — o sea que el día de publicar habría llevado a un 404. Al
+  auditar las 24 estaciones salió eso y el 404 de la portada.
+  Y hacía falta algo más: si esto sale como código abierto, dentro de la sala
+  tiene que haber un sitio donde el motor se explique. Un escaparate que no dice
+  qué vende no es un escaparate.
+-->
+<style>
+  * { box-sizing:border-box; }
+  body { margin:0; background:#f4f6f8; color:#1a2230; padding:38px 26px 70px;
+         font-family:ui-monospace,'JetBrains Mono','Courier New',monospace; }
+  main { max-width:720px; margin:0 auto; }
+  h1 { font-size:15px; letter-spacing:.4em; margin:0 0 6px; font-weight:600; }
+  .sub { font-size:12px; color:#6b7684; line-height:2; margin:0 0 26px; }
+  h2 { font-size:11px; letter-spacing:.24em; color:#8b95a3; font-weight:400;
+       margin:30px 0 10px; border-top:1px solid #dde3ea; padding-top:16px; }
+  p, li { font-size:12px; line-height:2; }
+  table { width:100%; border-collapse:collapse; font-size:11.5px; margin:6px 0 4px; }
+  td, th { text-align:left; padding:7px 10px; border-bottom:1px solid #e4eaf0; vertical-align:top; }
+  th { color:#8b95a3; font-weight:400; font-size:10px; letter-spacing:.16em; }
+  code, pre { background:#e9eef3; border-radius:3px; }
+  code { padding:1px 5px; font-size:11px; }
+  pre { padding:13px 15px; overflow-x:auto; font-size:11px; line-height:1.85; }
+  b { font-weight:600; }
+  .pie { margin-top:34px; font-size:10.5px; color:#8b95a3; line-height:1.9; }
+  a { color:#1a2230; }
+</style>
+</head>
+<body>
+<main>
+  <h1>alisa-engine</h1>
+  <p class="sub">
+    Un motor 3D ligero con <b>una puerta al gym</b>: el mismo entorno se juega con
+    una política numérica, con un LLM que razona en verbos, o con las manos.<br>
+    Sin instalar nada, sin backend. Abres un <code>.html</code> y funciona.
+    Motor completo + three.js ≈ <b>2,2 MB</b>.
+  </p>
+
+  <h2>LAS TRES PUERTAS</h2>
+  <p>Cada entorno se puede jugar de tres maneras, y <b>las tres dan la misma
+     puntuación</b> — por eso son comparables entre sí.</p>
+  <table>
+    <tr><th>puerta</th><th>interfaz</th><th>para quién</th></tr>
+    <tr><td>numérica</td><td><code>reset(seed)</code> · <code>step(action)</code> · <code>getObservation()</code></td><td>políticas, RL</td></tr>
+    <tr><td>lenguaje</td><td><code>describe()</code> · <code>affordances()</code> · <code>stepVerb()</code></td><td>agentes LLM</td></tr>
+    <tr><td>humana</td><td>la sala lo renderiza y lo juegas</td><td>personas</td></tr>
+  </table>
+
+  <h2>LA PARTIDA ES LA PRUEBA</h2>
+  <p>Una puntuación enviada por un desconocido no vale nada. Lo que vale es la
+     <b>partida</b>: la semilla y la lista de jugadas. Con eso se vuelve a jugar
+     exactamente la misma partida y se comprueba el resultado.</p>
+<pre>{ "juego": "blackjack", "semilla": 4085196618,
+  "jugadas": ["hit","stand","deal","hit",…], "puntos": 2 }</pre>
+  <p>Un zapato entero de blackjack —54 manos— cabe en <b>1 KB</b> y se verifica en
+     <b>0,5 ms</b>. Y eso mismo <b>es el conjunto de datos</b>: como las reglas son
+     deterministas, esos bytes se expanden en la trayectoria completa de estados y
+     decisiones, que es la forma que pide el aprendizaje por imitación.</p>
+  <p>Funciona porque se cumplen dos condiciones, y las dos están medidas:
+     las reglas son <b>deterministas</b> (mulberry32, solo enteros de 32 bits ⇒
+     idéntico en cualquier máquina) y son <b>JavaScript puro</b> — cero
+     <code>document</code>, cero <code>THREE</code>. El mismo fichero que juega en
+     el navegador verifica en el servidor.</p>
+
+  <h2>QUÉ HAY DENTRO</h2>
+  <table>
+    <tr><td><code>soma/</code></td><td>render e IO — <code>AlisaRenderCore</code>, plugins, assets. El backend es enchufable: WebGL hoy, WebGPU si lo pides</td></tr>
+    <tr><td><code>psyche/</code></td><td>interfaz y decisión</td></tr>
+    <tr><td><code>world/</code></td><td>simulación — factories, systems, ECS</td></tr>
+    <tr><td><code>gym/</code></td><td>el contrato de las tres puertas + el puente a Python</td></tr>
+    <tr><td><code>arcade/js/protohub/</code></td><td>las reglas locales, el verificador y el dataset</td></tr>
+  </table>
+  <p><b>El núcleo es vainilla</b>: no habla con ninguna red por su cuenta, y hay un
+     guardián que lo comprueba (<code>check_vanilla_boundary.py</code>). Conectarse
+     a ALISA es una mejora, no un requisito.</p>
+
+  <h2>EMPEZAR</h2>
+<pre>git clone &lt;este-repo&gt;
+cd alisa-systems
+python servir.py            # sirve public/ SIN caché, en :8000</pre>
+  <p>Y abres <a href="index.html">la portada</a>. No hace falta <code>npm install</code>
+     para usarlo; solo para reconstruir el bundle.</p>
+  <p><b>Ojo con <code>python -m http.server</code></b>: no manda cabeceras de caché,
+     el navegador se queda con los <code>.js</code> viejos y te enseña una versión
+     distinta de la que tienes en disco. Cuesta horas de depuración fantasma.</p>
+
+  <h2>LO QUE FALTA, DICHO</h2>
+  <ul>
+    <li>El póker no tiene reglas en JavaScript todavía; en la sala está marcado <b>EN OBRAS</b>.</li>
+    <li>La verificación en el navegador demuestra <b>coherencia</b>, no honradez: quien juega manda en su navegador. La que da confianza es la del servidor, y todavía no está.</li>
+    <li>No hay ejecutor de pruebas automático: las pruebas son laboratorios que se abren y cantan el veredicto.</li>
+    <li>16 módulos de colonia siguen bajo <code>src/</code>. Funcionan aparte, pero ahí sobran.</li>
+  </ul>
+
+  <p class="pie">
+    MIT. Los nombres de los juegos son genéricos, de dominio público o propios:
+    las mecánicas no son registrables, los nombres comerciales sí.<br>
+    <a href="index.html">← portada</a> · <a href="lab.html">catálogo completo</a> ·
+    <a href="rooms/room_sala_del_huevo.html">la sala</a>
+  </p>
+</main>
+</body>
+</html>

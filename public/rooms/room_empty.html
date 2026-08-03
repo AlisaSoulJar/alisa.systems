@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Empty Blueprint (Node)</title>
+    <style>
+        body, html { margin: 0; padding: 0; overflow: hidden; font-family: 'JetBrains Mono', Courier, monospace; background: #000; color: #fff; }
+        canvas { display: block; }
+        
+        #hud-container { position: absolute; left: 20px; top: 20px; width: 350px; pointer-events: none; }
+        .win95-window { background: #E8ECEF; border-top: 2px solid #FFF; border-left: 2px solid #FFF; border-right: 2px solid #888; border-bottom: 2px solid #888; padding: 3px; font-family: 'Verdana', sans-serif; pointer-events: auto; }
+        .win95-title { background: #000080; color: #FFF; padding: 4px 8px; font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .win95-header-btn { background: #C0C7C8; border-top: 1px solid #FFF; border-left: 1px solid #FFF; border-right: 1px solid #888; border-bottom: 1px solid #888; width: 16px; height: 14px; display: flex; align-items: center; justify-content: center; color: #000; font-size: 10px; cursor: pointer; font-weight: bold; }
+        .win95-content { padding: 15px; font-size: 13px; color: #000; display: flex; flex-direction: column; gap: 10px; }
+        .btn-exit { background: #e1e1e1; padding: 6px 12px; border: 1px solid #999; border-radius: 4px; color: #0056b3; cursor: pointer; font-weight: bold; transition: all 0.2s; font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+        .btn-exit:hover { background: #d0d0d0; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+        .toggle-btn { position: absolute; bottom: 20px; right: 20px; z-index: 10; padding: 10px; background: rgba(0, 0, 0, 0.5); color: #fff; border: 1px solid #555; cursor: pointer; font-family: 'JetBrains Mono', Courier, monospace; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div id="hud-container">
+        <div class="win95-window">
+            <div class="win95-title">
+                <span>🔲 Empty Blueprint Node</span>
+                <div class="win95-header-btn">X</div>
+            </div>
+            <div class="win95-content">
+                <span style="color:#555;font-size:12px;">Sovereign Simulation Gateway</span>
+                <hr style="border: 0; border-top: 1px dashed rgba(0,0,0,0.1); margin: 5px 0;">
+                
+                <span style="color:#777;font-size:11px;font-style:italic;">This room contains no objects or controllers. Use it to fork new 3D architectures.</span>
+                
+                <a href="../lab.html" class="btn-exit" style="width: 100%; text-align: center; margin-top: 20px;">⮌ EXIT TO OVERWORLD</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Import map mapped to alisa-engine -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "/vendor/three-0.160.0/build/three.module.js",
+            "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+            "@alisa-engine/": "../js/alisa-engine/src/"
+        }
+    }
+    </script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { AlisaRenderCore } from '@alisa-engine/soma/AlisaRenderCore.js';
+
+        // ═══════════════════════════════════════════════════
+        //  MATRIX ROOM INITIALIZATION
+        // ═══════════════════════════════════════════════════
+        window.gfx = new AlisaRenderCore();
+        window.gfx.setupDefaultEnvironment({ bgColor: 0x1e293b });
+        let scene = window.gfx.scene;
+        let camera = window.gfx.camera;
+        window.scene = scene; // Compatibility
+        window.camera = camera;
+
+        // Custom HemiLight
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444455, 0.8);
+        scene.add(hemiLight);
+
+        // Day/Night switch
+        let isNight = false;
+        window.toggleLights = function() {
+            isNight = !isNight;
+            if(isNight) {
+                hemiLight.intensity = 0.1;
+                window.gfx.getDirectionalLight().intensity = 0.2;
+                scene.background.setHex(0x020205);
+            } else {
+                hemiLight.intensity = 0.8;
+                window.gfx.getDirectionalLight().intensity = 1.0;
+                scene.background.setHex(0x1e293b);
+            }
+        };
+
+        window.gfx.startLoop();
+    </script>
+
+</body>
+</html>

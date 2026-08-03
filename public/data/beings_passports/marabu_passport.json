@@ -1,0 +1,21 @@
+{
+    "name": "Marabu",
+    "role": "The Sage Stork",
+    "emoji": "🦩",
+    "type": "biological",
+    "skeleton": "bird_tall",
+    "model_path": "beast_stork.glb",
+    "scale": 1.3,
+    "kinematics": "bird_stalk",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "edge_tts",
+        "tier": 4,
+        "voice_id": "es-EC-AndreaNeural",
+        "rate": "-5%",
+        "pitch": "-3Hz",
+        "label": "Marabú - Andrea (ecuatoriana, sabia, calmada)"
+    },
+    "avatar_source": "colonial_census_2026-04-23"
+}

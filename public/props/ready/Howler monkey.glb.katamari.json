@@ -1,0 +1,53 @@
+{
+    "source_file": "Howler monkey.glb",
+    "deduced_size_meters": 0.7,
+    "target_tier": "Tier -1: Small Fauna",
+    "target_scale_constraint": 0.6,
+    "voxel_grid": [
+        2,
+        4,
+        6
+    ],
+    "archetype": "bipedal",
+    "morphology": {
+        "size_m": 0.7,
+        "domain": "organic",
+        "cladistics": "none",
+        "mobility": "bipedal",
+        "mechanical_joints": 0
+    },
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0,
+    "ai_armature": [
+        {
+            "name": "Core Anchor X",
+            "parent": null,
+            "pos": [
+                0.0,
+                5.334287166595459,
+                -2.261455535888672
+            ]
+        },
+        {
+            "name": "Base Mount",
+            "parent": null,
+            "pos": [
+                0.0,
+                0.5334287166595459,
+                -2.261455535888672
+            ]
+        }
+    ],
+    "mesh_scale_multiplier": 0.027122990808856655,
+    "kinematics": {
+        "base_gait": "static",
+        "cycle_frequency_hz": 0.0,
+        "step_amplitude": 0.0,
+        "vertical_bounce": 0.0,
+        "spine_flexion": 0.0,
+        "idle_sway_hz": 0.0,
+        "locomotion_states": [
+            "idle"
+        ]
+    }
+}

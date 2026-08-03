@@ -1,0 +1,130 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { overflow: hidden; background: #0b0e18; font-family: 'Segoe UI', sans-serif; color: #ccc; }
+
+/* ─── LAUNCH MODAL ─── */
+#scenarioModal {
+    position: fixed; inset: 0; z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,0,0,0.92);
+    transition: opacity 0.4s;
+}
+.modal-box {
+    background: #12141e; border: 2px solid #ff9500;
+    border-radius: 16px; padding: 35px 45px; width: 90%;
+    box-shadow: 0 0 80px rgba(255,149,0,0.12);
+}
+.modal-box.large {
+    max-width: 650px;
+}
+.modal-box.default {
+    max-width: 520px;
+}
+.modal-box h1 { text-align: center; color: #ff9500; font-size: 26px; margin-bottom: 20px; letter-spacing: 2px; }
+
+.scenario-cards { display: flex; gap: 14px; margin-bottom: 24px; }
+.scenario-card {
+    flex: 1; background: #1a1c29; border: 2px solid #2a2c39;
+    border-radius: 12px; padding: 15px 10px; cursor: pointer;
+    transition: all 0.25s ease; text-align: center;
+}
+.scenario-card:hover { border-color: #ff9500; transform: translateY(-4px); box-shadow: 0 8px 24px rgba(255,149,0,0.12); }
+.scenario-card.selected { border-color: #ff9500; background: #2a2211; box-shadow: 0 0 0 3px rgba(255,149,0,0.15); }
+.scenario-card .card-emoji { font-size: 32px; display: block; margin-bottom: 8px; }
+.scenario-card h3 { font-size: 13px; font-weight: 700; color: #eee; margin-bottom: 6px; }
+.scenario-card p { font-size: 11px; color: #888; line-height: 1.4; }
+
+.card-s1.selected { border-color: #34c759; background: #122a12; box-shadow: 0 0 0 2px rgba(52,199,89,0.3); }
+.card-s2.selected { border-color: #007aff; background: #121a2a; box-shadow: 0 0 0 2px rgba(0,122,255,0.3); }
+.card-s3.selected { border-color: #ff3b30; background: #2a1212; box-shadow: 0 0 0 2px rgba(255,59,48,0.3); }
+
+.config-section {
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+}
+.config-section h4 { color: #aa8844; margin-bottom: 12px; font-size: 13px; text-transform: uppercase; letter-spacing: 1px; }
+
+.slider-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.slider-row.expanded { flex: 1; min-width: 200px; }
+.slider-row label { min-width: 100px; font-size: 13px; color: #bbb; }
+.slider-row input[type=range] { flex: 1; accent-color: #ff9500; }
+.slider-row .val { min-width: 30px; text-align: right; color: #ff9500; font-weight: bold; }
+
+.styled-select {
+    flex: 1; background: #111; color: #ff9500; border: 1px solid #333; padding: 4px;
+}
+.styled-checkbox {
+    accent-color: #ff9500; transform: scale(1.2); margin-left: 5px;
+}
+
+#btnStart {
+    display: block; margin: 25px auto 0; padding: 14px 50px;
+    font-size: 18px; font-weight: bold; background: #ff9500; color: #000;
+    border: none; border-radius: 8px; cursor: pointer;
+    box-shadow: 0 4px 15px rgba(255,149,0,0.3); transition: all 0.2s; letter-spacing: 1px;
+}
+#btnStart:hover { background: #ffaa33; transform: scale(1.04); }
+
+/* ─── HUD ─── */
+#hud {
+    display: none; position: absolute; top: 10px; left: 10px;
+    font-family: 'JetBrains Mono', monospace; background: rgba(0,0,0,0.82);
+    padding: 12px 16px; border-radius: 8px; border: 1px solid #444;
+    pointer-events: none; font-size: 13px; line-height: 1.7; z-index: 10;
+}
+#hud .title { color: #ff9500; font-size: 15px; font-weight: bold; margin-bottom: 4px; }
+#hud .stat { color: #aaa; }
+#hud .val { color: #ff9500; font-weight: bold; }
+
+#hud .stat-mt { margin-top: 8px; }
+#valStatus { color: #8855ff; }
+
+#controlsHelp {
+    display: none; position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%);
+    font-family: monospace; background: rgba(0,0,0,0.7); color: #888;
+    padding: 8px 16px; border-radius: 8px; font-size: 11px; z-index: 10; pointer-events: none;
+}
+
+/* ─── Immersive Camcorder HUD ─── */
+.immersive-camcorder {
+    position: fixed; top: 18px; right: 24px; z-index: 999;
+    color: #fff; font-family: 'JetBrains Mono', monospace; font-weight: 700;
+    font-size: 26px; text-shadow: 0 0 10px rgba(0,0,0,0.8);
+    display: flex; flex-direction: column; align-items: flex-end;
+    pointer-events: none; letter-spacing: 2px;
+}
+#cam-batt { font-size: 24px; color: #fff; text-shadow: 0 0 8px rgba(255,255,255,0.6); font-weight: 400; letter-spacing: 4px; }
+#cam-batt.low-batt { color: #ff3b30; text-shadow: 0 0 10px rgba(255,59,48,0.8); animation: batBlink 0.5s infinite alternate; }
+@keyframes batBlink { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+/* ─── Utility ─── */
+.hud-hidden { display: none; }
+
+/* ─── AI Beliefs Row ─── */
+.beliefs-row { font-size: 11px; letter-spacing: 1px; }
+.beliefs-text { color: #666; }
+
+/* ─── Camcorder Buttons ─── */
+.cam-btn { pointer-events: auto; cursor: pointer; }
+.cam-flash-btn { font-size: 16px; margin-top: 5px; color: #ffeb3b; }
+.cam-global-btn { font-size: 12px; margin-top: 8px; color: #aaddff; }
+
+/* ─── Phase Banner (H&S port) ─── */
+#phase-banner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.5);
+    font-size: 64px;
+    font-weight: 900;
+    color: #ffcc00;
+    text-shadow: 0 0 30px rgba(255,200,0,0.6), 0 4px 20px rgba(0,0,0,0.8);
+    letter-spacing: 6px;
+    z-index: 150;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap;
+}
+#phase-banner.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}

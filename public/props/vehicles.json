@@ -1,0 +1,122 @@
+{
+    "car_sedan_classic": [
+        {"shape": "box", "size": [1.6, 0.4, 2.8], "pos": [0, 0.35, 0.5], "radius": 0.05, "type": "vehicle"},
+        {"shape": "box", "size": [1.6, 0.4, 1.0], "pos": [0, 0.35, -1.4], "radius": 0.05, "type": "container", "name": "Maletero del Sedán"},
+        {"shape": "wedge", "size": [1.2, 1.5, 0.5], "pos": [0, 0.8, -0.2], "type": "glass"},
+        {"shape": "box", "size": [1.5, 0.1, 0.5], "pos": [0, 0.05, 1.0], "type": "cyan_neo"},
+        {"shape": "box", "size": [1.5, 0.1, 0.5], "pos": [0, 0.05, -1.0], "type": "cyan_neo"}
+    ],
+    "van_cargo": [
+        {"shape": "box", "size": [1.8, 0.5, 4.2], "pos": [0, 0.4, 0], "radius": 0.05, "type": "vehicle"},
+        {"shape": "wedge", "size": [1.6, 1.8, 1.4], "pos": [0, 1.35, -0.5], "type": "container", "name": "Carga de Furgoneta"},
+        {"shape": "box", "size": [1.6, 0.8, 1.0], "pos": [0, 1.05, 1.6], "radius": 0.02, "type": "glass"},
+        {"shape": "box", "size": [1.7, 0.1, 0.5], "pos": [0, 0.05, 1.2], "type": "cyan_neo"},
+        {"shape": "box", "size": [1.7, 0.1, 0.5], "pos": [0, 0.05, -1.2], "type": "cyan_neo"}
+    ],
+    "police_cruiser": [
+        {"shape": "box", "size": [1.6, 0.4, 2.8], "pos": [0, 0.35, 0.5], "radius": 0.05, "type": "dark"},
+        {"shape": "box", "size": [1.6, 0.4, 1.0], "pos": [0, 0.35, -1.4], "radius": 0.05, "type": "container", "name": "Armero Maletero Policial"},
+        {"shape": "wedge", "size": [1.2, 1.5, 0.5], "pos": [0, 0.8, -0.2], "type": "dark"},
+        {"shape": "box", "size": [0.8, 0.1, 0.2], "pos": [-0.4, 1.1, -0.2], "type": "cyan_neo"},
+        {"shape": "box", "size": [0.8, 0.1, 0.2], "pos": [0.4, 1.1, -0.2], "type": "red_neo"},
+        {"shape": "box", "size": [1.5, 0.1, 0.5], "pos": [0, 0.05, 1.0], "type": "cyan_neo"},
+        {"shape": "box", "size": [1.5, 0.1, 0.5], "pos": [0, 0.05, -1.0], "type": "cyan_neo"}
+    ],
+    "hover_bike": [
+        {"shape": "wedge", "size": [0.5, 0.7, 0.4], "pos": [0, 0.5, 0], "type": "vehicle"},
+        {"shape": "box", "size": [0.8, 0.2, 0.6], "pos": [0, 0.7, -0.6], "radius": 0.04, "type": "base"},
+        {"shape": "cylinder", "size": [0.1, 0.1, 0.8, 8], "pos": [0, 0.8, 0.8], "rot": [0, 0, 1.5708], "type": "dark"},
+        {"shape": "box", "size": [0.2, 0.1, 0.6], "pos": [-0.4, 0.4, -0.8], "type": "cyan_neo"},
+        {"shape": "box", "size": [0.2, 0.1, 0.6], "pos": [0.4, 0.4, -0.8], "type": "cyan_neo"}
+    ],
+    "airship_zeppelin_ad": [
+        {"shape": "cylinder", "size": [4.0, 4.0, 16.0, 16], "pos": [0, 10.0, 0], "rot": [1.5708, 0, 0], "type": "base"},
+        {"shape": "sphere", "size": [4.0, 16, 8, 0, 6.2832, 0, 1.5708], "pos": [0, 10.0, 8.0], "rot": [1.5708, 0, 0], "type": "base"},
+        {"shape": "sphere", "size": [4.0, 16, 8, 0, 6.2832, 0, 1.5708], "pos": [0, 10.0, -8.0], "rot": [-1.5708, 0, 0], "type": "base"},
+        {"shape": "wedge", "size": [1.6, 2.2, 1.5], "pos": [0, 7.5, 0], "type": "dark"},
+        {"shape": "box", "size": [3.0, 2.5, 0.2], "pos": [4.2, 10.0, 0], "rot": [0, 0, -0.1], "type": "l3_screen", "name": "Anuncio de Fideos"},
+        {"shape": "box", "size": [3.0, 2.5, 0.2], "pos": [-4.2, 10.0, 0], "rot": [0, 0, 0.1], "type": "l3_screen", "name": "Holograma Corporativo"}
+    ],
+    "freighter_cargo_hauler": [
+        {"shape": "wedge", "size": [5.0, 6.0, 2.0], "pos": [0, 8.0, 0], "type": "vehicle"},
+        {"shape": "sphere", "size": [2.0, 8, 4, 0, 6.2832, 0, 1.5708], "pos": [0, 10.5, 8.5], "type": "glass"},
+        {"shape": "box", "size": [4.0, 3.0, 3.0], "pos": [0, 9.5, 8.5], "type": "base"},
+        {"shape": "box", "size": [1.8, 1.8, 4.0], "pos": [-1.5, 6.0, 0], "type": "container", "name": "Contenedor L"},
+        {"shape": "box", "size": [1.8, 1.8, 4.0], "pos": [1.5, 6.0, 0], "type": "container", "name": "Contenedor R"},
+        {"shape": "wedge", "size": [1.5, 2.0, 2.0], "pos": [-4.0, 8.0, -8.0], "type": "dark"},
+        {"shape": "wedge", "size": [1.5, 2.0, 2.0], "pos": [4.0, 8.0, -8.0], "type": "dark"},
+        {"shape": "sphere", "size": [1.0, 8, 4, 0, 6.2832, 0, 1.5708], "pos": [-4.0, 8.0, -10.5], "rot": [1.5708, 0, 0], "type": "cyan_neo"},
+        {"shape": "sphere", "size": [1.0, 8, 4, 0, 6.2832, 0, 1.5708], "pos": [4.0, 8.0, -10.5], "rot": [1.5708, 0, 0], "type": "cyan_neo"}
+    ],
+    "grappler_ship_outlaw": [
+        {"shape": "cylinder", "size": [2.0, 1.0, 12.0, 8], "pos": [0, 5.0, 0], "rot": [1.5708, 0, 0], "type": "vehicle"},
+        {"shape": "box", "size": [8.0, 0.4, 4.0], "pos": [0, 5.5, -3.0], "type": "dark"},
+        {"shape": "box", "size": [0.8, 3.0, 0.8], "pos": [2.0, 5.0, 4.0], "rot": [0, 0, 0.5], "type": "base"},
+        {"shape": "box", "size": [0.8, 3.0, 0.8], "pos": [-2.0, 5.0, 4.0], "rot": [0, 0, -0.5], "type": "base"},
+        {"shape": "sphere", "size": [1.5, 12, 6], "pos": [0, 5.0, -6.5], "type": "cyan_neo"}
+    ],
+    "intercept_fighter_x": [
+        {"shape": "wedge", "size": [0.8, 1.2, 0.6], "pos": [0, 3.0, 0], "type": "dark"},
+        {"shape": "box", "size": [6.0, 0.2, 2.0], "pos": [0, 3.0, -1.0], "radius": 0.04, "type": "vehicle"},
+        {"shape": "box", "size": [6.0, 0.2, 2.0], "pos": [0, 3.0, -1.0], "rot": [0, 0, 0.4], "radius": 0.04, "type": "base"},
+        {"shape": "sphere", "size": [0.5, 8, 4, 0, 6.2832, 0, 1.5708], "pos": [0, 3.5, 0.5], "type": "glass"}
+    ],
+    "hover_skiff_barge": [
+        {"shape": "wedge", "size": [3.5, 4.0, 0.4], "pos": [0, 1.0, 0], "type": "base"},
+        {"shape": "box", "size": [1.5, 2.0, 1.5], "pos": [0, 2.2, 3.0], "type": "dark"},
+        {"shape": "sphere", "size": [0.4, 8, 4, 0, 6.2832, 0, 1.5708], "pos": [-2.2, 0.8, -3.0], "rot": [0, 0, 1.5708], "type": "cyan_neo"},
+        {"shape": "sphere", "size": [0.4, 8, 4, 0, 6.2832, 0, 1.5708], "pos": [2.2, 0.8, -3.0], "rot": [0, 0, 1.5708], "type": "cyan_neo"},
+        {"shape": "sphere", "size": [0.4, 8, 4, 0, 6.2832, 0, 1.5708], "pos": [0, 0.8, 4.2], "rot": [1.5708, 0, 0], "type": "cyan_neo"}
+    ],
+    "av_dropship_blocky": [
+        {"shape": "wedge", "size": [2.5, 3.0, 1.5], "pos": [0, 4.0, 0], "type": "vehicle"},
+        {"shape": "sphere", "size": [1.2, 8, 4, 0, 6.2832, 0, 1.5708], "pos": [0, 4.75, 2.0], "type": "glass"},
+        {"shape": "box", "size": [5.0, 0.3, 2.5], "pos": [0, 4.5, -1.0], "type": "dark"},
+        {"shape": "sphere", "size": [0.6, 8, 4, 0, 6.2832, 0, 1.5708], "pos": [-2.5, 4.3, -1.0], "type": "cyan_neo"},
+        {"shape": "sphere", "size": [0.6, 8, 4, 0, 6.2832, 0, 1.5708], "pos": [2.5, 4.3, -1.0], "type": "cyan_neo"}
+    ],
+    "food_truck_mobile": [
+        {"shape": "box", "size": [1.8, 0.5, 4.2], "pos": [0, 0.4, 0], "radius": 0.05, "type": "vehicle"},
+        {"shape": "wedge", "size": [1.6, 1.8, 1.4], "pos": [0, 1.35, -0.8], "type": "base"},
+        {"shape": "sphere", "size": [0.9, 8, 4, 0, 6.2832, 0, 1.5708], "pos": [0, 1.05, 2.1], "rot": [1.5708, 0, 0], "type": "glass"},
+        {"shape": "box", "size": [1.6, 1.0, 0.1], "pos": [0, 1.8, -2.0], "rot": [-0.3, 0, 0], "type": "l3_screen", "name": "Menú Street Food"},
+        {"shape": "box", "size": [1.7, 0.1, 0.5], "pos": [0, 0.05, 1.2], "type": "cyan_neo"},
+        {"shape": "box", "size": [1.7, 0.1, 0.5], "pos": [0, 0.05, -1.2], "type": "cyan_neo"}
+    ],
+    "cybertruck_angular": [
+        {"shape": "wedge", "size": [1.6, 0.6, 3.2], "pos": [0, 0.45, 0], "type": "vehicle"},
+        {"shape": "wedge", "size": [1.5, 0.4, 1.6], "pos": [0, 0.95, -0.2], "type": "glass"},
+        {"shape": "box", "size": [1.6, 0.4, 1.5], "pos": [0, 0.45, -1.5], "radius": 0.05, "type": "container", "name": "Caja del Cybertruck"},
+        {"shape": "box", "size": [1.5, 0.1, 0.5], "pos": [0, 0.05, 0.8], "type": "cyan_neo"},
+        {"shape": "box", "size": [1.5, 0.1, 0.5], "pos": [0, 0.05, -1.2], "type": "cyan_neo"}
+    ],
+    "arwing_starfighter": [
+        {"shape": "wedge", "size": [0.4, 1.0, 4.0], "pos": [0, 3.0, 0], "type": "dark"},
+        {"shape": "sphere", "size": [0.5, 8, 4, 0, 6.2832, 0, 1.5708], "pos": [0, 3.0, 2.0], "rot": [1.5708, 0, 0], "type": "dark"},
+        {"shape": "sphere", "size": [0.4, 8, 4, 0, 6.2832, 0, 1.5708], "pos": [0, 3.3, 0.5], "type": "glass"},
+        {"shape": "wedge", "size": [0.3, 0.8, 0.2], "pos": [-2.0, 3.0, -0.5], "type": "vehicle"},
+        {"shape": "wedge", "size": [0.3, 0.8, 0.2], "pos": [2.0, 3.0, -0.5], "type": "vehicle"},
+        {"shape": "box", "size": [4.5, 0.08, 1.5], "pos": [0, 3.0, -1.0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.3, 0.15, 0.6, 6], "pos": [0, 3.0, -2.3], "rot": [1.5708, 0, 0], "type": "cyan_neo"}
+    ],
+    "sailboat_zelda": [
+        {"shape": "sphere", "size": [1.5, 8, 4, 0, 6.2832, 0, 1.5708], "pos": [0, 0.8, 0], "rot": [3.1416, 0, 0], "type": "base"},
+        {"shape": "box", "size": [2.5, 0.1, 1.0], "pos": [0, 0.8, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.06, 0.06, 2.5, 4], "pos": [0, 2.05, 0], "type": "dark"},
+        {"shape": "box", "size": [1.2, 2.0, 0.02], "pos": [0.3, 2.0, 0], "rot": [0, 0.1, 0], "type": "base"},
+        {"shape": "box", "size": [0.6, 0.5, 0.5], "pos": [0, 0.5, 0.5], "type": "container", "name": "Cofre del Barco"}
+    ],
+    "mech_walker_bipedal": [
+        {"shape": "wedge", "size": [1.5, 2.0, 1.8], "pos": [0, 3.5, 0], "type": "dark"},
+        {"shape": "sphere", "size": [0.8, 8, 4, 0, 6.2832, 0, 1.5708], "pos": [0, 4.5, 0.5], "type": "glass"},
+        {"shape": "wedge", "size": [0.4, 0.6, 2.0], "pos": [-1.0, 1.5, 0.3], "type": "dark"},
+        {"shape": "wedge", "size": [0.4, 0.6, 2.0], "pos": [1.0, 1.5, 0.3], "type": "dark"},
+        {"shape": "cylinder", "size": [0.2, 0.2, 0.15, 6], "pos": [-1.0, 2.5, 0.3], "type": "base"},
+        {"shape": "cylinder", "size": [0.2, 0.2, 0.15, 6], "pos": [1.0, 2.5, 0.3], "type": "base"},
+        {"shape": "box", "size": [0.6, 0.2, 1.0], "pos": [-1.0, 0.1, 0.3], "radius": 0.04, "type": "dark"},
+        {"shape": "box", "size": [0.6, 0.2, 1.0], "pos": [1.0, 0.1, 0.3], "radius": 0.04, "type": "dark"},
+        {"shape": "box", "size": [0.5, 0.06, 0.9], "pos": [-1.0, 0.02, 0.3], "type": "cyan_neo"},
+        {"shape": "box", "size": [0.5, 0.06, 0.9], "pos": [1.0, 0.02, 0.3], "type": "cyan_neo"},
+        {"shape": "cylinder", "size": [0.15, 0.1, 1.5, 6], "pos": [1.2, 4.0, -0.5], "rot": [0, 0, 0.1], "type": "base"}
+    ]
+}

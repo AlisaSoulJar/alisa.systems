@@ -1,0 +1,8 @@
+--- ALISA STIGMERGIC TEST ---
+Simulating 5 seconds of ecological interactions...
+Fishes alive: 25
+Hunters alive: 4
+Sharks alive: 2
+Active Pheromone Voxels: 51
+Sample voxel:  { x: -16, y: 44, z: -56, food: 7, danger: 0 }
+SUCCESS: Pheromone Grid is alive and emitting biological gradients!

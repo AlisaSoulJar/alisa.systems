@@ -1,0 +1,2359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA — Corporate Building (13 Rue del Percebe)</title>
+    <link rel="stylesheet" href="corporate_building.css" />
+</head>
+<body>
+
+<div id="scenarioModal">
+    <div class="modal-box large">
+        <h1>ðŸ¢ CORPORATE BUILDING</h1>
+        <div class="scenario-cards">
+            <div class="scenario-card card-s1 selected" onclick="selectStage(1)">
+                <span class="card-emoji">ðŸ¢ðŸ”¦</span>
+                <h3>Stage 1 · Night Shift</h3>
+                <p>Find the raccoon in the corridors and landings. Dark mode stealth.</p>
+            </div>
+            <div class="scenario-card card-s2" onclick="selectStage(2)">
+                <span class="card-emoji">ðŸ—„ï¸ðŸ”¦â“</span>
+                <h3>Stage 2 · Prop Hunt</h3>
+                <p>The raccoon hides INSIDE boxes and cabinets! Search hiding spots.</p>
+            </div>
+            <div class="scenario-card card-s3" onclick="selectStage(3)">
+                <span class="card-emoji">ðŸ‘»ðŸ—„ï¸ðŸ’€</span>
+                <h3>Stage 3 · Survival Horror</h3>
+                <p>The Phantom patrols the dark. Hide, survive, and catch the raccoon.</p>
+            </div>
+        </div>
+        <div class="config-section">
+            <div class="slider-row expanded">
+                <label>ðŸ’ª Level</label>
+                <input type="range" min="1" max="10" value="1" id="mLevel" aria-label="Level" oninput="this.nextElementSibling.textContent=this.value">
+                <span class="val">1</span>
+            </div>
+            <div class="slider-row expanded">
+                <label>ðŸ—ï¸ Floors</label>
+                <input type="range" min="3" max="12" value="6" id="sFloors" aria-label="Floors" oninput="this.nextElementSibling.textContent=this.value">
+                <span class="val">6</span>
+            </div>
+            <div class="slider-row expanded">
+                <label>ðŸŽ® Mode</label>
+                <select id="mMode" aria-label="Mode" class="styled-select">
+                    <option value="human">ðŸŽ® Human</option>
+                    <option value="ai" selected>ðŸ¤– AI Agent</option>
+                </select>
+            </div>
+            <div class="slider-row expanded">
+                <label>ðŸ’¡ Lights Out</label>
+                <input type="checkbox" id="mLightsOut" aria-label="Lights Out" class="styled-checkbox" checked onchange="toggleGlobalLights(this.checked)">
+            </div>
+        </div>
+        <button id="btnStart" onclick="startSimulation()">▶ ENTER BUILDING</button>
+    </div>
+</div>
+
+<div id="hud">
+    <div class="title" id="hudTitle">ðŸ¢ Corporate Building</div>
+    <div class="stat">Floor: <span id="valFloor" class="val">1</span> / <span id="valTotalFloors" class="val">6</span></div>
+    <div class="stat">Mode: <span id="valMode" class="val">Walking</span></div>
+    <div class="stat stat-mt">Searches: <span id="valSearches" class="val">0</span></div>
+    <div class="stat">Status: <span id="valStatus" class="val">Hunting</span></div>
+    <div class="stat stat-mt hud-hidden" id="aiPhaseRow">ðŸ§  AI: <span id="valAIPhase" class="val">PICK_FLOOR</span></div>
+    <div class="stat hud-hidden beliefs-row" id="aiBeliefsRow">
+        <span id="valBeliefs" class="beliefs-text"></span>
+    </div>
+</div>
+
+<!-- ─── Immersive Camcorder HUD ─── -->
+<div id="camcorder" class="immersive-camcorder hud-hidden">
+    <div id="cam-batt">[■■■■]</div>
+    <div id="cam-flash" class="cam-btn cam-flash-btn" onclick="toggleFlashlight()">ðŸ”¦ ON (F)</div>
+    <div id="cam-global" class="cam-btn cam-global-btn" onclick="manuallyToggleGlobalLights()">ðŸ‘ï¸ GLOBAL LIGHTS</div>
+</div>
+
+<div id="controlsHelp">
+    A/D: Walk · W/S: Stairs · E: Call Elev · SPACE: Elev action · F: Flashlight · T: Minutero (Switch)
+</div>
+
+<div id="phase-banner"></div>
+
+<!-- ─── Mode Badges (4 vertientes) ─── -->
+<div id="mode-badges" style="display:none;">
+    <span class="mode-badge" id="badge-game">ðŸŽ® Minigame</span>
+    <span class="mode-badge" id="badge-world" style="display:none">ðŸŒ Overworld</span>
+    <span class="mode-badge" id="badge-ml">ðŸ§  ML Training</span>
+</div>
+
+<!-- ─── AI Machine Data Layer ─── -->
+<div id="ai-data-layer" style="display:none;" aria-hidden="true"></div>
+
+<!-- Import map mapped to alisa-engine -->
+<!-- ⚠️ `@alisa-engine/` apunta a `../js/…`, no a `./js/…`. Este fichero se
+     recuperó del backup, donde vivía un nivel más arriba; desde /games/ la
+     ruta relativa resolvía a /games/js/… y daba 404 en TODOS los imports.
+     El comentario va AQUÍ FUERA: un import map es JSON estricto, y meterlo
+     dentro como una clave "//" hace que el navegador avise en cada carga. -->
+<script type="importmap">
+{
+    "imports": {
+        "three": "/vendor/three-0.160.0/build/three.module.js",
+        "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+        "@alisa-engine/": "../js/alisa-engine/"
+    }
+}
+</script>
+
+<!-- El SDK vive en la raíz de public, no junto a este fichero. -->
+<script src="../alisa_sim_sdk.js"></script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { ProceduralBuildingFactory } from '@alisa-engine/src/world/factories/ProceduralBuildingFactory.js';
+import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+import { CorporateSeekerSystem } from '@alisa-engine/src/world/systems/CorporateSeekerSystem.js';
+import { ECSWorld } from '@alisa-engine/src/world/OverworldECS.js';
+import { EnergySystem, EnergyComponent } from '@alisa-engine/src/world/systems/EnergySystem.js';
+import { TimedRelaySystem, TimedRelayComponent } from '@alisa-engine/src/world/systems/TimedRelaySystem.js';
+import { ElevatorSystem, ElevatorComponent } from '@alisa-engine/src/world/systems/ElevatorSystem.js';
+import { LinearNavAgentSystem, LinearNavAgentComponent } from '@alisa-engine/src/world/systems/LinearNavAgentSystem.js';
+import { RLGymBridge } from '@alisa-engine/src/world/systems/RLGymBridge.js';
+import { CinematicPipelinePlugin } from '@alisa-engine/src/soma/plugins/CinematicPipelinePlugin.js';
+// `AssetManager` se usaba aquí como GLOBAL, de cuando el motor eran scripts
+// sueltos: `new ProceduralBuildingFactory(scene, AssetManager)` reventaba con
+// «AssetManager is not defined» y el edificio se quedaba sin puertas ni props.
+import { AssetManager } from '@alisa-engine/src/soma/AssetManager.js';
+window.THREE = Object.assign({}, THREE, { OrbitControls, GLTFLoader });
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  13, RUE DEL PERCEBE — Cross-Section Diorama Building
+//
+//  Camera: fixed orthographic side view, all floors visible.
+//  Each floor = corridor with doors, stair-portal, elevator.
+//  Movement: left/right on corridor, portals for vertical.
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+// ─── Scene Setup ───
+const gfx = new AlisaRenderCore({
+    clearColor: 0x000000,
+    cameraPosition: new THREE.Vector3(0, 15, 55),
+    autoRender: true
+});
+const scene = gfx.scene;
+const cam = gfx.camera;
+const renderer = gfx.renderer;
+const controls = gfx.controls;
+
+controls.target.set(0, 15, -10);
+controls.maxPolarAngle = Math.PI / 2 + 0.1; // allow slight under-view
+
+// Remove defaults from AlisaRenderCore
+gfx.scene.children = gfx.scene.children.filter(c => !(c instanceof THREE.Light));
+
+// Lighting for the diorama (Starts off in Lights Out mode)
+const ambient = new THREE.AmbientLight(0xffffff, 0.0);
+scene.add(ambient);
+
+const dirLight = new THREE.DirectionalLight(0xffeedd, 0.0);
+dirLight.position.set(20, 40, 50);
+scene.add(dirLight);
+
+const clock = new THREE.Clock();
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  CONFIGURATION
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+let totalFloors = 6;
+let doorsPerFloor = 2;
+let simulationRunning = false;
+let simTime = 0;
+let autoPlaying = false;
+let autoInterval = null;
+let simSpeedMultiplier = 1.0;
+let episodeDataset = [];
+window.alisaDataset = window.alisaDataset || []; // Global export
+
+let currentStage = 1;
+let gameLevel = 1;
+
+window.selectStage = function(s) {
+    currentStage = s;
+    document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('selected'));
+    document.querySelector(`.card-s${s}`).classList.add('selected');
+};
+
+
+// ─── GAME STATE (Hide & Seek / Cabinet Logic) ───
+let targetFloor = -1;
+let targetDoor = -1;       // Door index (Stage 1) or hidespot index (Stage 2)
+let searches = 0;
+let gameStatus = 'Hunting'; // 'Hunting', 'Found'
+let doorChecks = []; // Array of tracking data for SDK
+let raccoonHideSpot = -1;  // Stage 2: index into floors[f].hidingSpots where raccoon hid
+let hideSpotSearchCount = 0;
+let stalkerTimer = 0;
+
+// ─── CÓRTEX TIBURÓN — Headless Engine Instance ───
+const seekerAI = new CorporateSeekerSystem();
+
+// ─── ECS ENGINE ───
+window.ecs = new ECSWorld();
+window.energySys = new EnergySystem();
+window.timedRelaySys = new TimedRelaySystem();
+window.elevatorSys = new ElevatorSystem();
+
+window.ecs.addSystem(window.energySys.update.bind(window.energySys), ['EnergyComponent']);
+window.ecs.addSystem(window.timedRelaySys.update.bind(window.timedRelaySys), ['TimedRelayComponent']);
+window.ecs.addSystem(window.elevatorSys.update.bind(window.elevatorSys), ['ElevatorComponent']);
+window.navAgentSys = new LinearNavAgentSystem();
+window.ecs.addSystem(window.navAgentSys.update.bind(window.navAgentSys), ['LinearNavAgentComponent']);
+
+window.playerEntity = window.ecs.createEntity();
+window.ecs.addComponent(window.playerEntity, 'LinearNavAgentComponent', LinearNavAgentComponent({
+    speed: 12.0,
+    arrivalRadius: 0.1,
+    onArrived: (entityId) => {
+        if (typeof seekerAI !== 'undefined' && seekerAI.pendingAction && typeof _aiAction === 'function') {
+            _aiAction(seekerAI.pendingAction);
+            seekerAI.consumeIntents();
+        }
+    }
+}));
+window.ecs.addComponent(window.playerEntity, 'EnergyComponent', EnergyComponent({
+    maxEnergy: 100, currentEnergy: 100, drainRate: 1.5, hasDevice: true, isOn: true
+}));
+
+// Minutero Lights ECS Array
+window.floorLightEntities = [];
+for (let i = 0; i <= 10; i++) {
+    let e = window.ecs.createEntity();
+    window.ecs.addComponent(e, 'TimedRelayComponent', TimedRelayComponent({
+        timeRemaining: 0, maxTime: 13.0, isActive: false
+    }));
+    window.floorLightEntities.push(e);
+}
+
+window.elevatorEntity = window.ecs.createEntity();
+window.ecs.addComponent(window.elevatorEntity, 'ElevatorComponent', ElevatorComponent({
+    currentFloor: 1, targetFloor: -1, y: 0, moving: false, speed: 12.0, floorHeight: 5.0, // FL_H
+    onFloorReached: (entityId, currentFloor) => {
+        if (typeof elevator !== 'undefined') {
+            elevator.moving = false;
+            elevator.currentFloor = currentFloor;
+            if (elevator.indicator && elevator.indicator.material) {
+                elevator.indicator.material.color.setHex(0x33aa33);
+            }
+        }
+        if (typeof seeker !== 'undefined' && seeker.inElevator && seeker.targetElevFloor === currentFloor) {
+            seeker.floor = currentFloor;
+            seeker.y = (seeker.floor - 1) * 5.0; // FL_H
+            seeker.mode = 'walking';
+            seeker.inElevator = false;
+            if (seeker.mesh) seeker.mesh.visible = true;
+            if (typeof autoPlaying !== 'undefined' && autoPlaying && typeof seekerAI !== 'undefined') seekerAI.emit('exit_elevator');
+        }
+        if (typeof rabbit !== 'undefined' && rabbit.inElevator && rabbit.targetElevFloor === currentFloor) {
+            rabbit.floor = currentFloor;
+            rabbit.y = (rabbit.floor - 1) * 5.0;
+            rabbit.mode = 'walking';
+            rabbit.inElevator = false;
+            if (rabbit.mesh) rabbit.mesh.visible = true;
+        }
+    }
+}));
+
+
+const FL_H = 5.0;       // floor height
+const CORRIDOR_W = 28;  // corridor width (visible slice)
+const CORRIDOR_DEPTH = 5.0; // The depth of the 3D Aquarium
+const BUILDING_DEPTH = 30.0; // Total volume (corridor + hidden empty room space)
+const WALL_D = 0.5;     // wall depth (structural thickness)
+
+// Palette: warm interior colors per floor
+const FLOOR_COLORS = [
+    0xd4a574, 0xb8c4a0, 0xa8b8d0, 0xd0b8a8, 0xc4d0b8, 0xb0a8c4,
+    0xd0c4a0, 0xa8c4b8, 0xc4a8b0, 0xd0b0a8, 0xb8d0c4, 0xa8b0d0
+];
+const DOOR_COLORS = [0x885522, 0x664411, 0x553311, 0x774422, 0x886633, 0x665533];
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  BUILDING DATA
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+let buildingGroup = null;
+let floors = []; // Array of floor data
+
+// Elevator state
+let elevator = {
+    cabin: null,
+    currentFloor: 1, // Start on the first floor, not the basement
+    targetFloor: -1,
+    y: 0,
+    moving: false,
+    speed: 12.0,
+    indicator: null
+};
+
+// Cinematic State
+let gamePhase = 'cinematic'; // 'cinematic' | 'seeking'
+let jumpscareState = { active: false, phase: 'flicker', hallucinTimer: 0 };
+let phaseTimer = 0;
+let cinematicPhase = 'walking_to_elevator'; 
+let cinematicTimer = 0;
+let cinematicTargetDoor = -1;
+
+let isLightsOut = true;
+let floorLights = [];      // One PointLight per floor
+let floorLightTimers = []; // Timers matching floorLights
+let batteryPickups = [];   // Array of meshes
+
+let flashLightOn = true;
+let hudEnergy = 100.0;
+let flashLight = null;
+let volumetricBeam = null;
+
+window.toggleFlashlight = function() {
+    if (hudEnergy <= 0 && !flashLightOn) return;
+    flashLightOn = !flashLightOn;
+    document.getElementById('cam-flash').innerText = flashLightOn ? 'ðŸ”¦ ON (F)' : 'ðŸ”¦ OFF (F)';
+};
+
+window.toggleGlobalLights = function(checked) {
+    isLightsOut = checked;
+    // We assume `ambient`, `dirLight`, and `scene` exist.
+    if (typeof ambient !== 'undefined') ambient.intensity = isLightsOut ? 0.000 : 0.5;
+    if (typeof dirLight !== 'undefined') dirLight.intensity = isLightsOut ? 0.000 : 0.7;
+    
+    if (typeof scene !== 'undefined') {
+        scene.background = new THREE.Color(isLightsOut ? 0x000000 : 0x0b0e18);
+    }
+    
+    for (let f = 0; f < floorLightTimers.length; f++) {
+        floorLightTimers[f] = isLightsOut ? 0 : 9999;
+    }
+};
+
+window.manuallyToggleGlobalLights = function() {
+    let cb = document.getElementById('mLightsOut');
+    if (cb) {
+        cb.checked = !cb.checked;
+        toggleGlobalLights(cb.checked);
+    }
+};
+
+window.toggleMinutero = function(f) {
+    if (f >= 0 && f < floorLightTimers.length && isLightsOut) {
+        floorLightTimers[f] = 13.0; // 13 seconds of light
+        if (window.floorLightEntities && window.floorLightEntities[f]) {
+            let comp = window.ecs.getComponent(window.floorLightEntities[f], 'TimedRelayComponent');
+            if (comp) {
+                comp.isActive = true;
+                comp.timeRemaining = 13.0;
+            }
+        }
+    }
+};
+
+// Raccoon (Hiding Target)
+let rabbit = {
+    mesh: null,
+    visualModel: null,
+    floor: 0,
+    x: -18,
+    z: 0,
+    speed: 6.0,
+    mode: 'walking',
+    inElevator: false,
+    animPhase: 0
+};
+
+// Seeker
+let seeker = {
+    mesh: null,
+    visualModel: null,
+    floor: 0,
+    x: 0,            // horizontal position on corridor
+    z: 0,            // depth position in aquarium
+    speed: 12.0,
+    mode: 'walking',  // walking | elevator
+    animPhase: 0,
+    inElevator: false
+};
+
+// ─── MODEL LOADING STATE ───
+let modelsLoaded = 0;
+
+
+const loader = new GLTFLoader();
+
+/**
+ * Las rutas de los modelos eran relativas ('props/models/X.glb'), y una ruta
+ * relativa se resuelve contra LA PÁGINA, no contra el motor. Desde /games/
+ * apuntaban a /games/props/models/ y daban 404: el mapache, el buscador, el
+ * fantasma y el crypto bro no aparecían — el juego se quedaba sin personajes y
+ * sin decir por qué.
+ *
+ * Es exactamente la enfermedad para la que existe `AssetResolver` en el motor.
+ * Aquí basta con anclar a la raíz del sitio: esta página carga sus GLB a mano,
+ * no a través de `AssetManager`.
+ */
+const modelo = (nombre) => `/props/models/${nombre}`;
+
+let rabbitModel = null;
+let rabbitMixer = null, rabbitAnimMap = {}, rabbitCurAnim = '';
+
+let seekerModel = null;
+let seekerMixer = null, seekerAnimMap = {}, seekerCurAnim = '';
+
+let phantomModel = null;
+let phantomMixer = null, phantomAnimMap = {}, phantomCurAnim = '';
+
+function mapAnimations(gltf, mixer) {
+    const animMap = {};
+    if (!gltf.animations || gltf.animations.length === 0) return animMap;
+    gltf.animations.forEach((clip, idx) => {
+        const name = clip.name.toLowerCase();
+        const action = mixer.clipAction(clip);
+        if (name.includes('idle') || name.includes('stand')) animMap.idle = action;
+        else if (name.includes('run') || name.includes('sprint') || name.includes('walk')) animMap.run = action;
+        animMap['anim_' + idx] = action;
+    });
+    if (!animMap.idle) animMap.idle = animMap.anim_0 || animMap.run;
+    if (!animMap.run)  animMap.run  = animMap.anim_0 || animMap.idle;
+    return animMap;
+}
+
+function playCharAnim(mixer, animMap, curAnimRef, stateName) {
+    if (!mixer || !animMap) return curAnimRef;
+    if (curAnimRef === stateName) return curAnimRef;
+    if (curAnimRef && animMap[curAnimRef]) animMap[curAnimRef].fadeOut(0.3);
+    if (animMap[stateName]) { 
+        animMap[stateName].reset().fadeIn(0.3).play(); 
+        return stateName; 
+    }
+    if (animMap['anim_0']) {
+        animMap['anim_0'].reset().fadeIn(0.3).play();
+        return 'anim_0';
+    }
+    return curAnimRef;
+}
+
+function loadModels(callback) {
+    modelsLoaded = 0;
+    // Raccoon
+    loader.load(modelo('Raccoon.glb'), (gltf) => {
+        rabbitModel = gltf.scene;
+        rabbitModel.scale.set(0.4, 0.4, 0.4); // Double size
+        rabbitModel.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+        if (gltf.animations && gltf.animations.length > 0) {
+            rabbitMixer = new THREE.AnimationMixer(rabbitModel);
+            rabbitAnimMap = mapAnimations(gltf, rabbitMixer);
+            playCharAnim(rabbitMixer, rabbitAnimMap, '', 'idle');
+            rabbitCurAnim = 'idle';
+        }
+        modelsLoaded++;
+        if (modelsLoaded >= 3 && callback) callback();
+    }, undefined, () => {
+        const geo = new THREE.SphereGeometry(0.3);
+        const mat = new THREE.MeshStandardMaterial({ color: 0x999999 });
+        rabbitModel = new THREE.Mesh(geo, mat);
+        modelsLoaded++;
+        if (modelsLoaded >= 3 && callback) callback();
+    });
+
+    // Seeker
+    loader.load(modelo('Generic Male.glb'), (gltf) => {
+        seekerModel = gltf.scene;
+        const targetScale = 1.815; // 0.605 * 3 as requested
+        seekerModel.scale.set(targetScale, targetScale, targetScale);
+        seekerModel.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+        if (gltf.animations && gltf.animations.length > 0) {
+            seekerMixer = new THREE.AnimationMixer(seekerModel);
+            seekerAnimMap = mapAnimations(gltf, seekerMixer);
+            playCharAnim(seekerMixer, seekerAnimMap, '', 'idle');
+            seekerCurAnim = 'idle';
+        }
+        modelsLoaded++;
+        if (modelsLoaded >= 3 && callback) callback();
+    }, undefined, () => {
+        loader.load(modelo('Crypto Bro.glb'), (gltf2) => {
+            seekerModel = gltf2.scene;
+            seekerModel.scale.set(0.45, 0.45, 0.45);
+            seekerModel.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+            modelsLoaded++;
+            if (modelsLoaded >= 3 && callback) callback();
+        }, undefined, () => {
+             const geo = new THREE.BoxGeometry(0.5, 1.0, 0.5);
+             const mat = new THREE.MeshStandardMaterial({ color: 0xff8844 });
+             seekerModel = new THREE.Mesh(geo, mat);
+             modelsLoaded++;
+             if (modelsLoaded >= 3 && callback) callback();
+        });
+    });
+
+    // Ghost
+    loader.load(modelo('Ghost.glb'), (gltf) => {
+        phantomModel = gltf.scene;
+        phantomModel.scale.set(0.7, 0.7, 0.7);
+        phantomModel.traverse(c => { if (c.isMesh) { c.castShadow = true; } });
+        
+        if (gltf.animations && gltf.animations.length > 0) {
+            phantomMixer = new THREE.AnimationMixer(phantomModel);
+            phantomAnimMap = mapAnimations(gltf, phantomMixer);
+            phantomCurAnim = playCharAnim(phantomMixer, phantomAnimMap, '', 'run');
+        }
+        modelsLoaded++;
+        if (modelsLoaded >= 3 && callback) callback();
+    }, undefined, (err) => {
+        console.warn('Ghost.glb failed to load. Jumpscare will use a simple geometry.');
+        const gGeo = new THREE.CylinderGeometry(0.3, 0.5, 1.5, 8);
+        const gMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x444444 });
+        phantomModel = new THREE.Mesh(gGeo, gMat);
+        modelsLoaded++;
+        if (modelsLoaded >= 3 && callback) callback();
+    });
+}
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  EPISODE RESET (used by auto-restart after FOUND!)
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+function resetEpisode() {
+    // Reset all hidingSpot search states across all floors
+    for (let fi = 0; fi < floors.length; fi++) {
+        if (floors[fi].hidingSpots) {
+            floors[fi].hidingSpots.forEach(sp => {
+                sp.isSearched = false;
+                sp.hasRaccoon = false;
+                if (sp.mesh && sp.mesh.material) {
+                    sp.mesh.material.color.setHex(sp.originalColor || 0x554433);
+                    sp.mesh.material.transparent = false;
+                    sp.mesh.material.opacity = 1.0;
+                    sp.mesh.material.emissiveIntensity = 0.0;
+                }
+            });
+        }
+    }
+    raccoonHideSpot = -1;
+    hideSpotSearchCount = 0;
+
+    // All floors are valid targets — doors OR hidingSpots
+    let possibleFloors = [];
+    for (let i = 0; i < floors.length; i++) {
+        if (floors[i].doors.length > 0 || (floors[i].hidingSpots && floors[i].hidingSpots.length > 0)) {
+            possibleFloors.push(i);
+        }
+    }
+    if (possibleFloors.length === 0) possibleFloors = [1]; // fallback
+
+    let fMatch = possibleFloors[Math.floor(Math.random() * possibleFloors.length)];
+    let fd = floors[fMatch];
+    targetFloor = fMatch;
+
+    if (currentStage >= 2 && fd.hidingSpots && fd.hidingSpots.length > 0) {
+        // Stage 2: raccoon hides INSIDE a hidespot (furniture)
+        raccoonHideSpot = Math.floor(Math.random() * fd.hidingSpots.length);
+        fd.hidingSpots[raccoonHideSpot].hasRaccoon = true;
+        targetDoor = raccoonHideSpot; // reuse for cinematic walk target
+    } else if (fd.doors.length > 0) {
+        targetDoor = Math.floor(Math.random() * fd.doors.length);
+    } else if (fd.hidingSpots && fd.hidingSpots.length > 0) {
+        // Stage 1 legacy (doorless floors): MUST hide in a box!
+        raccoonHideSpot = Math.floor(Math.random() * fd.hidingSpots.length);
+        fd.hidingSpots[raccoonHideSpot].hasRaccoon = true;
+        targetDoor = raccoonHideSpot;
+    } else {
+        targetDoor = 0;
+    }
+    
+    searches = 0;
+    gameStatus = 'Hunting';
+    gamePhase = 'seeking';
+    doorChecks = [];
+    episodeDataset = [];
+    hudEnergy = 100.0;
+    flashLightOn = true;
+    
+    // Reset seeker to Planta Baja (floor 1)
+    if (seeker.mesh) {
+        seeker.floor = 1;
+        seeker.x = 0;
+        seeker.z = 0;
+        seeker.mode = 'walking';
+        seeker.inElevator = false;
+        seeker.mesh.visible = true;
+    }
+    
+    // Reset AI state (Engine)
+    if (seekerAI) {
+        let mappedFloors = [];
+        for(let i=0; i<floors.length; i++) { 
+            let fd = floors[i]; 
+            if(!fd) { mappedFloors.push(null); continue; }
+            mappedFloors.push({ doorsCount: fd.doors ? fd.doors.length : 0, spotsCount: fd.hidingSpots ? fd.hidingSpots.length : 0 });
+        }
+        seekerAI.reset(floors.length, mappedFloors);
+    }
+    
+    // Respawn batteries
+    spawnBatteries();
+}
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  MODAL
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// window.onload is intentionally removed so the modal demands ENTER BUILDING always
+
+window.startSimulation = function() {
+    document.getElementById('scenarioModal').style.opacity = '0';
+    setTimeout(() => { document.getElementById('scenarioModal').style.display = 'none'; }, 400);
+
+    totalFloors = parseInt(document.getElementById('sFloors').value);
+    doorsPerFloor = 1; // One main door per habitable floor in current architecture
+    document.getElementById('valTotalFloors').innerText = totalFloors;
+    
+    const mode = document.getElementById('mMode').value;
+    autoPlaying = (mode === 'ai');
+    document.getElementById('valMode').innerText = autoPlaying ? 'AI Brain (Hunting)' : 'Walking';
+
+    isLightsOut = document.getElementById('mLightsOut').checked;
+    
+    document.getElementById('hud').style.display = 'block';
+    document.getElementById('controlsHelp').style.display = 'block';
+    document.getElementById('hudTitle').innerText = 'ðŸ¢ LOADING...';
+
+    // Load GLB models FIRST, then build the world
+    loadModels(() => {
+        document.getElementById('hudTitle').innerText = 'ðŸ¢ Corporate Building';
+        
+    window.factory = new ProceduralBuildingFactory(scene, AssetManager);
+    // ⚠️ Antes: actory.build(...) directo. Eso SE SALTA uildAll(), que es
+    // quien aplica la corrección de luz — y sin ella la escena sale NEGRA.
+    //
+    // Está documentado en ESTUDIO_ProceduralBuildingFactory.md §4: las
+    // intensidades de esta fábrica (0.2–0.4) se calibraron para el modelo de luz
+    // ANTIGUO de three (pre-r155). Desde r155 las luces son físicamente
+    // correctas y una PointLight de 0.4 con 17 m de alcance es invisible. Esta
+    // página carga three 0.160.
+    //
+    // No era la cámara, ni la niebla, ni mi composer: era esto. El edificio se
+    // construía entero y no se veía nada.
+    window.factory.buildAll({
+        floors: totalFloors, doorsPerFloor, lightsOut: isLightsOut,
+        stage: currentStage, rabbitModel, seeker, rabbit,
+        camera: cam, controls,
+        lightScale: 20,   // ×20: el rango que recomienda el estudio para r155+
+        // characters por defecto es FALSE en buildAll, pensado para labs de gym
+        // que solo quieren el edificio. Esta página SÍ los quiere: carga sus
+        // cuatro GLB (mapache, buscador, fantasma, crypto bro) y además el haz
+        // volumétrico de la linterna se construye en esa misma rama. Sin esto la
+        // linterna alumbra pero no se ve el cono, que es medio juego.
+        characters: true,
+    });
+    
+    // Restore global references that the rest of the HTML expects
+    buildingGroup = window.factory.buildingGroup;
+    floors = window.factory.floors;
+    floorLights = window.factory.floorLights;
+    floorLightTimers = window.factory.floorLightTimers;
+    batteryPickups = window.factory.batteryPickups;
+    DOOR_ZONE_START = window.factory.DOOR_ZONE_START;
+    DOOR_ZONE_W = window.factory.DOOR_ZONE_W;
+
+        simulationRunning = true;
+        
+        if (autoPlaying) {
+            document.getElementById('aiPhaseRow').classList.remove('hud-hidden');
+            document.getElementById('aiBeliefsRow').classList.remove('hud-hidden');
+            if (seekerAI) seekerAI.reset(totalFloors + 1, Array(totalFloors + 1).fill({doorsCount:1, spotsCount:1})); // Basic initialization before correct one in buildBuilding / resetEpisode
+            if (!autoInterval) {
+                autoInterval = null; // Synchronous aiTickTimer used instead
+            }
+        }
+    });
+};
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  BUILD THE DIORAMA
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+let DOOR_ZONE_START = 0;
+let DOOR_ZONE_W = 0;
+
+function _makeArrow(char, color) {
+    const c = document.createElement('canvas');
+    c.width = 32; c.height = 32;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#' + color.toString(16).padStart(6, '0');
+    ctx.font = 'bold 26px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(char, 16, 16);
+    const tex = new THREE.CanvasTexture(c);
+    return new THREE.Mesh(
+        new THREE.PlaneGeometry(1.0, 1.0),
+        new THREE.MeshBasicMaterial({ map: tex, transparent: true })
+    );
+}
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  INPUT
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+const keys = {};
+const keysJustPressed = {};
+document.addEventListener('keydown', e => {
+    const k = e.key.toLowerCase();
+    
+    if (k === 't' && isLightsOut && gamePhase === 'seeking') {
+        toggleMinutero(seeker.floor);
+    }
+    
+    if (!keys[k]) keysJustPressed[k] = true;
+    keys[k] = true;
+});
+document.addEventListener('keyup', e => { keys[e.key.toLowerCase()] = false; });
+
+function consumeKey(k) {
+    if (keysJustPressed[k]) { keysJustPressed[k] = false; return true; }
+    return false;
+}
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  DOOR SEARCH LOGIC
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+function checkDoor(doorIndex, fd) {
+    if (gameStatus === 'Found') return;
+
+    const doorData = fd.doors[doorIndex];
+    searches++;
+
+    let distFloor = Math.abs(seeker.floor - targetFloor);
+    let distDoor = Math.abs(doorIndex - targetDoor);
+    let totalDist = distFloor * 2 + distDoor; // Floor diff is higher weight
+
+    let result = '';
+    let flashColor = 0xffffff;
+
+    if (distFloor === 0 && distDoor === 0) {
+        result = 'FOUND!';
+        flashColor = 0x00ff44;
+        gameStatus = 'Found';
+    } else if (distFloor === 0 && distDoor <= 1) {
+        result = 'HOT';
+        flashColor = 0xff3300;
+    } else if (distFloor === 0) {
+        result = 'WARM';
+        flashColor = 0xffaa00;
+    } else {
+        result = 'COLD';
+        flashColor = 0x4488ff;
+    }
+
+    _flashDoor(doorData.mesh, flashColor, doorData.frame);
+    gameStatus = (gameStatus === 'Found') ? 'FOUND!' : result;
+
+    doorChecks.push({
+        floor: seeker.floor + 1,
+        door: String.fromCharCode(65 + doorIndex),
+        x: doorData.x,
+        result: result,
+        distance: totalDist
+    });
+
+    episodeDataset.push({ action: 'check_door', door: doorIndex, floor: seeker.floor, result: result, status: gameStatus });
+
+    if (gameStatus === 'FOUND!') {
+        // Save dataset
+        window.alisaDataset.push({
+            floors: totalFloors, doors: doorsPerFloor,
+            target_floor: targetFloor, target_door: targetDoor,
+            searches: searches,
+            trajectory: [...episodeDataset]
+        });
+        
+        celebrateFound();
+        
+        // Auto-restart if in AI mode
+        if (autoPlaying) {
+            setTimeout(() => {
+                // Curriculum Learning: add a floor each episode
+                if (totalFloors < 12) {
+                    totalFloors++;
+                    document.getElementById('sFloors').value = totalFloors;
+                    document.getElementById('sFloors').nextElementSibling.textContent = totalFloors;
+                    document.getElementById('valTotalFloors').textContent = totalFloors;
+                    
+    window.factory = new ProceduralBuildingFactory(scene, AssetManager);
+    // ⚠️ Antes: actory.build(...) directo. Eso SE SALTA uildAll(), que es
+    // quien aplica la corrección de luz — y sin ella la escena sale NEGRA.
+    //
+    // Está documentado en ESTUDIO_ProceduralBuildingFactory.md §4: las
+    // intensidades de esta fábrica (0.2–0.4) se calibraron para el modelo de luz
+    // ANTIGUO de three (pre-r155). Desde r155 las luces son físicamente
+    // correctas y una PointLight de 0.4 con 17 m de alcance es invisible. Esta
+    // página carga three 0.160.
+    //
+    // No era la cámara, ni la niebla, ni mi composer: era esto. El edificio se
+    // construía entero y no se veía nada.
+    window.factory.buildAll({
+        floors: totalFloors, doorsPerFloor, lightsOut: isLightsOut,
+        stage: currentStage, rabbitModel, seeker, rabbit,
+        camera: cam, controls,
+        lightScale: 20,   // ×20: el rango que recomienda el estudio para r155+
+        // characters por defecto es FALSE en buildAll, pensado para labs de gym
+        // que solo quieren el edificio. Esta página SÍ los quiere: carga sus
+        // cuatro GLB (mapache, buscador, fantasma, crypto bro) y además el haz
+        // volumétrico de la linterna se construye en esa misma rama. Sin esto la
+        // linterna alumbra pero no se ve el cono, que es medio juego.
+        characters: true,
+    });
+    
+    // Restore global references that the rest of the HTML expects
+    buildingGroup = window.factory.buildingGroup;
+    floors = window.factory.floors;
+    floorLights = window.factory.floorLights;
+    floorLightTimers = window.factory.floorLightTimers;
+    batteryPickups = window.factory.batteryPickups;
+    DOOR_ZONE_START = window.factory.DOOR_ZONE_START;
+    DOOR_ZONE_W = window.factory.DOOR_ZONE_W;
+
+                }
+                resetEpisode();
+                seeker.mesh.position.set(seeker.x, floors[seeker.floor].baseY + 0.12, seeker.z);
+            }, 4000 / simSpeedMultiplier);
+        }
+    }
+}
+
+function _flashDoor(mesh, colorHex, frameGroup = null) {
+    const originalColor = mesh.material.color.getHex();
+    mesh.material.color.setHex(colorHex);
+    mesh.material.emissive.setHex(colorHex);
+    mesh.material.emissiveIntensity = 0.8;
+    
+    // Also flash the frame lightly
+    if (frameGroup) {
+        frameGroup.children.forEach(c => {
+            if (c.material) {
+                c.material.emissive.setHex(colorHex);
+                c.material.emissiveIntensity = 0.3;
+            }
+        });
+    }
+
+    setTimeout(() => {
+        mesh.material.color.setHex(originalColor);
+        mesh.material.emissive.setHex(0x000000);
+        mesh.material.emissiveIntensity = 0.0;
+        
+        if (frameGroup) {
+            frameGroup.children.forEach(c => c.material.emissiveIntensity = 0.0);
+        }
+    }, 800);
+}
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  HIDING SPOT SEARCH (Stage 2: Cabinet Search mechanic from H&S)
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+function checkHidingSpot(spotIndex, fd) {
+    if (gameStatus === 'Found') return;
+    const spot = fd.hidingSpots[spotIndex];
+    if (!spot || spot.isSearched) return;
+    
+    spot.isSearched = true;
+    searches++;
+    hideSpotSearchCount++;
+
+    // ─── SHAKE ANIMATION (from H&S Stage 2) ───
+    const mesh = spot.mesh;
+    const origX = mesh.position.x;
+    let shakeCount = 0;
+    const shakeInterval = setInterval(() => {
+        mesh.position.x = origX + (shakeCount % 2 === 0 ? 0.1 : -0.1);
+        shakeCount++;
+        if (shakeCount > 8) {
+            clearInterval(shakeInterval);
+            mesh.position.x = origX;
+        }
+    }, 40);
+
+    // ─── CHECK RESULT ───
+    let distFloor = Math.abs(seeker.floor - targetFloor);
+    let result = '';
+
+    if (spot.hasRaccoon) {
+        // FOUND raccoon inside this furniture!
+        result = 'FOUND!';
+        gameStatus = 'Found';
+        
+        // Visual: furniture glows green
+        mesh.material.color.setHex(0x34c759);
+        mesh.material.emissive = new THREE.Color(0x006600);
+        mesh.material.emissiveIntensity = 0.4;
+        
+        // Pop raccoon out of the furniture
+        if (rabbit.mesh) {
+            rabbit.mesh.visible = true;
+            rabbit.floor = seeker.floor;
+            rabbit.x = spot.x;
+            rabbit.z = mesh.position.z + 1.2;
+            rabbit.mesh.position.set(rabbit.x, fd.baseY + 0.5, rabbit.z);
+            rabbitCurAnim = playCharAnim(rabbitMixer, rabbitAnimMap, rabbitCurAnim, 'idle');
+        }
+    } else if (distFloor === 0) {
+        result = 'HOT';  // right floor, wrong spot
+    } else {
+        result = 'COLD';
+    }
+
+    // Visual feedback for empty spots
+    if (result !== 'FOUND!') {
+        const emitColor = result === 'HOT' ? 0xff3300 : 0x4488ff;
+        mesh.material.transparent = true;
+        mesh.material.opacity = 0.5;
+        mesh.material.color.setHex(emitColor);
+        mesh.material.emissive = new THREE.Color(emitColor);
+        mesh.material.emissiveIntensity = 0.35;
+    } else {
+        // No flash when found, controlled by celebrateFound
+    }
+
+    gameStatus = (gameStatus === 'Found') ? 'FOUND!' : result;
+
+    const spotLabel = spot.label || 'Spot';
+    doorChecks.push({
+        floor: seeker.floor + 1,
+        door: spotLabel,
+        x: spot.x,
+        result: result,
+        distance: distFloor
+    });
+
+    episodeDataset.push({ action: 'check_spot', spot: spotIndex, floor: seeker.floor, result: result, status: gameStatus });
+
+    if (gameStatus === 'FOUND!') {
+        window.alisaDataset.push({
+            floors: totalFloors, doors: doorsPerFloor,
+            target_floor: targetFloor, target_door: targetDoor,
+            searches: searches,
+            trajectory: [...episodeDataset]
+        });
+        
+        celebrateFound();
+        
+        if (autoPlaying) {
+            setTimeout(() => {
+                if (totalFloors < 12) {
+                    totalFloors++;
+                    document.getElementById('sFloors').value = totalFloors;
+                    document.getElementById('sFloors').nextElementSibling.textContent = totalFloors;
+                    document.getElementById('valTotalFloors').textContent = totalFloors;
+                    
+    window.factory = new ProceduralBuildingFactory(scene, AssetManager);
+    // ⚠️ Antes: actory.build(...) directo. Eso SE SALTA uildAll(), que es
+    // quien aplica la corrección de luz — y sin ella la escena sale NEGRA.
+    //
+    // Está documentado en ESTUDIO_ProceduralBuildingFactory.md §4: las
+    // intensidades de esta fábrica (0.2–0.4) se calibraron para el modelo de luz
+    // ANTIGUO de three (pre-r155). Desde r155 las luces son físicamente
+    // correctas y una PointLight de 0.4 con 17 m de alcance es invisible. Esta
+    // página carga three 0.160.
+    //
+    // No era la cámara, ni la niebla, ni mi composer: era esto. El edificio se
+    // construía entero y no se veía nada.
+    window.factory.buildAll({
+        floors: totalFloors, doorsPerFloor, lightsOut: isLightsOut,
+        stage: currentStage, rabbitModel, seeker, rabbit,
+        camera: cam, controls,
+        lightScale: 20,   // ×20: el rango que recomienda el estudio para r155+
+        // characters por defecto es FALSE en buildAll, pensado para labs de gym
+        // que solo quieren el edificio. Esta página SÍ los quiere: carga sus
+        // cuatro GLB (mapache, buscador, fantasma, crypto bro) y además el haz
+        // volumétrico de la linterna se construye en esa misma rama. Sin esto la
+        // linterna alumbra pero no se ve el cono, que es medio juego.
+        characters: true,
+    });
+    
+    // Restore global references that the rest of the HTML expects
+    buildingGroup = window.factory.buildingGroup;
+    floors = window.factory.floors;
+    floorLights = window.factory.floorLights;
+    floorLightTimers = window.factory.floorLightTimers;
+    batteryPickups = window.factory.batteryPickups;
+    DOOR_ZONE_START = window.factory.DOOR_ZONE_START;
+    DOOR_ZONE_W = window.factory.DOOR_ZONE_W;
+
+                }
+                resetEpisode();
+                seeker.mesh.position.set(seeker.x, floors[seeker.floor].baseY + 0.12, seeker.z);
+            }, 4000 / simSpeedMultiplier);
+        }
+    }
+}
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  SEEKER UPDATE
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+function updateSeeker(dt) {
+    if (gamePhase === 'cinematic') return;
+
+    if (seeker.mode.startsWith('stairs_') || seeker.mode.startsWith('chute') || seeker.mode.startsWith('roof')) {
+        const fd = floors[seeker.floor];
+        let isExiting = seeker.mode.endsWith('_out');
+        let walkSpeed = seeker.speed * (seeker.mode.includes('chute') ? 1.0 : 0.6); // slightly faster than 0.4 for smooth portal flow
+        
+        if (!isExiting) {
+            // Fase 1: Walking IN (away from camera)
+            seeker.z -= dt * walkSpeed; 
+            
+            // Fix moonwalk: dx=0, dz=-1
+            let targetRotWalkIn = Math.atan2(0, -1); 
+            if (seeker.visualModel) seeker.visualModel.rotation.y = targetRotWalkIn;
+            if (seeker.flashLightGroup) seeker.flashLightGroup.rotation.y = targetRotWalkIn;
+            
+            // When deep enough inside the portal volume, snap to destination and switch to OUT phase
+            if (seeker.z <= -4.5) {
+                if (seeker.mode === 'stairs_up') seeker.floor++;
+                else if (seeker.mode === 'stairs_down') seeker.floor--;
+                else if (seeker.mode === 'chute') seeker.floor = 1; // 1 is Planta Baja
+                
+                // Add _out suffix
+                seeker.mode += '_out';
+                
+                const nfd = floors[seeker.floor];
+                if (seeker.mode.startsWith('chute')) {
+                    seeker.x = DOOR_ZONE_START + 0.5 * DOOR_ZONE_W;
+                } else if (seeker.mode.startsWith('stairs_')) {
+                    seeker.x = nfd.stairX !== null ? nfd.stairX : 0;
+                }
+                
+                // Teleport Y and keep Z deep inside the new room
+                seeker.mesh.position.y = nfd.baseY + 0.12;
+            }
+        } else {
+            // Fase 2: Walking OUT (towards camera)
+            seeker.z += dt * walkSpeed;
+            
+            // Fix moonwalk: dx=0, dz=1
+            let targetRotWalkOut = Math.atan2(0, 1); 
+            if (seeker.visualModel) seeker.visualModel.rotation.y = targetRotWalkOut;
+            if (seeker.flashLightGroup) seeker.flashLightGroup.rotation.y = targetRotWalkOut;
+            
+            // Reached corridor
+            if (seeker.z >= -CORRIDOR_DEPTH/2 + 0.2) {
+                seeker.z = -CORRIDOR_DEPTH/2 + 0.2;
+                seeker.mode = 'walking';
+                if (seeker.floor === totalFloors - 1) { // Wait, totalFloors is roof, but array starts at 0. So roof is totalFloors-1? Actually we don't need gameStatus='ROOF EXPLORATION' here because we can let AI navigate normally.
+                }
+            }
+        }
+        
+        seekerCurAnim = playCharAnim(seekerMixer, seekerAnimMap, seekerCurAnim, 'run');
+        seeker.mesh.position.set(seeker.x, floors[seeker.floor].baseY + 0.12, seeker.z);
+        return; 
+    }
+
+    if (!seeker.mesh || seeker.inElevator) return;
+
+    let prevX = seeker.x; // store before modifying
+    let prevZ = seeker.z;
+
+    const fd = floors[seeker.floor];
+    if (!fd) return;
+    
+    // Limits of the Aquarium Tank
+    const halfW = CORRIDOR_W / 2 - 0.8;
+    const halfD = CORRIDOR_DEPTH / 2 - 0.4;
+    
+    // Aquarium Omnidirectional Movement (WASD)
+    let moved = false;
+    let dx = 0, dz = 0;
+
+    if (keys['a'] || keys['arrowleft']) dx -= 1;
+    if (keys['d'] || keys['arrowright']) dx += 1;
+    if (keys['w'] || keys['arrowup']) dz -= 1; // into screen (back wall)
+    if (keys['s'] || keys['arrowdown']) dz += 1; // towards glass
+
+    // Normalize diagonal movement
+    if (dx !== 0 || dz !== 0) {
+        const len = Math.hypot(dx, dz);
+        dx /= len; dz /= len;
+        
+        seeker.x += dx * seeker.speed * dt;
+        seeker.z += dz * seeker.speed * dt;
+        moved = true;
+    }
+
+    // Clamp inside Aquarium Glass
+    // If we are on f=1 and go past stairDownX, we can enter the boiler corridor
+    let inBoiler = false;
+    
+    if (seeker.floor === 1) {
+        const boilerDoorX = (fd.stairX || 0) + 1.6*1.5 + 0.4;
+        if (seeker.x > boilerDoorX - 1.0) {
+            inBoiler = true;
+        }
+    } else if (seeker.floor === 0) {
+        inBoiler = true; // Sótano permite acceder profundo
+    }
+
+    if (seeker.floor === totalFloors) {
+        // Azotea is fully walkable!
+        const rHalfW = CORRIDOR_W/2 + WALL_D*2 - 0.5;
+        const rHalfD = (BUILDING_DEPTH + WALL_D*2)/2 - 0.5;
+        const bCZ = -BUILDING_DEPTH/2 + CORRIDOR_DEPTH/2;
+        // The Caseta is a 4.0 wide solid block on the far left.
+        const rMinX = -rHalfW + 4.5;
+        seeker.x = Math.max(rMinX, Math.min(rHalfW, seeker.x));
+        seeker.z = Math.max(bCZ - rHalfD, Math.min(bCZ + rHalfD, seeker.z));
+    } else if (inBoiler) {
+        seeker.x = Math.max(-halfW, Math.min(halfW, seeker.x));
+        seeker.z = Math.max(-CORRIDOR_DEPTH/2 - 3.5, Math.min(halfD, seeker.z));
+    } else {
+        seeker.x = Math.max(-halfW, Math.min(halfW, seeker.x));
+        seeker.z = Math.max(-halfD, Math.min(halfD, seeker.z));
+    }
+
+    // Dynamic rotation handling
+    // IF AI IS MOVING, skip resolving rotation and animation here so they don't fight.
+    if (!(autoPlaying && seekerAI.moveTarget)) {
+        if (moved) {
+            // Both model and flashlight now use Math.atan2(dx, dz)
+            let targetRotModel = Math.atan2(dx, dz);
+            let targetRotLight = Math.atan2(dx, dz);
+            
+            if (seeker.visualModel) {
+                seeker.visualModel.rotation.y = targetRotModel; 
+            }
+            if (seeker.flashLightGroup) {
+                seeker.flashLightGroup.rotation.y = targetRotLight;
+            }
+            
+            seekerCurAnim = playCharAnim(seekerMixer, seekerAnimMap, seekerCurAnim, 'run');
+        } else {
+            seekerCurAnim = playCharAnim(seekerMixer, seekerAnimMap, seekerCurAnim, 'idle');
+        }
+    }
+
+    if (!seekerMixer && seeker.mesh.children[0]) {
+        if (moved) {
+            seeker.animPhase += dt * 10;
+            seeker.mesh.children[0].rotation.z = Math.sin(seeker.animPhase) * 0.1; // simple body sway fallback
+        } else {
+            seeker.mesh.children[0].rotation.z = 0;
+        }
+    }
+
+    // ─── PROXIMITY INTERACTIONS ───
+    const backWallZ = -CORRIDOR_DEPTH/2 + 0.2; // roughly where doors/stairs trigger
+    
+    // ─── STAIR DOOR (Dual interaction: Space=UP, Shift/C=DOWN) ───
+    if (fd.stairX !== null) {
+        const dist = Math.hypot(seeker.x - fd.stairX, seeker.z - backWallZ);
+        if (dist < 1.0) {
+            // Priority 1: Up (or Down if on highest roof)
+            if (consumeKey(' ') || consumeKey('arrowup') || consumeKey('w')) {
+                if (seeker.floor < totalFloors) { // Roof is totalFloors
+                    seeker.mode = 'stairs_up';
+                    return;
+                } else if (seeker.floor === totalFloors) { // Automatically go down if at roof
+                    seeker.mode = 'stairs_down';
+                    return;
+                }
+            }
+            // Priority 2: Down
+            if (consumeKey('shift') || consumeKey('c') || consumeKey('arrowdown') || consumeKey('s')) {
+                if (seeker.floor > 0) { // Basement is 0
+                    seeker.mode = 'stairs_down';
+                    return;
+                }
+            }
+        }
+    }
+
+    // ─── CHUTE (Space key on Top Floor) ───
+    if (seeker.floor === totalFloors - 1) {
+        // Find chute hole X
+        const chuteX = DOOR_ZONE_START + 0.5 * DOOR_ZONE_W;
+        if (Math.hypot(seeker.x - chuteX, seeker.z - backWallZ) < 1.5 && consumeKey(' ')) {
+            seeker.mode = 'chute';
+            return;
+        }
+        
+        const roofX = (fd.stairX || 0) + 1.2 + 0.4 + 1.2; // roughly
+        if (Math.hypot(seeker.x - roofX, seeker.z - backWallZ) < 1.5 && consumeKey(' ')) {
+            seeker.mode = 'roof';
+            return;
+        }
+    }
+
+    // ─── SEARCH (Enter key) — Doors AND Hidespots ───
+    if (consumeKey('enter') && gamePhase === 'seeking') {
+        let bestAction = null;
+        let bestDist = 2.5; // max proximity
+
+        // Check doors
+        for (let i = 0; i < fd.doors.length; i++) {
+            let dist = Math.hypot(seeker.x - fd.doors[i].x, seeker.z - backWallZ);
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestAction = { type: 'door', index: i };
+            }
+        }
+
+        // Check hidespots (Stage 2: always; Stage 1: only doorless floors)
+        if (fd.hidingSpots && fd.hidingSpots.length > 0) {
+            for (let i = 0; i < fd.hidingSpots.length; i++) {
+                if (fd.hidingSpots[i].isSearched) continue;
+                const sp = fd.hidingSpots[i];
+                let dist = Math.hypot(seeker.x - sp.x, seeker.z - (sp.mesh ? sp.mesh.position.z : 0));
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestAction = { type: 'spot', index: i };
+                }
+            }
+        }
+
+        if (bestAction) {
+            if (seeker.visualModel) seeker.visualModel.rotation.y = Math.PI;
+            if (bestAction.type === 'door') {
+                checkDoor(bestAction.index, fd);
+            } else {
+                checkHidingSpot(bestAction.index, fd);
+            }
+        }
+    }
+    // ─── ELEVATOR ───
+    const elevDist = Math.hypot(seeker.x - fd.elevDoorX, seeker.z - 0); // proximity to doors facing the corridor
+
+    // E = call elevator to this floor
+    if (consumeKey('e')) {
+        if (!elevator.moving && seeker.floor > 0) { // Sótano (0) has no elevator!
+            elevator.targetFloor = seeker.floor;
+            if (elevator.currentFloor === seeker.floor) {
+                elevator.doorTimer = 4.0;
+            } else {
+                elevator.moving = true;
+            }
+        }
+    }
+
+    // SPACE = enter elevator (if it's here and doors are open)
+    if (consumeKey(' ')) {
+        if (elevator.currentFloor === seeker.floor && !elevator.moving && elevDist < 2.0) {
+            seeker.inElevator = true;
+            seeker.mode = 'elevator';
+            seeker.x = fd.elevX;
+            _flashSeeker(0x4488ff);
+        }
+    }
+
+    // ─── Broom closet wall transparency (floor 1 only) ───
+    if (floors[1] && floors[1].group) {
+        const inBroomCloset = (seeker.floor === 1 && seeker.z < -2.0);
+        floors[1].group.traverse(child => {
+            if (child.userData && child.userData.broomWall) {
+                const targetOpacity = inBroomCloset ? 0.15 : 1.0;
+                child.material.opacity += (targetOpacity - child.material.opacity) * 0.1;
+            }
+        });
+    }
+
+    // Update position
+    const floorBaseY = floors[seeker.floor].baseY;
+    // ─── Visual Jump over Hiding Spots (Interaction Lab Fox style!) ───
+    let jumpY = 0;
+    if (fd.hidingSpots) {
+        for (let sp of fd.hidingSpots) {
+            let dxSp = seeker.x - sp.x;
+            let dzSp = seeker.z - (sp.mesh ? sp.mesh.position.z : 0);
+            if (Math.abs(dxSp) < 1.0 && Math.abs(dzSp) < 1.0) {
+                let proximity = Math.min(Math.abs(dxSp), Math.abs(dzSp));
+                jumpY = Math.max(jumpY, (1.0 - proximity) * 1.5); 
+            }
+        }
+    }
+    
+    seeker.mesh.position.set(seeker.x, floorBaseY + 0.12 + jumpY, seeker.z);
+}
+
+// ─── ELEVATOR UPDATE ───
+
+function updateSeekerInElevator(dt) {
+    if (!seeker.inElevator) return;
+
+    // Number keys select floor (1 to totalFloors-1 allowed, basically 1..5 if 6 total)
+    for (let n = 1; n < totalFloors; n++) {
+        if (consumeKey(String(n))) {
+            elevator.targetFloor = n;
+            elevator.moving = true;
+        }
+    }
+
+    // SPACE = exit elevator
+    if (consumeKey(' ') && !elevator.moving) {
+        seeker.inElevator = false;
+        seeker.floor = elevator.currentFloor;
+        seeker.mode = 'walking';
+        seeker.x = floors[seeker.floor].elevDoorX - 1.2; // step out to the left
+        seeker.z = 0;
+    }
+
+    // Update idle animation
+    seekerCurAnim = playCharAnim(seekerMixer, seekerAnimMap, seekerCurAnim, 'idle');
+    if (!seekerMixer && seeker.mesh.children[0]) {
+        seeker.mesh.children[0].rotation.z = 0;
+    }
+
+    // Ride with elevator
+    seeker.mesh.position.x = floors[1].elevX;
+    seeker.mesh.position.y = elevator.y + 0.12;
+    seeker.mesh.position.z = 0;
+}
+
+function _flashSeeker(color) {
+    if (!seeker.visualModel) return;
+    seeker.visualModel.traverse(c => {
+        if (c.isMesh && c.material) {
+            if (!c.userData.origEmissive) c.userData.origEmissive = c.material.emissive.clone();
+            c.material.emissive.setHex(color);
+            c.material.emissiveIntensity = 0.8;
+        }
+    });
+    setTimeout(() => {
+        if (seeker.visualModel) {
+            seeker.visualModel.traverse(c => {
+                if (c.isMesh && c.material && c.userData.origEmissive) {
+                    c.material.emissive.copy(c.userData.origEmissive);
+                    c.material.emissiveIntensity = 0.0;
+                }
+            });
+        }
+    }, 300);
+}
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  BANNER & CELEBRATION (ported from H&S)
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+function showBanner(text, duration) {
+    const el = document.getElementById('phase-banner');
+    if (!el) return;
+    el.textContent = text;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), duration || 2000);
+}
+
+let celebrationTimer = 0;
+let celebrationActive = false;
+let celebrationOrigCamPos = null;
+let celebrationOrigCamTarget = null;
+
+function celebrateFound() {
+    gamePhase = 'found'; // Freeze AI explicitly
+    celebrationActive = true;
+    celebrationTimer = 0;
+    
+    // Save camera state
+    celebrationOrigCamPos = cam.position.clone();
+    celebrationOrigCamTarget = controls.target.clone();
+    
+    // Zoom camera precisely to the seeker
+    const fd = floors[seeker.floor];
+    if (fd) {
+        const targetY = fd.baseY + 0.5 + buildingGroup.position.y;
+        const zoomPos = new THREE.Vector3(seeker.x, targetY, 12);
+        const zoomTarget = new THREE.Vector3(seeker.x, targetY, 0);
+        
+        // Smooth zoom over 0.8s
+        const startPos = cam.position.clone();
+        const startTarget = controls.target.clone();
+        let t = 0;
+        const zoomInterval = setInterval(() => {
+            t += 0.03;
+            if (t >= 1.0) {
+                t = 1.0;
+                clearInterval(zoomInterval);
+            }
+            const ease = t * t * (3 - 2 * t); // smoothstep
+            cam.position.lerpVectors(startPos, zoomPos, ease);
+            controls.target.lerpVectors(startTarget, zoomTarget, ease);
+        }, 16);
+    }
+    
+    // Banner
+    showBanner('ðŸŽ‰ ¡ATRAPADO!', 3000);
+    
+    // Seeker victory jumps
+    let jumpCount = 0;
+    const jumpInterval = setInterval(() => {
+        if (!seeker.mesh || jumpCount >= 4) {
+            clearInterval(jumpInterval);
+            // Restore camera after celebration
+            setTimeout(() => {
+                if (celebrationOrigCamPos && celebrationOrigCamTarget) {
+                    const restoreStart = cam.position.clone();
+                    const restoreTarget = controls.target.clone();
+                    let rt = 0;
+                    const restoreInterval = setInterval(() => {
+                        rt += 0.02;
+                        if (rt >= 1.0) {
+                            rt = 1.0;
+                            clearInterval(restoreInterval);
+                            celebrationActive = false;
+                        }
+                        const ease = rt * rt * (3 - 2 * rt);
+                        cam.position.lerpVectors(restoreStart, celebrationOrigCamPos, ease);
+                        controls.target.lerpVectors(restoreTarget, celebrationOrigCamTarget, ease);
+                    }, 16);
+                }
+            }, 1500);
+            return;
+        }
+        // Jump effect: move up then back down
+        const baseY = floors[seeker.floor].baseY + 0.12;
+        seeker.mesh.position.y = baseY + 1.5;
+        setTimeout(() => {
+            if (seeker.mesh) seeker.mesh.position.y = baseY;
+        }, 200);
+        jumpCount++;
+    }, 400);
+}
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  ELEVATOR UPDATE
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+function updateElevator(dt) {
+    if (!elevator.cabin) return;
+
+    // Movement physics delegated to ECS ElevatorSystem.
+    // ECS fires onFloorReached which handles the visual indicators.
+    // We only need to check doorTimer and visual positioning here:
+    
+    // Check if ECS just finished moving and sync doorTimer
+    if (!elevator.moving && elevator.targetFloor >= 0) {
+        elevator.targetFloor = -1;
+        elevator.doorTimer = 4.0;
+    }
+
+    if (!elevator.moving && elevator.doorTimer > 0) {
+        if (seeker.inElevator || rabbit.inElevator) {
+            elevator.doorTimer = 3.0; // Hold door
+        } else {
+            elevator.doorTimer -= dt;
+        }
+    }
+
+    elevator.cabin.position.y = elevator.y + FL_H * 0.38 + 0.15;
+
+    // Door animation: open on current floor when stopped
+    let fridgeFactor = 0;
+    floors.forEach((fd, i) => {
+        if (!fd.edoorL || !fd.edoorR || !fd.indicator) return; // Skip floors without elevator (e.g. Sótano)
+        const shouldOpen = (elevator.currentFloor === i && !elevator.moving && elevator.doorTimer > 0);
+        const amt = fd.edoorL.userData.openAmt || 0;
+        const target = shouldOpen ? fd.edoorW * 0.55 : 0;
+        const newAmt = THREE.MathUtils.lerp(amt, target, dt * 5);
+        fd.edoorL.userData.openAmt = newAmt;
+
+        fd.edoorL.position.z = fd.edoorW/4 + newAmt;
+        fd.edoorR.position.z = -fd.edoorW/4 - newAmt;
+
+        // Indicator logic
+        if (shouldOpen) {
+            fd.indicator.material.color.setHex(0x00ff44);
+            fridgeFactor = Math.max(0, newAmt / (fd.edoorW * 0.55));
+        } else {
+            fd.indicator.material.color.setHex(0x002244);
+        }
+    });
+
+    if (elevator.fridgeLight) {
+        elevator.fridgeLight.visible = (fridgeFactor > 0.05 && isLightsOut);
+        if (elevator.fridgeLight.visible) {
+            elevator.fridgeLight.scale.x = Math.max(0.01, fridgeFactor); // Match opening width exactly!
+            elevator.fridgeLight.material.opacity = (fridgeFactor * elevator.fridgeLight.userData.maxOpacity);
+        }
+    }
+}
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  HUD UPDATE
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+function updateHUD() {
+    document.getElementById('valFloor').textContent = seeker.floor + 1;
+    const modeIcons = {
+        walking: 'ðŸš¶ Walking',
+        elevator: 'ðŸ›— Elevator',
+        stairs_up: 'ðŸªœ Stairs ▲',
+        stairs_down: 'ðŸªœ Stairs ▼',
+        chute: '⚡ Chute',
+        roof: 'ðŸ—ï¸ Roof'
+    };
+    document.getElementById('valMode').textContent = modeIcons[seeker.mode] || seeker.mode;
+    document.getElementById('valSearches').textContent = searches;
+
+    const stElem = document.getElementById('valStatus');
+    stElem.textContent = gameStatus;
+    if (gameStatus === 'FOUND!') stElem.style.color = '#00ff44';
+    else if (gameStatus === 'HOT') stElem.style.color = '#ff3300';
+    else if (gameStatus === 'WARM') stElem.style.color = '#ffaa00';
+    else if (gameStatus === 'COLD') stElem.style.color = '#4488ff';
+    else stElem.style.color = '#aaddff';
+
+    // ─── Córtex Tiburón AI HUD ───
+    const isAI = autoPlaying || (document.getElementById('mMode') && document.getElementById('mMode').value === 'ai');
+    const aiRow = document.getElementById('aiPhaseRow');
+    const belRow = document.getElementById('aiBeliefsRow');
+    if (aiRow) { isAI ? aiRow.classList.remove('hud-hidden') : aiRow.classList.add('hud-hidden'); }
+    if (belRow) { isAI ? belRow.classList.remove('hud-hidden') : belRow.classList.add('hud-hidden'); }
+    if (isAI) {
+        const phaseIcons = {
+            PICK_FLOOR: 'ðŸŽ¯ PICKING',
+            TRAVEL: 'ðŸš€ TRAVEL→F' + (seekerAI.aiTargetFloor + 1),
+            EXPLORE: 'ðŸ” SWEEP F' + (seekerAI.aiTargetFloor + 1),
+        };
+        const aiPhaseElem = document.getElementById('valAIPhase');
+        if (aiPhaseElem) {
+            aiPhaseElem.textContent = phaseIcons[seekerAI.phase] || seekerAI.phase;
+            aiPhaseElem.style.color = seekerAI.phase === 'EXPLORE' ? '#ff9500' : seekerAI.phase === 'TRAVEL' ? '#00aaff' : '#aaddff';
+        }
+        // Posterior beliefs bar: [■■□□□□] per floor
+        const belElem = document.getElementById('valBeliefs');
+        if (belElem && seekerAI.beliefs.length > 0) {
+            const maxB = Math.max(...seekerAI.beliefs);
+            let bar = '';
+            for (let i = 0; i < seekerAI.beliefs.length; i++) {
+                const b = seekerAI.beliefs[i];
+                const isExplored = seekerAI.exploredFloors.has(i);
+                const isCurrent = (i === seeker.floor);
+                if (isExplored) bar += '<span style="color:#333">✗</span>';
+                else if (b >= maxB * 0.9 && b > 0) bar += '<span style="color:#ff3300">■</span>';
+                else if (b > 0.01) bar += '<span style="color:#ffaa00">□</span>';
+                else bar += '<span style="color:#333">·</span>';
+                if (isCurrent) bar += '<span style="color:#fff">▲</span>';
+            }
+            belElem.innerHTML = bar;
+        }
+    }
+}
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  CINEMATIC LOGIC
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+function updateCinematic(dt) {
+    if (gamePhase !== 'cinematic' || !rabbit.mesh) return;
+    
+    // Raccoon entry cinematic sequence
+    const fd = floors[rabbit.floor];
+    if (!fd) return;
+    
+    if (cinematicPhase === 'walking_to_elevator') {
+        rabbitCurAnim = playCharAnim(rabbitMixer, rabbitAnimMap, rabbitCurAnim, 'run');
+        if (rabbit.visualModel) rabbit.visualModel.rotation.y = Math.PI / 2; // Face right
+        
+        let tx = fd.stairX || 0;
+
+        if (targetFloor === 1) {
+            // Target is on this floor! Skip stairs entirely.
+            cinematicPhase = 'walking_to_door';
+            return;
+        }
+
+        if (rabbit.x < tx - 0.2) {
+            rabbit.x += rabbit.speed * 0.8 * dt; // walk right
+        } else if (rabbit.x > tx + 0.2) {
+            rabbit.x -= rabbit.speed * 0.8 * dt; // walk left
+            if (rabbit.visualModel) rabbit.visualModel.rotation.y = -Math.PI / 2;
+        } else {
+            // Arrived at stairs
+            rabbit.mesh.visible = false;
+            cinematicPhase = 'riding_elevator'; // repurpose this phase for stair traversal
+            cinematicTimer = 0;
+        }
+    } else if (cinematicPhase === 'riding_elevator') {
+        cinematicTimer += dt;
+        if (cinematicTimer > 1.0) {
+            rabbit.floor = targetFloor;
+            const tFd = floors[targetFloor];
+            // Azotea (totalFloors-1) uses stairDownX, Sotano uses stairUpX
+            let tx = 0;
+            if (targetFloor === totalFloors - 1) tx = tFd.stairDownX || 0;
+            else if (targetFloor === 0) tx = tFd.stairUpX || 0;
+            
+            rabbit.x = tx;
+            rabbit.mesh.position.set(rabbit.x, tFd.baseY + 0.12, 0);
+            rabbit.mesh.visible = true;
+            cinematicPhase = 'walking_to_door';
+            cinematicTimer = 0;
+        }
+    } else if (cinematicPhase === 'walking_to_door') {
+        rabbitCurAnim = playCharAnim(rabbitMixer, rabbitAnimMap, rabbitCurAnim, 'run');
+        const tFd = floors[targetFloor];
+        
+        // Determine target X: use door if available, else hiding spot
+        let targetX;
+        if (tFd.doors.length > 0 && targetDoor < tFd.doors.length) {
+            targetX = tFd.doors[targetDoor].x;
+        } else if (tFd.hidingSpots && tFd.hidingSpots.length > 0) {
+            const spotIdx = Math.min(targetDoor, tFd.hidingSpots.length - 1);
+            targetX = tFd.hidingSpots[spotIdx].x;
+        } else {
+            targetX = 0; // fallback center
+        }
+        
+        if (rabbit.x > targetX + 0.2) {
+            rabbit.x -= rabbit.speed * 0.8 * dt; // walk left
+            if (rabbit.visualModel) rabbit.visualModel.rotation.y = -Math.PI / 2;
+        } else if (rabbit.x < targetX - 0.2) {
+            rabbit.x += rabbit.speed * 0.8 * dt; // walk right
+            if (rabbit.visualModel) rabbit.visualModel.rotation.y = Math.PI / 2;
+        } else {
+            // Reached door/spot -> walk IN to hide (like portal mechanic)
+            rabbitCurAnim = playCharAnim(rabbitMixer, rabbitAnimMap, rabbitCurAnim, 'run');
+            let targetRotWalkIn = Math.atan2(0, -1);
+            if (rabbit.visualModel) rabbit.visualModel.rotation.y = targetRotWalkIn; // Face backwards (-Z)
+            
+            rabbit.z -= rabbit.speed * 0.5 * dt; // Walk into the volume
+            
+            if (rabbit.z <= -4.5) {
+                // Disappear deep inside
+                rabbit.mesh.visible = false;
+                gamePhase = 'seeking';
+                document.getElementById('hudTitle').innerText = 'ðŸ¢ Corporate Building';
+                document.getElementById('camcorder').style.display = 'flex';
+                if (seeker.mesh) {
+                    seeker.mesh.visible = true; // Reveal player!
+                    _flashSeeker(0xffeedd);
+                }
+            }
+        }
+    }
+    
+    if (!rabbit.inElevator && floors[rabbit.floor]) {
+        let yHop = 0;
+        if (cinematicPhase.includes('walking')) {
+            const time = performance.now() * 0.015;
+            yHop = Math.abs(Math.sin(time)) * 0.25;
+        }
+        rabbit.mesh.position.set(rabbit.x, floors[rabbit.floor].baseY + 0.12 + yHop, rabbit.z);
+    }
+}
+
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  MAIN LOOP
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+window.RLMode = false;
+
+// ─── RL BRIDGE ───
+const engineAdapter = {
+    getObservationVector: function() {
+        let s=0, r=0, rx=0, rz=0;
+        if (typeof seeker !== 'undefined' && seeker) s = (seeker.floor||0) / (typeof totalFloors !== 'undefined' ? totalFloors : 10);
+        if (typeof rabbit !== 'undefined' && rabbit) {
+            r = (rabbit.floor||0) / (typeof totalFloors !== 'undefined' ? totalFloors : 10);
+            rx = rabbit.x / 100;
+            rz = rabbit.z / 100;
+        }
+        let eComp = ecs.getComponent(playerEntity, 'EnergyComponent');
+        let currentEnergy = eComp ? eComp.currentEnergy : 0;
+        
+        return {
+            obs: [
+                s,
+                (typeof seeker !== 'undefined' && seeker ? seeker.x / 100 : 0),
+                (typeof seeker !== 'undefined' && seeker ? seeker.z / 100 : 0),
+                currentEnergy / 100,
+                (typeof rabbit !== 'undefined' && rabbit && rabbit.mesh && rabbit.mesh.visible ? 1.0 : 0.0),
+                r, rx, rz
+            ],
+            meta: { phase: (typeof gamePhase !== 'undefined' ? gamePhase : ''), energy: currentEnergy }
+        };
+    },
+    reset: function(seed) {
+        if(seed !== undefined && typeof Math !== 'undefined' && typeof Math.seedrandom === 'function') Math.seedrandom(seed);
+        if(typeof startSimulation === 'function') startSimulation();
+    },
+    stepSimulation: function(actionIdx, dt, isRLMode) {
+        if(typeof simulationRunning !== 'undefined' && !simulationRunning) return { obs: this.getObservationVector(), reward: 0, done: true };
+        if(typeof gamePhase !== 'undefined' && (gamePhase === 'gameover' || gamePhase === 'victory')) {
+            return { obs: this.getObservationVector(), reward: 0, done: true };
+        }
+        
+        if(typeof seeker !== 'undefined') {
+            if (actionIdx === 1) targetWalkSpot = { x: seeker.x, z: seeker.z - 4 };
+            if (actionIdx === 2) targetWalkSpot = { x: seeker.x, z: seeker.z + 4 };
+            if (actionIdx === 3) targetWalkSpot = { x: seeker.x - 4, z: seeker.z };
+            if (actionIdx === 4) targetWalkSpot = { x: seeker.x + 4, z: seeker.z };
+        }
+        
+        if(typeof executeLogicTick === 'function') executeLogicTick(dt);
+        
+        let reward = -0.01;
+        if (typeof gamePhase !== 'undefined') {
+            if (gamePhase === 'victory') reward += 10.0;
+            if (gamePhase === 'gameover') reward -= 5.0;
+        }
+        return { obs: this.getObservationVector(), reward: reward, done: typeof gamePhase !== 'undefined' && (gamePhase === 'gameover' || gamePhase === 'victory') };
+    },
+    setRLMode: function(enabled) {
+        const modeBadge = document.getElementById('aiBadgeMode');
+        if (modeBadge) {
+            modeBadge.innerText = enabled ? '🤖 ML Training' : '🧠 User Mode';
+            modeBadge.classList.toggle('minigame-badge', !enabled);
+            modeBadge.classList.toggle('training-badge', enabled);
+        }
+        if (enabled && typeof simulationRunning !== 'undefined' && !simulationRunning) {
+            const sm = document.getElementById('startModal');
+            if (sm) sm.style.display = 'none';
+            else {
+                const im = document.getElementById('introModal');
+                if (im) im.style.display = 'none';
+            }
+            if (typeof startSimulation === 'function') startSimulation();
+        }
+    }
+};
+
+// `RLGymBridge` instala `setRLMode`, `getObservationVector`, `resetEpisode` y
+// `stepSimulation` en `window` desde su propio constructor: no tiene métodos de
+// instancia que atar.
+//
+// Debajo había cuatro líneas `rlBridge.X.bind(rlBridge)`, restos de una API
+// anterior. La primera reventaba con «Cannot read properties of undefined
+// (reading 'bind')» y se llevaba por delante el resto del script — es decir,
+// este juego llevaba sin arrancar desde que cambió el puente.
+const rlBridge = new RLGymBridge(engineAdapter);
+
+// DELETED OLD RL BRIDGE
+/*
+window.setRLMode = function(enabled) {
+    window.RLMode = enabled;
+    const modeBadge = document.getElementById('aiBadgeMode');
+    if (modeBadge) {
+        modeBadge.innerText = enabled ? 'ðŸ¤– ML Training' : 'ðŸ§ User Mode';
+        modeBadge.classList.toggle('minigame-badge', !enabled);
+        modeBadge.classList.toggle('training-badge', enabled);
+    }
+    if (enabled && !simulationRunning) {
+        const sm = document.getElementById('startModal');
+        if (sm) sm.style.display = 'none';
+        else {
+            const im = document.getElementById('introModal');
+            if (im) im.style.display = 'none';
+        }
+        if (typeof startSimulation === 'function') startSimulation();
+    }
+};
+
+window.getObservationVector = function() {
+    let s=0, r=0, rx=0, rz=0;
+    if (typeof seeker !== 'undefined' && seeker) s = (seeker.floor||0) / (typeof totalFloors !== 'undefined' ? totalFloors : 10);
+    if (typeof rabbit !== 'undefined' && rabbit) {
+        r = (rabbit.floor||0) / (typeof totalFloors !== 'undefined' ? totalFloors : 10);
+        rx = rabbit.x / 100;
+        rz = rabbit.z / 100;
+    }
+    return {
+        obs: [
+            s,
+            (typeof seeker !== 'undefined' && seeker ? seeker.x / 100 : 0),
+            (typeof seeker !== 'undefined' && seeker ? seeker.z / 100 : 0),
+            (typeof hudEnergy !== 'undefined' ? hudEnergy / 100 : 0),
+            (typeof rabbit !== 'undefined' && rabbit && rabbit.mesh && rabbit.mesh.visible ? 1.0 : 0.0),
+            r, rx, rz
+        ],
+        meta: { phase: (typeof gamePhase !== 'undefined' ? gamePhase : ''), energy: (typeof hudEnergy !== 'undefined' ? hudEnergy : 0) }
+    };
+};
+
+window.resetEpisode = function(seed) { 
+    if(seed !== undefined && typeof Math !== 'undefined' && typeof Math.seedrandom === 'function') Math.seedrandom(seed);
+    if(typeof startSimulation === 'function') startSimulation();
+    return window.getObservationVector(); 
+};
+
+window.stepSimulation = function(actionIdx, dt) {
+    if(typeof simulationRunning !== 'undefined' && !simulationRunning) return { obs: window.getObservationVector(), reward: 0, done: true };
+    if(typeof gamePhase !== 'undefined' && (gamePhase === 'gameover' || gamePhase === 'victory')) {
+        return { obs: window.getObservationVector(), reward: 0, done: true };
+    }
+    
+    // RL Action Mapping to targetWalkSpot for simple WASD ML overriding
+    if(typeof seeker !== 'undefined') {
+        if (actionIdx === 1) targetWalkSpot = { x: seeker.x, z: seeker.z - 4 }; // North
+        if (actionIdx === 2) targetWalkSpot = { x: seeker.x, z: seeker.z + 4 }; // South
+        if (actionIdx === 3) targetWalkSpot = { x: seeker.x - 4, z: seeker.z }; // West
+        if (actionIdx === 4) targetWalkSpot = { x: seeker.x + 4, z: seeker.z }; // East
+    }
+    
+    if(typeof executeLogicTick === 'function') executeLogicTick(dt);
+    
+    let reward = -0.01;
+    if (typeof gamePhase !== 'undefined') {
+        if (gamePhase === 'victory') reward += 10.0;
+        if (gamePhase === 'gameover') reward -= 5.0;
+    }
+    return {  obs: window.getObservationVector(), reward: reward, done: typeof gamePhase !== 'undefined' && (gamePhase === 'gameover' || gamePhase === 'victory') };
+};
+*/
+
+// ─── Main AI Loop (Córtex Tiburón FSM) ───
+// Split into BRAIN (autoAgentStep, setInterval 300ms) and BODY (aiMovement, every frame)
+// Mirrors H&S pattern: aiTick() picks targets → moveSeeker() walks smoothly per-frame
+
+// Action dispatcher for non-movement actions (stairs, elevator, search)
+function _aiAction(intent) {
+    intent = intent.toLowerCase().trim();
+    if (intent === 'stairs_up') { keysJustPressed[' '] = true; }
+    else if (intent === 'stairs_down') { keysJustPressed['s'] = true; }
+    else if (intent === 'call_elevator') { keysJustPressed['e'] = true; }
+    else if (intent === 'enter_elevator' || intent === 'exit_elevator') { keysJustPressed[' '] = true; }
+    else if (intent === 'search_door') { keysJustPressed['enter'] = true; }
+    else if (intent.startsWith('search_spot_')) {
+        // Stage 2: AI directly searches a hidespot by index
+        const spotIdx = parseInt(intent.split('_')[2]);
+        const fd = floors[seeker.floor];
+        if (fd && fd.hidingSpots && fd.hidingSpots[spotIdx]) {
+            checkHidingSpot(spotIdx, fd);
+        }
+    }
+    else if (intent === 'toggle_minutero') { toggleMinutero(seeker.floor); }
+    else if (intent.startsWith('goto_floor_')) {
+        const n = parseInt(intent.split('_')[2]);
+        if (n && n <= totalFloors) keysJustPressed[String(n)] = true;
+    }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  AI BODY — Smooth continuous movement (called every frame from animate)
+//  Ported from H&S moveSeeker + animateSeeker pattern
+// ═══════════════════════════════════════════════════════════
+function aiMovement(dt) {
+    if (!autoPlaying || gamePhase !== 'seeking') return;
+    if (seeker.mode !== 'walking' || seeker.inElevator) return;
+    if (!seekerAI) return;
+    
+    let agent = window.ecs.getComponent(window.playerEntity, 'LinearNavAgentComponent');
+    if (!agent) return;
+
+    // ─── Set Target from AI ───
+    if (seekerAI.moveTarget) {
+        agent.targetX = seekerAI.moveTarget.x;
+        agent.targetZ = seekerAI.moveTarget.z;
+        agent.speed = seeker.speed || 12.0;
+        agent.arrivalRadius = seekerAI.arrivalRadius || 0.1;
+    } else {
+        agent.targetX = null;
+        agent.targetZ = null;
+    }
+
+    // ─── Sync ECS position to Seeker ───
+    seeker.x = agent.x;
+    seeker.z = agent.z;
+
+    if (agent.isMoving) {
+        // ─── Smooth rotation interpolation ───
+        let targetRotModel = Math.atan2(agent.vx, agent.vz);
+        let targetRotLight = Math.atan2(agent.vx, agent.vz);
+        
+        if (seeker.visualModel) {
+            let diff = targetRotModel - seeker.visualModel.rotation.y;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            seeker.visualModel.rotation.y += diff * 8 * dt;
+        }
+        
+        if (seeker.flashLightGroup) {
+            let diff2 = targetRotLight - seeker.flashLightGroup.rotation.y;
+            while (diff2 > Math.PI) diff2 -= Math.PI * 2;
+            while (diff2 < -Math.PI) diff2 += Math.PI * 2;
+            seeker.flashLightGroup.rotation.y += diff2 * 12 * dt;
+        }
+
+        // ─── Walk animation ───
+        seekerCurAnim = playCharAnim(seekerMixer, seekerAnimMap, seekerCurAnim, 'run');
+        if (!seekerMixer && seeker.mesh && seeker.mesh.children[0]) {
+            seeker.animPhase += dt * 10;
+            seeker.mesh.children[0].rotation.z = Math.sin(seeker.animPhase) * 0.1;
+        }
+    }
+
+    // ─── Clamp inside corridor ───
+    const fd = floors[seeker.floor];
+    if (!fd) return;
+    const halfW = CORRIDOR_W / 2 - 0.8;
+    const halfD = CORRIDOR_DEPTH / 2 - 0.4;
+
+    // Boiler corridor extension on floor 1
+    let inBoiler = false;
+    if (seeker.floor === 1) {
+        const boilerDoorX = (fd.stairX || 0) + 1.6*1.5 + 0.4;
+        if (seeker.x > boilerDoorX - 1.0) {
+            inBoiler = true;
+        }
+    } else if (seeker.floor === 0) {
+        inBoiler = true;
+    }
+    
+    if (seeker.floor === totalFloors) {
+        const rHalfW = CORRIDOR_W/2 + WALL_D*2 - 0.5;
+        const rHalfD = (BUILDING_DEPTH + WALL_D*2)/2 - 0.5;
+        const bCZ = -BUILDING_DEPTH/2 + CORRIDOR_DEPTH/2;
+        const rMinX = -rHalfW + 4.5;
+        seeker.x = Math.max(rMinX, Math.min(rHalfW, seeker.x));
+        seeker.z = Math.max(bCZ - rHalfD, Math.min(bCZ + rHalfD, seeker.z));
+    } else if (inBoiler) {
+        seeker.x = Math.max(-halfW, Math.min(halfW, seeker.x));
+        seeker.z = Math.max(-CORRIDOR_DEPTH/2 - 3.5, Math.min(halfD, seeker.z));
+    } else {
+        seeker.x = Math.max(-halfW, Math.min(halfW, seeker.x));
+        seeker.z = Math.max(-halfD, Math.min(halfD, seeker.z));
+    }
+    
+    // Sync back clamped position to ECS
+    agent.x = seeker.x;
+    agent.z = seeker.z;
+
+    // ─── Visual Jump over Hiding Spots ───
+    let jumpY = 0;
+    if (fd.hidingSpots && agent.isMoving) {
+        for (let sp of fd.hidingSpots) {
+            let dxSp = seeker.x - sp.x;
+            let dzSp = seeker.z - (sp.mesh ? sp.mesh.position.z : 0);
+            if (Math.abs(dxSp) < 1.0 && Math.abs(dzSp) < 1.0) {
+                let proximity = Math.min(Math.abs(dxSp), Math.abs(dzSp));
+                jumpY = Math.max(jumpY, (1.0 - proximity) * 1.5); 
+            }
+        }
+    }
+
+    // ─── Update mesh position ───
+    if (seeker.mesh) {
+        seeker.mesh.position.x = seeker.x;
+        seeker.mesh.position.y = floors[seeker.floor].baseY + 0.12 + jumpY;
+        seeker.mesh.position.z = seeker.z;
+    }
+}
+
+let aiTickTimer = 0;
+function executeLogicTick(dt) {
+    if (!simulationRunning) return;
+    
+    simTime += dt;
+    updateCinematic(dt);
+    
+    // Synchronous AI Tick replaces setInterval(300ms)
+    aiTickTimer += dt;
+    if (aiTickTimer >= 0.3) {
+        let mappedFloors = [];
+        for(let i=0; i<=totalFloors; i++) { 
+            let fd = floors[i]; 
+            if(!fd) { mappedFloors.push(null); continue; }
+            mappedFloors.push({ doorsCount: fd.doors ? fd.doors.length : 0, spotsCount: fd.hidingSpots ? fd.hidingSpots.length : 0, stairX: fd.stairX, switchX: fd.switchX, elevDoorX: fd.elevDoorX, doors: fd.doors, hidingSpots: fd.hidingSpots });
+        }
+        let stateChecks = { doors: doorChecks, spotSearched: floors.map(fd => fd.hidingSpots ? fd.hidingSpots.map(s => s.isSearched) : []) };
+        let state = {
+            autoPlaying: autoPlaying, gameStatus: gameStatus, gamePhase: gamePhase, 
+            seekerData: { floor: seeker.floor, mode: seeker.mode, x: seeker.x, z: seeker.z, inElevator: seeker.inElevator }, 
+            isLightsOut: isLightsOut, floorLightTimers: floorLightTimers, searches: searches, totalFloors: totalFloors,
+            hudEnergy: hudEnergy, batteryPickups: batteryPickups, elevatorData: { currentFloor: elevator.currentFloor, moving: elevator.moving },
+            stateChecks: stateChecks
+        };
+        if (seekerAI && autoPlaying) {
+            seekerAI.autoAgentStep(state, mappedFloors);
+            let intents = seekerAI.consumeIntents();
+            intents.forEach(i => { if (typeof _aiAction === 'function') _aiAction(i); });
+        }
+        aiTickTimer = 0;
+    }
+    
+    aiMovement(dt);
+    updateSeeker(dt);
+    updateSeekerInElevator(dt);
+    updateElevator(dt);
+    updateHUD();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  EL LOOK DE CINE — encendido con criterio, no de golpe
+// ═══════════════════════════════════════════════════════════════════════════
+// `CinematicPipelinePlugin` llevaba escrito desde el 28 de julio y solo lo
+// tocaba el barril `index.js`. Trae cielo atmosférico + sol + SSAO + bloom +
+// tonemapping ACES en una sola pieza.
+//
+// PERO NO SE ENCIENDE ENTERO AQUÍ, Y ES A PROPÓSITO.
+// Este juego apaga las luces adrede: es un edificio a oscuras donde buscas al
+// mapache con una linterna que gasta pilas. Meterle el cielo de hora dorada y
+// su sol lo dejaría precioso y sin juego — se vería todo, que es exactamente lo
+// que no queremos.
+//
+// Así que se encienden las dos piezas que SUMAN sin quitar:
+//   · bloom → los 24 materiales emisivos del edificio (rótulos, pantallas, el
+//             haz de la linterna) pasan a sangrar luz de verdad
+//   · SSAO  → sombras de contacto en las esquinas; en un interior oscuro es lo
+//             que hace que las cosas se apoyen en el suelo en vez de flotar
+// y se apagan las dos que restarían: `sky` y `lights`.
+//
+// El plugin trae esos interruptores justamente para esto. Un plugin de aspecto
+// que solo se pueda aplicar entero no sirve para un juego con dirección propia.
+const cine = new CinematicPipelinePlugin({
+    preset: 'night',
+    sky: false,        // el edificio vive en negro; un cielo lo delataría
+    lights: false,     // la iluminación ES la mecánica, no la decoración
+    ssao: true,
+    bloom: true,
+});
+gfx.registerPlugin(cine);
+
+// Alternar con la tecla C para ver el antes y el después. No es un adorno de
+// depuración: es la demostración. La afirmación "nuestro motor hace lo que un
+// AAA" se prueba enseñando la MISMA escena con y sin, no con una captura bonita.
+//
+// ⚠️ El plugin NO tiene interruptor propio: su `renderFn` es simplemente
+// `() => composer.render()`. Escribí un `cine.enabled` de mi cosecha antes de
+// mirar, y no habría hecho nada. Se alterna eligiendo QUIÉN pinta.
+let cineEncendido = true;
+const pintar = () => {
+    if (cineEncendido && cine.composer) cine.composer.render();
+    else gfx.renderer.render(gfx.scene, gfx.camera);
+    // El camino por defecto del núcleo también pinta la capa CSS3D. Al
+    // sustituirlo hay que seguir haciéndolo, o las etiquetas y pantallas
+    // HTML-en-3D desaparecerían sin un solo error: se vería "casi igual" y
+    // costaría relacionarlo con haber tocado el render.
+    if (gfx.css3dRenderer) gfx.css3dRenderer.render(gfx.scene, gfx.camera);
+};
+
+window.addEventListener('keydown', (e) => {
+    if (e.key !== 'c' && e.key !== 'C') return;
+    cineEncendido = !cineEncendido;
+    const aviso = document.getElementById('cam-flash');
+    if (aviso) aviso.innerText = cineEncendido ? '🎬 CINE ON (C)' : '🎬 CINE OFF (C)';
+});
+
+gfx.startLoop((engineDt) => {
+    let dt = Math.min(engineDt, 0.1);
+    dt *= simSpeedMultiplier;
+
+    if (simulationRunning && gamePhase === 'seeking' && window.ecs) {
+        window.ecs.tick(dt);
+        
+        // Sync ECS to HTML state
+        let eComp = window.ecs.getComponent(window.playerEntity, 'EnergyComponent');
+        if (eComp) {
+            hudEnergy = eComp.currentEnergy;
+            if (hudEnergy <= 0 && flashLightOn) {
+                flashLightOn = false;
+                eComp.isOn = false;
+                document.getElementById('cam-flash').innerText = '🔦 DEAD';
+                // Trigger Jumpscare
+                gamePhase = 'jumpscare';
+                phaseTimer = 2.0;
+                jumpscareState = { active: true, phase: 'flicker' };
+                if (!window.phantomGroup) {
+                    window.phantomGroup = new THREE.Group();
+                    if (phantomModel) window.phantomGroup.add(phantomModel);
+                    scene.add(window.phantomGroup);
+                }
+                window.phantomGroup.visible = false;
+                const angle = seeker.mesh.rotation.y + Math.PI;
+                window.phantomGroup.position.set(seeker.x + Math.sin(angle)*1.5, seeker.mesh.position.y, seeker.z + Math.cos(angle)*1.5);
+                window.phantomGroup.lookAt(seeker.x, seeker.mesh.position.y, seeker.z);
+            }
+        }
+        
+        let elComp = window.ecs.getComponent(window.elevatorEntity, 'ElevatorComponent');
+        if (elComp) {
+            // Mirror back to HTML object
+            elevator.y = elComp.y;
+            elevator.currentFloor = elComp.currentFloor;
+            elevator.moving = elComp.moving;
+            // Target dispatch is currently done directly to `elevator.targetFloor`. So we sync html -> ecs first
+            if (elevator.targetFloor !== elComp.targetFloor && elevator.moving) {
+                elComp.targetFloor = elevator.targetFloor;
+                elComp.moving = true;
+            }
+        }
+    }
+
+    if (rabbitMixer) rabbitMixer.update(dt);
+    if (seekerMixer) seekerMixer.update(dt * (seekerCurAnim === 'run' ? 1.5 : 1.0));
+    if (phantomMixer) phantomMixer.update(dt);
+
+    // Battery Logic (Delegated to ECS)
+    if (simulationRunning && gamePhase === 'seeking') {
+        if (flashLightOn) {
+            hudEnergy -= dt * 1.5; // Consume battery at 1.5 units per second
+            if (hudEnergy < 0) {
+                hudEnergy = 0;
+                flashLightOn = false;
+                document.getElementById('cam-flash').innerText = 'ðŸ”¦ DEAD';
+                // Trigger Jumpscare
+                gamePhase = 'jumpscare';
+                phaseTimer = 2.0;
+                jumpscareState = { active: true, phase: 'flicker' };
+                if (!window.phantomGroup) {
+                    window.phantomGroup = new THREE.Group();
+                    if (phantomModel) window.phantomGroup.add(phantomModel);
+                    scene.add(window.phantomGroup);
+                }
+                window.phantomGroup.visible = false;
+                const angle = seeker.mesh.rotation.y + Math.PI;
+                window.phantomGroup.position.set(
+                    seeker.mesh.position.x + Math.sin(angle) * 1.5,
+                    seeker.mesh.position.y,
+                    seeker.mesh.position.z + Math.cos(angle) * 1.5
+                );
+                window.phantomGroup.rotation.y = angle;
+            }
+        }
+        
+        let visualIntensity = flashLightOn ? 1.2 : 0.0;
+        let isLowBatt = (hudEnergy < 20 && hudEnergy > 0);
+        
+        if (flashLightOn && isLowBatt) {
+            if (Math.random() < 0.2) visualIntensity *= (Math.random() * 0.5 + 0.2); // Flickering
+            document.getElementById('cam-batt').classList.add('low-batt');
+        } else {
+            document.getElementById('cam-batt').classList.remove('low-batt');
+        }
+        
+        if (flashLight) flashLight.intensity = visualIntensity;
+        if (volumetricBeam) volumetricBeam.material.opacity = flashLightOn ? (visualIntensity / 1.2) * 1.0 : 0;
+        
+        let chunks = Math.ceil(hudEnergy / 25);
+        let bar = '[' + '■'.repeat(chunks) + '□'.repeat(4 - chunks) + ']';
+        document.getElementById('cam-batt').innerText = bar;
+
+        // --- Minuteros Logic ---
+        if (isLightsOut) {
+            for (let f = 0; f < floorLightTimers.length; f++) {
+                // Sync from ECS
+                if (window.floorLightEntities && window.floorLightEntities[f]) {
+                    let comp = window.ecs.getComponent(window.floorLightEntities[f], 'TimedRelayComponent');
+                    if (comp && floorLightTimers[f] !== 9999) {
+                        floorLightTimers[f] = comp.isActive ? comp.timeRemaining : 0;
+                    }
+                }
+                
+                if (floorLights[f]) {
+                    // Start dimming strongly when under 2 seconds, otherwise bright warm yellow
+                    let t = floorLightTimers[f];
+                    if (t >= 9999) floorLights[f].intensity = 0.4;
+                    else if (t > 2.0) floorLights[f].intensity = 0.4;
+                    else if (t > 0) {
+                        // Flickering right before light turns completely off
+                        let flicker = Math.random() > 0.3 ? 1.0 : 0.2;
+                        floorLights[f].intensity = (t / 2.0) * 0.4 * flicker;
+                    }
+                    else floorLights[f].intensity = 0;
+                }
+            }
+        } else {
+            // Keep all fLights on
+            for (let f = 0; f < floorLights.length; f++) {
+                if (floorLights[f]) floorLights[f].intensity = 0.4;
+            }
+        }
+        
+        // --- Battery Pickups Logic ---
+        for (let i = batteryPickups.length - 1; i >= 0; i--) {
+            let p = batteryPickups[i];
+            if (p.floor === seeker.floor) {
+                let dist = Math.hypot(seeker.x - p.x, seeker.z - p.z);
+                if (dist < 1.0) {
+                    // Collect!
+                    hudEnergy = Math.min(100.0, hudEnergy + 60.0);
+                    if (p.mesh.parent) p.mesh.parent.remove(p.mesh);
+                    batteryPickups.splice(i, 1);
+                    document.getElementById('cam-flash').innerText = flashLightOn ? 'ðŸ”¦ ON (F)' : 'ðŸ”¦ OFF (F)';
+                    _flashSeeker(0x34c759); // Flash green!
+                }
+            }
+        }
+    }
+
+    // Animate Flashlight Dust
+    if (window.flashDust && flashDust.userData.velocities && flashLightOn) {
+        const dPos = flashDust.geometry.attributes.position.array;
+        const dVel = flashDust.userData.velocities;
+        for (let i = 0; i < dPos.length / 3; i++) {
+            dPos[i*3] += dVel[i*3] * dt;
+            dPos[i*3+1] += dVel[i*3+1] * dt;
+            dPos[i*3+2] += dVel[i*3+2] * dt;
+            // Wrap particles when they float too far inside the cone
+            if (dPos[i*3+2] > 12) {
+                dPos[i*3+2] = 0.5; // Reset near lens
+                dPos[i*3] = (Math.random() - 0.5) * 1.5;
+                dPos[i*3+1] = (Math.random() - 0.5) * 1.5;
+            }
+        }
+        flashDust.geometry.attributes.position.needsUpdate = true;
+    }
+    if (window.flashDust) flashDust.visible = flashLightOn;
+
+    // --- Jumpscare Animation Loop ---
+    if (gamePhase === 'jumpscare') {
+        phaseTimer -= dt;
+        if (jumpscareState.phase === 'flicker') {
+            const strobe = Math.random() > 0.5;
+            if (flashLight) flashLight.intensity = strobe ? 1.5 : 0;
+            if (volumetricBeam) volumetricBeam.material.opacity = strobe ? 0.4 : 0;
+            if (window.phantomGroup) window.phantomGroup.visible = strobe;
+            
+            if (phaseTimer <= 1.0) {
+                jumpscareState.phase = 'rush';
+                if (flashLight) flashLight.intensity = 1.5; 
+                if (volumetricBeam) volumetricBeam.material.opacity = 0.4;
+                
+                const distObj = 10.0;
+                const angle = seeker.mesh.rotation.y;
+                window.phantomGroup.position.set(
+                    seeker.mesh.position.x + Math.sin(angle) * (distObj - 0.5),
+                    seeker.mesh.position.y,
+                    seeker.mesh.position.z + Math.cos(angle) * (distObj - 0.5)
+                );
+                window.phantomGroup.rotation.y = angle + Math.PI; 
+                
+                phantomModel.traverse(c => {
+                    if (c.isMesh && c.material) {
+                        c.material.transparent = false;
+                        c.material.opacity = 1.0;
+                    }
+                });
+                
+                window.phantomGroup.visible = true;
+                if (phantomMixer) phantomCurAnim = playCharAnim(phantomMixer, phantomAnimMap, phantomCurAnim, 'run');
+            }
+        } else if (jumpscareState.phase === 'rush') {
+            if (flashLight) flashLight.intensity = 1.5; 
+            if (volumetricBeam) volumetricBeam.material.opacity = 0.4;
+            
+            const dx = seeker.mesh.position.x - window.phantomGroup.position.x;
+            const dz = seeker.mesh.position.z - window.phantomGroup.position.z;
+            const distSq = dx*dx + dz*dz;
+            
+            window.phantomGroup.position.x += dx * dt * 4.0;
+            window.phantomGroup.position.z += dz * dt * 4.0;
+
+            if (distSq < 1.0 || phaseTimer <= 0) {
+                jumpscareState.phase = 'drag';
+                phaseTimer = 1.8; 
+                const vLen = Math.sqrt(dx*dx + dz*dz) || 1;
+                jumpscareState.dragDirX = dx / vLen; 
+                jumpscareState.dragDirZ = dz / vLen;
+            }
+        } else if (jumpscareState.phase === 'drag') {
+            const dragAccel = 15.0; 
+            seeker.mesh.position.x += jumpscareState.dragDirX * dragAccel * dt;
+            seeker.mesh.position.z += jumpscareState.dragDirZ * dragAccel * dt;
+            
+            window.phantomGroup.position.copy(seeker.mesh.position);
+            window.phantomGroup.position.x -= jumpscareState.dragDirX * 1.0;
+            window.phantomGroup.position.z -= jumpscareState.dragDirZ * 1.0;
+            
+            cam.rotation.z += Math.sin(phaseTimer * 20) * 0.05 * dt; 
+            window.phantomGroup.position.y = seeker.mesh.position.y + Math.sin(phaseTimer * 20) * 0.2;
+            
+            if (flashLight) flashLight.intensity = Math.max(0, flashLight.intensity - dt * 2.0);
+            if (volumetricBeam) volumetricBeam.material.opacity = flashLight.intensity > 0 ? 0.3 : 0;
+
+            if (phaseTimer <= 0) {
+                if (flashLight) flashLight.intensity = 0;
+                if (volumetricBeam) volumetricBeam.material.opacity = 0;
+                window.phantomGroup.visible = false;
+                jumpscareState.active = false;
+                gamePhase = 'gameover'; 
+                simulationRunning = false;
+                document.getElementById('bldg-title').innerText = 'ðŸ’€ THE END';
+            }
+        }
+    }
+
+    if (!window.RLMode) {
+        executeLogicTick(dt);
+    }
+
+    // Clear just-pressed keys at end of frame
+    for (const k in keysJustPressed) keysJustPressed[k] = false;
+}, pintar);   // ← segundo argumento: quien pinta. Sin esto el composer no entra
+              //   y el bloom no se ve, aunque el plugin esté registrado.
+
+document.addEventListener('keydown', e => {
+    if (e.key.toLowerCase() === 'f' && gamePhase === 'seeking') {
+        toggleFlashlight();
+    }
+});
+
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  ALISA SDK
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+ALISA_SDK.register({
+    sim: 'corporate_building',
+    getSemanticState: () => ({
+        status: simulationRunning ? 'running' : 'menu',
+        time: +simTime.toFixed(1),
+        game_status: gameStatus,
+        searches_made: searches,
+        seeker_floor: seeker.floor + 1,
+        seeker_x: +seeker.x.toFixed(1),
+        seeker_mode: seeker.mode,
+        seeker_in_elevator: seeker.inElevator,
+        elevator_floor: elevator.currentFloor + 1,
+        elevator_moving: elevator.moving,
+        total_floors: totalFloors,
+        doors_per_floor: doorsPerFloor,
+        recent_checks: doorChecks.slice(-3) // return last 3 feedbacks
+    }),
+    getAvailableActions: () => {
+        if (!simulationRunning) return ['wait'];
+        if (gameStatus === 'Found' || gameStatus === 'FOUND!') return ['wait'];
+
+        const acts = ['move_left', 'move_right', 'move_in', 'move_out', 'wait'];
+        if (!seeker.inElevator) {
+            acts.push('stairs_up', 'stairs_down', 'call_elevator', 'enter_elevator');
+            
+            // Allow search if near any door
+            const fd = floors[seeker.floor];
+            if (fd) {
+                let nearDoor = false;
+                for (let i = 0; i < fd.doors.length; i++) {
+                    if (Math.hypot(seeker.x - fd.doors[i].x, seeker.z - (-CORRIDOR_DEPTH/2 + 0.2)) < 1.2) nearDoor = true;
+                }
+                if (nearDoor) acts.push('search_door');
+            }
+        } else {
+            for (let i = 1; i <= totalFloors; i++) acts.push('goto_floor_' + i);
+            acts.push('exit_elevator');
+        }
+        return acts;
+    },
+    executeAction: (intentStr) => {
+        const intent = intentStr.toLowerCase().trim();
+        if (intent === 'move_left') { keys['a'] = true; setTimeout(() => keys['a']=false, 150); }
+        else if (intent === 'move_right') { keys['d'] = true; setTimeout(() => keys['d']=false, 150); }
+        else if (intent === 'move_in') { keys['w'] = true; setTimeout(() => keys['w']=false, 150); }
+        else if (intent === 'move_out') { keys['s'] = true; setTimeout(() => keys['s']=false, 150); }
+        else if (intent === 'stairs_up' || intent === 'stairs_down') { keysJustPressed[' '] = true; }
+        else if (intent === 'call_elevator') { keysJustPressed['e'] = true; }
+        else if (intent === 'enter_elevator' || intent === 'exit_elevator') { keysJustPressed[' '] = true; }
+        else if (intent === 'search_door') { keysJustPressed['enter'] = true; }
+        else if (intent.startsWith('goto_floor_')) {
+            const n = parseInt(intent.split('_')[2]);
+            if (n && n <= totalFloors) keysJustPressed[String(n)] = true;
+        }
+        return {success: true, msg: 'Dispatched: ' + intent};
+    },
+    getScore: () => ({
+        score: (gameStatus === 'Found' || gameStatus === 'FOUND!') ? Math.max(100 - searches*5, 10) : 0,
+        searches: searches,
+        time: simTime,
+        found: gameStatus === 'Found' || gameStatus === 'FOUND!'
+    })
+});
+
+</script>
+</body>
+</html>
+

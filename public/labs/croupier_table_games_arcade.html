@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA - Empty Matrix Room</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { margin: 0; overflow: hidden; background: #e0e5ec; font-family: 'Inter', sans-serif; user-select: none; }
+        
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; padding: 30px; z-index: 10;
+        }
+
+        .hud-panel {
+            background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.1); border-radius: 12px;
+            padding: 20px; pointer-events: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); color: #1a1a2e; width: 350px;
+        }
+
+        h1 { font-size: 24px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 5px; color: #111; }
+        .subtitle { font-size: 13px; color: #666; font-family: 'JetBrains Mono', monospace; }
+
+        .btn-exit {
+            display: inline-block; margin-top: 15px; text-decoration: none;
+            border: 1px solid #1976D2; background: rgba(33, 150, 243, 0.1);
+            color: #1976D2; cursor: pointer; padding: 8px 12px; font-weight: 700;
+            font-family: 'JetBrains Mono', monospace; border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .btn-exit:hover { background: rgba(33, 150, 243, 0.2); }
+        
+        .toggle-btn {
+            width: 100%; border: 1px solid #fde047; background: rgba(244, 239, 136, 0.1);
+            color: #fca311; cursor:pointer; padding: 8px; margin-top: 10px;
+            font-family: 'JetBrains Mono', monospace; border-radius: 4px; font-weight: bold;
+        }
+
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three-0.160.0/build/three.module.js",
+        "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+        "@alisa-engine/": "../js/alisa-engine/"
+      }
+    }
+    </script>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+
+    <div id="ui-layer">
+        <div class="hud-panel">
+            <h1>🔲 ALISA Arcade Node</h1>
+            <div class="subtitle">Sovereign Simulation Gateway</div>
+            
+            <div style="margin-top: 15px; display:flex; flex-direction:column; gap:5px;">
+                <span style="color:#1976D2;font-size:12px;font-weight:bold;">LOAD DETERMINISTIC GAME:</span>
+                <select id="gameSelect" onchange="window.loadGame(this.value)" style="pointer-events:auto;background: rgba(25,118,210,0.1); color: #1976D2; border: 1px solid #1976D2; padding: 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 13px; outline:none; cursor:pointer; margin-bottom:5px;">
+                    <option value="none">-- No Game --</option>
+                    <option value="chess" selected>Sovereign Chess</option>
+                    <option value="checkers">Checkers (Damas)</option>
+                    <option value="reversi">Othello (Reversi)</option>
+                    <option value="mancala">Mancala</option>
+                    <option value="go">Go (Baduk)</option>
+                    <option value="xiangqi">Xiangqi (Chinese Chess)</option>
+                </select>
+            </div>
+
+            <hr style="border: 0; border-top: 1px dashed rgba(0,0,0,0.1); margin: 15px 0;">
+            
+            <!-- Casino HUD Controls -->
+            <div id="casino-hud-block" style="display: none; flex-direction: column; gap: 8px; pointer-events:auto;">
+
+                <span style="color:#FF9800;font-size:12px;font-weight:bold;">🃏 CARD GAME:</span>
+                <select id="cardGameSelect" onchange="loadCardGame(this.value)" style="pointer-events:auto;background: rgba(255,152,0,0.1); color: #FF9800; border: 1px solid #FF9800; padding: 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 11px; outline:none; cursor:pointer; margin-bottom:5px;">
+                    <option value="sandbox">🔧 Sandbox (Free Play)</option>
+                    <optgroup label="♠ Poker">
+                        <option value="texas_holdem">Texas Hold'em</option>
+                        <option value="omaha">Omaha</option>
+                        <option value="five_card_draw">5-Card Draw</option>
+                    </optgroup>
+                    <optgroup label="🎰 Casino">
+                        <option value="blackjack">Blackjack / 21</option>
+                        <option value="baccarat">Baccarat</option>
+                        <option value="war">War</option>
+                    </optgroup>
+                    <optgroup label="🏆 Trick-Taking">
+                        <option value="brisca">Brisca</option>
+                        <option value="tute">Tute</option>
+                        <option value="hearts">Hearts</option>
+                        <option value="spades">Spades</option>
+                        <option value="bridge_contract">Contract Bridge</option>
+                    </optgroup>
+                    <optgroup label="🃏 Rummy">
+                        <option value="chinchon">Chinchón</option>
+                        <option value="gin_rummy">Gin Rummy</option>
+                        <option value="rummy_basic">Rummy</option>
+                        <option value="canasta">Canasta</option>
+                    </optgroup>
+                    <optgroup label="🔥 Shedding">
+                        <option value="uno">UNO</option>
+                        <option value="crazy_eights">Crazy Eights</option>
+                        <option value="sevens">Sevens</option>
+                    </optgroup>
+                    <optgroup label="🧩 Matching">
+                        <option value="go_fish">Go Fish</option>
+                        <option value="memory">Memory</option>
+                        <option value="old_maid">Old Maid</option>
+                    </optgroup>
+                    <optgroup label="♣ Solitaire">
+                        <option value="klondike_solitaire">Klondike</option>
+                        <option value="spider_solitaire">Spider</option>
+                    </optgroup>
+                    <optgroup label="🇪🇸 Betting">
+                        <option value="mus">Mus</option>
+                    </optgroup>
+                    <optgroup label="🧠 ML DOJO (LIVE RL)">
+                        <option value="rl_poker">Live Agent: Poker</option>
+                        <option value="rl_blackjack">Live Agent: Blackjack</option>
+                        <option value="rl_usura">Live Agent: Usura</option>
+                    </optgroup>
+                </select>
+                <div id="card-game-info" style="font-size:10px; font-family:'JetBrains Mono',monospace; color:#888; min-height:14px;"></div>
+                <hr style="border: 0; border-top: 1px dashed rgba(0,0,0,0.1); margin: 5px 0;">
+
+                <span style="color:#4CAF50;font-size:12px;font-weight:bold;">🂡 DECK SHOWCASE:</span>
+                <div style="display:flex; gap:5px; align-items:center;">
+                    <select id="deckSelect" style="flex:1; pointer-events:auto; background: rgba(76,175,80,0.1); color: #4CAF50; border: 1px solid #4CAF50; padding: 5px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 11px; outline:none; cursor:pointer;">
+                        <option value="french_52">French 52</option>
+                        <option value="french_54">French 54 (+ Jokers)</option>
+                        <option value="spanish_40">Spanish 40</option>
+                        <option value="spanish_48">Spanish 48</option>
+                        <option value="uno_108">UNO 108</option>
+                        <option value="tarot_78">Tarot 78</option>
+                    </select>
+                    <button onclick="showcaseDeck()" style="pointer-events:auto; background:#4CAF50; color:#fff; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:11px;">SHOW</button>
+                </div>
+                
+                <hr style="border: 0; border-top: 1px dashed rgba(0,0,0,0.1); margin: 5px 0;">
+                <span style="color:#555;font-size:12px;font-weight:bold;">🔧 SANDBOX DEALER:</span>
+                
+                <span style="color:#555;font-size:12px;font-weight:bold;">🎲 CROUPIER ENGINE:</span>
+                
+                <!-- PLAYERS -->
+                <div style="display:flex; gap:5px; align-items:center; font-size:11px; margin-bottom:5px;">
+                    <input type="number" id="crup_players" value="4" min="1" max="8" style="width:40px; padding:4px;"> PLYRS
+                    <input type="number" id="crup_cards" value="2" min="1" max="10" style="width:40px; padding:4px;"> CRDS
+                    <select id="crup_p_hidden" style="padding:4px; font-family:'JetBrains Mono'; width:60px;">
+                        <option value="1">Hidden</option>
+                        <option value="0">FaceUp</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap:5px; align-items:center; font-size:11px; margin-bottom: 5px;">
+                    <select id="crup_p_layout" style="width:100%; padding:4px; font-family:'JetBrains Mono';">
+                        <option value="fan">Fan (Standard Hand)</option>
+                        <option value="messy">Messy Pile (Chaos Throw)</option>
+                        <option value="pile">Neat Pile (Stacked Deck)</option>
+                        <option value="line">Line (Tableau/Community)</option>
+                        <option value="grid">Grid (Matrix)</option>
+                    </select>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <button onclick="croupierDealPlayers()" class="btn-exit" style="margin-top:0; width:48%;">🂠 Repartir Cartas</button>
+                    <button onclick="croupierRevealPlayers()" class="btn-exit" style="margin-top:0; width:48%; background:rgba(33,150,243,0.1); color:#2196F3; border-color:#2196F3;">👁️ Reveal Hands</button>
+                </div>                
+                <!-- COMMUNITY -->
+                <div style="display:flex; gap:5px; align-items:center; font-size:11px;">
+                    <input type="number" id="crup_comm" value="3" min="1" max="7" style="width:50px; padding:4px; font-family:'JetBrains Mono';"> BOARD
+                    <select id="crup_hidden" style="padding:4px; font-family:'JetBrains Mono'; width:70px;">
+                        <option value="0">FaceUp</option>
+                        <option value="1">Hidden</option>
+                    </select>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                    <button onclick="croupierDealCommunity()" class="btn-exit" style="width:48%;">🎴 Deal Cmnty</button>
+                    <div style="display:flex; width:48%; align-items: stretch; margin-top:15px;">
+                        <input type="number" id="crup_reveal_n" value="1" min="1" max="5" style="width:30px; border:1px solid #2196F3; border-right:none; background:rgba(33,150,243,0.1); color:#2196F3; font-weight:bold; text-align:center; border-radius:6px 0 0 6px; font-family:'JetBrains Mono'; margin:0; outline:none; font-size:12px;">
+                        <button onclick="croupierRevealNext()" class="btn-exit" style="margin-top:0; flex-grow:1; background:rgba(33,150,243,0.1); color:#2196F3; border-color:#2196F3; border-radius:0 6px 6px 0;">👁️ Reveal N</button>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <button onclick="demoCollectCards()" class="btn-exit" style="margin-top:0; width:100%; color:#f44336; border-color:#f44336; background:rgba(244,67,54,0.1);">🧹 Collect / Clear Table</button>
+                </div>
+                
+                <hr style="border: 0; border-top: 1px dashed rgba(0,0,0,0.1); margin: 5px 0;">
+                <span style="color:#555;font-size:12px;font-weight:bold;">UNIVERSAL VERBS:</span>
+                <div style="display:flex; justify-content:space-between; gap:4px;">
+                    <button onclick="croupierDraw()" class="btn-exit" style="margin-top:0; flex:1; font-size:10px;">🃏 Draw</button>
+                    <button onclick="croupierDiscard()" class="btn-exit" style="margin-top:0; flex:1; font-size:10px; color:#FF9800; border-color:#FF9800; background:rgba(255,152,0,0.1);">🗑️ Discard</button>
+                    <button onclick="croupierTap()" class="btn-exit" style="margin-top:0; flex:1; font-size:10px; color:#9C27B0; border-color:#9C27B0; background:rgba(156,39,176,0.1);">↻ Tap</button>
+                </div>
+                <div style="display:flex; justify-content:space-between; gap:4px;">
+                    <button onclick="croupierPass()" class="btn-exit" style="margin-top:0; flex:1; font-size:10px; color:#009688; border-color:#009688; background:rgba(0,150,136,0.1);">↔ Pass</button>
+                    <button onclick="croupierTuck()" class="btn-exit" style="margin-top:0; flex:1; font-size:10px; color:#4CAF50; border-color:#4CAF50; background:rgba(76,175,80,0.1);">📥 Tuck</button>
+                </div>
+
+                <hr style="border: 0; border-top: 1px dashed rgba(0,0,0,0.1); margin: 5px 0;">
+                <span style="color:#555;font-size:12px;font-weight:bold;">UNIVERSAL MACROS:</span>
+                <select id="sb_macro" style="width:100%; padding:4px; font-family:'JetBrains Mono'; margin-bottom:5px;">
+                    <option value="cascade">cascade (Solitaire)</option>
+                    <option value="grid">grid (Memory/Triad)</option>
+                    <option value="pyramid">pyramid (Solitaire)</option>
+                    <option value="circle">circle (Ritual)</option>
+                </select>
+                <button onclick="demoMacroLayout()" class="btn-exit" style="margin-top:0; width:100%;">✨ Run Macro</button>
+            </div>
+
+            <!-- Game Specific HUD container (empty for now, filled dynamically) -->
+            <div id="game-hud-block" style="display: none; flex-direction: column; gap: 8px;">
+                <span style="color:#555;font-size:12px;font-weight:bold;">GAME STATUS:</span>
+                <div style="background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); padding: 10px; border-radius: 6px; font-size: 12px; font-family: 'JetBrains Mono', monospace;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>TURN:</span><strong id="hud-turn" style="color:#1976D2;">WHITE</strong></div>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>STATE:</span><strong id="hud-state" style="color:#4CAF50;">ACTIVE</strong></div>
+                    <div style="margin-top:10px; color:#666;" id="hud-moves">Connecting to Hub...</div>
+                </div>
+                <button onclick="rageQuit()" style="margin-top:5px; width:100%; border:1px solid #f44336; background:rgba(244,67,54,0.1); color:#f44336; cursor:pointer; padding:6px; font-family:'JetBrains Mono', monospace; font-weight:bold; border-radius:4px; transition:all 0.2s;">
+                    💥 RAGE QUIT (FLIP BOARD)
+                </button>
+            </div>
+
+            <a href="../lab.html" id="btn-real-exit" class="btn-exit" style="width: 100%; text-align: center; margin-top: 20px;">⮌ EXIT TO OVERWORLD</a>
+            <button class="toggle-btn" onclick="toggleLights()">💡 Toggle Lights (L)</button>
+        </div>
+    </div>
+
+    <!-- CAPSULE INSPECTION VIEW (Full-screen centered, Resurrection Lab style) -->
+    <div id="capsule-view" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:200; pointer-events:none;">
+        <!-- Dark backdrop -->
+        <div style="position:absolute; inset:0; background:radial-gradient(ellipse at center, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.92) 100%);"></div>
+        <!-- Card container -->
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:280px; height:420px; border-radius:16px; box-shadow:0 0 60px rgba(33,150,243,0.4), 0 0 120px rgba(33,150,243,0.15), inset 0 0 30px rgba(33,150,243,0.2); border:2px solid rgba(33,150,243,0.6); overflow:hidden; background:#111;">
+            <canvas id="capsule-canvas" width="256" height="384" style="width:100%; height:100%;"></canvas>
+        </div>
+        <!-- Label -->
+        <div id="capsule-label" style="position:absolute; top:50%; left:50%; transform:translate(-50%, 240px); color:#2196F3; font-family:'JetBrains Mono',monospace; font-size:13px; text-align:center; letter-spacing:2px; text-shadow:0 0 10px rgba(33,150,243,0.8);">
+            CAPSULE SCAN
+        </div>
+    </div>
+
+    <button id="btn-standup" onclick="standUp()" style="display:none; position:absolute; bottom:30px; left:50%; transform:translateX(-50%); z-index:100; pointer-events:auto; padding:15px 30px; border-radius:8px; border:2px solid #FF4081; background:rgba(255,64,129,0.1); color:#FF4081; font-family:'JetBrains Mono',monospace; font-weight:900; font-size:16px; cursor:pointer; backdrop-filter:blur(5px); box-shadow:0 0 20px rgba(255,64,129,0.3); transition:all 0.2s;">
+        🧍 LEVANTARSE DE LA MESA
+    </button>
+    
+        <!-- Scripts loaded dynamically inside module to prevent THREE undefined race conditions -->
+    <script type="module" id="alisa-core-init">
+        import * as THREE from 'three';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+        import { AssetManager } from '@alisa-engine/src/soma/AssetManager.js';
+        import { CroupierSystem } from '@alisa-engine/src/world/CroupierSystem.js';
+        import { KinematicRageSystem } from '@alisa-engine/src/world/systems/KinematicRageSystem.js';
+        import { ArcadeTableRoomFactory } from '@alisa-engine/src/world/factories/ArcadeTableRoomFactory.js';
+        
+        window.THREE = Object.assign({}, THREE);
+        window.AssetManager = AssetManager;
+        window.croupierEngine = new CroupierSystem({ deckX: 2.5, deckY: 0.77, deckZ: 0 });
+        window.rageEngine = new KinematicRageSystem({ gravity: -60.0 });
+        
+        const app = new AlisaRenderCore({ 
+            cameraPosition: new THREE.Vector3(4, 3, 6),
+            clearColor: 0xe0e5ec,
+            fogColor: null
+        });
+        app.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        app.controls.target.set(0, 0.5, 0);
+        app.controls.maxPolarAngle = Math.PI / 2 + 0.1;
+
+        window.scene = app.scene;
+        window.camera = app.camera;
+        window.renderer = app.renderer;
+        window.controls = app.controls;
+        window.app = app; // Expose for legacy hooks
+        
+        const loadScript = src => new Promise(r => {
+            const s = document.createElement('script');
+            s.src = src; s.onload = r; document.head.appendChild(s);
+        });
+
+        async function init() {
+            await loadScript('../../arcade/js/arcade_mats.js?v=final2');
+            await loadScript('../../arcade/js/SovereignCardEngine.js?v=hifi1');
+            await loadScript('../js/chess_procedural.js');
+            await loadScript('../js/arcade_boards.js');
+            
+            const tableFactory = new ArcadeTableRoomFactory(app.scene, app.camera, app.controls, {
+                onSit: (targetX) => {
+                    const hudPanel = document.querySelector('.hud-panel');
+                    const gameSelectBlock = document.getElementById('gameSelect').parentElement;
+                    
+                    if (targetX === -2.5) {
+                        hudPanel.querySelector('h1').innerText = "🔲 Board Games Node";
+                        hudPanel.querySelector('.subtitle').innerText = "Sovereign Simulation Gateway";
+                        gameSelectBlock.style.display = 'flex';
+                        document.getElementById('casino-hud-block').style.display = 'none';
+                    } else {
+                        hudPanel.querySelector('h1').innerText = "🃏 Sovereign Casino Nodes";
+                        hudPanel.querySelector('.subtitle').innerText = "RLCard Sandbox & Stochastic Simulators";
+                        gameSelectBlock.style.display = 'none';
+                        document.getElementById('game-hud-block').style.display = 'none';
+                        document.getElementById('casino-hud-block').style.display = 'flex';
+                    }
+                    
+                    document.getElementById('btn-real-exit').style.display = 'none';
+                    document.querySelector('.toggle-btn').style.display = 'none';
+                    document.getElementById('btn-standup').style.display = 'block';
+                },
+                onStand: () => {
+                    const hudPanel = document.querySelector('.hud-panel');
+                    hudPanel.querySelector('h1').innerText = "🔲 ALISA Arcade Node";
+                    hudPanel.querySelector('.subtitle').innerText = "Sovereign Simulation Gateway";
+                    document.getElementById('gameSelect').parentElement.style.display = 'flex';
+                    
+                    if (tableFactory.currentGameSet && document.getElementById('gameSelect').value !== 'none') {
+                        document.getElementById('game-hud-block').style.display = 'flex';
+                    }
+                    document.getElementById('casino-hud-block').style.display = 'none';
+                    
+                    document.getElementById('btn-real-exit').style.display = 'inline-block';
+                    document.querySelector('.toggle-btn').style.display = 'block';
+                    document.getElementById('btn-standup').style.display = 'none';
+                }
+            });
+
+            await tableFactory.init();
+            window.tableFactory = tableFactory;
+            
+            // Expose for SovereignCardEngine legacy coupling
+            window.tableCards = tableFactory.tableCards;
+            window.matMesh = tableFactory.matMesh;
+            window.deckGroup = tableFactory.deckGroup;
+            window.standUp = () => tableFactory.standUp();
+            
+            document.querySelector('.subtitle').innerText = "Matrix Room + Sovereign Arcade";
+
+            let physicsEnabled = false;
+            let bGroupGlobal = null;
+            let pGroupGlobal = null;
+
+            window.rageQuit = function() {
+                if (!tableFactory.currentGameSet || physicsEnabled) return;
+
+                document.getElementById('hud-state').innerText = 'TABLE FLIPPED!';
+                document.getElementById('hud-state').style.color = '#f44336';
+                
+                bGroupGlobal = tableFactory.currentGameSet.children[0];
+                pGroupGlobal = tableFactory.currentGameSet.children[1];
+
+                const localScaleY = tableFactory.currentGameSet.scale.y; 
+                const floorLocalY = -0.75 / localScaleY; 
+
+                const entitiesToLaunch = [];
+                entitiesToLaunch.push({ id: 'board', isBoard: true, position: bGroupGlobal.position.clone(), rotation: bGroupGlobal.rotation.clone() });
+                pGroupGlobal.children.forEach((piece, i) => { entitiesToLaunch.push({ id: 'piece_'+i, isBoard: false, position: piece.position.clone(), rotation: piece.rotation.clone(), meshRef: piece }); });
+
+                const rages = window.rageEngine.applyImpulse(entitiesToLaunch, { floorY: floorLocalY });
+                rages.forEach((rageEnt, i) => {
+                    const originalEntity = entitiesToLaunch[i];
+                    if(originalEntity.id === 'board') bGroupGlobal.userData.rageState = rageEnt.rageState;
+                    else originalEntity.meshRef.userData.rageState = rageEnt.rageState;
+                });
+
+                physicsEnabled = true;
+                if (tableFactory.isSitting) setTimeout(() => tableFactory.standUp(), 100);
+            };
+
+            app.startLoop((dt) => {
+                tableFactory.tick(dt);
+                
+                if (physicsEnabled && bGroupGlobal && pGroupGlobal && window.rageEngine) {
+                    const simFrame = [];
+                    simFrame.push({ id: 'board', position: bGroupGlobal.position, rotation: bGroupGlobal.rotation, rageState: bGroupGlobal.userData.rageState });
+                    pGroupGlobal.children.forEach((piece, i) => { simFrame.push({ id: 'piece_'+i, position: piece.position, rotation: piece.rotation, rageState: piece.userData.rageState, meshRef: piece }); });
+
+                    const nextFrame = window.rageEngine.tick(simFrame, dt);
+
+                    nextFrame.forEach((ent, i) => {
+                        const originalEntity = simFrame[i];
+                        if (ent.id === 'board') {
+                            bGroupGlobal.position.copy(ent.position);
+                            bGroupGlobal.rotation.setFromVector3(ent.rotation);
+                            bGroupGlobal.userData.rageState = ent.rageState;
+                        } else {
+                            originalEntity.meshRef.position.copy(ent.position);
+                            originalEntity.meshRef.rotation.setFromVector3(ent.rotation);
+                            originalEntity.meshRef.userData.rageState = ent.rageState;
+                        }
+                    });
+                }
+            });
+
+            
+            await loadScript('../js/SovereignArcadeNode.js');
+            if (window.initLegacyRoom) window.initLegacyRoom();
+
+        }
+        init();
+    </script>
+
+    
+</body>
+</html>

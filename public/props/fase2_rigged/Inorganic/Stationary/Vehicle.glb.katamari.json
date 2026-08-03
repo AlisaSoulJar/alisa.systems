@@ -1,0 +1,23 @@
+{
+    "source_file": "Vehicle.glb",
+    "deduced_size_meters": 1.8,
+    "target_tier": "Tier 0: Base Humanoid",
+    "target_scale_constraint": 1.7999999999999998,
+    "voxel_grid": [
+        3,
+        6,
+        2
+    ],
+    "archetype": "prop_cube",
+    "morphology": {
+        "size_m": 1.8,
+        "domain": "inorganic",
+        "cladistics": "none",
+        "mobility": "stationary",
+        "mechanical_joints": 0
+    },
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0,
+    "mesh_scale_multiplier": 1.3598989795059562,
+    "mathematical_tomography": []
+}

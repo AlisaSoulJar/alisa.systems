@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA — Prueba del evaluador de póker</title>
+<!--
+  El evaluador de manos es la pieza donde un fallo se paga con un bote. Esto lo
+  prueba contra casos CONOCIDOS, incluidos los que rompen a casi todas las
+  implementaciones caseras:
+    · la rueda (A-2-3-4-5, donde el as vale UNO)
+    · escalera de color contra color
+    · full contra full, ganando el trío
+    · desempate por acompañante (kicker) con la misma pareja
+    · escalera en la mesa: si nadie la mejora, se reparte
+-->
+<style>
+ body{margin:0;background:#0b0e14;color:#cfe3f5;font-family:ui-monospace,monospace;padding:26px 30px;font-size:12px;line-height:1.85}
+ h1{font-size:13px;letter-spacing:.24em;color:#7fd0ff;font-weight:400;margin:0 0 16px}
+ .ok{color:#7CFC98} .mal{color:#ff8080;font-weight:700}
+ table{border-collapse:collapse;width:100%;max-width:1000px}
+ td{padding:4px 10px;border-bottom:1px solid #16202c;vertical-align:top}
+ .res{font-size:13px;margin-top:18px;padding-top:12px;border-top:1px solid #24384f}
+</style>
+</head>
+<body>
+<h1>▓ EVALUADOR DE PÓKER — PRUEBA</h1>
+<div id="salida">evaluando…</div>
+
+<script type="importmap">
+{ "imports": { "three": "/vendor/three-0.160.0/build/three.module.js" } }
+</script>
+<script type="module">
+import { evaluar, comparar, nombreDeMano } from '../arcade/js/protohub/rules/poker.js';
+
+const casos = [
+  // [descripción, cartas, categoría esperada]
+  ['escalera real',            ['S_10','S_J','S_Q','S_K','S_A','H_2','D_7'], 9],
+  ['escalera de color',        ['H_5','H_6','H_7','H_8','H_9','S_A','D_K'],  8],
+  ['póker',                    ['C_9','D_9','H_9','S_9','C_2','D_5','H_K'],  7],
+  ['full',                     ['C_8','D_8','H_8','S_4','C_4','D_2','H_7'],  6],
+  ['color',                    ['D_2','D_6','D_9','D_J','D_K','S_3','H_4'],  5],
+  ['escalera',                 ['C_5','D_6','H_7','S_8','C_9','D_2','H_K'],  4],
+  ['LA RUEDA (A-2-3-4-5)',     ['C_A','D_2','H_3','S_4','C_5','D_K','H_9'],  4],
+  ['trío',                     ['C_7','D_7','H_7','S_2','C_9','D_J','H_4'],  3],
+  ['doble pareja',             ['C_10','D_10','H_4','S_4','C_9','D_J','H_2'],2],
+  ['pareja',                   ['C_A','D_A','H_4','S_7','C_9','D_J','H_2'],  1],
+  ['carta alta',               ['C_A','D_3','H_5','S_7','C_9','D_J','H_2'],  0],
+];
+
+const duelos = [
+  ['full de ochos gana a full de cuatros',
+   ['C_8','D_8','H_8','S_4','C_4','D_2','H_7'], ['C_4','D_4','H_4','S_8','C_8','D_2','H_7'], 1],
+  ['pareja de ases con mejor acompañante',
+   ['C_A','D_A','H_K','S_7','C_3','D_2','H_9'], ['S_A','H_A','C_Q','S_7','C_3','D_2','H_9'], 1],
+  ['escalera de color gana a póker',
+   ['H_5','H_6','H_7','H_8','H_9','S_A','D_K'], ['C_9','D_9','H_9','S_9','C_2','D_5','H_K'], 1],
+  ['la rueda PIERDE contra escalera al 6',
+   ['C_A','D_2','H_3','S_4','C_5','D_K','H_9'], ['C_2','D_3','H_4','S_5','C_6','D_K','H_9'], -1],
+  ['escalera en la mesa: empate exacto',
+   ['C_2','D_3','H_4','S_5','C_6','D_K','H_9'], ['C_2','D_3','H_4','S_5','C_6','S_K','S_9'], 0],
+];
+
+let mal = 0;
+let html = '<table>';
+for (const [desc, cartas, esperada] of casos) {
+  const v = evaluar(cartas);
+  const bien = v[0] === esperada;
+  if (!bien) mal++;
+  html += `<tr><td>${bien ? '<span class="ok">✓</span>' : '<span class="mal">✗</span>'}</td>`
+        + `<td>${desc}</td><td style="color:#5f7a92">${cartas.join(' ')}</td>`
+        + `<td>${nombreDeMano(v)}${bien ? '' : ` <span class="mal">(esperaba ${esperada}, salió ${v[0]})</span>`}</td>`
+        + `<td style="color:#41566b">[${v.join(', ')}]</td></tr>`;
+}
+for (const [desc, a, b, signo] of duelos) {
+  const d = comparar(evaluar(a), evaluar(b));
+  const bien = Math.sign(d) === signo;
+  if (!bien) mal++;
+  html += `<tr><td>${bien ? '<span class="ok">✓</span>' : '<span class="mal">✗</span>'}</td>`
+        + `<td colspan="3">${desc}</td>`
+        + `<td style="color:#41566b">${Math.sign(d)}${bien ? '' : ` <span class="mal">esperaba ${signo}</span>`}</td></tr>`;
+}
+html += '</table>';
+
+// Control positivo: si el evaluador estuviera roto y devolviera siempre lo
+// mismo, TODO pasaría. Así que se comprueba que sabe distinguir.
+const distintos = new Set(casos.map(c => evaluar(c[1])[0])).size;
+html += `<div class="res">${mal === 0
+  ? `<span class="ok">${casos.length + duelos.length} de ${casos.length + duelos.length} correctas</span>`
+  : `<span class="mal">${mal} FALLAN</span>`} ·
+  control positivo: distingue <b>${distintos}</b> categorías distintas
+  ${distintos >= 10 ? '<span class="ok">✓</span>' : '<span class="mal">✗ debería distinguir 10</span>'}</div>`;
+
+document.getElementById('salida').innerHTML = html;
+window.__prueba = { fallos: mal, categorias: distintos,
+                    total: casos.length + duelos.length };
+</script>
+</body>
+</html>

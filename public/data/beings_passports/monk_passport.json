@@ -1,0 +1,20 @@
+{
+    "name": "Monk",
+    "role": "The Contemplative Eye",
+    "emoji": "🧘",
+    "type": "biological",
+    "skeleton": "humanoid",
+    "model_path": "monk.glb",
+    "scale": 1.0,
+    "kinematics": "humanoid_meditate",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "edge_tts",
+        "tier": 4,
+        "voice_id": "en-US-GuyNeural",
+        "rate": "-20%",
+        "pitch": "-5Hz",
+        "label": "Monk - Guy (contemplativo, pausado, profundo)"
+    }
+}

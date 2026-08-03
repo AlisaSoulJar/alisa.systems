@@ -1,0 +1,74 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  CI — que la tesis siga siendo cierta en cada empujón
+# ═══════════════════════════════════════════════════════════════════════════
+# Esto no comprueba «que compile»: comprueba **el argumento del proyecto**.
+# Si una partida legítima deja de aceptarse, o una trampa deja de cazarse, o el
+# motor vuelve a acoplarse a la colonia, el empujón se pone en rojo.
+#
+# Y hay una comprobación que va aparte y primero: los secretos. Publicar una
+# credencial no tiene marcha atrás —queda en clones, cachés y rastreadores— así
+# que se mira antes que nada, en su propio trabajo, para que se vea en rojo sin
+# tener que abrir un registro.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  secretos:
+    name: sin credenciales
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # `check_secretos.py` mira lo que git publicaría, así que necesita el
+          # historial real y no una copia superficial.
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: python check_secretos.py
+
+  pruebas:
+    name: la tesis se sostiene
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+
+      # `preflight.py` mide EL PAQUETE, no el taller. Sin construirlo antes,
+      # estaría midiendo otra cosa y diciendo que todo va bien.
+      - name: construir el paquete
+        run: python empaquetar.py
+
+      # Cuatro etapas, de dentro afuera:
+      #   1. `prueba_reglas.mjs`  — los 16 juegos se juegan, se repiten y se
+      #                             verifican, y ninguno comparte huella
+      #   2. `check_gym_envs.mjs` — los entornos nativos arrancan
+      #   3. `prueba_funcion.mjs` — el verificador de produccion, con una
+      #                             peticion sintetica
+      #   4. `preflight.py`       — la lista de antes de publicar
+      - name: npm test
+        run: npm test
+
+      # `npm test` comprueba que los juegos FUNCIONAN. Esto comprueba que MIDEN,
+      # que no es lo mismo: un entorno donde una politica tonta y una razonable
+      # sacan el mismo numero no es una prueba, es un generador de numeros.
+      # Falla solo con lo estructural —metrica constante, la tonta ganando, o el
+      # control de la Guerra separando—; la falta de senal por ruido es un aviso.
+      - name: los entornos miden algo
+        run: npm run calibrar
+
+      # Si algo falla, el paquete construido dice mas que el registro.
+      - name: guardar el paquete si algo falla
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist_publico
+          path: dist_publico/
+          retention-days: 7

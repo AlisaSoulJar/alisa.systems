@@ -1,0 +1,60 @@
+{
+    "janitor_cart": [
+        {"shape": "box", "size": [0.9, 0.5, 0.5], "pos": [0, 0.45, 0], "type": "container", "name": "Carro de Limpieza"},
+        {"shape": "cylinder", "size": [0.25, 0.25, 0.4, 6], "pos": [-0.3, 0.73, 0], "type": "base"},
+        {"shape": "cylinder", "size": [0.03, 0.03, 0.8, 4], "pos": [0.35, 1.1, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.06, 0.06, 0.05, 8], "pos": [-0.4, 0.06, -0.2], "rot": [0, 0, 1.5708], "type": "dark"},
+        {"shape": "cylinder", "size": [0.06, 0.06, 0.05, 8], "pos": [0.4, 0.06, -0.2], "rot": [0, 0, 1.5708], "type": "dark"},
+        {"shape": "cylinder", "size": [0.06, 0.06, 0.05, 8], "pos": [-0.4, 0.06, 0.2], "rot": [0, 0, 1.5708], "type": "dark"},
+        {"shape": "cylinder", "size": [0.06, 0.06, 0.05, 8], "pos": [0.4, 0.06, 0.2], "rot": [0, 0, 1.5708], "type": "dark"}
+    ],
+    "fuse_box_wall": [
+        {"shape": "box", "size": [0.6, 0.8, 0.2], "pos": [0, 1.5, -0.4], "radius": 0.01, "type": "container", "name": "Caja de Fusibles"}
+    ],
+    "fire_extinguisher": [
+        {"shape": "cylinder", "size": [0.15, 0.15, 0.5, 6], "pos": [0, 0.25, 0], "type": "red_neo"},
+        {"shape": "sphere", "size": [0.15, 6, 3, 0, 6.2832, 0, 1.5708], "pos": [0, 0.5, 0], "type": "red_neo"}
+    ],
+    "ventilation_fan_large": [
+        {"shape": "box", "size": [2.0, 2.0, 0.4], "pos": [0, 1.0, 0], "radius": 0.01, "type": "dark"},
+        {"shape": "cylinder", "size": [0.8, 0.8, 0.41, 8], "pos": [0, 1.0, 0], "rot": [1.5708, 0, 0], "type": "base"}
+    ],
+    "gas_tanks_pair": [
+        {"shape": "cylinder", "size": [0.3, 0.3, 1.0, 6], "pos": [-0.35, 0.5, 0], "type": "base"},
+        {"shape": "sphere", "size": [0.3, 6, 3, 0, 6.2832, 0, 1.5708], "pos": [-0.35, 1.0, 0], "type": "base"},
+        {"shape": "cylinder", "size": [0.3, 0.3, 1.0, 6], "pos": [0.35, 0.5, 0], "type": "base"},
+        {"shape": "sphere", "size": [0.3, 6, 3, 0, 6.2832, 0, 1.5708], "pos": [0.35, 1.0, 0], "type": "base"}
+    ],
+    "electrical_panel_wall": [
+        {"shape": "box", "size": [1.2, 1.8, 0.2], "pos": [0, 1.2, -0.4], "radius": 0.01, "type": "container", "name": "Cuadro Eléctrico"}
+    ],
+    "pipes_wall_cluster": [
+        {"shape": "cylinder", "size": [0.1, 0.1, 3.0, 6], "pos": [-0.3, 1.5, -0.4], "type": "base"},
+        {"shape": "cylinder", "size": [0.15, 0.15, 3.0, 6], "pos": [0.0, 1.5, -0.3], "type": "dark"},
+        {"shape": "cylinder", "size": [0.08, 0.08, 3.0, 6], "pos": [0.3, 1.5, -0.4], "type": "base"}
+    ],
+    "cleaning_cart_janitor": [
+        {"shape": "wedge", "size": [0.7, 0.8, 0.15], "pos": [0, 0.15, 0], "type": "base"},
+        {"shape": "wedge", "size": [0.7, 0.8, 1.0], "pos": [0, 0.6, -0.4], "type": "dark"},
+        {"shape": "wedge", "size": [0.35, 0.4, 0.3], "pos": [0, 0.3, 0.4], "type": "container", "name": "Cubo Fregona"}
+    ],
+    "ladder_metal_lean": [
+        {"shape": "cylinder", "size": [0.03, 0.03, 3.0, 4], "pos": [-0.2, 1.5, 0], "rot": [-0.15, 0, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.03, 0.03, 3.0, 4], "pos": [0.2, 1.5, 0], "rot": [-0.15, 0, 0], "type": "dark"},
+        {"shape": "cylinder", "size": [0.02, 0.02, 0.4, 4], "pos": [0, 0.6, 0.04], "rot": [0, 0, 1.5708], "type": "base"},
+        {"shape": "cylinder", "size": [0.02, 0.02, 0.4, 4], "pos": [0, 1.0, 0.08], "rot": [0, 0, 1.5708], "type": "base"},
+        {"shape": "cylinder", "size": [0.02, 0.02, 0.4, 4], "pos": [0, 1.4, 0.12], "rot": [0, 0, 1.5708], "type": "base"},
+        {"shape": "cylinder", "size": [0.02, 0.02, 0.4, 4], "pos": [0, 1.8, 0.16], "rot": [0, 0, 1.5708], "type": "base"},
+        {"shape": "cylinder", "size": [0.02, 0.02, 0.4, 4], "pos": [0, 2.2, 0.20], "rot": [0, 0, 1.5708], "type": "base"}
+    ],
+    "server_cooling_fan_wall": [
+        {"shape": "box", "size": [2.0, 2.0, 0.4], "pos": [0, 1.0, -0.4], "type": "dark"},
+        {"shape": "cylinder", "size": [0.8, 0.8, 0.45, 8], "pos": [0, 1.0, -0.4], "rot": [1.5708, 0, 0], "type": "base"}
+    ],
+    "water_heater_boiler": [
+        {"shape": "cylinder", "size": [0.5, 0.5, 1.4, 8], "pos": [0, 0.7, -0.2], "type": "dark"},
+        {"shape": "sphere", "size": [0.5, 8, 4, 0, 6.2832, 0, 1.5708], "pos": [0, 1.4, -0.2], "type": "dark"},
+        {"shape": "cylinder", "size": [0.05, 0.05, 0.4, 4], "pos": [-0.15, 1.6, -0.2], "type": "base"},
+        {"shape": "cylinder", "size": [0.05, 0.05, 0.4, 4], "pos": [0.15, 1.6, -0.2], "type": "base"}
+    ]
+}

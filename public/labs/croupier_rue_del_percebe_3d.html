@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA LAB — 13 Rue del Percebe · JUGABLE (la puerta humana)</title>
+<style>
+  body{margin:0;overflow:hidden;background:#05070d;font-family:ui-monospace,monospace;color:#fff}
+  #hud{position:absolute;top:14px;left:16px;z-index:100;font-size:12px;line-height:1.7;text-shadow:0 0 8px #000;pointer-events:none}
+  #hud h2{margin:0 0 4px;font-size:15px;color:#7fd0ff;letter-spacing:1px}
+  #hud .k{color:#5f7a92;display:inline-block;width:104px}
+  #hud .ok{color:#7CFC98}.hot{color:#ff7b52}.warm{color:#ffd166}.cold{color:#7fb0ff}
+  #log{position:absolute;top:14px;right:16px;width:236px;max-height:70vh;overflow:hidden;z-index:100;
+       background:rgba(8,12,20,.78);border:1px solid #1d2b3e;border-radius:8px;padding:9px 11px;font-size:10.5px;line-height:1.6}
+  #log h3{margin:0 0 5px;color:#7fd0ff;font-size:11px}
+  #banner{position:absolute;top:44%;left:50%;transform:translateX(-50%);z-index:120;font-size:26px;
+          letter-spacing:2px;text-shadow:0 0 22px #000;display:none;text-align:center}
+  #tip{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:100;color:#9fb3c8;font-size:12px;
+       background:rgba(8,12,20,.72);border:1px solid #1d2b3e;border-radius:7px;padding:7px 16px}
+  #tag{position:absolute;bottom:14px;left:16px;color:#4a5a6a;font-size:10px;z-index:100}
+  #tag b{color:#00ffcc}
+</style>
+<script type="importmap">
+{ "imports": { "three": "/vendor/three-0.160.0/build/three.module.js",
+               "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+               "@alisa-engine/": "../js/alisa-engine/" } }
+</script>
+</head>
+<body>
+<div id="hud">cargando el edificio…</div>
+<div id="log"><h3>▓ COMPROBACIONES</h3><div id="loglist"></div></div>
+<div id="banner"></div>
+<div id="tip">Haz <b>clic en una puerta</b> para abrirla · <b>rueda</b> para orbitar · el mapache está en una de ellas</div>
+<div id="tag">Powered by <b>@alisa-engine</b> · MISMO <b>RueDelPercebeEnv</b> que juegan la FSM y el LLM — misma métrica, mismos recibos</div>
+<script type="module">
+import * as THREE from 'three';
+import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+import { CinematicPipelinePlugin } from '@alisa-engine/src/soma/plugins/CinematicPipelinePlugin.js';
+import { RueDelPercebeEnv } from '@alisa-engine/src/gym/envs/RueDelPercebeEnv.js';
+// LA FÁBRICA QUE YA EXISTÍA (756 líneas): sótano, planta baja, azotea, ascensor,
+// escaleras, interruptores, luces por planta con parpadeo y las DOOR_COLORS originales.
+import { ProceduralBuildingFactory } from '@alisa-engine/src/world/factories/ProceduralBuildingFactory.js';
+import { AssetManager } from '@alisa-engine/src/soma/AssetManager.js';
+import { GymRecorder } from '@alisa-engine/src/gym/GymRecorder.js';
+
+window.onload = () => {
+  // ── EL MISMO ENTORNO que juegan los agentes ──
+  const seed = Math.floor(Math.random() * 10000);
+  const rec = new GymRecorder({ envId: RueDelPercebeEnv.id, seed, actor: 'humano', agentType: 'human' });
+  const env = new RueDelPercebeEnv({ recorder: rec });
+  env.reset(seed);
+  window.__env = env;
+
+  const app = new AlisaRenderCore({
+    clearColor: 0x090d16, fogColor: null, useShadows: true,
+    // escala REAL de la fábrica: FL_H=5, ancho 28, fondo 30 → hay que alejarse
+    cameraPosition: new THREE.Vector3(22, 6, 52)
+  });
+  // sin luces propias del pipeline: el ARTE del edificio trae las suyas (ambiente casi a cero)
+  const cine = new CinematicPipelinePlugin({ preset: 'interior', lights: true, bloom: true, ssao: false,
+                                             shadowExtent: 32 });
+  app.registerPlugin(cine);
+  app.controls.target.set(0, 0, 0);   // la fábrica centra el edificio en el origen
+  window.__core = app;
+
+  // ── EL EDIFICIO, con la fábrica REAL del motor (no una reimplementación) ──
+  const seeker = { mesh: null }, rabbit = { mesh: null };
+  const fab = new ProceduralBuildingFactory(app.scene, AssetManager);
+  fab.build(env.floors, env.doorsPerFloor, false, 1, null, seeker, rabbit, app.camera, app.controls,
+            { buildCharacters: false });   // solo el edificio: aquí no hay acosador
+  app.scene.add(new THREE.AmbientLight(0xbfd0e8, 0.16));   // ambiente bajo: manda la luz práctica
+  window.__fab = fab;
+
+  // mapear las puertas 3D de la fábrica a los "spots" lógicos del env
+  const doorMeshes = [];
+  fab.floors.forEach((fl, fi) => {
+    (fl.doors || []).forEach((d, di) => {
+      const mesh = d.mesh || d.group || d;
+      if (!mesh || !mesh.traverse) return;
+      const spot = env.spots.find(s => s.floor === fi && s.index === di && s.kind === 'puerta');
+      if (!spot) return;
+      mesh.userData.spot = spot;
+      doorMeshes.push({ mesh, spot });
+    });
+  });
+
+  // ── INTERACCIÓN: clic = comprobar (mismo step() que los agentes) ──
+  const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
+  const logList = document.getElementById('loglist'), banner = document.getElementById('banner');
+  const COL = { '¡ENCONTRADO!': 0x7CFC98, 'CALIENTE': 0xff7b52, 'TIBIO': 0xffd166, 'FRÍO': 0x4a7bd0 };
+
+  app.renderer.domElement.addEventListener('pointerdown', ev => {
+    if (env.done) return;
+    mouse.x = (ev.clientX / innerWidth) * 2 - 1;
+    mouse.y = -(ev.clientY / innerHeight) * 2 + 1;
+    ray.setFromCamera(mouse, app.camera);
+    const hit = ray.intersectObjects(doorMeshes.map(d => d.mesh))[0];
+    if (!hit) return;
+    const s = hit.object.userData.spot;
+    if (env.currentFloor !== s.floor) {            // moverse de planta (verbo del env)
+      const r0 = env.step({ verb: 'ir_a_planta', floor: s.floor });
+      rec.record({ verb: 'ir_a_planta', args: { floor: s.floor }, reward: r0.reward, t: env.t });
+    }
+    const verb = s.kind === 'puerta' ? 'comprobar_puerta' : 'comprobar_escondite';
+    const r = env.step({ verb, floor: s.floor, index: s.index });
+    rec.record({ verb, args: { floor: s.floor, index: s.index }, reward: r.reward, t: env.t });
+    const res = r.info.resultado;
+    if (res) {
+      const COLR = { '¡ENCONTRADO!': 0x7CFC98, 'CALIENTE': 0xff7b52, 'TIBIO': 0xffd166, 'FRÍO': 0x4a7bd0 };
+      const c = COLR[res] ?? 0x666666;
+      hit.object.traverse(o => { if (o.isMesh && o.material) {
+        o.material = o.material.clone();
+        o.material.color.setHex(c); o.material.emissive = new THREE.Color(c);
+        o.material.emissiveIntensity = res === '¡ENCONTRADO!' ? 0.9 : 0.4; } });
+      const cls = res === 'CALIENTE' ? 'hot' : res === 'TIBIO' ? 'warm' : res === 'FRÍO' ? 'cold' : 'ok';
+      logList.innerHTML = `<div>planta ${s.floor + 1} · ${s.kind} → <span class="${cls}">${res}</span></div>` + logList.innerHTML;
+    }
+    paint();
+    if (env.done) {
+      const sc = env.getScore();
+      banner.style.display = 'block';
+      banner.innerHTML = sc.metrics.encontrado
+        ? `<span style="color:#7CFC98">🦝 ¡ENCONTRADO!</span><div style="font-size:14px;color:#9fb3c8">${sc.metrics.comprobaciones} comprobaciones · ${sc.score} puntos</div>`
+        : `<span style="color:#ff7b72">SIN INTENTOS</span><div style="font-size:14px;color:#9fb3c8">estaba en la planta ${sc.metrics.planta_mapache}</div>`;
+      // sella la partida: mismos recibos que un agente
+      rec.seal(sc).then(sealed => {
+        const v = GymRecorder.validate(sealed);
+        document.getElementById('tip').innerHTML =
+          `partida sellada · <b>${sealed.receipts.length}</b> recibos · cadena <b style="color:${v.valid ? '#7CFC98' : '#ff7b72'}">${v.valid ? 'VÁLIDA' : 'ROTA'}</b> · recarga para otra`;
+        window.__sealed = sealed;
+      });
+    }
+  });
+
+  function paint() {
+    const sc = env.getScore();
+    const last = env.checks[env.checks.length - 1];
+    const cls = last ? (last.result === 'CALIENTE' ? 'hot' : last.result === 'TIBIO' ? 'warm' : last.result === 'FRÍO' ? 'cold' : 'ok') : '';
+    document.getElementById('hud').innerHTML =
+      `<h2>13 RUE DEL PERCEBE</h2>` +
+      `<span class="k">semilla</span> ${seed}<br>` +
+      `<span class="k">planta</span> ${env.currentFloor + 1} de ${env.floors}<br>` +
+      `<span class="k">intentos</span> <b>${env.budget - env.checks.length}</b> restantes<br>` +
+      `<span class="k">última pista</span> <span class="${cls}">${last ? last.result : '—'}</span><br>` +
+      `<span class="k">agente</span> <span class="ok">HUMANO</span> (mismo env que FSM y LLM)`;
+  }
+  paint();
+
+  app.startLoop(() => {}, cine.renderFn);
+  window.__ready = true;
+  window.__report = { seed, floors: env.floors, spots: env.spots.length, doors: doorMeshes.length };
+};
+</script>
+</body>
+</html>

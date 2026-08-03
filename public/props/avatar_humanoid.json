@@ -1,0 +1,184 @@
+{
+    "big_head_character_base": {
+        "type": "glb",
+        "url": "props/models/Big Head Character Base.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "blocks_humanoid": {
+        "type": "glb",
+        "url": "props/models/Blocks Humanoid.glb",
+        "scale": 1.0,
+        "tint": "#ffffff",
+        "faceStyle": "hologram"
+    },
+    "character_base": {
+        "type": "glb",
+        "url": "props/models/Character Base.glb",
+        "scale": 1.0,
+        "tint": "#ffffff",
+        "faceStyle": "hologram"
+    },
+    "crypto_bro": {
+        "type": "glb",
+        "url": "props/models/Crypto Bro.glb",
+        "scale": 1.0,
+        "tint": "#ffffff",
+        "faceStyle": "hologram"
+    },
+    "eyebrows_female": {
+        "type": "glb",
+        "url": "props/models/Eyebrows_Female.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "eyebrows_regular": {
+        "type": "glb",
+        "url": "props/models/Eyebrows_Regular.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "female_character_base": {
+        "type": "glb",
+        "url": "props/models/Female Character Base.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "female_fighter": {
+        "type": "glb",
+        "url": "props/models/Female Fighter.glb",
+        "scale": 1.0,
+        "tint": "#ffffff",
+        "faceStyle": "hologram"
+    },
+    "generic_female": {
+        "type": "glb",
+        "url": "props/models/Generic Female.glb",
+        "scale": 1.0,
+        "tint": "#ffffff",
+        "faceStyle": "hologram"
+    },
+    "generic_male": {
+        "type": "glb",
+        "url": "props/models/Generic Male.glb",
+        "scale": 1.0,
+        "tint": "#ffffff",
+        "faceStyle": "hologram"
+    },
+    "hair_beard": {
+        "type": "glb",
+        "url": "props/models/Hair_Beard.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "hair_buns": {
+        "type": "glb",
+        "url": "props/models/Hair_Buns.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "hair_buzzed": {
+        "type": "glb",
+        "url": "props/models/Hair_Buzzed.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "hair_buzzedfemale": {
+        "type": "glb",
+        "url": "props/models/Hair_BuzzedFemale.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "hair_long": {
+        "type": "glb",
+        "url": "props/models/Hair_Long.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "hair_simpleparted": {
+        "type": "glb",
+        "url": "props/models/Hair_SimpleParted.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "human_dude_guy": {
+        "type": "glb",
+        "url": "props/models/Human Dude Guy.glb",
+        "scale": 1.0,
+        "tint": "#ffffff",
+        "faceStyle": "hologram"
+    },
+    "knightcharacter": {
+        "type": "glb",
+        "url": "props/models/KnightCharacter.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "man": {
+        "type": "glb",
+        "url": "props/models/Man.glb",
+        "scale": 1.0,
+        "tint": "#ffffff",
+        "faceStyle": "hologram"
+    },
+    "o": {
+        "type": "glb",
+        "url": "props/models/O.glb",
+        "scale": 1.0,
+        "tint": "#ffffff",
+        "faceStyle": "hologram"
+    },
+    "richie": {
+        "type": "glb",
+        "url": "props/models/Richie.glb",
+        "scale": 1.0,
+        "tint": "#ffffff",
+        "faceStyle": "hologram"
+    },
+    "superhero_female_fullbody": {
+        "type": "glb",
+        "url": "props/models/Superhero_Female_FullBody.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "superhero_male_fullbody": {
+        "type": "glb",
+        "url": "props/models/Superhero_Male_FullBody.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "supersup": {
+        "type": "glb",
+        "url": "props/models/Supersup.glb",
+        "scale": 1.0,
+        "tint": "#ffffff",
+        "faceStyle": "hologram"
+    },
+    "woman": {
+        "type": "glb",
+        "url": "props/models/Woman.glb",
+        "scale": 1.0,
+        "tint": "#ffffff",
+        "faceStyle": "hologram"
+    },
+    "women_base": {
+        "type": "glb",
+        "url": "props/models/Women Base.glb",
+        "scale": 1.0,
+        "tint": "#ffffff",
+        "faceStyle": "hologram"
+    }
+}

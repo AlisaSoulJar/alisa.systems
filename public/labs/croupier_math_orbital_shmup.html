@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ALISA LAB — OrbitalKinematicsSystem V4 (Sovereign Aesthetics)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { overflow: hidden; background: #030308; font-family: 'JetBrains Mono', sans-serif; color: #ccc; }
+
+        /* ─── LAUNCH MODAL ─── */
+        #scenarioModal {
+            position: fixed; inset: 0; z-index: 200;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.94);
+        }
+        #scenarioModal .modal-box {
+            background: #0a0a1e; border: 2px solid #55aaff;
+            border-radius: 16px; padding: 35px 45px; max-width: 720px; width: 90%;
+            box-shadow: 0 0 80px rgba(85,170,255,0.2);
+            max-height: 90vh; overflow-y: auto;
+        }
+        #scenarioModal h1 {
+            text-align: center; color: #55aaff; font-size: 28px; margin-bottom: 25px; letter-spacing: 2px;
+        }
+        .scenario-cards { display: flex; gap: 18px; margin-bottom: 25px; }
+        .scenario-card {
+            flex: 1; background: #0d0d22; border: 2px solid #1a1a3c;
+            border-radius: 12px; padding: 18px; cursor: pointer; transition: all 0.25s ease;
+        }
+        .scenario-card:hover { border-color: #55aaff; transform: translateY(-3px); box-shadow: 0 6px 20px rgba(85,170,255,0.2); }
+        .scenario-card.selected { border-color: #55aaff; background: #15153a; }
+        .scenario-card h3 { color: #fff; margin-bottom: 8px; font-size: 16px; }
+        .scenario-card p { color: #88a; font-size: 12px; line-height: 1.5; }
+        .scenario-card .emoji-label { font-size: 32px; margin-bottom: 10px; display: block; }
+
+        #btnStart {
+            display: block; margin: 25px auto 0; padding: 14px 50px;
+            font-size: 18px; font-weight: bold; background: #2266cc; color: #fff;
+            border: none; border-radius: 8px; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(34,102,204,0.4); transition: all 0.2s; letter-spacing: 1px;
+        }
+        #btnStart:hover { background: #3388ff; transform: scale(1.04); }
+
+        /* ─── HUD ─── */
+        #hud {
+            display: none; position: absolute; top: 15px; left: 15px;
+            background: rgba(5,5,20,0.85); box-shadow: 0 0 15px rgba(85,170,255,0.15);
+            padding: 14px 18px; border-radius: 10px; border: 1px solid #2a2a55;
+            pointer-events: none; font-size: 13px; line-height: 1.8; z-index: 10;
+            backdrop-filter: blur(4px);
+        }
+        #hud .title { color: #00ffcc; font-size: 15px; font-weight: bold; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px;}
+        #hud .stat { color: #88a; }
+        #hud .v { color: #ff88cc; font-weight: bold; }
+        #hud .v-green { color: #88ff88; font-weight: bold; }
+        #hud .v-cyan { color: #88ccff; font-weight: bold; }
+        #hud .v-gold { color: #ffcc44; font-weight: bold; }
+        
+        .rank-bar { width: 120px; height: 6px; background: #111; border-radius: 3px; display: inline-block; vertical-align: middle; margin-left: 6px; border: 1px solid #333;}
+        .rank-fill { height: 100%; border-radius: 3px; transition: width 0.3s, background 0.3s; background:#44ff44; width: 0%;}
+
+        /* Screen flash */
+        #screenFlash {
+            position: fixed; inset: 0; pointer-events: none; z-index: 15;
+            background: rgba(255,255,255,0); transition: background 0.05s;
+        }
+        #screenFlash.graze { background: rgba(136,204,255,0.12); }
+        #screenFlash.death { background: rgba(255,68,68,0.4); }
+        #screenFlash.powerup { background: rgba(255,170,0,0.2); }
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three-0.160.0/build/three.module.js",
+        "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+        "@alisa-engine/": "../js/alisa-engine/"
+      }
+    }
+    </script>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+
+    <!-- LAUNCH MODAL -->
+    <div id="scenarioModal">
+        <div class="modal-box">
+            <h1>🚀 GYM: ORBITAL KINEMATICS V4.0</h1>
+
+            <div class="scenario-cards">
+                <div class="scenario-card selected" id="cardS1">
+                    <span class="emoji-label">🚀☄️🔔</span>
+                    <h3>Stage 1: Asteroid Gauntlet</h3>
+                    <p>Powered by the headless OrbitalKinematicsSystem. Math dictates survival, rendering dictates beauty.</p>
+                </div>
+            </div>
+
+            <button id="btnStart">▶ INITIATE DEPLOYMENT</button>
+        </div>
+    </div>
+
+    <!-- HUD -->
+    <div id="hud">
+        <div class="title" id="hudTitle">🚀 Sector Alpha — Active</div>
+        <div class="stat">⏱️ Time: <span class="v-green" id="vTime">0.0s</span> | Score: <span class="v-gold" id="vScore">0</span></div>
+        <div class="stat">📊 Rank (Speed Curve): <div class="rank-bar"><div class="rank-fill" id="rankFill"></div></div></div>
+        <div class="stat">🌊 Engine Load: <span class="v-gold" id="vWave">CALM</span></div>
+        <div class="stat">✨ Graze: <span class="v-cyan" id="vGraze">0</span></div>
+        <div class="stat">💀 Entities Tracking: <span class="v" id="vDeaths">0</span></div>
+    </div>
+
+    <div id="screenFlash"></div>
+
+    <!-- ⚠️ `js/sfx.js` son 36 KB de motor de audio procedural —unos sesenta
+         sonidos sintetizados con Web Audio, sin un solo fichero .wav— más
+         cuatro temas de música y una radio online gratuita (SomaFM). Lo cargaba
+         UNA página de las 131.
+
+         Y la costura estaba pedida a gritos: este HUD lleva un contador
+         «Graze» desde el primer día… y `sfx.js` trae un sonido `graze()`.
+         Alguien pensó las dos mitades y nadie las unió. -->
+    <script src="../js/sfx.js"></script>
+    <script type="module">
+        import * as THREE from 'three';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js?v=4';
+        import { OrbitalKinematicsSystem } from '@alisa-engine/src/world/systems/OrbitalKinematicsSystem.js?v=4';
+        import { AlisaBloomEngine } from '@alisa-engine/src/soma/plugins/AlisaBloomEngine.js?v=4';
+        import { AssetManager } from '@alisa-engine/src/soma/AssetManager.js';
+
+        // DOM Elements
+        const modal = document.getElementById('scenarioModal');
+        const hud = document.getElementById('hud');
+        const btnStart = document.getElementById('btnStart');
+        const vTime = document.getElementById('vTime');
+        const vScore = document.getElementById('vScore');
+        const vDeaths = document.getElementById('vDeaths');
+        const rankFill = document.getElementById('rankFill');
+        const screenFlash = document.getElementById('screenFlash');
+
+        // State binding
+        let core, engine, bloomPlugin;
+        let timeElapsed = 0;
+
+        // El «graze» de los shmup: rozar sin chocar. Es la mecánica que premia
+        // jugar cerca del peligro, y aquí ya había un contador esperándola.
+        const RADIO_ROCE = 3.2;
+        let roces = 0, sonando = new Set();
+
+        btnStart.onclick = async () => {
+            modal.style.display = 'none';
+            hud.style.display = 'block';
+
+            // El audio necesita un gesto del usuario para arrancar: este clic
+            // ES ese gesto, así que es el único sitio donde puede ir.
+            try {
+                SFX.init();
+                SFX.music.start('space');
+            } catch (e) { console.warn('[audio] no arranca:', e); }
+
+            // 1. Initialize ECS Framework
+            core = new AlisaRenderCore({ clearColor: 0x050510, fogColor: 0x050510, fogDensity: 0.015 });
+            core.setupDefaultEnvironment();
+            core.scene.fog = new THREE.FogExp2(0x020210, 0.015);
+            
+            // Reconfigure Core Lighting specific to Shmup aesthetics
+            core.hemiLight.intensity = 0.5;
+            core.hemiLight.color.setHex(0xb1e1ff);
+            core.hemiLight.groundColor.setHex(0x250645);
+            core.spotLight.color.setHex(0xa64dff);
+            
+            // Additional aesthetic sun
+            const sunLight = new THREE.DirectionalLight(0xff55aa, 1.2);
+            sunLight.position.set(20, 50, -20);
+            core.scene.add(sunLight);
+
+            // Hide default white grid, add Synthwave grid
+            core.scene.children.forEach(c => {
+                if(c.type === 'GridHelper') c.visible = false;
+                if(c.type === 'Mesh' && c.geometry.type === 'PlaneGeometry') {
+                    c.material.color.setHex(0x0a001a);
+                }
+            });
+            const neonGrid = new THREE.GridHelper(100, 50, 0xff00ff, 0x110033);
+            neonGrid.position.y = 0.1;
+            core.scene.add(neonGrid);
+
+            // 2. Initialize Visual Plugins (Bloom)
+            // Strength 1.5, Radius 0.4, Threshold 0.1
+            bloomPlugin = new AlisaBloomEngine(core, 1.5, 0.4, 0.1);
+            
+            // ═══════════════════════════════════════════════════════════════
+            //  3. EL SISTEMA, CONECTADO DE VERDAD
+            //
+            //  ⚠️ Aquí ponía `engine.init(core.scene)`, `engine.setCore(core)` y
+            //  `engine.update(dt)`, los tres envueltos en un `if(engine.X)`.
+            //  `OrbitalKinematicsSystem` no tiene ninguno de esos métodos, así
+            //  que no fallaba nada: sencillamente NO PASABA NADA. La página
+            //  enseñaba una rejilla vacía con un marcador que subía solo con el
+            //  reloj, y parecía viva. Por eso acabó en `legacy/`.
+            //
+            //  La API de verdad la sabía su arnés headless, que lleva meses
+            //  pasando: el sistema **no posee las entidades**, es cinemática
+            //  pura y el que llama es el dueño de los arrays.
+            //
+            //      tickAsteroids(asteroides, dt, globalZ)
+            //      tickEnemies(enemigos, dt, globalZ, t, nave, asteroides)
+            //      tickProjectiles(balas, dt, globalZ)
+            //
+            //  Un `if()` de más convierte un fallo ruidoso en uno invisible.
+            // ═══════════════════════════════════════════════════════════════
+            engine = new OrbitalKinematicsSystem({ arenaW: 120, arenaH: 60 });
+
+            const TIPOS = ['LINER','POPCORN','SWOOPER','TRACKER','CHARGER','SNIPER','BOMBER','MIRROR'];
+            const COLOR = { LINER:0xff3366, POPCORN:0xffaa00, SWOOPER:0x00ffcc, TRACKER:0xff00ff,
+                            CHARGER:0xff5500, SNIPER:0x66ff33, BOMBER:0xaa66ff, MIRROR:0x00aaff };
+
+            const grupo = new THREE.Group();
+            core.scene.add(grupo);
+            const cuerpos = new Map();          // id de entidad → malla
+
+            const geoAst  = new THREE.IcosahedronGeometry(1, 0);
+            const geoEne  = new THREE.ConeGeometry(1.1, 2.6, 6);
+            const geoBala = new THREE.SphereGeometry(0.28, 6, 5);
+
+            // ── LOS MODELOS QUE YA ESTABAN ELEGIDOS ─────────────────
+            // Yo había puesto icosaedros y conos. En `legacy/asteroids_v3` —un
+            // borrador aparcado— alguien ya había escogido siete rocas y un
+            // dron, y los siete siguen en disco pesando 5-9 KB cada uno.
+            //
+            // Eso es lo que se pierde cuando una página se aparca: no la
+            // página, las DECISIONES. Buscar antes de modelar.
+            const rocas = [];
+            let dron = null;
+
+            // Los modelos llegan cuando llegan, y las entidades ya están vivas.
+            // Sin esto, las ocho naves iniciales se creaban como conos y se
+            // quedaban así para siempre: sólo las que morían y reaparecían
+            // estrenaban modelo. Al llegar un modelo se tiran los cuerpos y se
+            // rehacen en el siguiente fotograma.
+            function rehacerCuerpos() {
+                for (const [id, m] of cuerpos) {
+                    grupo.remove(m);
+                    m.traverse?.(o => o.material?.dispose?.());
+                    cuerpos.delete(id);
+                }
+            }
+            // ⚠️ ESCRITOS UNO A UNO, Y NO ES POR GUSTO.
+            // Estaban como `` `../props/models/Rock_${i}.glb` `` en un bucle, y
+            // así el nombre `Rock_3.glb` NO APARECE EN NINGUNA PARTE del
+            // código. `empaquetar.py` decide qué viaja leyendo lo que el código
+            // nombra, así que las siete rocas se quedaron fuera del paquete y
+            // el juego salió sin piedras. Mismo fallo que las figuras de la
+            // baraja, distinto disfraz.
+            //
+            // La regla, para todo el motor: **los recursos se declaran, no se
+            // construyen.** Una ruta armada en tiempo de ejecución es invisible
+            // para cualquier herramienta que mire el código.
+            const ROCAS = [
+                '../props/models/Rock_1.glb', '../props/models/Rock_2.glb',
+                '../props/models/Rock_3.glb', '../props/models/Rock_4.glb',
+                '../props/models/Rock_5.glb', '../props/models/Rock_6.glb',
+                '../props/models/Rock_7.glb',
+            ];
+            for (const url of ROCAS) {
+                AssetManager.loadModelAsync(url)
+                    .then(s => { rocas.push(s); rehacerCuerpos(); }).catch(() => {});
+            }
+            AssetManager.loadModelAsync('../props/models/Robot Enemy Flying.glb')
+                .then(s => { dron = s; rehacerCuerpos(); }).catch(() => {});
+
+            /** Un entero estable a partir del id: la misma roca siempre. */
+            const semillaDe = (id) => {
+                let h = 0;
+                for (let i = 0; i < id.length; i++) h = (Math.imul(h, 31) + id.charCodeAt(i)) >>> 0;
+                return h;
+            };
+            /** Tiñe un modelo clonado sin tocar el material del original. */
+            function tenir(obj, color) {
+                obj.traverse(o => {
+                    if (!o.isMesh) return;
+                    o.material = o.material.clone();
+                    o.material.color.setHex(color);
+                    o.material.emissive?.setHex(color);
+                    if ('emissiveIntensity' in o.material) o.material.emissiveIntensity = 0.15;
+                });
+                return obj;
+            }
+
+            let asteroides = [], enemigos = [], balas = [], globalZ = 0;
+            const nave = { x: 0, y: 6, z: 0, dead: false, inNebula: false, rz: 0, rx: 0 };
+
+            const azar = (a, b) => a + Math.random() * (b - a);
+
+            function nuevoAsteroide(z) {
+                return { id: `a${Math.random().toString(36).slice(2)}`,
+                    x: azar(-50, 50), y: azar(-18, 22), z,
+                    // ⚠️ El suelo avanza a 20 u/s, así que lo que se ve es
+                    // `vz − 20`. El arnés headless las lanzaba con `vz` de 10 a
+                    // 25: la mitad SE ALEJABAN. Headless da igual —son números
+                    // que se mueven— pero en pantalla es un juego donde no llega
+                    // nada. Por debajo de 20 vienen todas hacia ti.
+                    vx: azar(-5, 5), vy: azar(-2, 2), vz: azar(2, 14),
+                    rx: 0, ry: 0, rz: 0, rvx: Math.random(), rvy: Math.random(), rvz: Math.random(),
+                    radius: azar(1.5, 4.5), isMono: Math.random() > 0.85, isPiston: false,
+                    pingPongMinX: -50, pingPongMaxX: 50, gc: false };
+            }
+            function nuevoEnemigo(z, i) {
+                return { id: `e${Math.random().toString(36).slice(2)}`, t: TIPOS[i % TIPOS.length],
+                    x: azar(-40, 40), y: azar(-10, 20), z,
+                    vx: 0, vy: 0, sp: azar(15, 25), hp: azar(20, 50),
+                    rx: 0, ry: 0, rz: 0, sinePhase: Math.random() * 6.28, sineAmp: azar(8, 13),
+                    enterSide: Math.random() > 0.5 ? 1 : -1,
+                    fireRate: azar(2, 5), fireT: azar(0, 3),
+                    chargeState: 'approach', windupTimer: 0, tx: 0, ty: 0,
+                    mineTimer: 3, spawnCount: 0, gc: false };
+            }
+
+            for (let i = 0; i < 22; i++) asteroides.push(nuevoAsteroide(azar(20, 140)));
+            for (let i = 0; i < 8;  i++) enemigos.push(nuevoEnemigo(azar(50, 130), i));
+
+            // La cámara mira por encima del hombro hacia el fondo. Sin fijarla,
+            // la del render core apunta a la escena de ejemplo y todo esto
+            // pasaba fuera de cuadro: había mundo, pero no había plano.
+            core.camera.position.set(0, 12, -24);
+            core.camera.lookAt(0, 7, 60);
+            if (core.controls) core.controls.enabled = false;
+
+            /** Una malla por entidad, creada al aparecer y retirada al morir. */
+            function cuerpoDe(ent, geo, color, escala) {
+                let m = cuerpos.get(ent.id);
+                if (!m) {
+                    // ⚠️ La emisión estaba a 0,55 y con el bloom a 1,5 la escena
+                    // se lavaba entera: un borrón blanco y rosa donde no se
+                    // distinguía una roca de una nave. El bloom es un adorno que
+                    // se come el dibujo si todo brilla; brillan poco los cuerpos
+                    // y mucho las balas, que son lo que hay que ver venir.
+                    m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
+                        color, emissive: color, emissiveIntensity: 0.18,
+                        roughness: 0.55, metalness: 0.1 }));
+                    cuerpos.set(ent.id, m);
+                    grupo.add(m);
+                }
+                m.scale.setScalar(escala);
+                return m;
+            }
+            function retirarMuertos(vivos) {
+                const ids = new Set(vivos.map(e => e.id));
+                for (const [id, m] of cuerpos) {
+                    if (ids.has(id)) continue;
+                    grupo.remove(m);
+                    // ⚠️ Esto era `m.material.dispose()` y funcionó mientras
+                    // todo eran mallas. Al pasar a modelos GLB, cada cuerpo es
+                    // un GRUPO: `grupo.material` no existe y reventaba en CADA
+                    // fotograma. Se recorre, que sirve para los dos casos.
+                    m.traverse?.(o => o.material?.dispose?.());
+                    cuerpos.delete(id);
+                }
+            }
+
+            // La nave sigue al ratón. Es lo mínimo para que esto sea jugable y
+            // no un salvapantallas: los enemigos apuntan a `nave`.
+            addEventListener('pointermove', (ev) => {
+                nave.x = (ev.clientX / innerWidth - 0.5) * 70;
+                nave.y = 14 - (ev.clientY / innerHeight) * 26;
+            });
+
+            // Load visual models and map over simple ECS proxies
+            // `Spaceship.glb` a secas NO EXISTE: la biblioteca sólo tiene las
+            // variantes numeradas que deja una descarga repetida —`Spaceship (1)`,
+            // `(2)`, `(4)`…—. La nave se caía con un 404 y el juego seguía con
+            // geometría de respaldo, que es la peor forma de fallar: se ve raro
+            // y no se sabe por qué.
+            let naveMalla = null;
+            AssetManager.loadModelAsync('../props/models/Spaceship (2).glb').then((escena) => {
+                naveMalla = escena.clone();
+                naveMalla.scale.setScalar(0.9);
+                naveMalla.rotation.y = Math.PI;      // que mire hacia el fondo
+                core.scene.add(naveMalla);
+            });
+
+            // 4. Start Core Loop
+            core.startLoop((dt) => {
+                timeElapsed += dt;
+                globalZ += 20 * dt;
+
+                // ── el sistema mueve el mundo ────────────────────────
+                engine.tickAsteroids(asteroides, dt, globalZ);
+                engine.tickEnemies(enemigos, dt, globalZ, timeElapsed, nave, asteroides);
+
+                // El sistema no dispara: MARCA que quiere disparar (`fireBullet`)
+                // y el frontend decide. Así la cinemática sigue sin saber nada
+                // de mallas ni de escenas.
+                for (const e of enemigos) {
+                    if (!e.fireBullet) continue;
+                    e.fireBullet = null;
+                    // Sólo suena lo que se oiría: un disparo a 90 unidades no
+                    // aporta tensión, aporta ruido.
+                    if (Math.abs(e.z - globalZ) < 70) { try { SFX.play('laser', 0.25); } catch (x) {} }
+                    const d = Math.hypot(nave.x - e.x, nave.y - e.y, nave.z - e.z) || 1;
+                    balas.push({ id: `b${Math.random().toString(36).slice(2)}`,
+                        x: e.x, y: e.y, z: e.z,
+                        vx: (nave.x - e.x) / d * 40, vy: (nave.y - e.y) / d * 40,
+                        vz: (nave.z - e.z) / d * 40, gc: false });
+                }
+                engine.tickProjectiles(balas, dt, globalZ);
+
+                // ── recoger lo muerto y reponer ──────────────────────
+                // Lo que ya pasó de largo se marca aquí: si no, una roca se
+                // queda pegada a la cámara ocupando media pantalla —se veía un
+                // borrón enorme y parecía un fallo de render, y era una piedra
+                // a treinta centímetros del objetivo.
+                for (const e of [...asteroides, ...enemigos, ...balas]) {
+                    if (e.z - globalZ < -12) e.gc = true;
+                }
+                asteroides = asteroides.filter(a => !a.gc);
+                enemigos   = enemigos.filter(e => !e.gc);
+                balas      = balas.filter(b => !b.gc);
+                while (asteroides.length < 20) asteroides.push(nuevoAsteroide(globalZ + azar(90, 190)));
+                while (enemigos.length < 8)    enemigos.push(nuevoEnemigo(globalZ + azar(90, 170), enemigos.length + (timeElapsed | 0)));
+
+                // ── pintar lo que dice la simulación ─────────────────
+                for (const a of asteroides) {
+                    let m = cuerpos.get(a.id);
+                    if (!m && rocas.length) {
+                        // Una roca fija por asteroide: si se sorteara cada
+                        // fotograma, la piedra cambiaría de forma en el aire.
+                        m = rocas[semillaDe(a.id) % rocas.length].clone();
+                        tenir(m, a.isMono ? 0x66ddff : 0xbb6677);
+                        cuerpos.set(a.id, m); grupo.add(m);
+                    }
+                    if (!m) m = cuerpoDe(a, geoAst, a.isMono ? 0x66ddff : 0xff44aa, 1);
+                    m.scale.setScalar(a.radius * 1.7);
+                    m.position.set(a.x, a.y, a.z - globalZ);
+                    m.rotation.set(a.rx, a.ry, a.rz);
+                }
+                for (const e of enemigos) {
+                    let m = cuerpos.get(e.id);
+                    if (!m && dron) {
+                        m = tenir(dron.clone(), COLOR[e.t] ?? 0xffffff);
+                        m.scale.setScalar(1.6);
+                        cuerpos.set(e.id, m); grupo.add(m);
+                    }
+                    if (!m) m = cuerpoDe(e, geoEne, COLOR[e.t] ?? 0xffffff, 1);
+                    m.position.set(e.x, e.y, e.z - globalZ);
+                    // Mira hacia donde va. El dron ya viene de pie, así que no
+                    // lleva el giro de 90° que necesitaba el cono.
+                    m.rotation.set(e.rx || 0, Math.PI + (e.ry || 0), e.rz || 0);
+                }
+                for (const b of balas) {
+                    const m = cuerpoDe(b, geoBala, 0x00e5ff, 1);
+                    m.position.set(b.x, b.y, b.z - globalZ);
+                }
+                retirarMuertos([...asteroides, ...enemigos, ...balas]);
+
+                if (naveMalla) {
+                    naveMalla.position.set(nave.x, nave.y, 9);
+                    naveMalla.rotation.z = (nave.x - naveMalla.position.x) * 0.2;
+                }
+                nave.z = globalZ;
+
+                // ── el roce: pasar cerca sin chocar ──────────────────
+                // Se suena UNA vez por entidad (por eso el conjunto `sonando`):
+                // sin eso, mientras una roca pasa cerca dispara el sonido en
+                // cada fotograma y son sesenta chasquidos por segundo.
+                for (const a of asteroides) {
+                    const dz = (a.z - globalZ) - 9;
+                    const cerca = Math.hypot(a.x - nave.x, a.y - nave.y, dz) < RADIO_ROCE + a.radius;
+                    if (cerca && !sonando.has(a.id)) {
+                        sonando.add(a.id); roces++;
+                        try { SFX.play('graze'); } catch (e) {}
+                        document.getElementById('vGraze').innerText = roces;
+                    } else if (!cerca) sonando.delete(a.id);
+                }
+
+                // ── el HUD dice lo que HAY, no lo que pasa el tiempo ──
+                vTime.innerText = timeElapsed.toFixed(1) + 's';
+                vScore.innerText = Math.floor(timeElapsed * 10);
+                vDeaths.innerText = `${asteroides.length} rocas · ${enemigos.length} naves · ${balas.length} balas`;
+                
+                const rankProgress = Math.min((timeElapsed / 60) * 100, 100);
+                rankFill.style.width = rankProgress + '%';
+                if(rankProgress > 80) rankFill.style.background = '#ff4444';
+                else if(rankProgress > 50) rankFill.style.background = '#ffaa00';
+                else rankFill.style.background = '#44ff44';
+
+                // Synthwave floor scroll
+                neonGrid.position.z = -((timeElapsed * 2) % 2);
+
+            }, bloomPlugin.render.bind(bloomPlugin)); // Custom render injects EffectComposer!
+            
+            window.__alisa_engine = engine;
+        };
+    </script>
+</body>
+</html>

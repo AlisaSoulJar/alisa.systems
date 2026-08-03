@@ -1,0 +1,29 @@
+{
+  "name": "@alisa-systems/alisa-engine",
+  "version": "4.0.0",
+  "description": "ALISA Sovereign OS Engine (Soma, Psyche, World)",
+  "type": "module",
+  "main": "dist/alisa-engine.umd.js",
+  "module": "dist/alisa-engine.es.js",
+  "exports": {
+    ".": {
+      "import": "./dist/alisa-engine.es.js",
+      "require": "./dist/alisa-engine.umd.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node tests/run_boids_headless.js && node tests/run_chopper_headless.js && node tests/run_asteroids_headless.js"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "three": "^0.160.0"
+  }
+}

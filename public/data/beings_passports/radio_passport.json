@@ -1,0 +1,24 @@
+{
+    "name": "Radio",
+    "role": "The Broadcaster",
+    "emoji": "📻",
+    "type": "machine",
+    "skeleton": "box",
+    "model_path": "radio.glb",
+    "scale": 1.0,
+    "kinematics": "box",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "synth",
+        "tier": 1,
+        "voice_id": "",
+        "rate": "-5%",
+        "pitch": "-2Hz",
+        "label": "Radio - Synth morse (emisora, código morse)",
+        "signal_type": "morse",
+        "signal_freq": 660,
+        "signal_duration": 0.3,
+        "freq_label": "radio morse, mi agudo"
+    }
+}

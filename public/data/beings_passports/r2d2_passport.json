@@ -1,0 +1,21 @@
+{
+    "name": "R2D2",
+    "role": "Astromech Droid",
+    "emoji": "🤖",
+    "type": "mechanical",
+    "skeleton": "droid_barrel",
+    "model_path": "r2d2.glb",
+    "scale": 0.8,
+    "kinematics": "droid_roll",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "synth",
+        "tier": 1,
+        "signal_type": "r2d2",
+        "signal_freq": 440,
+        "signal_duration": 0.3,
+        "label": "R2D2 - Synth chirps (astromech personality)",
+        "freq_label": "clásico droide, la=440Hz"
+    }
+}

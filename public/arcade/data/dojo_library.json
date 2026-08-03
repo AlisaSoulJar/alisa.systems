@@ -1,0 +1,45 @@
+{
+  "version": "1.0.0",
+  "meta": {
+    "author": "ALISA Dojo Architecture",
+    "description": "Universal Grid/Environment rules for Dojo/RL agents",
+    "date": "2026-04-12"
+  },
+  "environments": {
+    "peaton": {
+      "name": "Project Peatón",
+      "type": "gridworld",
+      "action_space": ["up", "down", "left", "right", "wait"],
+      "entities": {
+        "0": {"name": "road", "type": "background", "color": "#050a10", "geometry": "plane"},
+        "1": {"name": "frog", "type": "agent", "color": "#00ffc8", "geometry": "box", "asset": "frog.webp"},
+        "2": {"name": "car", "type": "hazard", "color": "#ff0044", "geometry": "box", "asset": "car.webp"},
+        "3": {"name": "safe_zone", "type": "background", "color": "#112233", "geometry": "plane"}
+      }
+    },
+    "snake": {
+      "name": "Project Ouroboros (Snake)",
+      "type": "gridworld",
+      "action_space": ["up", "down", "left", "right"],
+      "entities": {
+        "0": {"name": "empty", "type": "background", "color": "#1e293b", "geometry": "plane"},
+        "1": {"name": "head", "type": "agent", "color": "#00BFA5", "geometry": "rounded_box"},
+        "2": {"name": "body", "type": "tail", "color": "#00897B", "geometry": "box"},
+        "3": {"name": "food", "type": "reward", "color": "#FFCA28", "geometry": "sphere", "asset": "apple.webp"},
+        "4": {"name": "wall", "type": "hazard", "color": "#333333", "geometry": "box"}
+      }
+    },
+    "fagocito": {
+      "name": "Project Puck",
+      "type": "gridworld",
+      "action_space": ["up", "down", "left", "right"],
+      "entities": {
+        "0": {"name": "empty", "type": "background", "color": "#000000", "geometry": "plane"},
+        "1": {"name": "fagocito", "type": "agent", "color": "#FFEB3B", "geometry": "sphere", "asset": "fagocito.webp"},
+        "2": {"name": "ghost_red", "type": "hazard", "color": "#F44336", "geometry": "cylinder", "asset": "ghost_red.webp"},
+        "3": {"name": "pellet", "type": "reward", "color": "#FFFFFF", "geometry": "sphere_small"},
+        "4": {"name": "wall", "type": "boundary", "color": "#1976D2", "geometry": "box"}
+      }
+    }
+  }
+}

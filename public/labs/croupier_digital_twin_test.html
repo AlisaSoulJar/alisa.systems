@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ALISA LAB — ScummInteractionPlugin</title>
+    <style>body { margin: 0; overflow: hidden; background: #050508; font-family: monospace; color: white; }</style>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three-0.160.0/build/three.module.js",
+        "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+        "@alisa-engine/": "../js/alisa-engine/"
+      }
+    }
+    </script>
+</head>
+<body>
+    <div id="ui-overlay" style="position:absolute; top:20px; left:20px; z-index:100; pointer-events:none;">
+        <h2 style="margin:0; color:#00ffcc;">ScummInteractionPlugin</h2>
+        <p style="margin:5px 0; color:#888;">Powered by <code>@alisa-engine/examples/prefabs/ScummInteractionPlugin.js</code></p>
+    </div>
+    
+    <div id="startup-overlay" style="position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(5,5,8,0.9); z-index:200; display:flex; justify-content:center; align-items:center; flex-direction:column;">
+        <h1 style="color:#44ff88; font-size: 32px; letter-spacing: 2px;">THE SOVEREIGN MIRROR</h1>
+        <p style="color:#888; font-size: 16px; margin-bottom: 20px;">Procedural Engine & SCUMM Integration</p>
+        <button id="btn-start" style="padding:15px 30px; font-size:18px; font-weight:bold; font-family:monospace; background:#44ff88; color:#000; border:none; cursor:pointer; border-radius:4px;">INICIALIZAR SENSORIUM</button>
+    </div>
+    
+    <div id="scumm-hud" style="position:absolute; bottom:30px; left:50%; transform:translateX(-50%); width:600px; text-align:center; z-index:100; font-weight:bold; font-size:16px;">
+        <span id="pulse-status" style="background:rgba(10,10,15,0.8); padding:10px 20px; border-radius:8px; border:1px solid #333; color:#555;">Waiting for SCUMM Signal...</span>
+    </div>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+        import { CabinetEnvironmentFactory } from '@alisa-engine/src/world/factories/CabinetEnvironmentFactory.js?v=2';
+        import { ScummInteractionPlugin } from '@alisa-engine/src/soma/plugins/ScummInteractionPlugin.js?v=2';
+        
+        window.onload = () => {
+            const app = new AlisaRenderCore();
+            app.setupDefaultEnvironment();
+            
+            // Add a global ambient light to flash when events happen
+            const flashLight = new THREE.AmbientLight(0x000000);
+            app.scene.add(flashLight);
+            
+            // [ISOMORFISMO] Endocrine Atmosphere Control
+            const moodLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+            moodLight.position.set(0, 50, 0);
+            app.scene.add(moodLight);
+            app.scene.fog = new THREE.FogExp2(0x050508, 0.01);
+            
+            try {
+                const plugin = new ScummInteractionPlugin();
+                const factory = new CabinetEnvironmentFactory(app.scene);
+                factory.buildRoom(false);
+                
+                // Initialize a dummy partition to render a cabinet
+                const dummyPartition = plugin.fractalPartition(10, 12345);
+                factory.build3DCabinet(dummyPartition, {});
+                
+                // Target values for smooth lerp
+                const endocrineTargets = {
+                    ambientHex: 0xffffff,
+                    groundHex: 0x444444,
+                    fogHex: 0x050508,
+                    fogDensity: 0.01,
+                    intensity: 0.6
+                };
+                
+                let targetFOV = 60; // Default camera FOV
+                app.camera.fov = targetFOV;
+                app.camera.updateProjectionMatrix();
+
+                app.startLoop((dt) => {
+                    factory.updateActiveModels(dt, app.clock.getElapsedTime() * 1000);
+                    // Decay the flash light smoothly
+                    flashLight.intensity = THREE.MathUtils.lerp(flashLight.intensity, 0, dt * 5.0);
+                    
+                    // Smoothly restore FOV after camera kicks
+                    if (Math.abs(app.camera.fov - targetFOV) > 0.1) {
+                        app.camera.fov = THREE.MathUtils.lerp(app.camera.fov, targetFOV, dt * 8.0);
+                        app.camera.updateProjectionMatrix();
+                    }
+                    
+                    // Smoothly transition mood lighting (Endocrine regulation)
+                    moodLight.color.lerp(new THREE.Color(endocrineTargets.ambientHex), dt * 0.5);
+                    moodLight.groundColor.lerp(new THREE.Color(endocrineTargets.groundHex), dt * 0.5);
+                    app.scene.fog.color.lerp(new THREE.Color(endocrineTargets.fogHex), dt * 0.5);
+                    app.scene.fog.density = THREE.MathUtils.lerp(app.scene.fog.density, endocrineTargets.fogDensity, dt * 0.5);
+                    moodLight.intensity = THREE.MathUtils.lerp(moodLight.intensity, endocrineTargets.intensity, dt * 0.5);
+                    
+                    // Animate procedural event nodes
+                    const now = app.clock.getElapsedTime();
+                    for(let i=eventNodes.length-1; i>=0; i--) {
+                        const node = eventNodes[i];
+                        const age = now - node.spawnTime;
+                        
+                        // Simple upward movement + rotation
+                        node.mesh.position.y += dt;
+                        node.mesh.rotation.y += dt;
+                        node.mesh.rotation.x += dt * 0.5;
+                        
+                        // Fade out after 3 seconds
+                        if (age > 3) {
+                            node.mesh.material.opacity = 1.0 - (age - 3);
+                            if(node.mesh.material.opacity <= 0) {
+                                app.scene.remove(node.mesh);
+                                eventNodes.splice(i, 1);
+                            }
+                        }
+                    }
+                });
+                
+                // [ISOMORFISMO 1:1] SCUMM SSE Integration
+                const pulseStatusEl = document.getElementById('pulse-status');
+                
+                // Keep track of spawned procedural models
+                const eventNodes = [];
+                
+                // --- Procedural SFX (Web Audio API) ---
+                const playBeep = (freq, waveType, duration) => {
+                    try {
+                        const Ctx = window.AudioContext || window.webkitAudioContext;
+                        if(!window._alisa_audio_ctx) window._alisa_audio_ctx = new Ctx();
+                        const ctx = window._alisa_audio_ctx;
+                        if(ctx.state === 'suspended') ctx.resume();
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = waveType;
+                        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                        // Suave fade out
+                        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start();
+                        osc.stop(ctx.currentTime + duration);
+                    } catch(e) {}
+                };
+                
+                const spawnProceduralEvent = (scene) => {
+                    const colorMap = {
+                        world: 0xffaa33, // Naranja
+                        soma: 0xff3344,  // Rojo
+                        psyche: 0x4488ff,// Azul
+                        nodo: 0x44ff88   // Verde
+                    };
+                    const colorHex = colorMap[scene.domain] || 0xffffff;
+                    
+                    // SFX Procedural y Geometría
+                    let geometry;
+                    if(scene.event_type === "HIVE_WORK" || scene.event_type.includes("JOB")) {
+                        geometry = new THREE.BoxGeometry(0.8, 0.8, 0.8);
+                        playBeep(220, "square", 0.3);
+                        app.camera.fov -= 2; // Impacto menor de cámara
+                    } else if(scene.event_type === "SOMA_TICK" || scene.event_type === "HORMONE_CHANGE") {
+                        geometry = new THREE.IcosahedronGeometry(0.5, 1);
+                        playBeep(120, "sine", 0.6); // Latido grave
+                        app.camera.fov -= 1;
+                    } else if(scene.event_type === "PSYCHE_CYCLE" || scene.event_type === "DREAM") {
+                        geometry = new THREE.OctahedronGeometry(0.6, 0);
+                        playBeep(880, "triangle", 0.8); // Pensamiento agudo, cristalino
+                        app.camera.fov -= 5; // Concentración visual (Dolly in)
+                    } else {
+                        geometry = new THREE.SphereGeometry(0.4, 16, 16);
+                        playBeep(440, "sine", 0.2);
+                    }
+                    app.camera.updateProjectionMatrix();
+                    
+                    const material = new THREE.MeshStandardMaterial({
+                        color: colorHex, 
+                        emissive: colorHex, 
+                        emissiveIntensity: 0.6,
+                        transparent: true,
+                        opacity: 1.0,
+                        wireframe: scene.event_type === "DREAM"
+                    });
+                    
+                    const mesh = new THREE.Mesh(geometry, material);
+                    
+                    // Spawn at random position around center
+                    mesh.position.set(
+                        (Math.random() - 0.5) * 8, 
+                        Math.random() * 2 + 1, 
+                        (Math.random() - 0.5) * 8
+                    );
+                    
+                    app.scene.add(mesh);
+                    
+                    eventNodes.push({
+                        mesh: mesh,
+                        spawnTime: app.clock.getElapsedTime(),
+                        domain: scene.domain
+                    });
+                };
+                
+                const connectSCUMM = () => {
+                    const scummStream = new EventSource('http://127.0.0.1:8741/scumm/stream');
+                    
+                    scummStream.onopen = () => {
+                        pulseStatusEl.innerText = "SCUMM NARRATOR: Synchronized";
+                        pulseStatusEl.style.borderColor = '#ffcc00';
+                        pulseStatusEl.style.color = '#ffcc00';
+                    };
+                    
+                    scummStream.onmessage = (event) => {
+                        if(event.data.includes("heartbeat")) return;
+                        try {
+                            const scene = JSON.parse(event.data);
+                            
+                            // [ISOMORFISMO] Spawn 3D Procedural Representation!
+                            spawnProceduralEvent(scene);
+                            
+                            // [ISOMORFISMO] Actualizar Color Grading (Hormonas) si existen
+                            if (scene.endocrine) {
+                                const dop = scene.endocrine.dopamine || 0.5;
+                                const cor = scene.endocrine.cortisol || 0.5;
+                                const ser = scene.endocrine.serotonin || 0.5;
+                                
+                                // Mezcla cromática según hormonas:
+                                // Dopamina: Luz dorada, calidez y mucha visibilidad.
+                                // Cortisol: Oscuridad, tonos rojizos y niebla densa.
+                                // Serotonina: Tonos azules/rosados pastel, niebla clara.
+                                
+                                if (cor > 0.6 && cor > dop && cor > ser) {
+                                    // Cortisol Dominante (Estrés)
+                                    endocrineTargets.ambientHex = 0xff3333;
+                                    endocrineTargets.groundHex = 0x220000;
+                                    endocrineTargets.fogHex = 0x330505;
+                                    endocrineTargets.fogDensity = 0.05;
+                                    endocrineTargets.intensity = 0.8;
+                                } else if (dop > 0.6 && dop > ser) {
+                                    // Dopamina Dominante (Recompensa/Acción)
+                                    endocrineTargets.ambientHex = 0xffcc33;
+                                    endocrineTargets.groundHex = 0x553311;
+                                    endocrineTargets.fogHex = 0x221105;
+                                    endocrineTargets.fogDensity = 0.002;
+                                    endocrineTargets.intensity = 1.0;
+                                } else if (ser > 0.5) {
+                                    // Serotonina Dominante (Calma)
+                                    endocrineTargets.ambientHex = 0x88ccff;
+                                    endocrineTargets.groundHex = 0x223355;
+                                    endocrineTargets.fogHex = 0x112233;
+                                    endocrineTargets.fogDensity = 0.015;
+                                    endocrineTargets.intensity = 0.7;
+                                } else {
+                                    // Neutral
+                                    endocrineTargets.ambientHex = 0xffffff;
+                                    endocrineTargets.groundHex = 0x444444;
+                                    endocrineTargets.fogHex = 0x050508;
+                                    endocrineTargets.fogDensity = 0.01;
+                                    endocrineTargets.intensity = 0.6;
+                                }
+                            }
+                            
+                            if (scene.narrative) {
+                                // Cortar el texto si es muy largo
+                                let text = scene.narrative;
+                                if(text.length > 100) text = text.substring(0, 100) + "...";
+                                
+                                pulseStatusEl.innerText = `[${(scene.domain || 'SYSTEM').toUpperCase()}] ${text}`;
+                                
+                                // Detonar flash luminico segun el dominio
+                                flashLight.intensity = 2.0;
+                                if(scene.domain === "world") {
+                                    pulseStatusEl.style.color = '#ffaa33';
+                                    flashLight.color.setHex(0xffaa33);
+                                } else if(scene.domain === "soma") {
+                                    pulseStatusEl.style.color = '#ff3344';
+                                    flashLight.color.setHex(0xff3344);
+                                } else if(scene.domain === "psyche") {
+                                    pulseStatusEl.style.color = '#4488ff';
+                                    flashLight.color.setHex(0x4488ff);
+                                } else {
+                                    pulseStatusEl.style.color = '#44ff88';
+                                    flashLight.color.setHex(0x44ff88);
+                                }
+                                pulseStatusEl.style.borderColor = pulseStatusEl.style.color;
+                            }
+                        } catch(e) {}
+                    };
+                    
+                    scummStream.onerror = () => {
+                        pulseStatusEl.innerText = "SCUMM NARRATOR: Desynchronized";
+                        pulseStatusEl.style.color = '#ff3344';
+                        pulseStatusEl.style.borderColor = '#ff3344';
+                        scummStream.close();
+                        setTimeout(connectSCUMM, 5000);
+                    };
+                };
+                
+                document.getElementById('btn-start').addEventListener('click', () => {
+                    document.getElementById('startup-overlay').style.display = 'none';
+                    // Ignite AudioContext inside user gesture
+                    try {
+                        const Ctx = window.AudioContext || window.webkitAudioContext;
+                        window._alisa_audio_ctx = new Ctx();
+                        window._alisa_audio_ctx.resume();
+                    } catch(e) {}
+                    connectSCUMM();
+                });
+                
+                window.__alisa_engine = { factory, plugin };
+            } catch(e) {
+                console.error("ALISA Digital Twin Test Failed:", e);
+                document.getElementById('ui-overlay').innerHTML += `<p style='color:red'>Crash: ${e.message}</p>`;
+            }
+        };
+    </script>
+</body>
+</html>

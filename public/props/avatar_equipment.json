@@ -1,0 +1,65 @@
+{
+    "club": {
+        "type": "glb",
+        "url": "props/models/Club.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "cop": {
+        "type": "glb",
+        "url": "props/models/Cop.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "helmet1": {
+        "type": "glb",
+        "url": "props/models/Helmet1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "helmet2": {
+        "type": "glb",
+        "url": "props/models/Helmet2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "helmet3": {
+        "type": "glb",
+        "url": "props/models/Helmet3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "katana": {
+        "type": "glb",
+        "url": "props/models/Katana.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "shortsword": {
+        "type": "glb",
+        "url": "props/models/ShortSword.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "shoulderpads": {
+        "type": "glb",
+        "url": "props/models/ShoulderPads.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "sword": {
+        "type": "glb",
+        "url": "props/models/Sword.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    }
+}

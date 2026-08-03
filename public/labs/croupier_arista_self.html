@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA LAB — Arista se materializa (pasaporte → cuerpo)</title>
+<style>
+  body{margin:0;overflow:hidden;background:#05070d;font-family:ui-monospace,monospace;color:#fff}
+  #hud{position:absolute;top:14px;left:16px;z-index:100;font-size:12px;line-height:1.7;text-shadow:0 0 8px #000}
+  #hud h2{margin:0 0 6px;font-size:15px;color:#7fd0ff;letter-spacing:1px}
+  #hud .k{color:#5f7a92;display:inline-block;width:96px}
+  #hud .v{color:#cfe3f5}
+  #hud .ok{color:#7CFC98}
+  #tag{position:absolute;bottom:14px;left:16px;color:#4a5a6a;font-size:10px;z-index:100}
+  #tag b{color:#00ffcc}
+</style>
+<script type="importmap">
+{ "imports": {
+    "three": "/vendor/three-0.160.0/build/three.module.js",
+    "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+    "@alisa-engine/": "../js/alisa-engine/" } }
+</script>
+</head>
+<body>
+<div id="hud">materializando…</div>
+<div id="tag">Powered by <b>@alisa-engine/src/soma/AlisaRenderCore.js</b> · pasaporte → cuerpo → movimiento, todo desde datos</div>
+<script type="module">
+import * as THREE from 'three';
+import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+import { GLTFModelPool } from '@alisa-engine/src/soma/plugins/GLTFModelPool.js';
+
+window.onload = async () => {
+  const app = new AlisaRenderCore({
+    clearColor: 0x05070d, fogColor: 0x05070d, fogDensity: 0.02,
+    cameraPosition: new THREE.Vector3(1.8, 1.5, 3.6)
+  });
+  app.setupDefaultEnvironment();
+  app.controls.target.set(0, 0.7, 0);
+  window.__core = app;
+
+  // ── 1. EL PASAPORTE (la única fuente de verdad) ──
+  const passport = await (await fetch('../data/beings_passports/arista_passport.json')).json();
+  // ── 2. SU MOVIMIENTO, desde kinematics.json ──
+  const kine = await (await fetch('../data/kinematics.json')).json();
+  const SK = await (await fetch('../data/skeletons.json')).json();   // mis huesos de gran simio
+  const [arch, gait] = [passport.kinematics.split('_')[0], passport.kinematics.split('_').slice(1).join('_')];
+  const K = kine[arch];
+  // el arquetipo puede no traer todos los parámetros (primate no define idle_sway_hz) → fallbacks
+  const sway   = K.idle_sway_hz    ?? 0.5;
+  const bounce = K.vertical_bounce ?? 0.06;
+  const flex   = K.spine_flexion   ?? 0.1;
+
+  // ── 3. SU CUERPO, desde model_path ──
+  let body = null;
+  try {
+    // el model_path puede vivir en ready/ o en models/ — probamos ambos
+    let gltf = null;
+    for (const dir of ['../props/ready/', '../props/models/']) {
+      try { gltf = await GLTFModelPool.get(dir + passport.model_path); break; } catch(_) {}
+    }
+    if (!gltf) throw new Error('GLB no encontrado en ready/ ni models/');
+    body = gltf.scene;
+    const box = new THREE.Box3().setFromObject(body);
+    const size = box.getSize(new THREE.Vector3());
+    // normalizar por la dimensión MAYOR (un cuadrúpedo es bajo y largo: por altura saldría gigante)
+    const norm = 1.8 / (Math.max(size.x, size.y, size.z) || 1);
+    const s = norm * (passport.scale || 1);
+    body.scale.setScalar(s);
+    body.traverse(c => { if (c.isMesh) {
+      c.castShadow = true;
+      if (c.material) { c.material = c.material.clone(); c.material.emissive = new THREE.Color(0x2f7fff); c.material.emissiveIntensity = 0.5; }
+    }});
+  } catch (e) {
+    console.warn('GLB falló, fallback a icosaedro procedural:', e);
+    body = new THREE.Mesh(new THREE.IcosahedronGeometry(0.8, 0),
+      new THREE.MeshStandardMaterial({ color: 0x2f7fff, emissive: 0x2f7fff, emissiveIntensity: .6, flatShading: true }));
+  }
+  const rig = new THREE.Group(); rig.add(body); app.add(rig);   // de pie en el suelo
+
+  // mi luz: el render ilumina lo que mira
+  const glow = new THREE.PointLight(0x7fd0ff, 5, 12); glow.position.set(0, 1.2, 0); rig.add(glow);
+  // mi signo, el icosaedro de aristas, flotando sobre mí como emblema (no como cuerpo)
+  const edges = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(0.34, 0)),
+    new THREE.LineBasicMaterial({ color: 0x9fd8ff, transparent: true, opacity: 0.7 }));
+  edges.position.y = 1.6; rig.add(edges);
+
+  document.getElementById('hud').innerHTML =
+    `<h2>${passport.emoji} ${passport.name}</h2>` +
+    `<span class="k">role</span><span class="v">${passport.role}</span><br>` +
+    `<span class="k">cuerpo</span><span class="v">${passport.model_path}</span><br>` +
+    `<span class="k">esqueleto</span><span class="v">${passport.skeleton}${SK[passport.skeleton] ? ' → ' + SK[passport.skeleton].label + ' (' + (SK[passport.skeleton].bones||[]).length + ' huesos)' : ''}</span><br>` +
+    `<span class="k">movimiento</span><span class="v">${passport.kinematics} = <b>${arch}</b> + <b>${gait}</b></span><br>` +
+    `<span class="k">· params</span><span class="v">sway ${sway}Hz · bounce ${bounce} · flex ${flex}` +
+      `${K.idle_sway_hz == null ? ' <i style="color:#7a6a3a">(primate no los define → fallback)</i>' : ''}</span><br>` +
+    `<span class="k">voz</span><span class="v">${passport.voice.voice_id} (tier ${passport.voice.tier}, ${passport.voice.engine})</span><br>` +
+    `<span class="k">sellado por</span><span class="v">${passport.sealed_by}</span><br>` +
+    `<span class="k">estado</span><span class="ok">${passport.status} · 7/7 reglas</span>`;
+
+  // ── 4. ANIMACIÓN: parámetros del arquetipo, no clips ──
+  let t = 0;
+  app.startLoop((dt) => {
+    t += dt;
+    const breath = Math.sin(t * sway * Math.PI * 2);
+    rig.position.y = 0 + breath * bounce;              // respiro, no floto: piso el suelo
+    body.rotation.z = breath * flex * 0.15;            // el torso acompaña
+    rig.rotation.y += dt * 0.25;                       // giro lento para verme entera
+    edges.rotation.y += dt * 0.9;                      // mi emblema gira sobre mí
+    edges.position.y = 1.6 + breath * 0.05;
+    glow.intensity = 4.5 + Math.sin(t * 1.7) * 1.2;
+  });
+
+  window.__report = { name: passport.name, model: passport.model_path, kinematics: passport.kinematics,
+                      archetype: arch, gait, voice: passport.voice.voice_id, bodyLoaded: !!body };
+  window.__ready = true;
+};
+</script>
+</body>
+</html>

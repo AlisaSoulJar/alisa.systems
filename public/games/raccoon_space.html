@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ALISA — Raccoon Scape: Stage 7 — Space</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000000; font-family: monospace; color: #fff; user-select: none; }
+        #hud {
+            display: none; position: absolute; top: 10px; left: 10px;
+            font-family: monospace; background: rgba(10,5,20,0.85);
+            padding: 14px 18px; border-radius: 10px; border: 1px solid #aa33ff;
+            pointer-events: auto; font-size: 13px; line-height: 1.8; z-index: 10;
+            box-shadow: 0 0 20px rgba(170,51,255,0.2);
+        }
+        #hud .title { color: #cc88ff; font-size: 15px; font-weight: bold; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+        #hud .stat { color: #ddbbff; }
+        #hud .v-green { color: #88ff88; font-weight: bold; }
+        #hud .v-cyan { color: #88ccff; font-weight: bold; }
+        #hud .v-gold { color: #ffcc44; font-weight: bold; }
+        #hud .v-alert { color: #ff3b30; font-weight: bold; }
+        .fuel-container { width: 100%; height: 6px; background: #112; border-radius: 3px; margin-top: 5px; overflow: hidden; border: 1px solid #3a1c4c; margin-bottom: 5px; }
+        .fuel-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #ff3b30, #ff9500, #34c759); transition: width 0.1s linear; }
+        
+        #radar-container {
+            margin-top: 10px; width: 150px; height: 150px; background: rgba(0,0,0,0.5); 
+            border: 2px solid #aa33ff; border-radius: 50%; position: relative; overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(170,51,255,0.3);
+        }
+        #radar-sweep {
+            position: absolute; top: 0; left: 75px; width: 75px; height: 75px;
+            background: linear-gradient(to right, rgba(170,51,255,0) 0%, rgba(170,51,255,0.6) 100%);
+            transform-origin: bottom left; animation: radar-spin 3s linear infinite;
+        }
+        @keyframes radar-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .radar-blip {
+            position: absolute; width: 6px; height: 6px; background: #fff; border-radius: 50%;
+            transform: translate(-50%, -50%); box-shadow: 0 0 5px #fff;
+        }
+
+        #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.92); display: flex; align-items: center; justify-content: center; z-index: 100; }
+        #modal .box { background: rgba(15,5,25,0.95); border: 2px solid #aa33ff; padding: 40px; border-radius: 12px; max-width: 600px; width: 90%; box-shadow: 0 0 40px rgba(170,51,255,0.15); }
+        #modal h1 { color: #cc88ff; margin-bottom: 10px; font-size: 28px; letter-spacing: 2px; text-align: center; }
+        #modal h1 .emoji { font-size: 48px; display: block; margin-bottom: 10px; }
+        #modal p { color: #baa; margin-bottom: 20px; line-height: 1.6; font-size: 13px; text-align: center; }
+        #btnStart { display: block; margin: 20px auto 0; background: linear-gradient(135deg, #8822cc, #aa33ff); color: #fff; border: none; padding: 12px 40px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: transform 0.2s; font-family: inherit; width: 100%; }
+        #btnStart:hover { transform: scale(1.03); }
+        .modal-config { margin-top: 18px; display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+        .modal-config label { font-size: 11px; color: #baa; font-weight: 600; display: block; }
+        .modal-config select, .modal-config input { background: #0a0518; color: #cc88ff; border: 1px solid #5522aa; padding: 6px 10px; border-radius: 4px; font-family: inherit; font-size: 13px; width: 80px; }
+        
+        #messages { position: fixed; bottom: 45%; left: 50%; transform: translateX(-50%); font-size: 22px; font-weight: bold; text-shadow: 0 0 20px rgba(0,0,0,0.8); z-index: 30; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+        #hintBox { position: fixed; bottom: 20px; left: 20px; background: rgba(10,5,20,0.8); border: 1px solid #444; border-radius: 8px; padding: 10px 14px; font-size: 11px; color: #baa; z-index: 20; display: none; max-width: 250px; line-height: 1.5; }
+        .mode-badge { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
+        .badge-world { background: #110022; color: #aa33ff; border: 1px solid #aa33ff; }
+        #mode-badges { position: fixed; top: 10px; right: 10px; z-index: 20; display: none; }
+    </style>
+    <script type="importmap">
+    { 
+        "imports": { 
+            "three": "/vendor/three-0.160.0/build/three.module.js",
+            "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+            "@alisa-engine/": "../js/alisa-engine/"
+        } 
+    }
+    </script>
+</head>
+<body>
+
+<div id="modal">
+    <div class="box">
+        <h1 id="mTitle"><span class="emoji">🦝🌌</span>RACCOON SCAPE — SPACE</h1>
+        <p>The raccoon has commandeered an escape pod and hidden on a rogue planet.<br><br>
+        Navigate your scout ship through the asteroid field. Use the <b>Radar</b> to find planets, fly close, click them to scan.<br><br>
+        Powered by ALISA <b>RaccoonSpaceSystem</b> y <b>RaccoonEnvironmentFactory</b> ECS.</p>
+        <div class="modal-config">
+            <div><label>PLANETS</label><input type="number" id="mPlanets" value="6" min="3" max="15"></div>
+            <div><label>ASTEROIDS</label><input type="number" id="mAsteroids" value="30" min="0" max="100"></div>
+            <div><label>SEED</label><input type="number" id="mSeed" value="42" min="1"></div>
+        </div>
+        <button id="btnStart" onclick="initGame()">START: 🌌 HYPERJUMP</button>
+    </div>
+</div>
+
+<div id="hud">
+    <div class="title">🦝 SPACE FIELD — STAGE 7</div>
+    <span class="stat">SCANNED:</span> <span id="hScanned" class="v-cyan">0/6</span><br>
+    <span class="stat">FUSION FUEL:</span> <span id="hFuel" class="v-green">100</span>%
+    <div class="fuel-container"><div class="fuel-fill" id="vFuelBar"></div></div>
+    <span class="stat">TARGET:</span> <span class="v-gold">UNKNOWN</span><br>
+    <span class="stat">SCORE:</span> <span id="hScore" class="v-gold">0</span>
+    <div id="radar-container"><div id="radar-sweep"></div></div>
+</div>
+
+<div id="messages"></div>
+<div id="mode-badges"><span class="mode-badge badge-world">🌍 ECS Powered</span></div>
+<div id="hintBox">🌌 <b>W</b> Thrust · <b>A/D</b> Steer horizontally · <b>Q/E</b> Pitch Up/Down<br><b>Click Planet</b> to scan when close</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { RaccoonEnvironmentFactory } from '@alisa-engine/src/world/factories/RaccoonEnvironmentFactory.js';
+import { RaccoonSpaceSystem } from '@alisa-engine/src/world/systems/RaccoonSpaceSystem.js';
+
+import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+
+// Setup core THREE.js
+const gfx = new AlisaRenderCore({
+    clearColor: 0x000000,
+    fogColor: 0x000000,
+    fogDensity: 0.001
+});
+const scene = gfx.scene;
+const renderer = gfx.renderer;
+const camera = gfx.camera;
+camera.fov = 60;
+camera.far = 1500;
+camera.updateProjectionMatrix();
+gfx.controls.enabled = false;
+
+scene.add(new THREE.AmbientLight(0x111122, 1.0));
+const dirLight = new THREE.DirectionalLight(0xffeedd, 1.5);
+dirLight.position.set(100, 200, 50);
+scene.add(dirLight);
+
+// Setup Engine 
+const factory = new RaccoonEnvironmentFactory();
+const spaceEngine = new RaccoonSpaceSystem({ tankSize: 400 });
+
+// Map globals
+let planets = [];
+let targetPlanetIdx = -1;
+let totalPlanets = 6;
+let scannedCount = 0;
+let gameState = { playing: false, ended: false, score: 0 };
+let dustPoints = null;
+let shipRoot = null;
+
+// Keystrokes
+const keys = {};
+window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+spaceEngine.setKeys(keys);
+
+window.initGame = function() {
+    let seed = parseInt(document.getElementById('mSeed').value) || 42;
+    factory.seedRandom(seed);
+    const pCount = parseInt(document.getElementById('mPlanets').value) || 6;
+    const aCount = parseInt(document.getElementById('mAsteroids').value) || 30;
+    
+    // Clear old
+    while(scene.children.length > 0) scene.remove(scene.children[0]);
+    scene.add(new THREE.AmbientLight(0x111122, 1.0));
+    scene.add(dirLight);
+
+    // Decorate
+    dustPoints = factory.createDecoration(scene, 400);
+
+    // Generate Space System
+    const generation = factory.generateSpace(scene, pCount, aCount, 400);
+    planets = generation.planets;
+    targetPlanetIdx = generation.targetPlanetIdx;
+    totalPlanets = pCount;
+
+    // Ship setup
+    const shipRig = factory.createShip();
+    scene.add(shipRig.root);
+    camera.position.set(0, 5, 20); 
+    shipRig.root.add(camera);
+    shipRoot = shipRig.root;
+
+    spaceEngine.init(shipRig.root, shipRig.glow, generation.asteroids);
+    spaceEngine.onCollision = () => showMessage("💥 ASTEROID COLLISION! -5 FUEL", "#ff3b30");
+    spaceEngine.onFuelDrain = () => endGameFail();
+    
+    // UI Reset
+    gameState = { playing: true, ended: false, score: 0 };
+    scannedCount = 0;
+    
+    document.getElementById('modal').style.display = 'none';
+    document.getElementById('hud').style.display = 'block';
+    document.getElementById('mode-badges').style.display = 'flex';
+    document.getElementById('hintBox').style.display = 'block';
+};
+
+// Radar & UI logic
+function getPlanetTemperature(idx) {
+    if (idx === targetPlanetIdx) return { level: 'FOUND', color: 0x34c759, cssColor: '#34c759', label: '🎯 FOUND', dist: 0 };
+    const p1 = planets[idx].pos;
+    const p2 = planets[targetPlanetIdx].pos;
+    const dist = p1.distanceTo(p2);
+    const maxDist = 400;
+    const normDist = dist / maxDist;
+    
+    if (normDist < 0.15) return { level: 'HOT', color: 0x34c759, cssColor: '#34c759', label: '🟢 HOT', dist };
+    if (normDist < 0.3) return { level: 'WARM', color: 0xaacc00, cssColor: '#aacc00', label: '🟡 WARM', dist };
+    if (normDist < 0.5) return { level: 'COOL', color: 0xffcc00, cssColor: '#ffcc00', label: '🟠 COOL', dist };
+    if (normDist < 0.7) return { level: 'CHILLY', color: 0xff8800, cssColor: '#ff8800', label: '🟠 CHILLY', dist };
+    return { level: 'COLD', color: 0xff2200, cssColor: '#ff2200', label: '🔴 COLD', dist };
+}
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+window.addEventListener('pointerdown', (e) => {
+    if (!gameState.playing || gameState.ended) return;
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    
+    const hitBoxes = planets.map(p => p.mesh);
+    const intersects = raycaster.intersectObjects(hitBoxes, false);
+    
+    if (intersects.length > 0) {
+        if (intersects[0].distance > 100) { showMessage("TOO FAR TO SCAN", "#ff8800"); return; }
+        scanPlanet(intersects[0].object.userData.index);
+    }
+});
+
+function scanPlanet(idx) {
+    if (gameState.ended || planets[idx].scanned) return;
+    planets[idx].scanned = true;
+    scannedCount++;
+    
+    const temp = getPlanetTemperature(idx);
+    const p = planets[idx];
+    
+    p.mesh.material = p.mesh.material.clone();
+    p.mesh.material.emissive = new THREE.Color(temp.color);
+    p.mesh.material.emissiveIntensity = 0.5;
+    p.ring.material.color.setHex(temp.color);
+    p.ring.material.opacity = 0.8;
+    
+    if (idx === targetPlanetIdx) {
+        gameState.score += Math.floor(spaceEngine.fuel) + (totalPlanets - scannedCount) * 20;
+        showMessage("🎯🦝 RACCOON FOUND IN THIS SYSTEM!", "#34c759");
+        gameState.playing = false;
+        gameState.ended = true;
+        setTimeout(() => location.reload(), 4000);
+    } else {
+        spaceEngine.fuel -= 10;
+        showMessage(`${temp.label} <span style='color:${temp.cssColor}'>(${Math.floor(temp.dist)} LY away)</span>`, temp.cssColor);
+        if (spaceEngine.fuel <= 0) endGameFail();
+    }
+    updateHUD();
+}
+
+function showMessage(text, color) {
+    const msg = document.getElementById('messages');
+    msg.style.opacity = '1';
+    msg.innerHTML = `<span style='color:${color}'>${text}</span>`;
+    setTimeout(() => { if(!gameState.ended) msg.style.opacity = '0'; }, 1500);
+}
+
+function endGameFail() {
+    gameState.ended = true;
+    gameState.playing = false;
+    showMessage("⚡ FUSION CONTAINMENT FAILED!", "#ff3b30");
+    setTimeout(() => location.reload(), 3000);
+}
+
+function updateHUD() {
+    document.getElementById('hScanned').textContent = `${scannedCount}/${totalPlanets}`;
+    document.getElementById('hFuel').textContent = Math.floor(spaceEngine.fuel);
+    document.getElementById('vFuelBar').style.width = spaceEngine.fuel + '%';
+    document.getElementById('hScore').textContent = gameState.score;
+    const p = spaceEngine.fuel;
+    if (p < 20) document.getElementById('vFuelBar').style.background = '#ff3b30';
+    else if (p < 50) document.getElementById('vFuelBar').style.background = '#ff9500';
+    else document.getElementById('vFuelBar').style.background = 'linear-gradient(90deg, #ff3b30, #ff9500, #34c759)';
+}
+
+function updateRadar() {
+    if(!shipRoot) return;
+    const rC = document.getElementById('radar-container');
+    rC.querySelectorAll('.radar-blip').forEach(b => b.remove());
+    
+    const factor = 75 / 200;
+    planets.forEach(p => {
+        const relPos = p.pos.clone().sub(shipRoot.position);
+        const x = 75 + relPos.x * factor;
+        const z = 75 + relPos.z * factor;
+        if(x >= 0 && x <= 150 && z >= 0 && z <= 150) {
+            const blip = document.createElement('div');
+            blip.className = 'radar-blip';
+            blip.style.left = x + 'px';
+            blip.style.top = z + 'px';
+            if(p.scanned) {
+                const temp = getPlanetTemperature(p.index);
+                blip.style.background = temp.cssColor;
+                blip.style.boxShadow = `0 0 5px ${temp.cssColor}`;
+            }
+            rC.appendChild(blip);
+        }
+    });
+}
+
+gfx.startLoop((dt) => {
+    if (gameState.playing) {
+        spaceEngine.update(dt);
+        if (dustPoints && shipRoot) dustPoints.position.copy(shipRoot.position);
+        updateHUD();
+        if(Math.random() < 0.1) updateRadar();
+    }
+    
+    planets.forEach(p => {
+        p.ring.rotation.z += dt * 0.5;
+        p.mesh.rotation.y += dt * 0.1;
+    });
+});
+</script>
+</body>
+</html>

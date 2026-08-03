@@ -1,0 +1,20 @@
+{
+    "name": "Pidgin",
+    "role": "The Messenger",
+    "emoji": "🕊️",
+    "type": "machine",
+    "skeleton": "bird",
+    "model_path": "pidgin.glb",
+    "scale": 1.0,
+    "kinematics": "bird",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "edge_tts",
+        "tier": 4,
+        "voice_id": "es-ES-ElviraNeural",
+        "rate": "+5%",
+        "pitch": "+2Hz",
+        "label": "Pidgin - Elvira (mensajera, rápida, clara)"
+    }
+}

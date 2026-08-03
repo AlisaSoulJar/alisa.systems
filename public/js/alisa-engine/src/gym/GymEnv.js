@@ -1,0 +1,133 @@
+/**
+ * GymEnv — EL CONTRATO DE LAS TRES PUERTAS
+ * ═══════════════════════════════════════════════════════════════
+ * Un solo entorno, tres tipos de agente, UNA métrica comparable.
+ * Esto es lo que no existe en el mercado: los gyms actuales (Gym/Gymnasium,
+ * MineRL, ALE) son RL-numérico y punto. Aquí el MISMO entorno se juega:
+ *
+ *   🤖 NUMÉRICA  reset(seed) / step(action) / getObservation()      → RL, políticas, DQN
+ *   🧠 LENGUAJE  describe() / affordances() / actFromVerb()          → agentes LLM
+ *   🕹️ HUMANA    el lab lo renderiza y lo juegas con teclado/ratón   → personas
+ *
+ * ...y los tres producen el MISMO flujo de recibos firmados, así que sus
+ * puntuaciones son comparables y verificables (ver GymRecorder).
+ *
+ * Para crear un entorno: extiende esta clase e implementa los 5 métodos
+ * marcados ABSTRACTO. Lo demás te lo da el contrato.
+ */
+import { DeterministicScope } from '../world/core/DeterministicScope.js';
+
+export class GymEnv {
+    /** Identificador estable, estilo gym: 'alisa/Asteroids-v0' */
+    static id = 'alisa/Env-v0';
+    /** { shape:[n], names:[...], low:[], high:[] } */
+    static observationSpace = { shape: [0], names: [] };
+    /** { type:'continuous'|'discrete'|'verb', ... } */
+    static actionSpace = { type: 'continuous', shape: [0] };
+    /** Metadatos para la ficha del benchmark */
+    static meta = { title: '', summary: '', horizon: 1800, tags: [] };
+
+    constructor(opts = {}) {
+        this.recorder = opts.recorder || null;   // GymRecorder (opcional)
+        this.seed = 0;
+        this.t = 0;                              // tiempo simulado
+        this.steps = 0;
+        this.done = false;
+        this._lastScore = 0;
+    }
+
+    // ─── ABSTRACTO: lo que implementa cada entorno ───────────────
+    /** @abstract Reinicia con semilla. Debe ser DETERMINISTA. → obs */
+    reset(_seed = 0) { throw new Error('GymEnv.reset() no implementado'); }
+    /** @abstract Avanza la simulación un paso. → {obs, reward, done, info} */
+    step(_action, _dt = 1 / 60) { throw new Error('GymEnv.step() no implementado'); }
+    /** @abstract Vector de observación (números planos). */
+    getObservation() { throw new Error('GymEnv.getObservation() no implementado'); }
+    /** @abstract Estado en lenguaje natural, para agentes LLM. */
+    describe() { throw new Error('GymEnv.describe() no implementado'); }
+    /** @abstract Verbos disponibles AHORA: [{verb, args, label}] (capa SCUMM). */
+    affordances() { throw new Error('GymEnv.affordances() no implementado'); }
+
+    // ─── PUERTA DE LENGUAJE: verbo → acción numérica ─────────────
+    /** Traduce un verbo de affordances() a la acción nativa. Sobrescribible. */
+    actFromVerb(verb, args = {}) {
+        const a = this.affordances().find(x => x.verb === verb);
+        if (!a) return null;
+        return a.action !== undefined ? a.action : args;
+    }
+    /** Atajo para agentes LLM: ejecuta un verbo directamente. */
+    stepVerb(verb, args = {}, dt = 1 / 60) {
+        const action = this.actFromVerb(verb, args);
+        if (action === null) return { obs: this.getObservation(), reward: 0, done: this.done,
+                                      info: { error: `verbo desconocido: ${verb}` } };
+        const r = this.step(action, dt);
+        if (this.recorder) this.recorder.record({ verb, args, reward: r.reward, t: this.t });
+        return r;
+    }
+
+    // ─── PUNTUACIÓN COMPARABLE ───────────────────────────────────
+    /** { score, metrics{...} } — el eje común de los tres tipos de agente. */
+    getScore() { return { score: this._lastScore, metrics: {} }; }
+
+    /** Ficha del entorno, para el registro del benchmark. */
+    static spec() {
+        return { id: this.id, observationSpace: this.observationSpace,
+                 actionSpace: this.actionSpace, meta: this.meta };
+    }
+
+    // ─── EJECUCIÓN COMPLETA (usada por el validador headless) ────
+    /**
+     * Corre un episodio entero con una política.
+     *
+     * ⚠️ EL EPISODIO ENTERO VA DENTRO DE UN DeterministicScope. Sin esto la
+     * palabra "determinista" era un deseo, no una garantía: el motor tiene 470
+     * llamadas a `Math.random()` sin semilla repartidas por 67 ficheros, así que
+     * la misma semilla daba mundos distintos en la misma máquina. Medido, y
+     * `AsteroidsSystem` lo demostraba (2019 azares por episodio).
+     *
+     * Esto es lo que sostiene el benchmark: para validar la puntuación de otro
+     * hay que poder volver a simular su partida y obtener lo mismo.
+     *
+     * @param {Function} policy - (obs, env) => action
+     * @returns {Object} resultado + recibos
+     */
+    runEpisode(policy, { seed = 0, maxSteps = 1800, dt = 1 / 60 } = {}) {
+        return DeterministicScope.run(seed, () => {
+            this.reset(seed);
+            let obs = this.getObservation(), total = 0;
+            for (let i = 0; i < maxSteps && !this.done; i++) {
+                const action = policy(obs, this);
+                const r = this.step(action, dt);
+                obs = r.obs; total += r.reward;
+                if (this.recorder) this.recorder.record({ action, reward: r.reward, t: this.t });
+            }
+            return { seed, steps: this.steps, totalReward: total, ...this.getScore(),
+                     draws: DeterministicScope.draws,   // nº de azares consumidos: huella del episodio
+                     receipts: this.recorder ? this.recorder.receipts : [] };
+        });
+    }
+
+    /**
+     * ¿Es este entorno reproducible? Corre el mismo episodio dos veces con la
+     * misma semilla y una tercera con otra.
+     *
+     * Todo entorno que quiera entrar en el benchmark tiene que pasar esto.
+     *
+     * @param {Function} policy política determinista (o semillada aparte)
+     * @returns {{reproducible: boolean, sensible: boolean, draws: number, a: Object, b: Object}}
+     *   reproducible = misma semilla ⇒ misma puntuación y mismos pasos
+     *   sensible     = otra semilla ⇒ resultado distinto (si no, el entorno ignora la semilla)
+     */
+    static selfTest(policy, { seed = 1234, maxSteps = 600, dt = 1 / 60 } = {}) {
+        const huella = r => `${r.steps}|${r.totalReward.toFixed(6)}|${r.score ?? ''}|${r.draws}`;
+        const a = new this().runEpisode(policy, { seed, maxSteps, dt });
+        const b = new this().runEpisode(policy, { seed, maxSteps, dt });
+        const c = new this().runEpisode(policy, { seed: seed + 1, maxSteps, dt });
+        return {
+            reproducible: huella(a) === huella(b),
+            sensible: huella(a) !== huella(c),
+            draws: a.draws,
+            a, b
+        };
+    }
+}

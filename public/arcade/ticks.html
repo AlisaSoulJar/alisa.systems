@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA Arcade — TICKING GRIDS</title>
+    <link rel="stylesheet" href="css/arcade.css">
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+    <header>
+        <div class="subtitle">Contingency & Reflex Labs</div>
+        <h1>TICKING GRIDS</h1>
+    </header>
+    <main class="arcade-grid">
+        <a href="peaton.html" class="arcade-card" data-game="peaton">
+            <div class="card-header">
+                <div class="game-icon">🐸</div>
+                <div class="status-badge" data-state="offline"><div class="dot"></div> querying</div>
+            </div>
+            <div class="card-body">
+                <h2>Tropical M-30 Peatón</h2>
+                <p>3D Heavy Simulation with Traffic IDM & Ferret Ecology.</p>
+            </div>
+            <div class="card-footer">
+                <div class="api-endpoint">/arcade/peaton/move</div>
+                <div class="players"></div>
+            </div>
+        </a>
+        <a href="snake.html" class="arcade-card" data-game="snake">
+            <div class="card-header">
+                <div class="game-icon">🐍</div>
+                <div class="status-badge" data-state="offline"><div class="dot"></div> querying</div>
+            </div>
+            <div class="card-body">
+                <h2>Snake</h2>
+                <p>Self-collision avoidance.</p>
+            </div>
+            <div class="card-footer">
+                <div class="api-endpoint">/arcade/snake/move</div>
+                <div class="players"></div>
+            </div>
+        </a>
+        <a href="fagocito.html" class="arcade-card" data-game="fagocito">
+            <div class="card-header">
+                <div class="game-icon">👻</div>
+                <div class="status-badge" data-state="offline"><div class="dot"></div> querying</div>
+            </div>
+            <div class="card-body">
+                <h2>Pac-Node</h2>
+                <p>Maze traversal and ghost evasion.</p>
+            </div>
+            <div class="card-footer">
+                <div class="api-endpoint">/arcade/fagocito/move</div>
+                <div class="players"></div>
+            </div>
+        </a>
+    </main>
+    <script src="js/arcade_core.js"></script>
+</body>
+</html>

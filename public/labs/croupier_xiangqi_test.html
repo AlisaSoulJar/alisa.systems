@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA LAB — ¿son correctas las reglas de Xiangqi?</title>
+<style>
+  body{margin:0;background:#070a11;color:#cfe3f5;font-family:ui-monospace,monospace;padding:20px 26px 60px}
+  h1{margin:0 0 3px;font-size:18px;color:#7fd0ff}
+  h2{font-size:13px;color:#7fd0ff;margin:20px 0 6px;border-bottom:1px solid #1d2b3e;padding-bottom:4px}
+  pre{background:#0b1018;border:1px solid #16202e;padding:10px 12px;font-size:11.5px;
+      line-height:1.65;white-space:pre-wrap;color:#b8d4ea;margin:6px 0;border-radius:3px}
+</style>
+</head>
+<body>
+<h1>▓ XIANGQI · reglas del ProtoHub</h1>
+<div id="out"></div>
+<script type="module">
+import { xiangqi, legales, enJaque, generalesEnfrentados, aplica, aRC } from '../arcade/js/protohub/rules/xiangqi.js';
+
+const out = document.getElementById('out');
+const say = (h, t) => out.insertAdjacentHTML('beforeend', `<h2>${h}</h2><pre>${t}</pre>`);
+const R = {};
+
+function vacio() { return Array.from({length:10}, () => new Array(9).fill('')); }
+function poner(g, piezas) { for (const [sq, p] of Object.entries(piezas)) { const [r,c] = aRC(sq); g[r][c] = p; } return g; }
+
+// ── 1. PERFT desde la posición inicial ─────────────────────────
+// Valores conocidos del xiangqi: 44 · 1.920 · 79.666
+function perft(g, rojo, n) {
+  const movs = legales(g, rojo);
+  if (n === 1) return movs.length;
+  let t = 0;
+  for (const m of movs) t += perft(aplica(g, m), !rojo, n - 1);
+  return t;
+}
+const p0 = xiangqi.nuevaPartida();
+const ESPERADO = [[1,44],[2,1920],[3,79666]];
+let l = '', perftOk = true;
+for (const [d, n] of ESPERADO) {
+  const t0 = performance.now();
+  const got = perft(p0.grid, true, d);
+  const ms = (performance.now()-t0).toFixed(0);
+  const ok = got === n;
+  if (!ok) perftOk = false;
+  l += `  profundidad ${d}: ${String(got).padStart(7)}  esperado ${String(n).padStart(7)}  ${ok ? '✓' : '✗ MAL'}  (${ms} ms)\n`;
+}
+R.perft = perftOk;
+say('1 · Perft desde la posición inicial', l + '\n  (44 · 1.920 · 79.666 son los valores publicados del xiangqi)');
+
+// ── 2. EL CAÑÓN ────────────────────────────────────────────────
+// Mueve libre por vacío, pero SOLO come saltando exactamente una pieza.
+const g2 = poner(vacio(), { 'e5':'C', 'e3':'p', 'e1':'p', 'e9':'K', 'e0':'k' });
+const movsC = legales(g2, true).filter(m => m.startsWith('e5'));
+const comeSaltando = movsC.includes('e5e1');   // salta sobre e3, come en e1
+const comeSinSaltar = movsC.includes('e5e3');  // pegado: NO puede comer
+R.canon = comeSaltando && !comeSinSaltar;
+say('2 · El cañón come saltando, no de frente',
+  `  cañón rojo en e5; peones negros en e3 (pegado tras un hueco) y e1\n` +
+  `  jugadas del cañón: ${movsC.join(' ')}\n` +
+  `  come saltando (e5e1): ${comeSaltando} (debe ser true)\n` +
+  `  come de frente (e5e3): ${comeSinSaltar} (debe ser FALSE)\n  ${R.canon ? '✓' : '✗ MAL'}`);
+
+// ── 3. EL CABALLO SE TRABA ─────────────────────────────────────
+// ⚠️ Mi primera versión ponía los generales en e9 y e0 — la MISMA columna que
+// la pieza de prueba. Al mover el caballo, los generales quedaban mirándose y
+// TODAS sus jugadas eran ilegales: salían 0 destinos. El motor tenía razón; la
+// posición estaba mal montada. Los generales van a columnas distintas.
+const g3a = poner(vacio(), { 'e5':'N', 'd9':'K', 'f0':'k' });
+const libres = legales(g3a, true).filter(m => m.startsWith('e5')).length;
+const g3b = poner(vacio(), { 'e5':'N', 'e4':'p', 'd9':'K', 'f0':'k' });   // pata tapada abajo
+const trabado = legales(g3b, true).filter(m => m.startsWith('e5'));
+R.caballo = libres === 8 && !trabado.includes('e5d3') && !trabado.includes('e5f3');
+say('3 · El caballo se traba',
+  `  caballo suelto en e5: ${libres} destinos (esperado 8)\n` +
+  `  con la pata tapada en e4, ¿puede saltar a d3/f3? ` +
+  `${trabado.includes('e5d3') || trabado.includes('e5f3')} (debe ser FALSE)\n` +
+  `  destinos con la pata tapada: ${trabado.map(m=>m.slice(2)).join(' ')}\n  ${R.caballo ? '✓' : '✗ MAL'}`);
+
+// ── 4. EL ELEFANTE NO CRUZA EL RÍO ─────────────────────────────
+const g4 = poner(vacio(), { 'c5':'B', 'e9':'K', 'e0':'k' });
+const movsB = legales(g4, true).filter(m => m.startsWith('c5')).map(m => m.slice(2));
+const cruza = movsB.some(sq => parseInt(sq[1],10) <= 4);
+R.elefante = movsB.length > 0 && !cruza;
+say('4 · El elefante no cruza el río',
+  `  elefante rojo en c5 (el río está entre las filas 4 y 5)\n` +
+  `  destinos: ${movsB.join(' ')}\n  ¿alguno pasa a la fila ≤4?: ${cruza} (debe ser FALSE)\n  ${R.elefante ? '✓' : '✗ MAL'}`);
+
+// ── 5. GENERAL Y CONSEJERO ENCERRADOS ──────────────────────────
+const g5 = poner(vacio(), { 'e9':'K', 'e0':'k' });
+const movsK = legales(g5, true).filter(m => m.startsWith('e9')).map(m => m.slice(2));
+const seSale = movsK.some(sq => { const [r,c] = aRC(sq); return c < 3 || c > 5 || r < 7; });
+R.palacio = !seSale && movsK.length > 0;
+say('5 · El general no sale del palacio',
+  `  general rojo en e9 (palacio: filas 7-9, columnas d-f)\n` +
+  `  destinos: ${movsK.join(' ')}\n  ¿alguno se sale?: ${seSale} (debe ser FALSE)\n  ${R.palacio ? '✓' : '✗ MAL'}`);
+
+// ── 6. LOS GENERALES NO PUEDEN MIRARSE ─────────────────────────
+const g6 = poner(vacio(), { 'e9':'K', 'e0':'k' });          // misma columna, despejada
+const enfrentados = generalesEnfrentados(g6);
+const g6b = poner(vacio(), { 'e9':'K', 'e0':'k', 'e5':'p' }); // con algo en medio
+const tapados = generalesEnfrentados(g6b);
+// Y la consecuencia real: no puedes MOVER a una posición donde se miren.
+const g6c = poner(vacio(), { 'd9':'K', 'e0':'k' });
+const suicidaFrontal = legales(g6c, true).includes('d9e9');
+R.enfrentados = enfrentados && !tapados && !suicidaFrontal;
+say('6 · Los generales no pueden verse',
+  `  ambos en la columna e, despejada → enfrentados: ${enfrentados} (debe ser true)\n` +
+  `  con un peón en medio → enfrentados: ${tapados} (debe ser false)\n` +
+  `  ¿deja mover el general rojo a la columna del negro?: ${suicidaFrontal} (debe ser FALSE)\n  ${R.enfrentados ? '✓' : '✗ MAL'}`);
+
+// ── 7. EL SOLDADO, ANTES Y DESPUÉS DEL RÍO ─────────────────────
+// Mismo cuidado que en la prueba 3: generales fuera de la columna del soldado,
+// o su movimiento lateral quedaría prohibido por la regla de los generales.
+const g7a = poner(vacio(), { 'e6':'P', 'd9':'K', 'f0':'k' });   // aún en su lado
+const antes = legales(g7a, true).filter(m => m.startsWith('e6')).map(m => m.slice(2));
+const g7b = poner(vacio(), { 'e4':'P', 'd9':'K', 'f0':'k' });   // ya cruzó
+const despues = legales(g7b, true).filter(m => m.startsWith('e4')).map(m => m.slice(2));
+R.soldado = antes.length === 1 && antes[0] === 'e5' && despues.length === 3;
+say('7 · El soldado gana movimiento lateral al cruzar',
+  `  en su lado (e6): ${antes.join(' ')} (esperado solo e5)\n` +
+  `  cruzado (e4): ${despues.join(' ')} (esperado 3: adelante + dos lados)\n  ${R.soldado ? '✓' : '✗ MAL'}`);
+
+// ── 8. 200 PARTIDAS ────────────────────────────────────────────
+let fallos = 0, atascos = 0, terminadas = 0, mal = '';
+for (let s = 0; s < 200; s++) {
+  const p = xiangqi.nuevaPartida();
+  let pasos = 0;
+  while (true) {
+    const st = xiangqi.estado(p);
+    if (st.is_game_over) break;
+    if (++pasos > 300) { atascos++; break; }
+    const m = st.legal_moves[(Math.random() * st.legal_moves.length) | 0];
+    if (!xiangqi.mover(p, m)) { fallos++; mal += `  rechazó su propia jugada legal '${m}'\n`; break; }
+    // INVARIANTE: los dos generales siguen en el tablero hasta el final
+    if (generalesEnfrentados(p.grid)) { fallos++; mal += `  quedaron generales enfrentados\n`; break; }
+  }
+  if (xiangqi.estado(p).is_game_over) terminadas++;
+}
+R.partidas = fallos === 0;
+say('8 · 200 partidas al azar',
+  `  terminadas: ${terminadas}/200\n  sin terminar en 300 jugadas: ${atascos}\n  fallos: ${fallos}\n` + mal +
+  `  (que muchas no acaben en 300 jugadas es NORMAL jugando al azar: sin nadie\n` +
+  `   buscando el mate, dos generales encerrados pueden esquivarse eternamente)\n` +
+  `  ${R.partidas ? '✓ ninguna jugada ilegal y nunca quedan los generales enfrentados' : '✗ MAL'}`);
+
+// ── 9. DESHACER ────────────────────────────────────────────────
+const p9 = xiangqi.nuevaPartida();
+const snap = xiangqi.estado(p9).fen;
+xiangqi.mover(p9, xiangqi.estado(p9).legal_moves[0]);
+xiangqi.mover(p9, xiangqi.estado(p9).legal_moves[0]);
+xiangqi.deshacer(p9); xiangqi.deshacer(p9);
+R.deshacer = xiangqi.estado(p9).fen === snap;
+say('9 · Deshacer', `  antes:   ${snap}\n  después: ${xiangqi.estado(p9).fen}\n  ${R.deshacer ? '✓' : '✗ MAL'}`);
+
+const todo = Object.values(R).every(Boolean);
+say('VEREDICTO', Object.entries(R).map(([k,v]) => `  ${v ? '✓' : '✗'}  ${k}`).join('\n') +
+  `\n\n  ${todo ? '✅ XIANGQI CORRECTO' : '❌ hay algo mal'}`);
+window.__xiangqi = R;
+window.__ready = true;
+</script>
+</body>
+</html>

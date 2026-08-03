@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA LAB — ¿son correctas las reglas de Damas?</title>
+<style>
+  body{margin:0;background:#070a11;color:#cfe3f5;font-family:ui-monospace,monospace;padding:20px 26px 60px}
+  h1{margin:0 0 3px;font-size:18px;color:#7fd0ff}
+  h2{font-size:13px;color:#7fd0ff;margin:20px 0 6px;border-bottom:1px solid #1d2b3e;padding-bottom:4px}
+  pre{background:#0b1018;border:1px solid #16202e;padding:10px 12px;font-size:11.5px;
+      line-height:1.65;white-space:pre-wrap;color:#b8d4ea;margin:6px 0;border-radius:3px}
+</style>
+</head>
+<body>
+<h1>▓ DAMAS · reglas del ProtoHub</h1>
+<div id="out"></div>
+<script type="module">
+import { damas, jugadasDe, cuenta } from '../arcade/js/protohub/rules/damas.js';
+
+const out = document.getElementById('out');
+const say = (h, t) => out.insertAdjacentHTML('beforeend', `<h2>${h}</h2><pre>${t}</pre>`);
+const R = {};
+const fenDe = (p) => damas.estado(p).fen;
+
+// tablero desde un FEN corto, para montar posiciones a mano
+function poner(p, casillas) {
+  p.tablero = Array.from({length:8}, () => new Array(8).fill(null));
+  for (const [sq, pieza] of Object.entries(casillas)) {
+    const f = 8 - parseInt(sq[1],10), c = 'abcdefgh'.indexOf(sq[0]);
+    p.tablero[f][c] = pieza;
+  }
+}
+
+// ── 1. INICIO ──────────────────────────────────────────────────
+const p0 = damas.nuevaPartida();
+const st0 = damas.estado(p0);
+const { w, b } = cuenta(p0.tablero);
+R.inicio = w === 12 && b === 12 && st0.legal_moves.length === 7;
+say('1 · Reparto inicial',
+  `  FEN: ${st0.fen}\n  piezas: blancas ${w}, negras ${b} (esperado 12 y 12)\n` +
+  `  jugadas legales: ${st0.legal_moves.length} (esperado 7)\n  ${st0.legal_moves.join(' ')}\n  ${R.inicio ? '✓' : '✗ MAL'}`);
+
+// ── 2. COMER ES OBLIGATORIO ────────────────────────────────────
+const p1 = damas.nuevaPartida();
+poner(p1, { 'c3':'w', 'd4':'b', 'a1':'w' });   // hay captura c3xe5, y a1 podría moverse
+p1.blancasJuegan = true;
+const st1 = damas.estado(p1);
+R.obligada = st1.legal_moves.length === 1 && st1.legal_moves[0] === 'c3e5' && st1.captura_obligada;
+say('2 · Comer es obligatorio',
+  `  posición: blanca en c3, negra en d4, otra blanca suelta en a1\n` +
+  `  legales: ${st1.legal_moves.join(' ')}\n  (solo debe dejar c3e5; el a1 NO puede moverse)\n` +
+  `  captura_obligada: ${st1.captura_obligada}\n  ${R.obligada ? '✓' : '✗ MAL'}`);
+
+// ── 3. CAPTURA MÚLTIPLE ────────────────────────────────────────
+const p2 = damas.nuevaPartida();
+poner(p2, { 'c3':'w', 'd4':'b', 'f6':'b' });   // c3xe5xg7
+p2.blancasJuegan = true;
+const st2 = damas.estado(p2);
+R.multiple = st2.legal_moves.includes('c3e5g7');
+say('3 · Captura encadenada',
+  `  blanca en c3; negras en d4 y f6\n  legales: ${st2.legal_moves.join(' ')}\n` +
+  `  (debe encadenar: c3e5g7)\n  ${R.multiple ? '✓' : '✗ MAL'}`);
+if (R.multiple) {
+  damas.mover(p2, 'c3e5g7');
+  const c = cuenta(p2.tablero);
+  R.multiple = c.b === 0 && c.w === 1;
+  say('3b · …y se come las DOS',
+    `  tras c3e5g7 → blancas ${c.w}, negras ${c.b} (esperado 1 y 0)\n  ${R.multiple ? '✓' : '✗ MAL'}`);
+}
+
+// ── 4. CORONACIÓN ──────────────────────────────────────────────
+const p3 = damas.nuevaPartida();
+poner(p3, { 'b2':'w', 'h8':'b' });
+p3.blancasJuegan = true;
+// b2 -> a1? no: las blancas avanzan hacia la fila 8. b2->a3/c3 … llevémosla al borde
+poner(p3, { 'b7':'w', 'h1':'b' });
+damas.mover(p3, 'b7a8');
+R.corona = p3.tablero[0][0] === 'W';
+say('4 · Coronación',
+  `  peón blanco de b7 a a8 → ${p3.tablero[0][0]} (esperado 'W', dama)\n  ${R.corona ? '✓' : '✗ MAL'}`);
+
+// ── 5. LA DAMA VA EN LAS CUATRO DIAGONALES ─────────────────────
+const p4 = damas.nuevaPartida();
+poner(p4, { 'd4':'W', 'h1':'b' });
+p4.blancasJuegan = true;
+const dirs = damas.estado(p4).legal_moves.filter(m => m.startsWith('d4'));
+R.dama = dirs.length === 4;
+say('5 · La dama se mueve en las 4 diagonales',
+  `  dama blanca en d4 (tablero libre)\n  destinos: ${dirs.join(' ')}\n  ${R.dama ? '✓ las cuatro' : '✗ MAL, salen ' + dirs.length}`);
+
+// ── 6. 300 PARTIDAS AL AZAR ────────────────────────────────────
+let fallos = 0, atascos = 0, terminadas = 0, mal = '';
+for (let s = 0; s < 300; s++) {
+  const p = damas.nuevaPartida();
+  let pasos = 0;
+  while (true) {
+    const st = damas.estado(p);
+    if (st.is_game_over || !st.legal_moves.length) break;
+    if (++pasos > 400) { atascos++; break; }
+    const m = st.legal_moves[(Math.random() * st.legal_moves.length) | 0];
+    if (!damas.mover(p, m)) { fallos++; mal += `  rechazó su propia jugada legal '${m}'\n`; break; }
+    const c = cuenta(p.tablero);
+    // INVARIANTE: nunca puede haber más piezas de las que empezaron
+    if (c.w > 12 || c.b > 12) { fallos++; mal += `  piezas clonadas: ${c.w}/${c.b}\n`; break; }
+  }
+  if (damas.estado(p).is_game_over) terminadas++;
+}
+R.partidas = fallos === 0 && atascos === 0;
+say('6 · 300 partidas al azar',
+  `  terminadas: ${terminadas}/300\n  atascos: ${atascos}\n  fallos: ${fallos}\n` + mal +
+  `  ${R.partidas ? '✓ ninguna pieza se clona ni se atasca' : '✗ MAL'}`);
+
+// ── 7. DESHACER ────────────────────────────────────────────────
+const p5 = damas.nuevaPartida();
+const snap = fenDe(p5);
+damas.mover(p5, damas.estado(p5).legal_moves[0]);
+damas.mover(p5, damas.estado(p5).legal_moves[0]);
+damas.deshacer(p5); damas.deshacer(p5);
+R.deshacer = fenDe(p5) === snap;
+say('7 · Deshacer', `  antes:   ${snap}\n  después: ${fenDe(p5)}\n  ${R.deshacer ? '✓' : '✗ MAL'}`);
+
+// ── 8. EL RIVAL DE CASA ────────────────────────────────────────
+let gana = 0;
+for (let i = 0; i < 100; i++) {
+  const p = damas.nuevaPartida();
+  for (let k = 0; k < 400; k++) {
+    const st = damas.estado(p);
+    if (st.is_game_over || !st.legal_moves.length) break;
+    const m = p.blancasJuegan ? damas.sugerencia(p)
+                              : st.legal_moves[(Math.random() * st.legal_moves.length) | 0];
+    if (!m || !damas.mover(p, m)) break;
+  }
+  if (damas.estado(p).result === 'white') gana++;
+}
+R.rival = gana > 55;
+say('8 · El rival de casa contra el azar (100 partidas)',
+  `  la casa gana ${gana}%\n  ${R.rival ? '✓' : '✗ flojo'}`);
+
+const todo = Object.values(R).every(Boolean);
+say('VEREDICTO', Object.entries(R).map(([k,v]) => `  ${v ? '✓' : '✗'}  ${k}`).join('\n') +
+  `\n\n  ${todo ? '✅ DAMAS CORRECTO' : '❌ hay algo mal'}`);
+window.__damas = R;
+window.__ready = true;
+</script>
+</body>
+</html>

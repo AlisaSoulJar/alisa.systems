@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ALISA LAB — KatamariSystem V4 (Sovereign Aesthetics)</title>
+    <style>
+        body { margin: 0; overflow: hidden; background: #2b1d3d; font-family: 'Open Sans', sans-serif; color: white; user-select: none; }
+        
+        /* ─── WHIMSICAL HUD ─── */
+        #hud {
+            display: none; position: absolute; top: 15px; left: 15px;
+            background: rgba(255,100,180,0.85); box-shadow: 0 0 20px rgba(255,50,150,0.5);
+            padding: 18px 24px; border-radius: 20px; border: 4px solid #fff;
+            pointer-events: none; z-index: 10; transform: rotate(-2deg);
+        }
+        #hud .title { 
+            font-family: 'Fredoka One', cursive; color: #fff; font-size: 22px; 
+            margin-bottom: 10px; letter-spacing: 2px; text-shadow: 2px 2px 0px #ff3399;
+        }
+        #hud .stat { color: #fff; font-size: 14px; font-weight: bold; margin-bottom: 4px; }
+        #hud .val { background: #fff; color: #ff3399; padding: 2px 8px; border-radius: 12px; margin-left: 8px; display: inline-block;}
+        
+        /* ─── MODAL ─── */
+        #modal {
+            position: fixed; inset: 0; background: rgba(43, 29, 61, 0.92);
+            display: flex; align-items: center; justify-content: center; z-index: 100;
+        }
+        #modal .box {
+            background: linear-gradient(135deg, #ff66b2, #ffcc00); border: 6px solid #fff;
+            padding: 40px; border-radius: 30px; max-width: 600px; width: 90%;
+            box-shadow: 0 0 50px rgba(255,102,178,0.4); text-align: center;
+        }
+        #modal h1 { font-family: 'Fredoka One', cursive; color: #fff; margin-bottom: 15px; font-size: 38px; text-shadow: 3px 3px 0px #ff3399;}
+        #modal p { color: #fff; margin-bottom: 30px; line-height: 1.6; font-size: 16px; font-weight: 600;}
+        
+        #btnStart {
+            display: inline-block; margin: 20px auto 0; background: #fff;
+            color: #ff3399; border: none; padding: 15px 40px; font-size: 22px; font-family: 'Fredoka One';
+            border-radius: 50px; cursor: pointer; transition: all 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        #btnStart:hover { transform: scale(1.1) rotate(3deg); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
+
+        .scanlines {
+            position: fixed; inset: 0; pointer-events: none; z-index: 50;
+            background: radial-gradient(circle, transparent 50%, rgba(43,29,61,0.6) 100%);
+            mix-blend-mode: multiply; opacity: 0; transition: opacity 1s;
+        }
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "three": "/vendor/three-0.160.0/build/three.module.js",
+        "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+        "@alisa-engine/": "../js/alisa-engine/"
+      }
+    }
+    </script>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+
+    <!-- HUD Overlay -->
+    <div id="hud">
+        <div class="title">👑 KATAMARI ALLOCATOR</div>
+        <div class="stat">Diameter: <span class="val" id="hSize">0.0m</span></div>
+        <div class="stat">Chunks Consumed: <span class="val" id="hChunks">0</span></div>
+        <div class="stat">GC Memory: <span class="val" id="hMem">Nominal</span></div>
+    </div>
+
+    <!-- Scanlines -->
+    <div class="scanlines" id="scanlines"></div>
+
+    <!-- LAUNCH MODAL -->
+    <div id="modal">
+        <div class="box">
+            <h1>KATAMARI SWARM <span style="font-size:16px;">v4</span></h1>
+            <p>Recursive volumetric ingestion. Watch as the physical Memory Chunks are rolled up and dynamically instanced into the Katamari hierarchy.</p>
+            <button id="btnStart">ROLL IT UP!</button>
+        </div>
+    </div>
+    
+    <script type="module">
+        import * as THREE from 'three';
+        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js?v=4';
+        import { KatamariEngine } from '@alisa-engine/src/world/systems/KatamariEngine.js';
+        import { AlisaBloomEngine } from '@alisa-engine/src/soma/plugins/AlisaBloomEngine.js?v=4';
+
+        const modal = document.getElementById('modal');
+        const hud = document.getElementById('hud');
+        const btnStart = document.getElementById('btnStart');
+        const hSize = document.getElementById('hSize');
+        const hChunks = document.getElementById('hChunks');
+        const hMem = document.getElementById('hMem');
+        const scanlines = document.getElementById('scanlines');
+        
+        let core, engine, bloomPlugin;
+
+        btnStart.onclick = async () => {
+            modal.style.display = 'none';
+            hud.style.display = 'block';
+            scanlines.style.opacity = '1';
+
+            // 1. Initialize ECS (Vibrant Colors)
+            core = new AlisaRenderCore({ clearColor: 0x2b1d3d });
+            core.setupDefaultEnvironment();
+            core.scene.fog = new THREE.FogExp2(0x2b1d3d, 0.005);
+            
+            // Bright cheerful lighting
+            core.hemiLight.color.setHex(0xffffff);
+            core.hemiLight.groundColor.setHex(0xff66b2);
+            core.spotLight.color.setHex(0xffcc00);
+            core.spotLight.intensity = 1.5;
+
+            // 2. Add Bloom to make the Katamari pop
+            bloomPlugin = new AlisaBloomEngine(core, 0.8, 0.6, 0.4);
+
+            // 3. Initialize Engine
+            engine = new KatamariEngine(core);
+            engine.boot();
+            
+            // Adjust initial camera
+            core.camera.position.set(0, 20, 40);
+            core.controls.target.set(0, 0, 0);
+
+            // 4. Start Render/Logic Loop
+            core.startLoop((dt) => {
+                const metrics = engine.tick(dt);
+                
+                if (metrics) {
+                    hSize.innerText = metrics.size.toFixed(2) + 'm';
+                    hChunks.innerText = metrics.objCount;
+                    
+                    if(metrics.objCount > 50) hMem.innerText = "Heavy Load!";
+                    else hMem.innerText = "Nominal";
+                }
+
+                core.controls.update();
+            }, bloomPlugin.render.bind(bloomPlugin));
+            
+            window.__alisa_engine = engine;
+        };
+    </script>
+</body>
+</html>

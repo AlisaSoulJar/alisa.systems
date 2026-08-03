@@ -1,0 +1,53 @@
+{
+    "source_file": "Hamster.glb",
+    "deduced_size_meters": 23.0,
+    "target_tier": "Tier 2: Colossal",
+    "target_scale_constraint": 26.999999999999996,
+    "voxel_grid": [
+        10,
+        3,
+        8
+    ],
+    "archetype": "plantigrade",
+    "morphology": {
+        "size_m": 23.0,
+        "domain": "organic",
+        "cladistics": "plantigrade",
+        "mobility": "bipedal",
+        "mechanical_joints": 8
+    },
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0,
+    "ai_armature": [
+        {
+            "name": "Core Anchor X",
+            "parent": null,
+            "pos": [
+                0.0,
+                18.84522819519043,
+                0.0
+            ]
+        },
+        {
+            "name": "Base Mount",
+            "parent": null,
+            "pos": [
+                0.0,
+                1.884522819519043,
+                0.0
+            ]
+        }
+    ],
+    "mesh_scale_multiplier": 0.2417934126479291,
+    "kinematics": {
+        "base_gait": "static",
+        "cycle_frequency_hz": 0.0,
+        "step_amplitude": 0.0,
+        "vertical_bounce": 0.0,
+        "spine_flexion": 0.0,
+        "idle_sway_hz": 0.0,
+        "locomotion_states": [
+            "idle"
+        ]
+    }
+}

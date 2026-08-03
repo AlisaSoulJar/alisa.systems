@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA LAB — Snake y Fagocito: los juegos de acción</title>
+<style>
+  body{margin:0;background:#070a11;color:#cfe3f5;font-family:ui-monospace,monospace;padding:20px 26px 60px}
+  h1{margin:0 0 3px;font-size:18px;color:#7fd0ff}
+  h2{font-size:13px;color:#7fd0ff;margin:20px 0 6px;border-bottom:1px solid #1d2b3e;padding-bottom:4px}
+  .sub{color:#5f7a92;font-size:11.5px;line-height:1.7;max-width:900px;margin-bottom:10px}
+  pre{background:#0b1018;border:1px solid #16202e;padding:10px 12px;font-size:11.5px;
+      line-height:1.65;white-space:pre-wrap;color:#b8d4ea;margin:6px 0;border-radius:3px}
+</style>
+</head>
+<body>
+<h1>▓ SNAKE Y FAGOCITO · los de acción</h1>
+<div class="sub">
+Estos dos completan el catálogo: el motor no solo hace tablero y cartas.<br>
+Y aunque parezcan de reflejos, como <b>entornos son por pasos</b> — eliges dirección, el mundo avanza un tick.
+Esa es la forma exacta de un gym, y por eso ambos son bancos de pruebas clásicos de RL.
+</div>
+<div id="out"></div>
+<script type="module">
+import { snake } from '../arcade/js/protohub/rules/snake.js';
+import { fagocito, generarLaberinto } from '../arcade/js/protohub/rules/fagocito.js';
+
+const out = document.getElementById('out');
+const say = (h,t) => out.insertAdjacentHTML('beforeend', `<h2>${h}</h2><pre>${t}</pre>`);
+const R = {};
+
+// ══════════════ SNAKE ══════════════
+const s0 = snake.nuevaPartida();
+const st0 = snake.estado(s0);
+R.snakeInicio = st0.snake.length === 3 && st0.food && st0.legal_moves.length === 4;
+say('1 · Snake arranca',
+  `  longitud: ${st0.snake.length} (esperado 3)   comida en (${st0.food.x},${st0.food.y})\n` +
+  `  dirección: ${st0.direction}   jugadas: ${st0.legal_moves.join(' ')}\n  ${R.snakeInicio ? '✓' : '✗ MAL'}`);
+
+// Girar 180° se ignora, no mata
+const s1 = snake.nuevaPartida();          // va a la derecha
+snake.mover(s1, 'izquierda');
+R.snake180 = !s1.muerta && s1.direccion === 'derecha';
+say('2 · No se puede girar 180°',
+  `  yendo a la derecha, se pide izquierda\n  sigue viva: ${!s1.muerta}   dirección: ${s1.direccion} (debe seguir siendo derecha)\n` +
+  `  (se ignora en vez de matarte: es lo que hace el juego real)\n  ${R.snake180 ? '✓' : '✗ MAL'}`);
+
+// Muere contra el muro
+const s2 = snake.nuevaPartida();
+let n = 0;
+while (!s2.muerta && n < 40) { snake.mover(s2, 'derecha'); n++; }
+R.snakeMuro = s2.muerta && n < 20;
+say('3 · Muere contra el muro',
+  `  todo recto a la derecha: muere en ${n} pasos (la rejilla es de 20)\n  ${R.snakeMuro ? '✓' : '✗ MAL'}`);
+
+// Comer alarga y puntúa; la comida nunca cae dentro del cuerpo
+let comidas = 0, dentroDelCuerpo = 0, largoMal = 0;
+for (let it = 0; it < 200; it++) {
+  const p = snake.nuevaPartida();
+  let pasos = 0;
+  while (!p.muerta && pasos < 400) {
+    const antes = p.snake.length, sc = p.score;
+    const m = snake.sugerencia(p);
+    if (!m || !snake.mover(p, m)) break;
+    pasos++;
+    if (p.score > sc) {
+      comidas++;
+      if (p.snake.length !== antes + 1) largoMal++;
+    }
+    if (p.food && p.snake.some(x => x.x === p.food.x && x.y === p.food.y)) dentroDelCuerpo++;
+  }
+}
+R.snakeComer = comidas > 0 && largoMal === 0 && dentroDelCuerpo === 0;
+say('4 · 200 partidas de la casa',
+  `  comidas totales: ${comidas}\n  veces que comer NO alargó: ${largoMal} (debe ser 0)\n` +
+  `  comida aparecida dentro del cuerpo: ${dentroDelCuerpo} (debe ser 0)\n  ${R.snakeComer ? '✓' : '✗ MAL'}`);
+
+// ══════════════ FAGOCITO ══════════════
+const f0 = fagocito.nuevaPartida({ seed: 1234 });
+const fst0 = fagocito.estado(f0);
+R.fagoInicio = fst0.maze.length > 100 && fst0.pellets.length > 200 && fst0.ghosts.length === 3;
+say('5 · Fagocito arranca',
+  `  muros: ${fst0.maze.length}   alimento: ${fst0.pellets.length}   perseguidores: ${fst0.ghosts.length}\n` +
+  `  tipos: ${fst0.ghosts.map(g=>g.type).join(', ')}\n  jugadas legales: ${fst0.legal_moves.join(' ')}\n  ${R.fagoInicio ? '✓' : '✗ MAL'}`);
+
+// El laberinto es reproducible
+const a = generarLaberinto(99).map(f=>f.map(x=>x?1:0).join('')).join('');
+const b = generarLaberinto(99).map(f=>f.map(x=>x?1:0).join('')).join('');
+const c = generarLaberinto(100).map(f=>f.map(x=>x?1:0).join('')).join('');
+R.fagoSemilla = a === b && a !== c;
+say('6 · El laberinto es reproducible',
+  `  semilla 99 dos veces: ${a === b}\n  semilla 100 distinta: ${a !== c}\n` +
+  `  (sin esto no hay benchmark: no podrías repetir la partida de otro)\n  ${R.fagoSemilla ? '✓' : '✗ MAL'}`);
+
+// Nadie atraviesa muros — ni tú ni ellos
+let atravesados = 0, muertes = 0, comido = 0, terminadas = 0;
+for (let it = 0; it < 60; it++) {
+  const p = fagocito.nuevaPartida({ seed: it });
+  let pasos = 0;
+  while (pasos < 600) {
+    const st = fagocito.estado(p);
+    if (st.is_game_over) { terminadas++; break; }
+    const m = fagocito.sugerencia(p);
+    if (!m || !fagocito.mover(p, m)) break;
+    pasos++;
+    if (p.muro[p.pos.y][p.pos.x]) atravesados++;
+    for (const g of p.ghosts) if (p.muro[g.y][g.x]) atravesados++;
+  }
+  if (p.muerto) muertes++;
+  comido += fagocito.estado(p).score;
+}
+R.fagoMuros = atravesados === 0;
+say('7 · 60 partidas — nadie atraviesa muros',
+  `  veces dentro de un muro (tú o los perseguidores): ${atravesados} (debe ser 0)\n` +
+  `  partidas terminadas: ${terminadas}/60   muertes: ${muertes}\n  puntuación media: ${(comido/60).toFixed(0)}\n` +
+  `  ${R.fagoMuros ? '✓' : '✗ MAL'}`);
+
+// Contra un muro no se puede mover
+const f1 = fagocito.nuevaPartida({ seed: 1234 });
+f1.pos = { x: 1, y: 1 };
+const contraMuro = fagocito.mover(f1, 'izquierda');   // x=0 es borde
+R.fagoChoque = contraMuro === false;
+say('8 · Contra un muro, jugada rechazada',
+  `  en (1,1) se intenta ir a la izquierda (x=0 es el borde)\n  aceptada: ${contraMuro} (debe ser false)\n  ${R.fagoChoque ? '✓' : '✗ MAL'}`);
+
+const todo = Object.values(R).every(Boolean);
+say('VEREDICTO', Object.entries(R).map(([k,v]) => `  ${v ? '✓' : '✗'}  ${k}`).join('\n') +
+  `\n\n  ${todo ? '✅ SNAKE Y FAGOCITO CORRECTOS' : '❌ hay algo mal'}`);
+window.__accion = R;
+window.__ready = true;
+</script>
+</body>
+</html>

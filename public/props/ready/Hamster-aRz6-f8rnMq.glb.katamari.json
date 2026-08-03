@@ -1,0 +1,53 @@
+{
+    "source_file": "Hamster-aRz6-f8rnMq.glb",
+    "deduced_size_meters": 0.06,
+    "target_tier": "Tier -3: Micro",
+    "target_scale_constraint": 0.06666666666666665,
+    "voxel_grid": [
+        3,
+        1,
+        6
+    ],
+    "archetype": "plantigrade",
+    "morphology": {
+        "size_m": 0.06,
+        "domain": "organic",
+        "cladistics": "plantigrade",
+        "mobility": "quadrupedal",
+        "mechanical_joints": 0
+    },
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0,
+    "ai_armature": [
+        {
+            "name": "Core Anchor X",
+            "parent": null,
+            "pos": [
+                0.024847030639648438,
+                8.124549865722656,
+                0.08156752586364746
+            ]
+        },
+        {
+            "name": "Base Mount",
+            "parent": null,
+            "pos": [
+                0.024847030639648438,
+                4.4815600759349765,
+                0.08156752586364746
+            ]
+        }
+    ],
+    "mesh_scale_multiplier": 0.0069249011915134455,
+    "kinematics": {
+        "base_gait": "static",
+        "cycle_frequency_hz": 0.0,
+        "step_amplitude": 0.0,
+        "vertical_bounce": 0.0,
+        "spine_flexion": 0.0,
+        "idle_sway_hz": 0.0,
+        "locomotion_states": [
+            "idle"
+        ]
+    }
+}

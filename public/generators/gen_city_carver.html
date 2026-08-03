@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Overworld Procedural City Carver</title>
+    <style>
+        body { margin: 0; background: #050508; color: #0fffcc; font-family: monospace; overflow: hidden; }
+        #ui { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.8); padding: 15px; border: 1px solid #00ffff44; display: flex; flex-direction: column; gap: 10px; z-index: 10; width: 300px; }
+        button { background: #004444; border: 1px solid #00ffff; color: #00ffff; padding: 10px; cursor: pointer; font-weight: bold; width: 100%; }
+        button:hover { background: #00aaaa; color: #000; }
+        canvas { display: block; margin: 0 auto; transform-origin: top left; }
+        .legend { display: grid; grid-template-columns: 20px 1fr; gap: 5px; align-items: center; font-size: 12px; margin-top: 10px;}
+        .color-box { width: 15px; height: 15px; border: 1px solid #fff; }
+    </style>
+    <script type="importmap">
+    {
+      "imports": {
+        "@alisa-engine/": "../js/alisa-engine/"
+      }
+    }
+    </script>
+</head>
+<body>
+
+<div id="ui">
+    <b>OVERWORLD 2D RADAR</b>
+    <div style="font-size: 11px; color:#aaa;">Algoritmo de Tallado Celular (Grid Carving)</div>
+    <hr style="border:0; border-top:1px solid #333; width:100%;">
+    
+    <div>
+        <label>Seed (Semilla):</label>
+        <input type="number" id="seedInput" value="1337" style="background:#111; color:#0f0; border:1px solid #333; width: 80px;">
+        <button onclick="window.randomSeed()" style="width:auto; padding: 2px 5px;">🎲</button>
+    </div>
+    
+    <button onclick="window.generate()">[ GENERAR NUEVA CIUDAD ]</button>
+
+    <div class="legend" id="legendBox">
+        <!-- populated dynamically -->
+    </div>
+</div>
+
+<canvas id="radarCanvas"></canvas>
+
+<script type="module">
+import { CarverSystem, ZoneType } from '@alisa-engine/src/world/systems/CarverSystem.js';
+
+// === RENDER AND UI LOGIC ===
+
+const canvas = document.getElementById('radarCanvas');
+const ctx = canvas.getContext('2d');
+const TILE_SIZE = 12; // pixels
+
+// Create a 40x40 city map using ECS
+const carver = new CarverSystem(40, 40);
+
+function resizeCanvas() {
+    canvas.width = carver.w * TILE_SIZE;
+    canvas.height = carver.h * TILE_SIZE;
+    // center it roughly
+    canvas.style.marginLeft = Math.max(0, (window.innerWidth - canvas.width)/2) + "px";
+    canvas.style.marginTop = Math.max(0, (window.innerHeight - canvas.height)/2) + "px";
+}
+
+window.randomSeed = function() {
+    document.getElementById('seedInput').value = Math.floor(Math.random() * 999999);
+    window.generate();
+}
+
+window.generate = function() {
+    const seed = parseInt(document.getElementById('seedInput').value) || 1234;
+    resizeCanvas();
+    carver.generate(seed);
+    
+    // Populate the UI Legend using the static rules hardcoded in the CarverSystem archetype data
+    // (Assuming the archetypes match what CarverSystem builds)
+    const archetypes = [
+        { id: 10, w: 5, h: 5, color: '#00ffff', name: 'Corp V0' },
+        { id: 11, w: 4, h: 4, color: '#ff0044', name: 'Ziggurat' },
+        { id: 12, w: 4, h: 4, color: '#ff4400', name: 'Military' },
+        { id: 13, w: 3, h: 3, color: '#8800ff', name: 'Skybridge' },
+        { id: 14, w: 3, h: 3, color: '#aa00ee', name: 'Neon Club' },
+        { id: 15, w: 2, h: 2, color: '#ffdd00', name: 'Slum Tower' },
+        { id: 16, w: 2, h: 2, color: '#ddff00', name: 'L-Shape' },
+        { id: 17, w: 2, h: 2, color: '#ff8800', name: 'Depot' },
+        { id: 18, w: 1, h: 1, color: '#ff00ff', name: 'Stalls' },
+        { id: 19, w: 1, h: 1, color: '#00ff44', name: 'Capsule' },
+        { id: 20, w: 1, h: 1, color: '#555555', name: 'Vent Shaft' }
+    ];
+    
+    const legend = document.getElementById('legendBox');
+    legend.innerHTML = `
+        <div class="color-box" style="background: #22222a;"></div> <div>Avenida / Calle</div>
+        <div class="color-box" style="background: #00ff88; border-color:#00ff88"></div> <div style="color:#00ff88">PLAZA / ÁGORA</div>
+    `;
+    archetypes.forEach(a => {
+        legend.innerHTML += `<div class="color-box" style="background: ${a.color}88; border-color:${a.color}"></div> <div style="color:${a.color}">${a.name} (${a.w}x${a.h})</div>`;
+    });
+    
+    drawMap();
+}
+
+function drawMap() {
+    // 1. Draw base colors (Roads and Plazas and leftovers)
+    for(let y=0; y<carver.h; y++) {
+        for(let x=0; x<carver.w; x++) {
+            let color = '#111'; // unassigned solid (should be very rare due to Stall 1x1 filling)
+            const val = carver.grid[y][x];
+            
+            if (val === 0) color = '#22222a'; // Road
+            else if (val === 2) color = '#00ff88'; // Plaza
+            else if (val >= 10) color = '#1a1a24'; // Base asphalt under building
+            
+            ctx.fillStyle = color;
+            ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            
+            // Add a very subtle tint of the Voronoi district over the tiles
+            let zoneColors = {
+                [ZoneType.DOWNTOWN]: '#00ffff',
+                [ZoneType.INDUSTRIAL]: '#ff0044',
+                [ZoneType.NIGHTLIFE]: '#8800ff',
+                [ZoneType.SLUMS]: '#ff00ff'
+            };
+            ctx.fillStyle = (zoneColors[carver.zoneGrid[y][x]] || '#ffffff') + '15'; // 15 hex alpha
+            ctx.fillRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+            
+            // tiny grid line for debug
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            ctx.strokeRect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+        }
+    }
+    
+    // 2. Draw actual buildings on top of their assigned blocks
+    carver.buildings.forEach(b => {
+        const px = b.x * TILE_SIZE;
+        const py = b.y * TILE_SIZE;
+        const pw = b.w * TILE_SIZE;
+        const ph = b.h * TILE_SIZE;
+        
+        ctx.fillStyle = b.type.color + '44'; // 44 hex alphablend
+        ctx.fillRect(px + 1, py + 1, pw - 2, ph - 2); // 1px margin
+        
+        ctx.strokeStyle = b.type.color;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(px + 1, py + 1, pw - 2, ph - 2);
+    });
+}
+
+// Initial boot
+window.addEventListener('resize', resizeCanvas);
+window.generate();
+
+</script>
+</body>
+</html>

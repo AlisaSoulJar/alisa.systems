@@ -1,0 +1,1052 @@
+{
+    "birchtree_1": {
+        "type": "glb",
+        "url": "props/models/BirchTree_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_2": {
+        "type": "glb",
+        "url": "props/models/BirchTree_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_3": {
+        "type": "glb",
+        "url": "props/models/BirchTree_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_4": {
+        "type": "glb",
+        "url": "props/models/BirchTree_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_5": {
+        "type": "glb",
+        "url": "props/models/BirchTree_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_autumn_1": {
+        "type": "glb",
+        "url": "props/models/BirchTree_Autumn_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_autumn_2": {
+        "type": "glb",
+        "url": "props/models/BirchTree_Autumn_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_autumn_3": {
+        "type": "glb",
+        "url": "props/models/BirchTree_Autumn_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_autumn_4": {
+        "type": "glb",
+        "url": "props/models/BirchTree_Autumn_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_autumn_5": {
+        "type": "glb",
+        "url": "props/models/BirchTree_Autumn_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_dead_1": {
+        "type": "glb",
+        "url": "props/models/BirchTree_Dead_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_dead_2": {
+        "type": "glb",
+        "url": "props/models/BirchTree_Dead_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_dead_3": {
+        "type": "glb",
+        "url": "props/models/BirchTree_Dead_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_dead_4": {
+        "type": "glb",
+        "url": "props/models/BirchTree_Dead_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_dead_5": {
+        "type": "glb",
+        "url": "props/models/BirchTree_Dead_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_dead_snow_1": {
+        "type": "glb",
+        "url": "props/models/BirchTree_Dead_Snow_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_dead_snow_2": {
+        "type": "glb",
+        "url": "props/models/BirchTree_Dead_Snow_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_dead_snow_3": {
+        "type": "glb",
+        "url": "props/models/BirchTree_Dead_Snow_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_dead_snow_4": {
+        "type": "glb",
+        "url": "props/models/BirchTree_Dead_Snow_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_dead_snow_5": {
+        "type": "glb",
+        "url": "props/models/BirchTree_Dead_Snow_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_snow_1": {
+        "type": "glb",
+        "url": "props/models/BirchTree_Snow_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_snow_2": {
+        "type": "glb",
+        "url": "props/models/BirchTree_Snow_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_snow_3": {
+        "type": "glb",
+        "url": "props/models/BirchTree_Snow_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_snow_4": {
+        "type": "glb",
+        "url": "props/models/BirchTree_Snow_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "birchtree_snow_5": {
+        "type": "glb",
+        "url": "props/models/BirchTree_Snow_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "bushberries_1": {
+        "type": "glb",
+        "url": "props/models/BushBerries_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "bushberries_2": {
+        "type": "glb",
+        "url": "props/models/BushBerries_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "bush_1": {
+        "type": "glb",
+        "url": "props/models/Bush_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "bush_2": {
+        "type": "glb",
+        "url": "props/models/Bush_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "bush_snow_1": {
+        "type": "glb",
+        "url": "props/models/Bush_Snow_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "bush_snow_2": {
+        "type": "glb",
+        "url": "props/models/Bush_Snow_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "cactusflower_1": {
+        "type": "glb",
+        "url": "props/models/CactusFlower_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "cactusflowers_2": {
+        "type": "glb",
+        "url": "props/models/CactusFlowers_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "cactusflowers_3": {
+        "type": "glb",
+        "url": "props/models/CactusFlowers_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "cactusflowers_4": {
+        "type": "glb",
+        "url": "props/models/CactusFlowers_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "cactusflowers_5": {
+        "type": "glb",
+        "url": "props/models/CactusFlowers_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "cactus_1": {
+        "type": "glb",
+        "url": "props/models/Cactus_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "cactus_2": {
+        "type": "glb",
+        "url": "props/models/Cactus_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "cactus_3": {
+        "type": "glb",
+        "url": "props/models/Cactus_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "cactus_4": {
+        "type": "glb",
+        "url": "props/models/Cactus_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "cactus_5": {
+        "type": "glb",
+        "url": "props/models/Cactus_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_1": {
+        "type": "glb",
+        "url": "props/models/CommonTree_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_2": {
+        "type": "glb",
+        "url": "props/models/CommonTree_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_3": {
+        "type": "glb",
+        "url": "props/models/CommonTree_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_4": {
+        "type": "glb",
+        "url": "props/models/CommonTree_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_5": {
+        "type": "glb",
+        "url": "props/models/CommonTree_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_autumn_1": {
+        "type": "glb",
+        "url": "props/models/CommonTree_Autumn_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_autumn_2": {
+        "type": "glb",
+        "url": "props/models/CommonTree_Autumn_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_autumn_3": {
+        "type": "glb",
+        "url": "props/models/CommonTree_Autumn_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_autumn_4": {
+        "type": "glb",
+        "url": "props/models/CommonTree_Autumn_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_autumn_5": {
+        "type": "glb",
+        "url": "props/models/CommonTree_Autumn_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_dead_1": {
+        "type": "glb",
+        "url": "props/models/CommonTree_Dead_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_dead_2": {
+        "type": "glb",
+        "url": "props/models/CommonTree_Dead_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_dead_3": {
+        "type": "glb",
+        "url": "props/models/CommonTree_Dead_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_dead_4": {
+        "type": "glb",
+        "url": "props/models/CommonTree_Dead_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_dead_5": {
+        "type": "glb",
+        "url": "props/models/CommonTree_Dead_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_dead_snow_1": {
+        "type": "glb",
+        "url": "props/models/CommonTree_Dead_Snow_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_dead_snow_2": {
+        "type": "glb",
+        "url": "props/models/CommonTree_Dead_Snow_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_dead_snow_3": {
+        "type": "glb",
+        "url": "props/models/CommonTree_Dead_Snow_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_dead_snow_4": {
+        "type": "glb",
+        "url": "props/models/CommonTree_Dead_Snow_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_dead_snow_5": {
+        "type": "glb",
+        "url": "props/models/CommonTree_Dead_Snow_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_snow_1": {
+        "type": "glb",
+        "url": "props/models/CommonTree_Snow_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_snow_2": {
+        "type": "glb",
+        "url": "props/models/CommonTree_Snow_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_snow_3": {
+        "type": "glb",
+        "url": "props/models/CommonTree_Snow_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_snow_4": {
+        "type": "glb",
+        "url": "props/models/CommonTree_Snow_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "commontree_snow_5": {
+        "type": "glb",
+        "url": "props/models/CommonTree_Snow_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "corn_1": {
+        "type": "glb",
+        "url": "props/models/Corn_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "corn_2": {
+        "type": "glb",
+        "url": "props/models/Corn_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "flowers": {
+        "type": "glb",
+        "url": "props/models/Flowers.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "grass": {
+        "type": "glb",
+        "url": "props/models/Grass.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "grass_2": {
+        "type": "glb",
+        "url": "props/models/Grass_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "grass_short": {
+        "type": "glb",
+        "url": "props/models/Grass_Short.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "lilypad": {
+        "type": "glb",
+        "url": "props/models/Lilypad.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "palmtree_1": {
+        "type": "glb",
+        "url": "props/models/PalmTree_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "palmtree_2": {
+        "type": "glb",
+        "url": "props/models/PalmTree_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "palmtree_3": {
+        "type": "glb",
+        "url": "props/models/PalmTree_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "palmtree_4": {
+        "type": "glb",
+        "url": "props/models/PalmTree_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "pinetree_1": {
+        "type": "glb",
+        "url": "props/models/PineTree_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "pinetree_2": {
+        "type": "glb",
+        "url": "props/models/PineTree_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "pinetree_3": {
+        "type": "glb",
+        "url": "props/models/PineTree_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "pinetree_4": {
+        "type": "glb",
+        "url": "props/models/PineTree_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "pinetree_5": {
+        "type": "glb",
+        "url": "props/models/PineTree_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "pinetree_autumn_1": {
+        "type": "glb",
+        "url": "props/models/PineTree_Autumn_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "pinetree_autumn_2": {
+        "type": "glb",
+        "url": "props/models/PineTree_Autumn_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "pinetree_autumn_3": {
+        "type": "glb",
+        "url": "props/models/PineTree_Autumn_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "pinetree_autumn_4": {
+        "type": "glb",
+        "url": "props/models/PineTree_Autumn_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "pinetree_autumn_5": {
+        "type": "glb",
+        "url": "props/models/PineTree_Autumn_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "pinetree_snow_1": {
+        "type": "glb",
+        "url": "props/models/PineTree_Snow_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "pinetree_snow_2": {
+        "type": "glb",
+        "url": "props/models/PineTree_Snow_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "pinetree_snow_3": {
+        "type": "glb",
+        "url": "props/models/PineTree_Snow_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "pinetree_snow_4": {
+        "type": "glb",
+        "url": "props/models/PineTree_Snow_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "pinetree_snow_5": {
+        "type": "glb",
+        "url": "props/models/PineTree_Snow_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "plant_1": {
+        "type": "glb",
+        "url": "props/models/Plant_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "plant_2": {
+        "type": "glb",
+        "url": "props/models/Plant_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "plant_3": {
+        "type": "glb",
+        "url": "props/models/Plant_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "plant_4": {
+        "type": "glb",
+        "url": "props/models/Plant_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "plant_5": {
+        "type": "glb",
+        "url": "props/models/Plant_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rock_1": {
+        "type": "glb",
+        "url": "props/models/Rock_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rock_2": {
+        "type": "glb",
+        "url": "props/models/Rock_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rock_3": {
+        "type": "glb",
+        "url": "props/models/Rock_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rock_4": {
+        "type": "glb",
+        "url": "props/models/Rock_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rock_5": {
+        "type": "glb",
+        "url": "props/models/Rock_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rock_6": {
+        "type": "glb",
+        "url": "props/models/Rock_6.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rock_7": {
+        "type": "glb",
+        "url": "props/models/Rock_7.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rock_moss_1": {
+        "type": "glb",
+        "url": "props/models/Rock_Moss_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rock_moss_2": {
+        "type": "glb",
+        "url": "props/models/Rock_Moss_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rock_moss_3": {
+        "type": "glb",
+        "url": "props/models/Rock_Moss_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rock_moss_4": {
+        "type": "glb",
+        "url": "props/models/Rock_Moss_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rock_moss_5": {
+        "type": "glb",
+        "url": "props/models/Rock_Moss_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rock_moss_6": {
+        "type": "glb",
+        "url": "props/models/Rock_Moss_6.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rock_moss_7": {
+        "type": "glb",
+        "url": "props/models/Rock_Moss_7.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rock_snow_1": {
+        "type": "glb",
+        "url": "props/models/Rock_Snow_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rock_snow_2": {
+        "type": "glb",
+        "url": "props/models/Rock_Snow_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rock_snow_3": {
+        "type": "glb",
+        "url": "props/models/Rock_Snow_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rock_snow_4": {
+        "type": "glb",
+        "url": "props/models/Rock_Snow_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rock_snow_5": {
+        "type": "glb",
+        "url": "props/models/Rock_Snow_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rock_snow_6": {
+        "type": "glb",
+        "url": "props/models/Rock_Snow_6.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "rock_snow_7": {
+        "type": "glb",
+        "url": "props/models/Rock_Snow_7.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "treestump": {
+        "type": "glb",
+        "url": "props/models/TreeStump.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "treestump_moss": {
+        "type": "glb",
+        "url": "props/models/TreeStump_Moss.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "treestump_snow": {
+        "type": "glb",
+        "url": "props/models/TreeStump_Snow.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "wheat": {
+        "type": "glb",
+        "url": "props/models/Wheat.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_1": {
+        "type": "glb",
+        "url": "props/models/Willow_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_2": {
+        "type": "glb",
+        "url": "props/models/Willow_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_3": {
+        "type": "glb",
+        "url": "props/models/Willow_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_4": {
+        "type": "glb",
+        "url": "props/models/Willow_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_5": {
+        "type": "glb",
+        "url": "props/models/Willow_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_autumn_1": {
+        "type": "glb",
+        "url": "props/models/Willow_Autumn_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_autumn_2": {
+        "type": "glb",
+        "url": "props/models/Willow_Autumn_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_autumn_3": {
+        "type": "glb",
+        "url": "props/models/Willow_Autumn_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_autumn_4": {
+        "type": "glb",
+        "url": "props/models/Willow_Autumn_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_autumn_5": {
+        "type": "glb",
+        "url": "props/models/Willow_Autumn_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_dead_1": {
+        "type": "glb",
+        "url": "props/models/Willow_Dead_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_dead_2": {
+        "type": "glb",
+        "url": "props/models/Willow_Dead_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_dead_3": {
+        "type": "glb",
+        "url": "props/models/Willow_Dead_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_dead_4": {
+        "type": "glb",
+        "url": "props/models/Willow_Dead_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_dead_5": {
+        "type": "glb",
+        "url": "props/models/Willow_Dead_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_dead_snow_1": {
+        "type": "glb",
+        "url": "props/models/Willow_Dead_Snow_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_dead_snow_2": {
+        "type": "glb",
+        "url": "props/models/Willow_Dead_Snow_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_dead_snow_3": {
+        "type": "glb",
+        "url": "props/models/Willow_Dead_Snow_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_dead_snow_4": {
+        "type": "glb",
+        "url": "props/models/Willow_Dead_Snow_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_dead_snow_5": {
+        "type": "glb",
+        "url": "props/models/Willow_Dead_Snow_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_snow_1": {
+        "type": "glb",
+        "url": "props/models/Willow_Snow_1.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_snow_2": {
+        "type": "glb",
+        "url": "props/models/Willow_Snow_2.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_snow_3": {
+        "type": "glb",
+        "url": "props/models/Willow_Snow_3.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_snow_4": {
+        "type": "glb",
+        "url": "props/models/Willow_Snow_4.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "willow_snow_5": {
+        "type": "glb",
+        "url": "props/models/Willow_Snow_5.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "woodlog": {
+        "type": "glb",
+        "url": "props/models/WoodLog.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "woodlog_moss": {
+        "type": "glb",
+        "url": "props/models/WoodLog_Moss.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    },
+    "woodlog_snow": {
+        "type": "glb",
+        "url": "props/models/WoodLog_Snow.glb",
+        "scale": 0.05,
+        "tint": "#aaaaaa",
+        "faceStyle": "decal"
+    }
+}

@@ -1,0 +1,263 @@
+@import url('/vendor/fonts/fuentes.css');
+
+:root {
+    --bg-dark: #07070a;
+    --glass-bg: rgba(20, 20, 30, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-highlight: rgba(255, 255, 255, 0.15);
+    
+    --text-primary: #e0e0ec;
+    --text-muted: #8a8a9e;
+    
+    /* Game Thematic Glows */
+    --glow-chess: #a180ff;
+    --glow-go: #ffffff;
+    --glow-checkers: #ff4d6d;
+    --glow-risk: #ff9100;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-dark);
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+/* Background Atmosphere */
+body::before {
+    content: '';
+    position: fixed;
+    top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle at 50% 50%, rgba(100, 100, 150, 0.03) 0%, transparent 60%);
+    z-index: 0; pointer-events: none;
+}
+
+header {
+    width: 100%;
+    padding: 60px 40px 40px;
+    position: relative;
+    z-index: 2;
+    text-align: center;
+}
+
+header .subtitle {
+    font-size: 14px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+header h1 {
+    font-size: 48px;
+    font-weight: 900;
+    letter-spacing: -1.5px;
+    background: linear-gradient(180deg, #fff 0%, #aaa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+main.arcade-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 40px 60px;
+    position: relative;
+    z-index: 2;
+}
+
+/* Glass Card */
+.arcade-card {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 30px;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    cursor: pointer;
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 280px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.arcade-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--glass-highlight), transparent);
+    opacity: 0.3;
+    transition: opacity 0.5s;
+}
+
+.arcade-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 40px var(--card-glow, transparent);
+    border-color: var(--glass-highlight);
+}
+
+.arcade-card:hover::before {
+    opacity: 1;
+}
+
+/* Thematic Colors */
+.arcade-card[data-game="chess"] { --card-glow: rgba(161, 128, 255, 0.15); }
+.arcade-card[data-game="go"] { --card-glow: rgba(255, 255, 255, 0.1); }
+.arcade-card[data-game="checkers"] { --card-glow: rgba(255, 77, 109, 0.15); }
+.arcade-card[data-game="risk"] { --card-glow: rgba(255, 145, 0, 0.15); }
+
+/* Card Content */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.game-icon {
+    font-size: 36px;
+    filter: drop-shadow(0 0 10px var(--card-glow));
+}
+
+.status-badge {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-badge .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #666;
+}
+
+.status-badge[data-state="active"] .dot { background: #00e676; box-shadow: 0 0 8px #00e676; }
+.status-badge[data-state="waiting"] .dot { background: #ffea00; box-shadow: 0 0 8px #ffea00; }
+
+.card-body h2 {
+    font-size: 28px;
+    font-weight: 800;
+    margin-top: 20px;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.card-body p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-top: 30px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.api-endpoint {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.players {
+    display: flex;
+    gap: -10px;
+}
+
+/* ────────────────────────────────────────────────────────
+   PHASE 5: Autonomous Web Bots & Interactive HUD
+   ──────────────────────────────────────────────────────── */
+
+.agent-control {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.agent-control .input-row {
+    display: flex;
+    gap: 5px;
+}
+
+.agent-control input {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    flex: 1;
+}
+
+.agent-control input:focus {
+    outline: none;
+    border-color: #00ffc8;
+}
+
+.agent-control button {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.agent-control button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.auto-btn {
+    width: 100%;
+    margin-top: 5px;
+    background: rgba(255, 0, 100, 0.1) !important;
+    border: 1px solid rgba(255, 0, 100, 0.5) !important;
+    color: #ff4d6d !important;
+}
+
+.auto-btn.active {
+    background: rgba(0, 255, 200, 0.15) !important;
+    border-color: #00ffc8 !important;
+    color: #00ffc8 !important;
+    text-shadow: 0 0 8px rgba(0, 255, 200, 0.5);
+}

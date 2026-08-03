@@ -1,0 +1,12 @@
+{
+    "name": "Walter",
+    "role": "Conversation Alchemist",
+    "emoji": "❔",
+    "type": "biological",
+    "skeleton": "biped",
+    "model_path": "walter.glb",
+    "scale": 1.0,
+    "kinematics": "humanoid_walk",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED"
+}

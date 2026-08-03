@@ -1,0 +1,20 @@
+{
+    "name": "Hetty",
+    "role": "Human Resources Director",
+    "emoji": "👩‍💼",
+    "type": "biological",
+    "skeleton": "humanoid",
+    "model_path": "hetty.glb",
+    "scale": 1.0,
+    "kinematics": "humanoid_manager",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "edge_tts",
+        "tier": 4,
+        "voice_id": "en-GB-SoniaNeural",
+        "rate": "-5%",
+        "pitch": "0Hz",
+        "label": "Hetty - Sonia (británica, directiva, firme)"
+    }
+}

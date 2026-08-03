@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALISA LAB — ¿qué ve alguien que se descargue el motor?</title>
+<style>
+  body{margin:0;background:#070a11;color:#cfe3f5;font-family:ui-monospace,monospace;padding:20px 26px 60px}
+  h1{margin:0 0 3px;font-size:18px;color:#7fd0ff}
+  h2{font-size:13px;color:#7fd0ff;margin:20px 0 6px;border-bottom:1px solid #1d2b3e;padding-bottom:4px}
+  .sub{color:#5f7a92;font-size:11.5px;line-height:1.7;max-width:900px;margin-bottom:10px}
+  pre{background:#0b1018;border:1px solid #16202e;padding:10px 12px;font-size:11.5px;
+      line-height:1.65;white-space:pre-wrap;color:#b8d4ea;margin:6px 0;border-radius:3px}
+  .ok{color:#7CFC98}.bad{color:#ff7b72}
+</style>
+</head>
+<body>
+<h1>▓ LA PRUEBA DEL DESCONOCIDO · el motor sin hub, sin colonia, sin nada</h1>
+<div class="sub">
+Aquí <b>se corta el hub a propósito</b> (<code>window.ALISA_HUB_URL = null</code>) y se comprueba que
+los seis juegos de tablero arrancan, dan jugadas legales y se dejan jugar.<br>
+Es lo que verá quien se descargue el motor de GitHub y abra un fichero. Si algo aquí falla, falla para todo el mundo.
+</div>
+<div id="out"></div>
+
+<script type="module">
+// ⚠️ Cortamos el hub ANTES de cargar nada. Esto es la prueba entera.
+window.ALISA_HUB_URL = null;
+
+import { ProtoHub } from '../arcade/js/protohub/ProtoHub.js';
+import { ajedrez }  from '../arcade/js/protohub/rules/ajedrez.js';
+import { reversi }  from '../arcade/js/protohub/rules/reversi.js';
+import { mancala }  from '../arcade/js/protohub/rules/mancala.js';
+import { damas }    from '../arcade/js/protohub/rules/damas.js';
+import { go }       from '../arcade/js/protohub/rules/go.js';
+import { xiangqi }  from '../arcade/js/protohub/rules/xiangqi.js';
+import { snake }    from '../arcade/js/protohub/rules/snake.js';
+import { fagocito } from '../arcade/js/protohub/rules/fagocito.js';
+import { peaton }   from '../arcade/js/protohub/rules/peaton.js';
+
+const out = document.getElementById('out');
+const say = (h, t) => out.insertAdjacentHTML('beforeend', `<h2>${h}</h2><pre>${t}</pre>`);
+
+const hub = new ProtoHub()
+  .registrar('chess', ajedrez)
+  .registrar('reversi', reversi)
+  .registrar('mancala', mancala)
+  .registrar('checkers', damas)
+  .registrar('go', go)
+  .registrar('xiangqi', xiangqi)
+  .registrar('snake', snake)
+  .registrar('fagocito', fagocito)
+  .registrar('peaton', peaton);
+
+const JUEGOS = ['chess', 'xiangqi', 'go', 'reversi', 'checkers', 'mancala',
+                'snake', 'fagocito', 'peaton'];
+const R = {};
+let l = '';
+
+// ── 1. ¿ARRANCAN Y DAN JUGADAS? ────────────────────────────────
+for (const j of JUEGOS) {
+  const st = hub.state(j);
+  const ok = !st.error && st.legal_moves && st.legal_moves.length > 0;
+  R[j] = ok;
+  l += `  ${ok ? '✓' : '✗'}  ${j.padEnd(9)} ${String(st.legal_moves?.length ?? 0).padStart(4)} jugadas legales   conexión: ${st.conexion}\n`;
+}
+say('1 · Los seis arrancan sin backend', l);
+
+// ── 2. ¿SE DEJAN JUGAR? Una partida entera de cada uno ─────────
+let l2 = '';
+let todasOk = true;
+for (const j of JUEGOS) {
+  hub.reset(j);
+  let pasos = 0, error = null;
+  const tope = j === 'go' ? 400 : (j === 'xiangqi' ? 200 : 400);
+  while (pasos < tope) {
+    const st = hub.state(j);
+    if (st.is_game_over || !st.legal_moves.length) break;
+    // En los de acción se usa la casa: al azar mueren en tres pasos y no
+    // demostrarían nada. En los de tablero, azar puro.
+    const accion = hub.move(j, { action: 'ai_move' });
+    const r = accion.ok !== false ? accion
+      : hub.move(j, { action: 'move', params: { uci: st.legal_moves[(Math.random() * st.legal_moves.length) | 0] } });
+    if (!r.ok) { error = 'el motor rechazó una jugada que él mismo dio por legal'; break; }
+    pasos++;
+  }
+  const st = hub.state(j);
+  const ok = !error;
+  if (!ok) todasOk = false;
+  l2 += `  ${ok ? '✓' : '✗'}  ${j.padEnd(9)} ${String(pasos).padStart(4)} jugadas   ` +
+        `${st.is_game_over ? 'partida terminada' : 'en curso al llegar al tope'}` +
+        (error ? `   ← ${error}` : '') + '\n';
+}
+R.partidas = todasOk;
+say('2 · Una partida completa de cada uno', l2);
+
+// ── 3. LA PUERTA DE LENGUAJE ───────────────────────────────────
+// Lo que leería un agente LLM que no ve píxeles.
+hub.reset('chess');
+const stC = hub.state('chess');
+hub.reset('go');
+const stG = hub.state('go');
+say('3 · Lo que ve un agente que no tiene ojos',
+  `  ajedrez → turno ${stC.turn}, ${stC.legal_moves.length} jugadas\n` +
+  `    ${stC.legal_moves.slice(0, 12).join(' ')} …\n` +
+  `    FEN: ${stC.fen}\n\n` +
+  `  go → turno ${stG.turn}, ${stG.legal_moves.length} jugadas (361 puntos + pass)\n` +
+  `    ${stG.legal_moves.slice(0, 10).join(' ')} …\n\n` +
+  `  Ninguna de estas dos partidas ha tocado la red.`);
+
+// ── 4. ¿SE HA LLAMADO A ALGUNA IP? ─────────────────────────────
+// Se espía fetch para demostrarlo, no para creérselo.
+const llamadas = [];
+const _f = window.fetch;
+window.fetch = function (...a) { llamadas.push(String(a[0])); return _f.apply(this, a); };
+for (const j of JUEGOS) { hub.reset(j); hub.state(j); hub.move(j, { action: 'ai_move' }); }
+await new Promise(r => setTimeout(r, 500));
+R.sinRed = llamadas.length === 0;
+say('4 · ¿Ha salido algo a la red?',
+  `  llamadas de red durante toda la prueba: ${llamadas.length}\n` +
+  (llamadas.length ? '  ' + llamadas.join('\n  ') + '\n' : '') +
+  `  ${R.sinRed ? '✅ CERO. Todo ocurre en el navegador.' : '❌ algo salió fuera'}`);
+
+const todo = Object.values(R).every(Boolean);
+say('VEREDICTO',
+  Object.entries(R).map(([k, v]) => `  ${v ? '✓' : '✗'}  ${k}`).join('\n') +
+  `\n\n  ${todo ? '✅ EL MOTOR FUNCIONA SOLO. Publicable.' : '❌ algo falla sin hub'}`);
+
+window.__sinHub = R;
+window.__ready = true;
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+    "name": "Unknown",
+    "role": "The Surgeon",
+    "emoji": "❔",
+    "type": "mechanical",
+    "skeleton": "pygmalion_scanner",
+    "model_path": "pygmalion.glb",
+    "scale": 1.0,
+    "kinematics": "pygmalion_scanner"
+}

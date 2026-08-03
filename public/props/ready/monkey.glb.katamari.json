@@ -1,0 +1,53 @@
+{
+    "source_file": "monkey.glb",
+    "deduced_size_meters": 0.5,
+    "target_tier": "Tier -1: Small Fauna",
+    "target_scale_constraint": 0.6,
+    "voxel_grid": [
+        2,
+        4,
+        6
+    ],
+    "archetype": "plantigrade",
+    "morphology": {
+        "size_m": 0.5,
+        "domain": "organic",
+        "cladistics": "plantigrade",
+        "mobility": "bipedal",
+        "mechanical_joints": 0
+    },
+    "semantic_category": "M_GENERIC",
+    "rotation_y_offset_deg": 0,
+    "ai_armature": [
+        {
+            "name": "Core Anchor X",
+            "parent": null,
+            "pos": [
+                -0.0009375325289212563,
+                4.088524733168073,
+                -0.11987837528520401
+            ]
+        },
+        {
+            "name": "Base Mount",
+            "parent": null,
+            "pos": [
+                -0.0009375325289212563,
+                2.0659687620224436,
+                -0.11987837528520401
+            ]
+        }
+    ],
+    "mesh_scale_multiplier": 0.07315940212599814,
+    "kinematics": {
+        "base_gait": "static",
+        "cycle_frequency_hz": 0.0,
+        "step_amplitude": 0.0,
+        "vertical_bounce": 0.0,
+        "spine_flexion": 0.0,
+        "idle_sway_hz": 0.0,
+        "locomotion_states": [
+            "idle"
+        ]
+    }
+}

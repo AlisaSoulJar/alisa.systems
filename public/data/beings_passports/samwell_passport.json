@@ -1,0 +1,20 @@
+{
+    "name": "Samwell",
+    "role": "The Scribe",
+    "emoji": "📖",
+    "type": "biological",
+    "skeleton": "humanoid",
+    "model_path": "samwell.glb",
+    "scale": 1.0,
+    "kinematics": "bipedal",
+    "sealed_by": "Conrad, Bureaucrat Grade 36",
+    "status": "APPROVED",
+    "voice": {
+        "engine": "edge_tts",
+        "tier": 4,
+        "voice_id": "en-GB-RyanNeural",
+        "rate": "+0%",
+        "pitch": "+2Hz",
+        "label": "Samwell - Ryan (erudito, nervioso, buen corazón)"
+    }
+}
