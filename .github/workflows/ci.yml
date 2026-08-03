@@ -64,7 +64,6 @@ jobs:
       - name: los entornos miden algo
         run: npm run calibrar
 
-      # Si algo falla, el paquete construido dice mas que el registro.
       - name: guardar el paquete si algo falla
         if: failure()
         uses: actions/upload-artifact@v4
@@ -72,3 +71,32 @@ jobs:
           name: dist_publico
           path: dist_publico/
           retention-days: 7
+
+      # Guardamos el paquete construido para el job de despliegue
+      - name: guardar dist_publico para despliegue
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist_publico
+          path: dist_publico/
+
+  despliegue:
+    name: desplegar a cloudflare pages
+    needs: pruebas
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: descargar paquete construido
+        uses: actions/download-artifact@v4
+        with:
+          name: dist_publico
+          path: dist_publico
+      
+      - name: publicar en cloudflare pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: alisa-systems
+          directory: dist_publico
+          # La función de Cloudflare está dentro de dist_publico/functions (gracias a empaquetar.py)
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}

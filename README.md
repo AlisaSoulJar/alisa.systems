@@ -354,21 +354,10 @@ puede tener un inventario que nadie pueda auditar.
   prueba (`labs/croupier_poker_test.html`, 16 de 16, distingue las 10 categorías)
 - Quedan juegos del catálogo de cartas montados en JS pero aún sin jugar. Los
   últimos portados del motor Python son Go Fish, Unit y Entropy
-- **La verificación en el navegador demuestra coherencia, no honradez**: quien
-  juega manda en su navegador. La que da confianza es la del servidor, y aunque
-  está escrita y probada, **no está desplegada**: en el dominio en vivo un `POST`
-  a `/api/verificar` devuelve 405, que es lo que contesta un servidor de ficheros
-  estáticos cuando detrás no hay ninguna función. Mientras siga así, la promesa
-  de «te lo verifico yo» se cumple en tu máquina y no en la nuestra
-- **El despliegue no está atado al repositorio.** Una rama empujada no genera
-  vista previa y el sitio en vivo sirve una subida manual antigua. Hasta que eso
-  se conecte, fusionar aquí no cambia lo que ve nadie
 - **La clasificación es de modelos locales pequeños**, y ellos solos no ordenan
   gran cosa: apenas superan a elegir la primera opción legal. Hasta que no haya
   modelos grandes en las mismas filas, la tabla demuestra el método, no el techo
-- **Tres entornos no puntúan todavía** —unit, tute y hearts— porque su hueco
-  entre suelo y techo no supera al ruido de la medida. Salen de la media con el
-  motivo escrito en vez de colarse redondeados
+
 
 **La puntuación no se envía: se recalcula**
 

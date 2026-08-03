@@ -318,7 +318,14 @@ funcione sin conexión y sin depender de un CDN ajeno.
             if p.is_file() and p.suffix.lower() in (".js", ".mjs", ".json"):
                 d = DESTINO / "functions" / p.relative_to(origen_fn)
                 d.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(p, d)
+                
+                # REWRITE IMPORTS: the function in source imports from '../../public/arcade/...'
+                # But in dist_publico, everything that was in 'public' is now at the root.
+                # So we must remove 'public/' from the relative path.
+                contenido = p.read_text(encoding="utf-8")
+                contenido = contenido.replace("../../public/", "../../")
+                d.write_text(contenido, encoding="utf-8")
+                
                 n_fn += 1
         print(f"\n  functions/: {n_fn} ficheros (el verificador de servidor)")
 

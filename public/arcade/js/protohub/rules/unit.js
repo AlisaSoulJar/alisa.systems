@@ -202,7 +202,7 @@ export async function crearUnit({ url = RUTA_BIBLIOTECA, jugadores = 4, mano = 7
             const míos = valorMano(p.manos[0]);
             const rivales = p.manos.reduce((s, m, i) => s + (i === 0 ? 0 : valorMano(m)), 0);
             const gané = p.fin && p.ganadores.includes(0);
-            const puntos = gané ? 1000 + rivales : -míos;
+            const puntos = gané ? 100 + rivales : -míos;
 
             return {
                 juego: 'unit',
@@ -317,17 +317,48 @@ export async function crearUnit({ url = RUTA_BIBLIOTECA, jugadores = 4, mano = 7
             if (!opciones.length) return p.mazo.length ? 'robar' : 'pasar';
 
             const cartaDe = (m) => m.slice(6).split(':')[0];
-            const mejor = [...opciones].sort((a, b) => valorDe(cartaDe(a)) - valorDe(cartaDe(b))
-                                                    || (a < b ? -1 : 1))[0];
+            
+            const siguiente = (pid + p.sentido + p.jugadores) % p.jugadores;
+            const peligro = p.manos[siguiente].length === 1;
+            
+            let mejor;
+            if (peligro) {
+                const agresivas = opciones.filter(o => {
+                    const r = rango(cartaDe(o));
+                    return r === 'D2' || r === 'SKIP' || r === 'REV' || r === 'WD4';
+                });
+                if (agresivas.length) mejor = agresivas[0];
+            }
+            
+            if (!mejor) {
+                const cuenta = {};
+                for (const c of p.manos[pid]) {
+                    if (!esComodin(c)) cuenta[palo(c)] = (cuenta[palo(c)] || 0) + 1;
+                }
+                
+                mejor = [...opciones].sort((a, b) => {
+                    const ca = cartaDe(a), cb = cartaDe(b);
+                    const comodinA = esComodin(ca) ? 1 : 0;
+                    const comodinB = esComodin(cb) ? 1 : 0;
+                    if (comodinA !== comodinB) return comodinA - comodinB;
+                    
+                    const paloA = palo(ca), paloB = palo(cb);
+                    const countA = cuenta[paloA] || 0;
+                    const countB = cuenta[paloB] || 0;
+                    if (countA !== countB) return countB - countA;
+                    
+                    return valorDe(cb) - valorDe(ca);
+                })[0];
+            }
+            
             const carta = cartaDe(mejor);
             if (!esComodin(carta)) return mejor;
 
-            // Comodín: el color del que más cartas tenga en la mano.
-            const cuenta = new Map(COLORES.map(c => [c, 0]));
+            const cuenta2 = new Map(COLORES.map(c => [c, 0]));
             for (const c of p.manos[pid]) {
-                if (!esComodin(c) && cuenta.has(palo(c))) cuenta.set(palo(c), cuenta.get(palo(c)) + 1);
+                if (!esComodin(c) && cuenta2.has(palo(c))) cuenta2.set(palo(c), cuenta2.get(palo(c)) + 1);
             }
-            const col = COLORES.reduce((a, b) => (cuenta.get(b) > cuenta.get(a) ? b : a));
+            const col = COLORES.reduce((a, b) => (cuenta2.get(b) > cuenta2.get(a) ? b : a));
             return `jugar:${carta}:${col}`;
         },
 

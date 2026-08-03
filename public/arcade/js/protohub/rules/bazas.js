@@ -221,7 +221,20 @@ export function crearBazas(cfg) {
             if (MENOR_GANA) {
                 // Hearts: ganar la baza es cargar con sus puntos. Escurrirse.
                 const pierde = flojaAFuerte.filter(c => !ganaCon(c));
-                return `jugar:${(pierde.length ? pierde : flojaAFuerte)[0]}`;
+                if (pierde.length) {
+                    // Jugar la carta MÁS ALTA que no gane la baza, para quitárnosla de encima.
+                    // Si somos "fallo" (no seguimos el palo, lo que garantiza perder), tirar lo más caro.
+                    const salidaPalo = palo(p.baza[0].carta);
+                    const seguimosPalo = pierde.some(c => palo(c) === salidaPalo);
+                    if (!seguimosPalo) {
+                        const porPuntos = [...pierde].sort((a, b) => valor(a) - valor(b));
+                        return `jugar:${porPuntos[porPuntos.length - 1]}`;
+                    }
+                    return `jugar:${pierde[pierde.length - 1]}`;
+                } else {
+                    // Nos la comemos seguro: soltar la carta más alta para no tragar con ella luego.
+                    return `jugar:${flojaAFuerte[flojaAFuerte.length - 1]}`;
+                }
             }
 
             const ganadoras = flojaAFuerte.filter(ganaCon);

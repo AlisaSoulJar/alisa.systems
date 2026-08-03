@@ -26,7 +26,7 @@
 # Con esto la configuración vive en el repositorio: se revisa en un PR, viaja
 # con el código y no se pierde en un panel.
 name = "alisa-systems"
-pages_build_output_dir = "public"
+pages_build_output_dir = "dist_publico"
 compatibility_date = "2026-08-03"
 
 # Las Functions (`/api/verificar`) NO van aquí dentro: Cloudflare las coge de la

@@ -18,6 +18,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+
 RAIZ = Path(__file__).resolve().parent
 PUBLIC = RAIZ / "public"
 
@@ -36,8 +39,8 @@ print("=" * 74)
 print("  ANTES DE PUBLICAR")
 print("=" * 74)
 
-# ── 1. LO QUE TIENE QUE ESTAR ────────────────────────────────────
-print("\n── papeles ──")
+# -- 1. LO QUE TIENE QUE ESTAR ------------------------------------
+print("\n-- papeles --")
 for f, motivo in [
     ("LICENSE", "sin licencia nadie puede usarlo legalmente"),
     ("README.md", "nadie sabrá qué es ni cómo arrancarlo"),
