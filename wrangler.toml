@@ -1,0 +1,34 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  Cloudflare Pages — cuál es la raíz del sitio
+# ═══════════════════════════════════════════════════════════════════════════
+# Una sola línea que importa, y estaba viviendo en un panel web donde nadie la
+# veía y el repositorio no podía contradecirla.
+#
+# ⚠️ QUÉ ESTABA PASANDO EN PRODUCCIÓN
+# El sitio servía la raíz del REPOSITORIO en vez de `public/`. Consecuencias,
+# comprobadas contra el dominio en vivo antes de tocar nada:
+#
+#   · la portada era un `index.html` viejo de la raíz, no la Sala del Huevo
+#     —que lleva meses escrita, con su texto para quien llega sin WebGL—;
+#   · **todas las rutas devolvían la misma página**: `/rooms/…`, `/api/…` y
+#     hasta `/src/main.js` contestaban 6.313 bytes de HTML;
+#   · y como esa portada importa `/src/main.js`, el navegador recibía HTML donde
+#     esperaba un módulo. **La portada estaba rota en producción**, y desde
+#     fuera no se notaba: cargaba, se veía algo, y fallaba en la consola.
+#
+# La pista fue que `/colonia/` —una ruta que todavía no existe en ninguna rama—
+# también devolvía 200. Un sitio que contesta que sí a todo no está contestando.
+#
+# `servir.py` sirve `public/` desde siempre, así que en local todo iba bien y el
+# despliegue iba mal por su cuenta. **Lo desplegado y el árbol de trabajo pueden
+# llevar meses siendo cosas distintas si nadie lo comprueba desde fuera.**
+#
+# Con esto la configuración vive en el repositorio: se revisa en un PR, viaja
+# con el código y no se pierde en un panel.
+name = "alisa-systems"
+pages_build_output_dir = "public"
+compatibility_date = "2026-08-03"
+
+# Las Functions (`/api/verificar`) NO van aquí dentro: Cloudflare las coge de la
+# carpeta `functions/` de la raíz del proyecto, que es donde están. El
+# directorio de salida sólo dice de dónde salen los ficheros estáticos.

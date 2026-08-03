@@ -75,19 +75,44 @@ había sustituido `index.html` sin que el fichero desplegado dejara rastro en el
 árbol de trabajo. Ver [`colonia/LEEME.md`](colonia/LEEME.md), que incluye los dos
 avisos honestos (carga `pixi.js` de un CDN y no está mantenida).
 
-## ⚠️ Decisión pendiente antes de fusionar: cuál es la portada
+## ⚠️ Arregla un fallo de producción que no se veía desde fuera
 
-Hay **tres** candidatas y no he elegido por mi cuenta:
+Al ir a decidir cuál era la portada apareció algo peor: **el sitio en vivo servía
+la raíz del repositorio en vez de `public/`**, y con eso todas las rutas caían en
+el mismo fichero. Comprobado contra el dominio antes de tocar nada:
 
-| candidata | qué es |
-|---|---|
-| `index.html` (raíz, 8,5 KB) | Un cargador de overworld que importa `src/main.js`. Es lo que hay en el árbol de trabajo. |
-| `dist_publico/index.html` (6,0 KB) | La que genera `python empaquetar.py` para el paquete. |
-| `public/rooms/room_sala_del_huevo.html` (113 KB) | **La Sala del Huevo**, que es el escaparate real del proyecto. |
+```
+/                                 200   6.313 B
+/rooms/room_sala_del_huevo.html   200   6.313 B   ← la misma página
+/src/main.js                      200   6.313 B   ← HTML donde va un módulo JS
+/colonia/                         200   6.313 B   ← una ruta que aún no existía
+```
 
-Fusionar esta rama no cambia por sí solo lo que se sirve —el despliegue va por
-`wrangler` y por el paquete construido—, pero conviene decidirlo antes de
-desplegar.
+Una ruta inexistente contestando 200 fue la pista: **un sitio que dice que sí a
+todo no está contestando**. Y como la portada desplegada importa `/src/main.js`,
+el navegador recibía HTML donde esperaba JavaScript: la portada estaba rota en
+producción, cargando lo justo para que no se notara.
+
+En local nunca falló, porque `servir.py` sirve `public/` desde siempre. **Lo
+desplegado y el árbol de trabajo llevaban meses siendo cosas distintas.**
+
+El arreglo es `wrangler.toml` con `pages_build_output_dir = "public"`, para que
+esa decisión viva en el repositorio y se revise en un PR en vez de en un panel
+web que el código no puede contradecir.
+
+Con la raíz correcta, comprobado sirviendo `public/`:
+
+```
+/                                   200    5.961 B  La Sala del Huevo (portada)
+/rooms/room_sala_del_huevo.html     200  113.247 B  la Sala
+/colonia/                           200   63.641 B  la portada anterior
+/arcade/js/protohub/Verificador.js  200    9.436 B  las dependencias resuelven
+/noexiste.html                      404              ya no hay catch-all
+```
+
+La portada, por tanto, **ya era la Sala del Huevo**: `public/index.html` lleva
+meses escrito, con su texto para quien llega sin WebGL o con un lector de
+pantalla. Lo que faltaba no era escribirla, era servirla.
 
 ## Cómo comprobarlo sin fiarse
 
