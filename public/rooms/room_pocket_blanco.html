@@ -720,27 +720,42 @@ almas.initAgents(NALMAS, { minX:-26, maxX:26, minY:3, maxY:26, minZ:-26, maxZ:26
 const rnd = mulberry32(20260801);
 const estaciones = [];
 
-function anillo(lista, radio, tipo, verbo) {
-  lista.forEach((it, i) => {
-    const a = (i / lista.length) * Math.PI * 2 + (tipo === 'mesa' ? 0.24 : 0);
-    estaciones.push({
-      ...it, tipo, verbo, angulo: a,
-      x: Math.cos(a) * radio, z: Math.sin(a) * radio,
-      grupo: null, pantalla: null, materia: 0,
-    });
-  });
-}
-anillo(ARCADES,    30, 'arcade',   'JUGAR');
-anillo(MESAS,      52, 'mesa',     'SENTARSE');
-anillo(TERMINALES, 72, 'terminal', 'LEER');
+const TODAS = [
+    ...ARCADES.map(it => ({ ...it, tipo: 'arcade', verbo: 'JUGAR' })),
+    ...MESAS.map(it => ({ ...it, tipo: 'mesa', verbo: 'SENTARSE' })),
+    ...TERMINALES.map(it => ({ ...it, tipo: 'terminal', verbo: 'LEER' }))
+];
+
+const urlParams = new URLSearchParams(window.location.search);
+const focusId = urlParams.get('id');
+
+const maquina = TODAS.find(m => m.n === focusId) || TODAS[0];
+
+// Push strictly the one machine
+estaciones.push({
+    ...maquina, angulo: 0,
+    x: 0, z: 0, // CENTER IN THE VOID
+    grupo: null, pantalla: null, materia: 0,
+});
 
 try {
   const est = await fetch('../data/estado_salas.json').then(r => r.ok ? r.json() : {});
-  for (const e of estaciones) {
-    const clave = e.u.replace(/^\.\.\//, '');
-    if (est[clave] === 'roto') { e.enObras = true; e.verbo = 'EN OBRAS'; }
-  }
+  const e = estaciones[0];
+  const clave = e.u.replace(/^\.\.\//, '');
+  if (est[clave] === 'roto') { e.enObras = true; e.verbo = 'EN OBRAS'; }
 } catch { }
+
+// Move camera in front of it and auto-sit after models load
+camara.position.set(0, 1.62, 2.5); // Much closer since we are in focus mode
+setTimeout(() => {
+    if(estaciones.length > 0) {
+        // Find the mesh group
+        const target = estaciones[0];
+        if (target.grupo) {
+            sentarse(target);
+        }
+    }
+}, 1000);
 
 const matBlanca = new THREE.MeshStandardMaterial({ color:0xffffff, roughness:0.55, metalness:0.06 });
 const matOscura = new THREE.MeshStandardMaterial({ color:0x1b232e, roughness:0.42, metalness:0.22 });
@@ -1310,6 +1325,7 @@ addEventListener('touchcancel', soltar, { passive: false });
 
 let enPocketDimension = false;
 let transitionPocket = 0;
+let fichaLista = false;
 
 function usarLoQueMiro() {
   if (!dentro) return;
