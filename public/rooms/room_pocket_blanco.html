@@ -747,15 +747,7 @@ try {
 
 // Move camera in front of it and auto-sit after models load
 camara.position.set(0, 1.62, 2.5); // Much closer since we are in focus mode
-setTimeout(() => {
-    if(estaciones.length > 0) {
-        // Find the mesh group
-        const target = estaciones[0];
-        if (target.grupo) {
-            sentarse(target);
-        }
-    }
-}, 1000);
+
 
 const matBlanca = new THREE.MeshStandardMaterial({ color:0xffffff, roughness:0.55, metalness:0.06 });
 const matOscura = new THREE.MeshStandardMaterial({ color:0x1b232e, roughness:0.42, metalness:0.22 });
@@ -1233,7 +1225,7 @@ addEventListener('keyup',   e => { teclas[e.key.toLowerCase()] = false; });
 const umbral = document.getElementById('umbral');
 umbral.addEventListener('click', () => {
   umbral.classList.add('ido');
-  setTimeout(() => { umbral.style.display = 'none'; }, 1100);
+  umbral.style.display = 'none';
   pedirPuntero();
   dentro = true;
   tLlegada = 0;
@@ -1327,6 +1319,8 @@ let enPocketDimension = false;
 let transitionPocket = 0;
 let fichaLista = false;
 
+let uiHolograficaMostrada = false;
+
 function usarLoQueMiro() {
   if (!dentro) return;
   if (!esTactil && punteroVaBien && !sentadoEn && !document.pointerLockElement) { pedirPuntero(); return; }
@@ -1334,15 +1328,28 @@ function usarLoQueMiro() {
   if (!mirando) return;
   if (tLlegada < LLEGADA) return;
   if (sentadoEn) return;
-  if (mirando.__huevo) { recogerHuevo(); return; }
-  if (!fichaLista) { EntityCardSystem.init(); fichaLista = true; }
+  
+  if (!uiHolograficaMostrada) {
+      // First click: Show Holographic Info
+      avisar(mirando.n.toUpperCase(), '🕹️ MATERIA: ' + Math.round((mirando.materia ?? 0) * 100) + '% | PUNTOS: 0/55\n\n[ CLIC DE NUEVO PARA JUGAR ]');
+      uiHolograficaMostrada = true;
+      
+      // Reset after a while if they don't click
+      setTimeout(() => { uiHolograficaMostrada = false; }, 5000);
+      return;
+  }
+  
+  // Second click: PLAY (Fullscreen transition)
   document.exitPointerLock?.();
-  EntityCardSystem.open({
-    id: mirando.n,
-    type: mirando.tipo === 'arcade' ? 'estacion' : mirando.tipo === 'mesa' ? 'mesa' : 'terminal',
-    barras: [{ etiqueta: 'MATERIA', valor: Math.round((mirando.materia ?? 0) * 100), sufijo: '%' }, { etiqueta: 'PUNTOS', valor: 0, max: 55 }],
-    acciones: [{ etiqueta: mirando.verbo, hacer: () => sentarse(mirando) }, { etiqueta: 'APARTE', hacer: () => window.open(mirando.u, '_blank') }],
-  });
+  avisar('INICIANDO SIMULACIÓN', 'Cargando entorno 3D...');
+  
+  // Transition out
+  document.body.style.transition = 'opacity 1s';
+  document.body.style.opacity = '0';
+  
+  setTimeout(() => {
+      window.location.href = mirando.u;
+  }, 1000);
 }
 addEventListener('click', usarLoQueMiro);
 
