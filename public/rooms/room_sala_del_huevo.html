@@ -1345,14 +1345,9 @@ function usarLoQueMiro() {
   if (tLlegada < LLEGADA) return;
   if (sentadoEn) return;
   if (mirando.__huevo) { recogerHuevo(); return; }
-  if (!fichaLista) { EntityCardSystem.init(); fichaLista = true; }
   document.exitPointerLock?.();
-  EntityCardSystem.open({
-    id: mirando.n,
-    type: mirando.tipo === 'arcade' ? 'estacion' : mirando.tipo === 'mesa' ? 'mesa' : 'terminal',
-    barras: [{ etiqueta: 'MATERIA', valor: Math.round((mirando.materia ?? 0) * 100), sufijo: '%' }, { etiqueta: 'PUNTOS', valor: 0, max: 55 }],
-    acciones: [{ etiqueta: mirando.verbo, hacer: () => sentarse(mirando) }, { etiqueta: 'APARTE', hacer: () => window.open(mirando.u, '_blank') }],
-  });
+  avisar(mirando.n.toUpperCase(), 'Sincronizando...');
+  sentarse(mirando);
 }
 addEventListener('click', usarLoQueMiro);
 
