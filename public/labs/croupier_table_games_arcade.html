@@ -403,6 +403,16 @@
             if (window.initLegacyRoom) window.initLegacyRoom();
 
         }
+        
+        // Pocket Dimension Exit handler
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' || e.code === 'Escape') {
+                if (window.parent && window.parent !== window) {
+                    window.parent.postMessage('STAND_UP', '*');
+                }
+            }
+        });
+        
         init();
     </script>
 

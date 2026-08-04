@@ -951,10 +951,11 @@ function sentarse(e) {
   const mueble = e.grupo.position;
   const hx = camara.position.x - mueble.x, hz = camara.position.z - mueble.z;
   const dist = Math.hypot(hx, hz) || 1;
-  camara.position.set(mueble.x + (hx / dist) * 2.6, 1.62,
-                      mueble.z + (hz / dist) * 2.6);
-  giroH = Math.atan2(camara.position.x - mueble.x, camara.position.z - mueble.z);
-  giroV = -0.02;
+  
+  // En vez de salto instantáneo, guardamos el target y tick() interpola
+  tick.targetCamPos = new THREE.Vector3(mueble.x + (hx / dist) * 2.6, 1.62, mueble.z + (hz / dist) * 2.6);
+  tick.targetGiroH = Math.atan2(camara.position.x - mueble.x, camara.position.z - mueble.z);
+  tick.targetGiroV = -0.02;
 
   document.exitPointerLock?.();
 
@@ -962,10 +963,19 @@ function sentarse(e) {
     const pd = document.getElementById('pocket-dimension-container');
     const pc = document.getElementById('pocketCartridge');
     pd.style.display = 'block';
-    const url = new URL(e.u, window.location.href);
-    url.searchParams.set('pocket', '1');
-    pc.src = url.href; 
-    requestAnimationFrame(() => { pd.style.opacity = '1'; });
+    
+    // Retrasar la inmersión para que la cámara tenga tiempo de hacer el paneo suave
+    setTimeout(() => {
+        if (sentadoEn !== e) return; // Por si se levantó antes de los 600ms
+        const url = new URL(e.u, window.location.href);
+        url.searchParams.set('pocket', '1');
+        pc.src = url.href; 
+        requestAnimationFrame(() => { pd.style.opacity = '1'; });
+        enPocketDimension = true;
+        avisar(e.n.toUpperCase(), 'en dimensión de bolsillo');
+        PIE.textContent = `${e.n.toUpperCase()} · inmersión nativa · usa el botón para levantarte (o ESC)`;
+    }, 600);
+
     document.getElementById('btn-standup-pocket').onclick = () => {
         pd.style.opacity = '0';
         enPocketDimension = false;
@@ -975,9 +985,6 @@ function sentarse(e) {
             levantarse();
         }, 600);
     };
-    enPocketDimension = true;
-    avisar(e.n.toUpperCase(), 'en dimensión de bolsillo');
-    PIE.textContent = `${e.n.toUpperCase()} · inmersión nativa · usa el botón para levantarte`;
     return;
   }
 
@@ -1366,6 +1373,14 @@ function tick() {
 
   if (sentadoEn) {
     vel.set(0, 0, 0);
+    if (tick.targetCamPos) {
+        // Interpolación suave para entrada a las mesas
+        camara.position.lerp(tick.targetCamPos, dt * 5.0);
+        const diffH = tick.targetGiroH - giroH;
+        const deltaH = Math.atan2(Math.sin(diffH), Math.cos(diffH));
+        giroH += deltaH * (dt * 5.0);
+        giroV += (tick.targetGiroV - giroV) * (dt * 5.0);
+    }
   } else {
     const dir = new THREE.Vector3();
     if (teclas['w']||teclas['arrowup']) dir.z -= 1;
