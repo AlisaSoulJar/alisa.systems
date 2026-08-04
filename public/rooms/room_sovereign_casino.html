@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ALISA — La Sala del Huevo</title>
+<title>ALISA — Sovereign Grand Casino</title>
 <!--
   ═══════════════════════════════════════════════════════════════════════════
-   LA SALA DEL HUEVO — el hall de alisa.systems
+   SOVEREIGN CASINO — el hall de alisa.systems
   ═══════════════════════════════════════════════════════════════════════════
   Brief de Oscar: una anomalía/huevo, arcades y mesas, y un ambiente entre el
   Construct de Matrix y la estación de King's Cross donde Harry "muere".
@@ -27,7 +27,7 @@
        que inyecta caos, intención y propósito."  — Raw_Lore_Harvest.md
 
   La anomalía eres tú. Por eso el mundo se ordena a tu alrededor: el polvo se
-  te acerca, el suelo se dibuja bajo tus pies, y el huevo late más fuerte
+  te acerca, el suelo se dibuja bajo tus pies, y el casino se enciende
   cuanto más cerca estás. Sin ti esto es una base de datos a oscuras.
 
   PIEZAS DEL MOTOR QUE USA (ninguna escrita para esto)
@@ -159,7 +159,7 @@
 
 <div id="lienzo"></div>
 
-<div class="hud" id="marca">LA SALA DEL HUEVO</div>
+<div class="hud" id="marca">SOVEREIGN CASINO</div>
 <!-- ⚠️ EL HUD DIJO UNA MENTIRA DURANTE TODO EL DESARROLLO.
      La primera línea era «incubación 12.5%»: una constante clavada que jamás
      cambiaba. En un sitio cuya idea entera es «todo esto se puede comprobar»,
@@ -214,21 +214,6 @@
   <iframe id="romCartridge" src="about:blank"
           style="width:1024px;height:768px;border:0;background:#0d1218;"></iframe>
 </div>
-
-<!-- EL MÓDULO DE BOLSILLO (Pocket Dimension).
-     Para los juegos de mesa y cartas, en vez de renderizar una pantallita enana,
-     te "abducimos" a un iframe a pantalla completa. Es una sala independiente
-     solo para ti y esa mesa, pero engaña al cerebro para parecer que sigues ahí. -->
-<div id="pocket-dimension-container"
-     style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; opacity:0; transition:opacity 0.6s ease-in-out;">
-  <iframe id="pocketCartridge" src="about:blank"
-          style="width:100%; height:100%; border:0; background:transparent;"></iframe>
-  <button id="btn-standup-pocket"
-          style="position:absolute; bottom:30px; left:50%; transform:translateX(-50%); z-index:100000; padding:15px 30px; border-radius:8px; border:2px solid #ff4081; background:rgba(255,64,129,0.1); color:#ff4081; font-family:'JetBrains Mono',monospace; font-weight:900; font-size:16px; cursor:pointer; backdrop-filter:blur(5px); transition:all 0.2s;">
-      🧍 LEVANTARSE DE LA MESA
-  </button>
-</div>
-
 <div class="hud" id="pie">wasd para andar · ratón para mirar · clic para usar · esc para soltar</div>
 
 <!-- ⚠️ La primera versión de esta pantalla era solo poesía, y un recién llegado
@@ -236,9 +221,9 @@
      mucho mejor DESPUÉS de saber dónde te has metido: primero qué es y cómo se
      anda, luego el misterio. -->
 <div id="umbral">
-  <h1>LA SALA DEL HUEVO</h1>
+  <h1>SOVEREIGN CASINO</h1>
   <p class="que-es"><b>27 máquinas con juegos de verdad</b>, en una sala por la que
-     se anda.<br>Arcades, mesas de tablero y cartas, y un huevo en el centro.</p>
+     se anda.<br>Arcades, mesas de tablero y cartas, y un obelisco de neón central.</p>
   <!-- Esta frase hace dos trabajos y por eso se queda: explica el lore (tú eres
        la anomalía) y de paso explica la MECÁNICA (por qué las cosas aparecen al
        acercarte). Antes eran dos misterios sueltos: uno en el HUD y otro en la
@@ -315,13 +300,17 @@ import { ArcadeTableRoomFactory } from '@alisa-engine/src/world/factories/Arcade
 // funcionando encerrada en el juego. Aquí resuelve el peor problema de la sala
 // —«aparezco y no sé adónde ir»— sin poner un mapa que rompa el hechizo.
 import { RadarPlugin } from '@alisa-engine/src/soma/plugins/RadarPlugin.js';
+// Los muebles dejan de ser cajas mías. Ya está decidido: a la larga sale más
+// barato un .glb que geometría escrita a mano, y tenemos 973 modelos ahí al
+// lado —recreativas incluidas— que nadie estaba usando en esta sala.
 import { AssetManager } from '@alisa-engine/src/soma/AssetManager.js';
+// La anomalía. Buscada en TODA la unidad Q: antes de escribirla —dos resultados
+// y ninguno era render— así que esta sí tocaba hacerla. El huevo deja de ser un
+// huevo bonito y pasa a DOBLAR el espacio a su alrededor.
 import { AnomalyLensPlugin } from '@alisa-engine/src/soma/plugins/AnomalyLensPlugin.js';
+// Y el sonido de cada máquina, que sube al acercarte: `THREE.PositionalAudio`
+// con la escucha pegada a la cámara. También estaba escrito y sin usar.
 import { SpatialAudioPlugin } from '@alisa-engine/src/soma/plugins/SpatialAudioPlugin.js';
-import { ArcadeFXPlugin } from '@alisa-engine/src/soma/plugins/ArcadeFXPlugin.js';
-import { ConstructMaterializerPlugin } from '@alisa-engine/src/soma/plugins/ConstructMaterializerPlugin.js';
-import { EnvironmentPBRPlugin } from '@alisa-engine/src/soma/plugins/EnvironmentPBRPlugin.js';
-import { SovereignHaloPlugin } from '@alisa-engine/src/extensions/alisa-colony/plugins/SovereignHaloPlugin.js';
 
 // ═══════════════════════════════════════════════════════════════════════════
 //  EL CATÁLOGO — las estaciones son DATOS, no objetos
@@ -344,6 +333,8 @@ import { SovereignHaloPlugin } from '@alisa-engine/src/extensions/alisa-colony/p
 // y se puede jugar entero sin abrir esta sala:
 // `labs/croupier_gym_estaciones.html`.
 const ARCADES = [
+  { n:'Fagocito', u:'../arcade/fagocito.html', env:'alisa/fagocito-protohub-v0' },
+  { n:'Snake', u:'../arcade/snake.html', env:'alisa/snake-protohub-v0' },
   // ⚠️ ESTOS TRES ESTABAN EN `legacy/` Y NO LOS ENLAZABA NADIE.
   // Son los juegos más terminados que tenemos —87, 62 y 42 KB— y llevaban
   // meses dados por obsoletos. No lo estaban: el traslado a `legacy/` les
@@ -376,6 +367,8 @@ const ARCADES = [
 // sale exacta: no se puede alucinar una jugada ilegal porque solo se ofrecen
 // las legales.
 const MESAS = [
+  { n:'Entropy', u:'../arcade/entropy.html', cartas:true, env:'alisa/entropy-protohub-v0' },
+  { n:'Guerra', u:'../arcade/guerra.html', cartas:true, env:'alisa/guerra-protohub-v0' },
   { n:'Ajedrez',   u:'../arcade/chess.html',    tablero:'Checkers', env:'alisa/ajedrez-protohub-v0' },  // 8×8: el mismo damero
   { n:'Go',        u:'../arcade/go.html',       tablero:'Go',       env:'alisa/go-protohub-v0' },
   { n:'Reversi',   u:'../arcade/reversi.html',  tablero:'Reversi',  env:'alisa/reversi-protohub-v0' },
@@ -388,9 +381,16 @@ const MESAS = [
   { n:'Póker',     u:'../arcade/poker.html',     cartas:true, env:'alisa/poker-protohub-v0' },
 ];
 const TERMINALES = [
+  // ⚠️ Apuntaba a `lab_heritage.html`, que el manifiesto público EXCLUYE: el día
+  // de publicar habría sido un 404 dentro de la sala. Y si esto sale abierto,
+  // hace falta un sitio DENTRO del mundo donde el motor se explique.
   { n:'El Motor',       u:'../motor.html' },
   { n:'El Arcade',      u:'../arcade/index.html' },
   { n:'Investigación',  u:'../research.html' },
+  // ⚠️ Apuntaba a `../index.html`, que NO EXISTÍA: era la única de las 24
+  // estaciones que daba 404, y encima la puerta del sitio entero. Ahora la
+  // portada existe y esta terminal lleva al catálogo, que es lo que un
+  // visitante quiere desde dentro: ver TODO lo que hay.
   { n:'El Catálogo',    u:'../lab.html' },
 ];
 
@@ -398,12 +398,17 @@ const TERMINALES = [
 //  ESCENA
 // ═══════════════════════════════════════════════════════════════════════════
 const escena = new THREE.Scene();
-const camara = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 400);
-camara.position.set(0, 1.62, 54);
-const colorFondo = new THREE.Color(0xe6ebf0);
-const colorNegro = new THREE.Color(0x000000);
-escena.background = colorFondo.clone();
-escena.fog = new THREE.FogExp2(0xe6ebf0, 0.0062);
+// Un gris muy claro y frío, NO blanco puro: si el fondo es 0xffffff, cualquier
+// objeto blanco desaparece contra él y la sala se vuelve una hoja en blanco.
+// Dejando el fondo un punto por debajo, las cosas blancas recortan.
+escena.background = new THREE.Color(0x070b12);
+// La niebla es el truco entero del Construct: no hay paredes, hay distancia.
+// Bajada de 0.0125 a 0.009: con la anterior, el anillo de arcades se tragaba
+// entero antes de materializarse y no se veía llegar nada.
+escena.fog = new THREE.FogExp2(0x070b12, 0.009);
+
+const camara = new THREE.PerspectiveCamera(62, innerWidth/innerHeight, 0.1, 900);
+camara.position.set(0, 1.68, 44);
 
 const render = new THREE.WebGLRenderer({ antialias:true, powerPreference:'high-performance' });
 render.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -412,36 +417,69 @@ render.toneMapping = THREE.ACESFilmicToneMapping;
 render.toneMappingExposure = 1.02;
 document.getElementById('lienzo').appendChild(render.domElement);
 
-const envPbr = new EnvironmentPBRPlugin({ renderer: render, scene: escena }, { intensity: 0.7 });
-envPbr.onInit();
-
+// La capa CSS3D (las pantallas con páginas de verdad dentro) la pone y la
+// renderiza el plugin del holograma, más abajo. Yo tenía aquí un CSS3DRenderer
+// propio, y además invisible: el lienzo WebGL es OPACO (sin `alpha:true`), así
+// que cualquier capa CSS3D por debajo no se ve nunca. El orden que funciona es
+// lienzo debajo, cartucho encima.
 render.domElement.style.position = 'absolute';
 render.domElement.style.zIndex = '1';
 
+// Bloom suave. En blanco no se usa para "brillar": se usa para que la luz
+// desborde y los bordes se deshagan — que es lo que hace que un blanco se lea
+// como luminoso y no como papel.
 const composer = new EffectComposer(render);
 composer.addPass(new RenderPass(escena, camara));
-const lente = new AnomalyLensPlugin({ radio: 0.35, fuerza: 0.25, anillo: 0.8, color: new THREE.Color(1.0, 0.4, 0.05) });
+// La anomalía va JUSTO DESPUÉS del render y ANTES del bloom, y ese orden no es
+// negociable: dobla la sala ya pintada, y luego el bloom hace florecer el
+// anillo de fotones. Al revés, el resplandor se doblaría con todo lo demás y
+// parecería una mancha, no una luz.
+const lente = new AnomalyLensPlugin({ radio: 0.24, fuerza: 0.10, anillo: 0.42 });
 composer.addPass(lente.pase);
+// ⚠️ El umbral (tercer argumento) es LO IMPORTANTE en una escena blanca.
+// Con 0.92 el bloom mordía el blanco del fondo y lo desbordaba todo: la
+// pantalla se volvía leche y los objetos perdían el borde. Subido a 1.05, solo
+// desbordan las cosas que EMITEN —el núcleo del huevo, los vóxeles— que es
+// justo lo que queremos que brille. Contraste primero, brillo después.
+// ⚠️ SEGUNDA CORRECCIÓN, y más grave que la del umbral: la FUERZA y el RADIO.
+// Con 0.62 y 0.7 el resplandor del huevo se derramaba por medio cuadro y lo
+// lavaba TODO. Lo comprobé apagando el pase: con bloom, la pantalla de un
+// arcade —negro #0d1218— se veía gris claro, y un rojo puro salía rosa pálido.
+// En una sala blanca no queda margen: cualquier halo generoso se come los
+// pocos oscuros que dan forma a los objetos, y todo se vuelve leche.
+// A 0.11 / 0.28 el huevo conserva su halo y la sala recupera sus negros: la
+// pantalla vuelve a ser negra, la visera se separa del cuerpo y se ve la
+// rejilla del suelo. En blanco, el bloom es condimento, no salsa.
 const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.11, 0.28, 1.12);
 composer.addPass(bloom);
 composer.addPass(new OutputPass());
 
 // ── Luz ──────────────────────────────────────────────────────────────────
-escena.add(new THREE.HemisphereLight(0xffffff, 0xdfe6ec, 3.1));
-const cenital = new THREE.DirectionalLight(0xffffff, 1.5);
+// King's Cross: la luz viene de arriba y de todas partes a la vez.
+escena.add(new THREE.HemisphereLight(0x1a2b4c, 0x070b12, 1.5));
+const cenital = new THREE.DirectionalLight(0x00e676, 0.8);
 cenital.position.set(0, 60, 8);
 escena.add(cenital);
 
 // ── El entorno que se refleja ────────────────────────────────────────────
+// ⚠️ ERROR REAL, cazado en la revisión de arte: el huevo usa `transmission` y
+// `clearcoat: 1.0`, pero no había NI UN entorno que reflejar. Un clearcoat sin
+// nada que espejar no se lee como cristal: se lee como plástico mate con un
+// punto de brillo. Y es el objeto central de la sala.
+//
+// Se genera procedimentalmente —nada de cargar un .hdr— pintando un degradado
+// vertical en un canvas y pasándolo por PMREM: claro arriba (el cenital de
+// King's Cross), gris frío abajo (el suelo). Con eso, el huevo tiene por fin
+// suelo y cielo que devolver.
 {
   const c = document.createElement('canvas');
   c.width = 16; c.height = 256;
   const g = c.getContext('2d');
   const grad = g.createLinearGradient(0, 0, 0, 256);
-  grad.addColorStop(0.00, '#ffffff');
+  grad.addColorStop(0.00, '#ffffff');   // cenit
   grad.addColorStop(0.45, '#eef3f8');
-  grad.addColorStop(0.55, '#dde5ee');
-  grad.addColorStop(1.00, '#c3ced9');
+  grad.addColorStop(0.55, '#dde5ee');   // horizonte
+  grad.addColorStop(1.00, '#c3ced9');   // suelo
   g.fillStyle = grad; g.fillRect(0, 0, 16, 256);
 
   const tex = new THREE.CanvasTexture(c);
@@ -455,14 +493,16 @@ escena.add(cenital);
 }
 
 // ── El suelo ─────────────────────────────────────────────────────────────
+// Sin bordes: se disuelve en la niebla. Nunca ves dónde acaba.
 const suelo = new THREE.Mesh(
   new THREE.CircleGeometry(320, 96).rotateX(-Math.PI/2),
-  new THREE.MeshStandardMaterial({ color:0xffffff, roughness:0.82, metalness:0.02, transparent: true })
+  new THREE.MeshStandardMaterial({ color:0xffffff, roughness:0.82, metalness:0.02 })
 );
 suelo.position.y = -0.02;
 escena.add(suelo);
 
-const rejilla = new THREE.GridHelper(320, 160, 0x9fb0c0, 0xd4dee6);
+// La rejilla del Construct, apagándose con la distancia.
+const rejilla = new THREE.GridHelper(320, 160, 0x00ffc8, 0x070b12);
 rejilla.material.transparent = true; rejilla.material.opacity = 0.5;
 escena.add(rejilla);
 
@@ -470,153 +510,139 @@ escena.add(rejilla);
 //  EL HUEVO — la anomalía
 // ═══════════════════════════════════════════════════════════════════════════
 const huevo = new THREE.Group();
-const geoHuevo = new THREE.SphereGeometry(7, 64, 64);
-const matHuevo = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x110000, emissiveIntensity: 0.2, roughness: 0.1, metalness: 0.9 });
+const geoHuevo = new THREE.CylinderGeometry(2, 6, 25, 6);
+// No scale needed for obelisk          // un huevo es una esfera con prisa hacia arriba
+
+const matHuevo = new THREE.MeshPhysicalMaterial({
+  color:0xffffff, roughness:0.14, metalness:0.0,
+  transmission:0.62, thickness:5.5, ior:1.32,
+  clearcoat:1.0, clearcoatRoughness:0.06,
+  emissive:0x00ffc8, emissiveIntensity:0.32,
+});
 const cascara = new THREE.Mesh(geoHuevo, matHuevo);
 cascara.position.y = 10.2;
 huevo.add(cascara);
 
-// Photon Ring
-const photonGeo = new THREE.SphereGeometry(7.15, 64, 64);
-const photonMat = new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.35, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false });
-const photonRing = new THREE.Mesh(photonGeo, photonMat);
-photonRing.position.y = 10.2;
-huevo.add(photonRing);
-
-// Accretion Disk (Nucleo) - Procedural Plasma Shader
-const discoUniforms = {
-    time: { value: 0 },
-    color1: { value: new THREE.Color(0xffaa00) },
-    color2: { value: new THREE.Color(0xff3300) }
-};
-const geoDisco = new THREE.TorusGeometry(11, 2.5, 32, 200);
-geoDisco.rotateX(Math.PI / 2);
-geoDisco.rotateX(-0.15);
-const matDisco = new THREE.ShaderMaterial({
-    uniforms: discoUniforms,
-    vertexShader: `
-        varying vec2 vUv;
-        void main() {
-            vUv = uv;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-    `,
-    fragmentShader: `
-        uniform float time;
-        uniform vec3 color1;
-        uniform vec3 color2;
-        varying vec2 vUv;
-
-        // Simple hash and noise
-        float hash(float n) { return fract(sin(n) * 1e4); }
-        float noise(vec2 x) {
-            vec2 i = floor(x);
-            vec2 f = fract(x);
-            float a = hash(i.x + i.y * 57.0);
-            float b = hash(i.x + 1.0 + i.y * 57.0);
-            float c = hash(i.x + (i.y + 1.0) * 57.0);
-            float d = hash(i.x + 1.0 + (i.y + 1.0) * 57.0);
-            vec2 u = f * f * (3.0 - 2.0 * f);
-            return mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
-        }
-
-        void main() {
-            // Swirling plasma effect
-            float n = noise(vec2(vUv.x * 25.0 - time * 6.0, vUv.y * 4.0));
-            float n2 = noise(vec2(vUv.x * 60.0 + time * 2.0, vUv.y * 12.0));
-            
-            float intensity = smoothstep(0.2, 0.8, n * n2) * 2.5;
-            float edge = smoothstep(0.0, 0.3, vUv.y) * smoothstep(1.0, 0.7, vUv.y);
-            
-            vec3 finalColor = mix(color2, color1, intensity) * intensity * edge * 2.5;
-            gl_FragColor = vec4(finalColor, edge * intensity * 0.9);
-        }
-    `,
-    transparent: true,
-    blending: THREE.AdditiveBlending,
-    side: THREE.DoubleSide,
-    depthWrite: false
-});
-const nucleo = new THREE.Mesh(geoDisco, matDisco);
+// El núcleo late dentro. Es lo que hace que parezca vivo y no un adorno.
+const nucleo = new THREE.Mesh(
+  new THREE.SphereGeometry(2.6, 40, 32),
+  new THREE.MeshBasicMaterial({ color:0x00ffc8, transparent:true, opacity:0.85 })
+);
 nucleo.position.y = 10.2;
-// Save reference to uniforms so tick() can update time
-nucleo.userData.uniforms = discoUniforms;
 huevo.add(nucleo);
-
-const volumetrics = new VolumetricsPlugin();
-const radiationDust = VolumetricsPlugin.createFlashlightDust(350);
-radiationDust.material.color.setHex(0xffaa00);
-radiationDust.material.size = 0.2;
-radiationDust.scale.set(30, 20, 30);
-radiationDust.position.y = 10.2;
-huevo.add(radiationDust);
-volumetrics.registerDust(radiationDust);
-
-const jetUp = VolumetricsPlugin.createFlashlightBeam();
-jetUp.material.color.setHex(0xff3300);
-jetUp.scale.set(7, 60, 7);
-jetUp.position.y = 10.2;
-huevo.add(jetUp);
-
-const jetDown = VolumetricsPlugin.createFlashlightBeam();
-jetDown.material.color.setHex(0xff3300);
-jetDown.scale.set(7, 60, 7);
-jetDown.rotation.x = Math.PI;
-jetDown.position.y = 10.2;
-huevo.add(jetDown);
-
-const luzNucleo = new THREE.PointLight(0xff5500, 36, 80, 1.6);
+const luzNucleo = new THREE.PointLight(0x00ffc8, 26, 62, 1.7);
 luzNucleo.position.y = 10.2;
 huevo.add(luzNucleo);
 escena.add(huevo);
 
+// ═══════════════════════════════════════════════════════════════════════════
+//  LA INCUBACIÓN — y por qué el huevo NO eclosiona aquí
+// ═══════════════════════════════════════════════════════════════════════════
+// La sala tenía una llegada muy trabajada y después nada: un bucle ambiental
+// donde el que recorría las 24 estaciones recibía lo mismo que el que se
+// quedaba quieto. Eso es un estado, no un arco. Había que darle un arco.
+//
+// ⚠️ PERO LA ECLOSIÓN NO ES ESE ARCO, Y NO DEBE SERLO.
+//
+// El huevo eclosiona con **la Avenida de la Reina**: cuando haya cómputo en red
+// suficiente para sostener el sistema y existan las divisas. Es EL
+// acontecimiento del proyecto, y ocurre una sola vez, de verdad, para todo el
+// mundo a la vez. Gastarlo en "has paseado por un lobby" sería quemar el
+// momento más importante que tenemos a cambio de un premio de sesión.
+//
+// Así que aquí:
+//   · `INCUBACIÓN` muestra el progreso REAL y global (12,5%), que no depende de
+//     ti y que está lejísimos de completarse. Eso es honesto y es la promesa.
+//   · lo que tú haces al explorar es APORTAR: tu presencia calcula, y el huevo
+//     lo nota — se agrieta, late más fuerte, responde. Pero no rompe.
+//
+// Es el "Kickstarter Cuántico" de los apuntes: la restricción es la narrativa.
+// El visitante ve lo que va a pasar, y entiende que hace falta todo el mundo.
+//
+// La maquinaria de romper queda escrita y probada, esperando su día. Se dispara
+// con `window.__sala.eclosionar()` — o el día que el hub diga que la Avenida
+// está abierta. Construir el mecanismo sin gastar el acontecimiento.
+
+// ⚠️ Aquí había `const INCUBACION_REAL = 0.125` y el HUD lo pintaba como si
+// fuera telemetría. No lo era: era un número escrito a mano que no cambiaba
+// nunca. Ahora empieza en `null` —no lo sabemos— y solo se rellena si la
+// colonia lo dice. Un sitio que presume de verificable no puede abrir con un
+// dato inventado; y si no hay conexión, lo honesto es decir que no la hay.
 let incubacionReportada = null;
 let partidasVerificadas = 0;
+
+// ⚠️ NI SIQUIERA SE INTENTA SI NO PUEDE HABER HUB.
+// El hub de la colonia vive en `http://127.0.0.1:8741`, y desde una página
+// servida por HTTPS el navegador **bloquea** esa petición por contenido mixto.
+// El `.catch()` de abajo lo aguantaba sin romper nada —conectarse es una mejora,
+// no un requisito— pero dejaba un error rojo en la consola de un sitio público
+// dirigido justamente a gente que abre la consola. Un banco de pruebas que pide
+// que le audites no puede recibirte con un error que no significa nada.
+//
+// Así que se pregunta antes: sólo puede haber hub si esto se está viendo en la
+// máquina donde correría el hub.
 const HAY_HUB_POSIBLE = location.protocol === 'file:'
   || ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
 
+// Si el hub está levantado, la incubación llega de ahí. Si no, se queda en «—».
 if (HAY_HUB_POSIBLE) {
   fetch('http://127.0.0.1:8741/egg/incubation', { signal: AbortSignal.timeout(1200) })
     .then(r => r.ok ? r.json() : null)
     .then(d => { if (d && typeof d.incubation === 'number') incubacionReportada = d.incubation; })
-    .catch(() => {});
+    .catch(() => { /* sin colonia: se queda sin saberse, y se dice */ });
 }
-const vistas = new Set();
-let aportacion = 0;
+const vistas = new Set();          // estaciones que has resuelto
+let aportacion = 0;                // 0..1 — lo TUYO
 let rota = false;
 let nubeCascara = null;
-let latido = 0;
-let materializadas = 0;
-let mirando = null;
-const elMirilla = document.getElementById('mirilla');
-const elObj = document.getElementById('objetivo');
 
-const PUNTOS_HUEVO = 600;
+// ═══════════════════════════════════════════════════════════════════════════
+//  PUNTOS Y EL HUEVO QUE CAE
+// ═══════════════════════════════════════════════════════════════════════════
+// Nada de "ven y te damos un huevo". Aquí solo hay un banco de pruebas con
+// puntuación — mismas reglas para personas y para máquinas.
+//
+// Y a partir de cierto punto, **cae un huevo**. No se ofrece: aparece, como un
+// objeto que te has ganado. Si lo aceptas, tus puntos se convierten en Dust y
+// con eso arrancas tu propia colonia.
+//
+// La diferencia es de tono y lo es todo: una oferta al entrar suena a captación;
+// un objeto que aparece cuando ya llevas rato jugando es un hallazgo. Lo
+// segundo se cuenta a un amigo; lo primero se cierra.
+const PUNTOS_HUEVO = 600;          // el umbral del drop
 let puntos = 0;
-let huevoCaido = null;
+let huevoCaido = null;             // el loot, cuando exista
 let huevoRecogido = false;
 
+/** Un huevo pequeño se materializa delante de ti. */
 function soltarHuevo() {
   if (huevoCaido || huevoRecogido) return;
+
   const g = new THREE.Group();
   const cuerpo = new THREE.Mesh(
     new THREE.SphereGeometry(0.42, 40, 30).scale(1, 1.4, 1),
     new THREE.MeshPhysicalMaterial({
       color:0xffffff, roughness:0.1, transmission:0.5, thickness:0.9, ior:1.34,
-      clearcoat:1, emissive:0x4fd0ff, emissiveIntensity:0.9,
+      clearcoat:1, emissive:0x00e676, emissiveIntensity:0.9,
     })
   );
   g.add(cuerpo);
   const halo = new THREE.PointLight(0x9fe4ff, 9, 9, 1.6);
   g.add(halo);
+
+  // Cae justo delante, a la altura de la mano.
   const frente = new THREE.Vector3(0,0,-1).applyQuaternion(camara.quaternion);
-  g.position.set(camara.position.x + frente.x * 3.2, 1.15, camara.position.z + frente.z * 3.2);
+  g.position.set(
+    camara.position.x + frente.x * 3.2, 1.15,
+    camara.position.z + frente.z * 3.2);
   escena.add(g);
   huevoCaido = { grupo:g, cuerpo, nacido: reloj.getElapsedTime() };
+
   Sonido.cristal(0.62); Sonido.latido(1.6);
   avisar('HA CAÍDO UN HUEVO', 'acércate y púlsalo');
 }
 
+/** Aceptarlo: los puntos se vuelven Dust. */
 function recogerHuevo() {
   if (!huevoCaido || huevoRecogido) return;
   huevoRecogido = true;
@@ -626,6 +652,7 @@ function recogerHuevo() {
   avisar(`${puntos} PUNTOS → DUST`, 'con esto se arranca una colonia');
 }
 
+/** Un aviso breve, en el mismo idioma sobrio que el resto. */
 function avisar(titulo, pie) {
   const d = document.getElementById('aviso');
   d.innerHTML = `<div class="t">${titulo}</div><div class="p">${pie}</div>`;
@@ -634,45 +661,67 @@ function avisar(titulo, pie) {
   avisar._t = setTimeout(() => d.classList.remove('visible'), 5200);
 }
 
+// Las grietas: una segunda cáscara, un pelo más grande, que solo emite.
 const grietas = new THREE.Mesh(
   geoHuevo.clone(),
   new THREE.MeshBasicMaterial({
-    color: 0xff3300, transparent: true, opacity: 0,
+    color: 0x00e676, transparent: true, opacity: 0,
     blending: THREE.AdditiveBlending, depthWrite: false,
-    wireframe: true,
+    wireframe: true,               // el alambre ES la grieta: sin textura ni shader
   })
 );
 grietas.scale.setScalar(1.004);
 grietas.position.y = 10.2;
 huevo.add(grietas);
 
+/** Rompe la cáscara. Se llama una sola vez, al completar la exploración. */
 function romperCascara() {
   if (rota) return;
   rota = true;
+  // Una nube del tamaño del huevo, y se ejecuta HACIA ATRÁS.
   nubeCascara = nubeDeVoxeles(14, 20, 14, 777);
   nubeCascara.malla.position.y = 10.2;
-  nubeCascara.avance = 1;
+  nubeCascara.avance = 1;          // empieza encajada…
   huevo.add(nubeCascara.malla);
-  cascara.visible = false;
+  cascara.visible = false;         // …y la cáscara sólida desaparece bajo ella
   grietas.visible = false;
   Sonido.cristal(0.5);
   Sonido.latido(2.2);
 }
 
+// El haz cenital: la columna de luz de King's Cross.
 const haz = VolumetricsPlugin.createApplianceBeam('bulb');
 haz.scale.set(4.2, 9.0, 4.2);
 haz.position.y = 30;
 haz.material.opacity *= 0.5;
 escena.add(haz);
 
-const panel = new SovereignHaloPlugin({ scene: escena }, {
-  radio: 10, height: 1.8,
-  position: new THREE.Vector3(0, 23, 0),
-  tinta: '#ff6600',
+// ═══════════════════════════════════════════════════════════════════════════
+//  EL PANEL DE DESTINOS
+// ═══════════════════════════════════════════════════════════════════════════
+// Cuatro caras colgadas sobre el huevo, compartiendo un solo lienzo. Ámbar
+// sobre negro: es la segunda licencia de color de la sala y se la ha ganado
+// —cian es "dato volviéndose materia", ámbar es "la colonia hablando"— porque
+// es exactamente el código de color de un panel de estación de verdad.
+// La altura y el radio no son gusto: a 7,4 m y radio 7,6 el panel ATRAVESABA
+// el huevo. Cuelga por encima, como el de destinos de una estación de verdad.
+const panel = new SovereignTickerPlugin({ scene: escena }, {
+  // ⚠️ `radio` = anchura/2 exacta, o el cuadrado NO CIERRA: con radio 12,5 y
+  // caras de 17 quedaban cuatro tablones sueltos que desde medio lado se veían
+  // de canto. Con 8,5 las esquinas se tocan y es un panel colgado de verdad.
+  width: 17, height: 1.3, caras: 4, radio: 8.5,
+  position: new THREE.Vector3(0, 21.5, 0),
   velocidad: 118,
-  mensajes: ['LA SALA DEL HUEVO · BANCO DE PRUEBAS ABIERTO',
+  mensajes: ['SOVEREIGN CASINO · BANCO DE PRUEBAS ABIERTO',
              'MISMAS REGLAS PARA PERSONAS Y PARA MÁQUINAS'],
+  // Si el hub de la colonia está levantado, el panel cuenta lo que pasa ahí
+  // fuera. Si no, cuenta lo que pasa aquí dentro. Conectarse es una mejora.
+  // Mismo criterio que arriba: fuera de la máquina del hub ni se intenta, para
+  // no dejar un error de contenido mixto en la consola de un sitio público.
   stream: HAY_HUB_POSIBLE ? 'http://127.0.0.1:8741/terminal/logs/stream' : null,
+  // El log crudo de la colonia trae tracebacks, y lo primero que leía un
+  // visitante era un `ERROR Exception`. Verdad, viva, y mala carta de
+  // presentación. Se queda lo que se entiende desde fuera.
   filtro: (l) => {
     if (/error|traceback|exception|warning|debug/i.test(l)) return false;
     return l.replace(/^[\d\-:\s.]{10,}/, '').slice(0, 110).toUpperCase();
@@ -680,6 +729,12 @@ const panel = new SovereignHaloPlugin({ scene: escena }, {
 });
 panel.onInit();
 
+// ═══════════════════════════════════════════════════════════════════════════
+//  EL RADAR Y EL OÍDO
+// ═══════════════════════════════════════════════════════════════════════════
+// Los dos atacan el mismo problema por caminos distintos: saber dónde hay algo
+// sin salir del mundo. El radar lo dice a la vista; el zumbido de las máquinas
+// lo dice al oído, y ese es el que de verdad te hace girar la cabeza.
 const radar = new RadarPlugin({ alcance: 78, tam: 128, tinta: '#5a6675' })
                   .situar({ abajo: '22px', derecha: '22px' });
 
@@ -688,6 +743,18 @@ oido.zumbido('maquina',  { hz: 92,  ancho: 0.35, volumen: 0.5 });
 oido.zumbido('mesa',     { hz: 68,  ancho: 0.22, volumen: 0.42 });
 oido.zumbido('terminal', { hz: 124, ancho: 0.6,  volumen: 0.34 });
 
+/**
+ * Le da voz a las estaciones que ya son materia y todavía están mudas.
+ *
+ * ⚠️ Dos trampas, las dos medidas:
+ * 1. **three tiene SU PROPIO contexto de audio**, distinto del que abre la sala,
+ *    y nace suspendido. Sin `resume()` tras un gesto del visitante, los sonidos
+ *    se crean, dicen que existen… y no suenan. Cero errores en consola.
+ * 2. Las estaciones se materializan por CERCANÍA, y eso pasa mientras el umbral
+ *    todavía está puesto — o sea, antes de que haya audio. Si la voz se colgara
+ *    solo al construirlas, las primeras se quedarían mudas para siempre. Por eso
+ *    esto se llama desde el bucle: da voz a la que le falte, cuando se pueda.
+ */
 function darVoz() {
   const ctx = oido.listener.context;
   if (ctx.state === 'suspended') ctx.resume();
@@ -700,9 +767,18 @@ function darVoz() {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+//  LAS ALMAS
+// ═══════════════════════════════════════════════════════════════════════════
+// Van al huevo y huyen de ti. No es una floritura: es la frase del lore hecha
+// movimiento — "el usuario no es el padre que da órdenes, es la anomalía
+// termodinámica que inyecta caos". Se ve sin que nadie lo explique.
 const NALMAS = 90;
 const almas = new BoidsSystem({
   separationRadius: 1.9, alignmentRadius: 6.0, cohesionRadius: 8.0,
+  // ⚠️ maxForce 0.09 (el de fábrica) las dejaba PARADAS: con tanta cohesión y
+  // tanto seek, las fuerzas se anulan entre sí y la velocidad se queda en 0,1
+  // m/s. Medido, no supuesto. Con 0.34 tienen autoridad para virar.
   maxSpeed: 6.0, maxForce: 0.34,
 });
 const geoAlma = new THREE.SphereGeometry(0.2, 6, 5);
@@ -712,21 +788,25 @@ const matAlma = new THREE.MeshBasicMaterial({
 });
 const mallasAlma = [];
 for (let i = 0; i < NALMAS; i++) {
-  const m = new THREE.Mesh(geoAlma, matAlma);
+  const m = new THREE.Mesh(geoAlma, matAlma);   // material compartido: una sola llamada
   escena.add(m); mallasAlma.push(m);
 }
 almas.initAgents(NALMAS, { minX:-26, maxX:26, minY:3, maxY:26, minZ:-26, maxZ:26 }, mallasAlma);
 
-const rnd = mulberry32(20260801);
+// ═══════════════════════════════════════════════════════════════════════════
+//  LAS ESTACIONES — datos que se vuelven materia
+// ═══════════════════════════════════════════════════════════════════════════
+const rnd = mulberry32(20260801);   // misma sala cada vez que entras
 const estaciones = [];
 
+/** Coloca un catálogo en un anillo y anota QUÉ hay, sin construir nada. */
 function anillo(lista, radio, tipo, verbo) {
   lista.forEach((it, i) => {
     const a = (i / lista.length) * Math.PI * 2 + (tipo === 'mesa' ? 0.24 : 0);
     estaciones.push({
       ...it, tipo, verbo, angulo: a,
       x: Math.cos(a) * radio, z: Math.sin(a) * radio,
-      grupo: null, pantalla: null, materia: 0,
+      grupo: null, pantalla: null, materia: 0,   // 0 = todavía es solo un dato
     });
   });
 }
@@ -734,17 +814,48 @@ anillo(ARCADES,    30, 'arcade',   'JUGAR');
 anillo(MESAS,      52, 'mesa',     'SENTARSE');
 anillo(TERMINALES, 72, 'terminal', 'LEER');
 
+// ⚠️ Nueve de las diecinueve mesas del arcade no tienen reglas locales: se
+// sientas y te reciben con un `DISCONNECTED` en rojo. En el índice ya salían
+// marcadas, pero DENTRO de la sala no, y ahí es donde duele. Una máquina
+// apagada es honesta; una encendida que no responde parece rota.
+// El estado sale de `data/estado_salas.json`, que lo mide `estado_salas.py`.
 try {
   const est = await fetch('../data/estado_salas.json').then(r => r.ok ? r.json() : {});
   for (const e of estaciones) {
     const clave = e.u.replace(/^\.\.\//, '');
     if (est[clave] === 'roto') { e.enObras = true; e.verbo = 'EN OBRAS'; }
   }
-} catch { }
+} catch { /* sin fichero de estado, todas se ofrecen igual */ }
 
 const matBlanca = new THREE.MeshStandardMaterial({ color:0xffffff, roughness:0.55, metalness:0.06 });
 const matOscura = new THREE.MeshStandardMaterial({ color:0x1b232e, roughness:0.42, metalness:0.22 });
 
+// ═══════════════════════════════════════════════════════════════════════════
+//  LOS MUEBLES — modelos, no cajas
+// ═══════════════════════════════════════════════════════════════════════════
+// Los tenía escritos a mano con `BoxGeometry`. Está decidido desde hace tiempo
+// que a la larga sale más barato un .glb, y hay 973 modelos en `props/` que
+// esta sala no usaba. `room_arcade_hall.html` ya enseñaba cómo:
+//     { glb: '../props/models/Arcade Machine.glb', cssRotationOffset: Math.PI/2 }
+//
+// Medido antes de elegir, en vez de suponer:
+//   Arcade Machine.glb      2.59 × 1.24 × 0.93 · y trae `GameScreen_Plane` DENTRO
+//   Table.glb               1.10 × 2.13 × 0.82 · una sola malla
+//   CRT Monitor.glb         0.79 × 0.65 × 0.79
+//
+// Se cargan UNA vez y se clonan por estación: así se mantiene la
+// materialización por cercanía —clonar es instantáneo, cargar no— en vez de
+// tragarse las 24 de golpe como hace `ArcadeRoomManager`. Ese gestor es la
+// versión completa (luces, red, multijugador) y es lo que hay que adoptar el
+// día que dos personas estén en la sala a la vez.
+// Los tableros son un script clásico (publica `window.build*Board`), no un
+// módulo: se carga como lo hace el laboratorio de mesas, esperando su `onload`.
+//
+// ⚠️ Y necesita `THREE` como GLOBAL. En una página de módulos no lo es, así que
+// los seis constructores petaban con `THREE is not defined` — 190 errores y la
+// sala entera sin arrancar. El laboratorio no lo sufría porque allí three se
+// carga a la vieja usanza. Este puente de una línea es el precio de reutilizar
+// un script clásico, y es mucho más barato que reescribir los seis tableros.
 window.THREE = THREE;
 
 await new Promise((listo) => {
@@ -764,24 +875,28 @@ const CATALOGO_MUEBLES = {
 for (const [tipo, cfg] of Object.entries(CATALOGO_MUEBLES)) {
   try {
     const m = await AssetManager.loadModelAsync(cfg.url);
+    // Normalizar a una altura conocida: los modelos vienen a la escala que
+    // quiso su autor, y mezclarlos sin esto da una sala de juguetes y gigantes.
     const caja = new THREE.Box3().setFromObject(m);
     const t = caja.getSize(new THREE.Vector3());
     m.scale.multiplyScalar(cfg.alto / (t.y || 1));
+    // Y apoyarlo en el suelo: el origen del modelo no tiene por qué estar abajo.
     const caja2 = new THREE.Box3().setFromObject(m);
     m.position.y -= caja2.min.y;
     MODELOS[tipo] = m;
   } catch (err) {
     console.warn(`[Sala] sin modelo para ${tipo} (${err.message}); se usan cajas`);
-    MODELOS[tipo] = null;
+    MODELOS[tipo] = null;      // hay respaldo: la sala no se queda vacía
   }
 }
 
+/** Busca la pantalla DENTRO del modelo; si no la trae, se le pone una. */
 function pantallaDe(grupo, ancho, alto, z) {
   let hallada = null;
   grupo.traverse(o => {
     if (!hallada && o.isMesh && /screen|pantalla|display|monitor/i.test(o.name || '')) hallada = o;
   });
-  if (hallada) return hallada;
+  if (hallada) return hallada;                     // Arcade Machine.glb trae `GameScreen_Plane`
   const p = new THREE.Mesh(new THREE.PlaneGeometry(ancho, alto),
                            new THREE.MeshBasicMaterial({ color:0x0d1218 }));
   p.position.set(0, ...(Array.isArray(z) ? z : [alto, z]));
@@ -789,20 +904,39 @@ function pantallaDe(grupo, ancho, alto, z) {
   return p;
 }
 
-const ATOMO = 0.3;
+// ═══════════════════════════════════════════════════════════════════════════
+//  LA MATERIALIZACIÓN POR VÓXELES
+// ═══════════════════════════════════════════════════════════════════════════
+// Las cosas no aparecen con un fundido: se ENSAMBLAN. Una nube de cubos llega
+// desde fuera, converge y encaja en la forma.
+//
+// Y el tamaño del cubo no es un número bonito: es el ÁTOMO de la ley de escala
+// base-3 de ALISA (`VoxelArchetypes` — celda = 0,3 · 3^nivel). Así el efecto no
+// es decoración prestada de otro juego, es nuestra propia física enseñándose:
+// el mundo se construye con los ladrillos con los que está medido.
+const ATOMO = 0.3;                       // metros — el nivel 0 de la ley base-3
 const geoVoxel = new THREE.BoxGeometry(ATOMO, ATOMO, ATOMO);
+// ⚠️ Eran blancos, y en una sala blanca un cubo blanco es un cubo invisible.
+// Van en cian de dato — el color de "esto todavía no es materia, es
+// información". Es la única licencia cromática de la sala, y por eso funciona:
+// cuando ves azul, sabes que algo se está construyendo.
 const matVoxel = new THREE.MeshStandardMaterial({
     color: 0x2e6f9e, roughness: 0.25, metalness: 0.15,
-    emissive: 0x4fd0ff, emissiveIntensity: 1.9,
+    emissive: 0x00e676, emissiveIntensity: 1.9,
     transparent: true, opacity: 0.95,
 });
 
+/**
+ * Nube de vóxeles que cubre la caja de una estación. Cada cubo guarda su
+ * destino y un punto de partida disperso; el bucle los interpola.
+ */
 function nubeDeVoxeles(ancho, alto, fondo, semilla) {
     const r = mulberry32(semilla);
     const nx = Math.max(1, Math.round(ancho / ATOMO));
     const ny = Math.max(1, Math.round(alto  / ATOMO));
     const nz = Math.max(1, Math.round(fondo / ATOMO));
 
+    // Solo la CÁSCARA: el interior no se ve y multiplicaría los cubos por nada.
     const destinos = [];
     for (let i = 0; i < nx; i++)
       for (let j = 0; j < ny; j++)
@@ -820,6 +954,7 @@ function nubeDeVoxeles(ancho, alto, fondo, semilla) {
     malla.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     malla.frustumCulled = false;
 
+    // De dónde viene cada cubo: de fuera, en desorden, y con retraso propio.
     const origen = destinos.map(() => {
         const a = r() * Math.PI * 2, d = 9 + r() * 15;
         return { x: Math.cos(a)*d, y: r()*13, z: Math.sin(a)*d, retraso: r() * 0.55 };
@@ -829,45 +964,73 @@ function nubeDeVoxeles(ancho, alto, fondo, semilla) {
 
 const maniquí = new THREE.Object3D();
 
+/** Interpola la nube hacia su destino. `p` de 0 (dispersa) a 1 (encajada). */
 function avanzarNube(nube, p) {
     const { malla, destinos, origen } = nube;
     for (let i = 0; i < destinos.length; i++) {
+        // Cada cubo tiene su propio retraso: la forma se cierra por partes,
+        // no como un bloque. Es lo que lo hace parecer ensamblaje y no zoom.
         const t = Math.max(0, Math.min(1, (p - origen[i].retraso) / (1 - origen[i].retraso)));
-        const s = t * t * (3 - 2 * t);
+        const s = t * t * (3 - 2 * t);                     // suavizado
         maniquí.position.set(
             origen[i].x + (destinos[i].x - origen[i].x) * s,
             origen[i].y + (destinos[i].y - origen[i].y) * s,
             origen[i].z + (destinos[i].z - origen[i].z) * s,
         );
-        maniquí.rotation.set((1-s) * 5.5, (1-s) * 4.2, 0);
+        maniquí.rotation.set((1-s) * 5.5, (1-s) * 4.2, 0);  // giran mientras vuelan
         maniquí.scale.setScalar(0.35 + s * 0.65);
         maniquí.updateMatrix();
         malla.setMatrixAt(i, maniquí.matrix);
     }
     malla.instanceMatrix.needsUpdate = true;
-    malla.material.opacity = 0.95 * (1 - Math.pow(p, 3));
+    malla.material.opacity = 0.95 * (1 - Math.pow(p, 3));   // se apaga al encajar
 }
 
+/** Fabrica la geometría de una estación. Se llama UNA vez, al acercarte. */
 function materializar(e) {
   const g = new THREE.Group();
   g.position.set(e.x, 0, e.z);
-  g.rotation.y = Math.atan2(e.x, e.z);
+  // ⚠️ Aquí había un `g.lookAt(0, 1.4, 0)` con el comentario "todas miran al
+  // huevo". No lo hacían: solo acertaba la primera. El giro salía con el signo
+  // del ángulo cambiado, así que cada estación se desviaba el doble de su
+  // posición en el anillo — y la de enfrente del huevo enseñaba la ESPALDA.
+  // Media sala mostraba el trasero de sus máquinas y no lo vi hasta medir las
+  // 24 juntas. Un `lookAt` con la altura del objetivo distinta de la del objeto
+  // además mete cabeceo; aquí solo quiero giro, así que lo digo explícito.
+  //
+  // Y ya puestos, miran HACIA AFUERA, no al huevo. Es lo contrario de lo que
+  // decía el comentario original, y es mejor por dos razones: apareces fuera
+  // del anillo, así que lo primero que ves son PANTALLAS y no traseros; y al
+  // ponerte a jugar, el huevo te queda encendido justo detrás del cristal.
+  // La partida siempre tiene el huevo de fondo. Eso no se puede pedir dos veces.
+  g.rotation.y = Math.atan2(e.x, e.z);       // el +Z local se aleja del huevo
 
   if (e.tipo === 'mesa') {
     const tablero = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.5, 0.11, 40), matBlanca);
     tablero.position.y = 0.92; g.add(tablero);
     const pie = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.34, 0.92, 20), matOscura);
     pie.position.y = 0.46; g.add(pie);
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 3; i++) {            // taburetes, para que se lea como mesa
       const t = (i/3)*Math.PI*2 + rnd();
       const tab = new THREE.Mesh(new THREE.CylinderGeometry(0.3,0.3,0.5,16), matBlanca);
       tab.position.set(Math.cos(t)*2.5, 0.25, Math.sin(t)*2.5); g.add(tab);
     }
+    // Lo que hay ENCIMA de la mesa. Antes era un cuadrado oscuro y ya está;
+    // ahora la mesa dice a qué se juega en ella antes de que enciendas nada.
     if (e.cartas) {
+      // Tapete de casino y una baraja FÍSICA: 52 cartas, cada una un objeto con
+      // su grosor y su dorso. Sale de `ArcadeTableRoomFactory`, donde estaba
+      // enterrada en el init() de una sala entera que aquí no encaja.
+      // Verde de casino, pero apagado: en una sala de blancos, negros, cian y
+      // ámbar, un verde saturado es un cuarto acento y rompe la contención.
       const tapete = ArcadeTableRoomFactory.crearTapete(1.34, 0x14352a);
       tapete.position.set(0, 1.0, 0); g.add(tapete);
+
       const baraja = ArcadeTableRoomFactory.crearBaraja();
       baraja.position.set(0.34, 1.005, 0.2); g.add(baraja);
+
+      // Tres cartas repartidas boca abajo: una mesa con la baraja intacta
+      // parece cerrada; con cartas repartidas parece una partida a medias.
       for (let i = 0; i < 3; i++) {
         const c = ArcadeTableRoomFactory.crearBaraja({ n: 1 });
         c.position.set(-0.42 + i * 0.19, 1.006, -0.16 + (i % 2) * 0.06);
@@ -875,39 +1038,70 @@ function materializar(e) {
         g.add(c);
       }
     } else {
+      // ⚠️ Aquí yo pintaba 64 losetas a mano. `js/arcade_boards.js` ya traía
+      // seis tableros de verdad —reversi, mancala, damas, go, xiangqi,
+      // backgammon— con sus piezas colocadas, y el laboratorio
+      // `croupier_table_games_arcade.html` enseñaba cómo se usan.
+      //
+      // Vienen en DOS grupos, tablero y piezas, y esa separación no es un
+      // capricho: es lo que permite que `KinematicRageSystem` («Table Flip
+      // Physics») lance cada cosa por su lado el día que alguien pierda y
+      // vuelque la mesa.
       const grupoTablero = new THREE.Group(), grupoPiezas = new THREE.Group();
       const constructor = window[`build${e.tablero}Board`];
       if (constructor) {
         constructor(grupoTablero, grupoPiezas);
         const conjunto = new THREE.Group();
         conjunto.add(grupoTablero, grupoPiezas);
+        // Los tableros vienen a la escala del laboratorio, más grandes que mi
+        // mesa: se miden y se ajustan, en vez de suponer.
         const caja = new THREE.Box3().setFromObject(conjunto);
         const t = caja.getSize(new THREE.Vector3());
         conjunto.scale.setScalar(1.28 / Math.max(t.x, t.z, 0.001));
         conjunto.position.y = 1.005;
         g.add(conjunto);
-        e.tableroGrupo = grupoTablero; e.piezasGrupo = grupoPiezas;
+        e.tableroGrupo = grupoTablero; e.piezasGrupo = grupoPiezas;   // para el volcado
       } else {
         const tapete = ArcadeTableRoomFactory.crearTapete(1.34, 0x11161d);
         tapete.position.set(0, 1.0, 0); g.add(tapete);
       }
     }
+
+    // ⚠️ El tablero NO puede ser la pantalla, por tentador que sea. El plugin
+    // deduce el tamaño físico de la malla, y en un plano tumbado la altura
+    // local vale ~0: el cartucho saldría a escala absurda y la malla de
+    // raycast sería una línea sin grosor, imposible de clicar. Así que el
+    // juego se juega en un panel que FLOTA sobre la mesa, como una carta
+    // levantada. Vertical, 4:3, y encima del tapete.
     const p = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.125),
                              new THREE.MeshBasicMaterial({ color:0x0d1218,
                                                            transparent:true, opacity:0.9 }));
     p.position.set(0, 1.72, 0);
     g.add(p); e.pantalla = p;
   } else if (MODELOS[e.tipo]) {
+    // El mueble es un MODELO, clonado del que se cargó una sola vez.
     const mueble = MODELOS[e.tipo].clone(true);
+    // ⚠️ Tres intentos y dos equivocados, por adivinar en vez de leer:
+    //   `Math.PI`      → la máquina de perfil
+    //   `Math.PI / 2`  → tampoco; copié `cssRotationOffset` del ejemplo, y ese
+    //                    número NO es para el mueble: es para el CARTUCHO CSS3D.
+    // El bueno está en `ArcadeRoomManager._loadSingleCabinet`:
+    //   const baseOffset = cfg.baseRotation !== undefined ? cfg.baseRotation : -Math.PI/2;
+    //   mesh.rotation.y = Math.atan2(dx, dz) + baseOffset;
+    // O sea: el modelo trae -π/2 de fábrica, y el grupo ya aporta el `atan2`.
     mueble.rotation.y = -Math.PI / 2;
     g.add(mueble);
-    if (e.tipo === 'terminal') {
+    if (e.tipo === 'terminal') {                      // el CRT necesita su peana
       const pie = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.34, 0.95, 18), matBlanca);
       pie.position.y = 0.475; g.add(pie);
       mueble.position.y = 0.95;
     }
+    // La pantalla sale de DENTRO del modelo si la trae. `Arcade Machine.glb`
+    // trae `GameScreen_Plane` — el mismo nombre que busca `ArcadeRoomManager`,
+    // así que respeto su convención en vez de inventarme otra.
     e.pantalla = pantallaDe(g, 1.24, 0.93, [1.28, 0.46]);
   } else {
+    // Respaldo: si el modelo no cargó, la sala sigue en pie con cajas.
     const alto = e.tipo === 'terminal' ? 2.5 : 2.0;
     const cuerpo = new THREE.Mesh(new THREE.BoxGeometry(1.7, alto, 0.85), matBlanca);
     cuerpo.position.y = alto/2; g.add(cuerpo);
@@ -916,15 +1110,20 @@ function materializar(e) {
     e.pantalla = pantallaDe(g, 1.24, 0.93, [alto * 0.63, 0.44]);
   }
 
+  // Todo nace transparente: la materia entra con la cercanía, no de golpe.
+  // ⚠️ Una malla puede tener un ARRAY de materiales (una carta tiene seis
+  // caras distintas: dorso, canto…), y un array no tiene `.clone()`. Sin este
+  // rodeo, poner una baraja encima de una mesa reventaba la materialización
+  // entera de la estación con un TypeError.
   const preparar = (m) => { const c = m.clone(); c.transparent = true; c.opacity = 0; return c; };
   g.traverse(o => {
     if (!o.isMesh) return;
     o.material = Array.isArray(o.material) ? o.material.map(preparar) : preparar(o.material);
   });
   escena.add(g);
-  constructMaterializer.registerEntity(e);
   e.grupo = g;
 
+  // Y por delante de la geometría, la nube que la ensambla.
   const caja = new THREE.Box3().setFromObject(g);
   const t = caja.getSize(new THREE.Vector3());
   e.nube = nubeDeVoxeles(
@@ -933,115 +1132,186 @@ function materializar(e) {
   g.add(e.nube.malla);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+//  SENTARSE — el cartucho se monta en la máquina donde te sientas
+// ═══════════════════════════════════════════════════════════════════════════
+// Sustituye a mi versión anterior, que creaba un iframe por cada estación
+// cercana. Aquí hay UNO, y se mueve. Se levanta con ESC.
 const holograma = new CSS3DHologramPlugin({ camera: camara, scene: escena });
-const arcadeFX = new ArcadeFXPlugin(holograma);
-const constructMaterializer = new ConstructMaterializerPlugin(escena);
 let sentadoEn = null;
+// El pie de la pantalla es el único sitio donde un estado puede quedarse quieto.
 const PIE = document.getElementById('pie');
 const PIE_ANDANDO = PIE.textContent;
 
+// El plugin crea su capa sin z-index (queda en 'auto'), y una capa 'auto' se
+// pinta ANTES que un elemento posicionado con z-index positivo: el lienzo la
+// tapaba entera. Encima del lienzo, y transparente al ratón para que los clics
+// sigan llegando al mundo; el iframe se vuelve clicable solo al proyectarlo.
 Object.assign(holograma.css3dRenderer.domElement.style, { zIndex: '2', pointerEvents: 'none' });
-holograma.acento = '#93a7bd';
+holograma.acento = '#93a7bd';   // acero frío: el magenta de fábrica es de sala oscura
+
 holograma.setStandUpCallback(() => { levantarse(); });
 
 function sentarse(e) {
   if (!e?.pantalla) return;
   sentadoEn = e;
   holograma.setSeated(true);
+  // La rotación del grupo importa: la pantalla está girada hacia el huevo, y el
+  // plugin necesita saberlo para orientar el cartucho igual que la malla.
+  // ⚠️ SENTARSE ES ACERCARSE, Y ESTO FALTABA.
+  // La mira engancha una máquina a quince metros, así que se podía «sentar» sin
+  // moverse: el cartucho se montaba de verdad —cargado, proyectado y clicable—
+  // pero seguía allí, en su mueble, del tamaño de un sello. Lo comprobé en el
+  // navegador: `titulo_dentro` decía el nombre del juego y `pointerEvents` era
+  // `auto`. Todo funcionando y nada jugable, que es la peor combinación posible
+  // porque no hay ningún error que mirar.
+  //
+  // El prototipo `room_arcade_hall.html` ya lo resolvía —`targetCamPos` a 2,5
+  // unidades delante del mueble— y aquí se había perdido por el camino.
   const mueble = e.grupo.position;
   const hx = camara.position.x - mueble.x, hz = camara.position.z - mueble.z;
   const dist = Math.hypot(hx, hz) || 1;
   camara.position.set(mueble.x + (hx / dist) * 2.6, 1.62,
                       mueble.z + (hz / dist) * 2.6);
+  // Y mirando al mueble: `giroH = 0` mira al origen desde z=+44, o sea que el
+  // frente es (0,0,-1) girado — de ahí este atan2 y no el contrario.
   giroH = Math.atan2(camara.position.x - mueble.x, camara.position.z - mueble.z);
   giroV = -0.02;
 
+  holograma.loadMachine(e.u, e.pantalla, e.grupo.rotation.y);
   document.exitPointerLock?.();
 
-  if (e.tipo === 'mesa') {
-    const pd = document.getElementById('pocket-dimension-container');
-    const pc = document.getElementById('pocketCartridge');
-    pd.style.display = 'block';
-    const url = new URL(e.u, window.location.href);
-    url.searchParams.set('pocket', '1');
-    pc.src = url.href; 
-    requestAnimationFrame(() => { pd.style.opacity = '1'; });
-    document.getElementById('btn-standup-pocket').onclick = () => {
-        pd.style.opacity = '0';
-        enPocketDimension = false;
-        setTimeout(() => {
-            pd.style.display = 'none';
-            pc.src = 'about:blank';
-            levantarse();
-        }, 600);
-    };
-    enPocketDimension = true;
-    avisar(e.n.toUpperCase(), 'en dimensión de bolsillo');
-    PIE.textContent = `${e.n.toUpperCase()} · inmersión nativa · usa el botón para levantarte`;
-    return;
-  }
-
-  holograma.loadMachine(e.u, e.pantalla, e.grupo.rotation.y);
+  // ⚠️ AQUÍ ESTABA EL «NO SE PUEDE JUGAR A NADA».
+  // El cartucho nace MONTADO: pegado a la máquina y con `pointerEvents: none`,
+  // o sea mirándose pero sin recibir un clic. Para jugar había que clicar el
+  // cristal y que pasara a PROYECTADO. Un paso invisible — y en esta sala era el
+  // CUARTO: acercarse, clicar la máquina, pulsar JUGAR en la ficha, y sólo
+  // entonces clicar el cristal. El aviso que lo contaba era un mensaje que se
+  // desvanecía, así que quien parpadeara veía una pantalla encendida que no
+  // respondía. Nada estaba roto y todo lo parecía.
+  //
+  // El prototipo `room_arcade_hall.html` ya tenía estas dinámicas resueltas y
+  // hacía dos cosas mejor: sentaba de un clic —sin ficha en medio— y dejaba el
+  // «Click screen to project» FIJO en un panel, no en un aviso que se va.
+  //
+  // Aquí se quita el paso: en cuanto el cartucho termina de montarse, se
+  // proyecta solo. `loadMachine` deja `screenMode` en 'MOUNTED' dentro de un
+  // temporizador propio, así que no vale llamar a `setHologramMode` justo
+  // después: se esperaría a que el plugin termine, mirándolo, en vez de
+  // adivinar cuánto tarda.
   const seSienta = e;
   const proyectarCuandoEsteListo = (intentos = 0) => {
-    if (sentadoEn !== seSienta) return;
+    if (sentadoEn !== seSienta) return;                    // se levantó mientras
     if (holograma.currentCssObject && holograma.screenMode === 'MOUNTED') {
       holograma.setHologramMode('PROJECTED');
       return;
     }
-    if (intentos > 180) return;
+    if (intentos > 180) {                                  // ~3 s a 60 fps
+      console.warn('[Sala] el cartucho no llegó a montarse; queda el clic manual');
+      return;
+    }
     requestAnimationFrame(() => proyectarCuandoEsteListo(intentos + 1));
   };
   proyectarCuandoEsteListo();
+
   avisar(e.n.toUpperCase(), 'esc para levantarte');
+  // Estado FIJO mientras estás sentada, no un aviso que se va. Es lo que hacía
+  // el prototipo con su panel de estado, y es media diferencia entre «esto no
+  // funciona» y «ah, ya estoy dentro».
   PIE.textContent = `${e.n.toUpperCase()} · juega en la pantalla · esc para levantarte`;
 }
 
+/**
+ * Recoge la partida jugada en el cartucho y la PUNTÚA — pero solo si se puede
+ * volver a jugar y sale lo mismo.
+ *
+ * ⚠️ Esto es lo que hace verdad el pacto de la puerta. Hasta ahora la sala daba
+ * puntos por MATERIALIZAR estaciones, o sea por pasear: cualquiera sacaba 500
+ * puntos sin tocar un juego. «Todo lo de aquí puntúa» era una frase bonita
+ * sobre nada.
+ *
+ * El circuito completo ya existía y estaba suelto en tres piezas: el ProtoHub
+ * graba `{juego, semilla, jugadas}`, `Verificador.js` la re-simula y caza seis
+ * trampas, y `Dataset.js` la convierte en trayectoria. Solo faltaba que la sala
+ * las pidiera al levantarse.
+ *
+ * Y se verifica AQUÍ, en la máquina del propio jugador, sabiendo lo que eso
+ * vale y lo que no: no demuestra honradez —el jugador manda en su navegador—,
+ * demuestra que la traza es COHERENTE y reproducible. La verificación que da
+ * confianza es la del servidor, con la misma función y el mismo fichero de
+ * reglas. Esto es el ensayo; aquello será el estreno.
+ */
 async function cobrarPartida(e) {
   const marco = document.getElementById('romCartridge');
   const w = marco?.contentWindow;
   const ph = w?.ALISA_PROTOHUB;
+  // ⚠️ Esto se rendía EN SILENCIO con tres `return null` seguidos. Si algo va
+  // mal, una persona pierde su partida y no se entera de nada — y quien depure
+  // esto mañana tampoco. Ahora cada renuncia dice por qué. Callarse un fallo no
+  // lo hace más pequeño, lo hace más caro.
   if (!e) return null;
-  if (!ph) return null;
+  if (!ph) { console.warn('[Sala] no se cobra: el cartucho aún no publicó su ProtoHub'); return null; }
   const juego = [...ph.reglas.keys()][0];
-  if (!juego) return null;
+  if (!juego) { console.warn('[Sala] no se cobra: ese juego no trae reglas locales'); return null; }
+
   const partida = ph.partida(juego);
-  if (!partida || !partida.jugadas.length) return null;
+  if (!partida) { console.warn(`[Sala] no se cobra: sin grabación de '${juego}'`); return null; }
+  if (!partida.jugadas.length) return null;               // se sentó y no jugó: normal
 
   try {
     const { verificar } = await import('../arcade/js/protohub/Verificador.js');
     const v = verificar(ph.reglas.get(juego), partida);
     if (!v.valida) {
-      panel.anunciar(`${e.n.toUpperCase()} · PARTIDA NO VERIFICADA`);
-      mostrarFicha(partida, false, v.motivo);
+      panel.anunciar(`${e.n.toUpperCase()} · PARTIDA NO VERIFICADA · ${v.motivo}`);
+      mostrarFicha(partida, false, v.motivo);   // también se enseña cuando falla
       return { valida: false, motivo: v.motivo };
     }
+    // Puntúa la LONGITUD de la partida y el resultado: jugar mucho cuenta,
+    // ganar cuenta más, y perder también suma — porque una partida perdida es
+    // exactamente igual de valiosa como dato que una ganada.
     const ganados = Math.round(6 + partida.jugadas.length * 0.6 + Math.max(0, v.puntos ?? 0) * 4);
     puntos += ganados;
     if (!partidas.has(e)) partidas.set(e, []);
     partidas.get(e).push({ ...partida, verificada: true, ganados });
-    panel.anunciar(`${e.n.toUpperCase()} · PARTIDA VERIFICADA · +${ganados}`);
+    panel.anunciar(`${e.n.toUpperCase()} · PARTIDA VERIFICADA · ${partida.jugadas.length} JUGADAS · +${ganados}`);
     avisar('PARTIDA VERIFICADA', `${partida.jugadas.length} jugadas · +${ganados} puntos`);
+    // Falsearla AHORA, con las reglas todavía vivas en el cartucho.
     partida._trampas = await probarTrampas(ph.reglas.get(juego), partida);
     partidasVerificadas++;
-    lanzarPulso();
+    lanzarPulso();                       // la sala se entera de que has probado algo
     mostrarFicha(partida, true);
     Sonido.cristal(1.15);
     return { valida: true, ganados, partida };
-  } catch (err) { return null; }
+  } catch (err) {
+    console.warn('[Sala] no se pudo verificar la partida:', err.message);
+    return null;
+  }
 }
 
+/** Las partidas jugadas en esta visita. Esto ES el dataset, en bruto. */
 const partidas = new Map();
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  EL PULSO DE UNA PARTIDA VERIFICADA
+// ═══════════════════════════════════════════════════════════════════════════
+// Cuando algo se demuestra, la sala tiene que enterarse. No con un cartel: con
+// un anillo de luz que sale de TUS PIES, cruza la rejilla y llega al huevo, y
+// una anomalía que se dobla un poco más al recibirlo.
+//
+// Es el mismo gesto que la llegada —una onda que escribe el mundo— pero al
+// revés y en pequeño: allí el mundo aparecía porque llegaste tú; aquí se dobla
+// porque has probado algo. Reusar la forma no es pereza: es rima visual, y una
+// sala que rima se recuerda.
 const geoPulso = new THREE.RingGeometry(0.6, 0.78, 128).rotateX(-Math.PI / 2);
 const matPulso = new THREE.MeshBasicMaterial({
-  color: 0x4fd0ff, transparent: true, opacity: 0,
+  color: 0x00e676, transparent: true, opacity: 0,
   blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide,
 });
 const pulso = new THREE.Mesh(geoPulso, matPulso);
 pulso.visible = false;
 escena.add(pulso);
-let tPulso = 0;
-let fogonazo = 0;
+let tPulso = 0;             // 0 = apagado
+let fogonazo = 0;           // el destello que recibe la lente y el huevo
 
 function lanzarPulso() {
   pulso.position.set(camara.position.x, 0.04, camara.position.z);
@@ -1054,14 +1324,23 @@ function avanzarPulso(dt) {
   if (fogonazo > 0) fogonazo = Math.max(0, fogonazo - dt * 1.6);
   if (!tPulso) return;
   tPulso += dt;
-  const T = 2.6;
+  const T = 2.6;                       // lo que tarda en cruzar la sala
   const p = tPulso / T;
   if (p >= 1) { tPulso = 0; pulso.visible = false; return; }
+  // Sale rápido y se frena: así parece que EMPUJA, no que se infla.
   const r = 1 + Math.pow(p, 0.62) * 78;
   pulso.scale.set(r, 1, r);
   matPulso.opacity = 0.5 * Math.pow(1 - p, 1.7);
 }
 
+/**
+ * Enseña la partida recién jugada. No es un adorno: es LA prueba.
+ *
+ * Cualquiera puede hacer una sala 3D bonita. Lo que no tiene nadie ahí fuera es
+ * que tu partida quepa en un kilobyte, se pueda volver a jugar y dé lo mismo.
+ * Eso estaba ocurriendo desde hace rato y no se veía por ninguna parte, así que
+ * el visitante no tenía forma de saber que era distinto de un marcador cualquiera.
+ */
 const fichaPartida = document.getElementById('ficha-partida');
 let ultimaPartida = null;
 
@@ -1076,11 +1355,29 @@ function mostrarFicha(partida, valida, motivo) {
   sello.textContent = valida ? 'VERIFICADA' : 'NO CUADRA';
   sello.className = valida ? '' : 'mal';
   fichaPartida.querySelector('.pie').textContent = valida
-    ? 'Se verifica volviéndola a jugar.'
+    ? 'Se verifica volviéndola a jugar. Cambia una jugada y no cuadra.'
     : motivo || 'No se pudo reproducir.';
   fichaPartida.classList.add('visible');
 }
 
+/**
+ * Falsear la propia partida, delante del visitante, y que el verificador la
+ * cace. Prueba las cuatro trampas de golpe y enseña la primera que salta.
+ *
+ * Esto vale más que cualquier texto explicativo: «no se puede falsear» es una
+ * afirmación; verlo intentar y fallar es una demostración. Y es honesto en las
+ * dos direcciones — si algún día una trampa colara, este botón lo enseñaría.
+ */
+/**
+ * Prueba las cuatro trampas clásicas contra la partida recién jugada.
+ *
+ * ⚠️ Se ejecuta AL COBRAR, no al pulsar el botón, y por una razón de fondo: al
+ * levantarte el cartucho se desconecta y el iframe vuelve a `about:blank`, así
+ * que el módulo de reglas —que vive en el contexto de ESE iframe— desaparece
+ * con él. Guardarme una referencia sería guardar un fantasma de un contexto
+ * destruido. Así que se falsea mientras la partida está viva y se enseña
+ * después. El botón revela; no calcula.
+ */
 async function probarTrampas(reglas, partida) {
   try {
     const { verificar } = await import('../arcade/js/protohub/Verificador.js');
@@ -1101,27 +1398,31 @@ document.getElementById('fp-falsear').addEventListener('click', (ev) => {
   ev.stopPropagation();
   const salida = document.getElementById('fp-veredicto');
   const t = ultimaPartida?._trampas;
-  if (!t) return;
+  if (!t) { salida.textContent = 'Juega una partida primero.'; salida.classList.add('visible'); return; }
   const cazadas = t.filter(x => !x.colada).length;
   salida.innerHTML = t.map(x => x.colada
         ? `⚠ ${x.nombre}: HA COLADO`
         : `✕ ${x.nombre} — ${x.motivo}`).join('<br>')
       + `<br><b style="color:#1d6b45">${cazadas} de ${t.length} trampas cazadas</b>`;
   salida.classList.add('visible');
-  panel.anunciar(`TRAMPAS PROBADAS · ${cazadas} DE ${t.length} CAZADAS`);
+  panel.anunciar(`TRAMPAS PROBADAS EN DIRECTO · ${cazadas} DE ${t.length} CAZADAS`);
 });
 
 document.getElementById('fp-copiar').addEventListener('click', async (ev) => {
-  ev.stopPropagation();
+  ev.stopPropagation();                       // que no cuente como «usar»
   if (!ultimaPartida) return;
   const texto = JSON.stringify(ultimaPartida);
-  try { await navigator.clipboard.writeText(texto); } catch {}
+  try { await navigator.clipboard.writeText(texto); }
+  catch { /* sin permiso de portapapeles: al menos que la vea */ console.log(texto); }
+  const b = document.getElementById('fp-copiar');
+  b.textContent = 'COPIADA · 1 KB QUE SE PUEDEN REPETIR';
+  setTimeout(() => { b.textContent = 'COPIAR PARTIDA'; }, 2600);
 });
 
 async function levantarse() {
   if (!sentadoEn) return;
   const donde = sentadoEn;
-  await cobrarPartida(donde);
+  await cobrarPartida(donde);          // cobrar ANTES de soltar el cartucho
   holograma.setSeated(false);
   holograma.disconnect();
   sentadoEn = null;
@@ -1129,8 +1430,28 @@ async function levantarse() {
   pedirPuntero();
 }
 
-const LLEGADA = 4.2;
-let tLlegada = -1;
+// ═══════════════════════════════════════════════════════════════════════════
+//  LA LLEGADA — el mundo existe PORQUE has llegado
+// ═══════════════════════════════════════════════════════════════════════════
+// Antes entrabas y la sala ya estaba puesta. Eso contradice la premisa entera:
+// si el usuario es "la anomalía termodinámica que inyecta caos, intención y
+// propósito", entonces sin él no debería haber nada. La sala no te espera: te
+// obedece.
+//
+// Así que al entrar, durante ~4 segundos:
+//   · la niebla está cerrada y no se ve un palmo
+//   · una onda de choque sale de tus pies y recorre el suelo
+//   · la rejilla se dibuja SOLA a su paso, de dentro hacia fuera
+//   · al alcanzar el centro, el huevo se enciende
+//   · el polvo sale despedido y luego vuelve a caer
+//
+// Es el "load the jump program" del Construct, pero contado con nuestra propia
+// premisa en vez de con la de otro.
+
+const LLEGADA = 4.2;           // segundos que dura
+let tLlegada = -1;             // -1 = aún no ha empezado
+
+// El anillo de choque: un disco muy fino que crece por el suelo.
 const onda = new THREE.Mesh(
   new THREE.RingGeometry(0.9, 1.25, 128).rotateX(-Math.PI/2),
   new THREE.MeshBasicMaterial({ color:0x6fdcff, transparent:true, opacity:0,
@@ -1138,25 +1459,39 @@ const onda = new THREE.Mesh(
 );
 onda.position.y = 0.03;
 escena.add(onda);
+
+// Un segundo anillo, más lento y ancho: da sensación de profundidad al pulso.
 const onda2 = onda.clone();
 onda2.material = onda.material.clone();
 escena.add(onda2);
 
+/** Interpola la sala entre "no existe" (0) y "existe del todo" (1). */
 function aplicarLlegada(p) {
   const s = p * p * (3 - 2 * p);
+  // La niebla se abre: es lo que descubre el espacio.
   escena.fog.density = 0.075 - (0.075 - 0.009) * s;
+  // La rejilla se dibuja de dentro afuera con el frente de onda.
   rejilla.material.opacity = 0.5 * s;
+  // El huevo despierta a mitad de camino, no al principio.
   const q = Math.max(0, (p - 0.42) / 0.58);
   cascara.visible = nucleo.visible = q > 0.001;
   cascara.scale.setScalar(0.55 + q * 0.45);
   nucleo.material.opacity = q * 0.85;
   luzNucleo.intensity = q * 26;
   haz.material.opacity = (haz.userData.op ??= haz.material.opacity) * q;
+  // El polvo entra al final: primero el espacio, luego el aire.
   polvo.material.opacity = 0.62 * Math.max(0, (p - 0.55) / 0.45);
+  // Y las almas lo último de todo, cuando el huevo ya está encendido: es lo que
+  // las explica. Aparecen porque HAY algo a lo que orbitar.
   matAlma.opacity = 0.9 * Math.max(0, (p - 0.68) / 0.32);
   panel.tickerGroup.visible = p > 0.5;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+//  EL POLVO — la anomalía se nota en el aire
+// ═══════════════════════════════════════════════════════════════════════════
+// No es decoración: las motas DERIVAN HACIA TI. Eres la perturbación, así que el
+// aire responde a dónde estás. Es lo que hace que el sitio se sienta ocupado.
 const NPOLVO = 900;
 const posPolvo = new Float32Array(NPOLVO * 3);
 for (let i = 0; i < NPOLVO; i++) {
@@ -1173,37 +1508,61 @@ const polvo = new THREE.Points(geoPolvo, new THREE.PointsMaterial({
 }));
 escena.add(polvo);
 
+// ═══════════════════════════════════════════════════════════════════════════
+//  EL SONIDO — sintetizado, sin un solo fichero
+// ═══════════════════════════════════════════════════════════════════════════
+// Ningún juego del proyecto tenía audio. Aquí no se carga: se GENERA, igual que
+// la geometría. Un .mp3 sería un objeto traído de fuera; esto es coherente con
+// una sala que se fabrica a sí misma.
+//
+// Tres capas, y ninguna es música:
+//   · el zumbido de la sala   — dos senos casi afinados; el batido lento entre
+//                               ellos es lo que hace que un espacio "suene grande"
+//   · el latido del huevo     — un golpe grave, sincronizado con el visual
+//   · el cristal al encajar   — un tintineo corto cuando una estación se materializa
+//
+// Todo arranca en el clic de ENTRAR, que es el único gesto que permite abrir
+// audio en un navegador.
 const Sonido = {
   ctx: null, maestro: null, zumbido: null,
+
   abrir() {
     if (this.ctx) return;
     const AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return;
+    if (!AC) return;                        // sin audio, la sala sigue funcionando
     this.ctx = new AC();
     this.maestro = this.ctx.createGain();
-    this.maestro.gain.value = 0.0;
+    this.maestro.gain.value = 0.0;          // entra con la llegada, no de golpe
     this.maestro.connect(this.ctx.destination);
+
+    // ── El zumbido de la sala ──
+    // Dos osciladores a 55 y 55.3 Hz: la diferencia produce un batido de 0,3 Hz.
+    // Es un truco viejo de sonido ambiental — el oído lo lee como "aire", no
+    // como nota, y evita que suene a sintetizador.
     const mezcla = this.ctx.createGain();
     mezcla.gain.value = 0.055;
     for (const f of [55, 55.3, 110.2]) {
       const o = this.ctx.createOscillator();
       o.type = 'sine'; o.frequency.value = f;
       const g = this.ctx.createGain();
-      g.gain.value = f > 100 ? 0.22 : 1;
+      g.gain.value = f > 100 ? 0.22 : 1;    // el armónico, más bajo
       o.connect(g); g.connect(mezcla); o.start();
     }
+    // Un filtro paso bajo muy cerrado: quita todo lo que "silba".
     const paso = this.ctx.createBiquadFilter();
     paso.type = 'lowpass'; paso.frequency.value = 220; paso.Q.value = 0.6;
     mezcla.connect(paso); paso.connect(this.maestro);
     this.zumbido = mezcla;
   },
+
+  /** El latido del huevo: un golpe grave que cae. */
   latido(fuerza = 1) {
     if (!this.ctx) return;
     const t = this.ctx.currentTime;
     const o = this.ctx.createOscillator();
     o.type = 'sine';
     o.frequency.setValueAtTime(78, t);
-    o.frequency.exponentialRampToValueAtTime(34, t + 0.34);
+    o.frequency.exponentialRampToValueAtTime(34, t + 0.34);   // el "pum" es la CAÍDA
     const g = this.ctx.createGain();
     g.gain.setValueAtTime(0, t);
     g.gain.linearRampToValueAtTime(0.16 * fuerza, t + 0.02);
@@ -1211,9 +1570,12 @@ const Sonido = {
     o.connect(g); g.connect(this.maestro);
     o.start(t); o.stop(t + 0.55);
   },
+
+  /** El cristal: una estación acaba de encajar. */
   cristal(altura = 1) {
     if (!this.ctx) return;
     const t = this.ctx.currentTime;
+    // Tres parciales inarmónicos — así suena a cristal y no a campana de iglesia.
     [1, 2.76, 5.4].forEach((mult, i) => {
       const o = this.ctx.createOscillator();
       o.type = 'sine';
@@ -1226,55 +1588,117 @@ const Sonido = {
       o.start(t); o.stop(t + 1.7);
     });
   },
+
+  /** El volumen general sube con la llegada. */
   presencia(v) {
     if (!this.ctx) return;
     this.maestro.gain.setTargetAtTime(v, this.ctx.currentTime, 0.4);
   },
 };
 
+// ═══════════════════════════════════════════════════════════════════════════
+//  MOVIMIENTO
+// ═══════════════════════════════════════════════════════════════════════════
 const teclas = {};
+// ⚠️ Esto era `Math.PI` y hacía que llegaras DE ESPALDAS al huevo: con la cámara
+// en z=+44, el frente (0,0,-1) girado 180° apunta a +z, o sea hacia fuera. Lo
+// primero que ve un visitante era el vacío. A 0, el frente mira al origen.
 let giroH = 0, giroV = -0.04, dentro = false;
 const vel = new THREE.Vector3();
+
+// Para poder colocar la vista desde fuera (pruebas y capturas). No cambia nada
+// del juego: es el mismo par de ángulos que mueve el ratón.
+window.__mirar = (h, v = giroV) => { giroH = h; giroV = v; };
+
 addEventListener('keydown', e => { teclas[e.key.toLowerCase()] = true; });
 addEventListener('keyup',   e => { teclas[e.key.toLowerCase()] = false; });
+
 const umbral = document.getElementById('umbral');
 umbral.addEventListener('click', () => {
   umbral.classList.add('ido');
   setTimeout(() => { umbral.style.display = 'none'; }, 1100);
   pedirPuntero();
   dentro = true;
-  tLlegada = 0;
-  Sonido.abrir();
+  tLlegada = 0;                 // ← empieza la anomalía
+  Sonido.abrir();               // el clic es el único gesto que abre el audio
+
+  // El pie decía WASD siempre. A alguien con un teléfono eso le dice "esto no
+  // es para ti", que es lo último que quieres en una portada.
   const pie = document.getElementById('pie');
   if (pie) pie.innerHTML = esTactil
     ? 'dedo izquierdo para andar · dedo derecho para mirar · toca para usar'
     : 'wasd para andar · ratón para mirar · clic para usar · esc para soltar';
 });
-
+// ⚠️ AQUÍ ESTABA `dentro = !!document.pointerLockElement`, y era un callejón sin
+// salida. `dentro` gobierna todo, y ESC suelta el puntero en CUALQUIER navegador
+// — o sea que el propio pie de página («esc para soltar») mandaba al visitante a
+// un estado donde ya no podía mirar ni usar nada, sin ninguna forma de volver
+// salvo recargar la página. Probado: tras ESC, el clic no abría ninguna ficha.
+//
+// Ya dentro se está dentro. El puntero es solo la cámara: si está suelto, el
+// primer clic lo recupera en vez de contar como «usar» — que es exactamente lo
+// que espera cualquiera que haya jugado a algo en primera persona.
+addEventListener('pointerlockchange', () => {
+  const suelto = !document.pointerLockElement;
+  document.getElementById('pie').textContent = suelto && !sentadoEn
+    ? 'ratón suelto · haz clic para volver a mirar'
+    : (esTactil ? 'dedo izquierdo para andar · dedo derecho para mirar · toca para usar'
+                : 'wasd para andar · ratón para mirar · clic para usar · esc para soltar el ratón');
+});
+// ═══════════════════════════════════════════════════════════════════════════
+//  MIRAR — con el puntero capturado, y TAMBIÉN sin él
+// ═══════════════════════════════════════════════════════════════════════════
+// ⚠️ ESTE ERA EL FALLO QUE DEJABA LA SALA INJUGABLE, Y SON DOS QUE SE SUMAN.
+//
+// 1. Mirar dependía EN EXCLUSIVA del bloqueo de puntero: `if
+//    (!document.pointerLockElement) return;`. Sin bloqueo, la cámara se queda
+//    clavada mirando al mismo punto para siempre.
+// 2. Y el manejador del clic, al ver el puntero suelto, lo volvía a pedir y
+//    salía. O sea que **tampoco se podía usar nada**: cada clic se gastaba en
+//    reintentar una captura que no llegaba.
+//
+// Juntos dan una sala que se ve preciosa, en la que andas de frente y no puedes
+// ni girar ni tocar nada. Es exactamente lo que se veía: «las máquinas se
+// materializan pero no se puede jugar».
+//
+// El navegador tiene mil razones legítimas para negar el bloqueo —permisos,
+// políticas, cooldown tras un ESC, incrustaciones—. Aquí llegó como
+// `WrongDocumentError`, pero el motivo da igual: **una sala en primera persona
+// no puede tener un único camino para girar la cámara.**
+//
+// Así que hay dos, y el segundo no pide permiso a nadie: arrastrar.
 let punteroVaBien = true;
+
 function sinPuntero(motivo) {
   if (!punteroVaBien) return;
   punteroVaBien = false;
-  console.warn('[Sala] puntero no concedido: arrastrar para mirar');
+  console.warn('[Sala] el navegador no concede bloqueo de puntero'
+             + (motivo ? ` (${motivo})` : '') + ': se pasa a arrastrar para mirar');
   if (!sentadoEn) PIE.textContent = 'arrastra para mirar · wasd para andar · clic para usar';
 }
+
+/** Pide la captura del puntero sin que un rechazo rompa nada. */
 function pedirPuntero() {
   if (!punteroVaBien || esTactil) return;
   try {
-    const p = document.body.requestPointerLock();
+    const p = pedirPuntero();
     if (p && typeof p.catch === 'function') p.catch(e => sinPuntero(e?.name));
   } catch (e) { sinPuntero(e?.name); }
 }
 addEventListener('pointerlockerror', () => sinPuntero('pointerlockerror'));
 
+// Camino 1: puntero capturado. Camino 2: arrastrar con el botón izquierdo.
 let arrastrando = false, ratonX = 0, ratonY = 0, arrastrado = 0;
+
 addEventListener('mousedown', e => {
   if (e.button !== 0 || sentadoEn || document.pointerLockElement) return;
   arrastrando = true; arrastrado = 0;
   ratonX = e.clientX; ratonY = e.clientY;
 });
 addEventListener('mouseup', () => { arrastrando = false; });
+
 const mirarV = (d) => { giroV = Math.max(-1.15, Math.min(1.15, giroV - d)); };
+
 addEventListener('mousemove', e => {
   if (document.pointerLockElement) {
     giroH -= e.movementX * 0.0022;
@@ -1289,11 +1713,28 @@ addEventListener('mousemove', e => {
   mirarV(dy * 0.0034);
 });
 
+// ═══════════════════════════════════════════════════════════════════════════
+//  TÁCTIL — porque la portada se abre sobre todo desde un teléfono
+// ═══════════════════════════════════════════════════════════════════════════
+// Esto NO funcionaba en móvil: cero controles táctiles, `pointerLock` no existe
+// ahí, y el pie de página le pedía WASD a alguien que tiene un dedo. Si esta
+// sala es la puerta de alisa.systems, la mayoría llegaría, no podría moverse, y
+// se iría — y habríamos hecho una demo preciosa para escritorio.
+//
+// Se resuelve sin botones en pantalla, que ensuciarían una sala tan sobria:
+//   · dedo en la MITAD IZQUIERDA  → andar (como un stick virtual invisible)
+//   · dedo en la MITAD DERECHA    → mirar
+//   · toque corto sin arrastrar   → usar lo que tengas delante
 const esTactil = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+const dedos = new Map();          // id → {x0,y0,x,y,zona,t0}
+
+// Los mandos de la puerta, dichos en el idioma del aparato que tiene delante.
 if (esTactil) {
   const m = document.getElementById('mandos-umbral');
-  if (m) m.innerHTML = '<b>dedo izquierdo</b> para andar · <b>dedo derecho</b> para mirar · <b>toca</b> para usar';
+  if (m) m.innerHTML = '<b>dedo izquierdo</b> para andar · <b>dedo derecho</b> para mirar · '
+                     + '<b>toca</b> lo que tengas delante para usarlo';
 }
+
 function tocar(ev) {
   for (const t of ev.changedTouches) {
     dedos.set(t.identifier, {
@@ -1307,18 +1748,19 @@ function mover(ev) {
   for (const t of ev.changedTouches) {
     const d = dedos.get(t.identifier);
     if (!d) continue;
-    if (d.zona === 'mirar') {
+    if (d.zona === 'mirar') {      // el giro es relativo al último punto
       giroH -= (t.clientX - d.x) * 0.005;
       giroV = Math.max(-1.15, Math.min(1.15, giroV - (t.clientY - d.y) * 0.005));
     }
     d.x = t.clientX; d.y = t.clientY;
   }
-  ev.preventDefault();
+  ev.preventDefault();             // sin esto el navegador hace scroll y rebote
 }
 function soltar(ev) {
   for (const t of ev.changedTouches) {
     const d = dedos.get(t.identifier);
     if (d) {
+      // Toque corto y sin arrastre = usar. Igual que el clic del ratón.
       const quieto = Math.hypot(t.clientX - d.x0, t.clientY - d.y0) < 12;
       if (quieto && performance.now() - d.t0 < 350) usarLoQueMiro();
       dedos.delete(t.identifier);
@@ -1330,54 +1772,146 @@ addEventListener('touchmove',  mover,  { passive: false });
 addEventListener('touchend',   soltar, { passive: false });
 addEventListener('touchcancel', soltar, { passive: false });
 
-let enPocketDimension = false;
-let transitionPocket = 0;
+/** El vector de marcha que sale del dedo izquierdo. */
+function marchaTactil() {
+  for (const d of dedos.values()) {
+    if (d.zona !== 'andar') continue;
+    const dx = d.x - d.x0, dy = d.y - d.y0;
+    const l = Math.hypot(dx, dy);
+    if (l < 8) return null;                       // zona muerta
+    const k = Math.min(1, l / 70);                // cuanto más lejos, más rápido
+    return { x: (dx / l) * k, z: (dy / l) * k };
+  }
+  return null;
+}
 
+// Clic = usar lo que estés mirando: se abre en su propia pestaña.
+// La ficha se monta una vez, cuando haga falta.
+let fichaLista = false;
+
+// Un solo camino para "usar". El dedo y el ratón entran por aquí, así que no
+// hay forma de que uno pueda hacer algo que el otro no.
 function usarLoQueMiro() {
   if (!dentro) return;
-  if (!esTactil && punteroVaBien && !sentadoEn && !document.pointerLockElement) { pedirPuntero(); return; }
+  // El primer clic con el ratón suelto sirve para recuperar la cámara, no para
+  // usar. Si no, el visitante que pulsó ESC clica y clica sin entender por qué
+  // no pasa nada. (Y con el dedo no hay puntero que capturar: en táctil, fuera.)
+  // ⚠️ Y aquí la segunda mitad del fallo: si el navegador NUNCA concede el
+  // bloqueo, este `return` se comía todos los clics para siempre. Ahora sólo se
+  // gasta un clic en recuperar la cámara mientras la captura siga siendo
+  // posible; si no lo es, se usa directamente y se mira arrastrando.
+  if (!esTactil && punteroVaBien && !sentadoEn && !document.pointerLockElement) {
+    pedirPuntero();
+    return;
+  }
+  // Un arrastre para girar la cámara no es un clic de «usar».
   if (arrastrado > 6) { arrastrado = 0; return; }
   if (!mirando) return;
+  // ⚠️ El clic que cruza el umbral seguía viajando hasta aquí y abría la ficha
+  // de la primera máquina que pillara el rayo: entrabas y te recibía un panel
+  // encima de la cara, antes incluso de ver la sala. Durante la llegada no se
+  // usa nada — la llegada se mira.
   if (tLlegada < LLEGADA) return;
-  if (sentadoEn) return;
-  if (mirando.__huevo) { recogerHuevo(); return; }
+  if (sentadoEn) return;              // sentada, los clics son del juego
+  if (mirando.__huevo) { recogerHuevo(); return; }   // recogerlo, no abrirlo
+
+  // ⚠️ Antes esto abría la página directamente en otra pestaña. Eso rompía la
+  // sala: te sacaba del mundo de un salto, sin transición y sin contexto.
+  //
+  // Ahora se EXAMINA primero. La ficha da nombre, tipo, un retrato y sus datos,
+  // y desde ahí decides entrar. Es la diferencia entre un enlace y un objeto:
+  // un enlace te lleva, un objeto te deja mirarlo antes.
   if (!fichaLista) { EntityCardSystem.init(); fichaLista = true; }
-  document.exitPointerLock?.();
+  document.exitPointerLock?.();          // soltar el ratón para poder usarla
+
+  const valePuntos = mirando.tipo === 'arcade' ? 55 : mirando.tipo === 'mesa' ? 40 : 20;
+  const resuelta = vistas.has(mirando);
+
   EntityCardSystem.open({
     id: mirando.n,
-    type: mirando.tipo === 'arcade' ? 'estacion' : mirando.tipo === 'mesa' ? 'mesa' : 'terminal',
-    barras: [{ etiqueta: 'MATERIA', valor: Math.round((mirando.materia ?? 0) * 100), sufijo: '%' }, { etiqueta: 'PUNTOS', valor: 0, max: 55 }],
-    acciones: [{ etiqueta: mirando.verbo, hacer: () => sentarse(mirando) }, { etiqueta: 'APARTE', hacer: () => window.open(mirando.u, '_blank') }],
+    type: mirando.tipo === 'arcade' ? 'estacion'
+        : mirando.tipo === 'mesa'   ? 'mesa' : 'terminal',
+    // Solo datos que EXISTEN. Antes esto mandaba campos de Being y la ficha
+    // mostraba "CPU LOAD 0%" y "Coords: undefined" — números falsos con pinta
+    // de verdaderos, que engañan más que un hueco vacío.
+    barras: [
+      { etiqueta: 'MATERIA', valor: Math.round((mirando.materia ?? 0) * 100), sufijo: '%' },
+      { etiqueta: 'PUNTOS',  valor: valePuntos, max: 55 },
+    ],
+    nota: resuelta
+      ? 'Resuelta. Ya cuenta en tu marcador.'
+      : 'Sin resolver. Acércate hasta que encaje.',
+    // El verbo SIENTA, no abre una pestaña. Salir del mundo de un salto rompía
+    // la sala; ahora el juego aparece en la máquina que tienes delante.
+    // El enlace aparte queda para quien lo prefiera a pantalla completa.
+    acciones: [
+      { etiqueta: mirando.verbo, hacer: () => sentarse(mirando) },
+      { etiqueta: 'APARTE',      hacer: () => window.open(mirando.u, '_blank') },
+    ],
   });
 }
 addEventListener('click', usarLoQueMiro);
 
+// ESC lo lleva el plugin, no yo: tiene tres estados (pantalla en la máquina →
+// proyectada delante de ti → pantalla completa) y ESC retrocede uno cada vez.
+// Mi propio listener se saltaba esa escalera y te levantaba de golpe desde
+// pantalla completa. El plugin ya llama a `levantarse()` por standUpCallback.
+
+// ═══════════════════════════════════════════════════════════════════════════
+//  BUCLE
+// ═══════════════════════════════════════════════════════════════════════════
+const reloj = new THREE.Clock();
+let mirando = null, materializadas = 0;
+const elMirilla = document.getElementById('mirilla');
+const elObj = document.getElementById('objetivo');
+
 function tick() {
-  const t = performance.now() / 1000;
-  const dt = Math.min(t - tick.ultimoTime || 0, 0.1);
-  tick.ultimoTime = t;
   requestAnimationFrame(tick);
-  
+  const dt = Math.min(reloj.getDelta(), 0.1);
+  const t  = reloj.getElapsedTime();
+
+  // ── La llegada ──
   if (tLlegada >= 0 && tLlegada < LLEGADA) {
     tLlegada += dt;
     const p = Math.min(1, tLlegada / LLEGADA);
     aplicarLlegada(p);
+
+    // Las dos ondas, a ritmos distintos, saliendo de donde estás.
+    for (const [o, vel, ancho] of [[onda, 46, 1], [onda2, 27, 2.6]]) {
+      const r = 0.9 + tLlegada * vel;
+      o.position.set(camara.position.x, 0.03, camara.position.z);
+      o.scale.setScalar(r);
+      o.material.opacity = Math.max(0, 0.55 * (1 - tLlegada / (LLEGADA * 0.85))) / ancho;
+    }
+    // La rejilla solo se ve por DENTRO del frente de onda: parece que la onda
+    // la va escribiendo. Es el detalle que vende que el mundo lo creas tú.
+    rejilla.material.opacity *= Math.min(1, tLlegada * 0.9);
+
+    if (tLlegada >= LLEGADA) { onda.visible = onda2.visible = false; aplicarLlegada(1); }
   }
 
+  // ── Andar ──
+  // Sentada no se anda: las teclas son del juego que tienes delante. Si no,
+  // pulsar W en un arcade te alejaba de la propia máquina que estás usando.
   if (sentadoEn) {
-    vel.set(0, 0, 0);
+    vel.set(0, 0, 0);              // y sin inercia guardada para el momento de levantarte
   } else {
     const dir = new THREE.Vector3();
-    if (teclas['w']||teclas['arrowup']) dir.z -= 1;
-    if (teclas['s']||teclas['arrowdown']) dir.z += 1;
-    if (teclas['a']||teclas['arrowleft']) dir.x -= 1;
+    if (teclas['w']||teclas['arrowup'])    dir.z -= 1;
+    if (teclas['s']||teclas['arrowdown'])  dir.z += 1;
+    if (teclas['a']||teclas['arrowleft'])  dir.x -= 1;
     if (teclas['d']||teclas['arrowright']) dir.x += 1;
+    // El dedo suma al mismo vector: no hay dos caminos de movimiento que puedan
+    // desincronizarse, solo dos formas de rellenar el mismo.
+    const m = marchaTactil();
+    if (m) { dir.x += m.x; dir.z += m.z; }
     if (dir.lengthSq()) {
       dir.normalize().applyAxisAngle(new THREE.Vector3(0,1,0), giroH);
       vel.addScaledVector(dir, 46 * dt);
     }
-    vel.multiplyScalar(Math.pow(0.0016, dt));
+    vel.multiplyScalar(Math.pow(0.0016, dt));      // rozamiento suave
     camara.position.addScaledVector(vel, dt);
+    camara.position.y = 1.68 + Math.sin(t * 6.2) * Math.min(vel.length(), 6) * 0.006;  // el paso
     const lim = 110, d = Math.hypot(camara.position.x, camara.position.z);
     if (d > lim) { camara.position.x *= lim/d; camara.position.z *= lim/d; }
   }
@@ -1385,28 +1919,13 @@ function tick() {
   const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(giroV, giroH, 0, 'YXZ'));
   camara.quaternion.copy(q);
 
+  // ── El huevo late, y late MÁS cuanto más cerca estás ──
   const dHuevo = Math.hypot(camara.position.x, camara.position.z);
   const cerca = Math.max(0, 1 - dHuevo / 60);
-  lente.anillo = 0.50 + cerca * 0.30 + fogonazo * 1.4;
+  const latido = 0.5 + Math.sin(t * (1.5 + cerca * 2.4)) * 0.5;
 
-  if (enPocketDimension) {
-    transitionPocket = Math.min(1, transitionPocket + dt * 1.5);
-  } else {
-    transitionPocket = Math.max(0, transitionPocket - dt * 1.5);
-  }
-  
-  if (transitionPocket > 0) {
-    escena.background.copy(colorFondo).lerp(colorNegro, transitionPocket);
-    escena.fog.color.copy(colorFondo).lerp(colorNegro, transitionPocket);
-    escena.fog.density = 0.0062 + transitionPocket * 0.05; 
-    suelo.material.opacity = 1 - transitionPocket;
-    huevo.scale.setScalar(1 - transitionPocket * 0.99);
-    estaciones.forEach(e => { if (e !== sentadoEn && e.grupo) e.grupo.visible = (transitionPocket < 0.9); });
-  }
-
+  // ── Tu aportación: el huevo NOTA que estás, pero no rompe ──
   aportacion += (vistas.size / estaciones.length - aportacion) * Math.min(1, dt * 0.9);
-  nucleo.rotation.y -= dt * 0.8;
-  latido = (Math.sin(t * 3.8) + 1) / 2;
   if (!rota) {
     // Las grietas se encienden con lo que aportas y pulsan con el latido. Al
     // completar la sala brillan del todo — y ahí se quedan. Esa contención ES
@@ -1432,11 +1951,6 @@ function tick() {
     tick.ultimoLatido = t;
     Sonido.latido(0.35 + cerca * 0.85 + aportacion * 0.5);
   }
-  
-  if (nucleo.userData && nucleo.userData.uniforms) {
-      nucleo.userData.uniforms.time.value = t;
-  }
-  
   nucleo.scale.setScalar(0.86 + latido * (0.16 + cerca * 0.3));
   nucleo.material.opacity = 0.55 + latido * 0.35;
   luzNucleo.intensity = 18 + latido * (12 + cerca * 40);
@@ -1622,19 +2136,15 @@ function tick() {
   // probar. Nadie tiene que leerlo para entenderlo; se ve.
   const probado = 1 - Math.exp(-partidasVerificadas / 3);   // sube y se satura
   lente.apuntar(huevo.position.clone().setY(10.2), camara, innerWidth / innerHeight);
-  lente.radio  = 0.25 + probado * 0.20 + aportacion * 0.05 + cerca * 0.08;
-  lente.fuerza = 0.15 + probado * 0.25 + aportacion * 0.04 + latido * 0.02 + fogonazo * 0.08;
-  lente.anillo = 0.50 + latido * 0.30 + fogonazo * 1.4;
+  lente.radio  = 0.15 + probado * 0.15 + aportacion * 0.03 + cerca * 0.05;
+  lente.fuerza = 0.045 + probado * 0.10  + aportacion * 0.015 + latido * 0.012 + fogonazo * 0.08;
+  lente.anillo = 0.24 + latido * 0.28 + fogonazo * 1.4;
 
   composer.render();
   // El plugin renderiza su propia capa CSS3D aquí dentro, además de mover el
   // cartucho cuando lo proyectas hacia ti. Sin esta llamada la pantalla se
   // monta pero no se dibuja: el iframe existe y no se ve.
   holograma.onUpdate(dt);
-  arcadeFX.onUpdate(dt);
-  constructMaterializer.onUpdate(dt);
-  volumetrics.onUpdate(dt);
-  panel.onUpdate(dt);
 }
 tick();
 
@@ -1643,14 +2153,6 @@ addEventListener('resize', () => {
   render.setSize(innerWidth, innerHeight);
   holograma.onResize(innerWidth, innerHeight);
   composer.setSize(innerWidth, innerHeight);
-});
-
-// Escuchar mensajes del Pocket Dimension por si el juego pide salir (ej. con ESC)
-window.addEventListener('message', (event) => {
-  if (event.data === 'STAND_UP' && sentadoEn?.tipo === 'mesa') {
-    const btn = document.getElementById('btn-standup-pocket');
-    if (btn && btn.offsetParent !== null) btn.click();
-  }
 });
 
 // La sala arranca SIN EXISTIR. Si no, la onda de llegada no crea nada: llega a
