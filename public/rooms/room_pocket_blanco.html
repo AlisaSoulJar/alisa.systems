@@ -400,10 +400,10 @@ const TERMINALES = [
 const escena = new THREE.Scene();
 const camara = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 400);
 camara.position.set(0, 1.62, 54);
-const colorFondo = new THREE.Color(0xe6ebf0);
+const colorFondo = new THREE.Color(0xffffff);
 const colorNegro = new THREE.Color(0x000000);
 escena.background = colorFondo.clone();
-escena.fog = new THREE.FogExp2(0xe6ebf0, 0.0062);
+escena.fog = new THREE.FogExp2(0xffffff, 0.0062);
 
 const render = new THREE.WebGLRenderer({ antialias:true, powerPreference:'high-performance' });
 render.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -474,14 +474,14 @@ const geoHuevo = new THREE.SphereGeometry(7, 64, 64);
 const matHuevo = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x110000, emissiveIntensity: 0.2, roughness: 0.1, metalness: 0.9 });
 const cascara = new THREE.Mesh(geoHuevo, matHuevo);
 cascara.position.y = 10.2;
-huevo.add(cascara);
+// huevo.add(cascara);
 
 // Photon Ring
 const photonGeo = new THREE.SphereGeometry(7.15, 64, 64);
 const photonMat = new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.35, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false });
 const photonRing = new THREE.Mesh(photonGeo, photonMat);
 photonRing.position.y = 10.2;
-huevo.add(photonRing);
+// huevo.add(photonRing);
 
 // Accretion Disk (Nucleo) - Procedural Plasma Shader
 const discoUniforms = {
@@ -541,7 +541,7 @@ const nucleo = new THREE.Mesh(geoDisco, matDisco);
 nucleo.position.y = 10.2;
 // Save reference to uniforms so tick() can update time
 nucleo.userData.uniforms = discoUniforms;
-huevo.add(nucleo);
+// huevo.add(nucleo);
 
 const volumetrics = new VolumetricsPlugin();
 const radiationDust = VolumetricsPlugin.createFlashlightDust(350);
@@ -568,7 +568,7 @@ huevo.add(jetDown);
 const luzNucleo = new THREE.PointLight(0xff5500, 36, 80, 1.6);
 luzNucleo.position.y = 10.2;
 huevo.add(luzNucleo);
-escena.add(huevo);
+// escena.add(huevo);
 
 let incubacionReportada = null;
 let partidasVerificadas = 0;
@@ -944,61 +944,36 @@ Object.assign(holograma.css3dRenderer.domElement.style, { zIndex: '2', pointerEv
 holograma.acento = '#93a7bd';
 holograma.setStandUpCallback(() => { levantarse(); });
 
+
 function sentarse(e) {
   if (!e?.pantalla) return;
   sentadoEn = e;
   holograma.setSeated(true);
-  const mueble = e.grupo.position;
-  const hx = camara.position.x - mueble.x, hz = camara.position.z - mueble.z;
-  const dist = Math.hypot(hx, hz) || 1;
-  
-  // En vez de salto instantáneo, guardamos el target y tick() interpola
-  tick.targetCamPos = new THREE.Vector3(mueble.x + (hx / dist) * 2.6, 1.62, mueble.z + (hz / dist) * 2.6);
-  tick.targetGiroH = Math.atan2(camara.position.x - mueble.x, camara.position.z - mueble.z);
-  tick.targetGiroV = -0.02;
-
   document.exitPointerLock?.();
 
-  const pd = document.getElementById('pocket-dimension-container');
-  const pc = document.getElementById('pocketCartridge');
-  pd.style.display = 'block';
-  
-  // Retrasar la inmersión para que la cámara tenga tiempo de hacer el paneo suave
-  setTimeout(() => {
-      if (sentadoEn !== e) return; // Por si se levantó antes
-      
-      let finalUrl;
-      if (e.tipo === 'mesa') {
-          // Las mesas ya son entornos 3D aislados
-          const url = new URL(e.u, window.location.href);
-          url.searchParams.set('pocket', '1');
-          finalUrl = url.href;
-      } else {
-          // Los arcades usan el Focus Room blanco
-          const url = new URL('room_pocket_blanco.html', window.location.href);
-          url.searchParams.set('id', e.n);
-          finalUrl = url.href;
-      }
-      
-      pc.src = finalUrl; 
-      requestAnimationFrame(() => { pd.style.opacity = '1'; });
-      enPocketDimension = true;
-      avisar(e.n.toUpperCase(), 'en modo focus');
-      PIE.textContent = `${e.n.toUpperCase()} · focus mode · usa el botón para salir (o ESC)`;
-  }, 600);
-
-  document.getElementById('btn-standup-pocket').onclick = () => {
-      pd.style.opacity = '0';
-      enPocketDimension = false;
-      setTimeout(() => {
-          pd.style.display = 'none';
-          pc.src = 'about:blank';
-          levantarse();
-      }, 600);
+  holograma.loadMachine(e.u, e.pantalla, e.grupo.rotation.y);
+  const seSienta = e;
+  const proyectar = (intentos = 0) => {
+    if (sentadoEn !== seSienta) return;
+    if (holograma.currentCssObject && holograma.screenMode === 'MOUNTED') {
+      holograma.setHologramMode('PROJECTED');
+      return;
+    }
+    if (intentos > 180) return;
+    requestAnimationFrame(() => proyectar(intentos + 1));
   };
-
-  // Remove legacy holograma.loadMachine call since we now use Pocket Blanco for everything
+  proyectar();
+  PIE.textContent = e.n.toUpperCase() + ' · FOCUS MODE · MOUSE/TECLADO PARA JUGAR · ESC PARA SALIR';
 }
+
+// Global ESC listener to exit Focus Room
+document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' || ev.code === 'Escape') {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage('STAND_UP', '*');
+        }
+    }
+});
 
 async function cobrarPartida(e) {
   const marco = document.getElementById('romCartridge');
