@@ -20,12 +20,16 @@ llevar días siendo cosas distintas*, y el segundo no se recupera si nadie mira.
 
 ## Dos avisos honestos
 
-1. **Carga `pixi.js` desde un CDN.** El resto del repositorio no llama a ninguna
-   red —hay un laboratorio que lo comprueba espiando `fetch`, y las librerías van
-   copiadas en `public/vendor/`—, pero esta página es anterior a esa regla. No se
-   ha tocado: cambiarla sería lo contrario de conservarla. Así que la promesa de
-   «funciona sin conexión» cubre el motor, los juegos y la sala, **no este
-   recuerdo**.
+1. **Ya no depende de nadie.** Cargaba `pixi.js` desde un CDN, y aquí llegó a
+   decir que la promesa de «funciona sin conexión» no cubría este recuerdo.
+   Estaba mal: lo dijo la puerta automática antes de publicar —`preflight.py`
+   bloqueó por «una página carga código desde un CDN»— y tenía razón. **Una
+   página que depende de un tercero no está conservada, está prestada**: el día
+   que ese CDN cambie de política, el recuerdo se apaga solo.
+
+   Así que la librería vive en `public/vendor/pixi-7.3.2/` y la página apunta
+   ahí. Es la única línea que se le ha tocado, y se le ha tocado precisamente
+   para que siga siendo la misma dentro de diez años.
 
 2. **No está mantenida.** No entra en `npm test`, no se calibra y no tiene
    recibo verificable. Si algún día deja de funcionar, es una pieza de museo, no
