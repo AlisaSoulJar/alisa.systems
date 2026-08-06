@@ -634,7 +634,10 @@ async function decirQueSigoAqui() {
 // `Cannot access 'motasDeSeres' before initialization`. Va al final del bloque,
 // cuando ya existe todo lo que necesita. El intervalo sí puede quedarse: para
 // cuando dispare, el módulo ha terminado.
-setInterval(decirQueSigoAqui, 20000);
+// Cada 25 s. El plazo del servidor son 60 y él decide si hace falta reescribir
+// —las escrituras del almacén son el recurso escaso, no las lecturas—, así que
+// latir más a menudo no gana nada y gasta cuota de todos.
+setInterval(decirQueSigoAqui, 25000);
 
 // Para poder mirar desde fuera qué está viendo la sala, no qué dice la API.
 // Lo pedí a gritos depurando esto: la API listaba ocho seres y el HUD decía

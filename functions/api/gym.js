@@ -189,11 +189,28 @@ export async function onRequestPost({ request, env }) {
         try {
             const quien = String(pet.quien).replace(/[<>&"'\x00-\x1f\x7f]/g, '').trim().slice(0, 24);
             if (quien) {
-                await env.PRESENCIA.put(`p:agente:${quien}`, JSON.stringify({
-                    quien, tipo: 'agente',
-                    estacion: TITULOS[pet.juego] ?? pet.juego,
-                    juego: pet.juego, desde: Date.now(),
-                }), { expirationTtl: 60 });
+                // ⚠️ NO SE ESCRIBE EN CADA JUGADA, Y ESTO ERA UNA BOMBA.
+                // El gym se llama una vez por movimiento: una partida de Go
+                // Fish son 73 llamadas. Escribiendo en todas, un solo agente se
+                // comía las 1.000 escrituras diarias del plan gratuito en
+                // catorce partidas — y al agotarse, la presencia se apaga sin
+                // avisar. Se mira antes: si ya está anotado en esta misma
+                // estación y le queda vida, no se toca.
+                const clave = `p:agente:${quien}`;
+                const estacion = TITULOS[pet.juego] ?? pet.juego;
+                const previo = await env.PRESENCIA.get(clave);
+                let hayQueEscribir = true;
+                if (previo) {
+                    const a = JSON.parse(previo);
+                    hayQueEscribir = a.estacion !== estacion
+                                  || (Date.now() - (a.desde ?? 0)) / 1000 >= 40;
+                }
+                if (hayQueEscribir) {
+                    await env.PRESENCIA.put(clave, JSON.stringify({
+                        quien, tipo: 'agente', estacion,
+                        juego: pet.juego, desde: Date.now(),
+                    }), { expirationTtl: 60 });
+                }
             }
         } catch { /* sin presencia se juega igual */ }
     }

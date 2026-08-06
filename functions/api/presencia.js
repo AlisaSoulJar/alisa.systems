@@ -84,10 +84,33 @@ export async function onRequestPost({ request, env }) {
         juego: limpio(d?.juego, 24) || null,
         desde: Date.now(),
     };
+    // ⚠️ ESCRIBIR CUESTA; LEER, MUCHO MENOS.
+    // El plan gratuito da 1.000 escrituras al día y 100.000 lecturas. Con un
+    // latido cada 20 s son 180 escrituras por hora y por visitante: tres
+    // personas un rato y la cuota se acaba — y cuando se acaba, la presencia
+    // deja de funcionar sin decir nada.
+    //
+    // Así que antes de escribir se mira si ya hay una entrada fresca. Si la
+    // hay y no ha cambiado de sitio, no se toca: la que existe seguirá viva
+    // hasta que caduque, y el latido sólo tiene que renovarla cuando de verdad
+    // queda poco. Una lectura vale una centésima de una escritura.
+    const clave = `p:${tipo}:${quien}`;
+    const previo = await env.PRESENCIA.get(clave);
+    if (previo) {
+        try {
+            const antes = JSON.parse(previo);
+            const edad = (Date.now() - (antes.desde ?? 0)) / 1000;
+            const mismoSitio = antes.estacion === ficha.estacion;
+            // Se renueva sólo en la última tercera parte de su vida, o si te
+            // has movido —ahí sí interesa que se vea enseguida.
+            if (mismoSitio && edad < VIDA * 0.66) {
+                return responder(200, { anotado: true, renovado: false, caduca_en: Math.round(VIDA - edad), ...antes });
+            }
+        } catch { /* entrada rota: se reescribe */ }
+    }
     // La clave lleva el tipo delante para poder contar sin leerlo todo.
-    await env.PRESENCIA.put(`p:${tipo}:${quien}`, JSON.stringify(ficha),
-                            { expirationTtl: VIDA });
-    return responder(200, { anotado: true, caduca_en: VIDA, ...ficha });
+    await env.PRESENCIA.put(clave, JSON.stringify(ficha), { expirationTtl: VIDA });
+    return responder(200, { anotado: true, renovado: true, caduca_en: VIDA, ...ficha });
 }
 
 /** Quién hay ahora mismo, y dónde. */
