@@ -56,11 +56,16 @@ const ALIAS = { ajedrez: 'chess', damas: 'checkers' };
 
 const ESLABONES = [
     ['reglas',   'reglas propias en JavaScript'],
-    ['pagina',   'página en la que se juega'],
+    ['pagina',   'una persona puede jugarlo en el navegador'],
     ['gym',      'entorno para máquinas'],
     ['marcador', 'puntúa, y el número cambia'],
     ['casa',     'rival de la casa'],
-    ['prueba',   'una prueba que comprueba SUS reglas'],
+    // ⚠️ Esta columna decía «una prueba que comprueba SUS reglas» y era
+    // engañosa: los 19 los cubre `prueba_reglas.mjs` en cada `npm test`. Lo que
+    // mide de verdad es si tiene un LABORATORIO propio en el navegador — un
+    // sitio donde un desconocido abra la página y vea el veredicto sin
+    // instalarse nada. Es otra cosa, y menos común: 7 de 19.
+    ['lab',      'laboratorio propio que se abre y canta el veredicto'],
     ['sala',     'estación en la Sala del Huevo'],
 ];
 
@@ -71,15 +76,29 @@ for (const juego of JUEGOS) {
     const pagina = ALIAS[juego] ?? juego;
     const tiene = {
         reglas: true,
-        pagina: arcade.includes(pagina + '.html'),
+        // ⚠️ Buscaba un fichero con el nombre del juego, y desde que existe
+        // `mesa.html` —una mesa genérica dirigida por `rules/index.js`— los
+        // diecinueve se pueden jugar en el navegador aunque no tengan página
+        // propia. Seguir contando ficheros habría dado 12/19 con siete juegos
+        // jugables delante: la pregunta era «¿se puede jugar?», no «¿hay un
+        // .html que se llame así?».
+        pagina: arcade.includes(pagina + '.html') || arcade.includes('mesa.html'),
         gym: registro.includes(`'${juego}'`),
         // Que exista un marcador NUMÉRICO publicado. El ajedrez no lo tenía y
         // valía 0 en toda partida jugara quien jugara — ver `docs/como-nos-equivocamos.md`.
         marcador: (st.score !== undefined || st.puntos !== undefined)
                   && typeof puntuacionDe(st) === 'number',
         casa: typeof reglas.sugerencia === 'function',
-        prueba: labs.some(f => f.includes(juego) && /test|perft/.test(f)),
-        sala: sala.includes(`'${juego}-protohub`) || sala.includes(`/${pagina}.html`),
+        lab: labs.some(f => f.includes(juego) && /test|perft/.test(f)),
+        // ⚠️ Esto buscaba `'${juego}-protohub` con la comilla pegada, y el
+        // identificador real es `'alisa/brisca-protohub-v0'`: entre la comilla
+        // y el nombre va `alisa/`. Añadí ocho estaciones y el contador subió
+        // UNA — la única que acertaba lo hacía por su página propia, no por el
+        // entorno. Un detector que busca un patrón que no existe siempre dice
+        // que no, y «no» suena a diagnóstico.
+        sala: sala.includes(`${juego}-protohub`)
+              || sala.includes(`juego=${juego}`)
+              || sala.includes(`/${pagina}.html`),
     };
     juegos.push({
         juego, titulo: TITULOS[juego] ?? juego, tiene,

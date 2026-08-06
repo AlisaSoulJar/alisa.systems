@@ -6,7 +6,7 @@
     ],
     [
       "pagina",
-      "página en la que se juega"
+      "una persona puede jugarlo en el navegador"
     ],
     [
       "gym",
@@ -21,8 +21,8 @@
       "rival de la casa"
     ],
     [
-      "prueba",
-      "una prueba que comprueba SUS reglas"
+      "lab",
+      "laboratorio propio que se abre y canta el veredicto"
     ],
     [
       "sala",
@@ -39,7 +39,7 @@
         "gym": true,
         "marcador": true,
         "casa": true,
-        "prueba": true,
+        "lab": true,
         "sala": true
       },
       "completos": 7
@@ -53,7 +53,7 @@
         "gym": true,
         "marcador": true,
         "casa": true,
-        "prueba": true,
+        "lab": true,
         "sala": true
       },
       "completos": 7
@@ -67,7 +67,7 @@
         "gym": true,
         "marcador": true,
         "casa": true,
-        "prueba": true,
+        "lab": true,
         "sala": true
       },
       "completos": 7
@@ -81,7 +81,7 @@
         "gym": true,
         "marcador": true,
         "casa": true,
-        "prueba": true,
+        "lab": true,
         "sala": true
       },
       "completos": 7
@@ -95,7 +95,7 @@
         "gym": true,
         "marcador": true,
         "casa": true,
-        "prueba": true,
+        "lab": true,
         "sala": true
       },
       "completos": 7
@@ -109,7 +109,7 @@
         "gym": true,
         "marcador": true,
         "casa": true,
-        "prueba": true,
+        "lab": true,
         "sala": true
       },
       "completos": 7
@@ -123,7 +123,7 @@
         "gym": true,
         "marcador": true,
         "casa": true,
-        "prueba": false,
+        "lab": false,
         "sala": false
       },
       "completos": 5
@@ -137,7 +137,7 @@
         "gym": true,
         "marcador": true,
         "casa": true,
-        "prueba": false,
+        "lab": false,
         "sala": false
       },
       "completos": 5
@@ -151,10 +151,10 @@
         "gym": true,
         "marcador": true,
         "casa": true,
-        "prueba": false,
-        "sala": false
+        "lab": false,
+        "sala": true
       },
-      "completos": 5
+      "completos": 6
     },
     {
       "juego": "blackjack",
@@ -165,7 +165,7 @@
         "gym": true,
         "marcador": true,
         "casa": true,
-        "prueba": false,
+        "lab": false,
         "sala": true
       },
       "completos": 6
@@ -179,7 +179,7 @@
         "gym": true,
         "marcador": true,
         "casa": true,
-        "prueba": true,
+        "lab": true,
         "sala": true
       },
       "completos": 7
@@ -189,98 +189,98 @@
       "titulo": "Brisca",
       "tiene": {
         "reglas": true,
-        "pagina": false,
+        "pagina": true,
         "gym": true,
         "marcador": true,
         "casa": true,
-        "prueba": false,
-        "sala": false
+        "lab": false,
+        "sala": true
       },
-      "completos": 4
+      "completos": 6
     },
     {
       "juego": "tute",
       "titulo": "Tute",
       "tiene": {
         "reglas": true,
-        "pagina": false,
+        "pagina": true,
         "gym": true,
         "marcador": true,
         "casa": true,
-        "prueba": false,
-        "sala": false
+        "lab": false,
+        "sala": true
       },
-      "completos": 4
+      "completos": 6
     },
     {
       "juego": "hearts",
       "titulo": "Hearts",
       "tiene": {
         "reglas": true,
-        "pagina": false,
+        "pagina": true,
         "gym": true,
         "marcador": true,
         "casa": true,
-        "prueba": false,
-        "sala": false
+        "lab": false,
+        "sala": true
       },
-      "completos": 4
+      "completos": 6
     },
     {
       "juego": "spades",
       "titulo": "Spades",
       "tiene": {
         "reglas": true,
-        "pagina": false,
+        "pagina": true,
         "gym": true,
         "marcador": true,
         "casa": true,
-        "prueba": false,
-        "sala": false
+        "lab": false,
+        "sala": true
       },
-      "completos": 4
+      "completos": 6
     },
     {
       "juego": "guerra",
       "titulo": "Guerra (control)",
       "tiene": {
         "reglas": true,
-        "pagina": false,
+        "pagina": true,
         "gym": true,
         "marcador": true,
         "casa": true,
-        "prueba": false,
-        "sala": false
+        "lab": false,
+        "sala": true
       },
-      "completos": 4
+      "completos": 6
     },
     {
       "juego": "gofish",
       "titulo": "Go Fish",
       "tiene": {
         "reglas": true,
-        "pagina": false,
+        "pagina": true,
         "gym": true,
         "marcador": true,
         "casa": true,
-        "prueba": false,
-        "sala": false
+        "lab": false,
+        "sala": true
       },
-      "completos": 4
+      "completos": 6
     },
     {
       "juego": "unit",
       "titulo": "Unit",
       "tiene": {
         "reglas": true,
-        "pagina": false,
+        "pagina": true,
         "gym": true,
         "marcador": true,
         "casa": true,
-        "prueba": false,
-        "sala": false
+        "lab": false,
+        "sala": true
       },
-      "completos": 4
+      "completos": 6
     },
     {
       "juego": "entropy",
@@ -291,20 +291,20 @@
         "gym": true,
         "marcador": true,
         "casa": true,
-        "prueba": false,
-        "sala": false
+        "lab": false,
+        "sala": true
       },
-      "completos": 5
+      "completos": 6
     }
   ],
   "total": {
     "reglas": 19,
-    "pagina": 12,
+    "pagina": 19,
     "gym": 19,
     "marcador": 19,
     "casa": 19,
-    "prueba": 7,
-    "sala": 8
+    "lab": 7,
+    "sala": 17
   },
-  "fecha": 1786023940440
+  "fecha": 1786025398332
 }

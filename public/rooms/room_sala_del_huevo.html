@@ -388,6 +388,27 @@ const MESAS = [
   // `cartas` cambia lo que hay ENCIMA de la mesa: tapete y baraja física en
   // vez de tablero. Una mesa de póker con un damero pintado sería mentira.
   { n:'Blackjack', u:'../arcade/blackjack.html', cartas:true, env:'alisa/blackjack-protohub-v0' },
+
+  // ⚠️ SIETE JUEGOS QUE NADIE PODÍA JUGAR.
+  // Brisca, tute, hearts, spades, guerra, gofish y unit tenían reglas propias,
+  // entorno de gym, marcador y rival de casa desde hace días — y ninguna
+  // página. La tabla de capacidades lo dijo con un número: los siete en 4/7, y
+  // a los siete les faltaba exactamente lo mismo. Eso no son siete problemas.
+  //
+  // `mesa.html` es UNA mesa para todos, dirigida por `rules/index.js`. Sus
+  // botones son `legal_moves`: la misma lista que recibe un agente por
+  // `/api/gym`. No hay una interfaz para personas y otra para máquinas — hay
+  // una puerta, dibujada.
+  { n:'Brisca',  u:'../arcade/mesa.html?juego=brisca',  cartas:true, env:'alisa/brisca-protohub-v0' },
+  { n:'Tute',    u:'../arcade/mesa.html?juego=tute',    cartas:true, env:'alisa/tute-protohub-v0' },
+  { n:'Hearts',  u:'../arcade/mesa.html?juego=hearts',  cartas:true, env:'alisa/hearts-protohub-v0' },
+  { n:'Spades',  u:'../arcade/mesa.html?juego=spades',  cartas:true, env:'alisa/spades-protohub-v0' },
+  { n:'Go Fish', u:'../arcade/mesa.html?juego=gofish',  cartas:true, env:'alisa/gofish-protohub-v0' },
+  { n:'Unit',    u:'../arcade/mesa.html?juego=unit',    cartas:true, env:'alisa/unit-protohub-v0' },
+  { n:'Entropy', u:'../arcade/entropy.html',            cartas:true, env:'alisa/entropy-protohub-v0' },
+  // La Guerra entra también: es el CONTROL del banco de pruebas y conviene que
+  // se pueda jugar, no sólo medir. Un control que nadie puede mirar no tranquiliza.
+  { n:'Guerra (control)', u:'../arcade/mesa.html?juego=guerra', cartas:true, env:'alisa/guerra-protohub-v0' },
   { n:'Póker',     u:'../arcade/poker.html',     cartas:true, env:'alisa/poker-protohub-v0' },
 ];
 const TERMINALES = [
