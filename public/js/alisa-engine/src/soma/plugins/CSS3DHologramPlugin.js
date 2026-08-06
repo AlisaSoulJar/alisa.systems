@@ -302,6 +302,25 @@ export class CSS3DHologramPlugin {
             clearTimeout(this._temporizadorMontaje);
             this._temporizadorMontaje = setTimeout(() => {
                 if (sello !== this._selloMontaje) return;   // ya no toca
+
+                // ⚠️ MONTAR UNA SOLA VEZ POR CARTUCHO. Aquí estaba el bucle.
+                //
+                // Montar crea un `CSS3DObject` nuevo y lo mete en la escena, y
+                // eso reubica su elemento en el DOM. Reubicar un <iframe> —o
+                // CUALQUIER ancestro suyo— lo hace navegar otra vez desde cero,
+                // que dispara `onload`, que vuelve a montar. Medido con la sala
+                // quieta: **una recarga por segundo, para siempre**. El juego se
+                // reiniciaba solo y era imposible avanzar en una partida.
+                //
+                // Envolver el iframe en un <div> no bastó —lo probé y seguían
+                // las diez recargas en diez segundos—, porque mover el
+                // envoltorio arrastra al iframe igual. Lo que rompe el ciclo no
+                // es dónde vive el iframe: es no repetir el montaje.
+                //
+                // El primer `onload` tras fijar `src` es el bueno. Los
+                // siguientes son consecuencia nuestra, y se ignoran.
+                if (this._montadoPara === gameUrl && this.currentCssObject) return;
+                this._montadoPara = gameUrl;
                 iframe.style.pointerEvents = 'none';
                 this.screenMode = 'MOUNTED';
 
@@ -491,6 +510,9 @@ export class CSS3DHologramPlugin {
                 }
             }
         }
+        // Al soltar el cartucho se olvida qué había montado, para que el
+        // siguiente juego sí pueda montarse.
+        this._montadoPara = null;
         this.screenMode = 'MOUNTED';
     }
 
