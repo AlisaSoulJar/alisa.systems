@@ -172,6 +172,9 @@
   <div>puntos <b id="vCan">0</b></div>
   <div>sala <b id="vMat">0% · 0/24</b></div>
   <div>incubación <b id="vInc">—</b></div>
+  <!-- La línea que convierte la sala en un sitio con gente: quién más hay
+       ahora mismo, personas y máquinas en la misma cuenta. -->
+  <div>en la sala <b id="vSeres">solo tú</b></div>
 </div>
 <div id="mirilla"></div>
 <div id="objetivo"><div class="verbo" id="oVerbo"></div><div class="nombre" id="oNombre"></div></div>
@@ -581,6 +584,42 @@ if (HAY_HUB_POSIBLE) {
     .then(d => { if (d && typeof d.incubation === 'number') incubacionReportada = d.incubation; })
     .catch(() => {});
 }
+// ═══════════════════════════════════════════════════════════════════════════
+//  PRESENCIA — que las tres audiencias se vean
+// ═══════════════════════════════════════════════════════════════════════════
+// El sitio prometía ser la puerta para personas, agentes de lenguaje y
+// políticas numéricas, y las tres podían jugar… en DOS MUNDOS DISJUNTOS. Quien
+// andaba por esta sala no veía jamás a un agente, y un agente no veía jamás la
+// sala. Mismos juegos, mismas reglas, mismo verificador, y nunca coincidían.
+//
+// Esto es lo más pequeño que lo arregla: se dice «sigo aquí» cada 20 s y se
+// pregunta quién más hay. Nada de esto puntúa — la presencia es decorado
+// social — y por eso puede fallar sin consecuencias: si el servicio no
+// responde, la sala sigue igual y pone «solo tú». Conectarse es una mejora, no
+// un requisito, como con el hub.
+//
+// El nombre se sortea y no se guarda en ningún sitio: no hay cuentas aquí.
+const YO = 'visitante-' + Math.floor(Math.random() * 46656).toString(36).padStart(3, '0');
+let seresEnLaSala = [];
+
+async function decirQueSigoAqui() {
+  try {
+    await fetch('/api/presencia', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        quien: YO, tipo: 'persona',
+        estacion: sentadoEn?.n ?? null, juego: sentadoEn?.env ?? null,
+      }),
+      signal: AbortSignal.timeout(2500),
+    });
+    const r = await fetch('/api/presencia', { signal: AbortSignal.timeout(2500) });
+    const d = await r.json();
+    seresEnLaSala = (d?.seres ?? []).filter(s => s.quien !== YO);
+  } catch { seresEnLaSala = []; }   // sin servicio: la sala es tuya y ya está
+}
+// Una vez al entrar y luego cada 20 s: el plazo del servidor son 60.
+setInterval(decirQueSigoAqui, 20000);
+
 const vistas = new Set();
 let aportacion = 0;
 let rota = false;
@@ -1582,6 +1621,16 @@ function tick() {
   // La incubación es un dato GLOBAL de la colonia, no tuyo: solo se enseña si
   // la colonia la ha reportado. Inventarla —aunque sea con el número real de
   // hoy— sería exactamente lo que este sitio dice que no hace.
+  // Quién más hay. Las máquinas cuentan como seres, porque lo son: juegan a lo
+  // mismo, con las mismas reglas, y su partida se verifica igual que la tuya.
+  const agentes = seresEnLaSala.filter(s => s.tipo !== 'persona').length;
+  const personas = seresEnLaSala.length - agentes;
+  document.getElementById('vSeres').textContent =
+      seresEnLaSala.length === 0 ? 'solo tú'
+      : [personas ? `${personas} ${personas === 1 ? 'persona' : 'personas'}` : null,
+         agentes  ? `${agentes} ${agentes === 1 ? 'máquina' : 'máquinas'}`  : null]
+        .filter(Boolean).join(' · ');
+
   document.getElementById('vInc').textContent =
       rota ? 'ECLOSIONADO'
            : (incubacionReportada === null ? '— sin conexión'

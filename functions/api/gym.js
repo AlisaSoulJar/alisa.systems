@@ -145,7 +145,7 @@ export async function onRequestGet({ request }) {
     });
 }
 
-export async function onRequestPost({ request }) {
+export async function onRequestPost({ request, env }) {
     let pet;
     try { pet = await request.json(); }
     catch { return responder(400, { error: 'JSON inválido' }); }
@@ -174,6 +174,29 @@ export async function onRequestPost({ request }) {
 
     const st = reglas.estado(r.p);
     const acciones = accionesDe(st);
+
+    // ⚠️ UN AGENTE QUE JUEGA, EXISTE.
+    // Hasta ahora un modelo podía jugar la misma partida que una persona y no
+    // estar en ninguna parte: la sala nunca supo de él. Si dice cómo se llama,
+    // ocupa sitio como cualquiera — y quien esté paseando por la sala lo verá
+    // sentado en esa estación.
+    //
+    // Es opcional a propósito: sin `quien` se juega igual. Nadie tiene que
+    // identificarse para usar el gym, y nada de esto puntúa. Y si el almacén
+    // falla, la partida sigue: se envuelve en su propio `try` porque **una
+    // caída del decorado social no puede tumbar una partida**.
+    if (env?.PRESENCIA && pet?.quien) {
+        try {
+            const quien = String(pet.quien).replace(/[<>&"'\x00-\x1f\x7f]/g, '').trim().slice(0, 24);
+            if (quien) {
+                await env.PRESENCIA.put(`p:agente:${quien}`, JSON.stringify({
+                    quien, tipo: 'agente',
+                    estacion: TITULOS[pet.juego] ?? pet.juego,
+                    juego: pet.juego, desde: Date.now(),
+                }), { expirationTtl: 60 });
+            }
+        } catch { /* sin presencia se juega igual */ }
+    }
 
     // El estado tal cual lo publican las reglas, sin recortar: es lo que ve una
     // persona en su pantalla. Lo que un agente NO recibe es lo que una persona

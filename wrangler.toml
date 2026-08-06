@@ -32,3 +32,20 @@ compatibility_date = "2026-08-03"
 # Las Functions (`/api/verificar`) NO van aquí dentro: Cloudflare las coge de la
 # carpeta `functions/` de la raíz del proyecto, que es donde están. El
 # directorio de salida sólo dice de dónde salen los ficheros estáticos.
+
+# ── PRESENCIA ──────────────────────────────────────────────────────────────
+# El único estado compartido de todo el sitio, y es a propósito el más pequeño
+# posible: quién está ahora mismo en la sala y en qué estación.
+#
+# Todo lo demás aquí es SIN ESTADO —el gym re-simula, el verificador re-simula—
+# y esa es la fuerza del proyecto: nada que guardar, nada que corromper, nada
+# que auditar. Pero «verse unos a otros» es irreduciblemente un estado
+# compartido: no hay forma de que dos seres coincidan si nadie recuerda que el
+# otro está ahí.
+#
+# Así que se acota al mínimo: entradas que caducan solas en 60 s, sin cuentas,
+# sin histórico y sin nada que identifique a nadie más allá del nombre que se
+# ponga. Si el servicio se cae, la sala sigue funcionando en solitario.
+[[kv_namespaces]]
+binding = "PRESENCIA"
+id = "5f08e01c349a49aab99b996cd40e728c"
