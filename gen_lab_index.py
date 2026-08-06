@@ -24,9 +24,30 @@ ARCADE = os.path.join(PUB, "arcade")
 # La portada: la sala manda, y va arriba y grande.
 HALL = "rooms/room_sala_del_huevo.html"
 
+GENERADORES = os.path.join(PUB, "generators")
+LEGACY = os.path.join(PUB, "legacy")
+
+# ⚠️ DOS CARPETAS ENTERAS QUE NO ENSENABAMOS.
+# Medido: de 153 paginas en `public/`, 34 no las enlazaba nadie. Entre ellas los
+# siete generadores procedurales —todos arrancan y pintan— y diez paginas en
+# `legacy/`, de las que seis funcionan, incluida `room_empty_table_games_node`:
+# el selector de mesas con brisca, tute, mus y go fish que dabamos por perdido.
+#
+# No estaban rotas ni escondidas a proposito: nadie las habia listado. Es el
+# mismo patron de siempre — dar por ausente lo que solo estaba sin enlazar.
+# Las dos que no arrancan (`corporate_building_legacy`, `room_simulator`) se
+# quedan fuera, comprobado abriendolas en un navegador.
+LEGACY_ROTAS = {"corporate_building_legacy.html", "room_simulator.html"}
+
 # categorias por patron de nombre (orden importa)
 CATS = [
     ("🏆 Gym y benchmark", ["gym_bench","rue_del_percebe"]),
+    # Los arneses de prueba son EVIDENCIA, no sobras. En un banco de pruebas
+    # abierto son lo que permite no fiarse de nosotros, asi que suben de
+    # «Otros laboratorios» a tener seccion propia.
+    ("🔍 Las pruebas que lo sostienen",
+     ["_test", "perft", "audit", "smoketest", "_check", "sin_hub", "verificad",
+      "banco_motores", "dataset", "determinism"]),
     ("🎬 Realización · ALISA Labs", ["confessional", "el_reparto", "cinematic_room", "arista_self", "avatar_face_lab", "aris_self_puppet"]),
     ("🦍 Avatares y rig",           ["rig_avatar", "animator_dojo", "archetype_matrix", "morpholog", "proportional"]),
     ("🛂 Colonia y datos",          ["customs", "aduana", "scumm", "terminal", "digital_twin"]),
@@ -176,22 +197,70 @@ for rel, titulo, desc in DESTACADAS:
     destacadas_html.append(
         f'<a class="card destacada" href="{rel}"><b>{html.escape(titulo)}</b>'
         f'{sello(rel, p)}<span class="d">{html.escape(desc)}</span></a>')
+def piso(titulo, explicacion):
+    """Un rótulo que dice para qué sirve lo que viene debajo.
+
+    ⚠️ El catálogo era una lista plana de 118 fichas y decía en una línea suelta
+    «el producto es la sala; lo demás es de dónde salió» — y a continuación lo
+    mezclaba todo. El tercer clic de un visitante caía en un experimento de
+    abril y se llevaba la idea de que esto es un montón de cosas a medias.
+    No sobraba contenido: faltaba jerarquía.
+    """
+    return (f'<div class="piso"><b>{html.escape(titulo)}</b>'
+            f'<span>{html.escape(explicacion)}</span></div>')
+
+
+# ══ PISO 1 · JUGAR ══════════════════════════════════════════════════════════
+cards.append(piso(
+    "1 · JUGAR",
+    "El producto. Se anda por la sala, se juega en las máquinas, y todo lo que "
+    "juegas deja un recibo que cualquiera puede volver a jugar."))
+
 if destacadas_html:
     cards.append('<h2>⭐ Empieza por aquí <i>si sólo vas a abrir tres</i></h2>'
                  f'<div class="grid">{"".join(destacadas_html)}</div>')
 
-# ── Lo primero, lo que se juega ─────────────────────────────────────────────
 juegos_fs, juegos_html = tarjetas(GAMES, "games/", "juego")
 if juegos_html:
     cards.append(f'<h2>🕹️ Juegos <i>{len(juegos_fs)}</i></h2><div class="grid">{juegos_html}</div>')
 
 arcade_fs, arcade_html = tarjetas(ARCADE, "arcade/", "mesa")
 if arcade_html:
-    cards.append(f'<h2>🃏 Arcade — tablero y cartas <i>{len(arcade_fs)}</i>'
+    cards.append(f'<h2>🃏 Mesas de tablero y cartas <i>{len(arcade_fs)}</i>'
                  f' <a href="arcade/index.html" style="color:#7fd0ff;font-size:11px">· índice propio</a></h2>'
                  f'<div class="grid">{arcade_html}</div>')
 
-for cat, items in groups:
+# ══ PISO 2 · MEDIR ══════════════════════════════════════════════════════════
+cards.append(piso(
+    "2 · MEDIR",
+    "El banco de pruebas, y lo que permite no fiarse de nosotros: los arneses "
+    "que comprueban las reglas, el determinismo y el verificador. Si algo de "
+    "esto falla, el número que te damos no vale."))
+
+MEDIR = {"🏆 Gym y benchmark", "🔍 Las pruebas que lo sostienen"}
+for cat, items in [g for g in groups if g[0] in MEDIR]:
+    inner = []
+    for f in items:
+        p = os.path.join(LABS, f)
+        t = html.escape(title_of(p))
+        short = t.split("—")[-1].strip() if "—" in t else t
+        inner.append(f'<a class="card" href="labs/{f}"><b>{html.escape(f[9:-5].replace("_"," "))}</b>'
+                     f'{sello(f"labs/{f}", p)}<span class="d">{short[:78]}</span></a>')
+    cards.append(f'<h2>{cat} <i>{len(items)}</i></h2><div class="grid">{"".join(inner)}</div>')
+
+# ══ PISO 3 · EL TALLER ══════════════════════════════════════════════════════
+cards.append(piso(
+    "3 · EL TALLER",
+    "De dónde salió todo esto: generadores, sistemas de mundo, rigs y estancias "
+    "del motor. No es producto y no pretende serlo — se publica porque un motor "
+    "que no puedes ver por dentro es un motor en el que no puedes confiar."))
+
+gen_fs, gen_html = tarjetas(GENERADORES, "generators/", "gen")
+if gen_html:
+    cards.append(f'<h2>🧪 Generadores procedurales <i>{len(gen_fs)}</i></h2>'
+                 f'<div class="grid">{gen_html}</div>')
+
+for cat, items in [g for g in groups if g[0] not in MEDIR]:
     inner = []
     for f in items:
         p = os.path.join(LABS, f)
@@ -203,7 +272,24 @@ for cat, items in groups:
 
 rooms_fs, rooms_html = tarjetas(ROOMS, "rooms/", "room", recorte=5)
 if rooms_html:
-    cards.append(f'<h2>🏛️ Estancias (rooms) <i>{len(rooms_fs)}</i></h2><div class="grid">{rooms_html}</div>')
+    cards.append(f'<h2>🏛️ Estancias del motor <i>{len(rooms_fs)}</i></h2><div class="grid">{rooms_html}</div>')
+
+# ── Antecedentes ────────────────────────────────────────────────────────────
+# Se enseñan por la misma razón que se archiva y no se borra: son de dónde
+# salieron los de arriba, y alguna guarda cosas que los nuevos no tienen —el
+# selector de mesas con brisca, tute, mus y go fish está aquí, no en el arcade.
+leg_fs = sorted(f for f in os.listdir(LEGACY)
+                if f.endswith(".html") and f not in LEGACY_ROTAS) if os.path.isdir(LEGACY) else []
+if leg_fs:
+    inner = []
+    for f in leg_fs:
+        p = os.path.join(LEGACY, f)
+        t = html.escape(title_of(p))
+        inner.append(f'<a class="card" href="legacy/{f}"><b>{html.escape(f[:-5].replace("_"," "))}</b>'
+                     f'<span class="d">{t.split("—")[-1].strip()[:78]}</span></a>')
+    cards.append(f'<h2>🗄️ Antecedentes <i>{len(leg_fs)}</i>'
+                 f' <a style="color:#64748b;font-size:11px">· versiones anteriores, se conservan</a></h2>'
+                 f'<div class="grid">{"".join(inner)}</div>')
 
 n_colonia = sum(1 for grupo, carpeta, pre in
                 ((juegos_fs, GAMES, "games/"), (arcade_fs, ARCADE, "arcade/"),
@@ -225,6 +311,14 @@ page = f"""<!DOCTYPE html>
   .sub {{ color: #94a3b8; font-size: 14px; line-height: 1.8; max-width: 800px; }}
   .sub b {{ color: #a7f3d0; font-weight: 600; }}
   code {{ font-family: 'JetBrains Mono', monospace; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 13px; color: #cbd5e1; }}
+  /* El rótulo de piso. Sin esto el catálogo era una lista plana de 118 fichas
+     donde el tercer clic de un visitante caía en un experimento de abril: no
+     sobraba contenido, faltaba jerarquía. */
+  .piso {{ margin: 64px 0 8px; padding: 18px 22px; border-radius: 14px;
+           border: 1px solid var(--border); background: rgba(255,255,255,0.03); }}
+  .piso b {{ display:block; font-family:'JetBrains Mono',monospace; font-size:15px;
+             letter-spacing:3px; color:#fff; }}
+  .piso span {{ display:block; margin-top:6px; font-size:12.5px; color:#94a3b8; line-height:1.7; }}
   h2 {{ font-size: 16px; color: #fff; margin: 40px 0 16px; font-weight: 600; letter-spacing: 1px; display: flex; align-items: center; gap: 12px; font-family: 'JetBrains Mono', monospace; }}
   h2 i {{ color: #64748b; font-style: normal; font-size: 13px; font-weight: 400; padding: 2px 8px; background: rgba(255,255,255,0.05); border-radius: 12px; }}
   .grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }}
