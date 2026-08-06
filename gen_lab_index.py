@@ -64,17 +64,46 @@ def necesita_colonia(path):
     «INCUBACION — SIN CONEXION». Una insignia que asusta sobre la pagina
     estrella no informa: espanta.
 
-    Ahora hace falta que la llamada NO este protegida. Si hay un `catch`, un
-    `??`, un `elegirBackend` (el selector del ProtoHub, escrito justo para
-    esto) o el propio cartel de sin conexion, la pagina degrada sola y es
-    publica.
+    Hace falta que la llamada NO este protegida. Si hay un `catch`, un `??`, un
+    `elegirBackend` (el selector del ProtoHub, escrito justo para esto) o el
+    propio cartel de sin conexion, la pagina degrada sola y es publica.
+
+    ⚠️ Y AUN ASI MIRABA DONDE NO ERA. Buscaba el guardia en el FICHERO ENTERO:
+    bastaba un `catch` en cualquier rincon —y hay `catch` en casi todas— para
+    dar por protegida una llamada al hub que estaba mil lineas mas alla y a la
+    intemperie. Resultado: de las diecisiete paginas que hablan con el hub solo
+    UNA se llevaba el sello, cuando siete se rompen de verdad sin colonia.
+
+    Un guardia protege lo que tiene AL LADO, asi que se mira el vecindario de
+    cada llamada. Es el mismo error de alcance que ya mordio en el censo
+    (contar fichas pegadas a los modelos) y en el empaquetador (anclas sin
+    literal): la pregunta estaba bien y el sitio donde se buscaba, mal.
+
+    ⚠️ Y la primera version del vecindario se paso de estrecha: 400 caracteres
+    a cada lado. Marco `croupier_chopper_aquarium` como rota cuando tiene un
+    `try {` DOCE LINEAS mas arriba — con sangrado de veinte espacios, doce
+    lineas son mas de 400 caracteres. De mirar todo el fichero a mirar por una
+    rendija, y las dos veces mal.
+
+    Lo que arregla el tamaño de la ventana es entender la FORMA del guardia:
+    un `try {` va SIEMPRE antes de la llamada, y un `.catch()` o un `??`
+    SIEMPRE despues. Asi que se mira lejos hacia atras y cerca hacia delante,
+    en vez de un cuadrado a ojo.
     """
     txt = leer(path)
-    if not re.search(r"127\.0\.0\.1:874\d|localhost:874\d", txt):
+    llamadas = list(re.finditer(r"127\.0\.0\.1:874\d|localhost:874\d", txt))
+    if not llamadas:
         return False
-    protegida = re.search(r"catch\s*[\({]|\.catch\(|elegirBackend|\?\?|SIN CONEXI",
-                          txt, re.I)
-    return not protegida
+
+    antes = re.compile(r"try\s*\{|HAY_HUB_POSIBLE|elegirBackend", re.I)
+    despues = re.compile(r"\.catch\(|\?\?|onerror|SIN CONEXI|timeout|catch\s*[\({]", re.I)
+
+    def desprotegida(m):
+        return not (antes.search(txt[max(0, m.start() - 1800): m.start()])
+                    or despues.search(txt[m.start(): m.start() + 700]))
+
+    # Si UNA sola llamada queda a la intemperie, la pagina se rompe.
+    return any(desprotegida(m) for m in llamadas)
 
 
 def sello(rel, path):

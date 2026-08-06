@@ -6,7 +6,12 @@
     <title>ALISA Colonial Overworld</title>
     <!-- Modern Typography -->
     
-    <link rel="stylesheet" href="css/style.css">
+    <!-- ⚠️ Aquí se pedía `css/style.css`, que NO EXISTE desde hace tiempo. En
+       producción el servidor contesta con la página de 404 —que es HTML— y el
+       navegador la rechaza: «Refused to apply style… MIME type text/html».
+       O sea, un error rojo en consola y la página sin estilar, y nadie lo vio
+       porque en local también faltaba y también fallaba en silencio.
+       Se quita el enlace: la hoja no existe y pedirla no la trae. -->
 <link rel="stylesheet" href="/vendor/fonts/fuentes.css">
 </head>
 <body>

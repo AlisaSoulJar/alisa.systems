@@ -144,7 +144,15 @@
         // ═══════════════════════════════════════════════════
         // sync:true — esta sala ES de la colonia y quiere el multijugador.
         // Ya no viene activado por defecto: el motor tiene que poder correr suelto.
-        const room = new ArcadeRoomManager(scene, gfx, { sync: true });
+        // ⚠️ `sync: true` a secas abre un WebSocket a `/overworld/sync`, que
+        // sólo existe en el hub de la colonia. En producción eso deja un 404 de
+        // handshake en la consola de cualquiera que entre — dos veces, porque
+        // reintenta. La sala funciona igual sin él: el multijugador es una
+        // mejora, no un requisito. Mismo criterio que en la Sala del Huevo:
+        // sólo se pide lo que puede existir desde donde estás.
+        const HAY_COLONIA = location.protocol === 'file:'
+          || ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+        const room = new ArcadeRoomManager(scene, gfx, { sync: HAY_COLONIA });
         const hologram = new CSS3DHologramPlugin(gfx);
         const arcadeFx = new ArcadeFXPlugin(hologram);
 
