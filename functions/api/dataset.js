@@ -1,0 +1,172 @@
+/**
+ * functions/api/dataset.js — el corpus que no se puede envenenar
+ * ═══════════════════════════════════════════════════════════════════════════
+ *     POST /api/dataset   { juego, semilla, jugadas, tipo?, quien? }
+ *     GET  /api/dataset                → qué hay dentro
+ *     GET  /api/dataset?formato=jsonl  → descárgatelo entero
+ *
+ * POR QUÉ ESTE DATASET ES DISTINTO
+ * Los corpus de partidas de este sector se recogen de una de dos formas: te
+ * fías de quien los sube, o pones a otro modelo a hacer de juez. Las dos tienen
+ * el mismo agujero — alguien tiene que creerse algo.
+ *
+ * Aquí no. Una fila entra **sólo si este servidor ha vuelto a jugar la partida**
+ * con el mismo fichero de reglas que corre en el navegador de quien la jugó. Se
+ * guarda la puntuación RECALCULADA, nunca la declarada.
+ *
+ * Consecuencias, y son grandes:
+ *   · nadie puede meter basura: la partida inflada, la jugada ilegal o la
+ *     semilla que no cuadra se rechazan solas;
+ *   · no hace falta moderación, ni reputación, ni cuentas, ni confianza;
+ *   · **se puede abrir a cualquiera** — humano, agente, un desconocido con
+ *     `curl`— sin que eso degrade el corpus. Cuanta más gente, mejor, que es
+ *     justo lo contrario de lo que le pasa a un dataset que hay que vigilar.
+ *
+ * Y lo que se guarda es minúsculo: `{juego, semilla, jugadas}`. Con eso y las
+ * reglas se reconstruye cualquier estado intermedio, así que guardar el estado
+ * sería guardar algo que ya sabemos deducir. Una partida entera son unos
+ * cientos de bytes.
+ *
+ * ⚠️ SE GUARDA LA HUELLA DE LAS REGLAS. Si mañana cambiamos una regla, las
+ * filas viejas siguen siendo ciertas — pero de otro juego. Sin esa columna
+ * acabaríamos promediando dos juegos distintos creyendo que es uno.
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+import { verificar } from '../../public/arcade/js/protohub/Verificador.js';
+import { huellaDeReglas } from '../../public/arcade/js/protohub/huella.js';
+import { JUEGOS, cargarReglas } from '../../public/arcade/js/protohub/rules/index.js';
+
+const BIBLIOTECA = '/arcade/data/card_library.json';
+const TOPE_JUGADAS = 4000;
+const TIPOS = new Set(['persona', 'agente', 'politica']);
+
+const CABECERAS = {
+    'content-type': 'application/json; charset=utf-8',
+    'access-control-allow-origin': '*',
+    'access-control-allow-headers': 'content-type',
+};
+const responder = (codigo, cuerpo, cabeceras = CABECERAS) =>
+    new Response(typeof cuerpo === 'string' ? cuerpo : JSON.stringify(cuerpo, null, 2),
+                 { status: codigo, headers: cabeceras });
+
+const cache = new Map();
+async function reglasDe(juego, urlPeticion) {
+    if (cache.has(juego)) return cache.get(juego);
+    if (!JUEGOS.includes(juego)) return null;
+    const reglas = await cargarReglas(juego, { url: new URL(BIBLIOTECA, urlPeticion).href });
+    cache.set(juego, reglas);
+    return reglas;
+}
+
+const limpio = (v, tope) =>
+    String(v ?? '').replace(/[<>&"'\x00-\x1f\x7f]/g, '').trim().slice(0, tope);
+
+/** La identidad de una partida: el juego, el mundo y lo que se hizo en él. */
+async function firmaDe(juego, semilla, jugadas) {
+    const texto = `${juego}|${semilla}|${jugadas.join(',')}`;
+    const bytes = new TextEncoder().encode(texto);
+    const hash = await crypto.subtle.digest('SHA-256', bytes);
+    return [...new Uint8Array(hash)].slice(0, 12)
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+export async function onRequestOptions() {
+    return new Response(null, { status: 204, headers: CABECERAS });
+}
+
+export async function onRequestPost({ request, env }) {
+    if (!env?.DATASET) return responder(503, { guardada: false, motivo: 'sin almacén' });
+
+    let d;
+    try { d = await request.json(); }
+    catch { return responder(400, { guardada: false, motivo: 'JSON inválido' }); }
+
+    const jugadas = d?.jugadas;
+    if (!Array.isArray(jugadas) || !jugadas.length) {
+        return responder(400, { guardada: false, motivo: 'faltan las jugadas' });
+    }
+    if (jugadas.length > TOPE_JUGADAS) {
+        return responder(413, { guardada: false, motivo: `demasiadas jugadas (tope ${TOPE_JUGADAS})` });
+    }
+    const semilla = Number(d?.semilla);
+    if (!Number.isFinite(semilla)) {
+        return responder(400, { guardada: false, motivo: 'falta la semilla' });
+    }
+    const reglas = await reglasDe(d?.juego, request.url);
+    if (!reglas) return responder(400, { guardada: false, motivo: `no sé jugar a '${d?.juego}'`, juegos: JUEGOS });
+
+    // ── LA ÚNICA PUERTA: se vuelve a jugar ──────────────────────────────
+    let v;
+    try { v = verificar(reglas, { ...d, semilla }); }
+    catch (e) { return responder(200, { guardada: false, motivo: `las reglas fallaron: ${e.message}` }); }
+    if (!v.valida) {
+        // Rechazar NO es un error del servicio: es el servicio funcionando.
+        return responder(200, { guardada: false, motivo: v.motivo, puntos: v.puntos });
+    }
+
+    const firma = await firmaDe(d.juego, semilla, jugadas);
+    const fila = {
+        firma, juego: d.juego, semilla: semilla >>> 0,
+        jugadas: JSON.stringify(jugadas), n_jugadas: jugadas.length,
+        puntos: v.puntos,                       // el RECALCULADO
+        reglas: huellaDeReglas(reglas),
+        tipo: TIPOS.has(d?.tipo) ? d.tipo : 'desconocido',
+        quien: limpio(d?.quien, 24) || null,
+        terminada: v.terminada ? 1 : 0,
+        fecha: Date.now(),
+    };
+
+    try {
+        await env.DATASET.prepare(
+            `INSERT INTO partidas
+               (firma, juego, semilla, jugadas, n_jugadas, puntos, reglas, tipo, quien, terminada, fecha)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
+            .bind(fila.firma, fila.juego, fila.semilla, fila.jugadas, fila.n_jugadas,
+                  fila.puntos, fila.reglas, fila.tipo, fila.quien, fila.terminada, fila.fecha)
+            .run();
+    } catch (e) {
+        // Misma partida dos veces: no es un fallo, es que ya está.
+        if (/UNIQUE/i.test(e.message)) {
+            return responder(200, { guardada: false, motivo: 'esta partida ya estaba', firma });
+        }
+        throw e;
+    }
+    return responder(201, { guardada: true, firma, puntos: v.puntos, jugadas: fila.n_jugadas });
+}
+
+export async function onRequestGet({ request, env }) {
+    if (!env?.DATASET) return responder(503, { motivo: 'sin almacén' });
+    const url = new URL(request.url);
+
+    // Descarga entera, una partida por línea. Sin paginar, sin clave, sin pedir
+    // permiso: un corpus que no puedes bajarte no es un corpus, es una demo.
+    if (url.searchParams.get('formato') === 'jsonl') {
+        const { results } = await env.DATASET.prepare(
+            `SELECT juego, semilla, jugadas, puntos, reglas, tipo, quien, terminada, fecha
+               FROM partidas ORDER BY id LIMIT 20000`).all();
+        const cuerpo = results.map(r =>
+            JSON.stringify({ ...r, jugadas: JSON.parse(r.jugadas), terminada: !!r.terminada })).join('\n');
+        return responder(200, cuerpo, {
+            ...CABECERAS,
+            'content-type': 'application/x-ndjson; charset=utf-8',
+            'content-disposition': 'attachment; filename="alisa-partidas.jsonl"',
+        });
+    }
+
+    const total = await env.DATASET.prepare('SELECT COUNT(*) AS n FROM partidas').first();
+    const porJuego = await env.DATASET.prepare(
+        `SELECT juego, COUNT(*) AS n, ROUND(AVG(puntos), 2) AS media
+           FROM partidas GROUP BY juego ORDER BY n DESC`).all();
+    const porTipo = await env.DATASET.prepare(
+        `SELECT tipo, COUNT(*) AS n FROM partidas GROUP BY tipo`).all();
+
+    return responder(200, {
+        que_es: 'Partidas verificadas: cada fila la ha vuelto a jugar este servidor '
+              + 'antes de guardarla. La puntuación es la recalculada, nunca la declarada.',
+        como_aportar: 'POST /api/dataset { juego, semilla, jugadas, tipo?, quien? }',
+        descarga: '/api/dataset?formato=jsonl',
+        partidas: total?.n ?? 0,
+        por_juego: porJuego.results,
+        por_tipo: porTipo.results,
+    });
+}

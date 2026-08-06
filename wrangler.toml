@@ -49,3 +49,17 @@ compatibility_date = "2026-08-03"
 [[kv_namespaces]]
 binding = "PRESENCIA"
 id = "5f08e01c349a49aab99b996cd40e728c"
+
+# ── DATASET ────────────────────────────────────────────────────────────────
+# El corpus de partidas verificadas. La base ya existía —`alisa-mmo-db`, creada
+# el 30 de abril— y llevaba desde entonces con CERO tablas: alguien la
+# provisionó para el multijugador y ahí se quedó. Se reutiliza en vez de crear
+# otra, que es la regla de esta casa.
+#
+# Aquí sí hay estado, y a diferencia de la presencia este merece la pena: una
+# fila sólo entra si el servidor ha vuelto a jugar la partida, así que el
+# almacén no guarda afirmaciones de nadie — guarda resultados recalculados.
+[[d1_databases]]
+binding = "DATASET"
+database_name = "alisa-mmo-db"
+database_id = "0852197b-9c2d-46f6-ab25-e79c6104ef5d"
