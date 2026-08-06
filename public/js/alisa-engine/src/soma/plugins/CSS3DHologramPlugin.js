@@ -118,7 +118,7 @@ export class CSS3DHologramPlugin {
             const intersects = this.screenRaycaster.intersectObject(this.currentDebugScreen);
             
             if (intersects.length > 0) {
-                this.setHologramMode('PROJECTED');
+                this.setHologramMode('FULLSCREEN');
             }
         });
 
@@ -356,7 +356,7 @@ export class CSS3DHologramPlugin {
                 // Invisible Raycast Proxy Mesh
                 const debugGeo = new THREE.PlaneGeometry(physicalWidth, physicalHeight);
                 const debugMat = new THREE.MeshBasicMaterial({ 
-                    color: 0x000000, side: THREE.FrontSide, blending: THREE.NoBlending,
+                    color: 0x000000, side: THREE.DoubleSide, blending: THREE.NoBlending,
                     opacity: 0, colorWrite: false 
                 });
 
@@ -374,7 +374,7 @@ export class CSS3DHologramPlugin {
                     if(this.screenMode === 'PROJECTED') iframe.contentWindow.document.body.style.cursor = 'pointer';
                     
                     iframe.contentWindow.document.addEventListener('click', () => {
-                        if (this.screenMode === 'PROJECTED') {
+                        if (this.screenMode === 'PROJECTED' || this.screenMode === 'MOUNTED') {
                             this.setHologramMode('FULLSCREEN');
                         }
                     });

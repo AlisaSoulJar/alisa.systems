@@ -1,272 +1,3 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ALISA — La Sala del Huevo</title>
-<!--
-  ═══════════════════════════════════════════════════════════════════════════
-   LA SALA DEL HUEVO — el hall de alisa.systems
-  ═══════════════════════════════════════════════════════════════════════════
-  Brief de Oscar: una anomalía/huevo, arcades y mesas, y un ambiente entre el
-  Construct de Matrix y la estación de King's Cross donde Harry "muere".
-
-  LA IDEA QUE UNE LAS TRES COSAS
-  Los apuntes de la v4 describen el "Renderizado JIT Cuántico": los entornos no
-  existen hasta que la cámara los observa; solo son parámetros ligeros en una
-  base de datos. Eso, HECHO VISIBLE, es exactamente el Construct: el mundo se
-  materializa a tu paso.
-
-  Así que aquí no se decora con niebla blanca para que parezca Matrix. Se
-  enseña la arquitectura de verdad: cada estación existe como dato, y solo se
-  vuelve materia cuando te acercas. La estética ES la honestidad técnica.
-
-  Y la anomalía no es un agujero negro de adorno. El lore ya la define:
-
-      "El usuario no es el padre que da órdenes, es la ANOMALÍA TERMODINÁMICA
-       que inyecta caos, intención y propósito."  — Raw_Lore_Harvest.md
-
-  La anomalía eres tú. Por eso el mundo se ordena a tu alrededor: el polvo se
-  te acerca, el suelo se dibuja bajo tus pies, y el huevo late más fuerte
-  cuanto más cerca estás. Sin ti esto es una base de datos a oscuras.
-
-  PIEZAS DEL MOTOR QUE USA (ninguna escrita para esto)
-    CinematicPipelinePlugin  bloom + tonemapping ACES
-    VolumetricsPlugin        haces volumétricos y polvo
-    ProceduralTextureFactory texturas de canvas cacheadas
-    mulberry32               todo el ruido es semillado: misma sala siempre
-  ═══════════════════════════════════════════════════════════════════════════
--->
-<style>
-  html,body { margin:0; padding:0; width:100%; height:100%; overflow:hidden;
-              background:#eef1f4; font-family:'JetBrains Mono',ui-monospace,monospace; }
-  #lienzo { position:absolute; inset:0; }
-
-  /* La interfaz no flota sobre el mundo: se comporta como niebla impresa. */
-  .hud { position:absolute; z-index:10; color:#2a3340; letter-spacing:0.06em;
-         text-transform:uppercase; font-size:10px; pointer-events:none;
-         text-shadow:0 0 18px rgba(255,255,255,0.9); }
-  #marca   { top:26px; left:32px; font-size:13px; letter-spacing:0.34em; color:#1a2230; }
-  #estado  { top:26px; right:32px; text-align:right; line-height:1.9; }
-  #estado b { color:#1a2230; font-weight:600; }
-  #pie     { bottom:26px; left:50%; transform:translateX(-50%); text-align:center;
-             line-height:1.9; opacity:0.72; }
-
-  /* La mirilla: un punto. Lo justo para saber dónde miras. */
-  /* ⚠️ El halo blanco no es adorno: la mirilla y el rótulo son oscuros porque
-     la sala es blanca, pero al apuntar a una máquina caen sobre su PANTALLA,
-     que es negra — y desaparecían justo en el momento en que hacen falta. Con
-     el contorno claro se leen sobre los dos fondos. */
-  #mirilla { position:absolute; top:50%; left:50%; width:5px; height:5px; z-index:11;
-             transform:translate(-50%,-50%); border-radius:50%;
-             background:#1a2230; opacity:0.5; transition:all .18s;
-             box-shadow:0 0 0 1.5px rgba(255,255,255,.55); }
-  #mirilla.activa { width:16px; height:16px; opacity:0.9; background:transparent;
-                    border:1.5px solid #1a2230;
-                    box-shadow:0 0 0 1.5px rgba(255,255,255,.55),
-                               inset 0 0 0 1.5px rgba(255,255,255,.55); }
-
-  /* Lo que estás mirando. Verbo arriba, nombre abajo — como en SCUMM. */
-  #objetivo { position:absolute; top:calc(50% + 34px); left:50%; transform:translateX(-50%);
-              z-index:11; text-align:center; opacity:0; transition:opacity .18s;
-              pointer-events:none; }
-  #objetivo .verbo  { font-size:9px; letter-spacing:0.3em; color:#5a6675;
-                      text-shadow:0 0 6px #fff, 0 0 2px #fff; }
-  #objetivo .nombre { font-size:14px; color:#121822; margin-top:4px; letter-spacing:0.04em;
-                      text-shadow:0 0 7px #fff, 0 0 3px #fff, 0 1px 0 #fff; }
-  #objetivo.visible { opacity:1; }
-
-  /* El aviso del loot. Aparece arriba, sin tapar el mundo. */
-  #aviso { position:absolute; top:16%; left:50%; transform:translateX(-50%) translateY(-8px);
-           z-index:12; text-align:center; opacity:0; transition:opacity .5s, transform .5s;
-           pointer-events:none; }
-  #aviso.visible { opacity:1; transform:translateX(-50%) translateY(0); }
-  #aviso .t { font-size:13px; letter-spacing:0.34em; color:#1a2230; }
-  #aviso .p { font-size:10px; letter-spacing:0.14em; color:#7b8694; margin-top:7px; }
-
-  /* La entrada. Blanco sobre blanco: aún no has llegado del todo. */
-  #umbral { position:absolute; inset:0; z-index:20; display:flex; flex-direction:column;
-            align-items:center; justify-content:center; background:#f4f6f8; cursor:pointer;
-            transition:opacity 1.1s ease; }
-  #umbral h1 { font-size:15px; letter-spacing:0.62em; color:#1a2230; margin:0 0 18px; font-weight:400; }
-  #umbral p  { font-size:11px; color:#6b7684; max-width:400px; text-align:center;
-               line-height:2; margin:0 0 30px; letter-spacing:0.05em; }
-  /* El pacto: se dice ANTES de entrar, no en un pie de página.
-     El whitepaper proponía que el jugador no supiera que está en un proceso de
-     selección. Se dice al revés, y a la cara: es más honesto y es mejor gancho.
-     "Te observamos y eso es la oferta" convence más que un embudo escondido —
-     y es lo único que aguanta que alguien lea el código, siendo open core. */
-  #umbral .pacto { font-size:10px; color:#8b95a3; max-width:430px; line-height:2.1;
-                   border-top:1px solid #dde3ea; padding-top:18px; margin-top:4px; }
-  #umbral .pacto b { color:#1a2230; font-weight:600; }
-  #umbral .que-es { font-size:12.5px; color:#1a2230; letter-spacing:0.02em;
-                    line-height:2; margin-bottom:22px; }
-  #umbral .mandos { font-size:10px; color:#8b95a3; letter-spacing:0.08em;
-                    margin:22px 0 26px; }
-  #umbral .mandos b { color:#1a2230; font-weight:600; }
-  /* El botón parecía texto. Que se vea que se pulsa. */
-  #umbral .entrar { font-size:11px; letter-spacing:0.34em; color:#f4f6f8;
-                    background:#1a2230; padding:11px 30px; border-radius:3px;
-                    transition:background .2s; }
-  #umbral .entrar:hover { background:#39485c; }
-  #umbral.ido { opacity:0; pointer-events:none; }
-
-  /* La ficha de partida: discreta, abajo a la izquierda, y solo aparece cuando
-     de verdad has jugado algo. Nada de adornos — son datos y se leen. */
-  #ficha-partida { position:absolute; left:22px; bottom:22px; z-index:12;
-      background:rgba(255,255,255,.82); backdrop-filter:blur(3px);
-      border:1px solid #cfd8e2; border-radius:4px; padding:13px 15px 12px;
-      font-size:10px; letter-spacing:.06em; color:#39485c; min-width:212px;
-      opacity:0; transform:translateY(6px); transition:opacity .4s, transform .4s;
-      pointer-events:none; }
-  #ficha-partida.visible { opacity:1; transform:translateY(0); pointer-events:auto; }
-  #ficha-partida .cab { font-size:9px; letter-spacing:.22em; color:#8b95a3;
-      margin-bottom:9px; display:flex; justify-content:space-between; gap:10px; }
-  #fp-sello { color:#1d6b45; font-weight:700; }
-  #fp-sello.mal { color:#a32020; }
-  #ficha-partida .fila { display:flex; justify-content:space-between; gap:16px;
-      padding:2px 0; }
-  #ficha-partida .fila span { color:#8b95a3; }
-  #ficha-partida .fila b { color:#1a2230; font-weight:600; }
-  #ficha-partida .pie { margin-top:9px; padding-top:8px; border-top:1px solid #e2e8ee;
-      font-size:9px; color:#8b95a3; line-height:1.7; letter-spacing:.02em; }
-  #fp-copiar { margin-top:10px; width:100%; cursor:pointer; padding:7px;
-      background:transparent; border:1px solid #b9c4d0; border-radius:3px;
-      color:#39485c; font-family:inherit; font-size:9px; letter-spacing:.2em; }
-  #fp-copiar:hover { background:#1a2230; color:#f4f6f8; border-color:#1a2230; }
-  #fp-falsear { margin-top:6px; width:100%; cursor:pointer; padding:7px;
-      background:transparent; border:1px dashed #c9a0a0; border-radius:3px;
-      color:#8a5a5a; font-family:inherit; font-size:9px; letter-spacing:.2em; }
-  #fp-falsear:hover { background:#5a1f1f; color:#ffdede; border-color:#5a1f1f; }
-  #fp-veredicto { margin-top:8px; font-size:9px; line-height:1.7; color:#a32020;
-      letter-spacing:.02em; display:none; }
-  #fp-veredicto.visible { display:block; }
-
-  /* En pantalla estrecha, la ficha y el radar se pisaban: la ficha ocupa el
-     ancho abajo y el radar sube y encoge. Un escaparate que se rompe en un
-     móvil es un escaparate cerrado para la mitad de la gente. */
-  @media (max-width: 620px) {
-    #umbral { padding: 0 22px; }
-    #ficha-partida { left:12px; right:12px; bottom:12px; min-width:0; }
-    #ficha-partida .fila { padding:1px 0; }
-    .radar-alisa { width:96px !important; height:96px !important;
-                   bottom:auto !important; top:96px !important; right:12px !important; }
-    #pie { bottom:auto; top:14px; }
-  }
-</style>
-</head>
-<body>
-
-<div id="lienzo"></div>
-
-<div class="hud" id="marca">LA SALA DEL HUEVO</div>
-<!-- ⚠️ EL HUD DIJO UNA MENTIRA DURANTE TODO EL DESARROLLO.
-     La primera línea era «incubación 12.5%»: una constante clavada que jamás
-     cambiaba. En un sitio cuya idea entera es «todo esto se puede comprobar»,
-     enseñar de primeras un número inventado no es un detalle de adorno: es la
-     contradicción central. Ahora arriba va lo ÚNICO que el visitante se ha
-     ganado y se puede verificar —sus partidas— y la incubación solo aparece si
-     la colonia la reporta de verdad. Sin conexión, se dice. -->
-<div class="hud" id="estado">
-  <div>partidas <b id="vPar">0 verificadas</b></div>
-  <div>puntos <b id="vCan">0</b></div>
-  <div>sala <b id="vMat">0% · 0/24</b></div>
-  <div>incubación <b id="vInc">—</b></div>
-</div>
-<div id="mirilla"></div>
-<div id="objetivo"><div class="verbo" id="oVerbo"></div><div class="nombre" id="oNombre"></div></div>
-<!-- El aviso del loot. Tenía CSS y código, y me faltaba el div: `avisar()`
-     reventaba contra un null y se llevaba por delante el resto del frame. -->
-<div id="aviso"></div>
-
-<!-- LA PRUEBA. Lo que nos separa de cualquier otra sala 3D bonita no es el
-     render: es que tu partida son 1 KB que se pueden volver a jugar y dan lo
-     mismo. Eso estaba pasando y no se veía. Aquí se ve, y te la puedes llevar. -->
-<div id="ficha-partida">
-  <div class="cab">TU ÚLTIMA PARTIDA <span id="fp-sello">VERIFICADA</span></div>
-  <div class="fila"><span>juego</span><b id="fp-juego">—</b></div>
-  <div class="fila"><span>semilla</span><b id="fp-semilla">—</b></div>
-  <div class="fila"><span>jugadas</span><b id="fp-jugadas">—</b></div>
-  <div class="fila"><span>tamaño</span><b id="fp-bytes">—</b></div>
-  <div class="pie">Se verifica volviéndola a jugar. Cambia una jugada y no cuadra.</div>
-  <button id="fp-copiar">COPIAR PARTIDA</button>
-  <!-- Que lo compruebe él. Decir «esto no se puede falsear» es marketing;
-       dejar que lo intente en un clic y ver al verificador cazarlo es prueba. -->
-  <button id="fp-falsear">INTENTA FALSEARLA</button>
-  <div id="fp-veredicto"></div>
-</div>
-
-<!-- EL CARTUCHO. Uno solo para toda la sala: se monta en la máquina donde te
-     sientas y se desmonta al levantarte. El nombre `romCartridge` no es mío —
-     es el que espera `CSS3DHologramPlugin`, y respetarlo es lo que permite
-     reutilizar el plugin en vez de reescribirlo. -->
-<!-- ⚠️ El cajón NO puede ser `display:none`, aunque así estaba en la sala
-     original. El cartucho pasa aquí sus primeros instantes, mientras carga, y
-     un iframe sin caja tiene un lienzo de 0×0: los juegos WebGL arrancaban
-     ciegos y escupían cientos de "Framebuffer is incomplete: zero size" —
-     dimensionan su renderer una sola vez, al nacer. Fuera de la pantalla, pero
-     con su tamaño de verdad. -->
-<div id="iframe-hide-container"
-     style="position:fixed; left:-20000px; top:0; width:1024px; height:768px; overflow:hidden;">
-  <!-- 1024×768 no es decorativo: el plugin calcula la escala como
-       ancho_físico / 1024. Si el iframe midiera otra cosa, la página saldría
-       más grande o más pequeña que el cristal de la máquina. -->
-  <iframe id="romCartridge" src="about:blank"
-          style="width:1024px;height:768px;border:0;background:#0d1218;"></iframe>
-</div>
-
-<!-- EL MÓDULO DE BOLSILLO (Pocket Dimension).
-     Para los juegos de mesa y cartas, en vez de renderizar una pantallita enana,
-     te "abducimos" a un iframe a pantalla completa. Es una sala independiente
-     solo para ti y esa mesa, pero engaña al cerebro para parecer que sigues ahí. -->
-<div id="pocket-dimension-container"
-     style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:99999; opacity:0; transition:opacity 0.6s ease-in-out;">
-  <iframe id="pocketCartridge" src="about:blank"
-          style="width:100%; height:100%; border:0; background:transparent;"></iframe>
-  <button id="btn-standup-pocket"
-          style="position:absolute; bottom:30px; left:50%; transform:translateX(-50%); z-index:100000; padding:15px 30px; border-radius:8px; border:2px solid #ff4081; background:rgba(255,64,129,0.1); color:#ff4081; font-family:'JetBrains Mono',monospace; font-weight:900; font-size:16px; cursor:pointer; backdrop-filter:blur(5px); transition:all 0.2s;">
-      🧍 LEVANTARSE DE LA MESA
-  </button>
-</div>
-
-<div class="hud" id="pie">wasd para andar · ratón para mirar · clic para usar · esc para soltar</div>
-
-<!-- ⚠️ La primera versión de esta pantalla era solo poesía, y un recién llegado
-     no sabía si esto era un juego, una web o una obra. La frase bonita funciona
-     mucho mejor DESPUÉS de saber dónde te has metido: primero qué es y cómo se
-     anda, luego el misterio. -->
-<div id="umbral">
-  <h1>LA SALA DEL HUEVO</h1>
-  <p class="que-es"><b>27 máquinas con juegos de verdad</b>, en una sala por la que
-     se anda.<br>Arcades, mesas de tablero y cartas, y un huevo en el centro.</p>
-  <!-- Esta frase hace dos trabajos y por eso se queda: explica el lore (tú eres
-       la anomalía) y de paso explica la MECÁNICA (por qué las cosas aparecen al
-       acercarte). Antes eran dos misterios sueltos: uno en el HUD y otro en la
-       materialización, y ninguno se explicaba. -->
-  <p>Esto no existe todavía: son parámetros en una base de datos.<br>
-     <b>Tú eres la anomalía</b> — se vuelve materia a tu paso.</p>
-  <p class="pacto">Todo lo de aquí <b>puntúa</b>. Qué resuelves, cómo navegas,
-     cuánto cómputo prestas.<br>
-     Es un banco de pruebas abierto: mismas reglas para personas y para máquinas.</p>
-  <!-- El texto se reescribe si hay dedo en vez de ratón. Decirle «WASD» a
-       alguien con un móvil es peor que no decir nada: le estás explicando unos
-       mandos que su aparato no tiene. -->
-  <p class="mandos" id="mandos-umbral"><b>WASD</b> para andar · <b>ratón</b> para mirar ·
-     <b>clic</b> para usar lo que tengas delante</p>
-  <div class="entrar">ENTRAR</div>
-</div>
-
-<script type="importmap">
-{
-  "imports": {
-    "three": "/vendor/three-0.160.0/build/three.module.js",
-    "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
-    "@alisa-engine/": "../js/alisa-engine/"
-  }
-}
-</script>
-
-<script type="module">
 import * as THREE from 'three';
 import { EffectComposer }  from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass }      from 'three/addons/postprocessing/RenderPass.js';
@@ -294,7 +25,7 @@ import { EntityCardSystem }  from '@alisa-engine/src/extensions/alisa-colony/psy
 // `CSS3DHologramPlugin` (17 KB, 0 importadores hasta hoy) trae el mecanismo
 // entero: `loadMachine(url, pantalla, rotación)`, `setSeated()`,
 // `setStandUpCallback()`, `disconnect()`.
-import { CSS3DHologramPlugin } from '@alisa-engine/src/soma/plugins/CSS3DHologramPlugin.js?v=3';
+import { CSS3DHologramPlugin } from '@alisa-engine/src/soma/plugins/CSS3DHologramPlugin.js';
 // El teletipo (3,3 KB, 0 importadores). En una sala como esta, un
 // panel colgado no es un adorno: es el mueble propio del sitio, el de destinos.
 // Y resuelve lo que peor llevaba la sala: que la economía viviera solo en un
@@ -400,10 +131,10 @@ const TERMINALES = [
 const escena = new THREE.Scene();
 const camara = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 400);
 camara.position.set(0, 1.62, 54);
-const colorFondo = new THREE.Color(0xe6ebf0);
+const colorFondo = new THREE.Color(0xffffff);
 const colorNegro = new THREE.Color(0x000000);
 escena.background = colorFondo.clone();
-escena.fog = new THREE.FogExp2(0xe6ebf0, 0.0062);
+escena.fog = new THREE.FogExp2(0xffffff, 0.0062);
 
 const render = new THREE.WebGLRenderer({ antialias:true, powerPreference:'high-performance' });
 render.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -474,14 +205,14 @@ const geoHuevo = new THREE.SphereGeometry(7, 64, 64);
 const matHuevo = new THREE.MeshStandardMaterial({ color: 0x000000, emissive: 0x110000, emissiveIntensity: 0.2, roughness: 0.1, metalness: 0.9 });
 const cascara = new THREE.Mesh(geoHuevo, matHuevo);
 cascara.position.y = 10.2;
-huevo.add(cascara);
+// huevo.add(cascara);
 
 // Photon Ring
 const photonGeo = new THREE.SphereGeometry(7.15, 64, 64);
 const photonMat = new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent: true, opacity: 0.35, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false });
 const photonRing = new THREE.Mesh(photonGeo, photonMat);
 photonRing.position.y = 10.2;
-huevo.add(photonRing);
+// huevo.add(photonRing);
 
 // Accretion Disk (Nucleo) - Procedural Plasma Shader
 const discoUniforms = {
@@ -541,7 +272,7 @@ const nucleo = new THREE.Mesh(geoDisco, matDisco);
 nucleo.position.y = 10.2;
 // Save reference to uniforms so tick() can update time
 nucleo.userData.uniforms = discoUniforms;
-huevo.add(nucleo);
+// huevo.add(nucleo);
 
 const volumetrics = new VolumetricsPlugin();
 const radiationDust = VolumetricsPlugin.createFlashlightDust(350);
@@ -568,7 +299,7 @@ huevo.add(jetDown);
 const luzNucleo = new THREE.PointLight(0xff5500, 36, 80, 1.6);
 luzNucleo.position.y = 10.2;
 huevo.add(luzNucleo);
-escena.add(huevo);
+// escena.add(huevo);
 
 let incubacionReportada = null;
 let partidasVerificadas = 0;
@@ -720,27 +451,34 @@ almas.initAgents(NALMAS, { minX:-26, maxX:26, minY:3, maxY:26, minZ:-26, maxZ:26
 const rnd = mulberry32(20260801);
 const estaciones = [];
 
-function anillo(lista, radio, tipo, verbo) {
-  lista.forEach((it, i) => {
-    const a = (i / lista.length) * Math.PI * 2 + (tipo === 'mesa' ? 0.24 : 0);
-    estaciones.push({
-      ...it, tipo, verbo, angulo: a,
-      x: Math.cos(a) * radio, z: Math.sin(a) * radio,
-      grupo: null, pantalla: null, materia: 0,
-    });
-  });
-}
-anillo(ARCADES,    30, 'arcade',   'JUGAR');
-anillo(MESAS,      52, 'mesa',     'SENTARSE');
-anillo(TERMINALES, 72, 'terminal', 'LEER');
+const TODAS = [
+    ...ARCADES.map(it => ({ ...it, tipo: 'arcade', verbo: 'JUGAR' })),
+    ...MESAS.map(it => ({ ...it, tipo: 'mesa', verbo: 'SENTARSE' })),
+    ...TERMINALES.map(it => ({ ...it, tipo: 'terminal', verbo: 'LEER' }))
+];
+
+const urlParams = new URLSearchParams(window.location.search);
+const focusId = urlParams.get('id');
+
+const maquina = TODAS.find(m => m.n === focusId) || TODAS[0];
+
+// Push strictly the one machine
+estaciones.push({
+    ...maquina, angulo: 0,
+    x: 0, z: 0, // CENTER IN THE VOID
+    grupo: null, pantalla: null, materia: 0,
+});
 
 try {
   const est = await fetch('../data/estado_salas.json').then(r => r.ok ? r.json() : {});
-  for (const e of estaciones) {
-    const clave = e.u.replace(/^\.\.\//, '');
-    if (est[clave] === 'roto') { e.enObras = true; e.verbo = 'EN OBRAS'; }
-  }
+  const e = estaciones[0];
+  const clave = e.u.replace(/^\.\.\//, '');
+  if (est[clave] === 'roto') { e.enObras = true; e.verbo = 'EN OBRAS'; }
 } catch { }
+
+// Move camera in front of it and auto-sit after models load
+camara.position.set(0, 1.62, 2.5); // Much closer since we are in focus mode
+
 
 const matBlanca = new THREE.MeshStandardMaterial({ color:0xffffff, roughness:0.55, metalness:0.06 });
 const matOscura = new THREE.MeshStandardMaterial({ color:0x1b232e, roughness:0.42, metalness:0.22 });
@@ -848,33 +586,6 @@ function avanzarNube(nube, p) {
     malla.material.opacity = 0.95 * (1 - Math.pow(p, 3));
 }
 
-function generarTexturaJuego(titulo) {
-  const canvas = document.createElement('canvas');
-  canvas.width = 512; canvas.height = 384;
-  const ctx = canvas.getContext('2d');
-  
-  ctx.fillStyle = '#0a0a0a';
-  ctx.fillRect(0, 0, 512, 384);
-  
-  ctx.shadowColor = '#00ffcc';
-  ctx.shadowBlur = 30;
-  ctx.fillStyle = '#00ffcc';
-  ctx.font = 'bold 32px monospace';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  
-  ctx.fillText(titulo.toUpperCase(), 256, 192);
-  
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '16px sans-serif';
-  ctx.fillText('INSERT COIN', 256, 300);
-  
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  return tex;
-}
-
 function materializar(e) {
   const g = new THREE.Group();
   g.position.set(e.x, 0, e.z);
@@ -948,18 +659,6 @@ function materializar(e) {
     if (!o.isMesh) return;
     o.material = Array.isArray(o.material) ? o.material.map(preparar) : preparar(o.material);
   });
-  
-  if (e.pantalla) {
-    const tex = generarTexturaJuego(e.n);
-    if (Array.isArray(e.pantalla.material)) {
-      e.pantalla.material[0].map = tex;
-      e.pantalla.material[0].color.setHex(0xffffff);
-    } else {
-      e.pantalla.material.map = tex;
-      e.pantalla.material.color.setHex(0xffffff);
-    }
-  }
-
   escena.add(g);
   constructMaterializer.registerEntity(e);
   e.grupo = g;
@@ -983,29 +682,27 @@ Object.assign(holograma.css3dRenderer.domElement.style, { zIndex: '2', pointerEv
 holograma.acento = '#93a7bd';
 holograma.setStandUpCallback(() => { levantarse(); });
 
+
 function sentarse(e) {
-    if (!e?.pantalla) return;
-    sentadoEn = e;
-    holograma.setSeated(true);
-    const mueble = e.grupo.position;
-    const hx = camara.position.x - mueble.x, hz = camara.position.z - mueble.z;
-    const dist = Math.hypot(hx, hz) || 1;
-    
-    // Interpolacion suave (camara paneo al sentarse)
-    tick.targetCamPos = new THREE.Vector3(mueble.x + (hx / dist) * 2.6, 1.62, mueble.z + (hz / dist) * 2.6);
-    tick.targetGiroH = Math.atan2(camara.position.x - mueble.x, camara.position.z - mueble.z);
-    tick.targetGiroV = -0.02;
+  if (!e?.pantalla) return;
+  sentadoEn = e;
+  holograma.setSeated(true);
+  document.exitPointerLock?.();
   
-    document.exitPointerLock?.();
+  // Load the actual live game into the 3D screen (CSS3D)
+  holograma.loadMachine(e.u, e.pantalla, e.grupo.rotation.y);
   
-    // Limpiamos la UI de Pocket Blanco y cargamos el juego directamente aqui
-    const pd = document.getElementById('pocket-dimension-container');
-    if (pd) pd.style.display = 'none';
-    
-    // Cargar la maquina en el holograma CSS3D nativo de la sala del huevo
-    const finalUrl = e.u || ('../labs/croupier_katamari_swarm.html?mode=arcade&id=' + encodeURIComponent(e.n));
-    holograma.loadMachine(finalUrl, e.pantalla, e.grupo.rotation.y);
+  PIE.textContent = e.n.toUpperCase() + ' — FOCUS MODE — MOUSE/TECLADO PARA JUGAR — ESC PARA SALIR';
 }
+
+// Global ESC listener to exit Focus Room
+document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' || ev.code === 'Escape') {
+        if (window.parent && window.parent !== window) {
+            window.parent.postMessage('STAND_UP', '*');
+        }
+    }
+});
 
 async function cobrarPartida(e) {
   const marco = document.getElementById('romCartridge');
@@ -1245,19 +942,12 @@ const Sonido = {
 const teclas = {};
 let giroH = 0, giroV = -0.04, dentro = false;
 const vel = new THREE.Vector3();
-
-// Para colocar la vista desde fuera: pruebas y capturas. No cambia nada del
-// juego —es el mismo par de ángulos que mueve el ratón— y por eso vale la pena
-// que exista: sin él, para apuntar a una máquina desde un navegador automático
-// hay que simular un arrastre y esperar a que la mira enganche por casualidad.
-// Se perdió en una limpieza y me costó un rodeo largo volver a apuntar.
-window.__mirar = (h, v = giroV) => { giroH = h; giroV = v; };
 addEventListener('keydown', e => { teclas[e.key.toLowerCase()] = true; });
 addEventListener('keyup',   e => { teclas[e.key.toLowerCase()] = false; });
 const umbral = document.getElementById('umbral');
 umbral.addEventListener('click', () => {
   umbral.classList.add('ido');
-  setTimeout(() => { umbral.style.display = 'none'; }, 1100);
+  umbral.style.display = 'none';
   pedirPuntero();
   dentro = true;
   tLlegada = 0;
@@ -1352,17 +1042,20 @@ let transitionPocket = 0;
 let fichaLista = false;
 
 function usarLoQueMiro() {
-  if (!dentro) return;
+  if (!dentro && !sentadoEn) return;
   if (!esTactil && punteroVaBien && !sentadoEn && !document.pointerLockElement) { pedirPuntero(); return; }
   if (arrastrado > 6) { arrastrado = 0; return; }
-  if (!mirando) return;
   if (tLlegada < LLEGADA) return;
-  if (sentadoEn) return;
-  if (mirando.__huevo) { recogerHuevo(); return; }
-  document.exitPointerLock?.();
-  avisar(mirando.n.toUpperCase(), 'Sincronizando...');
-  sentarse(mirando);
-}
+  
+  if (!sentadoEn) {
+      if (!mirando) return;
+      // First click: sit in front of the machine (it will load the preview via sentarse)
+      sentarse(mirando);
+      return;
+  }
+  
+  }
+window.usarLoQueMiro = usarLoQueMiro;
 addEventListener('click', usarLoQueMiro);
 
 function tick() {
@@ -1721,6 +1414,3 @@ window.__sala = {
   get aportacion(){ return aportacion; },
   get rota(){ return rota; },
 };
-</script>
-</body>
-</html>

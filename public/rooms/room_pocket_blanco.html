@@ -211,8 +211,8 @@
   <!-- 1024×768 no es decorativo: el plugin calcula la escala como
        ancho_físico / 1024. Si el iframe midiera otra cosa, la página saldría
        más grande o más pequeña que el cristal de la máquina. -->
-  <iframe id="romCartridge" src="about:blank"
-          style="width:1024px;height:768px;border:0;background:#0d1218;"></iframe>
+    <iframe id="romCartridge" src="about:blank"
+            style="width:1024px;height:768px;border:0;background:#0d1218;"></iframe>
 </div>
 
 <!-- EL MÓDULO DE BOLSILLO (Pocket Dimension).
@@ -399,7 +399,7 @@ const TERMINALES = [
 // ═══════════════════════════════════════════════════════════════════════════
 const escena = new THREE.Scene();
 const camara = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 400);
-camara.position.set(0, 1.62, 54);
+camara.position.set(0, 1.7, 1.8);
 const colorFondo = new THREE.Color(0xffffff);
 const colorNegro = new THREE.Color(0x000000);
 escena.background = colorFondo.clone();
@@ -957,24 +957,11 @@ function sentarse(e) {
   sentadoEn = e;
   holograma.setSeated(true);
   document.exitPointerLock?.();
-
-  // Load a Data URI preview instead of the heavy 3D game to prevent CSS3D nesting crashes
-  const previewHtml = '<html><head><style>body{background:#0a0a0a;color:#00ffcc;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;font-family:sans-serif;text-align:center;box-shadow:inset 0 0 50px #00ffcc22;} h1{font-size:4rem;margin:0;text-transform:uppercase;letter-spacing:4px;} p{font-size:1.5rem;opacity:0.7;} .blink{animation:b 1.5s infinite;} @keyframes b{50%{opacity:0;}}</style></head><body><h1>' + e.n + '</h1><p>MATERIA: ' + Math.round((e.materia ?? 0) * 100) + '% | PUNTOS: 0/55</p><br><br><p class="blink">[ CLIC PARA JUGAR A PANTALLA COMPLETA ]</p></body></html>';
-  const dataUrl = 'data:text/html;charset=utf-8,' + encodeURIComponent(previewHtml);
   
-  holograma.loadMachine(dataUrl, e.pantalla, e.grupo.rotation.y);
-  const seSienta = e;
-  const proyectar = (intentos = 0) => {
-    if (sentadoEn !== seSienta) return;
-    if (holograma.currentCssObject && holograma.screenMode === 'MOUNTED') {
-      holograma.setHologramMode('PROJECTED');
-      return;
-    }
-    if (intentos > 180) return;
-    requestAnimationFrame(() => proyectar(intentos + 1));
-  };
-  proyectar();
-  PIE.textContent = e.n.toUpperCase() + ' · FOCUS MODE · MOUSE/TECLADO PARA JUGAR · ESC PARA SALIR';
+  // Load the actual live game into the 3D screen (CSS3D)
+  holograma.loadMachine(e.u, e.pantalla, e.grupo.rotation.y);
+  
+  PIE.textContent = e.n.toUpperCase() + ' — FOCUS MODE — MOUSE/TECLADO PARA JUGAR — ESC PARA SALIR';
 }
 
 // Global ESC listener to exit Focus Room
@@ -1323,34 +1310,40 @@ let enPocketDimension = false;
 let transitionPocket = 0;
 let fichaLista = false;
 
+
 function usarLoQueMiro() {
-  if (!dentro) return;
-  if (!esTactil && punteroVaBien && !sentadoEn && !document.pointerLockElement) { pedirPuntero(); return; }
-  if (arrastrado > 6) { arrastrado = 0; return; }
-  if (!mirando) return;
-  if (tLlegada < LLEGADA) return;
-  
-  if (!sentadoEn) {
-      // First click: sit in front of the machine (it will load the preview via sentarse)
-      sentarse(mirando);
-      return;
-  }
-  
-  // Second click (already seated): PLAY (Fullscreen transition)
-  document.exitPointerLock?.();
-  avisar('INICIANDO SIMULACIÓN', 'Cargando entorno 3D...');
-  
-  // Transition out
-  document.body.style.transition = 'opacity 1s';
-  document.body.style.opacity = '0';
-  
-  setTimeout(() => {
-      window.location.href = sentadoEn.u;
-  }, 1000);
+    if (!dentro && !sentadoEn) return;
+    if (!esTactil && punteroVaBien && !sentadoEn && !document.pointerLockElement) { pedirPuntero(); return; }
+    if (arrastrado > 6) { arrastrado = 0; return; }
+    if (tLlegada < LLEGADA) return;
+    
+    if (!sentadoEn) {
+        if (!mirando) return;
+        // First click: sit in front of the machine (it will load the preview via sentarse)
+        sentarse(mirando);
+        return;
+    } else {
+        // Second click (already seated): PLAY (Fullscreen transition)
+        document.exitPointerLock?.();
+        avisar('INICIANDO SIMULACIÓN', 'Cargando entorno 3D...');
+        if (holograma.currentCssObject) {
+            holograma.currentCssObject.element.style.pointerEvents = 'none';
+        }
+        document.body.style.transition = 'opacity 1.0s';
+        document.body.style.opacity = '0';
+        setTimeout(() => {
+            if (window.parent && window.parent !== window) {
+                window.parent.location.href = sentadoEn.u;
+            } else {
+                window.location.href = sentadoEn.u;
+            }
+        }, 1000);
+    }
 }
+window.usarLoQueMiro = usarLoQueMiro;
 addEventListener('click', usarLoQueMiro);
 
-function tick() {
+  function tick() {
   const t = performance.now() / 1000;
   const dt = Math.min(t - tick.ultimoTime || 0, 0.1);
   tick.ultimoTime = t;
