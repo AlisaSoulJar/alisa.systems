@@ -616,9 +616,96 @@ async function decirQueSigoAqui() {
     const d = await r.json();
     seresEnLaSala = (d?.seres ?? []).filter(s => s.quien !== YO);
   } catch { seresEnLaSala = []; }   // sin servicio: la sala es tuya y ya está
+  // ⚠️ Esto era `catch { }` a secas, «para que nunca se ponga por delante de la
+  // sala». Y me tapó mi propio fallo: los seres llegaban, el HUD los contaba
+  // bien, y no se pintaba ni uno — sin una sola pista de por qué. Pintar puede
+  // fallar sin llevarse la sala por delante, pero callarse el motivo no es
+  // robustez, es esconder la basura. Se sigue sin romper nada, y se dice.
+  try { refrescarMotas(); }
+  catch (e) { console.warn('[Sala] no he podido pintar a los otros seres:', e); }
 }
-// Una vez al entrar y luego cada 20 s: el plazo del servidor son 60.
+// ⚠️ «Una vez al entrar» decía el comentario, y NO se llamaba ni una vez: sólo
+// se programaba el intervalo. O sea que quien entraba veía «solo tú» durante
+// veinte segundos aunque la sala estuviera llena — justo el momento en que uno
+// mira si hay alguien. Un comentario que describe lo que el código no hace,
+// otra vez.
+// ⚠️ Y la primera llamada NO puede ir aquí: `motasDeSeres` se declara unas
+// líneas más abajo, así que pedir presencia antes reventaba con
+// `Cannot access 'motasDeSeres' before initialization`. Va al final del bloque,
+// cuando ya existe todo lo que necesita. El intervalo sí puede quedarse: para
+// cuando dispare, el módulo ha terminado.
 setInterval(decirQueSigoAqui, 20000);
+
+// Para poder mirar desde fuera qué está viendo la sala, no qué dice la API.
+// Lo pedí a gritos depurando esto: la API listaba ocho seres y el HUD decía
+// uno, y sin esto no hay forma de saber cuál de los dos lados falla.
+window.__seres = () => ({ yo: YO, veo: seresEnLaSala, motas: [...motasDeSeres.keys()] });
+
+// ── Y que se VEAN, no sólo que se cuenten ──────────────────────────────────
+// Contar seres en el HUD ya juntaba los dos mundos, pero seguía siendo una
+// cifra. Lo que convierte esto en una sala con gente es ver DÓNDE está cada
+// uno: una persona y una máquina, cada una en su estación.
+//
+// Se distinguen por la forma, no por el color, y a propósito:
+//   · persona → una esfera blanda, con luz difusa. Cuerpo.
+//   · máquina → un octaedro de aristas, girando. Geometría, no carne.
+// No es adorno: es la única señal honesta que podemos dar. No sabemos si al
+// otro lado hay alguien o algo, sabemos lo que ha declarado — y una forma
+// distinta lo dice sin fingir que lo hemos comprobado.
+const motasDeSeres = new Map();          // quien → grupo THREE
+const grupoSeres = new THREE.Group();
+escena.add(grupoSeres);
+
+function crearMota(ser) {
+  const g = new THREE.Group();
+  const esMaquina = ser.tipo !== 'persona';
+  const malla = esMaquina
+    ? new THREE.Mesh(new THREE.OctahedronGeometry(0.30),
+        new THREE.MeshBasicMaterial({ color: 0x39485c, wireframe: true, transparent: true, opacity: 0.85 }))
+    : new THREE.Mesh(new THREE.SphereGeometry(0.26, 20, 14),
+        new THREE.MeshStandardMaterial({ color: 0xf4f6f8, emissive: 0x93a7bd,
+                                         emissiveIntensity: 0.5, roughness: 0.5 }));
+  malla.position.y = 1.55;
+  g.add(malla);
+  // ⚠️ Aquí ponía `reloj.getElapsedTime()`, y `reloj` se declara MUCHO más
+  // abajo, en el bucle. Como esto se llama en cuanto contesta la presencia,
+  // saltaba `ReferenceError: reloj is not defined` — y con el `catch` vacío que
+  // tenía puesto, en silencio: los seres llegaban, el HUD los contaba, y no se
+  // pintaba ni uno sin una sola pista. Se usa el mismo reloj que el bucle
+  // (`performance.now()`), que no depende de dónde esté declarado nada.
+  g.userData = { malla, esMaquina, nacida: performance.now() / 1000 };
+  return g;
+}
+
+/** Reconcilia lo que hay en la sala con lo que dice el servicio. */
+function refrescarMotas() {
+  const vivos = new Set();
+  for (const ser of seresEnLaSala) {
+    // Sólo se pinta a quien dice DÓNDE está y donde eso existe. Un ser sin
+    // estación conocida no se coloca en el centro «por poner algo»: se cuenta
+    // en el HUD y ya. Inventar una posición sería el mismo pecado que inventar
+    // un dato de telemetría.
+    const est = estaciones.find(e => e.n === ser.estacion);
+    if (!est) continue;
+    vivos.add(ser.quien);
+    let m = motasDeSeres.get(ser.quien);
+    if (!m) { m = crearMota(ser); motasDeSeres.set(ser.quien, m); grupoSeres.add(m); }
+    // Justo al lado de la estación, hacia fuera del anillo: sentado, no encima.
+    const fuera = 1.25;
+    m.position.set(est.x + Math.cos(est.angulo) * fuera, 0,
+                   est.z + Math.sin(est.angulo) * fuera);
+  }
+  for (const [quien, m] of motasDeSeres) {
+    if (vivos.has(quien)) continue;      // se fue: se lo lleva la sala
+    grupoSeres.remove(m);
+    motasDeSeres.delete(quien);
+  }
+}
+
+// Ahora sí: la primera consulta, con todo lo que necesita ya declarado. Sin
+// esto, quien entra ve «solo tú» durante veinte segundos aunque la sala esté
+// llena — justo el momento en que uno mira si hay alguien.
+decirQueSigoAqui();
 
 const vistas = new Set();
 let aportacion = 0;
@@ -1621,6 +1708,17 @@ function tick() {
   // La incubación es un dato GLOBAL de la colonia, no tuyo: solo se enseña si
   // la colonia la ha reportado. Inventarla —aunque sea con el número real de
   // hoy— sería exactamente lo que este sitio dice que no hace.
+  // Los otros seres, vivos: la máquina gira sobre sí misma y la persona
+  // respira. Movimiento lento y distinto, que es lo que hace que una silueta
+  // parezca ocupada en algo en vez de un icono clavado en el suelo.
+  for (const m of motasDeSeres.values()) {
+    const { malla, esMaquina, nacida } = m.userData;
+    const edad = t - nacida;
+    malla.scale.setScalar(Math.min(1, edad * 2.2));         // entra creciendo
+    if (esMaquina) { malla.rotation.y += dt * 0.9; malla.rotation.x += dt * 0.35; }
+    else { malla.position.y = 1.55 + Math.sin(t * 1.4 + nacida) * 0.06; }
+  }
+
   // Quién más hay. Las máquinas cuentan como seres, porque lo son: juegan a lo
   // mismo, con las mismas reglas, y su partida se verifica igual que la tuya.
   const agentes = seresEnLaSala.filter(s => s.tipo !== 'persona').length;
