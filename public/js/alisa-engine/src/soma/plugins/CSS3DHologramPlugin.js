@@ -166,12 +166,14 @@ export class CSS3DHologramPlugin {
             this.screenMode = mode;
             
             // Restore iframe back to CSS3D if it was fullscreened
-            if (iframe.parentElement === this._fsOverlay) {
+            // El que viaja es el envoltorio, no el iframe: ver el bloque de
+            // `loadMachine`. Mover un <iframe> lo recarga y reinicia la partida.
+            if (this._envoltorio && this._envoltorio.parentElement === this._fsOverlay) {
                 this._fsOverlay.style.display = 'none';
                 this.currentCssObject.element = iframe;
                 // Re-insert into CSS3D div wrapper
                 if (this._css3dDivBackup) {
-                    this._css3dDivBackup.appendChild(iframe);
+                    this._css3dDivBackup.appendChild(this._envoltorio ?? iframe);
                 }
             }
 
@@ -190,11 +192,13 @@ export class CSS3DHologramPlugin {
             this.screenMode = mode;
             
             // Restore iframe back to CSS3D if it was fullscreened
-            if (iframe.parentElement === this._fsOverlay) {
+            // El que viaja es el envoltorio, no el iframe: ver el bloque de
+            // `loadMachine`. Mover un <iframe> lo recarga y reinicia la partida.
+            if (this._envoltorio && this._envoltorio.parentElement === this._fsOverlay) {
                 this._fsOverlay.style.display = 'none';
                 this.currentCssObject.element = iframe;
                 if (this._css3dDivBackup) {
-                    this._css3dDivBackup.appendChild(iframe);
+                    this._css3dDivBackup.appendChild(this._envoltorio ?? iframe);
                 }
             }
 
@@ -234,7 +238,10 @@ export class CSS3DHologramPlugin {
             
             // Reparent iframe into the fixed overlay — this is a MOVE within the same
             // document so the iframe does NOT reload (spec: only cross-document moves reload)
-            this._fsOverlay.appendChild(iframe);
+            // Se muda el ENVOLTORIO, con el iframe dentro y quieto.
+            this._fsOverlay.appendChild(this._envoltorio ?? iframe);
+            if (this._envoltorio) Object.assign(this._envoltorio.style,
+                { position: 'absolute', top: '0', left: '0', width: '100%', height: '100%' });
             this._fsOverlay.style.display = 'block';
             
             // Style iframe to fill the overlay completely
@@ -318,8 +325,38 @@ export class CSS3DHologramPlugin {
                 // el viejo se quedaba en la escena con su transformación puesta.
                 [...this.cssScene.children].forEach(o => this.cssScene.remove(o));
 
+                // ⚠️ AL CSS3DObject SE LE DA UN <div>, NUNCA EL <iframe>.
+                // Aquí había `new CSS3DObject(iframe)` y montaba un bucle que se
+                // alimentaba solo:
+                //
+                //   onload → montar → CSS3DObject se apropia del <iframe> y lo
+                //   mete en el DOM del renderer → MOVER UN IFRAME LO RECARGA →
+                //   onload → montar → …
+                //
+                // Medido en el navegador con la sala quieta: **6 recargas en 6
+                // segundos**. El juego se reiniciaba una vez por segundo, así
+                // que era imposible avanzar en una partida — y no había ningún
+                // error, sólo un aviso («Cross-origin frame single-click
+                // blocked») que en realidad decía otra cosa: el gancho de clic
+                // se ataba a un documento que estaba a punto de desaparecer.
+                //
+                // Un <div> se puede mover por el DOM cuantas veces haga falta.
+                // Un <iframe> no: cambiar de padre lo hace navegar otra vez
+                // desde cero. Así que el que viaja es el envoltorio y el iframe
+                // se queda quieto dentro.
+                if (!this._envoltorio) {
+                    this._envoltorio = document.createElement('div');
+                    this._envoltorio.id = 'cartuchoEnvoltorio';
+                    Object.assign(this._envoltorio.style, {
+                        width: '1024px', height: '768px', overflow: 'hidden',
+                    });
+                }
+                if (iframe.parentElement !== this._envoltorio) {
+                    this._envoltorio.appendChild(iframe);   // una sola vez en su vida
+                }
+
                 // Create Native CSS3D Object
-                const cssObject = new CSS3DObject(iframe);
+                const cssObject = new CSS3DObject(this._envoltorio);
                 cssObject.position.copy(trueCenter);
                 
                 // Align rotation to parent arcade machine, plus subtle CRT pitch tilt backward
@@ -407,7 +444,7 @@ export class CSS3DHologramPlugin {
         if (iframe && this._fsOverlay && iframe.parentElement === this._fsOverlay) {
             this._fsOverlay.style.display = 'none';
             if (this._css3dDivBackup) {
-                this._css3dDivBackup.appendChild(iframe);
+                this._css3dDivBackup.appendChild(this._envoltorio ?? iframe);
             }
             iframe.style.position = '';
             iframe.style.width = '1024px';
@@ -444,7 +481,14 @@ export class CSS3DHologramPlugin {
                 iframe.src = 'about:blank';
                 iframe.style.transform = '';
                 iframe.style.pointerEvents = 'none';
-                this.hogarDelCartucho.appendChild(iframe);
+                // Vuelve el envoltorio a su cajón; el iframe no se mueve nunca.
+                if (this._envoltorio) {
+                    Object.assign(this._envoltorio.style,
+                        { position: '', top: '', left: '', width: '1024px', height: '768px' });
+                    this.hogarDelCartucho.appendChild(this._envoltorio);
+                } else {
+                    this.hogarDelCartucho.appendChild(iframe);
+                }
             }
         }
         this.screenMode = 'MOUNTED';
