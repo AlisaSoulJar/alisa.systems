@@ -1,0 +1,310 @@
+{
+  "eslabones": [
+    [
+      "reglas",
+      "reglas propias en JavaScript"
+    ],
+    [
+      "pagina",
+      "página en la que se juega"
+    ],
+    [
+      "gym",
+      "entorno para máquinas"
+    ],
+    [
+      "marcador",
+      "puntúa, y el número cambia"
+    ],
+    [
+      "casa",
+      "rival de la casa"
+    ],
+    [
+      "prueba",
+      "una prueba que comprueba SUS reglas"
+    ],
+    [
+      "sala",
+      "estación en la Sala del Huevo"
+    ]
+  ],
+  "juegos": [
+    {
+      "juego": "ajedrez",
+      "titulo": "Ajedrez",
+      "tiene": {
+        "reglas": true,
+        "pagina": true,
+        "gym": true,
+        "marcador": true,
+        "casa": true,
+        "prueba": true,
+        "sala": true
+      },
+      "completos": 7
+    },
+    {
+      "juego": "go",
+      "titulo": "Go",
+      "tiene": {
+        "reglas": true,
+        "pagina": true,
+        "gym": true,
+        "marcador": true,
+        "casa": true,
+        "prueba": true,
+        "sala": true
+      },
+      "completos": 7
+    },
+    {
+      "juego": "reversi",
+      "titulo": "Reversi",
+      "tiene": {
+        "reglas": true,
+        "pagina": true,
+        "gym": true,
+        "marcador": true,
+        "casa": true,
+        "prueba": true,
+        "sala": true
+      },
+      "completos": 7
+    },
+    {
+      "juego": "damas",
+      "titulo": "Damas",
+      "tiene": {
+        "reglas": true,
+        "pagina": true,
+        "gym": true,
+        "marcador": true,
+        "casa": true,
+        "prueba": true,
+        "sala": true
+      },
+      "completos": 7
+    },
+    {
+      "juego": "xiangqi",
+      "titulo": "Xiangqi",
+      "tiene": {
+        "reglas": true,
+        "pagina": true,
+        "gym": true,
+        "marcador": true,
+        "casa": true,
+        "prueba": true,
+        "sala": true
+      },
+      "completos": 7
+    },
+    {
+      "juego": "mancala",
+      "titulo": "Mancala",
+      "tiene": {
+        "reglas": true,
+        "pagina": true,
+        "gym": true,
+        "marcador": true,
+        "casa": true,
+        "prueba": true,
+        "sala": true
+      },
+      "completos": 7
+    },
+    {
+      "juego": "snake",
+      "titulo": "Snake",
+      "tiene": {
+        "reglas": true,
+        "pagina": true,
+        "gym": true,
+        "marcador": true,
+        "casa": true,
+        "prueba": false,
+        "sala": false
+      },
+      "completos": 5
+    },
+    {
+      "juego": "fagocito",
+      "titulo": "Fagocito",
+      "tiene": {
+        "reglas": true,
+        "pagina": true,
+        "gym": true,
+        "marcador": true,
+        "casa": true,
+        "prueba": false,
+        "sala": false
+      },
+      "completos": 5
+    },
+    {
+      "juego": "peaton",
+      "titulo": "Peatón",
+      "tiene": {
+        "reglas": true,
+        "pagina": true,
+        "gym": true,
+        "marcador": true,
+        "casa": true,
+        "prueba": false,
+        "sala": false
+      },
+      "completos": 5
+    },
+    {
+      "juego": "blackjack",
+      "titulo": "Blackjack",
+      "tiene": {
+        "reglas": true,
+        "pagina": true,
+        "gym": true,
+        "marcador": true,
+        "casa": true,
+        "prueba": false,
+        "sala": true
+      },
+      "completos": 6
+    },
+    {
+      "juego": "poker",
+      "titulo": "Póker",
+      "tiene": {
+        "reglas": true,
+        "pagina": true,
+        "gym": true,
+        "marcador": true,
+        "casa": true,
+        "prueba": true,
+        "sala": true
+      },
+      "completos": 7
+    },
+    {
+      "juego": "brisca",
+      "titulo": "Brisca",
+      "tiene": {
+        "reglas": true,
+        "pagina": false,
+        "gym": true,
+        "marcador": true,
+        "casa": true,
+        "prueba": false,
+        "sala": false
+      },
+      "completos": 4
+    },
+    {
+      "juego": "tute",
+      "titulo": "Tute",
+      "tiene": {
+        "reglas": true,
+        "pagina": false,
+        "gym": true,
+        "marcador": true,
+        "casa": true,
+        "prueba": false,
+        "sala": false
+      },
+      "completos": 4
+    },
+    {
+      "juego": "hearts",
+      "titulo": "Hearts",
+      "tiene": {
+        "reglas": true,
+        "pagina": false,
+        "gym": true,
+        "marcador": true,
+        "casa": true,
+        "prueba": false,
+        "sala": false
+      },
+      "completos": 4
+    },
+    {
+      "juego": "spades",
+      "titulo": "Spades",
+      "tiene": {
+        "reglas": true,
+        "pagina": false,
+        "gym": true,
+        "marcador": true,
+        "casa": true,
+        "prueba": false,
+        "sala": false
+      },
+      "completos": 4
+    },
+    {
+      "juego": "guerra",
+      "titulo": "Guerra (control)",
+      "tiene": {
+        "reglas": true,
+        "pagina": false,
+        "gym": true,
+        "marcador": true,
+        "casa": true,
+        "prueba": false,
+        "sala": false
+      },
+      "completos": 4
+    },
+    {
+      "juego": "gofish",
+      "titulo": "Go Fish",
+      "tiene": {
+        "reglas": true,
+        "pagina": false,
+        "gym": true,
+        "marcador": true,
+        "casa": true,
+        "prueba": false,
+        "sala": false
+      },
+      "completos": 4
+    },
+    {
+      "juego": "unit",
+      "titulo": "Unit",
+      "tiene": {
+        "reglas": true,
+        "pagina": false,
+        "gym": true,
+        "marcador": true,
+        "casa": true,
+        "prueba": false,
+        "sala": false
+      },
+      "completos": 4
+    },
+    {
+      "juego": "entropy",
+      "titulo": "Entropy",
+      "tiene": {
+        "reglas": true,
+        "pagina": true,
+        "gym": true,
+        "marcador": true,
+        "casa": true,
+        "prueba": false,
+        "sala": false
+      },
+      "completos": 5
+    }
+  ],
+  "total": {
+    "reglas": 19,
+    "pagina": 12,
+    "gym": 19,
+    "marcador": 19,
+    "casa": 19,
+    "prueba": 7,
+    "sala": 8
+  },
+  "fecha": 1786023940440
+}

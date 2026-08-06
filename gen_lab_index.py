@@ -210,6 +210,42 @@ def piso(titulo, explicacion):
             f'<span>{html.escape(explicacion)}</span></div>')
 
 
+# ── LA CADENA ───────────────────────────────────────────────────────────────
+# ⚠️ Un inventario no demuestra nada. `/lab` listaba 118 tarjetas y eso ensena
+# que TIENES cosas, no que el motor sepa hacerlas.
+#
+# El ajedrez es el patron oro porque tiene la cadena entera: reglas propias,
+# pagina jugable, entorno de gym, marcador que cambia, rival de casa, una prueba
+# de SUS reglas y estacion en la sala. Esta tabla mide cuantos juegos llegan
+# ahi — incluidos los que no. Lo escribe `node cadena.mjs`, no esta mano.
+_cadena_p = os.path.join(PUB, "data", "cadena.json")
+if os.path.exists(_cadena_p):
+    try:
+        cad = json.load(open(_cadena_p, encoding="utf-8"))
+        oro = [j for j in cad["juegos"] if j["completos"] == len(cad["eslabones"])]
+        filas = []
+        for j in sorted(cad["juegos"], key=lambda x: -x["completos"]):
+            celdas = "".join(
+                f'<td class="{"si" if j["tiene"][k] else "no"}">{"●" if j["tiene"][k] else "·"}</td>'
+                for k, _ in cad["eslabones"])
+            filas.append(f'<tr><th>{html.escape(j["titulo"])}</th>{celdas}'
+                         f'<td class="n">{j["completos"]}/{len(cad["eslabones"])}</td></tr>')
+        cab = "".join(f'<td title="{html.escape(d)}">{html.escape(k)}</td>'
+                      for k, d in cad["eslabones"])
+        pies = "".join(f'<td class="n">{cad["total"][k]}</td>' for k, _ in cad["eslabones"])
+        cards.append(
+            '<div class="piso"><b>QUÉ SABE HACER EL MOTOR</b><span>'
+            f'La cadena completa del ajedrez, aplicada a los {len(cad["juegos"])} juegos. '
+            f'La tienen entera <b>{len(oro)}</b>: {", ".join(html.escape(j["titulo"]) for j in oro)}. '
+            'Las reglas, el gym, el marcador y el rival de casa están en los 19 — '
+            'lo que falta es escaparate, no motor.'
+            '</span></div>'
+            f'<table class="cadena"><tr><th></th>{cab}<td class="n">·</td></tr>'
+            f'{"".join(filas)}'
+            f'<tr class="tot"><th>de {len(cad["juegos"])}</th>{pies}<td class="n"></td></tr></table>')
+    except Exception:
+        pass   # sin la medida, el indice sigue saliendo igual
+
 # ══ PISO 1 · JUGAR ══════════════════════════════════════════════════════════
 cards.append(piso(
     "1 · JUGAR",
@@ -316,9 +352,23 @@ page = f"""<!DOCTYPE html>
      sobraba contenido, faltaba jerarquía. */
   .piso {{ margin: 64px 0 8px; padding: 18px 22px; border-radius: 14px;
            border: 1px solid var(--border); background: rgba(255,255,255,0.03); }}
-  .piso b {{ display:block; font-family:'JetBrains Mono',monospace; font-size:15px;
-             letter-spacing:3px; color:#fff; }}
+  /* ⚠️ `> b` y no `b` a secas: la regla de bloque alcanzaba tambien a los
+     <b> que van DENTRO del texto y partia la frase en tres lineas. */
+  .piso > b {{ display:block; font-family:'JetBrains Mono',monospace; font-size:15px;
+               letter-spacing:3px; color:#fff; }}
+  .piso span b {{ color:#e2e8f0; font-weight:600; }}
   .piso span {{ display:block; margin-top:6px; font-size:12.5px; color:#94a3b8; line-height:1.7; }}
+  /* La tabla de la cadena. Sobria a propósito: es una medida, no un adorno. */
+  table.cadena {{ width:100%; border-collapse:collapse; margin:0 0 8px;
+                  font-family:'JetBrains Mono',monospace; font-size:11.5px; }}
+  table.cadena th {{ text-align:left; font-weight:500; color:#cbd5e1; padding:5px 10px 5px 0; white-space:nowrap; }}
+  table.cadena td {{ text-align:center; padding:5px 4px; color:#64748b; }}
+  table.cadena tr:first-child td {{ color:#64748b; font-size:10px; letter-spacing:.5px; }}
+  table.cadena td.si {{ color:#4ade80; }}
+  table.cadena td.no {{ color:#3f4756; }}
+  table.cadena td.n {{ color:#94a3b8; }}
+  table.cadena tr.tot {{ border-top:1px solid var(--border); }}
+  table.cadena tr.tot th, table.cadena tr.tot td {{ color:#94a3b8; padding-top:8px; }}
   h2 {{ font-size: 16px; color: #fff; margin: 40px 0 16px; font-weight: 600; letter-spacing: 1px; display: flex; align-items: center; gap: 12px; font-family: 'JetBrains Mono', monospace; }}
   h2 i {{ color: #64748b; font-style: normal; font-size: 13px; font-weight: 400; padding: 2px 8px; background: rgba(255,255,255,0.05); border-radius: 12px; }}
   .grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }}
