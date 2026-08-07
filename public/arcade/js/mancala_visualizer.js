@@ -21,6 +21,22 @@ const engine = new SovereignBoardEngine({
     gameId: 'mancala',
     onInit3D: function(scene, camera, renderer) {
         camera.position.set(0, 8, 5);
+
+        // ⚠️ MANCALA ES EL RARO, Y POR ESO ENCAJA IGUAL.
+        // Sus jugadas no son coordenadas sino el ÍNDICE del hoyo: `0`…`5`. Aun
+        // así entra en el mismo módulo — una rejilla de 6 por 1— sin más que
+        // decirle cómo se llama una casilla. Que el caso raro no necesite código
+        // propio es la prueba de que la abstracción estaba bien elegida.
+        // La geometría sale de sus propios hoyos: `-3.25 + i * X_SPACING` en la
+        // fila `z = 1.0`, que es la del jugador 0.
+        import('./raton_tablero.js').then(({ engancharRaton }) => {
+            engancharRaton({
+                engine, modo: 'colocar',
+                columnas: 6, filas: 1, paso: X_SPACING,
+                origen: { x: -3.25, z: MANCALA_Z },
+                nombrar: (c) => String(c),
+            });
+        });
         camera.lookAt(0, 0, 0);
 
         engine.controls = new THREE.OrbitControls(camera, renderer.domElement);

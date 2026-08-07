@@ -161,7 +161,11 @@ export async function crearUnit({ url = RUTA_BIBLIOTECA, jugadores = 4, mano = 7
             return p;
         },
 
-        estado(p) {
+        // `asiento` = desde qué silla se mira. Ver la nota larga en `bazas.js`:
+        // sin esto, en una mesa compartida el segundo jugador veía la mano del
+        // primero. Opcional, para no cambiarle nada al verificador ni al gym.
+        estado(p, asiento = 0) {
+            const yo = Number.isInteger(asiento) && p.manos[asiento] ? asiento : 0;
             if (!p.fin && p.turnos >= HORIZONTE) cerrarBloqueada(p);
 
             const pid = p.turno;
@@ -199,15 +203,16 @@ export async function crearUnit({ url = RUTA_BIBLIOTECA, jugadores = 4, mano = 7
             // se queda de desempate, para que dos agentes que pierden los dos
             // sigan siendo distinguibles.
             const valorMano = (m) => m.reduce((s, c) => s + valorDe(c), 0);
-            const míos = valorMano(p.manos[0]);
-            const rivales = p.manos.reduce((s, m, i) => s + (i === 0 ? 0 : valorMano(m)), 0);
-            const gané = p.fin && p.ganadores.includes(0);
+            const míos = valorMano(p.manos[yo]);
+            const rivales = p.manos.reduce((s, m, i) => s + (i === yo ? 0 : valorMano(m)), 0);
+            const gané = p.fin && p.ganadores.includes(yo);
             const puntos = gané ? 100 + rivales : -míos;
 
             return {
                 juego: 'unit',
-                mano: [...p.manos[0]],
-                manos_rivales: p.manos.slice(1).map(m => m.length),
+                asiento: yo,
+                mano: [...p.manos[yo]],
+                manos_rivales: p.manos.filter((_, i) => i !== yo).map(m => m.length),
                 cima: cima(p),
                 color: p.color,
                 sentido: p.sentido,

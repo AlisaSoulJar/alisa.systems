@@ -298,9 +298,16 @@ class SovereignCardEngine {
             await new Promise(r => setTimeout(r, 25));
         }
         const proto = window.ALISA_PROTOHUB;
-        const hubBase = window.ALISA_HUB_URL === undefined
-            ? 'http://127.0.0.1:8741'
-            : window.ALISA_HUB_URL;
+        // ⚠️ SIN HUB SALVO QUE SE PIDA. Mismo cambio y mismo motivo que en
+        // `SovereignBoardEngine.js`: el defecto sondeaba `127.0.0.1:8741` —el hub
+        // de la colonia, que es otro proyecto— y dejaba un 404 en consola en cada
+        // carga, apuntando a una dirección privada nuestra. Desde una página
+        // https el navegador ni siquiera permite llamar a http://, así que en el
+        // sitio publicado era ruido sin ninguna posibilidad de servir.
+        //
+        // Se arregló primero en el motor de tablero y aquí quedó pendiente: dos
+        // copias del mismo andamio, y una se quedó atrás. La de siempre.
+        const hubBase = window.ALISA_HUB_URL ?? null;
 
         if (hubBase) {
             try {
@@ -392,18 +399,70 @@ class SovereignCardEngine {
         }
     }
 
+    /**
+     * ═══ QUIÉN JUEGA POR ESTA MANO ═══════════════════════════════════════
+     *
+     * Extrapolado de `SovereignBoardEngine`, que recibió el mismo cambio el
+     * 2026-08-06. Antes esto mandaba `ai_move` y punto: había UN rival posible,
+     * la heurística del propio juego, sin nombre y sin forma de cambiarlo.
+     *
+     * Ahora lo resuelve `protohub/asientos.js`, el mismo módulo que usan la mesa
+     * funcional y los seis tableros. Lo que se gana no es cosmético:
+     *   · las políticas son las de la tabla de clasificación (`primera`, `azar`,
+     *     `casa`), no un «ai_move» que nadie puede reproducir;
+     *   · un modelo puede sentarse, y lo llama ESTE navegador — sin colonia;
+     *   · y `?asientos=` significa lo mismo aquí que en todo lo demás.
+     */
+    async _asientos() {
+        this._modAsientos ??= await import('./protohub/asientos.js');
+        return this._modAsientos;
+    }
+
     async processAutoAgent(data) {
         if (!this.autoMode || this.isGameOver) return;
-        
+
         const stateObj = data.state || data;
-        if (stateObj.legal_actions !== undefined && stateObj.legal_actions.length === 0) return;
-        
-        let payload = { action: "ai_move", params: {} };
+        const acciones = (stateObj.legal_moves ?? stateObj.legal_actions ?? [])
+            .filter(m => m !== 'nueva' && m !== 'reset');
+        if (!acciones.length) return;
+
+        const mod = await this._asientos();
+        // En una mesa de cartas contra la casa sólo hay una silla que decida, así
+        // que se lee `?asientos=` como una sola posición. Cuando estas páginas
+        // pasen a ser configuración (ver `docs/croupier_por_composicion.md`) esto
+        // leerá tantas como tenga el juego.
+        const spec = new URLSearchParams(location.search).get('asientos')?.split(',')[0]
+                   || 'fsm:casa';
+        if (mod.esPersona(spec)) return;                 // le toca a una persona
+
         try {
-            const r = await this.backend.move(payload);
+            const proto = window.ALISA_PROTOHUB;
+            const reglas = proto?.reglas?.get(this.gameId);
+            const llm = {
+                url: document.getElementById('llmUrlInput')?.value.trim(),
+                modelo: document.getElementById('llmModelInput')?.value.trim(),
+            };
+            this._ctrl ??= {};
+            const clave = `${spec}:${llm.url}:${llm.modelo}`;
+            this._ctrl[clave] ??= mod.crearControlador(spec, { juego: this.gameId, reglas, llm });
+
+            const jugada = await this._ctrl[clave].elegir({
+                juego: stateObj.juego ?? this.gameId,
+                st: stateObj, acciones, reglas,
+                p: proto?.partidas?.get(this.gameId),
+            });
+            // Si no elige, se para y se dice. No se juega por nadie: en el banco
+            // eso se cuenta como jugada «forzada» y se publica el porcentaje.
+            if (!jugada) {
+                console.warn(`[Arcade] «${this._ctrl[clave].etiqueta}» no eligió ninguna de las ${acciones.length} legales.`);
+                this.toggleAutoMode();
+                return;
+            }
+            const r = await this.backend.move({ action: 'move', params: { uci: jugada }, move: jugada });
             if (r && r.ok === false) { this.toggleAutoMode(); return; }
             this.pollHub();
         } catch(e) {
+             console.error('[Arcade] el asiento no pudo jugar:', e.message);
              this.toggleAutoMode(); // Safety Stop
         }
     }

@@ -121,7 +121,11 @@ export async function crearGoFish({ url = RUTA_BIBLIOTECA, jugadores = 3, mano =
             return p;
         },
 
-        estado(p) {
+        // `asiento` = desde qué silla se mira. Sin él, todo el mundo veía la
+        // mano del asiento 0 — en una mesa compartida, la del rival. Ver la nota
+        // larga en `bazas.js`. Opcional para no tocar al verificador ni al gym.
+        estado(p, asiento = 0) {
+            const yo = Number.isInteger(asiento) && p.manos[asiento] ? asiento : 0;
             const pid = p.turno;
             const atascada = p.sinProgreso >= TOPE_ATASCO;
             const terminada = todosLosLibros(p) || sinCartas(p) || atascada;
@@ -136,8 +140,9 @@ export async function crearGoFish({ url = RUTA_BIBLIOTECA, jugadores = 3, mano =
 
             return {
                 juego: 'gofish',
-                mano: [...manoDe(p, 0)],
-                manos_rivales: p.manos.slice(1).map(m => m.length),
+                asiento: yo,
+                mano: [...manoDe(p, yo)],
+                manos_rivales: p.manos.filter((_, i) => i !== yo).map(m => m.length),
                 libros: p.libros.map(l => [...l]),
                 // El tablero de este juego: quién ha pedido qué y si acertó.
                 // Es información PÚBLICA, la misma que ve un humano en la mesa.

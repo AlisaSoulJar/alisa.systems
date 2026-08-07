@@ -1,0 +1,39 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  worker-mesas — las mesas compartidas
+# ═══════════════════════════════════════════════════════════════════════════
+# Va en un Worker aparte y no en las Pages Functions porque una Function no
+# puede DEFINIR una clase Durable Object: sólo enlazarla. Así que aquí vive la
+# clase y el sitio la usará por enlace.
+#
+# Comprobado antes de escribir una línea: esta cuenta despliega Durable Objects
+# respaldados por SQLite sin cambiar de plan. Se probó con un worker sonda de
+# doce líneas que contaba visitas — 1, 2, 3— y luego se retiró. Preguntar salía
+# más barato que suponer, y suponer aquí costaba 5 $/mes de más o un rediseño.
+name = "alisa-mesas"
+main = "mesas.js"
+compatibility_date = "2026-08-03"
+
+# De dónde lee el catálogo de cartas. Tiene que ser un ORIGEN ENTERO: este worker
+# vive en `workers.dev`, no en el sitio, así que una ruta relativa se resolvería
+# contra sí mismo — que es exactamente el fallo que costó desplegar dos veces
+# (`error code: 1042`, un cuerpo que ni siquiera era JSON). Quien bifurque esto
+# apunta aquí a su propio despliegue.
+[vars]
+ORIGEN = "https://alisa.systems"
+
+# Para que el worker pueda decir QUÉ VERSIÓN es cuando se le pregunta.
+# No es un adorno: un despliegue tarda unos segundos en llegar a todas partes, y
+# durante esa ventana el worker contesta con el código VIEJO. Cuatro veces en una
+# tarde saqué conclusiones de esa ventana —«el guardián no funciona», «faltan
+# campos»— y cuatro veces la conclusión era falsa. Con esto, `desplegar.mjs`
+# espera a ver el identificador nuevo antes de dejar medir nada.
+[version_metadata]
+binding = "VERSION"
+
+[[durable_objects.bindings]]
+name = "MESAS"
+class_name = "MesaCompartida"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["MesaCompartida"]

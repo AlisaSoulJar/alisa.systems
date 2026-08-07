@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALISA — jugar</title>
+<meta name="alisa-escaparate" content="juegos">
+<meta name="alisa-muestra" content="Los 20 juegos en una sola página: 2D, 3D y texto del mismo sustrato, con persona, política o modelo en cada silla y recibo verificable">
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+<script type="importmap">
+{ "imports": {
+    "three": "/vendor/three-0.160.0/build/three.module.js",
+    "three/addons/": "/vendor/three-0.160.0/examples/jsm/"
+} }
+</script>
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f4f6f8; color:#1a2230; padding:20px 18px 50px;
+         font:12px/1.7 'JetBrains Mono', ui-monospace, monospace; }
+  main { max-width:1200px; margin:0 auto; }
+  h1 { font-size:13px; letter-spacing:.4em; text-transform:uppercase; font-weight:400; margin:0 0 4px; }
+  .sub { color:#6b7684; font-size:11.5px; margin:0 0 14px; max-width:80ch; }
+  .barra { display:flex; gap:8px; align-items:center; margin:0 0 12px; flex-wrap:wrap; }
+  select, button, input { font:inherit; font-size:11px; padding:5px 9px; border:1px solid #b9c4d0;
+                          border-radius:3px; background:#fff; }
+  button { cursor:pointer; }
+  button.j { border-color:#1a2230; background:#1a2230; color:#f4f6f8; }
+  button.j:hover { background:#39485c; }
+  button.j:disabled { background:#e6ebf0; color:#8b95a3; border-color:#dde3ea; cursor:default; }
+  .rejas { display:grid; grid-template-columns:1.15fr .85fr; gap:12px; align-items:start; }
+  .panel { border:1px solid #dde3ea; border-radius:4px; background:#fff; overflow:hidden; margin-bottom:12px; }
+  .panel h2 { font-size:10px; letter-spacing:.28em; text-transform:uppercase; color:#8b95a3;
+              margin:0; padding:8px 12px; border-bottom:1px solid #eef2f6; font-weight:400; }
+  .cuerpo { padding:10px 12px; }
+  canvas { display:block; width:100%; height:300px; }
+  pre { margin:0; padding:10px 12px; font-size:10.5px; line-height:1.55; white-space:pre-wrap;
+        max-height:200px; overflow:auto; color:#39485c; }
+  .jugadas { display:flex; flex-wrap:wrap; gap:6px; }
+  .asiento { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .asiento > .dato:first-child { min-width:80px; color:#39485c; font-size:11px; }
+  .dato { font-size:11.5px; }
+  .nota { font-size:10.5px; color:#8b95a3; line-height:1.6; margin-top:5px; }
+  .marcador { font-size:20px; letter-spacing:.05em; }
+  a { color:#39485c; }
+  @media (max-width:900px){ .rejas { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1 id="titulo">jugar</h1>
+  <!-- El número lo pone el código (`cuantos`), no la mano: ya decía «los veinte»
+       con veintidós en la lista. Un dato escrito a mano en una página pública
+       envejece callando, y aquí encima se contradecía con el desplegable de al
+       lado, que sí se genera. -->
+  <p class="sub">
+    Los <span id="cuantos">…</span> juegos, una sola página. El dibujo, la escena 3D y el texto salen
+    del <b>mismo sustrato</b>; los botones son las jugadas legales, las mismas que
+    recibe un modelo. Cada silla la puede llevar una persona, una política o un
+    modelo — y al terminar sale un recibo que un desconocido puede verificar.
+  </p>
+
+  <div class="barra">
+    <select id="juego"></select>
+    <button id="nueva">nueva partida</button>
+    <label class="dato"><input type="checkbox" id="ver3d" checked> 3D</label>
+    <span id="dato" style="color:#8b95a3"></span>
+  </div>
+
+  <div class="rejas">
+    <div>
+      <div class="panel"><h2>el tablero</h2><canvas id="c2d"></canvas></div>
+      <div class="panel" id="p3d"><h2>el mismo sustrato, en 3D</h2><canvas id="c3d"></canvas></div>
+    </div>
+    <div>
+      <div class="panel"><h2>quién juega</h2><div class="cuerpo" id="asientos"></div></div>
+      <div class="panel"><h2>puedes</h2><div class="cuerpo jugadas" id="jugadas"></div></div>
+      <div class="panel" id="panelFin" style="display:none"><h2>final</h2><div class="cuerpo" id="fin"></div></div>
+      <div class="panel"><h2>lo que lee un modelo sin visión</h2><pre id="texto"></pre></div>
+    </div>
+  </div>
+</main>
+
+<!--
+  jugar.html — UNA PÁGINA PARA LOS VEINTE, Y PARA LOS QUE VENGAN
+  ═══════════════════════════════════════════════════════════════════════════
+  Es el montaje de piezas que ya existían por separado:
+    · `sustrato.js`   la matriz plana, una sola forma para los veinte
+    · `pintar2d/3d`   dos proyecciones que NO saben a qué se juega
+    · `asientos.js`   persona · FSM · modelo en cada silla
+    · `descripcion`   la puerta de lenguaje
+    · `/api/verificar` el recibo
+
+  ⚠️ POR QUÉ ESTO ERA EL PASO MÁS BARATO QUE MÁS DESBLOQUEA.
+  Hasta hoy sólo seis juegos tenían tablero 3D, y cada uno con su visualizador a
+  medida —catorce en total, cada uno con su bug—. Aquí no hay ninguno: hay un
+  pintor que lee el sustrato. Así que los veinte tienen 3D, y el género número
+  veintiuno lo tendrá el día que tenga reglas, sin escribir una línea de dibujo.
+
+  Y no sustituye a `mesa.html` ni a las páginas 3D dedicadas: aquéllas están
+  hechas a mano y se ven mejor. Ésta es la que existe SIEMPRE.
+-->
+<script type="module">
+import * as THREE from 'three';
+import { ProtoHub } from './js/protohub/ProtoHub.js';
+import { JUEGOS, TITULOS, cargarReglas } from './js/protohub/rules/index.js';
+import { puntuacionDe } from './js/protohub/Verificador.js';
+import { obtenerSustrato } from './js/protohub/sustrato.js';
+import { describirEstado } from './js/protohub/descripcion.js';
+import { pintar2d } from './js/protohub/render/pintar2d.js';
+import { crearPintor3d } from './js/protohub/render/pintar3d.js';
+import { CONTROLADORES, crearControlador, esPersona, leerAsientos, pintarPanel }
+    from './js/protohub/asientos.js';
+
+const $ = (id) => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+const c2d = $('c2d'), c3d = $('c3d'), ctx = c2d.getContext('2d');
+
+// ── El 3D: escena mínima. Aquí el decorado no es el asunto. ───────────────
+const escena = new THREE.Scene();
+escena.background = new THREE.Color(0xeef2f6);
+escena.add(new THREE.HemisphereLight(0xffffff, 0x99a3ad, 1.5));
+const sol = new THREE.DirectionalLight(0xffffff, 1.2); sol.position.set(6, 12, 8);
+escena.add(sol);
+const cam = new THREE.PerspectiveCamera(45, 1, 0.1, 500);
+const rend = new THREE.WebGLRenderer({ canvas: c3d, antialias: true });
+const pintor3d = crearPintor3d(escena, THREE);
+
+// ── Estado ───────────────────────────────────────────────────────────────
+let juego = JUEGOS.includes(params.get('juego')) ? params.get('juego') : 'sokoban';
+let reglas = null, hub = null, orden = [], asientos = leerAsientos(params);
+let llm = { url: params.get('llm_url') ?? '', modelo: params.get('llm_modelo') ?? '' };
+
+const specDe = (i) => asientos[i] ?? (i === 0 ? 'persona' : 'fsm:casa');
+const cache = new Map();
+function controladorDe(i) {
+    const clave = `${i}:${specDe(i)}:${llm.url}:${llm.modelo}`;
+    if (!cache.has(clave)) cache.set(clave, crearControlador(specDe(i), { juego, reglas, llm }));
+    return cache.get(clave);
+}
+
+$('juego').innerHTML = JUEGOS.map(j =>
+    `<option value="${j}"${j === juego ? ' selected' : ''}>${TITULOS[j] ?? j}</option>`).join('');
+$('cuantos').textContent = JUEGOS.length;
+
+function medir() {
+    for (const c of [c2d, c3d]) {
+        const r = c.getBoundingClientRect();
+        c.width = Math.max(2, Math.floor(r.width)); c.height = Math.max(2, Math.floor(r.height));
+    }
+    cam.aspect = c3d.width / Math.max(1, c3d.height); cam.updateProjectionMatrix();
+    rend.setSize(c3d.width, c3d.height, false);
+}
+addEventListener('resize', () => { medir(); pintar(); });
+
+async function arrancar(j) {
+    juego = j;
+    reglas = await cargarReglas(j, {});
+    hub = new ProtoHub().registrar(j, reglas);
+    window.ALISA_PROTOHUB = hub;
+    hub.reset(j, { semilla: Number(params.get('semilla')) || Math.floor(Math.random() * 1e6) });
+    orden = []; cache.clear();
+    $('titulo').textContent = TITULOS[j] ?? j;
+    $('panelFin').style.display = 'none';
+    anotar(); pintarAsientos(); pintar(); await avanzar();
+}
+
+/** Los asientos se descubren jugando: cada juego los nombra a su manera. */
+function anotar() {
+    const t = hub.state(juego).turn;
+    if (t && !orden.includes(t)) orden.push(t);
+}
+const indiceTurno = () => { anotar(); const i = orden.indexOf(hub.state(juego).turn); return i < 0 ? 0 : i; };
+const meToca = () => esPersona(specDe(indiceTurno()));
+
+function pintar() {
+    const st = hub.state(juego);
+    const p = hub.partidas?.get(juego);
+    const sus = obtenerSustrato(juego, reglas, p, st);
+
+    // ⚠️ Las tres proyecciones reciben LO MISMO. Ninguna sabe a qué se juega.
+    pintar2d(ctx, sus, { ancho: c2d.width, alto: c2d.height });
+    $('texto').textContent = reglas.describir ? reglas.describir(p) : describirEstado(juego, st);
+    if ($('ver3d').checked) {
+        pintor3d.pintar(sus);
+        const lado = Math.max(sus.rejilla?.ancho ?? 8, sus.rejilla?.alto ?? 8, 7);
+        cam.position.set(lado * 0.7, lado * 0.95, lado * 1.1);
+        cam.lookAt(0, 0, 0);
+        rend.render(escena, cam);
+    }
+
+    $('dato').textContent =
+        (sus.rejilla ? `rejilla ${sus.rejilla.ancho}×${sus.rejilla.alto} · ` : '')
+      + `${sus.piezas.length} piezas · ${sus.zonas.length} zonas · `
+      + `${pintor3d.llamadas} llamadas · ${sus.derivado ? 'sustrato derivado' : 'sustrato propio'}`;
+
+    const acciones = (st.legal_moves ?? []).filter(m => m !== 'nueva' && m !== 'reset');
+    $('jugadas').innerHTML = '';
+    if (st.is_game_over) return terminar(st);
+    if (!meToca()) {
+        $('jugadas').innerHTML = `<span class="dato" style="color:#8b95a3">juega ${
+            orden[indiceTurno()] ?? 'otro asiento'}…</span>`;
+        return;
+    }
+    for (const m of acciones) {
+        const b = document.createElement('button');
+        b.className = 'j';
+        b.textContent = m.replace(/^jugar:|^pedir:/, '');
+        b.title = m;
+        b.onclick = async () => {
+            [...$('jugadas').children].forEach(x => { x.disabled = true; });
+            hub.move(juego, { move: m });
+            anotar(); pintarAsientos({ soloSiCambia: true }); pintar(); await avanzar();
+        };
+        $('jugadas').appendChild(b);
+    }
+}
+
+/** Hace jugar a los asientos que no son personas, con pausa para poder mirar. */
+let corriendo = false;
+async function avanzar() {
+    if (corriendo) return;
+    corriendo = true;
+    try {
+        for (let v = 0; v < 500; v++) {
+            const st = hub.state(juego);
+            if (st.is_game_over || meToca()) break;
+            const acciones = (st.legal_moves ?? []).filter(m => m !== 'nueva' && m !== 'reset');
+            if (!acciones.length) break;
+            const ctrl = controladorDe(indiceTurno());
+            let jugada = null;
+            try {
+                jugada = await ctrl.elegir({ juego, st, acciones, reglas,
+                                             p: hub.partidas?.get(juego) });
+            } catch (e) { $('dato').textContent = `«${ctrl.etiqueta}»: ${e.message}`; break; }
+            // ⚠️ Si no elige, se para y se dice. No se juega por nadie: en el
+            // banco eso se cuenta como jugada forzada y se publica el porcentaje.
+            if (!jugada) { $('dato').textContent = `«${ctrl.etiqueta}» no eligió ninguna legal.`; break; }
+            hub.move(juego, { move: jugada });
+            anotar(); pintar();
+            await new Promise(r => setTimeout(r, 220));
+        }
+    } finally { corriendo = false; }
+    pintarAsientos({ soloSiCambia: true });
+    pintar();
+}
+
+let pintadas = -1;
+function pintarAsientos({ soloSiCambia = false } = {}) {
+    const nombres = orden.length ? orden : ['asiento 1'];
+    if (soloSiCambia && nombres.length === pintadas) return;
+    pintadas = nombres.length;
+    pintarPanel({
+        nodo: $('asientos'), asientos: nombres,
+        valores: nombres.map((_, i) => specDe(i)), llm,
+        alCambiar: (i, spec) => {
+            asientos[i] = spec; cache.clear();
+            // La dirección describe siempre la partida que se está viendo, así
+            // que compartirla reproduce ésta y no otra.
+            const u = new URL(location.href);
+            u.searchParams.set('juego', juego);
+            u.searchParams.set('asientos', nombres.map((_, k) => specDe(k)).join(','));
+            history.replaceState(null, '', u);
+            pintarAsientos(); pintar(); avanzar();
+        },
+        alCambiarLlm: (v) => { llm = v; cache.clear(); pintarAsientos(); avanzar(); },
+    });
+}
+
+async function terminar(st) {
+    const rec = hub.partida(juego);
+    $('panelFin').style.display = '';
+    $('fin').innerHTML =
+        `<div class="marcador">${puntuacionDe(st)} puntos</div>`
+      + `<div class="nota">recibo · ${rec.jugadas.length} jugadas · semilla ${rec.semilla}</div>`
+      + `<div class="jugadas" style="margin-top:9px">
+           <button class="j" id="verificar">verificar en el servidor</button>
+           <button class="j" id="aportar">aportar al corpus</button>
+         </div><div class="nota" id="res"></div>`;
+    const llamar = async (ruta, cuerpo, boton) => {
+        boton.disabled = true;
+        $('res').textContent = 'preguntando al servidor…';
+        try {
+            const d = await fetch(ruta, { method: 'POST', headers: { 'content-type': 'application/json' },
+                                          body: JSON.stringify(cuerpo) }).then(r => r.json());
+            $('res').textContent = JSON.stringify(d);
+        } catch (e) {
+            // Sin servidor la partida sigue siendo válida: verificar es una mejora.
+            $('res').textContent = 'sin servidor: la partida se jugó igual (' + e.message + ')';
+            boton.disabled = false;
+        }
+    };
+    $('verificar').onclick = (e) => llamar('/api/verificar', { ...rec, puntos: puntuacionDe(st) }, e.target);
+    $('aportar').onclick = (e) => llamar('/api/dataset', { ...rec, puntos: puntuacionDe(st), tipo: 'persona' }, e.target);
+}
+
+$('juego').onchange = (e) => arrancar(e.target.value);
+$('nueva').onclick = () => arrancar(juego);
+$('ver3d').onchange = () => { $('p3d').style.display = $('ver3d').checked ? '' : 'none'; medir(); pintar(); };
+
+medir();
+await arrancar(juego);
+</script>
+</body>
+</html>

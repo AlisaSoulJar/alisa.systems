@@ -18,10 +18,26 @@ export class BSPSystem {
      * @param {Object} config Configuration parameters
      * @param {number} config.minLeafSize Minimum size of a partitioned leaf
      * @param {number} config.maxLeafSize Maximum size of a partitioned leaf
+     * @param {() => number} [config.rng] Source of randomness, [0,1). Defaults to
+     *        `Math.random`. Pass a seeded generator to get reproducible dungeons.
      */
     constructor(config = {}) {
         this.minLeafSize = config.minLeafSize || 10;
         this.maxLeafSize = config.maxLeafSize || 30;
+        /**
+         * ⚠️ WHY THIS PARAMETER EXISTS.
+         *
+         * This generator called `this.rng()` in eleven places, which made it
+         * usable for a demo and unusable for anything that has to be REPLAYED:
+         * a benchmark run, a bug report, a match receipt. Same seed, different
+         * dungeon — so `{game, seed, moves}` no longer reproduces the game, and
+         * a verifiable result stops being verifiable.
+         *
+         * It is not a design flaw, it is a missing parameter. Injecting the
+         * source of randomness costs one line and is backwards compatible: every
+         * existing caller keeps the exact behaviour it had.
+         */
+        this.rng = config.rng || Math.random;
     }
 
     /**
@@ -41,7 +57,7 @@ export class BSPSystem {
             for (let i = 0; i < leaves.length; i++) {
                 const leaf = leaves[i];
                 if (leaf.leftChild === null && leaf.rightChild === null) {
-                    if (leaf.width > this.maxLeafSize || leaf.height > this.maxLeafSize || Math.random() > 0.25) {
+                    if (leaf.width > this.maxLeafSize || leaf.height > this.maxLeafSize || this.rng() > 0.25) {
                         if (this._splitLeaf(leaf)) {
                             leaves.push(leaf.leftChild);
                             leaves.push(leaf.rightChild);
@@ -67,7 +83,7 @@ export class BSPSystem {
     }
 
     _splitLeaf(leaf) {
-        let splitHorizontally = Math.random() > 0.5;
+        let splitHorizontally = this.rng() > 0.5;
 
         // Force orientation if proportion is skewed
         if (leaf.width > leaf.height && leaf.width / leaf.height >= 1.25) splitHorizontally = false;
@@ -76,7 +92,7 @@ export class BSPSystem {
         const max = (splitHorizontally ? leaf.height : leaf.width) - this.minLeafSize;
         if (max <= this.minLeafSize) return false; // Too small
 
-        const split = Math.floor(Math.random() * (max - this.minLeafSize)) + this.minLeafSize;
+        const split = Math.floor(this.rng() * (max - this.minLeafSize)) + this.minLeafSize;
 
         if (splitHorizontally) {
             leaf.leftChild = new Leaf(leaf.x, leaf.y, leaf.width, split);
@@ -92,21 +108,19 @@ export class BSPSystem {
         if (leaf.leftChild !== null || leaf.rightChild !== null) {
             if (leaf.leftChild !== null) this._createRooms(leaf.leftChild, roomsArray);
             if (leaf.rightChild !== null) this._createRooms(leaf.rightChild, roomsArray);
-            
-            if (leaf.leftChild !== null && leaf.rightChild !== null) {
-                // Determine connection points
-                const lRoom = this._getRoom(leaf.leftChild);
-                const rRoom = this._getRoom(leaf.rightChild);
-            }
+            // (dead block removed: it called _getRoom twice and used neither
+            //  result. Harmless while randomness was global, but _getRoom draws
+            //  from the rng, so with a seeded generator it silently shifted the
+            //  whole sequence — a dungeon that changed for no visible reason.)
         } else {
             // Leaf is a room
             const roomSize = {
-                x: Math.floor(Math.random() * (leaf.width - 3)) + 3,
-                y: Math.floor(Math.random() * (leaf.height - 3)) + 3
+                x: Math.floor(this.rng() * (leaf.width - 3)) + 3,
+                y: Math.floor(this.rng() * (leaf.height - 3)) + 3
             };
             const roomPos = {
-                x: Math.floor(Math.random() * (leaf.width - roomSize.x - 1)) + 1,
-                y: Math.floor(Math.random() * (leaf.height - roomSize.y - 1)) + 1
+                x: Math.floor(this.rng() * (leaf.width - roomSize.x - 1)) + 1,
+                y: Math.floor(this.rng() * (leaf.height - roomSize.y - 1)) + 1
             };
             
             leaf.room = {
@@ -128,7 +142,7 @@ export class BSPSystem {
         if(lRoom === null && rRoom === null) return null;
         if(rRoom === null) return lRoom;
         if(lRoom === null) return rRoom;
-        return Math.random() > 0.5 ? lRoom : rRoom;
+        return this.rng() > 0.5 ? lRoom : rRoom;
     }
     
     _createHalls(leaf, hallsArray) {
@@ -157,7 +171,7 @@ export class BSPSystem {
 
         if (w < 0) {
             if (h < 0) {
-                if (Math.random() < 0.5) {
+                if (this.rng() < 0.5) {
                     hallsArray.push({ x: point2.x, y: point1.y, width: Math.abs(w), height: 1 });
                     hallsArray.push({ x: point2.x, y: point2.y, width: 1, height: Math.abs(h) });
                 } else {
@@ -165,7 +179,7 @@ export class BSPSystem {
                     hallsArray.push({ x: point1.x, y: point2.y, width: 1, height: Math.abs(h) });
                 }
             } else if (h > 0) {
-                if (Math.random() < 0.5) {
+                if (this.rng() < 0.5) {
                     hallsArray.push({ x: point2.x, y: point1.y, width: Math.abs(w), height: 1 });
                     hallsArray.push({ x: point2.x, y: point1.y, width: 1, height: Math.abs(h) });
                 } else {
@@ -177,7 +191,7 @@ export class BSPSystem {
             }
         } else if (w > 0) {
             if (h < 0) {
-                if (Math.random() < 0.5) {
+                if (this.rng() < 0.5) {
                     hallsArray.push({ x: point1.x, y: point2.y, width: Math.abs(w), height: 1 });
                     hallsArray.push({ x: point1.x, y: point2.y, width: 1, height: Math.abs(h) });
                 } else {
@@ -185,7 +199,7 @@ export class BSPSystem {
                     hallsArray.push({ x: point2.x, y: point2.y, width: 1, height: Math.abs(h) });
                 }
             } else if (h > 0) {
-                if (Math.random() < 0.5) {
+                if (this.rng() < 0.5) {
                     hallsArray.push({ x: point1.x, y: point1.y, width: Math.abs(w), height: 1 });
                     hallsArray.push({ x: point2.x, y: point1.y, width: 1, height: Math.abs(h) });
                 } else {

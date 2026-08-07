@@ -1,5 +1,5 @@
 /**
- * llm.mjs — un agente de lenguaje jugando por la puerta de lenguaje
+ * llm.js — un agente de lenguaje jugando por la puerta de lenguaje
  * ═══════════════════════════════════════════════════════════════════════════
  * Esto es lo que convierte «gym y banco de pruebas para humanos, FSM y agentes
  * LLM» de una frase de portada en algo comprobable.

@@ -1,5 +1,5 @@
 /**
- * proveedores.mjs — de dónde sale una respuesta de modelo
+ * proveedores.js — de dónde sale una respuesta de modelo
  * ═══════════════════════════════════════════════════════════════════════════
  * Un proveedor es una función `async (prompt) => { texto, entrada, salida, ms }`.
  * Nada más. El arnés no sabe si detrás hay un modelo de 600 MB en tu portátil,

@@ -1,0 +1,16 @@
+# Sonda: ¿tiene esta cuenta Durable Objects?
+# Se despliega un worker mínimo con una clase DO respaldada por SQLite (la
+# variante que Cloudflare habilitó en el plan gratuito). Si el despliegue pasa,
+# el multijugador real es viable sin cambiar de plan; si lo rechaza, lo dirá el
+# error y no habrá que suponerlo.
+name = "alisa-sonda-do"
+main = "sonda.js"
+compatibility_date = "2026-08-03"
+
+[[durable_objects.bindings]]
+name = "MESA"
+class_name = "MesaSonda"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["MesaSonda"]

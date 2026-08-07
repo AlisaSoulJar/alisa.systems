@@ -1,3 +1,9 @@
+// ATENCION: este import faltaba. El modulo usaba THREE. sin importarlo, o sea que
+// dependia de que alguien hubiera dejado la global puesta con un <script> clasico:
+// funcionaba EN SU PAGINA y en ninguna otra. Un modulo que solo funciona donde
+// nacio no es un modulo. Lo destapo clasificar_piezas.mjs sobre las 179 piezas.
+import * as THREE from 'three';
+
 /**
  * [ALISA Overworld Frontend]
  * Polling loop and state management.

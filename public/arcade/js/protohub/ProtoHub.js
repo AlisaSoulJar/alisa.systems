@@ -200,7 +200,27 @@ export class ProtoHub {
  * @returns {Promise<{tipo:'remoto'|'local', state:Function, move:Function}>}
  */
 export async function elegirBackend(protoHub, juegoId, opts = {}) {
-    const hubUrl = opts.hubUrl === undefined ? 'http://127.0.0.1:8741' : opts.hubUrl;
+    /**
+     * ⚠️ EL HUB SE PIDE, NO SE SUPONE. ESTE DEFECTO ESTABA AL REVÉS.
+     *
+     * Antes, sin decir nada, esto sondeaba `http://127.0.0.1:8741` — el hub de la
+     * colonia, que es OTRO proyecto. Consecuencias para cualquiera que no fuéramos
+     * nosotros: un error 404 en la consola en cada carga de página, apuntando a
+     * una dirección privada nuestra que en su máquina no existe y que además
+     * sugiere que al motor le falta algo. No le falta nada: las reglas están en
+     * el navegador y la partida se juega entera aquí.
+     *
+     * Y desde una página https el navegador ni siquiera deja llamar a http://, así
+     * que en el sitio publicado ese sondeo NUNCA podía funcionar. Era coste y
+     * ruido sin ninguna posibilidad de servir para algo.
+     *
+     * Ahora hay que pedirlo: `opts.hubUrl` o `window.ALISA_HUB_URL`. Conectar con
+     * ALISA es una mejora —partidas compartidas, ledger, $NEURO—, no un requisito,
+     * y el defecto tiene que decir eso.
+     */
+    const hubUrl = opts.hubUrl !== undefined
+        ? opts.hubUrl
+        : (typeof window !== 'undefined' ? (window.ALISA_HUB_URL ?? null) : null);
     const local = {
         tipo: 'local',
         state: async () => protoHub.state(juegoId),

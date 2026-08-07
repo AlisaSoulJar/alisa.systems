@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALISA — la misma matriz, tres proyecciones</title>
+<meta name="alisa-escaparate" content="gym">
+<meta name="alisa-muestra" content="El mismo estado pintado en 2D, en 3D y contado en texto: las tres cosas son proyecciones de una matriz plana, no tres implementaciones">
+<script type="importmap">
+{ "imports": {
+    "three": "/vendor/three-0.160.0/build/three.module.js",
+    "three/addons/": "/vendor/three-0.160.0/examples/jsm/"
+} }
+</script>
+<style>
+  :root { color-scheme: light; }
+  body { margin:0; background:#f4f6f8; color:#1a2230; padding:22px 20px 40px;
+         font:12px/1.7 'JetBrains Mono', ui-monospace, monospace; }
+  main { max-width:1180px; margin:0 auto; }
+  h1 { font-size:13px; letter-spacing:.4em; text-transform:uppercase; font-weight:400; margin:0 0 4px; }
+  .lede { color:#6b7684; font-size:11.5px; margin:0 0 16px; max-width:76ch; }
+  .barra { display:flex; gap:10px; align-items:center; margin:0 0 14px; flex-wrap:wrap; }
+  select, button { font:inherit; font-size:11px; padding:5px 9px; border:1px solid #b9c4d0;
+                   border-radius:3px; background:#fff; cursor:pointer; }
+  .rejas { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .panel { border:1px solid #dde3ea; border-radius:4px; background:#fff; overflow:hidden; }
+  .panel h2 { font-size:10px; letter-spacing:.28em; text-transform:uppercase; color:#8b95a3;
+              margin:0; padding:9px 12px; border-bottom:1px solid #eef2f6; font-weight:400; }
+  canvas { display:block; width:100%; height:340px; }
+  pre { margin:0; padding:12px; font-size:11px; line-height:1.6; white-space:pre-wrap;
+        max-height:190px; overflow:auto; color:#39485c; }
+  @media (max-width:820px){ .rejas { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>la misma matriz, tres proyecciones</h1>
+  <p class="lede">
+    Abajo hay <b>un solo estado</b>. El dibujo 2D, la escena 3D y el texto que lee
+    un modelo no son tres implementaciones: son tres lecturas de la misma matriz
+    plana. Cambia de juego y las tres cambian a la vez, sin que ninguna sepa a
+    qué se está jugando.
+  </p>
+
+  <div class="barra">
+    <select id="juego"></select>
+    <button id="jugar">jugar una al azar</button>
+    <button id="nueva">reiniciar</button>
+    <span id="dato" style="color:#8b95a3"></span>
+  </div>
+
+  <div class="rejas">
+    <div class="panel"><h2>proyección 2D</h2><canvas id="c2d"></canvas></div>
+    <div class="panel"><h2>proyección 3D — el ledger visual</h2><canvas id="c3d"></canvas></div>
+  </div>
+  <div class="panel" style="margin-top:14px">
+    <h2>proyección de texto — lo que lee un modelo sin visión</h2>
+    <pre id="texto"></pre>
+  </div>
+  <div class="panel" style="margin-top:14px">
+    <h2>el sustrato</h2><pre id="crudo"></pre>
+  </div>
+</main>
+
+<!--
+  ⚠️ POR QUÉ ESTA PÁGINA EXISTE
+  La tesis del motor —«el 3D es sólo un ledger visual: pintamos lo que en
+  realidad es una matriz plana»— era hasta hoy una intención. Medido el
+  2026-08-07, había CINCO codificaciones distintas del mismo estado (FEN, matriz,
+  lista plana, listas de {x,y}, manos), y de ahí salieron casi todos los fallos
+  de la semana.
+
+  Con `sustrato.js` hay una sola. Esta página lo enseña de la forma más difícil
+  de discutir: el mismo estado, tres lecturas, ninguna sabe el juego.
+-->
+<script type="module">
+import * as THREE from 'three';
+import { JUEGOS, TITULOS, cargarReglas } from './js/protohub/rules/index.js';
+import { obtenerSustrato } from './js/protohub/sustrato.js';
+import { describirEstado } from './js/protohub/descripcion.js';
+import { pintar2d } from './js/protohub/render/pintar2d.js';
+import { crearPintor3d } from './js/protohub/render/pintar3d.js';
+
+const $ = (id) => document.getElementById(id);
+const c2d = $('c2d'), c3d = $('c3d');
+const ctx = c2d.getContext('2d');
+
+// ── 3D: una escena mínima. El decorado no es el asunto aquí. ──────────────
+const escena = new THREE.Scene();
+escena.background = new THREE.Color(0xeef2f6);
+escena.add(new THREE.HemisphereLight(0xffffff, 0x99a3ad, 1.5));
+const sol = new THREE.DirectionalLight(0xffffff, 1.2); sol.position.set(6, 12, 8);
+escena.add(sol);
+const cam = new THREE.PerspectiveCamera(45, 1, 0.1, 500);
+const rend = new THREE.WebGLRenderer({ canvas: c3d, antialias: true });
+const pintor3d = crearPintor3d(escena, THREE);
+
+function medir() {
+    for (const c of [c2d, c3d]) {
+        const r = c.getBoundingClientRect();
+        c.width = Math.max(2, Math.floor(r.width)); c.height = Math.max(2, Math.floor(r.height));
+    }
+    cam.aspect = c3d.width / c3d.height; cam.updateProjectionMatrix();
+    rend.setSize(c3d.width, c3d.height, false);
+}
+addEventListener('resize', () => { medir(); pintarTodo(); });
+
+// ── El estado ────────────────────────────────────────────────────────────
+let juego = 'ajedrez', reglas = null, p = null;
+
+$('juego').innerHTML = JUEGOS.map(j =>
+    `<option value="${j}"${j === juego ? ' selected' : ''}>${TITULOS[j] ?? j}</option>`).join('');
+
+async function cargar(j) {
+    juego = j;
+    reglas = await cargarReglas(j, {});
+    p = reglas.nuevaPartida({ semilla: 7, seed: 7 });
+    pintarTodo();
+}
+
+function pintarTodo() {
+    const st = reglas.estado(p);
+    const sus = obtenerSustrato(juego, reglas, p, st);
+
+    // ⚠️ Las tres llamadas reciben LO MISMO y ninguna sabe a qué se juega.
+    pintar2d(ctx, sus, { ancho: c2d.width, alto: c2d.height });
+    pintor3d.pintar(sus);
+    $('texto').textContent = describirEstado(juego, st);
+
+    // La cámara se coloca sola desde el tamaño del sustrato: sin ajustes por juego.
+    const lado = Math.max(sus.rejilla?.ancho ?? 8, sus.rejilla?.alto ?? 8, 6);
+    cam.position.set(lado * 0.75, lado * 0.95, lado * 1.15);
+    cam.lookAt(0, 0, 0);
+    rend.render(escena, cam);
+
+    // ⚠️ Se enseña el número de LLAMADAS DE DIBUJO a propósito. La primera
+    // versión creaba una malla por celda y por pieza: fagocito son 28×28 celdas
+    // y 561 piezas, o sea 1.345 llamadas, y el navegador dejaba de poder ni
+    // capturar la pantalla. Con instanciado son menos de diez. Tenerlo a la
+    // vista es lo que impide que vuelva a colarse.
+    $('dato').textContent =
+        `${sus.rejilla ? `rejilla ${sus.rejilla.ancho}×${sus.rejilla.alto} · ` : ''}`
+      + `${sus.piezas.length} piezas · ${sus.zonas.length} zonas · `
+      + `${pintor3d.llamadas} llamadas de dibujo`
+      + `${sus.derivado ? ' · derivado del adaptador' : ' · sustrato propio'}`;
+    $('crudo').textContent = JSON.stringify({
+        rejilla: sus.rejilla ? { ancho: sus.rejilla.ancho, alto: sus.rejilla.alto,
+                                 celdas: '…' + sus.rejilla.celdas.length + ' valores' } : null,
+        piezas: sus.piezas.slice(0, 8),
+        zonas: sus.zonas.map(z => ({ ...z, items: z.items.slice(0, 6) })),
+    }, null, 1);
+}
+
+$('juego').onchange = (e) => cargar(e.target.value);
+$('nueva').onclick = () => { p = reglas.nuevaPartida({ semilla: Date.now() >>> 0 }); pintarTodo(); };
+$('jugar').onclick = () => {
+    const st = reglas.estado(p);
+    const m = (st.legal_moves ?? []).filter(x => x !== 'nueva' && x !== 'reset');
+    if (m.length) reglas.mover(p, m[Math.floor(Math.random() * m.length)]);
+    pintarTodo();
+};
+
+medir();
+await cargar(juego);
+</script>
+</body>
+</html>

@@ -48,9 +48,9 @@ const impo = (rel) => import(pathToFileURL(path.join(AQUI, rel)).href);
 const { CATALOGO } = await impo('public/js/alisa-engine/src/gym/registro.js');
 const { verificar } = await impo('public/arcade/js/protohub/Verificador.js');
 const { cargarReglas, TITULOS } = await impo('public/arcade/js/protohub/rules/index.js');
-const { jugarEpisodio } = await impo('agentes/llm.mjs');
-const { ollama } = await impo('agentes/proveedores.mjs');
-const { POLITICAS } = await impo('agentes/politicas.mjs');
+const { jugarEpisodio } = await impo('public/arcade/js/agentes/llm.js');
+const { ollama } = await impo('public/arcade/js/agentes/proveedores.js');
+const { POLITICAS } = await impo('public/arcade/js/agentes/politicas.js');
 
 const args = {};
 for (let i = 2; i < process.argv.length; i++) {
@@ -228,12 +228,29 @@ for (const [juego, fila] of datos) {
     for (const part of participantes) {
         const r = fila[part.nombre];
         n[part.nombre] = r?.error ? null : (r.puntosCortos - suelo) / hueco;
-        // ⚠️ LA INCERTIDUMBRE VIAJA CON EL NÚMERO.
-        // Un modelo se mide con 3 partidas porque cuesta dinero, y 3 partidas de
-        // un juego de cartas dicen poco. Publicar «0,71» a secas es fingir una
-        // precisión que no se tiene. Se publica el ± y que cada cual juzgue.
-        inc[part.nombre] = r?.error ? null
-            : 2 * errorTipico((r.serie ?? []).slice(0, SEMILLAS)) / Math.abs(hueco);
+        /**
+         * ⚠️ LA INCERTIDUMBRE VIAJA CON EL NÚMERO.
+         * Un modelo se mide con 3 partidas porque cuesta dinero, y 3 partidas de
+         * un juego de cartas dicen poco. Publicar «0,71» a secas es fingir una
+         * precisión que no se tiene. Se publica el ± y que cada cual juzgue.
+         *
+         * ⚠️ Y NO SE RECORTA LA SERIE PARA CALCULARLA — ANTES SÍ, Y MENTÍA.
+         *
+         * Estaba `.slice(0, SEMILLAS)`, que tiene sentido para la MEDIA (los
+         * modelos y las bases deben compararse sobre las mismas semillas) y
+         * ninguno para la dispersión: recortaba a una muestra las 80 partidas que
+         * las líneas base sí habían jugado. Con `--semillas 1` el efecto era el
+         * peor posible — el error típico de una sola muestra es cero, así que
+         * **la tabla entera salía con `±0,00`, incluido el azar**, declarando
+         * precisión perfecta justo en la tanda con menos datos.
+         *
+         * Con una sola partida la dispersión no es cero: es DESCONOCIDA. Se dice
+         * `null` y se imprime «—», porque un hueco en la tabla es honrado y un
+         * cero es una afirmación.
+         */
+        const serie = r?.serie ?? [];
+        inc[part.nombre] = r?.error || serie.length < 2 ? null
+            : 2 * errorTipico(serie) / Math.abs(hueco);
     }
     incertidumbres.set(juego, inc);
     normalizados.set(juego, n);
@@ -250,7 +267,10 @@ for (const part of participantes) {
     const media = vals.reduce((a, b) => a + b, 0) / vals.length;
     // Las incertidumbres de juegos independientes se suman en cuadratura.
     const incs = juegosUtiles.map(j => incertidumbres.get(j)[part.nombre]).filter(v => v !== null);
-    const inc = Math.hypot(...incs) / Math.max(1, incs.length);
+    // Sin ninguna dispersión medible no hay dispersión que publicar: `null`, no
+    // cero. `Math.hypot()` sin argumentos vale 0, y ese cero se colaba como si
+    // fuera una medida — el mismo cero falso que ya salía por el recorte de arriba.
+    const inc = incs.length ? Math.hypot(...incs) / incs.length : null;
     const tot = (k) => juegosUtiles.reduce((a, j) => a + (datos.get(j)[part.nombre]?.[k] ?? 0), 0);
     // Cada participante juega las semillas que le tocan: las bases muchas más.
     const verif = tot('verificadas'), esperadas = tot('semillas');
@@ -261,7 +281,7 @@ for (const part of participantes) {
                    porJuego: Object.fromEntries(juegosUtiles.map(j => [j, normalizados.get(j)[part.nombre]])) });
 
     console.log(`  ${verif === esperadas ? verde('✓') : rojo('✗')} ${part.nombre.padEnd(22)}`
-        + `${media.toFixed(2).padStart(7)}${('±' + inc.toFixed(2)).padStart(7)}`
+        + `${media.toFixed(2).padStart(7)}${(inc === null ? '—' : '±' + inc.toFixed(2)).padStart(7)}`
         + `${Math.min(...vals).toFixed(2).padStart(7)}${Math.max(...vals).toFixed(2).padStart(8)}`
         + `${String(tot('forzadas')).padStart(11)}${(tot('tokens') / 1000).toFixed(1).padStart(10)}k`
         + `${(tot('ms') / 1000).toFixed(0).padStart(7)}   ${verif}/${esperadas}`);
@@ -286,6 +306,97 @@ await writeFile(path.join(dir, 'tabla.json'), JSON.stringify(
       descartados: Object.fromEntries([...descartes].filter(([, m]) => m)),
       resumen }, null, 2));
 
+/**
+ * ⚠️ LA CLASIFICACIÓN, EN UNA PÁGINA — Y ES LO QUE NOS DIFERENCIA.
+ *
+ * El argumento entero del proyecto es que una partida se comprueba VOLVIÉNDOLA A
+ * JUGAR, no pidiéndole a otro modelo que la puntúe. Eso sólo vale algo si la
+ * tabla resultante está donde cualquiera pueda mirarla y, sobre todo, discutirla:
+ * cada fila lleva cuántos recibos verificaron y cuántas jugadas hubo que forzar,
+ * que son las dos cifras con las que se destapa un banco de pruebas amañado.
+ *
+ * Se genera en la misma pasada que la mide. Una tabla de resultados escrita a
+ * mano es exactamente lo que este proyecto lleva semanas quitando de en medio.
+ */
+if (args.html) {
+    const pct = (r) => r.llamadas ? (r.forzadas / r.llamadas * 100).toFixed(0) : '0';
+    const filas = resumen.map(r => `<tr><th>${r.participante}</th>`
+        + `<td class="n"><b>${r.media.toFixed(2)}</b></td>`
+        + `<td class="n gris">${r.incertidumbre === null
+              ? '<span title="una sola partida: la dispersión no se ha medido">—</span>'
+              : '±' + r.incertidumbre.toFixed(2)}</td>`
+        + `<td class="n">${r.forzadas}/${r.llamadas} <span class="gris">(${pct(r)}%)</span></td>`
+        + `<td class="n gris">${(r.tokens / 1000).toFixed(1)}k</td>`
+        + `<td class="n">${r.verificadas}/${r.esperadas}</td></tr>`).join('\n');
+
+    const cab = participantes.map(p => `<th>${p.nombre}</th>`).join('');
+    const porJuego = juegosUtiles.map(j => {
+        const n = normalizados.get(j);
+        return `<tr><th><a href="/arcade/jugar.html?juego=${j}">${TITULOS[j] ?? j}</a></th>`
+            + participantes.map(p => `<td class="n">${n[p.nombre] === null ? '—' : n[p.nombre].toFixed(2)}</td>`).join('')
+            + '</tr>';
+    }).join('\n');
+
+    const fuera = [...descartes].filter(([, m]) => m);
+    await writeFile(path.join(AQUI, String(args.html)), `<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA — clasificación</title>
+<meta name="alisa-escaparate" content="motor">
+<style>
+:root{color-scheme:light dark}
+body{margin:0;padding:2.5rem 1.25rem;background:#f4f6f8;color:#1a2230;
+     font:15px/1.6 ui-sans-serif,system-ui,sans-serif}
+main{max-width:56rem;margin:0 auto}
+h1{font:600 1.5rem/1.2 ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase}
+h2{font:600 1rem/1.2 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;margin-top:2.2rem}
+p.sub{color:#4a5866;max-width:46rem}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;background:#fff;
+      border:1px solid #d9e0e7;font-size:14px}
+th,td{padding:.42rem .6rem;border-bottom:1px solid #eef2f5}
+thead th{font:600 11px/1.4 ui-monospace,monospace;text-transform:uppercase;
+         letter-spacing:.06em;color:#4a5866;text-align:right}
+thead th:first-child{text-align:left}
+tbody th{text-align:left;font-weight:500}
+tbody th a{color:#1a2230;text-decoration:none;border-bottom:1px solid #c9d3dd}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.gris{color:#7f8c8d}
+.escala{background:#e9eef3;padding:.7rem .9rem;border-radius:4px;max-width:46rem}
+footer{margin-top:2.5rem;color:#7f8c8d;font-size:13px}
+@media(prefers-color-scheme:dark){
+ body{background:#12171d;color:#e6ecf2}table{background:#1a2028;border-color:#2b3540}
+ th,td{border-bottom-color:#232c36}tbody th a{color:#e6ecf2;border-bottom-color:#3a4550}
+ p.sub,thead th,.gris{color:#9aa8b5}.escala{background:#1a2028}}
+</style></head><body><main>
+<h1>Clasificación</h1>
+<p class="sub">Modelos y líneas base en las mismas filas, medidos en la misma tanda.
+${SEMILLAS} semillas por juego para los modelos y ${SEMILLAS_BASE} para las bases —no
+cuestan tokens, así que el metro se mide con más partidas que lo que se mide con él.</p>
+<p class="escala"><b>0,00</b> = tan bueno como elegir siempre la primera opción legal.<br>
+<b>1,00</b> = tan bueno como el rival de casa del juego.<br>
+<span class="gris">Las puntuaciones crudas no son comparables entre juegos —el xiangqi va
+en miles y el Go Fish en unidades— así que sumarlas daría un número que sólo habla del
+juego de escala más grande. Cada juego se lleva a esta escala común antes de promediar.</span></p>
+<table><thead><tr><th>participante</th><th>media</th><th>±</th>
+<th>jugadas forzadas</th><th>tokens</th><th>recibos verificados</th></tr></thead>
+<tbody>${filas}</tbody></table>
+<p class="sub"><b>Las dos columnas que importan para desconfiar.</b> «Forzadas» son las
+veces que el participante no dio una jugada válida y hubo que elegir por él: si ese número
+sube, la fila mide el arnés y no al modelo. «Recibos verificados» son las partidas que se
+volvieron a jugar entero contra el mismo fichero de reglas y dieron el mismo resultado.
+<b>Lo que no verifica, no puntúa</b> — y no hay ningún modelo juez en ninguna parte.</p>
+<h2>Por juego</h2>
+<table><thead><tr><th>juego</th>${cab}</tr></thead><tbody>${porJuego}</tbody></table>
+${fuera.length ? `<h2>Fuera de la media, y por qué</h2><ul class="sub">`
+    + fuera.map(([j, m]) => `<li><b>${j}</b> — ${m}</li>`).join('') + '</ul>' : ''}
+<footer>Generada por <code>tabla.mjs</code> el ${new Date().toISOString().slice(0, 10)},
+tope ${TOPE} decisiones. Los juegos cuyo hueco entre líneas base no supera al ruido salen
+de la media con el motivo puesto: un juego que no distingue a quien lo juega no puede
+ordenar a nadie. · <a href="/generos.html">Qué estructuras cubre el motor</a></footer>
+</main></body></html>
+`);
+    console.log(gris(`\n  html en ${args.html}`));
+}
+
 if (args.md) {
     const md = [
         '# Clasificación', '',
@@ -299,7 +410,8 @@ if (args.md) {
         'que lo que se mide con él. El ± es la incertidumbre real de cada fila.', '',
         '| participante | media | ± | forzadas | tokens | recibos verificados |',
         '|---|---|---|---|---|---|',
-        ...resumen.map(r => `| ${r.participante} | ${r.media.toFixed(2)} | ±${r.incertidumbre.toFixed(2)} | ${r.forzadas}/${r.llamadas} `
+        ...resumen.map(r => `| ${r.participante} | ${r.media.toFixed(2)} `
+            + `| ${r.incertidumbre === null ? '— (sin medir)' : '±' + r.incertidumbre.toFixed(2)} | ${r.forzadas}/${r.llamadas} `
             + `| ${(r.tokens / 1000).toFixed(1)}k | ${r.verificadas}/${r.esperadas} |`),
         '', `Juegos que puntúan: ${juegosUtiles.join(', ')}.`, '',
         ...([...descartes].filter(([, m]) => m).length

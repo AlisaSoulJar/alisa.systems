@@ -67,7 +67,78 @@ const ESLABONES = [
     // instalarse nada. Es otra cosa, y menos común: 7 de 19.
     ['lab',      'laboratorio propio que se abre y canta el veredicto'],
     ['sala',     'estación en la Sala del Huevo'],
+
+    // ═══ COLUMNAS AÑADIDAS EL 2026-08-06 ═══════════════════════════════════
+    // ⚠️ EL METRO SE HABÍA QUEDADO CORTO, Y ESO ES PEOR QUE NO TENERLO.
+    // En una sola jornada se construyeron mesas compartidas, asientos que admiten
+    // personas, políticas y modelos, y ratón en cuatro tableros que no se podían
+    // tocar. Ninguna de las siete columnas de arriba pregunta por nada de eso, así
+    // que la tabla seguía cantando 19/19 en cinco columnas mientras go no dibujaba
+    // su tablero y siete juegos de cartas no tenían mesa que ver.
+    //
+    // Ya pasó una vez con la columna `prueba`, que medía otra cosa de la que decía.
+    // Una medida que deja de medir lo que importa sigue dando verde, y el verde es
+    // lo que hace que nadie mire.
+    ['tablero3d',  'tablero 3D propio, no sólo la mesa funcional'],
+    ['raton',      'se juega clicando el tablero, no escribiendo la jugada'],
+    ['asientos',   'cada silla admite persona, política o modelo'],
+    ['compartida', 'dos seres pueden sentarse a la MISMA partida'],
 ];
+
+/**
+ * ⚠️ LO QUE ESTA HERRAMIENTA NO PUEDE MEDIR, Y NO FINGE MEDIR.
+ *
+ * Falta una columna «se ve»: que el 3D dibuje algo de verdad. Go la fallaría —
+ * juega, se clica, el minimapa lo refleja, y el tablero no aparece— y por eso
+ * haría falta.
+ *
+ * No se añade porque desde Node NO SE PUEDE COMPROBAR: hace falta un navegador
+ * que renderice y alguien que mire los píxeles. Poner aquí una columna que en
+ * realidad detectara «tiene un fichero visualizador» sería exactamente el error
+ * que estas cuatro columnas vienen a corregir: una medida con el nombre de otra.
+ *
+ * Va aparte, como prueba de navegador. Hasta que exista, `se ve` se comprueba a
+ * ojo y se anota en `docs/adaptar_lo_que_hay.md`.
+ */
+
+// ── Con qué se juega cada juego, leído de los ficheros y no declarado ──────
+//
+// La página de cada juego es ya sólo configuración:
+//     montarMesa({ juego: 'go', visualizador: 'go_visualizer.js' });
+// así que basta con leerla. Nada de mantener aquí una lista paralela: eso es
+// justo lo que se separa en cuanto entre el juego veinte.
+const paginas = {};
+for (const f of arcade.filter(f => f.endsWith('.html'))) {
+    const txt = await readFile(path.join(PUB, 'arcade', f), 'utf8');
+    const m = txt.match(/montarMesa\(\s*\{([^}]*)\}/s);
+    if (!m) continue;
+    const juego = m[1].match(/juego:\s*'([^']+)'/)?.[1];
+    const vis = m[1].match(/visualizador:\s*'([^']+)'/)?.[1];
+    if (juego) paginas[juego] = { fichero: f, visualizador: vis };
+}
+
+const visualizadores = {};
+for (const [juego, p] of Object.entries(paginas)) {
+    if (!p.visualizador) continue;
+    try {
+        visualizadores[juego] = await readFile(
+            path.join(PUB, 'arcade/js', p.visualizador), 'utf8');
+    } catch { /* declarado y ausente: se nota abajo como sin ratón */ }
+}
+
+// El panel de asientos llega por dos caminos, y los dos son el MISMO módulo:
+// `mesa.html` lo importa para los diecinueve, y `SovereignBoardEngine` para las
+// páginas de tablero. Se comprueba que esté, en vez de darlo por hecho.
+const mesaGenerica = await readFile(path.join(PUB, 'arcade/mesa.html'), 'utf8');
+const motorTablero = await readFile(path.join(PUB, 'arcade/js/SovereignBoardEngine.js'), 'utf8');
+const hayAsientosEnLaMesa = mesaGenerica.includes('asientos.js');
+const hayAsientosEnElMotor = motorTablero.includes('asientos.js');
+
+// Quién NO admite compañía, y por qué. Se importa del propio árbitro para que no
+// haya dos verdades: si mañana el póker aprende a sentar a dos, esta tabla se
+// entera sola.
+const { SOLITARIOS } = await import(
+    pathToFileURL(path.join(AQUI, 'worker-mesas/mesas.js')).href);
 
 const juegos = [];
 for (const juego of JUEGOS) {
@@ -99,6 +170,30 @@ for (const juego of JUEGOS) {
         sala: sala.includes(`${juego}-protohub`)
               || sala.includes(`juego=${juego}`)
               || sala.includes(`/${pagina}.html`),
+
+        // Tablero 3D PROPIO. `mesa.html` no cuenta: es funcional a propósito y
+        // vale para los diecinueve, así que contarla aquí daría 19/19 y esta
+        // columna dejaría de distinguir nada — que es como se estropean las
+        // medidas.
+        tablero3d: !!visualizadores[juego],
+
+        // ⚠️ Se pregunta por el RATÓN SOBRE EL TABLERO, no por «se puede clicar».
+        // Los botones de `mesa.html` también son clics, así que la pregunta laxa
+        // daría 19/19 y no diría nada. Lo que interesa es si el 3D se toca: hasta
+        // hoy, cuatro de los seis tableros se dibujaban y no se podían tocar.
+        raton: !!visualizadores[juego] && (
+            visualizadores[juego].includes('raton_tablero')
+            || /addEventListener\('(pointerdown|click|mousedown)'/.test(visualizadores[juego])),
+
+        // Por `mesa.html` lo tienen los diecinueve; las páginas de tablero lo
+        // reciben además por el motor. Un 19/19 aquí es un hecho, no un adorno:
+        // dice que cualquier juego admite persona, política o modelo en su silla.
+        asientos: hayAsientosEnLaMesa || (!!visualizadores[juego] && hayAsientosEnElMotor),
+
+        // Lo dice el árbitro, no esta tabla. Seis dicen que no y cada uno con su
+        // motivo escrito: `guerra` es el control del banco, `blackjack` y `poker`
+        // se juegan contra la casa, y snake/fagocito/peaton son de un jugador.
+        compartida: !SOLITARIOS[juego],
     };
     juegos.push({
         juego, titulo: TITULOS[juego] ?? juego, tiene,

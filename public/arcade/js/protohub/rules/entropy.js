@@ -127,7 +127,12 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
             return p;
         },
 
-        estado(p) {
+        // `asiento` = desde qué silla se mira. Aquí la fuga era más leve que en
+        // los demás —las cartas tapadas ya salen como `null` incluso las propias—
+        // pero igual de rota: el segundo jugador veía la caja del primero como si
+        // fuera la suya. Ver la nota larga en `bazas.js`.
+        estado(p, asiento = 0) {
+            const yo = Number.isInteger(asiento) && p.cajas[asiento] ? asiento : 0;
             if (!p.fin && p.turnos >= HORIZONTE) resolver(p);
 
             const pid = p.turno;
@@ -159,7 +164,7 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
             const visiblesDe = (i) => p.cajas[i].reduce(
                 (s, h) => s + (h.visible ? valorDe(h.carta) : 0), 0);
 
-            const míos = p.fin ? p.puntosFinales[0] : visiblesDe(0);
+            const míos = p.fin ? p.puntosFinales[yo] : visiblesDe(yo);
             // Menos es mejor y la métrica del banco es «más es mejor»: se niega
             // aquí, igual que en hearts, para que el número que se verifica y el
             // que se compara sean el mismo.
@@ -167,8 +172,9 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
 
             return {
                 juego: 'entropy',
-                caja: verCaja(p.cajas[0]),
-                cajas_rivales: p.cajas.slice(1).map(verCaja),
+                asiento: yo,
+                caja: verCaja(p.cajas[yo]),
+                cajas_rivales: p.cajas.filter((_, i) => i !== yo).map(verCaja),
                 columnas: COLUMNAS,
                 robada: p.robada,
                 robada_de: p.robadaDe,

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALISA — de qué es capaz el motor</title>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+<style>
+  :root { color-scheme: light; }
+  body { margin:0; background:#f7f9fb; color:#1a2230;
+         font:14px/1.7 'JetBrains Mono', ui-monospace, monospace; padding:44px 22px; }
+  main { max-width:900px; margin:0 auto; }
+  h1 { font-size:13px; letter-spacing:.45em; text-transform:uppercase;
+       font-weight:400; margin:0 0 6px; }
+  .lede { font-size:12px; color:#6b7684; margin:0 0 40px; max-width:60ch; }
+  section { margin:0 0 34px; }
+  h2 { font-size:11px; letter-spacing:.28em; text-transform:uppercase;
+       color:#39485c; margin:0 0 4px; font-weight:400; }
+  .sub { font-size:11.5px; color:#8b95a3; margin:0 0 14px; }
+  a.t { display:block; border:1px solid #dde3ea; border-radius:4px; background:#fff;
+        padding:12px 14px; margin-bottom:7px; text-decoration:none; color:inherit; }
+  a.t:hover { border-color:#1a2230; }
+  a.t b { display:block; font-weight:500; font-size:13px; }
+  a.t span { display:block; font-size:11.5px; color:#6b7684; margin-top:3px; }
+  footer { font-size:11px; color:#8b95a3; border-top:1px solid #dde3ea;
+           padding-top:16px; margin-top:20px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>de qué es capaz el motor</h1>
+  <p class="lede">
+    Todo lo de aquí corre en el navegador, sin instalar nada y sin ningún
+    servidor nuestro detrás. Cada pieza dice qué demuestra.
+  </p>
+    <section>
+      <h2>Juegos</h2>
+      <p class="sub">Diecinueve, y los mismos para personas, políticas y modelos.</p>
+      <a class="t" href="/arcade/chess.html"><b>ALISA Arcade — Ajedrez</b><span>Ajedrez 3D con las reglas en el navegador; en cada silla una persona, una política o un modelo</span></a>
+      <a class="t" href="/arcade/blackjack.html"><b>ALISA Arcade — Casino Blackjack</b><span>Mesa de cartas 3D leyendo el catálogo de barajas, no cartas escritas a mano</span></a>
+      <a class="t" href="/arcade/go.html"><b>ALISA Arcade — Go</b><span>Go 19x19; el mismo tablero se juega clicando o leyendo su rejilla en texto</span></a>
+      <a class="t" href="/arcade/mesa.html"><b>ALISA Arcade — Mesa</b><span>Una mesa para los 19 juegos: los botones SON las jugadas legales, así que una persona no puede hacer una ilegal por la misma razón que no puede un modelo</span></a>
+      <a class="t" href="/arcade/reversi.html"><b>ALISA Arcade — Reversi</b><span>Reversi 3D, reglas locales y recibo verificable</span></a>
+      <a class="t" href="/arcade/xiangqi.html"><b>ALISA Arcade — Xiangqi</b><span>Ajedrez chino 9x10, con su propio vocabulario de jugadas</span></a>
+      <a class="t" href="/arcade/jugar.html"><b>ALISA — jugar</b><span>Los 20 juegos en una sola página: 2D, 3D y texto del mismo sustrato, con persona, política o modelo en cada silla y recibo verificable</span></a>
+    </section>
+    <section>
+      <h2>Gym y verificación</h2>
+      <p class="sub">Una partida se verifica volviéndola a jugar. Sin jueces.</p>
+      <a class="t" href="/arcade/proyecciones.html"><b>ALISA — la misma matriz, tres proyecciones</b><span>El mismo estado pintado en 2D, en 3D y contado en texto: las tres cosas son proyecciones de una matriz plana, no tres implementaciones</span></a>
+      <a class="t" href="/labs/pieza.html?m=gym/envs/AsteroidsEnv.js"><b>AsteroidsEnv</b><span>reset, step, getObservation — 8.8 KB</span></a>
+      <a class="t" href="/labs/pieza.html?m=world/systems/BulletHeavenEngine.js"><b>BulletHeavenEngine</b><span>reset, act, getObservation — 21.3 KB</span></a>
+      <a class="t" href="/labs/pieza.html?m=gym/envs/CabinetEscapeEnv.js"><b>CabinetEscapeEnv</b><span>reset, step, getObservation — 9.8 KB</span></a>
+      <a class="t" href="/labs/pieza.html?m=gym/envs/ChopperAquariumEnv.js"><b>ChopperAquariumEnv</b><span>reset, step, getObservation — 7.5 KB</span></a>
+      <a class="t" href="/labs/pieza.html?m=gym/envs/CuccoSwarmEnv.js"><b>CuccoSwarmEnv</b><span>reset, step, getObservation — 8.4 KB</span></a>
+      <a class="t" href="/labs/pieza.html?m=world/systems/EcosystemSystem.js"><b>EcosystemSystem</b><span>tickPlankton, tickFishes, tickHunters — 22.6 KB</span></a>
+      <a class="t" href="/labs/pieza.html?m=world/systems/FoodChainSystem.js"><b>FoodChainSystem</b><span>createPreyState, createPredatorState, tickPrey — 30.5 KB</span></a>
+      <a class="t" href="/labs/pieza.html?m=gym/GymBridge.js"><b>GymBridge</b><span>el puente para conducir el navegador desde fuera</span></a>
+      <a class="t" href="/labs/pieza.html?m=gym/GymEnv.js"><b>GymEnv</b><span>la clase base: define las tres puertas</span></a>
+      <a class="t" href="/labs/pieza.html?m=world/systems/IDMSystem.js"><b>IDMSystem</b><span>tick, tickMultiLane, getObservation — 9.4 KB</span></a>
+      <a class="t" href="/labs/pieza.html?m=world/systems/OrbitalKinematicsSystem.js"><b>OrbitalKinematicsSystem</b><span>tickAsteroids, tickEnemies, tickProjectiles — 10.1 KB</span></a>
+      <a class="t" href="/labs/pieza.html?m=gym/ProtoHubEnv.js"><b>ProtoHubEnv</b><span>el adaptador que convierte los 19 juegos en entornos</span></a>
+      <a class="t" href="/labs/pieza.html?m=world/systems/RaccoonSpaceCore.js"><b>RaccoonSpaceCore</b><span>reset, step, observacion — 12.1 KB</span></a>
+      <a class="t" href="/labs/pieza.html?m=gym/envs/RaccoonSpaceEnv.js"><b>RaccoonSpaceEnv</b><span>reset, step, getObservation — 6.3 KB</span></a>
+      <a class="t" href="/labs/pieza.html?m=gym/envs/RueDelPercebeEnv.js"><b>RueDelPercebeEnv</b><span>reset, step, getObservation — 12.5 KB</span></a>
+      <a class="t" href="/labs/pieza.html?m=world/systems/SimonSaysSystem.js"><b>SimonSaysSystem</b><span>createState, tick, getObservation — 8 KB</span></a>
+      <a class="t" href="/labs/pieza.html?m=world/systems/TurretCombatSystem.js"><b>TurretCombatSystem</b><span>reset, tick — 6.2 KB</span></a>
+    </section>
+    <section>
+      <h2>Motor y render</h2>
+      <p class="sub">Lo que dibuja: procedural, LOD, voxel, cámara.</p>
+      <a class="t" href="/labs/croupier_webgpu_anomalia.html"><b>ALISA — Anomalía en WebGPU + TSL</b><span>WebGPU con shaders escritos en TSL y post-proceso por nodos, no por pases</span></a>
+      <a class="t" href="/labs/escena_biolabenvironment.html"><b>ALISA — BiolabEnvironmentFactory</b><span>Laboratorio de neón: cubas, burbujas, LEDs y brazos robóticos procedurales</span></a>
+      <a class="t" href="/labs/escena_cabinetenvironment.html"><b>ALISA — CabinetEnvironmentFactory</b><span>La cabina del escape room, generada por código</span></a>
+      <a class="t" href="/labs/escena_colonialcontrolroom.html"><b>ALISA — ColonialControlRoomFactory</b><span>Sala de control con pantallas y luces de aviso</span></a>
+      <a class="t" href="/labs/escena_dojoenvironment.html"><b>ALISA — DojoEnvironmentFactory</b><span>Un dojo entero de 369×327 construido por código</span></a>
+      <a class="t" href="/labs/escena_interactionlab.html"><b>ALISA — InteractionLabFactory</b><span>Sala de interacción: objetos con los que un agente puede trastear</span></a>
+    </section>
+    <section>
+      <h2>Física y vida artificial</h2>
+      <p class="sub">Bandadas, enjambres, depredadores, acumulación.</p>
+      <a class="t" href="/labs/croupier_math_boids_flock.html"><b>ALISA LAB — Aquarium Ecosystem V4 (Sovereign Aesthetics)</b><span>400 boids en bandada: la matemática corre headless y el 3D sólo la mira</span></a>
+      <a class="t" href="/labs/croupier_math_orbital_shmup.html"><b>ALISA LAB — OrbitalKinematicsSystem V4 (Sovereign Aesthetics)</b><span>Cinemática orbital con bloom: la matemática decide la supervivencia y el render sólo la dibuja</span></a>
+      <a class="t" href="/labs/escena_chopperflight.html"><b>ALISA — ChopperFlightFactory</b><span>Vuelo sobre terreno generado: 155 mallas sin un solo asset</span></a>
+      <a class="t" href="/labs/escena_locomotionenvironment.html"><b>ALISA — LocomotionEnvironmentFactory</b><span>Escenario de locomoción con 20 luces para probar caminar</span></a>
+      <a class="t" href="/labs/croupier_cucco_swarm.html"><b>🐔 Cucco Swarm — Bullet Heaven | Powered by alisa-engine</b><span>Un bullet-heaven jugable con oleadas, niveles y enjambre — todo sobre el mismo motor</span></a>
+    </section>
+    <section>
+      <h2>Avatares y rigging</h2>
+      <p class="sub">Esqueletos, caras y arquetipos.</p>
+      <a class="t" href="/labs/escena_archetypeenvironment.html"><b>ALISA — ArchetypeEnvironmentFactory</b><span>Arquetipos de cuerpo, uno al lado del otro</span></a>
+      <a class="t" href="/labs/escena_morpheusenvironment.html"><b>ALISA — MorpheusEnvironmentFactory</b><span>El banco de pruebas de morfología</span></a>
+      <a class="t" href="/labs/escena_pygmalionenvironment.html"><b>ALISA — PygmalionEnvironmentFactory</b><span>El taller donde se generan avatares: 82 mallas y 19 luces</span></a>
+    </section>
+    <section>
+      <h2>motor</h2>
+      <p class="sub">⚠️ categoría no declarada en ORDEN, revísala</p>
+      <a class="t" href="/generos.html"><b>ALISA — matriz de géneros</b><span></span></a>
+    </section>
+  <footer>
+    40 piezas, de dos fuentes que se declaran solas: las páginas con
+    <code>&lt;meta name="alisa-escaparate"&gt;</code> y los módulos del motor que
+    exponen <code>reset</code>/<code>step</code>/<code>getObservation</code> — una
+    declaración más fuerte que una etiqueta, porque no se puede poner de adorno.
+    Lo que no se declara no sale: un experimento interno nuevo nunca aparece por
+    olvido.
+  </footer>
+</main>
+</body>
+</html>

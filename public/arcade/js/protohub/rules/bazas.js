@@ -119,18 +119,43 @@ export function crearBazas(cfg) {
             return p;
         },
 
-        estado(p) {
+        /**
+         * @param {number} asiento  DESDE QUÉ SILLA SE MIRA. Por defecto, la 0.
+         *
+         * ⚠️ ESTO NACIÓ DE UNA FUGA, Y DE LAS FEAS.
+         * Antes sólo existía la vista del asiento 0: `mano` eran siempre las
+         * cartas del primero. En una partida contra la casa daba igual, porque
+         * sólo había un humano mirando. En una MESA COMPARTIDA, el segundo
+         * jugador abría su pestaña y veía la mano del primero, carta por carta.
+         *
+         * No lo detectó ninguna prueba: la partida avanzaba, los turnos se
+         * repartían bien y el recibo verificaba. Se vio abriendo dos pestañas y
+         * comparando lo que enseñaba cada una — B_6, E_S, O_S en las dos.
+         *
+         * El parámetro es opcional a propósito: el verificador, el gym y el
+         * calibrador siguen llamando `estado(p)` y siguen midiendo el asiento
+         * que abre, que es lo que siempre midieron. Lo que cambia es que ahora
+         * se PUEDE preguntar por otra silla, y la mesa lo hace por cada quien.
+         *
+         * `legal_moves` no depende del asiento sino del TURNO, y eso ya estaba
+         * bien: son las jugadas de quien mueve, mire quien mire.
+         */
+        estado(p, asiento = 0) {
+            const yo = Number.isInteger(asiento) && p.manos[asiento] ? asiento : 0;
             const terminada = p.manos.every(m => m.length === 0);
             const legales = terminada ? ['nueva']
                           : jugables(p, p.turno).map(c => `jugar:${c}`);
             // ⚠️ En hearts menos es mejor, y la métrica del banco es «más es
             // mejor». Se niega aquí, no en el entorno, para que el número que
             // se verifica y el que se compara sean el mismo.
-            const míos = p.puntos[0];
+            const míos = p.puntos[yo];
             return {
                 juego: nombre,
-                mano: p.manos[0],
-                manos_rivales: p.manos.slice(1).map(m => m.length),
+                asiento: yo,
+                mano: p.manos[yo],
+                // Los DEMÁS, no «los que no son el primero»: quien mira desde la
+                // silla 2 cuenta las cartas de la 0, la 1 y la 3.
+                manos_rivales: p.manos.filter((_, i) => i !== yo).map(m => m.length),
                 baza: p.baza.map(j => ({ jugador: j.pid, carta: j.carta })),
                 triunfo: p.triunfo,
                 turn: p.turno === 0 ? 'player' : `cpu${p.turno}`,
@@ -260,24 +285,42 @@ const ESPANOLA = { FUERZA: ['2', '4', '5', '6', '7', 'S', 'C', 'R', '3', '1'],
                    PUNTOS: { '1': 11, '3': 10, 'R': 4, 'C': 3, 'S': 2 } };
 const FRANCESA = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 
-export const crearBrisca = () => crearBazas({
+/**
+ * ⚠️ LOS CUATRO RECIBEN `{ url }`, Y HUBO QUE ARREGLARLO.
+ *
+ * Antes eran `() => crearBazas({…})._cargar()`: una flecha SIN parámetros. Como
+ * `index.js` los llama con `f(opts)`, JavaScript tiraba `opts` sin decir nada y
+ * `_cargar()` usaba siempre su ruta relativa. En el navegador funciona; en un
+ * servidor —donde esa ruta no resuelve— caía al respaldo interno.
+ *
+ * O sea que `/api/gym` y `/api/verificar` llevaban desde el primer día jugando
+ * estos cuatro con una baraja distinta de la del navegador. No estalló porque el
+ * respaldo de `spanish_40` resulta ser igual que el de la biblioteca: coincidían
+ * por suerte, no porque nadie lo hubiera comprobado. El día que la biblioteca
+ * cambie una carta, una partida legítima empezaría a salir «inválida» y el rastro
+ * llevaría a cualquier sitio menos aquí.
+ *
+ * Lo cubre `prueba_biblioteca.mjs`, que le da una URL imposible a cada juego de
+ * cartas y exige que se entere.
+ */
+export const crearBrisca = (o) => crearBazas({
     nombre: 'brisca', baraja: 'spanish_40', jugadores: 4, mano: 3,
-    ...ESPANOLA, SEGUIR_PALO: false, ROBAR_TRAS_BAZA: true })._cargar();
+    ...ESPANOLA, SEGUIR_PALO: false, ROBAR_TRAS_BAZA: true })._cargar(o?.url);
 
-export const crearTute = () => crearBazas({
+export const crearTute = (o) => crearBazas({
     nombre: 'tute', baraja: 'spanish_40', jugadores: 4, mano: 10,
-    ...ESPANOLA, SEGUIR_PALO: true, ROBAR_TRAS_BAZA: false })._cargar();
+    ...ESPANOLA, SEGUIR_PALO: true, ROBAR_TRAS_BAZA: false })._cargar(o?.url);
 
-export const crearHearts = () => crearBazas({
+export const crearHearts = (o) => crearBazas({
     nombre: 'hearts', baraja: 'french_52', jugadores: 4, mano: 13,
     FUERZA: FRANCESA, SEGUIR_PALO: true, ROBAR_TRAS_BAZA: false, MENOR_GANA: true,
     sinTriunfo: true,          // en hearts no hay triunfo, y es la regla
     // Aquí no puntúa el RANGO sino el PALO, y una carta concreta.
     puntosCarta: (id) => (palo(id) === 'H' ? 1
                         : (palo(id) === 'S' && rango(id) === 'Q') ? 13 : 0),
-})._cargar();
+})._cargar(o?.url);
 
-export const crearSpades = () => crearBazas({
+export const crearSpades = (o) => crearBazas({
     nombre: 'spades', baraja: 'french_52', jugadores: 4, mano: 13,
     FUERZA: FRANCESA, SEGUIR_PALO: true, ROBAR_TRAS_BAZA: false,
-    PUNTOS_POR_BAZA: 1, triunfoFijo: 'S' })._cargar();
+    PUNTOS_POR_BAZA: 1, triunfoFijo: 'S' })._cargar(o?.url);

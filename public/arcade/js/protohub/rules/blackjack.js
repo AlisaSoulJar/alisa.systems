@@ -125,7 +125,11 @@ export async function crearBlackjack({ url = RUTA_BIBLIOTECA } = {}) {
 
     const reglas = {
         ficha: F,
-        biblioteca: !!lib,
+        // ⚠️ «MIS NORMAS ESTABAN EN EL CATÁLOGO», no «llegó algún JSON».
+        // Antes era `!!lib`, y con un `{}` por respuesta decía `true` mientras
+        // jugaba enterito con el respaldo. Una marca que existe para avisar de
+        // que se está jugando con otra baraja no puede dar un falso tranquilo.
+        biblioteca: !!lib?.games?.blackjack,
 
         nuevaPartida(opts = {}) {
             const semilla = opts.semilla ?? (Math.random() * 2 ** 32) >>> 0;

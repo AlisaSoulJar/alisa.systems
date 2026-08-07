@@ -18,6 +18,18 @@ const engine = new SovereignBoardEngine({
         dirLight.position.set(5, 10, 5);
         scene.add(dirLight);
 
+        // El ratón, igual que en go: mismo módulo, otra configuración. Aquí el
+        // tablero es 8×8 con celda 1 centrada en el origen — se ve en
+        // `createBoard()`: `sq.position.set(c - 3.5, -0.1, r - 3.5)`.
+        import('./raton_tablero.js').then(({ engancharRaton, nombrarLetraNumero }) => {
+            engancharRaton({
+                engine, modo: 'colocar',
+                columnas: 8, filas: 8, paso: 1,
+                origen: { x: -3.5, z: -3.5 },
+                nombrar: nombrarLetraNumero({ filas: 8 }),
+            });
+        });
+
         boardGroup = new THREE.Group();
         scene.add(boardGroup);
 

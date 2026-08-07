@@ -1,5 +1,5 @@
 /**
- * politicas.mjs — las líneas base, en las mismas filas que los modelos
+ * politicas.js — las líneas base, en las mismas filas que los modelos
  * ═══════════════════════════════════════════════════════════════════════════
  * Una tabla de modelos sin líneas base no dice nada. «GPT-loquesea saca 47» no
  * es información: 47 puede ser una barbaridad o menos que apretar siempre el

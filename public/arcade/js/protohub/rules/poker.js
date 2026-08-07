@@ -191,7 +191,10 @@ export async function crearPoker({ url = RUTA_BIBLIOTECA } = {}) {
     const rondas = ficha?.betting_rounds ?? ['pre-flop','post-flop','post-turn','post-river'];
 
     const reglas = {
-        biblioteca: !!lib,
+        // «Mi ficha estaba en el catálogo», no «llegó algún JSON»: con `!!lib`,
+        // un catálogo vacío daba `true` y se jugaba con el respaldo tan contento.
+        // `ficha` ya se resuelve dos líneas arriba, así que se aprovecha.
+        biblioteca: !!ficha,
         ficha: { rondas, fichas: FICHAS_INICIALES, manos: MANOS_POR_SESION },
 
         nuevaPartida(opts = {}) {
@@ -360,6 +363,23 @@ export async function crearPoker({ url = RUTA_BIBLIOTECA } = {}) {
                 semilla: p.semilla,
                 mano: p.mano, manos: MANOS_POR_SESION,
                 turno: p.turno,
+                /**
+                 * ⚠️ `turn` ADEMÁS DE `turno`, PORQUE POKER ERA EL ÚNICO QUE NO
+                 * LO DECÍA.
+                 *
+                 * Los otros veinte publican `turn`, y todo lo que reparte
+                 * asientos lo lee ahí: el árbitro de las mesas compartidas para
+                 * saber a quién le toca, el panel de sillas, el arnés de
+                 * medida. Poker lo llamaba sólo `turno`, así que para todos
+                 * ellos valía `undefined` — sin un error, sin una traza.
+                 *
+                 * Es exactamente el fallo por el que existe `desajustes.mjs`:
+                 * go publicaba el tablero en `board` mientras la puerta de
+                 * lenguaje lo buscaba en `tablero`, y estuvimos meses jugando al
+                 * go sin ver una piedra. Se conserva `turno` porque su
+                 * visualizador ya lo lee, y se añade el nombre de la casa.
+                 */
+                turn: p.turno,
                 mi_mano: p.comunes.length ? nombreDeMano(evaluar([...p.jugador, ...p.comunes])) : null,
                 puntos: p.fichasJugador - FICHAS_INICIALES,   // fichas netas
                 ganadas: p.ganadas, perdidas: p.perdidas,

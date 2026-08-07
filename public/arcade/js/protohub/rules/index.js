@@ -60,6 +60,45 @@ export const REGLAS = {
     gofish:  (o) => import('./gofish.js').then(m => m.crearGoFish(o)),
     unit:    (o) => import('./unit.js').then(m => m.crearUnit(o)),
     entropy: (o) => import('./entropy.js').then(m => m.crearEntropy(o)),
+
+    // ⚠️ EL PRIMERO QUE PUBLICA `sustrato(p)` NATIVO.
+    // Los diecinueve de arriba dicen su estado en cinco codificaciones distintas
+    // y `sustrato.js` las traduce. Éste no necesita traducción, así que el 2D,
+    // el 3D y el texto salieron el mismo día que las reglas — sin escribir un
+    // visualizador. Es la demostración con cronómetro de que el motor hace lo
+    // que promete: planificación espacial con estados irreversibles, un género
+    // que no estaba cubierto, en doscientas líneas y cero arte.
+    sokoban: () => import('./sokoban.js').then(m => m.sokoban),
+    // Y el segundo: OBSERVABILIDAD PARCIAL, lo que ninguno de los veintiuno
+    // anteriores tenía — aquí no se ve el estado, se descubre. Es el género que
+    // separa a un agente con memoria de uno sin ella, y el primero que se apoya
+    // en una pieza del motor (`BSPSystem`) para generar el mundo.
+    cripta: () => import('./cripta.js').then(m => m.cripta),
+    // Y el tercero, que lo eligió una MEDIDA y no una corazonada: `matriz_generos`
+    // enseñó que la casilla `espacial + oculto + rival` estaba vacía y que catorce
+    // de veintiún juegos ocupaban sólo dos perfiles. Deducir dónde está lo que
+    // otro ha escondido, mientras él deduce lo mismo de ti.
+    flota: () => import('./flota.js').then(m => m.flota),
+    // Y el cuarto, también elegido por la matriz: `autonomo` lo sostenían 3 de 22,
+    // ninguno lo juntaba con un adversario, y NINGUNO tenía economía — un recurso
+    // que obliga a elegir entre gastar ahora y poder gastar luego. Es la primera
+    // vez que el motor pide planificar contra un reloj que corre sin ti.
+    defensa: () => import('./defensa.js').then(m => m.defensa),
+    // Y el quinto cierra la tabla: los CINCO ejes en un solo juego. El sigilo ES
+    // esa interseccion — sin niebla es un pillapilla, sin rival es cripta, sin
+    // drones es un duelo limpio. Ademas es el primero ASIMETRICO: dos oficios
+    // distintos que puntuan distinto en el mismo entorno.
+    sigilo: () => import('./sigilo.js').then(m => m.sigilo),
+    // Y el sexto rompe el supuesto que compartían los VEINTICUATRO anteriores:
+    // que cuando te toca, el pasado ya está decidido. Aquí los dos eligen a la
+    // vez, así que la jugada buena no es la que gana mirando el tablero sino la
+    // que el otro no prevea. Es la diferencia entre el ajedrez y el penalti.
+    frentes: () => import('./frentes.js').then(m => m.frentes),
+    // Y el séptimo llena la última casilla vacía: COOPERATIVO. En los veinticinco
+    // anteriores, cuando decide alguien más, decide en tu contra — el supuesto
+    // estaba tan metido que hasta el instrumento que mide la tabla lo daba por
+    // hecho y no habría sabido reconocer un cooperativo aunque lo tuviera delante.
+    relevo: () => import('./relevo.js').then(m => m.relevo),
 };
 
 export const JUEGOS = Object.keys(REGLAS);

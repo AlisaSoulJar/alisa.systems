@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALISA — catálogo del motor</title>
+<script type="importmap">
+{ "imports": {
+    "three": "/vendor/three-0.160.0/build/three.module.js",
+    "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+    "@alisa-engine/": "/js/alisa-engine/"
+} }
+</script>
+<style>
+  body { margin:0; background:#f7f9fb; color:#1a2230; padding:34px 20px 70px;
+         font:12px/1.6 'JetBrains Mono', ui-monospace, monospace; }
+  main { max-width:1080px; margin:0 auto; }
+  h1 { font-size:13px; letter-spacing:.4em; text-transform:uppercase; font-weight:400; margin:0 0 4px; }
+  .lede { color:#6b7684; font-size:11.5px; margin:0 0 20px; max-width:72ch; }
+  #barra { height:3px; background:#dde3ea; border-radius:2px; overflow:hidden; margin:0 0 18px; }
+  #barra i { display:block; height:100%; width:0; background:#1a2230; transition:width .2s; }
+  table { border-collapse:collapse; width:100%; font-size:11.5px; }
+  th { text-align:left; font-weight:400; color:#8b95a3; border-bottom:1px solid #dde3ea;
+       padding:6px 8px; position:sticky; top:0; background:#f7f9fb; }
+  td { padding:5px 8px; border-bottom:1px solid #eef2f6; vertical-align:top; }
+  tr:hover td { background:#fff; }
+  .c { font-weight:600; padding:1px 7px; border-radius:3px; font-size:10.5px; white-space:nowrap; }
+  .escena  { background:#e3f6e8; color:#1d6b34; }
+  .gym     { background:#e5eeff; color:#26458c; }
+  .apagada { background:#fdf0d5; color:#8a5a00; }
+  .rota    { background:#fde6ea; color:#9c1f38; }
+  .m { color:#6b7684; }
+  a { color:#39485c; }
+  #resumen { display:flex; gap:16px; flex-wrap:wrap; margin:0 0 16px; font-size:11.5px; }
+  #resumen b { font-size:16px; display:block; }
+</style>
+</head>
+<body>
+<main>
+  <h1>catálogo del motor</h1>
+  <p class="lede">
+    Se carga cada pieza, se inspecciona lo que exporta de verdad y se la intenta
+    arrancar. Nada de esto está escrito a mano: la lista sale del disco
+    (<code>gen_motor_manifest.py</code>) y la clasificación, de preguntarle a cada
+    módulo.
+  </p>
+  <div id="barra"><i></i></div>
+  <div id="resumen"></div>
+  <table><thead><tr>
+    <th>pieza</th><th>familia</th><th>KB</th><th>veredicto</th><th>lo que expone</th>
+  </tr></thead><tbody id="filas"></tbody></table>
+</main>
+
+<!--
+  catalogo.html — LAS 180 PIEZAS, PREGUNTADAS UNA A UNA
+  ═══════════════════════════════════════════════════════════════════════════
+  Medido antes de escribir esto: el motor tiene 180 módulos y 79 (44 %) no los
+  enseñaba ninguna página. Recorrerlos a mano son 79 pestañas; esto los recorre
+  en una.
+
+  ⚠️ CLASIFICA POR LO QUE LA PIEZA EXPONE, NO POR SU NOMBRE.
+  `FoodChainSystem` suena a simulación visual y en realidad expone
+  `createPreyState`, `tickPredator`, `getPreyObservation`: es un entorno de gym
+  multiagente, no algo que se dibuje. Adivinar por el nombre habría dado la
+  respuesta contraria, y en este proyecto adivinar ya nos ha costado tres tardes.
+
+  ⚠️ Y NO SE DIBUJA NADA AQUÍ, A PROPÓSITO.
+  Se construye la pieza y se mira qué mete en una escena de mentira, sin renderer
+  ni bucle. Ciento ochenta piezas dibujando a la vez fundirían el navegador, y lo
+  que se quiere saber es qué ES cada una — para verla está `pieza.html?m=…`.
+-->
+<script type="module">
+import * as THREE from 'three';
+
+const $filas = document.getElementById('filas');
+const $barra = document.querySelector('#barra i');
+const $res = document.getElementById('resumen');
+
+const { piezas } = await fetch('/data/motor.json').then(r => r.json());
+const cuenta = { escena: 0, gym: 0, apagada: 0, rota: 0 };
+
+const ARRANQUE = ['buildAll', 'build', 'init', 'start'];
+// Señales de que una pieza es un ENTORNO y no un decorado: estados, ticks y
+// observaciones. Es el vocabulario del gym, no el del render.
+const DE_GYM = /^(reset|step|tick\w*|get\w*Observation|create\w*State|observ\w*|act|legalMoves)$/i;
+
+for (const [i, p] of piezas.entries()) {
+    $barra.style.width = `${(i / piezas.length) * 100}%`;
+    let veredicto = 'rota', detalle = '', metodos = [];
+
+    try {
+        const mod = await import(`@alisa-engine/src/${p.ruta}`);
+        const pares = Object.entries(mod);
+        const [, Clase] = pares.find(([, v]) => typeof v === 'function' && /^[A-Z]/.test(v.name ?? ''))
+                       ?? pares.find(([, v]) => typeof v === 'function') ?? [];
+
+        /**
+         * ⚠️ NO TODO SE EXPORTA COMO CLASE, Y LA PRIMERA VERSIÓN SÓLO MIRABA ESO.
+         *
+         * En este motor conviven dos formas: `export class X {}` y
+         * `export const X = { init(), update() }` — un objeto literal con sus
+         * métodos. `FileSystemDioramaSystem`, los 52 KB más grandes de todo,
+         * es de la segunda: salía como «apagada · sólo datos» teniendo `init()`.
+         *
+         * Otra vez lo mismo: dos maneras de decir lo mismo, y un detector que
+         * sólo conocía una. Aquí se miran las dos.
+         */
+        const objeto = !Clase && pares.map(([, v]) => v)
+            .find(v => v && typeof v === 'object'
+                    && Object.keys(v).some(k => typeof v[k] === 'function'));
+
+        if (!Clase && !objeto) {
+            veredicto = 'apagada';
+            detalle = pares.length ? `sólo datos: ${pares.map(([k]) => k).slice(0, 4).join(', ')}`
+                                   : 'no exporta nada';
+        } else if (objeto) {
+            metodos = Object.keys(objeto).filter(k => typeof objeto[k] === 'function');
+            const arranca = metodos.filter(m => ARRANQUE.includes(m));
+            const gym = metodos.filter(m => DE_GYM.test(m));
+            if (gym.length >= 2) { veredicto = 'gym'; detalle = gym.slice(0, 5).join(', '); }
+            else if (arranca.length) {
+                veredicto = 'escena';
+                // No se invoca: un objeto literal suele guardar estado global y
+                // arrancarlo aquí, 179 veces seguidas, sería pedir problemas.
+                detalle = `${arranca.join(', ')} (objeto literal)`;
+            } else { veredicto = 'apagada'; detalle = metodos.slice(0, 5).join(', ') || 'sin métodos'; }
+        } else {
+            metodos = Object.getOwnPropertyNames(Clase.prototype ?? {}).filter(m => m !== 'constructor');
+            const arranca = metodos.filter(m => ARRANQUE.includes(m));
+            const gym = metodos.filter(m => DE_GYM.test(m));
+
+            if (gym.length >= 2) {
+                veredicto = 'gym';
+                detalle = gym.slice(0, 5).join(', ');
+            } else if (arranca.length) {
+                // Se comprueba que ADEMÁS haga algo: se le da una escena de
+                // mentira y se cuenta qué mete. Un `build()` que no añade nada
+                // es tan inútil como no tenerlo, y así se ve.
+                const escena = new THREE.Scene();
+                let puso = 0;
+                try {
+                    const inst = Clase.length >= 2 ? new Clase(escena, {})
+                               : Clase.length === 1 ? new Clase(escena) : new Clase();
+                    for (const m of arranca) { try { inst[m](escena); } catch { /* se anota abajo */ } }
+                    puso = escena.children.length;
+                } catch { /* el constructor pide cosas que aquí no hay */ }
+                veredicto = 'escena';
+                detalle = `${arranca.join(', ')}${puso ? ` → ${puso} objetos` : ' (necesita datos)'}`;
+            } else {
+                veredicto = 'apagada';
+                detalle = metodos.slice(0, 5).join(', ') || 'sin métodos';
+            }
+        }
+    } catch (e) {
+        veredicto = 'rota';
+        detalle = e.message.slice(0, 90);
+    }
+
+    cuenta[veredicto]++;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><a href="pieza.html?m=${p.ruta}">${p.nombre}</a></td>`
+                 + `<td class="m">${p.familia}</td><td class="m">${p.kb}</td>`
+                 + `<td><span class="c ${veredicto}">${veredicto}</span></td>`
+                 + `<td class="m">${detalle}</td>`;
+    $filas.appendChild(tr);
+}
+
+$barra.style.width = '100%';
+$res.innerHTML = [
+    ['escena', 'se dibujan', cuenta.escena],
+    ['gym', 'entornos', cuenta.gym],
+    ['apagada', 'sin arranque', cuenta.apagada],
+    ['rota', 'no cargan', cuenta.rota],
+].map(([c, t, n]) => `<div><b>${n}</b><span class="c ${c}">${t}</span></div>`).join('')
+ + `<div><b>${piezas.length}</b><span class="m">piezas en total</span></div>`;
+</script>
+</body>
+</html>

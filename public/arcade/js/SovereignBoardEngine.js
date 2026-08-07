@@ -17,8 +17,16 @@ class SovereignBoardEngine {
         
         // Agent UI State
         this.autoMode = false;
-        this.whitePlayer = 'engine';
-        this.blackPlayer = 'engine';
+        // ⚠️ LOS ASIENTOS SE INICIALIZAN AQUÍ, NO EN EL HUD, Y HAY MOTIVO.
+        // No todas las páginas montan el panel de agente: `checkers.html`, por
+        // ejemplo, no lo monta. Cuando los valores vivían en el desplegable, esas
+        // páginas se quedaban con el `'engine'` de fábrica —una palabra que ya no
+        // significa nada— y hasta lo escribían en la dirección. El vocabulario es
+        // el de `protohub/asientos.js`, tenga panel la página o no.
+        const _a = String(new URLSearchParams(location.search).get('asientos') ?? '')
+            .split(',').map(s => s.trim());
+        this.whitePlayer = _a[0] || 'persona';
+        this.blackPlayer = _a[1] || 'fsm:casa';
         this.currentLegalMoves = [];
         this.isGameOver = false;
         this.gamesPlayed = 0;
@@ -49,6 +57,11 @@ class SovereignBoardEngine {
         this._iniciarBackend().then(() => {
             this.pollHub();
             setInterval(this.pollHub, 1000);
+            // Si alguna silla no es de una persona, el automático se enciende
+            // solo. Va AQUÍ y no en el panel porque hay páginas que no montan
+            // panel —`checkers.html`— y allí la mesa se quedaba quieta esperando
+            // un botón que no existe: parecía rota estando bien.
+            this._arrancarSiHayAgentes();
         });
         
         // Sovereign Gym Auto-Boot
@@ -141,9 +154,13 @@ class SovereignBoardEngine {
             await new Promise(r => setTimeout(r, 25));
         }
         const proto = window.ALISA_PROTOHUB;
-        const hubBase = window.ALISA_HUB_URL === undefined
-            ? 'http://127.0.0.1:8741'
-            : window.ALISA_HUB_URL;
+        // ⚠️ SIN HUB SALVO QUE SE PIDA. El defecto estaba al revés: sondeaba
+        // `127.0.0.1:8741` —el hub de la colonia, que es otro proyecto— y dejaba
+        // un 404 en la consola en cada carga, apuntando a una dirección privada
+        // nuestra. Desde https ese sondeo ni siquiera está permitido, así que en
+        // el sitio publicado era ruido sin ninguna posibilidad de servir.
+        // Ver el mismo cambio y el mismo motivo en `protohub/ProtoHub.js`.
+        const hubBase = window.ALISA_HUB_URL ?? null;
 
         if (hubBase) {
             try {
@@ -306,13 +323,9 @@ class SovereignBoardEngine {
                                 <select id="whitePlayerSelect" style="
                                     width:100%; background:rgba(0,0,0,0.5); color:#a180ff; border:1px solid rgba(161,128,255,0.3);
                                     padding:5px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:10px; cursor:pointer;
-                                ">
-                                    <option value="engine">🤖 Engine</option>
-                                    <option value="human">👤 Human</option>
-                                    <option value="alisa">👸 ALISA</option>
-                                    <option value="queen">👑 Queen</option>
-                                    <option value="llm">🧠 LLM</option>
-                                </select>
+                                "><!-- vacío a propósito: lo llena _llenarAsientos() desde
+                                       protohub/asientos.js, para que no haya una copia
+                                       de la lista escrita aquí a mano --></select>
                             </div>
                             <div style="flex:0 0 20px; display:flex; align-items:center; justify-content:center; color:#666; font-size:12px; padding-top:12px;">vs</div>
                             <div style="flex:1;">
@@ -320,19 +333,20 @@ class SovereignBoardEngine {
                                 <select id="blackPlayerSelect" style="
                                     width:100%; background:rgba(0,0,0,0.5); color:#FF4081; border:1px solid rgba(255,64,129,0.3);
                                     padding:5px; border-radius:4px; font-family:'JetBrains Mono',monospace; font-size:10px; cursor:pointer;
-                                ">
-                                    <option value="engine">🤖 Engine</option>
-                                    <option value="human">👤 Human</option>
-                                    <option value="alisa">👸 ALISA</option>
-                                    <option value="queen">👑 Queen</option>
-                                    <option value="llm">🧠 LLM</option>
-                                </select>
+                                "><!-- ídem --></select>
                             </div>
                         </div>
-                        
-                        <!-- LLM Model Input (auto-shown when LLM selected) -->
-                        <div id="llmModelRow" class="input-row" style="display:none; margin-bottom:6px;">
-                            <input type="text" id="llmModelInput" placeholder="Ollama model..." value="qwen2.5:3b" style="flex:1;" />
+
+                        <!-- ⚠️ DOS CASILLAS, NO UNA: dirección Y modelo.
+                             Antes sólo se pedía el nombre del modelo porque la
+                             jugada la pedía el HUB DE LA COLONIA, que sabía dónde
+                             vivía Ollama. En el sitio público no hay colonia, así
+                             que el navegador llama él mismo y necesita saber a
+                             dónde. Sin esto, «LLM» era una opción que no hacía
+                             absolutamente nada fuera de casa. -->
+                        <div id="llmModelRow" class="input-row" style="display:none; margin-bottom:6px; gap:4px;">
+                            <input type="text" id="llmUrlInput" placeholder="http://127.0.0.1:11434/v1/chat/completions" style="flex:2;" />
+                            <input type="text" id="llmModelInput" placeholder="llama3.2:3b" style="flex:1;" />
                         </div>
 
                         <div class="input-row">
@@ -377,8 +391,10 @@ class SovereignBoardEngine {
             });
         }
         
-        // Initial sync of UI state
-        this.onPlayerChange();
+        // Los desplegables llegan vacíos del HUD: los llena el catálogo. Es
+        // asíncrono porque `asientos.js` es un módulo y esto un script clásico,
+        // así que `onPlayerChange()` se llama desde dentro cuando ya hay opciones.
+        this._llenarAsientos();
     }
 
     bindClick(id, callback) {
@@ -451,17 +467,65 @@ class SovereignBoardEngine {
     // ═══════════════════════════════════════════════════════════════════
     // AGENT CONTROLS
     // ═══════════════════════════════════════════════════════════════════
+    /**
+     * Llena los dos desplegables desde el catálogo de `asientos.js`.
+     *
+     * Se hace en JS y no en el HTML del HUD para que no haya DOS listas: la del
+     * módulo y una copia escrita aquí. Ese era exactamente el problema anterior
+     * —`alisa` y `queen` seguían en el desplegable mucho después de dejar de
+     * significar nada— y las listas paralelas no se arreglan actualizándolas.
+     */
+    async _llenarAsientos() {
+        const { CONTROLADORES } = await this._asientos();
+        const params = new URLSearchParams(location.search);
+        const pedidos = String(params.get('asientos') ?? '').split(',').map(s => s.trim());
+        // Por defecto: tú de blancas contra la heurística del juego. Es lo que
+        // hacía antes, sólo que ahora la heurística tiene nombre y se puede
+        // cambiar por otra que sí aparece en la tabla de clasificación.
+        const porDefecto = ['persona', 'fsm:casa'];
+        let hayPanel = false;
+
+        ['whitePlayerSelect', 'blackPlayerSelect'].forEach((id, i) => {
+            const sel = document.getElementById(id);
+            if (!sel) return;
+            sel.innerHTML = Object.entries(CONTROLADORES)
+                .map(([clave, c]) => `<option value="${clave}" title="${c.ayuda}">${c.etiqueta}</option>`)
+                .join('');
+            sel.value = (pedidos[i] && CONTROLADORES[pedidos[i]]) ? pedidos[i] : porDefecto[i];
+            hayPanel = true;
+        });
+        // Sin panel no hay nada que leer: los valores ya vienen del constructor y
+        // leerlos de unos desplegables que no existen los borraría.
+        if (hayPanel) this.onPlayerChange();
+        this._arrancarSiHayAgentes();
+    }
+
+    /** Enciende el automático si alguna silla no la lleva una persona. */
+    async _arrancarSiHayAgentes() {
+        const { esPersona } = await this._asientos();
+        if ((!esPersona(this.whitePlayer) || !esPersona(this.blackPlayer)) && !this.autoMode) {
+            this.toggleAutoMode();
+        }
+    }
+
     onPlayerChange() {
         const w = document.getElementById('whitePlayerSelect');
         const b = document.getElementById('blackPlayerSelect');
         if (w) this.whitePlayer = w.value;
         if (b) this.blackPlayer = b.value;
 
-        // Show LLM selector if any player is LLM
+        // Las casillas del modelo sólo cuando hacen falta.
         const llmRow = document.getElementById('llmModelRow');
         if (llmRow) {
-            llmRow.style.display = (this.whitePlayer === 'llm' || this.blackPlayer === 'llm') ? 'flex' : 'none';
+            const hayModelo = [this.whitePlayer, this.blackPlayer]
+                .some(v => String(v ?? '').startsWith('llm'));
+            llmRow.style.display = hayModelo ? 'flex' : 'none';
         }
+        // La dirección describe la mesa que se está viendo, así que se puede
+        // compartir: «juega tú de blancas contra mi modelo» es un enlace.
+        const u = new URL(location.href);
+        u.searchParams.set('asientos', `${this.whitePlayer},${this.blackPlayer}`);
+        history.replaceState(null, '', u);
     }
 
     toggleAutoMode() {
@@ -487,41 +551,90 @@ class SovereignBoardEngine {
         }
     }
 
+    /**
+     * ═══ QUIÉN JUEGA POR ESTE ASIENTO ═══════════════════════════════════
+     *
+     * ⚠️ ANTES ESTO ERA UNA LISTA APARTE, Y MEDIO FALSA.
+     * El desplegable ofrecía `engine / human / alisa / queen / llm`. De esos,
+     * `alisa` y `queen` acababan los dos en el mismo `ai_move` —eran decoración—
+     * y `llm` mandaba `llm_move` AL HUB DE LA COLONIA. O sea que en el sitio
+     * público, donde no hay colonia, elegir «LLM» no hacía nada: ni jugaba, ni
+     * avisaba. Cinco opciones para dos comportamientos.
+     *
+     * Ahora el asiento lo resuelve `protohub/asientos.js`, el MISMO módulo que
+     * usa `mesa.html`. Consecuencias que no son de limpieza:
+     *   · las políticas son las de la tabla de clasificación (`primera`, `azar`,
+     *     `casa`), no un «engine» sin nombre que nadie puede reproducir;
+     *   · el modelo lo llama ESTE navegador, así que funciona sin colonia;
+     *   · y `?asientos=` significa lo mismo aquí que en la mesa, así que un
+     *     enlace montado vale para las dos.
+     */
+    async _asientos() {
+        if (!this._modAsientos) {
+            this._modAsientos = await import('./protohub/asientos.js');
+        }
+        return this._modAsientos;
+    }
+
+    _specDelTurno() {
+        return this.currentTurn === 'white' ? this.whitePlayer : this.blackPlayer;
+    }
+
     async processAutoAgent(data) {
         if (!this.autoMode || this.isGameOver) return;
-        
+
         // If the engine explicitly evaluated legal moves and returned an empty set, halt.
         // Otherwise, engines like Go/Xiangqi that might not return an array can continue checking
         const stateObj = data.state || data;
         if (stateObj.legal_moves !== undefined && stateObj.legal_moves.length === 0) return;
-        
-        const actPlayer = this.currentTurn === 'white' ? this.whitePlayer : this.blackPlayer;
-        if (actPlayer === 'human') return; // Wait for manual input
-        
-        let payload = {};
-        if (actPlayer === 'llm') {
-            payload = { action: "llm_move", params: { model: document.getElementById('llmModelInput') ? document.getElementById('llmModelInput').value : "qwen2.5:3b" } };
-        } else {
-            payload = { action: "ai_move", params: {} };
-        }
-        
+
+        const spec = this._specDelTurno();
+        const mod = await this._asientos();
+        if (mod.esPersona(spec)) return;                 // le toca a una persona
+
+        const acciones = (this.currentLegalMoves || [])
+            .filter(m => m !== 'nueva' && m !== 'reset');
+        if (!acciones.length) return;
+
         try {
-            const r = await this.backend.move(payload);
-            // En local no hay LLM al otro lado: si el ProtoHub no sabe atender
-            // la acción, se para el automático en vez de girar en vacío.
-            if (r && r.ok === false) {
-                console.warn(`[Arcade] el backend no atiende '${payload.action}': ${r.error || ''}`);
+            const proto = window.ALISA_PROTOHUB;
+            const reglas = proto?.reglas?.get(this.gameId);
+            const llm = {
+                url: document.getElementById('llmUrlInput')?.value.trim(),
+                modelo: document.getElementById('llmModelInput')?.value.trim(),
+            };
+            // Se rehace por jugada a propósito: así un cambio de desplegable o de
+            // modelo surte efecto en el acto. `azar` pierde su hilo de semilla al
+            // rehacerse, así que se guarda por asiento.
+            this._ctrl = this._ctrl || {};
+            const clave = `${this.currentTurn}:${spec}:${llm.url}:${llm.modelo}`;
+            if (!this._ctrl[clave]) {
+                this._ctrl[clave] = mod.crearControlador(spec, { juego: this.gameId, reglas, llm });
+            }
+            const jugada = await this._ctrl[clave].elegir({
+                // ⚠️ El nombre que publican las REGLAS, no el del registro.
+                // Dos páginas registran con otro nombre —`ajedrez` se registra
+                // como `chess`, `damas` como `checkers`— y ese nombre entra en el
+                // texto que lee un modelo. Si aquí dijera «Chess» y el banco de
+                // pruebas «Ajedrez», los dos números dejarían de ser comparables
+                // por una diferencia que no tiene nada que ver con jugar.
+                juego: stateObj.juego ?? this.gameId,
+                st: stateObj, acciones, reglas,
+                p: proto?.partidas?.get(this.gameId),
+            });
+
+            // ⚠️ SI NO ELIGE, SE PARA Y SE DICE. No se juega por él: en el banco
+            // de pruebas eso se cuenta como jugada «forzada» y se publica el
+            // porcentaje. Una mesa que rellenara el hueco en silencio le estaría
+            // regalando partidas a un modelo que no supo jugarlas.
+            if (!jugada) {
+                console.warn(`[Arcade] «${this._ctrl[clave].etiqueta}» no eligió ninguna de las ${acciones.length} legales.`);
                 this.toggleAutoMode();
                 return;
             }
-            // ⚠️ AQUÍ ESTABA `this.pollHub()` — y era el bug.
-            // pollHub llama al agente, que mueve, que llama a pollHub… La
-            // partida entera se resolvía por recursión en un parpadeo y solo se
-            // veía el resultado final. Ahora se refresca la VISTA y se para: la
-            // siguiente jugada la trae el reloj, así que se ve jugar.
-            await this._refrescarVista();
+            await this.sendMove(jugada);
         } catch(e) {
-             console.error("Auto-agent dispatch failed", e);
+             console.error('[Arcade] el asiento no pudo jugar:', e.message);
              this.toggleAutoMode(); // Safety Stop
         }
     }

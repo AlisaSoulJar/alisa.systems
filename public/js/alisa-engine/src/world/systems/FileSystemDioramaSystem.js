@@ -1,10 +1,27 @@
 /*
  * ALISA Colonial Overworld - Phase 8: Core Node Diorama
  * "The Mighty Max Black Monolith"
- * 
+ *
  * Replaces the hex-based chunk renderer with a single, perfectly sculpted
  * solid monolith to act as the primary cross-domain Hub.
  */
+
+/**
+ * ⚠️ ESTE IMPORT FALTABA, Y ERA EL MÓDULO MÁS GRANDE DEL MOTOR.
+ *
+ * 52 KB y 111 usos de `THREE.` sin importarlo: dependía de que alguien hubiera
+ * dejado un `<script>` clásico con la global puesta. Cargado como módulo —que es
+ * como lo carga cualquier página moderna— reventaba con `THREE is not defined`.
+ *
+ * Lo destapó `labs/catalogo.html` al importar las 180 piezas una a una: de las
+ * tres que no cargaban, dos eran falsos positivos (un `vite.config`, que no es
+ * pieza, y un módulo que pide `@tensorflow/tfjs`). Ésta era el fallo de verdad.
+ *
+ * Nadie lo había visto porque la única página que lo usaba lo cargaba con las
+ * globales ya puestas: funcionaba EN SU SITIO y en ningún otro. Un módulo que
+ * sólo funciona en el sitio donde nació no es un módulo.
+ */
+import * as THREE from 'three';
 
 export const FileSystemDioramaSystem = {
     canvas: null,
@@ -1165,5 +1182,23 @@ export const FileSystemDioramaSystem = {
     }
 };
 
-// Start the Diorama Core Engine!
-Renderer.init();
+/**
+ * ⚠️ AQUÍ HABÍA `Renderer.init();` — UNA LÍNEA QUE ARRANCABA AL IMPORTAR.
+ *
+ * Dos cosas mal en cuatro palabras:
+ *
+ * 1. `Renderer` no existe en este módulo. Era una global de la página donde
+ *    nació. Cualquier `import` de este fichero moría con «Renderer is not
+ *    defined» ANTES de ejecutar una sola línea útil.
+ * 2. Y aunque existiera: **un módulo no debe arrancarse solo al importarse.**
+ *    Importar es decir «quiero esto a mano», no «enciéndelo». Con esta línea era
+ *    imposible inspeccionarlo, catalogarlo o usar una parte sin lanzar el
+ *    diorama entero.
+ *
+ * Los 52 KB de este fichero —el módulo más grande del motor— eran inalcanzables
+ * por eso. Lo destapó `labs/catalogo.html` importando las 179 piezas una a una.
+ *
+ * Ahora arranca quien lo use:
+ *     import { FileSystemDioramaSystem } from '…/FileSystemDioramaSystem.js';
+ *     FileSystemDioramaSystem.init();
+ */

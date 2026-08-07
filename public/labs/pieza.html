@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALISA — una pieza del motor</title>
+<script type="importmap">
+{ "imports": {
+    "three": "/vendor/three-0.160.0/build/three.module.js",
+    "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
+    "@alisa-engine/": "/js/alisa-engine/"
+} }
+</script>
+<style>
+  body { margin:0; overflow:hidden; background:#05050a; color:#e2e2f0;
+         font:12px/1.7 'JetBrains Mono', ui-monospace, monospace; }
+  #informe { position:absolute; top:0; left:0; max-width:460px; max-height:100vh;
+             overflow:auto; padding:16px 18px; z-index:10;
+             background:rgba(8,8,16,.86); backdrop-filter:blur(10px);
+             border-right:1px solid rgba(138,43,226,.25); }
+  h1 { font-size:12px; letter-spacing:.2em; text-transform:uppercase; margin:0 0 2px;
+       color:#c8b8ff; font-weight:600; }
+  .ruta { color:#6b7684; font-size:10.5px; word-break:break-all; margin-bottom:12px; }
+  .l { margin:2px 0; }
+  .ok   { color:#7CFC98; }
+  .no   { color:#FF6B8A; }
+  .info { color:#8a8a9e; }
+  .dato { color:#fff; }
+  code { color:#a180ff; }
+  .caja { border:1px solid rgba(255,255,255,.09); border-radius:6px;
+          padding:9px 11px; margin:11px 0; }
+  a { color:#a180ff; }
+</style>
+</head>
+<body>
+<div id="informe"><h1>cargando…</h1></div>
+
+<!--
+  pieza.html — UNA PÁGINA PARA CUALQUIER MÓDULO DEL MOTOR
+  ═══════════════════════════════════════════════════════════════════════════
+      /labs/pieza.html?m=world/systems/FoodChainSystem.js
+
+  POR QUÉ EXISTE
+  Medido el 2026-08-07: el motor tiene 180 módulos y **79 no los enseña ninguna
+  página** (44 %). Entre ellos, sistemas de 20-31 KB con nombre de género propio:
+  cadena trófica, brazo robótico, sigilo, escape, tráfico, plataformas.
+
+  Y de las que SÍ tienen página, 15 usan un lanzador que **adivina la API**:
+
+      const engine = new LoQueSea();          // ← sin argumentos
+      if (engine.init)    engine.init(app.scene);
+      if (engine.setCore) engine.setCore(app);
+      app.startLoop(dt => { if (engine.update) engine.update(dt); });
+
+  Cada llamada detrás de un `if`. Cuando la API real es otra —y en
+  `CarverEnvironmentFactory` lo es: `constructor(scene, grid)` + `buildAll()`—
+  no se ejecuta nada, no falla nada, y queda una rejilla vacía bajo un cartel que
+  dice «Powered by…». Eso es peor que un error.
+
+  ⚠️ ESTE LANZADOR TAMPOCO ADIVINA BIEN SIEMPRE. LA DIFERENCIA ES QUE LO CUENTA.
+  Inspecciona lo que el módulo exporta de verdad —constructor, aridad, métodos— y
+  escribe en pantalla qué encontró, qué probó y qué pasó. Cuando acierta, la
+  pieza se ve. Cuando no, sale un informe que dice exactamente qué le falta en
+  vez de un vacío silencioso.
+
+  Un fallo explicado se arregla en cinco minutos. Uno callado dura meses: éste
+  llevaba meses.
+-->
+<script type="module">
+import * as THREE from 'three';
+import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+
+const $ = document.getElementById('informe');
+const params = new URLSearchParams(location.search);
+const ruta = (params.get('m') ?? '').replace(/[^\w./-]/g, '');
+
+const lineas = [];
+const di = (clase, html) => { lineas.push(`<div class="l ${clase}">${html}</div>`); pinta(); };
+const caja = (html) => { lineas.push(`<div class="caja">${html}</div>`); pinta(); };
+function pinta() {
+    $.innerHTML = `<h1>${ruta.split('/').pop() || 'sin módulo'}</h1>`
+                + `<div class="ruta">${ruta || '—'}</div>` + lineas.join('');
+}
+
+if (!ruta) {
+    di('no', 'Falta <code>?m=</code>. Ejemplo:');
+    di('info', '<a href="?m=world/systems/FoodChainSystem.js">?m=world/systems/FoodChainSystem.js</a>');
+    throw new Error('sin módulo');
+}
+
+// ── 1. Cargar ────────────────────────────────────────────────────────────
+let mod;
+try {
+    mod = await import(`@alisa-engine/src/${ruta}`);
+    di('ok', '✓ módulo cargado');
+} catch (e) {
+    di('no', `✗ no se pudo cargar: ${e.message}`);
+    throw e;
+}
+
+// ── 2. Inspeccionar de verdad, en vez de suponer ─────────────────────────
+const exports = Object.entries(mod).filter(([k]) => k !== 'default');
+if (mod.default) exports.push(['default', mod.default]);
+if (!exports.length) { di('no', '✗ el módulo no exporta nada'); throw new Error('vacío'); }
+
+di('info', `exporta: ${exports.map(([k]) => `<code>${k}</code>`).join(', ')}`);
+
+// Se prefiere una clase; si no hay, una función.
+const [nombre, Pieza] = exports.find(([, v]) => typeof v === 'function' && /^[A-Z]/.test(v.name))
+                     ?? exports.find(([, v]) => typeof v === 'function')
+                     ?? [];
+if (!Pieza) { di('no', '✗ no exporta ninguna clase ni función'); throw new Error('sin clase'); }
+
+const metodos = Object.getOwnPropertyNames(Pieza.prototype ?? {})
+    .filter(m => m !== 'constructor');
+caja(`<div class="dato">${nombre}</div>`
+   + `<div class="info">constructor con ${Pieza.length} argumento(s)</div>`
+   + `<div class="info">métodos: ${metodos.length ? metodos.map(m => `<code>${m}</code>`).join(', ') : '(ninguno)'}</div>`);
+
+// ── 3. El anfitrión ──────────────────────────────────────────────────────
+const app = new AlisaRenderCore();
+app.setupDefaultEnvironment();
+di('ok', '✓ escena lista (AlisaRenderCore)');
+
+// ── 4. Arrancar la pieza, contando cada intento ──────────────────────────
+//
+// El orden va de lo más específico a lo más genérico. `buildAll`/`build` primero
+// porque es la convención de las factorías, que son las que más se rompían con
+// el lanzador viejo.
+const tiene = (m) => metodos.includes(m);
+let pieza = null, arrancada = false;
+
+/**
+ * ⚠️ SE BUSCAN AYUDANTES ESTÁTICOS, Y ESTO SALIÓ DE UN HALLAZGO.
+ *
+ * La primera versión construía con `(scene, core)` y `CarverEnvironmentFactory`
+ * contestó con un error que era, en realidad, documentación:
+ *
+ *   «falta carverGrid { w, h, grid[y][x], elevationGrid[y][x] } en el
+ *    constructor. Usa CarverEnvironmentFactory.demoGrid(w, h) para una de prueba»
+ *
+ * O sea que el módulo llevaba escrito CÓMO probarlo, con un generador de datos de
+ * ejemplo incluido. Nadie lo leía porque el lanzador viejo se tragaba la
+ * excepción detrás de un `if`. El módulo hablaba y el andamio no escuchaba.
+ *
+ * Así que ahora se buscan esos ayudantes por convención de nombre y se usan.
+ */
+const estaticos = Object.getOwnPropertyNames(Pieza)
+    .filter(k => typeof Pieza[k] === 'function' && !['length', 'name', 'prototype'].includes(k));
+const ayudante = estaticos.find(k => /^(demo|ejemplo|sample|default|make|create)/i.test(k));
+if (estaticos.length) di('info', `estáticos: ${estaticos.map(k => `<code>${k}</code>`).join(', ')}`);
+
+const construir = (extra) => Pieza.length >= 2 ? new Pieza(app.scene, extra)
+                          : Pieza.length === 1 ? new Pieza(app.scene)
+                          : new Pieza();
+try {
+    let datos = app;
+    if (ayudante && Pieza.length >= 2) {
+        try {
+            datos = Pieza[ayudante](24, 24);
+            di('ok', `✓ datos de prueba con <code>${ayudante}(24, 24)</code>`);
+        } catch { datos = app; }
+    }
+    pieza = construir(datos);
+    di('ok', `✓ construida con ${Pieza.length} argumento(s)`);
+} catch (e) {
+    di('no', `✗ el constructor falló: ${e.message}`);
+    di('info', 'Ese mensaje suele decir exactamente qué le falta — léelo, no lo tapes.');
+}
+
+if (pieza) {
+    for (const [m, args] of [['buildAll', [{}]], ['build', []],
+                             ['init', [app.scene]], ['setCore', [app]], ['start', []]]) {
+        if (!tiene(m)) continue;
+        try { pieza[m](...args); di('ok', `✓ <code>${m}()</code> llamado`); arrancada = true; }
+        catch (e) { di('no', `✗ <code>${m}()</code> lanzó: ${e.message}`); }
+    }
+    if (tiene('update')) {
+        app.startLoop((dt) => { try { pieza.update(dt); } catch { /* una vez basta */ } });
+        di('ok', '✓ <code>update(dt)</code> enganchado al bucle');
+        arrancada = true;
+    } else {
+        app.startLoop(() => {});
+        di('info', 'sin <code>update(dt)</code>: escena estática');
+    }
+}
+
+/**
+ * ⚠️ ENCUADRAR LO QUE SE HAYA CONSTRUIDO, SEA DONDE SEA.
+ *
+ * `BiolabEnvironmentFactory` construye 232 mallas y la página se veía NEGRA: la
+ * cámara por defecto miraba al origen y la pieza estaba en otro sitio, o a otra
+ * escala. Con 39 piezas por revisar, dejar la cámara fija habría hecho parecer
+ * rotas a las que sólo estaban fuera de plano — y eso ya nos costó meses con go.
+ *
+ * Se mide la caja de todo lo construido y se coloca la cámara a la distancia que
+ * la contiene. Sin adivinar tamaños: la escena dice cuánto ocupa.
+ */
+function encuadrar() {
+    const caja = new THREE.Box3();
+    let algo = false;
+    app.scene.traverse(o => {
+        if (!o.isMesh) return;
+        algo = true;
+        caja.expandByObject(o);
+    });
+    if (!algo || caja.isEmpty()) return null;
+
+    const centro = caja.getCenter(new THREE.Vector3());
+    const tam = caja.getSize(new THREE.Vector3());
+    const radio = Math.max(tam.x, tam.y, tam.z) * 0.5 || 1;
+    /**
+     * ⚠️ EL RADIO SALE DE LA DIAGONAL, NO DEL LADO MAYOR — Y SE ACERCA.
+     *
+     * La primera versión usaba el lado mayor por 1.4 de aire. Con el biolab
+     * —100×4×100, o sea un suelo enorme con cosas bajitas encima— eso ponía la
+     * cámara a 190 unidades, y desde ahí la escena entera se confundía con el
+     * fondo: cero píxeles distinguibles. A 92 se pintaban 50.000.
+     *
+     * Se usa la diagonal (que respeta la forma real) y se ajusta el aire para no
+     * irse lejos con superficies planas y grandes.
+     */
+    /**
+     * ⚠️ LA DISTANCIA SALE DE MEDIR, NO DE LA TRIGONOMETRÍA.
+     *
+     * La fórmula "correcta" —encajar la caja en el campo de visión— daba 407
+     * unidades para el dojo, y ahí se pintaban CERO píxeles. A 203 se pintaban
+     * 4.469. La razón: estas escenas son enormes y dispersas, y a la distancia
+     * que las encaja enteras cada pieza ocupa menos de un píxel y se funde con
+     * el fondo.
+     *
+     * Así que se acerca a 0,45 de la diagonal, que es lo que la medición dice
+     * que funciona. Se corta algo de escena a cambio de ver algo — y esta
+     * herramienta existe para responder «¿hay algo?», no para componer el plano.
+     */
+    const dist = tam.length() * 0.45 || 1;
+
+    app.camera.position.set(centro.x + dist * 0.7, centro.y + dist * 0.55, centro.z + dist * 0.7);
+    app.camera.near = Math.max(0.01, dist / 500);
+    app.camera.far = dist * 12;
+    app.camera.updateProjectionMatrix();
+    app.camera.lookAt(centro);
+    if (app.controls) { app.controls.target.copy(centro); app.controls.update(); }
+    return { tam, radio };
+}
+/**
+ * ⚠️ LUZ PROPIA DEL LANZADOR, Y HAY QUE DECIR POR QUÉ.
+ *
+ * Medido con `DojoEnvironmentFactory`: a 0,4 de su diagonal se pintaban 3.659
+ * píxeles; a 0,8 y a 1,5, **cero**. Cuanto más lejos, menos — y eso no es cosa
+ * de la geometría, es que **la alumbran luces de alcance corto** puestas por su
+ * propia página. Fuera de ese charco, todo negro.
+ *
+ * Sin esto, el veredicto de esta herramienta sería «no se ve nada» para media
+ * biblioteca, y sería mentira: la pieza construye 134 mallas sobre 352×311.
+ *
+ * ⚠️ Y NO ES NEUTRAL: esta luz CAMBIA cómo se ve la pieza respecto a su montaje
+ * original. Aquí sirve para responder «¿hay algo?», no «¿qué aspecto tiene?».
+ * Para lo segundo hay que abrir su página, o dársela.
+ */
+function alumbrar() {
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x223344, 1.1);
+    const sol = new THREE.DirectionalLight(0xffffff, 1.4);
+    sol.position.set(1, 2, 1).normalize();
+    hemi.name = sol.name = '__luz_del_lanzador';
+    app.scene.add(hemi, sol);
+}
+alumbrar();
+
+const marco = encuadrar();
+
+// Se deja a mano lo que la página ha construido. Es un laboratorio: poder abrir
+// la consola y toquetear `__pieza.app.scene` es la mitad de su utilidad.
+window.__pieza = { app, pieza, Pieza, marco, THREE };
+
+/**
+ * ⚠️ UN CUADRO A MANO, SIEMPRE. NO BASTA CON ARRANCAR EL BUCLE.
+ *
+ * `startLoop` va con `requestAnimationFrame`, y **el navegador no lo dispara si
+ * la pestaña no está visible**. Con la ventana detrás o minimizada, esta página
+ * se quedaba completamente negra: cero cuadros, cero llamadas, cero triángulos —
+ * y parecía que la pieza estaba rota.
+ *
+ * Se vio midiendo: `render.frame` valía 0 con la escena entera montada, y al
+ * forzar un `render()` a mano salían 90.618 triángulos.
+ *
+ * Para una página cuyo trabajo es «enséñame si esto construye algo», depender de
+ * que alguien tenga la ventana delante es inaceptable — y para revisar 39 piezas
+ * seguidas, imposible. Así que se pinta un cuadro en cuanto está montada, y otro
+ * cada vez que la pestaña vuelve a verse.
+ */
+/**
+ * ⚠️ BLOOM, PORQUE MUCHAS PIEZAS ESTÁN HECHAS CONTANDO CON ÉL.
+ *
+ * `BiolabEnvironmentFactory` construye 239 mallas con materiales de neón —cian
+ * `00ffaa`, LEDs, tubos— y en un `AlisaRenderCore` pelado se veía **casi negra**:
+ * geometría apenas insinuada sobre fondo oscuro. No estaba rota; le faltaba su
+ * pila. Las páginas suyas que sí lucen montan `AlisaBloomEngine`, y sin él el
+ * material emisivo no se despega del fondo.
+ *
+ * Si el lanzador juzgara sin dársela, descartaríamos piezas buenas por no
+ * enseñarlas como están hechas para verse. Y de paso esto ES lo que queremos
+ * demostrar: que las piezas se componen.
+ */
+let bloom = null;
+try {
+    const { AlisaBloomEngine } = await import('@alisa-engine/src/soma/plugins/AlisaBloomEngine.js');
+    bloom = new AlisaBloomEngine(app);
+    di('ok', '✓ bloom montado (<code>AlisaBloomEngine</code>)');
+} catch (e) {
+    di('info', `sin bloom: ${e.message.slice(0, 60)}`);
+}
+
+/**
+ * ⚠️ SE DIBUJA DIRECTO Y ADEMÁS CON BLOOM, EN ESE ORDEN.
+ *
+ * El compositor del bloom puede acabar en negro para escenas que no esperaba, y
+ * entonces esta página mentiría: diría «no se ve nada» de una pieza que sí se
+ * dibuja. Se pinta primero el dibujado directo —que es la verdad— y después se
+ * le pasa el bloom encima si funciona.
+ */
+const pintarUna = () => {
+    app.renderer.render(app.scene, app.camera);
+    if (bloom?.render) { try { bloom.render(0.016); } catch { /* el directo ya está */ } }
+};
+pintarUna();
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') pintarUna();
+});
+
+// ── 5. El veredicto, que es lo que faltaba ───────────────────────────────
+let mallas = 0, luces = 0;
+app.scene.traverse(o => { if (o.isMesh) mallas++; if (o.isLight) luces++; });
+const objetos = app.scene.children.length;
+if (!arrancada) {
+    caja('<div class="no">Nada que arrancar.</div>'
+       + `<div class="info">Esta pieza no expone ninguno de <code>buildAll</code>, `
+       + `<code>build</code>, <code>init</code>, <code>start</code> ni <code>update</code>. `
+       + `Sus métodos son: ${metodos.map(m => `<code>${m}</code>`).join(', ') || '(ninguno)'}.</div>`
+       + '<div class="info" style="margin-top:6px">No es un fallo del módulo: es que '
+       + 'nadie ha dicho todavía cómo se enciende. Ese es exactamente el trabajo.</div>');
+} else {
+    // ⚠️ Se cuentan MALLAS, no hijos de la escena. Una factoría que mete todo
+    // dentro de un `Group` marcaba «1 objeto» igual que una que no puso nada:
+    // con ese número mandé a mirar las piezas equivocadas.
+    caja(`<div class="${mallas ? 'ok' : 'no'}">${mallas ? 'Arrancada.' : 'Arrancada, pero vacía.'}</div>`
+       + `<div class="info">${mallas} mallas · ${luces} luces · ${objetos} en la raíz`
+       + (marco ? ` · ocupa ${marco.tam.x.toFixed(1)}×${marco.tam.y.toFixed(1)}×${marco.tam.z.toFixed(1)}` : '')
+       + '</div>'
+       + (!mallas ? '<div class="no" style="margin-top:6px">Se llamó a algo y no puso geometría. '
+                  + 'Casi siempre significa que le faltan datos de entrada, no que esté rota — '
+                  + '`CarverEnvironmentFactory` hacía justo esto hasta que se le dio su `demoGrid`.</div>' : ''));
+}
+di('info', '<a href="/escaparate">← escaparate</a>');
+</script>
+</body>
+</html>

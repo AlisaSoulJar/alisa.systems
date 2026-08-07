@@ -1,0 +1,4466 @@
+{
+ "fecha": "2026-08-07",
+ "total": 179,
+ "cuenta": {
+  "apagada": 120,
+  "escena": 39,
+  "sin_exportar": 3,
+  "gym": 17
+ },
+ "piezas": [
+  {
+   "ruta": "index.js",
+   "nombre": "index",
+   "familia": "raiz",
+   "kb": 3.7,
+   "clase": "apagada",
+   "exporta": [
+    "GYM_ENVS"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": []
+  },
+  {
+   "ruta": "extensions/alisa-colony/index.js",
+   "nombre": "index",
+   "familia": "alisa-colony",
+   "kb": 4.2,
+   "clase": "apagada",
+   "exporta": [
+    "HUB_URL_DEFECTO"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": []
+  },
+  {
+   "ruta": "extensions/alisa-colony/avatar-pipeline/ArachneIngestionSystem.js",
+   "nombre": "ArachneIngestionSystem",
+   "familia": "avatar-pipeline",
+   "kb": 13.4,
+   "clase": "apagada",
+   "exporta": [
+    "ArachneIngestionSystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "initialize",
+    "tick",
+    "setTube",
+    "dispenseItem",
+    "tubeLoop",
+    "logBrain",
+    "overrideHunt",
+    "doWrapAsync",
+    "createSilkThread",
+    "createCocoon"
+   ]
+  },
+  {
+   "ruta": "extensions/alisa-colony/avatar-pipeline/GeppettoChoreographySystem.js",
+   "nombre": "GeppettoChoreographySystem",
+   "familia": "avatar-pipeline",
+   "kb": 16.1,
+   "clase": "apagada",
+   "exporta": [
+    "GeppettoBrain",
+    "GeppettoChoreographySystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "logBrain",
+    "log",
+    "setUI",
+    "setProgress",
+    "flashImpact",
+    "fetchPipeline",
+    "clearProp",
+    "spawnProp",
+    "animateWaterLevel",
+    "runCycle",
+    "onUpdate"
+   ]
+  },
+  {
+   "ruta": "extensions/alisa-colony/avatar-pipeline/MorpheusSimulationSystem.js",
+   "nombre": "MorpheusSimulationSystem",
+   "familia": "avatar-pipeline",
+   "kb": 11.7,
+   "clase": "apagada",
+   "exporta": [
+    "MorpheusSimulationSystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "loadAvatar",
+    "startTest",
+    "postFailureToJobBoard",
+    "postSuccessToHub",
+    "tick"
+   ]
+  },
+  {
+   "ruta": "extensions/alisa-colony/avatar-pipeline/PygmalionTopologySystem.js",
+   "nombre": "PygmalionTopologySystem",
+   "familia": "avatar-pipeline",
+   "kb": 31.6,
+   "clase": "apagada",
+   "exporta": [
+    "PygmalionBrain",
+    "PygmalionTopologySystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "logBrain",
+    "tick",
+    "doCalibration",
+    "startSurgery",
+    "doSurgeryAsync",
+    "boot",
+    "wait",
+    "bootFactoryWorkers",
+    "createCocoon",
+    "animateMovement",
+    "hatchAndProcess",
+    "beltLoop"
+   ]
+  },
+  {
+   "ruta": "extensions/alisa-colony/plugins/ColonialPassportPlugin.js",
+   "nombre": "ColonialPassportPlugin",
+   "familia": "plugins",
+   "kb": 5.1,
+   "clase": "apagada",
+   "exporta": [
+    "ColonialPassportPlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "onInit",
+    "pollRegistry",
+    "instantiatePassport",
+    "onUpdate"
+   ]
+  },
+  {
+   "ruta": "extensions/alisa-colony/plugins/ColonialTerminalPlugin.js",
+   "nombre": "ColonialTerminalPlugin",
+   "familia": "plugins",
+   "kb": 8.2,
+   "clase": "apagada",
+   "exporta": [
+    "ColonialTerminalPlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "onInit",
+    "_loadGLBNode",
+    "_buildProceduralMonolith",
+    "_buildProceduralDesk",
+    "_buildCSS3DScreen",
+    "_connectStream",
+    "_appendLog",
+    "onUpdate"
+   ]
+  },
+  {
+   "ruta": "extensions/alisa-colony/plugins/JobBoardDisplayPlugin.js",
+   "nombre": "JobBoardDisplayPlugin",
+   "familia": "plugins",
+   "kb": 3.1,
+   "clase": "apagada",
+   "exporta": [
+    "JobBoardDisplayPlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "onInit",
+    "updateCanvas",
+    "startPolling"
+   ]
+  },
+  {
+   "ruta": "extensions/alisa-colony/plugins/PythonTelemetrySensor.js",
+   "nombre": "PythonTelemetrySensor",
+   "familia": "plugins",
+   "kb": 3,
+   "clase": "escena",
+   "exporta": [
+    "PythonTelemetrySensor"
+   ],
+   "arranque": [
+    "start"
+   ],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "start",
+    "stop",
+    "poll",
+    "tick"
+   ],
+   "objetos": 0,
+   "mallas": 0,
+   "luces": 0
+  },
+  {
+   "ruta": "extensions/alisa-colony/plugins/SovereignAvatarSystem.js",
+   "nombre": "SovereignAvatarSystem",
+   "familia": "plugins",
+   "kb": 28.3,
+   "clase": "apagada",
+   "exporta": [
+    "SovereignAvatarSystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "_initCSS2D",
+    "_initAudio",
+    "_initStateStream",
+    "_startPositionBroadcast",
+    "_stopPositionBroadcast",
+    "_processStatePayload",
+    "_fetchRegistryFromHub",
+    "getBeingConfig",
+    "processScene",
+    "forceSpawn",
+    "_buildComicBubble",
+    "_getEmojiForEvent"
+   ]
+  },
+  {
+   "ruta": "extensions/alisa-colony/plugins/SovereignHaloPlugin.js",
+   "nombre": "SovereignHaloPlugin",
+   "familia": "plugins",
+   "kb": 4.5,
+   "clase": "apagada",
+   "exporta": [
+    "SovereignHaloPlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "onInit",
+    "anunciar",
+    "setMensajes",
+    "connectHubStream",
+    "onUpdate"
+   ]
+  },
+  {
+   "ruta": "extensions/alisa-colony/plugins/SovereignTickerPlugin.js",
+   "nombre": "SovereignTickerPlugin",
+   "familia": "plugins",
+   "kb": 6.3,
+   "clase": "apagada",
+   "exporta": [
+    "SovereignTickerPlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "onInit",
+    "anunciar",
+    "setMensajes",
+    "connectHubStream",
+    "onUpdate"
+   ]
+  },
+  {
+   "ruta": "extensions/alisa-colony/psyche/EntityCardSystem.js",
+   "nombre": "EntityCardSystem",
+   "familia": "psyche",
+   "kb": 32.5,
+   "clase": "escena",
+   "exporta": [
+    "EntityCardSystem"
+   ],
+   "arranque": [
+    "init"
+   ],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "init",
+    "_inyectarEstilos",
+    "_createDOM",
+    "_bindEvents",
+    "open",
+    "close",
+    "updateLive",
+    "_startPortraitAnimation",
+    "_renderStats",
+    "_updateStatBars",
+    "_renderFooter",
+    "_wakeEntity"
+   ],
+   "objetos": 0,
+   "mallas": 0,
+   "luces": 0
+  },
+  {
+   "ruta": "extensions/alisa-colony/psyche/TerminalInteractionEngine.js",
+   "nombre": "TerminalInteractionEngine",
+   "familia": "psyche",
+   "kb": 12.5,
+   "clase": "escena",
+   "exporta": [
+    "TerminalInteractionEngine"
+   ],
+   "arranque": [
+    "init"
+   ],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "init",
+    "_bindEvents",
+    "open",
+    "close",
+    "_executeVerb",
+    "dispatchNavigate",
+    "_dispatchInteract",
+    "_dispatchFleetControl",
+    "_openChat",
+    "_closeChat",
+    "_sendChat"
+   ],
+   "objetos": 0,
+   "mallas": 0,
+   "luces": 0
+  },
+  {
+   "ruta": "extensions/alisa-colony/psyche/TerminalUIEngine.js",
+   "nombre": "TerminalUIEngine",
+   "familia": "psyche",
+   "kb": 30.2,
+   "clase": "escena",
+   "exporta": [
+    "TerminalUIEngine"
+   ],
+   "arranque": [
+    "start"
+   ],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "changeDomain",
+    "ascendDomain",
+    "updateBreadcrumbUI",
+    "start",
+    "connectWorldBridge",
+    "connectLuaStream",
+    "connectScummStream",
+    "initTabs",
+    "_pollHubLogs",
+    "_initIRC",
+    "appendIRCMessage",
+    "showChatBubble"
+   ],
+   "objetos": null,
+   "fallo_al_ejecutar": "Cannot read properties of undefined (reading 'protocol')"
+  },
+  {
+   "ruta": "extensions/alisa-colony/systems/ColonialMetabolismSystem.js",
+   "nombre": "ColonialMetabolismSystem",
+   "familia": "systems",
+   "kb": 4.4,
+   "clase": "apagada",
+   "exporta": [
+    "ColonialMetabolismSystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "startMetabolism",
+    "pollStatus",
+    "updateLightTargets",
+    "triggerHeatSpike",
+    "tick"
+   ]
+  },
+  {
+   "ruta": "extensions/alisa-colony/systems/HubCartographerSystem.js",
+   "nombre": "HubCartographerSystem",
+   "familia": "systems",
+   "kb": 1.4,
+   "clase": "apagada",
+   "exporta": [
+    "HubCartographerSystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "pollState",
+    "changeDomain"
+   ]
+  },
+  {
+   "ruta": "extensions/alisa-colony/utils/HubClient.js",
+   "nombre": "HubClient",
+   "familia": "utils",
+   "kb": 3.3,
+   "clase": "apagada",
+   "exporta": [
+    "HubClient"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "fire",
+    "poll"
+   ]
+  },
+  {
+   "ruta": "extensions/avatar-pipeline/ArachneEnvironmentFactory.js",
+   "nombre": "ArachneEnvironmentFactory",
+   "familia": "avatar-pipeline",
+   "kb": 1.4,
+   "clase": "apagada",
+   "exporta": [
+    "ArachneEnvironmentFactory"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "setupLighting",
+    "setupDust"
+   ]
+  },
+  {
+   "ruta": "extensions/avatar-pipeline/ArachneSoftBodyPhysics.js",
+   "nombre": "ArachneSoftBodyPhysics",
+   "familia": "avatar-pipeline",
+   "kb": 5,
+   "clase": "apagada",
+   "exporta": [
+    "ArachneSoftBodyPhysics"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "buildOrbWeb",
+    "addEdge",
+    "updateWebGeometry",
+    "onUpdate",
+    "impulse",
+    "addDewDrops"
+   ]
+  },
+  {
+   "ruta": "extensions/avatar-pipeline/ArtDirectionPipeline.js",
+   "nombre": "ArtDirectionPipeline",
+   "familia": "avatar-pipeline",
+   "kb": 18.4,
+   "clase": "escena",
+   "exporta": [
+    "ArtDirectionPipeline"
+   ],
+   "arranque": [
+    "init"
+   ],
+   "gym": [
+    "tickAnimation"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "init",
+    "loadModel",
+    "projectSkeleton",
+    "applyAvatarSkin",
+    "updateScannerVisibility",
+    "tickAnimation",
+    "setAvatarVisible",
+    "setBaseMeshVisible"
+   ],
+   "objetos": null,
+   "fallo_al_ejecutar": "Cannot read properties of undefined (reading 'add')"
+  },
+  {
+   "ruta": "extensions/avatar-pipeline/BaseEnvironmentFactory.js",
+   "nombre": "BaseEnvironmentFactory",
+   "familia": "avatar-pipeline",
+   "kb": 0.2,
+   "clase": "sin_exportar",
+   "exporta": [],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": []
+  },
+  {
+   "ruta": "extensions/avatar-pipeline/BaseSimulationSystem.js",
+   "nombre": "BaseSimulationSystem",
+   "familia": "avatar-pipeline",
+   "kb": 0.2,
+   "clase": "sin_exportar",
+   "exporta": [],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": []
+  },
+  {
+   "ruta": "extensions/avatar-pipeline/GeppettoEnvironmentFactory.js",
+   "nombre": "GeppettoEnvironmentFactory",
+   "familia": "avatar-pipeline",
+   "kb": 4.8,
+   "clase": "apagada",
+   "exporta": [
+    "GeppettoEnvironmentFactory"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "setupLighting",
+    "setupRoom",
+    "setupTank",
+    "setupServerRack",
+    "setupCables",
+    "setupDust"
+   ]
+  },
+  {
+   "ruta": "extensions/avatar-pipeline/GeppettoKinematics.js",
+   "nombre": "GeppettoKinematics",
+   "familia": "avatar-pipeline",
+   "kb": 3.5,
+   "clase": "apagada",
+   "exporta": [
+    "GeppettoKinematics"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "applyKinematics"
+   ]
+  },
+  {
+   "ruta": "extensions/avatar-pipeline/MorpheusEnvironmentFactory.js",
+   "nombre": "MorpheusEnvironmentFactory",
+   "familia": "avatar-pipeline",
+   "kb": 1.6,
+   "clase": "escena",
+   "exporta": [
+    "MorpheusEnvironmentFactory"
+   ],
+   "arranque": [
+    "buildAll"
+   ],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "setupLighting",
+    "setupTrack",
+    "buildObstacleCourse",
+    "buildAll"
+   ],
+   "objetos": 3,
+   "mallas": 5,
+   "luces": 1
+  },
+  {
+   "ruta": "extensions/avatar-pipeline/PygmalionEnvironmentFactory.js",
+   "nombre": "PygmalionEnvironmentFactory",
+   "familia": "avatar-pipeline",
+   "kb": 10.5,
+   "clase": "escena",
+   "exporta": [
+    "PygmalionEnvironmentFactory"
+   ],
+   "arranque": [
+    "buildAll"
+   ],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "setupLighting",
+    "setupRoom",
+    "setupHangar",
+    "setupBelt",
+    "setupTunnel",
+    "setupDust",
+    "buildAll"
+   ],
+   "objetos": 45,
+   "mallas": 82,
+   "luces": 19
+  },
+  {
+   "ruta": "gym/GymBridge.js",
+   "nombre": "GymBridge",
+   "familia": "gym",
+   "kb": 6.5,
+   "clase": "gym",
+   "exporta": [
+    "GymBridge"
+   ],
+   "arranque": [],
+   "gym": [
+    "reset",
+    "step",
+    "observation"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "attach",
+    "makeApi",
+    "spec",
+    "id",
+    "reset",
+    "step",
+    "observation",
+    "score",
+    "describe",
+    "affordances",
+    "stepVerb",
+    "setRenderEnabled"
+   ]
+  },
+  {
+   "ruta": "gym/GymEnv.js",
+   "nombre": "GymEnv",
+   "familia": "gym",
+   "kb": 6.9,
+   "clase": "gym",
+   "exporta": [
+    "GymEnv"
+   ],
+   "arranque": [],
+   "gym": [
+    "reset",
+    "step",
+    "getObservation"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "reset",
+    "step",
+    "getObservation",
+    "describe",
+    "affordances",
+    "actFromVerb",
+    "stepVerb",
+    "getScore",
+    "spec",
+    "runEpisode",
+    "selfTest"
+   ]
+  },
+  {
+   "ruta": "gym/GymIdentity.js",
+   "nombre": "GymIdentity",
+   "familia": "gym",
+   "kb": 5,
+   "clase": "escena",
+   "exporta": [
+    "GymIdentity"
+   ],
+   "arranque": [
+    "init"
+   ],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "init",
+    "_hash",
+    "sign",
+    "verify",
+    "forge"
+   ],
+   "objetos": 0,
+   "mallas": 0,
+   "luces": 0
+  },
+  {
+   "ruta": "gym/GymRecorder.js",
+   "nombre": "GymRecorder",
+   "familia": "gym",
+   "kb": 5.1,
+   "clase": "apagada",
+   "exporta": [
+    "GymRecorder"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "_chain",
+    "record",
+    "seal",
+    "validate"
+   ]
+  },
+  {
+   "ruta": "gym/ProtoHubEnv.js",
+   "nombre": "ProtoHubEnv",
+   "familia": "gym",
+   "kb": 13.5,
+   "clase": "gym",
+   "exporta": [
+    "crearEnvDeProtoHub"
+   ],
+   "arranque": [],
+   "gym": [
+    "reset",
+    "step",
+    "getObservation"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "reset",
+    "_estado",
+    "_puntosDe",
+    "_tocaLaCasa",
+    "step",
+    "getObservation",
+    "describe",
+    "affordances",
+    "getScore",
+    "partida"
+   ]
+  },
+  {
+   "ruta": "gym/registro.js",
+   "nombre": "registro",
+   "familia": "gym",
+   "kb": 13.3,
+   "clase": "apagada",
+   "exporta": [
+    "CATALOGO",
+    "buscar",
+    "politicaTonta",
+    "politicaFSM",
+    "politicaAzar"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "cargar"
+   ]
+  },
+  {
+   "ruta": "gym/envs/AsteroidsEnv.js",
+   "nombre": "AsteroidsEnv",
+   "familia": "envs",
+   "kb": 8.8,
+   "clase": "gym",
+   "exporta": [
+    "AsteroidsEnv"
+   ],
+   "arranque": [],
+   "gym": [
+    "reset",
+    "step",
+    "getObservation"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "_mulberry32",
+    "_withSeed",
+    "reset",
+    "step",
+    "_nearest",
+    "getObservation",
+    "describe",
+    "affordances",
+    "getScore"
+   ]
+  },
+  {
+   "ruta": "gym/envs/CabinetEscapeEnv.js",
+   "nombre": "CabinetEscapeEnv",
+   "familia": "envs",
+   "kb": 9.8,
+   "clase": "gym",
+   "exporta": [
+    "CabinetEscapeEnv"
+   ],
+   "arranque": [],
+   "gym": [
+    "reset",
+    "step",
+    "getObservation"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "reset",
+    "step",
+    "getObservation",
+    "getScore",
+    "describe",
+    "affordances",
+    "actFromVerb",
+    "_vecinos",
+    "baseline",
+    "_restantes"
+   ]
+  },
+  {
+   "ruta": "gym/envs/ChopperAquariumEnv.js",
+   "nombre": "ChopperAquariumEnv",
+   "familia": "envs",
+   "kb": 7.5,
+   "clase": "gym",
+   "exporta": [
+    "ChopperAquariumEnv"
+   ],
+   "arranque": [],
+   "gym": [
+    "reset",
+    "step",
+    "getObservation"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "reset",
+    "_escaneadas",
+    "step",
+    "getObservation",
+    "describe",
+    "affordances",
+    "getScore",
+    "partida"
+   ]
+  },
+  {
+   "ruta": "gym/envs/CuccoSwarmEnv.js",
+   "nombre": "CuccoSwarmEnv",
+   "familia": "envs",
+   "kb": 8.4,
+   "clase": "gym",
+   "exporta": [
+    "CuccoSwarmEnv"
+   ],
+   "arranque": [],
+   "gym": [
+    "reset",
+    "step",
+    "getObservation"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "reset",
+    "step",
+    "getObservation",
+    "describe",
+    "affordances"
+   ]
+  },
+  {
+   "ruta": "gym/envs/RaccoonSpaceEnv.js",
+   "nombre": "RaccoonSpaceEnv",
+   "familia": "envs",
+   "kb": 6.3,
+   "clase": "gym",
+   "exporta": [
+    "RaccoonSpaceEnv"
+   ],
+   "arranque": [],
+   "gym": [
+    "reset",
+    "step",
+    "getObservation"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "reset",
+    "step",
+    "getObservation",
+    "describe",
+    "affordances"
+   ]
+  },
+  {
+   "ruta": "gym/envs/RueDelPercebeEnv.js",
+   "nombre": "RueDelPercebeEnv",
+   "familia": "envs",
+   "kb": 12.5,
+   "clase": "gym",
+   "exporta": [
+    "RueDelPercebeEnv"
+   ],
+   "arranque": [],
+   "gym": [
+    "reset",
+    "step",
+    "getObservation"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "_rng",
+    "reset",
+    "_hint",
+    "step",
+    "getObservation",
+    "describe",
+    "affordances",
+    "actFromVerb",
+    "getScore",
+    "bayesianBaseline"
+   ]
+  },
+  {
+   "ruta": "psyche/FSMSystem.js",
+   "nombre": "FSMSystem",
+   "familia": "psyche",
+   "kb": 6.4,
+   "clase": "apagada",
+   "exporta": [
+    "FSMSystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "addState",
+    "addTransition",
+    "setState",
+    "setTimer",
+    "isTimerExpired",
+    "_doTransition",
+    "tick",
+    "wasInState",
+    "getDebugInfo"
+   ]
+  },
+  {
+   "ruta": "psyche/SteeringSystem.js",
+   "nombre": "SteeringSystem",
+   "familia": "psyche",
+   "kb": 6,
+   "clase": "apagada",
+   "exporta": [
+    "SteeringSystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "steer",
+    "calculateFlocking",
+    "calculateIDM",
+    "flee",
+    "seek"
+   ]
+  },
+  {
+   "ruta": "soma/AlisaRenderCore.js",
+   "nombre": "AlisaRenderCore",
+   "familia": "soma",
+   "kb": 8.2,
+   "clase": "apagada",
+   "exporta": [
+    "AlisaRenderCore"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "onWindowResize",
+    "registerPlugin",
+    "getPlugin",
+    "setupDefaultEnvironment",
+    "add",
+    "startLoop",
+    "stopLoop"
+   ]
+  },
+  {
+   "ruta": "soma/ArachneEngine.js",
+   "nombre": "ArachneEngine",
+   "familia": "soma",
+   "kb": 5.3,
+   "clase": "apagada",
+   "exporta": [
+    "ArachneEngine"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "normalizeMesh",
+    "applyKatamariScale"
+   ]
+  },
+  {
+   "ruta": "soma/AssetManager.js",
+   "nombre": "AssetManager",
+   "familia": "soma",
+   "kb": 32.4,
+   "clase": "apagada",
+   "exporta": [
+    "AssetManager"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "loadAsset",
+    "setGLTFDelegate",
+    "loadModelAsync",
+    "loadGLTF",
+    "isLoaded",
+    "get",
+    "loadBlueprints",
+    "loadRoomTypes",
+    "loadBuildingTypes",
+    "spawnBuilding",
+    "createRoom",
+    "spawn"
+   ]
+  },
+  {
+   "ruta": "soma/AssetResolver.js",
+   "nombre": "AssetResolver",
+   "familia": "soma",
+   "kb": 3.5,
+   "clase": "apagada",
+   "exporta": [
+    "AssetResolver"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "setBase",
+    "resetBase",
+    "resolve"
+   ]
+  },
+  {
+   "ruta": "soma/MotionBank.js",
+   "nombre": "MotionBank",
+   "familia": "soma",
+   "kb": 7.2,
+   "clase": "apagada",
+   "exporta": [
+    "MotionBank"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "extractFromGLTF",
+    "sampleToBones"
+   ]
+  },
+  {
+   "ruta": "soma/ProceduralKinematics.js",
+   "nombre": "ProceduralKinematics",
+   "familia": "soma",
+   "kb": 37.2,
+   "clase": "apagada",
+   "exporta": [
+    "ProceduralKinematics"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "getGaitCurve",
+    "tick"
+   ]
+  },
+  {
+   "ruta": "soma/ProceduralRigging.js",
+   "nombre": "ProceduralRigging",
+   "familia": "soma",
+   "kb": 70.6,
+   "clase": "apagada",
+   "exporta": [
+    "ProceduralRigging"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "extract",
+    "buildArchetypeSkeleton",
+    "bindMesh",
+    "bindSkin"
+   ]
+  },
+  {
+   "ruta": "soma/ProceduralScanner.js",
+   "nombre": "ProceduralScanner",
+   "familia": "soma",
+   "kb": 5.3,
+   "clase": "apagada",
+   "exporta": [
+    "ProceduralScanner"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "scanTopologicalRings",
+    "snapToBiologicalTemplate"
+   ]
+  },
+  {
+   "ruta": "soma/PygmalionEngine.js",
+   "nombre": "PygmalionEngine",
+   "familia": "soma",
+   "kb": 12.8,
+   "clase": "apagada",
+   "exporta": [
+    "PygmalionEngine"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "voxelize",
+    "_createConvexPolygonGeometry",
+    "_createRingSlices",
+    "performTomography",
+    "generateMST",
+    "sculptSkeleton"
+   ]
+  },
+  {
+   "ruta": "soma/RenderBackend.js",
+   "nombre": "RenderBackend",
+   "familia": "soma",
+   "kb": 3.3,
+   "clase": "apagada",
+   "exporta": [
+    "hayWebGPUenElNavegador"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": []
+  },
+  {
+   "ruta": "soma/morphology/ProceduralAnimator.js",
+   "nombre": "ProceduralAnimator",
+   "familia": "morphology",
+   "kb": 10.7,
+   "clase": "apagada",
+   "exporta": [
+    "ProceduralAnimator"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "injectProxyBones",
+    "_parseSemanticPosition",
+    "injectVoxelBones",
+    "applyWalkCycle"
+   ]
+  },
+  {
+   "ruta": "soma/morphology/ProceduralItem.js",
+   "nombre": "ProceduralItem",
+   "familia": "morphology",
+   "kb": 2.7,
+   "clase": "apagada",
+   "exporta": [
+    "ProceduralItem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "buildItemMesh"
+   ]
+  },
+  {
+   "ruta": "soma/morphology/ProceduralRigging.js",
+   "nombre": "ProceduralRigging",
+   "familia": "morphology",
+   "kb": 8.7,
+   "clase": "apagada",
+   "exporta": [
+    "ProceduralRigging"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "loadDatabases",
+    "getSolidMat",
+    "buildMaterial",
+    "applyMaterialStyle",
+    "buildPrimitiveGeometry",
+    "buildRig",
+    "animateLocomotion"
+   ]
+  },
+  {
+   "ruta": "soma/morphology/ProceduralSPE.js",
+   "nombre": "ProceduralSPE",
+   "familia": "morphology",
+   "kb": 6,
+   "clase": "apagada",
+   "exporta": [
+    "AlisaEntity",
+    "SPEFactory"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "getTierBounds",
+    "random",
+    "generateVisualModel",
+    "subdivideVoxels",
+    "generateStaticMeshCloud"
+   ]
+  },
+  {
+   "ruta": "soma/morphology/ProceduralTexture.js",
+   "nombre": "ProceduralTexture",
+   "familia": "morphology",
+   "kb": 17.3,
+   "clase": "apagada",
+   "exporta": [
+    "ProceduralTexture"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "onInit",
+    "_loadPalettes",
+    "onUpdate",
+    "preloadAssets",
+    "_generateMasterOverlays",
+    "resolvePalette",
+    "getAutoMaterial",
+    "getCompositeMat",
+    "getSolidMat",
+    "getTintedHeroMat"
+   ]
+  },
+  {
+   "ruta": "soma/morphology/ProportionalAtlas.js",
+   "nombre": "ProportionalAtlas",
+   "familia": "morphology",
+   "kb": 10.9,
+   "clase": "apagada",
+   "exporta": [
+    "ProportionalAtlas"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "getStripTexture",
+    "createBuildingLayer",
+    "stackBlock",
+    "rebuild",
+    "handleSingleClick",
+    "handleDoubleClick"
+   ]
+  },
+  {
+   "ruta": "soma/morphology/SemanticAnatomy.js",
+   "nombre": "SemanticAnatomy",
+   "familia": "morphology",
+   "kb": 7,
+   "clase": "apagada",
+   "exporta": [
+    "SEMANTIC_ANATOMY",
+    "deduceSemanticArchetype"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": []
+  },
+  {
+   "ruta": "soma/morphology/SkeletalScanner.js",
+   "nombre": "SkeletalScanner",
+   "familia": "morphology",
+   "kb": 5.9,
+   "clase": "apagada",
+   "exporta": [
+    "SkeletalScanner"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "tagBonesWithAIRoles"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/AlisaBloomEngine.js",
+   "nombre": "AlisaBloomEngine",
+   "familia": "plugins",
+   "kb": 2,
+   "clase": "apagada",
+   "exporta": [
+    "AlisaBloomEngine"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "onWindowResize",
+    "render"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/AnomalyLensPlugin.js",
+   "nombre": "AnomalyLensPlugin",
+   "familia": "plugins",
+   "kb": 5.6,
+   "clase": "apagada",
+   "exporta": [
+    "AnomalyLensPlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "apuntar"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/ArcadeFXPlugin.js",
+   "nombre": "ArcadeFXPlugin",
+   "familia": "plugins",
+   "kb": 7,
+   "clase": "apagada",
+   "exporta": [
+    "ArcadeFXPlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "_createScanlines",
+    "_setScanlines",
+    "_createVignette",
+    "_pulseVignette",
+    "_setVignette",
+    "_createHUD",
+    "_setHUD",
+    "_getHUDText",
+    "onUpdate"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/BSPRenderPlugin.js",
+   "nombre": "BSPRenderPlugin",
+   "familia": "plugins",
+   "kb": 4.1,
+   "clase": "apagada",
+   "exporta": [
+    "BSPRenderPlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "generateBSPTopology"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/CSS3DHologramPlugin.js",
+   "nombre": "CSS3DHologramPlugin",
+   "familia": "plugins",
+   "kb": 25.7,
+   "clase": "apagada",
+   "exporta": [
+    "CSS3DHologramPlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "onResize",
+    "setStatusCallback",
+    "setStandUpCallback",
+    "setSeated",
+    "setTiedLight",
+    "bindEvents",
+    "setHologramMode",
+    "loadMachine",
+    "disconnect",
+    "onUpdate"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/CabinetBSPPlugin.js",
+   "nombre": "CabinetBSPPlugin",
+   "familia": "plugins",
+   "kb": 6,
+   "clase": "apagada",
+   "exporta": [
+    "CabinetBSPPlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "mulberry32",
+    "fractalPartition",
+    "bspDistance",
+    "bspSharedPrefix",
+    "getBspNeighbors",
+    "selectRandom",
+    "selectAreaGreedy",
+    "selectBayesian",
+    "countAdjacentDangers",
+    "countAdjacentItems",
+    "syncState"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/CascadedShadowPlugin.js",
+   "nombre": "CascadedShadowPlugin",
+   "familia": "plugins",
+   "kb": 4.7,
+   "clase": "apagada",
+   "exporta": [
+    "CascadedShadowPlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "onInit",
+    "setupMaterial",
+    "register",
+    "setSunDirection",
+    "onUpdate",
+    "dispose",
+    "lightDirection"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/CinematicCameraPlugin.js",
+   "nombre": "CinematicCameraPlugin",
+   "familia": "plugins",
+   "kb": 3.9,
+   "clase": "apagada",
+   "exporta": [
+    "CinematicCameraPlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "setTarget",
+    "configure",
+    "onUpdate"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/CinematicPipelinePlugin.js",
+   "nombre": "CinematicPipelinePlugin",
+   "familia": "plugins",
+   "kb": 8.1,
+   "clase": "apagada",
+   "exporta": [
+    "CinematicPipelinePlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "onInit",
+    "setPreset",
+    "onUpdate",
+    "dispose"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/ConstructMaterializerPlugin.js",
+   "nombre": "ConstructMaterializerPlugin",
+   "familia": "plugins",
+   "kb": 3,
+   "clase": "apagada",
+   "exporta": [
+    "ConstructMaterializerPlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "registerEntity",
+    "onUpdate"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/EnvironmentPBRPlugin.js",
+   "nombre": "EnvironmentPBRPlugin",
+   "familia": "plugins",
+   "kb": 1.6,
+   "clase": "apagada",
+   "exporta": [
+    "EnvironmentPBRPlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "onInit",
+    "onUpdate"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/GLTFModelPool.js",
+   "nombre": "GLTFModelPool",
+   "familia": "plugins",
+   "kb": 7.1,
+   "clase": "apagada",
+   "exporta": [
+    "GLTFModelPool"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "get",
+    "load",
+    "has",
+    "getOriginal",
+    "preloadBatch",
+    "dispose"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/GLTFPlugin.js",
+   "nombre": "GLTFPlugin",
+   "familia": "plugins",
+   "kb": 2,
+   "clase": "apagada",
+   "exporta": [
+    "GLTFPlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "onInit",
+    "load"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/InputControllerPlugin.js",
+   "nombre": "InputControllerPlugin",
+   "familia": "plugins",
+   "kb": 5.7,
+   "clase": "apagada",
+   "exporta": [
+    "InputControllerPlugin"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "attach",
+    "detach",
+    "_onKeyDown",
+    "_onKeyUp",
+    "bindKey",
+    "bindAxis",
+    "tick",
+    "isDown",
+    "justPressed",
+    "getAxis",
+    "timeHeld"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/MatrioshkaPlugin.js",
+   "nombre": "MatrioshkaPlugin",
+   "familia": "plugins",
+   "kb": 4.9,
+   "clase": "apagada",
+   "exporta": [
+    "MatrioshkaPlugin"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "boot",
+    "createMechPlayer",
+    "playMatrioshka",
+    "handleKeyDown",
+    "handleKeyUp",
+    "tick"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/MorphologyImporterPlugin.js",
+   "nombre": "MorphologyImporterPlugin",
+   "familia": "plugins",
+   "kb": 5,
+   "clase": "apagada",
+   "exporta": [
+    "MorphologyImporterPlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "onInit",
+    "loadNormalizedAsset"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/RadarPlugin.js",
+   "nombre": "RadarPlugin",
+   "familia": "plugins",
+   "kb": 6.9,
+   "clase": "apagada",
+   "exporta": [
+    "RadarPlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "situar",
+    "_punto",
+    "pintar",
+    "destruir"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/ResonanceFieldPlugin.js",
+   "nombre": "ResonanceFieldPlugin",
+   "familia": "plugins",
+   "kb": 6.5,
+   "clase": "apagada",
+   "exporta": [
+    "ResonanceFieldPlugin"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "setSize",
+    "initialize",
+    "alignFrequencies",
+    "synchronizeOscillators",
+    "analyzeConvergence",
+    "animateWaveFunction",
+    "warpPhaseSpace",
+    "accumulateEnergy",
+    "tick",
+    "vx",
+    "vy"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/ScummInteractionPlugin.js",
+   "nombre": "ScummInteractionPlugin",
+   "familia": "plugins",
+   "kb": 9.3,
+   "clase": "apagada",
+   "exporta": [
+    "ScummInteractionPlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "mulberry32",
+    "fractalPartition",
+    "bspDistance",
+    "initEpisode",
+    "getBspNeighbors",
+    "countAdjacentItems",
+    "pickUpItem",
+    "selectDrawer"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/SkyRenderPlugin.js",
+   "nombre": "SkyRenderPlugin",
+   "familia": "plugins",
+   "kb": 1.7,
+   "clase": "apagada",
+   "exporta": [
+    "SkyRenderPlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "onInit",
+    "onUpdate"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/SparkSystem.js",
+   "nombre": "SparkSystem",
+   "familia": "plugins",
+   "kb": 5,
+   "clase": "apagada",
+   "exporta": [
+    "SparkSystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "emit",
+    "playWeldSound",
+    "update"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/SpatialAudioPlugin.js",
+   "nombre": "SpatialAudioPlugin",
+   "familia": "plugins",
+   "kb": 5.4,
+   "clase": "apagada",
+   "exporta": [
+    "SpatialAudioPlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "onInit",
+    "onUpdate",
+    "registrarSonido",
+    "zumbido",
+    "loadSound",
+    "playPositionalSound",
+    "_synthesizeTypingClack"
+   ]
+  },
+  {
+   "ruta": "soma/plugins/VolumetricsPlugin.js",
+   "nombre": "VolumetricsPlugin",
+   "familia": "plugins",
+   "kb": 8.7,
+   "clase": "apagada",
+   "exporta": [
+    "VolumetricsPlugin"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "registerDust",
+    "onUpdate",
+    "createBaseTexture",
+    "createFlashlightBeam",
+    "createFlashlightDust",
+    "createApplianceBeam",
+    "generateAmbientDustParticles"
+   ]
+  },
+  {
+   "ruta": "soma/tools/CrossSectionDrawTool.js",
+   "nombre": "CrossSectionDrawTool",
+   "familia": "tools",
+   "kb": 13.1,
+   "clase": "apagada",
+   "exporta": [
+    "CrossSectionDrawTool"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "toggleDrawMode",
+    "setModelFilename",
+    "undoVertex",
+    "clearSelection",
+    "saveSection",
+    "getVertexCount",
+    "getSectionCount",
+    "_addVertexToSelection",
+    "_updateDrawPolygon",
+    "_handlePointerDown",
+    "_handlePointerMove",
+    "_handlePointerUp"
+   ]
+  },
+  {
+   "ruta": "soma/utils/AnimationUtils.js",
+   "nombre": "AnimationUtils",
+   "familia": "utils",
+   "kb": 2.1,
+   "clase": "apagada",
+   "exporta": [
+    "AnimationUtils"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "animateFall",
+    "animateDescend",
+    "animateSpin",
+    "waitClose"
+   ]
+  },
+  {
+   "ruta": "soma/utils/MMOClient.js",
+   "nombre": "MMOClient",
+   "familia": "utils",
+   "kb": 2.3,
+   "clase": "apagada",
+   "exporta": [
+    "MMOClient"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "setBaseUrl",
+    "submitTelemetry"
+   ]
+  },
+  {
+   "ruta": "world/AABBSystem.js",
+   "nombre": "AABBSystem",
+   "familia": "world",
+   "kb": 1.4,
+   "clase": "apagada",
+   "exporta": [
+    "AABBSystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "pointInBox",
+    "intersects",
+    "resolveWallDeflection"
+   ]
+  },
+  {
+   "ruta": "world/BSPSystem.js",
+   "nombre": "BSPSystem",
+   "familia": "world",
+   "kb": 9.1,
+   "clase": "apagada",
+   "exporta": [
+    "BSPSystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "generate",
+    "_splitLeaf",
+    "_createRooms",
+    "_getRoom",
+    "_createHalls"
+   ]
+  },
+  {
+   "ruta": "world/BspPropSystem.js",
+   "nombre": "BspPropSystem",
+   "familia": "world",
+   "kb": 4.2,
+   "clase": "apagada",
+   "exporta": [
+    "BspPropSystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "generateBspShelf",
+    "generateGridStorage"
+   ]
+  },
+  {
+   "ruta": "world/CabinetBSPEngine.js",
+   "nombre": "CabinetBSPEngine",
+   "familia": "world",
+   "kb": 4.9,
+   "clase": "apagada",
+   "exporta": [
+    "CabinetBSPEngine"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "fractalPartition",
+    "bspDistance",
+    "syncState",
+    "countAdjacentItems",
+    "getBspNeighbors",
+    "selectRandom",
+    "selectAreaGreedy"
+   ]
+  },
+  {
+   "ruta": "world/CroupierSystem.js",
+   "nombre": "CroupierSystem",
+   "familia": "world",
+   "kb": 5,
+   "clase": "apagada",
+   "exporta": [
+    "CroupierSystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "calculatePlayerHands",
+    "calculateCommunity"
+   ]
+  },
+  {
+   "ruta": "world/OverworldECS.js",
+   "nombre": "OverworldECS",
+   "familia": "world",
+   "kb": 3.3,
+   "clase": "apagada",
+   "exporta": [
+    "ECSWorld",
+    "TransformComponent",
+    "VelocityComponent",
+    "RenderProxyComponent",
+    "P2PAssetStreamingComponent"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "createEntity",
+    "destroyEntity",
+    "addComponent",
+    "removeComponent",
+    "getComponent",
+    "query",
+    "addSystem",
+    "tick",
+    "_invalidateCache"
+   ]
+  },
+  {
+   "ruta": "world/core/BaseEnvironmentFactory.js",
+   "nombre": "BaseEnvironmentFactory",
+   "familia": "core",
+   "kb": 7.7,
+   "clase": "escena",
+   "exporta": [
+    "BaseEnvironmentFactory"
+   ],
+   "arranque": [
+    "buildAll"
+   ],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "createFloor",
+    "createDustField",
+    "applyLightingPreset",
+    "buildAll",
+    "update"
+   ],
+   "objetos": 0,
+   "mallas": 0,
+   "luces": 0
+  },
+  {
+   "ruta": "world/core/BaseSimulationSystem.js",
+   "nombre": "BaseSimulationSystem",
+   "familia": "core",
+   "kb": 4.2,
+   "clase": "apagada",
+   "exporta": [
+    "BaseSimulationSystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "log",
+    "playAnim",
+    "initMixer",
+    "tick"
+   ]
+  },
+  {
+   "ruta": "world/core/DeterministicScope.js",
+   "nombre": "DeterministicScope",
+   "familia": "core",
+   "kb": 7.8,
+   "clase": "apagada",
+   "exporta": [
+    "normalizeSeed",
+    "mulberry32",
+    "DeterministicScope"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "run",
+    "_enter",
+    "_exit",
+    "verify"
+   ]
+  },
+  {
+   "ruta": "world/core/FlickerSystem.js",
+   "nombre": "FlickerSystem",
+   "familia": "core",
+   "kb": 4.7,
+   "clase": "apagada",
+   "exporta": [
+    "FlickerSystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "register",
+    "registerHologram",
+    "unregister",
+    "tick",
+    "dispose"
+   ]
+  },
+  {
+   "ruta": "world/core/GeometryBaker.js",
+   "nombre": "GeometryBaker",
+   "familia": "core",
+   "kb": 1.4,
+   "clase": "apagada",
+   "exporta": [
+    "GeometryBaker"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "extractBakedGeometry",
+    "extractMaterial"
+   ]
+  },
+  {
+   "ruta": "world/core/InstancedRenderPool.js",
+   "nombre": "InstancedRenderPool",
+   "familia": "core",
+   "kb": 4.5,
+   "clase": "apagada",
+   "exporta": [
+    "InstancedRenderPool"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "registerType",
+    "syncType",
+    "computeSmoothHeading",
+    "purgeMemory"
+   ]
+  },
+  {
+   "ruta": "world/core/ParticleEmitter.js",
+   "nombre": "ParticleEmitter",
+   "familia": "core",
+   "kb": 7.4,
+   "clase": "apagada",
+   "exporta": [
+    "ParticleEmitter"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "emit",
+    "fillAmbient",
+    "tick",
+    "_tickBurst",
+    "_tickAmbient",
+    "dispose"
+   ]
+  },
+  {
+   "ruta": "world/core/ProceduralLocomotion.js",
+   "nombre": "ProceduralLocomotion",
+   "familia": "core",
+   "kb": 2.4,
+   "clase": "apagada",
+   "exporta": [
+    "ProceduralLocomotion"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "apply"
+   ]
+  },
+  {
+   "ruta": "world/core/ProceduralTextureFactory.js",
+   "nombre": "ProceduralTextureFactory",
+   "familia": "core",
+   "kb": 13,
+   "clase": "apagada",
+   "exporta": [
+    "ProceduralTextureFactory"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "getOrCreate",
+    "checkerboard",
+    "labelPlate",
+    "windowGrid",
+    "gradientBeam",
+    "lightPool",
+    "industrialTiles",
+    "carverFacadeAtlas",
+    "asphalt",
+    "grass",
+    "oilSpill",
+    "vapor"
+   ]
+  },
+  {
+   "ruta": "world/core/SeededRNG.js",
+   "nombre": "SeededRNG",
+   "familia": "core",
+   "kb": 2.6,
+   "clase": "apagada",
+   "exporta": [
+    "SeededRNG"
+   ],
+   "arranque": [],
+   "gym": [
+    "reset"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "reset",
+    "reseed",
+    "next",
+    "range",
+    "int",
+    "pick",
+    "shuffle",
+    "chance",
+    "spatialSeed"
+   ]
+  },
+  {
+   "ruta": "world/factories/AquariumEnvironmentFactory.js",
+   "nombre": "AquariumEnvironmentFactory",
+   "familia": "factories",
+   "kb": 26.1,
+   "clase": "escena",
+   "exporta": [
+    "AquariumEnvironmentFactory"
+   ],
+   "arranque": [
+    "buildAll"
+   ],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "buildAll",
+    "_buildTank",
+    "_buildLighting",
+    "_buildGround",
+    "_buildSkyscraper",
+    "_buildChopper",
+    "placeRaccoon",
+    "_buildDust",
+    "_buildPheromoneGrid",
+    "_buildCorals",
+    "syncToEngine",
+    "_syncEcosystemGroup"
+   ],
+   "objetos": null,
+   "fallo_al_ejecutar": "Cannot set properties of null (setting 'fillStyle')"
+  },
+  {
+   "ruta": "world/factories/ArcadeDojoFactory.js",
+   "nombre": "ArcadeDojoFactory",
+   "familia": "factories",
+   "kb": 6.4,
+   "clase": "escena",
+   "exporta": [
+    "ArcadeDojoFactory"
+   ],
+   "arranque": [
+    "buildAll"
+   ],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "buildAll",
+    "update",
+    "setLighting",
+    "toggleXRay",
+    "loadCabinet"
+   ],
+   "objetos": 3,
+   "mallas": 0,
+   "luces": 2
+  },
+  {
+   "ruta": "world/factories/ArcadeRoomManager.js",
+   "nombre": "ArcadeRoomManager",
+   "familia": "factories",
+   "kb": 19.3,
+   "clase": "escena",
+   "exporta": [
+    "ArcadeRoomManager"
+   ],
+   "arranque": [
+    "buildAll"
+   ],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "_initMMOSync",
+    "connectSync",
+    "disconnectSync",
+    "buildAll",
+    "dispose",
+    "setLighting",
+    "loadCabinets",
+    "_loadSingleCabinet",
+    "_detectScreenMesh",
+    "_createSyntheticScreen",
+    "getCabinetFromIntersect",
+    "getAllGroups"
+   ],
+   "objetos": 2,
+   "mallas": 1,
+   "luces": 1
+  },
+  {
+   "ruta": "world/factories/ArcadeTableRoomFactory.js",
+   "nombre": "ArcadeTableRoomFactory",
+   "familia": "factories",
+   "kb": 9.3,
+   "clase": "escena",
+   "exporta": [
+    "ArcadeTableRoomFactory"
+   ],
+   "arranque": [
+    "init",
+    "buildAll"
+   ],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "init",
+    "buildAll",
+    "update",
+    "setGameSet",
+    "onClick",
+    "sitAtTable",
+    "standUp",
+    "tick",
+    "crearBaraja",
+    "crearTapete"
+   ],
+   "objetos": 2,
+   "mallas": 0,
+   "luces": 2
+  },
+  {
+   "ruta": "world/factories/ArchetypeEnvironmentFactory.js",
+   "nombre": "ArchetypeEnvironmentFactory",
+   "familia": "factories",
+   "kb": 4.9,
+   "clase": "escena",
+   "exporta": [
+    "ArchetypeEnvironmentFactory"
+   ],
+   "arranque": [
+    "buildAll",
+    "init"
+   ],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "_legacyConstructor",
+    "buildAll",
+    "setupVisuals",
+    "applyCognitiveColors",
+    "syncLights",
+    "getAvatarGroup",
+    "getStimulusPos",
+    "setStimulusPos",
+    "setCore",
+    "init",
+    "update",
+    "add"
+   ],
+   "objetos": 4,
+   "mallas": 6,
+   "luces": 2
+  },
+  {
+   "ruta": "world/factories/AsteroidsFactory.js",
+   "nombre": "AsteroidsFactory",
+   "familia": "factories",
+   "kb": 8.7,
+   "clase": "escena",
+   "exporta": [
+    "AsteroidsFactory"
+   ],
+   "arranque": [
+    "buildAll"
+   ],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "buildAll",
+    "loadAssets",
+    "buildArenaGrid",
+    "createShipVisual",
+    "createAsteroidVisual",
+    "createMonoWallVisual",
+    "createDroneVisual",
+    "createProjectileVisual",
+    "createItemVisual",
+    "spawnParticles",
+    "syncParticles",
+    "syncGrid"
+   ],
+   "objetos": 1,
+   "mallas": 0,
+   "luces": 0
+  },
+  {
+   "ruta": "world/factories/BiolabEnvironmentFactory.js",
+   "nombre": "BiolabEnvironmentFactory",
+   "familia": "factories",
+   "kb": 16,
+   "clase": "escena",
+   "exporta": [
+    "BiolabEnvironmentFactory"
+   ],
+   "arranque": [
+    "init",
+    "buildAll"
+   ],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "init",
+    "buildAll",
+    "setupLighting",
+    "toggleLights",
+    "buildProceduralVat",
+    "buildBubbles",
+    "buildLEDs",
+    "buildTubes",
+    "buildRoboticArms",
+    "tick"
+   ],
+   "objetos": 9,
+   "mallas": 232,
+   "luces": 8
+  },
+  {
+   "ruta": "world/factories/CabinetEnvironmentFactory.js",
+   "nombre": "CabinetEnvironmentFactory",
+   "familia": "factories",
+   "kb": 15.7,
+   "clase": "escena",
+   "exporta": [
+    "CabinetEnvironmentFactory"
+   ],
+   "arranque": [
+    "buildAll"
+   ],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "buildAll",
+    "gridPartition",
+    "buildRoom",
+    "build3DCabinet",
+    "openDrawer3D",
+    "populateFloorItems",
+    "show3DModel",
+    "showBattery3D",
+    "hide3DModels",
+    "createVolumetricTexture",
+    "setupFlashlights",
+    "updateActiveModels"
+   ],
+   "objetos": 5,
+   "mallas": 5,
+   "luces": 2
+  },
+  {
+   "ruta": "world/factories/CarverEnvironmentFactory.js",
+   "nombre": "CarverEnvironmentFactory",
+   "familia": "factories",
+   "kb": 58,
+   "clase": "escena",
+   "exporta": [
+    "CarverEnvironmentFactory"
+   ],
+   "arranque": [
+    "buildAll",
+    "build"
+   ],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "buildAll",
+    "demoGrid",
+    "build",
+    "getProceduralSkin",
+    "update",
+    "stairway",
+    "elevator",
+    "guardrail",
+    "manhole",
+    "crack",
+    "oilStain",
+    "trash"
+   ],
+   "objetos": 0,
+   "mallas": 0,
+   "luces": 0
+  },
+  {
+   "ruta": "world/factories/ChopperFlightFactory.js",
+   "nombre": "ChopperFlightFactory",
+   "familia": "factories",
+   "kb": 7.2,
+   "clase": "escena",
+   "exporta": [
+    "ChopperFlightFactory"
+   ],
+   "arranque": [
+    "buildAll"
+   ],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "buildAll",
+    "update",
+    "buildCity",
+    "buildHelipad",
+    "buildChopper",
+    "fireProjectile",
+    "updatePhysics"
+   ],
+   "objetos": 153,
+   "mallas": 155,
+   "luces": 0
+  },
+  {
+   "ruta": "world/factories/ColonialControlRoomFactory.js",
+   "nombre": "ColonialControlRoomFactory",
+   "familia": "factories",
+   "kb": 5.5,
+   "clase": "escena",
+   "exporta": [
+    "ColonialControlRoomFactory"
+   ],
+   "arranque": [
+    "buildAll"
+   ],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "buildAll",
+    "buildRoom",
+    "addNeonPillar",
+    "getSocketTransform"
+   ],
+   "objetos": 1,
+   "mallas": 14,
+   "luces": 6
+  },
+  {
+   "ruta": "world/factories/CompizEnvironmentFactory.js",
+   "nombre": "CompizEnvironmentFactory",
+   "familia": "factories",
+   "kb": 7.7,
+   "clase": "escena",
+   "exporta": [
+    "CompizEnvironmentFactory"
+   ],
+   "arranque": [
+    "buildAll",
+    "init"
+   ],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "_legacyConstructor",
+    "buildAll",
+    "setupLighting",
+    "buildRoom",
+    "applyOpticalIllusion",
+    "setCore",
+    "init",
+    "add",
+    "remove"
+   ],
+   "objetos": 0,
+   "mallas": 0,
+   "luces": 0
+  },
+  {
+   "ruta": "world/factories/CuccoEnvironmentFactory.js",
+   "nombre": "CuccoEnvironmentFactory",
+   "familia": "factories",
+   "kb": 29.3,
+   "clase": "escena",
+   "exporta": [
+    "CuccoEnvironmentFactory"
+   ],
+   "arranque": [
+    "buildAll",
+    "init"
+   ],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "_loadModels",
+    "buildAll",
+    "setCore",
+    "init",
+    "update",
+    "syncState",
+    "_setupProceduralWeapons",
+    "_setupArena",
+    "_setupPlayer",
+    "_enemyGeo",
+    "_getEntityVisualParams",
+    "_syncCrates"
+   ],
+   "objetos": 0,
+   "mallas": 0,
+   "luces": 0
+  },
+  {
+   "ruta": "world/factories/DojoEnvironmentFactory.js",
+   "nombre": "DojoEnvironmentFactory",
+   "familia": "factories",
+   "kb": 7.1,
+   "clase": "escena",
+   "exporta": [
+    "DojoEnvironmentFactory"
+   ],
+   "arranque": [
+    "buildAll"
+   ],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "buildAll",
+    "setupArena",
+    "buildDanceFloor",
+    "spawnKatamariFood",
+    "spawnKatamariCity",
+    "createLantern",
+    "applySimonUI",
+    "syncKatamariConsumption"
+   ],
+   "objetos": 54,
+   "mallas": 133,
+   "luces": 4
+  },
+  {
+   "ruta": "world/factories/EnvironmentFactory.js",
+   "nombre": "EnvironmentFactory",
+   "familia": "factories",
+   "kb": 19.7,
+   "clase": "apagada",
+   "exporta": [
+    "EnvironmentFactory"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "loadTexture",
+    "createProceduralPlanet",
+    "createStarBlock",
+    "createTree",
+    "createForest",
+    "createBSPRoom",
+    "createBSPCabinet",
+    "createProp",
+    "createBoidProxy",
+    "createPhantomProxy",
+    "createKatamariProxy",
+    "createCorporateSkyscraper"
+   ]
+  },
+  {
+   "ruta": "world/factories/InteractionLabFactory.js",
+   "nombre": "InteractionLabFactory",
+   "familia": "factories",
+   "kb": 20.3,
+   "clase": "escena",
+   "exporta": [
+    "InteractionLabFactory"
+   ],
+   "arranque": [
+    "buildAll"
+   ],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "buildAll",
+    "_buildLighting",
+    "_buildArenaFloor",
+    "_buildCrates",
+    "_generateCratePositions",
+    "_buildCheese",
+    "_generateCheesePositions",
+    "_loadEntityTemplates",
+    "spawnEntity",
+    "despawnEntity",
+    "_attachPendingSpawns",
+    "syncAgents"
+   ],
+   "objetos": 58,
+   "mallas": 54,
+   "luces": 8
+  },
+  {
+   "ruta": "world/factories/KatamariFactory.js",
+   "nombre": "KatamariFactory",
+   "familia": "factories",
+   "kb": 4.9,
+   "clase": "escena",
+   "exporta": [
+    "KatamariFactory"
+   ],
+   "arranque": [
+    "buildAll"
+   ],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "buildAll",
+    "syncToEngine"
+   ],
+   "objetos": 1,
+   "mallas": 1,
+   "luces": 0
+  },
+  {
+   "ruta": "world/factories/LocomotionEnvironmentFactory.js",
+   "nombre": "LocomotionEnvironmentFactory",
+   "familia": "factories",
+   "kb": 14.7,
+   "clase": "escena",
+   "exporta": [
+    "LocomotionEnvironmentFactory"
+   ],
+   "arranque": [
+    "buildAll",
+    "init"
+   ],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "_legacyConstructor",
+    "buildAll",
+    "applyAction",
+    "getState",
+    "_bindKeys",
+    "setupPlayer",
+    "setupArena",
+    "buildDanceFloor",
+    "buildJumpingPuzzle",
+    "createLantern",
+    "applySimonUI",
+    "setCore"
+   ],
+   "objetos": 39,
+   "mallas": 105,
+   "luces": 20
+  },
+  {
+   "ruta": "world/factories/NeonSignFactory.js",
+   "nombre": "NeonSignFactory",
+   "familia": "factories",
+   "kb": 3.5,
+   "clase": "apagada",
+   "exporta": [
+    "NeonSignFactory"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "createNeonLineMat",
+    "createNeonSign",
+    "createHologramSign"
+   ]
+  },
+  {
+   "ruta": "world/factories/ProceduralBuildingFactory.js",
+   "nombre": "ProceduralBuildingFactory",
+   "familia": "factories",
+   "kb": 46.5,
+   "clase": "escena",
+   "exporta": [
+    "ProceduralBuildingFactory"
+   ],
+   "arranque": [
+    "buildAll",
+    "build"
+   ],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "buildAll",
+    "update",
+    "build",
+    "spawnBatteries",
+    "exteriorDistance"
+   ],
+   "objetos": 0,
+   "mallas": 0,
+   "luces": 0
+  },
+  {
+   "ruta": "world/factories/ProceduralPropsFactory.js",
+   "nombre": "ProceduralPropsFactory",
+   "familia": "factories",
+   "kb": 8.3,
+   "clase": "apagada",
+   "exporta": [
+    "ProceduralPropsFactory"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "createBspShelf",
+    "createGridStorage",
+    "createDesk",
+    "createTVStand",
+    "createChair",
+    "createStreetlight",
+    "createDumpster",
+    "createVapor"
+   ]
+  },
+  {
+   "ruta": "world/factories/RaccoonEnvironmentFactory.js",
+   "nombre": "RaccoonEnvironmentFactory",
+   "familia": "factories",
+   "kb": 18.4,
+   "clase": "escena",
+   "exporta": [
+    "RaccoonEnvironmentFactory"
+   ],
+   "arranque": [
+    "buildAll"
+   ],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "buildAll",
+    "seedRandom",
+    "generateSpace",
+    "createShip",
+    "createDecoration",
+    "generatePlanet",
+    "createSatellite",
+    "generateCity",
+    "createDrone"
+   ],
+   "objetos": 0,
+   "mallas": 0,
+   "luces": 0
+  },
+  {
+   "ruta": "world/factories/TrafficEnvironmentFactory.js",
+   "nombre": "TrafficEnvironmentFactory",
+   "familia": "factories",
+   "kb": 13.8,
+   "clase": "escena",
+   "exporta": [
+    "TrafficEnvironmentFactory"
+   ],
+   "arranque": [
+    "buildAll",
+    "init"
+   ],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "buildAll",
+    "applyAction",
+    "getState",
+    "_bindKeys",
+    "init",
+    "setCore",
+    "preloadAssets",
+    "buildHighway",
+    "createVisualCar",
+    "createVisualFrog",
+    "createVisualFerret",
+    "createOilSpill"
+   ],
+   "objetos": 0,
+   "mallas": 0,
+   "luces": 0
+  },
+  {
+   "ruta": "world/factories/TreadmillEnvironmentFactory.js",
+   "nombre": "TreadmillEnvironmentFactory",
+   "familia": "factories",
+   "kb": 7.4,
+   "clase": "escena",
+   "exporta": [
+    "TreadmillEnvironmentFactory"
+   ],
+   "arranque": [
+    "buildAll",
+    "init"
+   ],
+   "gym": [
+    "tickAquarium"
+   ],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "_legacyConstructor",
+    "buildAll",
+    "setupArena",
+    "hashCoord",
+    "buildChunk",
+    "tickAquarium",
+    "setCore",
+    "init",
+    "update",
+    "add",
+    "remove"
+   ],
+   "objetos": 9,
+   "mallas": 0,
+   "luces": 6
+  },
+  {
+   "ruta": "world/factories/VoxelGlitchFactory.js",
+   "nombre": "VoxelGlitchFactory",
+   "familia": "factories",
+   "kb": 15.7,
+   "clase": "escena",
+   "exporta": [
+    "VoxelGlitchFactory"
+   ],
+   "arranque": [
+    "buildAll",
+    "init"
+   ],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "_legacyConstructor",
+    "buildAll",
+    "setTier",
+    "setTargetModel",
+    "rebuildGhostBox",
+    "resetToGhost",
+    "isBoxOverlappingShape",
+    "subdivideVoxels",
+    "generateStaticMeshCloud",
+    "clearVoxels",
+    "triggerSober",
+    "triggerGlitch"
+   ],
+   "objetos": 0,
+   "mallas": 0,
+   "luces": 0
+  },
+  {
+   "ruta": "world/systems/AsteroidsEngine.js",
+   "nombre": "AsteroidsEngine",
+   "familia": "systems",
+   "kb": 9.2,
+   "clase": "escena",
+   "exporta": [
+    "AsteroidsEngine"
+   ],
+   "arranque": [
+    "start"
+   ],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "loadAssets",
+    "start",
+    "tick",
+    "setTelemetryEnabled",
+    "submitTelemetry"
+   ],
+   "objetos": null,
+   "fallo_al_ejecutar": "Cannot read properties of undefined (reading 'add')"
+  },
+  {
+   "ruta": "world/systems/AsteroidsSystem.js",
+   "nombre": "AsteroidsSystem",
+   "familia": "systems",
+   "kb": 21.5,
+   "clase": "escena",
+   "exporta": [
+    "SHIP_GAUGES",
+    "WAVES",
+    "AsteroidsSystem"
+   ],
+   "arranque": [
+    "start"
+   ],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "start",
+    "spawnStar",
+    "updateStars",
+    "spawnParticles",
+    "advanceGauge",
+    "activateGauge",
+    "updateWaveLogic",
+    "spawnShip",
+    "shipAI",
+    "spawnAsteroid",
+    "breakAsteroid",
+    "spawnItem"
+   ],
+   "objetos": 0,
+   "mallas": 0,
+   "luces": 0
+  },
+  {
+   "ruta": "world/systems/BoidsSystem.js",
+   "nombre": "BoidsSystem",
+   "familia": "systems",
+   "kb": 7,
+   "clase": "apagada",
+   "exporta": [
+    "BoidsSystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "initAgents",
+    "update",
+    "tick",
+    "x",
+    "y",
+    "z"
+   ]
+  },
+  {
+   "ruta": "world/systems/BulletHeavenEngine.js",
+   "nombre": "BulletHeavenEngine",
+   "familia": "systems",
+   "kb": 21.3,
+   "clase": "gym",
+   "exporta": [
+    "BulletHeavenEngine"
+   ],
+   "arranque": [],
+   "gym": [
+    "reset",
+    "act",
+    "getObservation"
+   ],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "reset",
+    "setInput",
+    "setSpecial",
+    "act",
+    "update",
+    "_updatePlayer",
+    "_regenHP",
+    "_updateSpecials",
+    "_updateShield",
+    "_knockback",
+    "_spawnWave",
+    "_spawnEnemy"
+   ]
+  },
+  {
+   "ruta": "world/systems/CabinetEscapeSystem.js",
+   "nombre": "CabinetEscapeSystem",
+   "familia": "systems",
+   "kb": 10.4,
+   "clase": "apagada",
+   "exporta": [
+    "CabinetEscapeSystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "resetState",
+    "getOptimal",
+    "initEpisode",
+    "selectDrawer",
+    "doMontyReveal",
+    "pickUpBattery",
+    "getObservationVector"
+   ]
+  },
+  {
+   "ruta": "world/systems/CabinetJumpscareSystem.js",
+   "nombre": "CabinetJumpscareSystem",
+   "familia": "systems",
+   "kb": 4.5,
+   "clase": "apagada",
+   "exporta": [
+    "CabinetJumpscareSystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "resetState",
+    "triggerJumpscare",
+    "playAnim",
+    "update"
+   ]
+  },
+  {
+   "ruta": "world/systems/CarverEntitySystem.js",
+   "nombre": "CarverEntitySystem",
+   "familia": "systems",
+   "kb": 2.7,
+   "clase": "apagada",
+   "exporta": [
+    "CarverEntitySystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "populate",
+    "pickTarget",
+    "tick"
+   ]
+  },
+  {
+   "ruta": "world/systems/CarverSystem.js",
+   "nombre": "CarverSystem",
+   "familia": "systems",
+   "kb": 12.1,
+   "clase": "apagada",
+   "exporta": [
+    "ZoneType",
+    "CarverSystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "random",
+    "generate",
+    "generateVoronoiZones",
+    "generateTopography",
+    "carveAvenues",
+    "carveSlums",
+    "carveBraidMaze",
+    "resolveSlums",
+    "carveStreets",
+    "carvePlazas",
+    "assignBuildings",
+    "canFit"
+   ]
+  },
+  {
+   "ruta": "world/systems/ChopperAquariumEngine.js",
+   "nombre": "ChopperAquariumEngine",
+   "familia": "systems",
+   "kb": 17.3,
+   "clase": "apagada",
+   "exporta": [
+    "ChopperAquariumEngine"
+   ],
+   "arranque": [],
+   "gym": [
+    "reset"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "on",
+    "emit",
+    "reset",
+    "vecLength",
+    "vecNormalize",
+    "vecDot",
+    "checkFloor",
+    "winSequence",
+    "crashSequence",
+    "stepSimulation",
+    "getObservationVector",
+    "executeLogicTick"
+   ]
+  },
+  {
+   "ruta": "world/systems/CorporateSeekerSystem.js",
+   "nombre": "CorporateSeekerSystem",
+   "familia": "systems",
+   "kb": 13.5,
+   "clase": "apagada",
+   "exporta": [
+    "CorporateSeekerSystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "reset"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "emit",
+    "consumeIntents",
+    "reset",
+    "normalizeBeliefs",
+    "updateBeliefs",
+    "pickBestFloor",
+    "isFloorFullyChecked",
+    "walkTo",
+    "autoAgentStep"
+   ]
+  },
+  {
+   "ruta": "world/systems/CuccoGameSystem.js",
+   "nombre": "CuccoGameSystem",
+   "familia": "systems",
+   "kb": 10.8,
+   "clase": "apagada",
+   "exporta": [
+    "CuccoGameSystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "reset"
+   ],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "getState",
+    "reset",
+    "_updateShield",
+    "update",
+    "_updateBossLogic",
+    "_updatePuddles",
+    "_killEnemy",
+    "_damageEnemy",
+    "_fireWeapon",
+    "_updateSpecials"
+   ]
+  },
+  {
+   "ruta": "world/systems/EcosystemSystem.js",
+   "nombre": "EcosystemSystem",
+   "familia": "systems",
+   "kb": 22.6,
+   "clase": "gym",
+   "exporta": [
+    "EcosystemSystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "tickPlankton",
+    "tickFishes",
+    "tickHunters",
+    "tickSharks"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "clampToTank",
+    "wallDeflect3D",
+    "avoidObstacles3D",
+    "getDistanceSq",
+    "getDistance",
+    "tickPlankton",
+    "tickFishes",
+    "tickHunters",
+    "tickSharks"
+   ]
+  },
+  {
+   "ruta": "world/systems/ElevatorSystem.js",
+   "nombre": "ElevatorSystem",
+   "familia": "systems",
+   "kb": 1.3,
+   "clase": "apagada",
+   "exporta": [
+    "ElevatorComponent",
+    "ElevatorSystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "update"
+   ]
+  },
+  {
+   "ruta": "world/systems/EnergySystem.js",
+   "nombre": "EnergySystem",
+   "familia": "systems",
+   "kb": 1,
+   "clase": "apagada",
+   "exporta": [
+    "EnergyComponent",
+    "EnergySystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "update"
+   ]
+  },
+  {
+   "ruta": "world/systems/FileSystemDioramaSystem.js",
+   "nombre": "FileSystemDioramaSystem",
+   "familia": "systems",
+   "kb": 54,
+   "clase": "escena",
+   "exporta": [
+    "FileSystemDioramaSystem"
+   ],
+   "arranque": [
+    "init"
+   ],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "_generateWindowTexture",
+    "init",
+    "clearWorld",
+    "buildMasterBlock",
+    "_generateFacadeTexture",
+    "_buildGroundPlane",
+    "_buildDataHighways",
+    "speed",
+    "_buildNebula",
+    "_createEntityMesh",
+    "updateState",
+    "setupInteractions"
+   ],
+   "objetos": 0,
+   "mallas": 0,
+   "luces": 0
+  },
+  {
+   "ruta": "world/systems/FoodChainSystem.js",
+   "nombre": "FoodChainSystem",
+   "familia": "systems",
+   "kb": 30.5,
+   "clase": "gym",
+   "exporta": [
+    "FoodChainSystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "createPreyState",
+    "createPredatorState",
+    "tickPrey",
+    "tickPredator",
+    "getPreyObservation",
+    "getPredatorObservation"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "createPreyState",
+    "createPredatorState",
+    "tickPrey",
+    "tickPredator",
+    "getPreyObservation",
+    "getPredatorObservation",
+    "_dist",
+    "_clamp",
+    "_wallDeflect",
+    "_forward",
+    "_turnToward",
+    "_moveAgent"
+   ]
+  },
+  {
+   "ruta": "world/systems/HidingSpotSystem.js",
+   "nombre": "HidingSpotSystem",
+   "familia": "systems",
+   "kb": 0.6,
+   "clase": "apagada",
+   "exporta": [
+    "HidingSpotComponent",
+    "HidingSpotSystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "update"
+   ]
+  },
+  {
+   "ruta": "world/systems/IDMSystem.js",
+   "nombre": "IDMSystem",
+   "familia": "systems",
+   "kb": 9.4,
+   "clase": "gym",
+   "exporta": [
+    "IDMSystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick",
+    "tickMultiLane",
+    "getObservation"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "tick",
+    "tickMultiLane",
+    "_findLane",
+    "getObservation"
+   ]
+  },
+  {
+   "ruta": "world/systems/InteractionLabEngine.js",
+   "nombre": "InteractionLabEngine",
+   "familia": "systems",
+   "kb": 6.7,
+   "clase": "apagada",
+   "exporta": [
+    "InteractionLabEngine"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "boot",
+    "tick",
+    "getObservationVector"
+   ]
+  },
+  {
+   "ruta": "world/systems/KataSequenceSystem.js",
+   "nombre": "KataSequenceSystem",
+   "familia": "systems",
+   "kb": 3.1,
+   "clase": "apagada",
+   "exporta": [
+    "KataSequenceSystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "play",
+    "stop",
+    "tick"
+   ]
+  },
+  {
+   "ruta": "world/systems/KatamariEngine.js",
+   "nombre": "KatamariEngine",
+   "familia": "systems",
+   "kb": 1.1,
+   "clase": "apagada",
+   "exporta": [
+    "KatamariEngine"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "boot",
+    "tick"
+   ]
+  },
+  {
+   "ruta": "world/systems/KatamariScaleSystem.js",
+   "nombre": "KatamariScaleSystem",
+   "familia": "systems",
+   "kb": 15.9,
+   "clase": "apagada",
+   "exporta": [
+    "KatamariScaleSystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "initTiers",
+    "buildAllTiers",
+    "createFloorGrid",
+    "createTierGeometry",
+    "createLabelSprite",
+    "buildVoxelMannequin",
+    "injectModelIntoTier"
+   ]
+  },
+  {
+   "ruta": "world/systems/KatamariSystem.js",
+   "nombre": "KatamariSystem",
+   "familia": "systems",
+   "kb": 7.5,
+   "clase": "escena",
+   "exporta": [
+    "KatamariSystem"
+   ],
+   "arranque": [
+    "init"
+   ],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "applyAction",
+    "getState",
+    "_bindKeys",
+    "init",
+    "update",
+    "processCollisions",
+    "_volumeFromRadius",
+    "_radiusFromVolume"
+   ],
+   "objetos": 0,
+   "mallas": 0,
+   "luces": 0
+  },
+  {
+   "ruta": "world/systems/KinematicControllerSystem.js",
+   "nombre": "KinematicControllerSystem",
+   "familia": "systems",
+   "kb": 4.2,
+   "clase": "apagada",
+   "exporta": [
+    "KinematicControllerSystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "setTarget",
+    "setInput",
+    "configure",
+    "update"
+   ]
+  },
+  {
+   "ruta": "world/systems/KinematicRageSystem.js",
+   "nombre": "KinematicRageSystem",
+   "familia": "systems",
+   "kb": 4,
+   "clase": "apagada",
+   "exporta": [
+    "KinematicRageSystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "applyImpulse",
+    "tick"
+   ]
+  },
+  {
+   "ruta": "world/systems/LinearNavAgentSystem.js",
+   "nombre": "LinearNavAgentSystem",
+   "familia": "systems",
+   "kb": 2.4,
+   "clase": "apagada",
+   "exporta": [
+    "LinearNavAgentComponent",
+    "LinearNavAgentSystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "update"
+   ]
+  },
+  {
+   "ruta": "world/systems/NavMeshAgentSystem.js",
+   "nombre": "NavMeshAgentSystem",
+   "familia": "systems",
+   "kb": 8.4,
+   "clase": "apagada",
+   "exporta": [
+    "NavMeshAgentComponent",
+    "NavMeshAgentSystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "_worldToIndex",
+    "_calculatePath",
+    "_heuristic",
+    "_reconstructPath",
+    "update"
+   ]
+  },
+  {
+   "ruta": "world/systems/NavMeshExtractionEngine.js",
+   "nombre": "NavMeshExtractionEngine",
+   "familia": "systems",
+   "kb": 4.9,
+   "clase": "apagada",
+   "exporta": [
+    "NavMeshExtractionEngine"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "extract",
+    "getExportPayload"
+   ]
+  },
+  {
+   "ruta": "world/systems/NeuralDrivingSystem.js",
+   "nombre": "NeuralDrivingSystem",
+   "familia": "systems",
+   "kb": 3.7,
+   "clase": "apagada",
+   "exporta": [
+    "NeuralDrivingSystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "initAndTrainModel",
+    "tick",
+    "onEpochEnd"
+   ]
+  },
+  {
+   "ruta": "world/systems/OrbitalKinematicsSystem.js",
+   "nombre": "OrbitalKinematicsSystem",
+   "familia": "systems",
+   "kb": 10.1,
+   "clase": "gym",
+   "exporta": [
+    "OrbitalKinematicsSystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "tickAsteroids",
+    "tickEnemies",
+    "tickProjectiles"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "tickAsteroids",
+    "tickEnemies",
+    "tickProjectiles"
+   ]
+  },
+  {
+   "ruta": "world/systems/PhantomFSMSystem.js",
+   "nombre": "PhantomFSMSystem",
+   "familia": "systems",
+   "kb": 5.3,
+   "clase": "apagada",
+   "exporta": [
+    "PhantomComponent",
+    "PhantomFSMSystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "update"
+   ]
+  },
+  {
+   "ruta": "world/systems/PheromoneGrid.js",
+   "nombre": "PheromoneGrid",
+   "familia": "systems",
+   "kb": 4.9,
+   "clase": "apagada",
+   "exporta": [
+    "PheromoneGrid"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "_getIndex",
+    "addPheromone",
+    "getPheromone",
+    "getGradient",
+    "tick",
+    "getState",
+    "x",
+    "y",
+    "z"
+   ]
+  },
+  {
+   "ruta": "world/systems/ProceduralRiggingEngine.js",
+   "nombre": "ProceduralRiggingEngine",
+   "familia": "systems",
+   "kb": 4.6,
+   "clase": "apagada",
+   "exporta": [
+    "ProceduralRiggingEngine"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "extractAndMapSkeleton",
+    "_heuristicStringMatch",
+    "_validateRig",
+    "requestVisionSDKMapping"
+   ]
+  },
+  {
+   "ruta": "world/systems/RLGymBridge.js",
+   "nombre": "RLGymBridge",
+   "familia": "systems",
+   "kb": 1.7,
+   "clase": "apagada",
+   "exporta": [
+    "RLGymBridge"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": []
+  },
+  {
+   "ruta": "world/systems/RaccoonCitySystem.js",
+   "nombre": "RaccoonCitySystem",
+   "familia": "systems",
+   "kb": 2.8,
+   "clase": "escena",
+   "exporta": [
+    "RaccoonCitySystem"
+   ],
+   "arranque": [
+    "init"
+   ],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "init",
+    "setKeys",
+    "update"
+   ],
+   "objetos": 0,
+   "mallas": 0,
+   "luces": 0
+  },
+  {
+   "ruta": "world/systems/RaccoonPlanetSystem.js",
+   "nombre": "RaccoonPlanetSystem",
+   "familia": "systems",
+   "kb": 1.5,
+   "clase": "escena",
+   "exporta": [
+    "RaccoonPlanetSystem"
+   ],
+   "arranque": [
+    "init"
+   ],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "init",
+    "update"
+   ],
+   "objetos": 0,
+   "mallas": 0,
+   "luces": 0
+  },
+  {
+   "ruta": "world/systems/RaccoonSpaceCore.js",
+   "nombre": "RaccoonSpaceCore",
+   "familia": "systems",
+   "kb": 12.1,
+   "clase": "gym",
+   "exporta": [
+    "VERBOS_ESPACIO",
+    "RaccoonSpaceCore"
+   ],
+   "arranque": [],
+   "gym": [
+    "reset",
+    "step",
+    "observacion"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "reset",
+    "step",
+    "planetaCerca",
+    "terminado",
+    "info",
+    "observacion",
+    "vx"
+   ]
+  },
+  {
+   "ruta": "world/systems/RaccoonSpaceSystem.js",
+   "nombre": "RaccoonSpaceSystem",
+   "familia": "systems",
+   "kb": 4.5,
+   "clase": "escena",
+   "exporta": [
+    "RaccoonSpaceSystem"
+   ],
+   "arranque": [
+    "init"
+   ],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "init",
+    "setKeys",
+    "update"
+   ],
+   "objetos": 0,
+   "mallas": 0,
+   "luces": 0
+  },
+  {
+   "ruta": "world/systems/RoboticArmSystem.js",
+   "nombre": "RoboticArmSystem",
+   "familia": "systems",
+   "kb": 30.8,
+   "clase": "apagada",
+   "exporta": [
+    "RoboticArm",
+    "RoboticArmFactory"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "_buildGeometry",
+    "solveIK",
+    "movePTP",
+    "playServoWhine",
+    "animateToIdle",
+    "moveLIN",
+    "reachToward",
+    "resetPose",
+    "getTipWorldPosition",
+    "breathe",
+    "dispose",
+    "create"
+   ]
+  },
+  {
+   "ruta": "world/systems/ScummInteractionEngine.js",
+   "nombre": "ScummInteractionEngine",
+   "familia": "systems",
+   "kb": 3.4,
+   "clase": "apagada",
+   "exporta": [
+    "ScummInteractionEngine"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "initEpisode",
+    "selectDrawer"
+   ]
+  },
+  {
+   "ruta": "world/systems/ScummOverworldEngine.js",
+   "nombre": "ScummOverworldEngine",
+   "familia": "systems",
+   "kb": 2.1,
+   "clase": "apagada",
+   "exporta": [
+    "ScummOverworldEngine"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "setTargetPosition",
+    "setVerb",
+    "resolveInteraction",
+    "syncStateOverride",
+    "update"
+   ]
+  },
+  {
+   "ruta": "world/systems/SimonSaysSystem.js",
+   "nombre": "SimonSaysSystem",
+   "familia": "systems",
+   "kb": 8,
+   "clase": "gym",
+   "exporta": [
+    "SimonSaysSystem"
+   ],
+   "arranque": [
+    "start"
+   ],
+   "gym": [
+    "createState",
+    "tick",
+    "getObservation"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "createState",
+    "start",
+    "stop",
+    "tick",
+    "submitAction",
+    "submitTileArrival",
+    "getObservation",
+    "getAvailableActions",
+    "_setNextTarget"
+   ]
+  },
+  {
+   "ruta": "world/systems/StealthSightSystem.js",
+   "nombre": "StealthSightSystem",
+   "familia": "systems",
+   "kb": 4.1,
+   "clase": "apagada",
+   "exporta": [
+    "StealthSightSystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "resolveCollisions",
+    "rayVsAABB2D",
+    "castRay",
+    "canSeePoint2D"
+   ]
+  },
+  {
+   "ruta": "world/systems/TelemetryBridge.js",
+   "nombre": "TelemetryBridge",
+   "familia": "systems",
+   "kb": 3,
+   "clase": "apagada",
+   "exporta": [
+    "TelemetryBridge"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "connectLuaStream",
+    "connectScummStream",
+    "connectWorldBridgeWs",
+    "connectAll"
+   ]
+  },
+  {
+   "ruta": "world/systems/TimedRelaySystem.js",
+   "nombre": "TimedRelaySystem",
+   "familia": "systems",
+   "kb": 0.9,
+   "clase": "apagada",
+   "exporta": [
+    "TimedRelayComponent",
+    "TimedRelaySystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "update"
+   ]
+  },
+  {
+   "ruta": "world/systems/TrafficSurvivalSystem.js",
+   "nombre": "TrafficSurvivalSystem",
+   "familia": "systems",
+   "kb": 20,
+   "clase": "apagada",
+   "exporta": [
+    "TrafficSurvivalSystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "addCar",
+    "addFrog",
+    "addFerret",
+    "addOilSpill",
+    "tick",
+    "_tickCars",
+    "_wreckCar",
+    "_tickWrecksAndEnvironment",
+    "_tickFerrets",
+    "_tickFrogs",
+    "_findLaneByZ"
+   ]
+  },
+  {
+   "ruta": "world/systems/TrafficSystem.js",
+   "nombre": "TrafficSystem",
+   "familia": "systems",
+   "kb": 5.3,
+   "clase": "apagada",
+   "exporta": [
+    "TrafficSystem"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "spawnAgent",
+    "update",
+    "_updateWorldPosition"
+   ]
+  },
+  {
+   "ruta": "world/systems/TurretCombatSystem.js",
+   "nombre": "TurretCombatSystem",
+   "familia": "systems",
+   "kb": 6.2,
+   "clase": "gym",
+   "exporta": [
+    "TurretCombatSystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "reset",
+    "tick"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "addTurret",
+    "reset",
+    "distSq",
+    "dir",
+    "tick"
+   ]
+  },
+  {
+   "ruta": "world/systems/WorldBuilderSystem.js",
+   "nombre": "WorldBuilderSystem",
+   "familia": "systems",
+   "kb": 12.9,
+   "clase": "escena",
+   "exporta": [
+    "WorldBuilderSystem"
+   ],
+   "arranque": [
+    "build"
+   ],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "build",
+    "_buildAtmosphere",
+    "_buildTerrain",
+    "_buildStructures",
+    "_buildProps",
+    "_buildAgents"
+   ],
+   "objetos": 0,
+   "mallas": 0,
+   "luces": 0
+  },
+  {
+   "ruta": "world/systems/ml_dqn_idm.js",
+   "nombre": "ml_dqn_idm",
+   "familia": "systems",
+   "kb": 5.8,
+   "clase": "sin_exportar",
+   "exporta": [],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": []
+  },
+  {
+   "ruta": "world/utils/ModelUtils.js",
+   "nombre": "ModelUtils",
+   "familia": "utils",
+   "kb": 1.2,
+   "clase": "apagada",
+   "exporta": [
+    "ModelUtils"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "loadGLB",
+    "fitToBox"
+   ]
+  },
+  {
+   "ruta": "world/utils/ObservationRewardResolver.js",
+   "nombre": "ObservationRewardResolver",
+   "familia": "utils",
+   "kb": 7.1,
+   "clase": "apagada",
+   "exporta": [
+    "resolveObservationReward"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": []
+  }
+ ]
+}

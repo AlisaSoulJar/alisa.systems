@@ -12,8 +12,26 @@ const HALF_BOARD = BOARD_SIZE / 2;
 const engine = new SovereignBoardEngine({
     gameId: 'go',
     onInit3D: function(scene, camera, renderer) {
-        camera.position.set(0, 14, 12);
+        // Un goban de 19×19 con paso 0,8 mide 14,4 de lado — casi el doble que un
+        // tablero de ajedrez. Con la cámara a (0,14,12) se salía por abajo. Ahora
+        // cabe entero. (Se vio en cuanto dejó de estar fuera de plano: mientras el
+        // mundo estaba desplazado, el encuadre era el menor de los problemas.)
+        camera.position.set(0, 19, 16);
         camera.lookAt(0, 0, 0);
+
+        // ⚠️ EL RATÓN. Hasta hoy este tablero no se podía tocar: se dibujaba y
+        // ya está. La única forma de jugar al go aquí era escribir `a19` en una
+        // caja de texto. El enganche vive en `raton_tablero.js` porque a
+        // reversi, mancala y xiangqi les faltaba EXACTAMENTE lo mismo, y cuatro
+        // raycasters a medida serían cuatro veces el mismo error.
+        import('./raton_tablero.js').then(({ engancharRaton, nombrarLetraNumero }) => {
+            engancharRaton({
+                engine, modo: 'colocar',
+                columnas: GRID_SIZE, filas: GRID_SIZE, paso: SPACING,
+                origen: { x: -HALF_BOARD, z: -HALF_BOARD },
+                nombrar: nombrarLetraNumero({ filas: GRID_SIZE }),
+            });
+        });
 
         engine.controls = new THREE.OrbitControls(camera, renderer.domElement);
          engine.controls.enableDamping = true;
@@ -28,7 +46,32 @@ const engine = new SovereignBoardEngine({
         keyLight.position.set(-8, 15, 8);
         keyLight.castShadow = true;
         scene.add(keyLight);
-        scene.add(new THREE.SpotLight(0x4fc3f7, 0.8)).position.set(8, 12, -8);
+        /**
+         * ⚠️ ESTA LÍNEA MOVÍA EL MUNDO. TRES LÍNEAS EN VEZ DE UNA, A PROPÓSITO.
+         *
+         * Estaba escrita así, encadenada:
+         *
+         *     scene.add(new THREE.SpotLight(0x4fc3f7, 0.8)).position.set(8, 12, -8);
+         *
+         * y parece que coloca el foco. No lo hace: `Object3D.add()` devuelve
+         * **la escena**, no el objeto añadido. Así que ese `.position.set()`
+         * movía la ESCENA ENTERA a (8, 12, -8) y dejaba el foco en el origen.
+         *
+         * Consecuencia: el tablero quedaba fuera del encuadre y la página se veía
+         * NEGRA. Sin un error, sin un aviso: el bucle de dibujo corría, el lienzo
+         * era el correcto, las luces estaban, la geometría estaba bien colocada
+         * —en local— y el renderer informaba de 120 triángulos donde tocaban 576,
+         * porque el frustum descartaba casi todo. Se podía jugar al go entero por
+         * la caja de texto sin ver una piedra.
+         *
+         * Se tardó en encontrar porque todo lo sospechoso estaba bien. Sólo salió
+         * al comparar la posición LOCAL de una pieza (0, -0.75, 0) con la de
+         * MUNDO (8, 11.25, -8): un desplazamiento idéntico para todos, que no
+         * podía venir del grupo —tenía posición 0— ni de las piezas.
+         */
+        const relleno = new THREE.SpotLight(0x4fc3f7, 0.8);
+        relleno.position.set(8, 12, -8);
+        scene.add(relleno);
 
         scene.add(boardGroup);
         scene.add(piecesGroup);
@@ -45,17 +88,29 @@ const engine = new SovereignBoardEngine({
     }
 });
 
+/**
+ * ⚠️ `MeshPhysicalMaterial`, NO `MeshStandardMaterial`.
+ *
+ * `clearcoat` y `clearcoatRoughness` —el brillo de concha que promete el
+ * comentario original— **no existen en `MeshStandardMaterial`**. Three lo avisaba
+ * por consola dos veces por piedra (186 avisos en una partida de dos jugadas) y
+ * descartaba las dos propiedades: las piedras blancas llevaban desde siempre sin
+ * el acabado que el código creía estar dándoles.
+ *
+ * Un aviso repetido cientos de veces se vuelve invisible, y ahí estaba escondido.
+ */
 function createWhiteMaterial() {
-    return new THREE.MeshStandardMaterial({
+    return new THREE.MeshPhysicalMaterial({
         color: 0xfdfdfd, roughness: 0.1, metalness: 0.05,
-        clearcoat: 0.5, clearcoatRoughness: 0.2 // Clamshell sheen
+        clearcoat: 0.5, clearcoatRoughness: 0.2   // brillo de concha
     });
 }
 
 function createBlackMaterial() {
-    return new THREE.MeshStandardMaterial({
+    // Mismo caso que la blanca: `clearcoat` es de `MeshPhysicalMaterial`.
+    return new THREE.MeshPhysicalMaterial({
         color: 0x111111, roughness: 0.2, metalness: 0.1,
-        clearcoat: 0.3, clearcoatRoughness: 0.3 // Slate sheen
+        clearcoat: 0.3, clearcoatRoughness: 0.3   // brillo de pizarra
     });
 }
 
@@ -101,10 +156,25 @@ function buildBoard() {
     }
 }
 
+/**
+ * ⚠️ GEOMETRÍA Y MATERIALES UNA VEZ, NO UNO POR PIEDRA.
+ *
+ * `spawnStone` creaba una `SphereGeometry(0.38, 32, 16)` y un material NUEVOS en
+ * cada piedra — y `syncGoState` vacía y repuebla el tablero en cada refresco, o
+ * sea varias veces por segundo. En una partida avanzada eso son cientos de
+ * objetos de GPU creados y tirados por segundo.
+ *
+ * Se vio por los avisos de consola: 186 en una partida de dos jugadas, dos por
+ * cada piedra creada. El aviso era de otra cosa (ver abajo) pero el NÚMERO
+ * delataba que se estaba construyendo mucho más de lo necesario.
+ */
+let geoPiedra = null, matBlanca = null, matNegra = null;
+
 function spawnStone(isWhite, x, y) {
-    const geo = new THREE.SphereGeometry(0.38, 32, 16);
-    const mat = isWhite ? createWhiteMaterial() : createBlackMaterial();
-    const stone = new THREE.Mesh(geo, mat);
+    geoPiedra ??= new THREE.SphereGeometry(0.38, 32, 16);
+    matBlanca ??= createWhiteMaterial();
+    matNegra ??= createBlackMaterial();
+    const stone = new THREE.Mesh(geoPiedra, isWhite ? matBlanca : matNegra);
     
     // Flatten the sphere slightly to look like a Yunzi stone
     stone.scale.set(1, 0.45, 1);
@@ -148,25 +218,39 @@ function syncGoState(state) {
     
     if (!state) return;
     
-    // Parsing logic for whatever array/matrix format the Go engine uses.
-    // Assume state is an array of arrays or flat 361 array.
-    // 0 = empty, 1 = Black, 2 = White (standard ML representation)
-    if (Array.isArray(state)) {
-        if (state.length === 19) {
+    /**
+     * ⚠️ ESTA FUNCIÓN LEÍA EL TABLERO DE DOS FORMAS DISTINTAS, Y SÓLO UNA IBA.
+     *
+     * Arriba, para el minimapa, hace `const b = state.board`. Aquí abajo, para el
+     * 3D, preguntaba `Array.isArray(state)` — y `state` es `{ board: [...] }`, un
+     * envoltorio, no el array. O sea que la condición era SIEMPRE falsa y el
+     * bucle que crea las piedras no llegó a ejecutarse nunca.
+     *
+     * El síntoma engañaba: el minimapa del HUD sí pintaba las piedras, así que
+     * parecía que el juego se dibujaba bien y que el problema era «del 3D». Eran
+     * dos lecturas del mismo dato en veinte líneas, una buena y otra no.
+     *
+     * Se acepta cualquiera de las dos formas —el envoltorio y el array pelado—
+     * porque este visualizador también sirve partidas venidas de un hub, y allí
+     * el formato no lo decidimos nosotros.
+     */
+    const rejilla = Array.isArray(state) ? state : b;
+    if (Array.isArray(rejilla)) {
+        if (rejilla.length === 19) {
             // 2D Array
             for (let y = 0; y < 19; y++) {
                 for (let x = 0; x < 19; x++) {
-                    const val = state[y][x];
+                    const val = rejilla[y][x];
                     if (val === 1 || val === 'B' || val === 'b') spawnStone(false, x, y);
                     if (val === 2 || val === 'W' || val === 'w') spawnStone(true, x, y);
                 }
             }
-        } else if (state.length === 361) {
+        } else if (rejilla.length === 361) {
             // Flat Array
             for (let i = 0; i < 361; i++) {
                 const y = Math.floor(i / 19);
                 const x = i % 19;
-                const val = state[i];
+                const val = rejilla[i];
                 if (val === 1 || val === 'B' || val === 'b') spawnStone(false, x, y);
                 if (val === 2 || val === 'W' || val === 'w') spawnStone(true, x, y);
             }

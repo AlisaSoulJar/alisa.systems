@@ -70,7 +70,15 @@
   a { color:#39485c; }
   select { font:inherit; font-size:11px; padding:5px 8px; border:1px solid #b9c4d0;
            border-radius:3px; background:#fff; }
+  input { font:inherit; font-size:11px; padding:5px 8px; border:1px solid #b9c4d0;
+          border-radius:3px; background:#fff; min-width:0; flex:1; }
+  .asiento { display:flex; align-items:center; gap:10px; margin-bottom:7px; }
+  .asiento > .dato:first-child { min-width:96px; color:#39485c; }
+  .asiento.llm { gap:6px; }
+  .nota { font-size:10.5px; color:#8b95a3; line-height:1.7; margin-top:6px; }
 </style>
+<meta name="alisa-escaparate" content="juegos">
+<meta name="alisa-muestra" content="Una mesa para los 19 juegos: los botones SON las jugadas legales, así que una persona no puede hacer una ilegal por la misma razón que no puede un modelo">
 </head>
 <body>
 <main>
@@ -81,7 +89,9 @@
     puede verificar y aportar al corpus.
     &nbsp;·&nbsp; <select id="selector"></select>
   </p>
+  <p class="sub" id="aviso_sala"></p>
 
+  <div class="panel"><h2>quién juega</h2><div id="asientos"></div></div>
   <div class="panel"><h2>tu mano</h2><div class="mano" id="mano"></div></div>
   <div class="panel"><h2>la mesa</h2><div class="dato" id="mesa"></div></div>
   <div class="panel"><h2>puedes</h2><div class="jugadas" id="jugadas"></div></div>
@@ -92,6 +102,8 @@
 import { ProtoHub } from './js/protohub/ProtoHub.js';
 import { JUEGOS, TITULOS, cargarReglas } from './js/protohub/rules/index.js';
 import { puntuacionDe } from './js/protohub/Verificador.js';
+import { CONTROLADORES, crearControlador, esPersona, leerAsientos, pintarPanel }
+    from './js/protohub/asientos.js';
 
 const params = new URLSearchParams(location.search);
 const juego = JUEGOS.includes(params.get('juego')) ? params.get('juego') : 'brisca';
@@ -99,21 +111,183 @@ const juego = JUEGOS.includes(params.get('juego')) ? params.get('juego') : 'bris
 // puede compartir «juega esta mano» igual que se comparte un recibo.
 const semilla = Number(params.get('semilla')) || Math.floor(Math.random() * 1e6);
 
+/**
+ * ═══ DOS MODOS, UNA SOLA MESA ═══════════════════════════════════════════
+ * Sin `?sala=`, la partida ocurre AQUÍ: las reglas corren en esta pestaña y la
+ * casa juega los demás asientos. Es lo que había y sigue funcionando sin red.
+ *
+ * Con `?sala=loquesea`, la partida ocurre en un árbitro compartido y esta página
+ * pasa a ser una ventana a ella. Dos personas —o una persona y su agente, o dos
+ * agentes— que abran la misma dirección se sientan a la MISMA partida.
+ *
+ * ⚠️ Lo que NO cambia entre los dos modos, que es lo que importa:
+ * los botones siguen siendo `legal_moves`, y lo que sale al final sigue siendo
+ * el mismo recibo `{juego, semilla, jugadas}` que verifica `/api/verificar`.
+ * Jugar acompañado no produce una partida de otra clase.
+ */
+const MESAS = 'https://alisa-mesas.prime-6d5.workers.dev';
+const sala = (params.get('sala') ?? '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 40);
+// Un nombre por defecto para quien no ponga el suyo. No identifica a nadie: sólo
+// distingue un asiento de otro, que es todo lo que la mesa necesita saber.
+const yo = (params.get('yo') ?? '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 24)
+         || 'invitado-' + Math.random().toString(36).slice(2, 6);
+
 const reglas = await cargarReglas(juego);
 const hub = new ProtoHub().registrar(juego, reglas);
 window.ALISA_PROTOHUB = hub;          // la Sala lo busca aquí para cobrar
 hub.reset(juego, { semilla });
 
-document.getElementById('titulo').textContent = TITULOS[juego] ?? juego;
+const $ = (id) => document.getElementById(id);
+
+/**
+ * ═══ QUIÉN LLEVA CADA ASIENTO ═══════════════════════════════════════════
+ * `?asientos=persona,fsm:casa,fsm:azar,llm` viaja en la dirección, así que una
+ * partida montada se comparte con un enlace: «tú de blancas contra mi modelo» no
+ * hace falta explicarlo, se manda.
+ *
+ * Por defecto el primero es una persona y el resto la heurística del juego —que
+ * es lo que había siempre, sólo que ahora se puede cambiar.
+ */
+const asientos = leerAsientos(params);
+const porDefecto = (i) => (i === 0 ? 'persona' : 'fsm:casa');
+const specDe = (i) => asientos[i] ?? porDefecto(i);
+const etiquetaDe = (spec) => CONTROLADORES[spec ?? 'persona']?.etiqueta ?? spec;
+
+/** Los datos del servidor de modelos, si algún asiento es un modelo. */
+let llm = { url: params.get('llm_url') ?? '', modelo: params.get('llm_modelo') ?? '' };
+
+/**
+ * Los controladores se construyen PEREZOSAMENTE y se guardan.
+ * `fsm:azar` lleva su propio estado —una semilla que avanza— así que rehacerlo
+ * en cada jugada lo dejaría eligiendo siempre lo mismo, y una línea base que no
+ * varía deja de ser una línea base.
+ */
+const cache = new Map();
+function controladorDe(i) {
+    const spec = specDe(i);
+    const clave = `${i}:${spec}:${llm.url}:${llm.modelo}`;
+    if (!cache.has(clave)) cache.set(clave, crearControlador(spec, { juego, reglas, llm }));
+    return cache.get(clave);
+}
+const olvidarControladores = () => cache.clear();
+
+/**
+ * La partida de esta pestaña. Aquí mandan LOS ASIENTOS: cada silla la lleva una
+ * persona, una política o un modelo, y se combinan como se quiera.
+ *
+ * ⚠️ ANTES ESTO ERA «TÚ CONTRA LA CASA», Y SE NOTABA EN EL CÓDIGO.
+ * La versión anterior tenía un `esMio(st)` que decía «el asiento 0 eres tú» y un
+ * bucle que llamaba a `ai_move` para todos los demás. O sea que sólo existían
+ * dos papeles: el humano y la máquina. No había forma de poner un modelo de
+ * blancas, ni de ver a dos políticas jugar entre ellas, ni de sentarse tres.
+ */
+const enLaPestaña = {
+    compartida: false,
+    // Los nombres de asiento se descubren jugando, igual que en la mesa
+    // compartida: cada juego los llama a su manera y adivinarlo ya costó caro.
+    ordenAsientos: [],
+    async entrar() { this.anotar(); return true; },
+    anotar() {
+        const t = hub.state(juego).turn;
+        if (t && !this.ordenAsientos.includes(t)) this.ordenAsientos.push(t);
+    },
+    estado: () => hub.state(juego),
+    /** El índice del asiento que mueve ahora. */
+    indiceTurno() {
+        this.anotar();
+        const t = this.estado().turn;
+        const i = this.ordenAsientos.indexOf(t);
+        return i >= 0 ? i : 0;
+    },
+    meToca() { return esPersona(specDe(this.indiceTurno())); },
+    acciones: () => (hub.state(juego).legal_moves ?? [])
+        .filter(m => m !== 'nueva' && m !== 'reset'),
+    async jugar(m) {
+        // ⚠️ `{ move: m }`, no `{ jugada: m }`. Me inventé el nombre del campo en
+        // vez de leer el contrato: `ProtoHub.move()` acepta `params.uci`,
+        // `params.action`, `uci` o `move`, y con cualquier otra cosa devuelve
+        // «falta la jugada» y NO SE QUEJA. Doscientos clics y cero jugadas
+        // grabadas, sin un error en consola.
+        hub.move(juego, { move: m });
+        this.anotar();
+    },
+    recibo: () => hub.partida(juego),
+    resumen() {
+        const st = this.estado();
+        return this.ordenAsientos.map((n, i) =>
+            `${n}<span class="dato"> · ${etiquetaDe(specDe(i))}</span>` +
+            (st.turn === n ? ' ←' : '')).join(' &nbsp;·&nbsp; ');
+    },
+};
+
+/** La partida de la sala: el árbitro manda y esta página mira. */
+const enLaSala = {
+    compartida: true,
+    ultimo: null,
+    async pedir(ruta, cuerpo) {
+        const r = await fetch(`${MESAS}/mesa/${sala}${ruta}`, cuerpo ? {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify(cuerpo),
+        } : undefined);
+        return { codigo: r.status, ...(await r.json()) };
+    },
+    async entrar() {
+        const r = await this.pedir('/sentarse', { quien: yo, tipo: 'persona', juego, semilla });
+        // Un «no» con motivo se enseña tal cual. La mesa se toma la molestia de
+        // explicar por qué en algunos juegos no cabe un segundo; tragarse esa
+        // explicación y dejar la pantalla en blanco sería desperdiciarla.
+        if (r.codigo !== 200) { this.ultimo = r; return false; }
+        this.ultimo = r;
+        return true;
+    },
+    // `?quien=` es lo que hace que la mesa enseñe TU mano y no la del asiento 0.
+    // Sin él se recibe la vista canónica, que es la del primero que se sentó.
+    async refrescar() { this.ultimo = await this.pedir(`?quien=${encodeURIComponent(yo)}`); },
+    estado() { return this.ultimo?.estado ?? {}; },
+    /**
+     * ⚠️ EN UNA SALA SÓLO MANDAS SOBRE TU SILLA.
+     * Las demás las lleva quien se haya sentado en ellas, en su propia pestaña.
+     * Por eso aquí `?asientos=` tiene UN valor —quién juega por ti: tú, una
+     * política o un modelo— y no la lista entera. Ofrecer la lista sugeriría que
+     * puedes decidir por el de enfrente, y no puedes: eso es el árbitro.
+     */
+    miIndice: () => 0,
+    indiceTurno() { return this.ultimo?.turno_de === yo ? 0 : -1; },
+    meToca() { return this.ultimo?.turno_de === yo && esPersona(specDe(0)); },
+    acciones() { return this.ultimo?.acciones ?? []; },
+    async jugar(m) {
+        const r = await this.pedir('/jugar', { quien: yo, jugada: m });
+        if (r.codigo === 200) { this.ultimo = r; $('aviso_sala').textContent = ''; return; }
+        // El árbitro dijo que no, y casi siempre por un motivo legítimo: otro se
+        // adelantó entre que se pintó el botón y se pulsó. Se adopta SU estado,
+        // que es el bueno — el de esta pestaña ya era viejo.
+        $('aviso_sala').textContent = r.error ?? 'la jugada no entró';
+        if (r.estado) this.ultimo = r; else await this.refrescar();
+    },
+    recibo() { return this.ultimo?.recibo; },
+    resumen() {
+        const m = this.ultimo;
+        if (!m?.asientos) return '';
+        const quien = m.asientos.map(a =>
+            `${a.quien === yo ? '<b>' + a.quien + ' (tú)</b>' : a.quien}<span class="dato"> · ${a.asiento ?? '—'}</span>`).join(' &nbsp;·&nbsp; ');
+        const casa = m.los_juega_la_casa ? ` &nbsp;·&nbsp; <span class="dato">+${m.los_juega_la_casa} de la casa</span>` : '';
+        return `sala <b>${sala}</b> &nbsp;·&nbsp; ${quien}${casa}`;
+    },
+};
+
+const mesa = sala ? enLaSala : enLaPestaña;
+
+document.getElementById('titulo').textContent =
+    (TITULOS[juego] ?? juego) + (sala ? ` · sala ${sala}` : '');
 const sel = document.getElementById('selector');
 sel.innerHTML = JUEGOS.map(j => `<option value="${j}"${j === juego ? ' selected' : ''}>${TITULOS[j] ?? j}</option>`).join('');
+// Cambiar de juego sale de la sala: una sala ES una partida de un juego, no un
+// sitio donde se cambia de tablero.
 sel.onchange = () => { location.search = `?juego=${sel.value}`; };
 
-const $ = (id) => document.getElementById(id);
-const esMio = (st) => !st.turn || st.turn === 'player' || st.turn === 'white';
-
 function pintar() {
-  const st = hub.state(juego);
+  const st = mesa.estado();
 
   $('mano').innerHTML = (st.mano ?? st.player_hand ?? [])
       .map(c => `<span class="carta">${c}</span>`).join('') || '<span class="dato">—</span>';
@@ -130,45 +304,133 @@ function pintar() {
   if (st.preguntas?.length)  dec('última pregunta', (p => `${p.de}→${p.a} pide ${p.rango}: ${p.acierta ? 'sí' : 'no'}`)(st.preguntas.at(-1)));
   if (st.manos_rivales)      dec('rivales', st.manos_rivales.join(' · ') + ' cartas');
   if (st.mazo_restante != null) dec('mazo', st.mazo_restante);
-  dec('turno', esMio(st) ? 'tuyo' : (st.turn ?? '—'));
+  dec('turno', mesa.meToca() ? 'tuyo' : (mesa.ultimo?.turno_de ?? st.turn ?? '—'));
+  if (mesa.resumen()) filas.unshift(`<div>${mesa.resumen()}</div>`);
   $('mesa').innerHTML = filas.join('');
 
-  const legales = (st.legal_moves ?? []).filter(m => m !== 'nueva' && m !== 'reset');
   $('jugadas').innerHTML = '';
   if (st.is_game_over) { terminar(st); return; }
-  if (!esMio(st)) { $('jugadas').innerHTML = '<span class="dato">juega la casa…</span>'; return; }
-  for (const m of legales) {
+  if (!mesa.meToca()) {
+    // En una mesa compartida no «juega la casa»: espera alguien con nombre.
+    $('jugadas').innerHTML = mesa.compartida
+        ? `<span class="dato">le toca a ${mesa.ultimo?.turno_de ?? 'otro asiento'}…</span>`
+        : '<span class="dato">juega la casa…</span>';
+    return;
+  }
+  for (const m of mesa.acciones()) {
     const b = document.createElement('button');
     b.className = 'j';
     b.textContent = m.replace(/^jugar:|^pedir:/, '');
     b.title = m;
-    // ⚠️ `{ move: m }`, no `{ jugada: m }`. Me inventé el nombre del campo en
-    // vez de leer el contrato: `ProtoHub.move()` acepta `params.uci`,
-    // `params.action`, `uci` o `move`, y con cualquier otra cosa devuelve
-    // «falta la jugada» y NO SE QUEJA. Doscientos clics y cero jugadas
-    // grabadas, sin un error en consola.
-    b.onclick = () => { hub.move(juego, { move: m }); casaSiTocaYPinta(); };
+    b.onclick = async () => {
+      // Se apagan TODOS los botones, no sólo el pulsado: en una sala el viaje de
+      // ida y vuelta dura lo suyo, y sin esto se pueden mandar tres jugadas
+      // antes de que conteste la primera. El árbitro rechazaría las de más, pero
+      // el usuario vería tres errores por un clic de más.
+      [...$('jugadas').children].forEach(x => { x.disabled = true; });
+      await mesa.jugar(m);
+      pintarAsientos({ soloSiCambia: true });
+      pintar();
+      await avanzar();      // ahora juegan las políticas y los modelos
+      vigilar();
+    };
     $('jugadas').appendChild(b);
   }
 }
 
-/** La casa juega sola mientras no sea tu turno. Sin esto la mesa se queda quieta. */
-function casaSiTocaYPinta() {
-  // `ai_move` es la puerta que el ProtoHub tiene puesta justo para esto: pide
-  // la sugerencia, la aplica Y LA GRABA. Llamando a `reglas.sugerencia` por mi
-  // cuenta me saltaba la grabación, y una partida a la que le faltan las
-  // jugadas de la casa no se puede re-simular — o sea, no puntúa.
-  let vueltas = 0;
-  let st = hub.state(juego);
-  while (!st.is_game_over && !esMio(st) && vueltas++ < 64) {
-    if (!hub.move(juego, { action: 'ai_move' }).ok) break;
-    st = hub.state(juego);
-  }
-  pintar();
+/**
+ * Hace jugar a los asientos que no son personas, hasta que le toque a una.
+ *
+ * ⚠️ CON PAUSA, Y NO POR ESTÉTICA. Sin ella, cuatro políticas terminan una
+ * partida entera entre dos fotogramas y nadie ve nada: la pantalla salta del
+ * reparto al marcador final. Una mesa donde no se puede MIRAR jugar no sirve
+ * para entender por qué un agente pierde, que es medio propósito de esto.
+ *
+ * ⚠️ Y SI EL CONTROLADOR NO SABE, SE PARA. Un modelo que no acierta a elegir
+ * devuelve `null`; entonces la mesa se detiene y lo dice, en vez de jugar por él.
+ * Regalarle una jugada a un modelo que no supo darla convierte el banco de
+ * pruebas en un adorno.
+ */
+let corriendo = false;
+async function avanzar({ pausa = 350 } = {}) {
+    if (corriendo) return;
+    corriendo = true;
+    try {
+        for (let vueltas = 0; vueltas < 400; vueltas++) {
+            const st = mesa.estado();
+            if (st.is_game_over) break;
+            const i = mesa.indiceTurno?.();
+            // `-1` en una sala significa «no es tu turno»: la juega otro, en su
+            // pestaña. No es un error, es esperar.
+            if (i === undefined || i < 0 || mesa.meToca()) break;
+            const ctrl = controladorDe(i);
+            if (ctrl.tipo === 'persona') break;
+            const acciones = mesa.acciones();
+            if (!acciones.length) break;
+
+            let jugada = null;
+            try {
+                // `hub.partidas` es el mapa de partidas vivas. La política `casa`
+                // necesita la partida DE VERDAD, no su estado publicado: le
+                // pregunta al juego su sugerencia, que es justo lo que un modelo
+                // no puede hacer. En una sala no la hay —la partida vive en el
+                // árbitro— y por eso allí `casa` no se ofrece.
+                jugada = await ctrl.elegir({ juego, st, acciones, reglas,
+                                             p: hub.partidas?.get(juego) });
+            } catch (e) {
+                $('aviso_sala').textContent = `el asiento «${ctrl.etiqueta}» no pudo jugar: ${e.message}`;
+                break;
+            }
+            if (!jugada) {
+                $('aviso_sala').textContent =
+                    `«${ctrl.etiqueta}» no eligió ninguna de las ${acciones.length} jugadas legales. La mesa espera.`;
+                break;
+            }
+            await mesa.jugar(jugada);
+            pintar();
+            if (pausa) await new Promise(r => setTimeout(r, pausa));
+        }
+    } finally {
+        corriendo = false;
+    }
+    // Sólo si han APARECIDO asientos. Repintar el panel en cada jugada cerraría
+    // el desplegable en las narices de quien lo esté abriendo.
+    pintarAsientos({ soloSiCambia: true });
+    pintar();
+}
+
+/**
+ * En una sala, preguntar de vez en cuando mientras le toque a otro.
+ *
+ * ⚠️ SONDEO Y NO WEBSOCKETS, A PROPÓSITO. Estos juegos son por turnos: entre
+ * jugada y jugada pasan segundos, no milisegundos. Un sondeo cada segundo y
+ * medio se siente igual y no arrastra reconexiones, latidos ni estados a medias.
+ * El día que haya algo en tiempo real esto se cambia; hoy sería complejidad
+ * comprada por adelantado.
+ */
+let sondeo = null;
+function vigilar() {
+  clearTimeout(sondeo);
+  if (!mesa.compartida) return;
+  const st = mesa.estado();
+  if (st.is_game_over || mesa.meToca()) return;
+  sondeo = setTimeout(async () => {
+    await mesa.refrescar();
+    pintar();
+    // Si mi silla la lleva una política o un modelo, que juegue en cuanto le
+    // toque: quien deja su asiento a un agente no debería tener que mirar.
+    await avanzar();
+    vigilar();
+  }, 1500);
 }
 
 async function terminar(st) {
-  const rec = hub.partida(juego);
+  // El recibo sale de donde se jugó. Es la misma forma en los dos modos
+  // —`{juego, semilla, jugadas}`— y por eso los botones de abajo no distinguen:
+  // una partida acompañada se verifica y se aporta exactamente igual que una en
+  // solitario. Ese es el sentido de todo esto.
+  const rec = mesa.recibo();
+  clearTimeout(sondeo);
   const p = $('panelFin');
   p.className = 'panel fin';
   p.style.display = '';
@@ -183,6 +445,9 @@ async function terminar(st) {
      </div>
      <div class="aviso" id="resultado"></div>`;
 
+  // Otra partida SALE de la sala: una sala es una partida concreta, con su
+  // semilla y sus asientos. Reiniciarla por dentro le borraría la partida a
+  // quien esté sentado enfrente.
   $('otra').onclick = () => { location.search = `?juego=${juego}`; };
 
   const llamar = async (ruta, cuerpo, boton) => {
@@ -205,7 +470,68 @@ async function terminar(st) {
     llamar('/api/dataset', { ...rec, puntos: puntuacionDe(st), tipo: 'persona' }, e.target);
 }
 
-casaSiTocaYPinta();
+/**
+ * El panel de asientos. En local se ven todos; en una sala, sólo el tuyo.
+ *
+ * `fsm:casa` no se ofrece en una sala y NO es un olvido: esa política le pide al
+ * juego su sugerencia, y para eso hace falta la partida de verdad — que en una
+ * sala vive en el árbitro, no aquí. Ofrecerla igualmente habría dado un asiento
+ * que juega como `primera` mientras dice llamarse `casa`: una etiqueta que
+ * miente es peor que una opción que falta.
+ */
+let asientosPintados = -1;
+function pintarAsientos({ soloSiCambia = false } = {}) {
+    const enSala = mesa.compartida;
+    const nombres = enSala
+        ? ['tu asiento']
+        : (mesa.ordenAsientos.length ? mesa.ordenAsientos : ['asiento 1']);
+    if (soloSiCambia && nombres.length === asientosPintados) return;
+    asientosPintados = nombres.length;
+    pintarPanel({
+        nodo: $('asientos'),
+        asientos: nombres,
+        valores: nombres.map((_, i) => specDe(i)),
+        excluir: enSala ? ['fsm:casa'] : [],
+        llm,
+        alCambiar: (i, spec) => {
+            asientos[i] = spec;
+            olvidarControladores();
+            // La dirección se actualiza sin recargar: así el enlace que hay en la
+            // barra SIEMPRE describe la mesa que se está viendo, y compartirlo
+            // reproduce esta partida y no otra.
+            const u = new URL(location.href);
+            u.searchParams.set('asientos', nombres.map((_, k) => specDe(k)).join(','));
+            history.replaceState(null, '', u);
+            pintarAsientos(); pintar(); avanzar();
+        },
+        alCambiarLlm: (v) => { llm = v; olvidarControladores(); pintarAsientos(); avanzar(); },
+    });
+}
+
+/** Sentarse (si hay sala), pintar, y quedarse mirando si le toque a otro. */
+async function arrancar() {
+  if (!await mesa.entrar()) {
+    // La mesa dijo que no. Se enseña SU motivo, palabra por palabra, y se ofrece
+    // la salida — que aquí es jugar el mismo juego sin sala, no rendirse.
+    const m = mesa.ultimo ?? {};
+    $('jugadas').innerHTML =
+      `<span class="dato">${m.error ?? 'no se pudo entrar en la sala'}</span>`;
+    $('mesa').innerHTML =
+      `<div>${m.motivo ?? ''}</div>` +
+      `<div style="margin-top:10px"><a href="?juego=${juego}">jugar sin sala →</a></div>`;
+    return;
+  }
+  if (mesa.compartida) {
+    $('aviso_sala').innerHTML =
+      `comparte esta dirección para que se siente alguien más. ` +
+      `Quien entre con <code>?yo=</code> distinto ocupa otro asiento.`;
+  }
+  pintarAsientos();
+  pintar();
+  await avanzar();      // por si el primer asiento no es una persona
+  vigilar();
+}
+await arrancar();
 </script>
 </body>
 </html>

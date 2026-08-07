@@ -45,6 +45,7 @@ import { GymEnv } from './GymEnv.js';
 // el verificador contaran los puntos de forma distinta, el recibo de una
 // partida legítima no cuadraría — y eso pasó de verdad, ver `_puntosDe`.
 import { puntuacionDe } from '../../../../arcade/js/protohub/Verificador.js';
+import { describirEstado } from '../../../../arcade/js/protohub/descripcion.js';
 
 /** Un tope para que la casa no pueda encadenar turnos hasta colgar la pestaña. */
 const MAX_TURNOS_CASA = 64;
@@ -131,7 +132,15 @@ export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
             if (res === '0-1') return -1;
             if (res && String(res).startsWith('1/2')) return 0;
 
-            const ganador = e.winner ?? e.ganador ?? null;
+            // ⚠️ `res` TAMBIÉN CUENTA COMO GANADOR, Y ANTES NO.
+            // Esta línea buscaba `winner` o `ganador`, y **ningún juego publica
+            // ninguno de los dos**: los diecinueve publican `result`. Como arriba
+            // sólo se compara con la notación de ajedrez (`1-0`, `0-1`, `1/2`) y
+            // ellos dicen `'black'`, `'white'` o `'draw'`, este bloque no llegaba
+            // a ejecutarse jamás. Un `??` encadenado con dos nombres muertos no da
+            // error: da `null`, y `null` se lee como «no hay ganador».
+            // Lo destapó `desajustes.mjs`, buscando justo esto.
+            const ganador = e.winner ?? e.ganador ?? res;
             if (ganador) {
                 if (/draw|tabla|empate/i.test(String(ganador))) return 0;
                 return String(ganador) === String(this.turnoAgente) ? 1 : -1;
@@ -205,14 +214,12 @@ export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
             ];
         }
 
+        // El texto vive en `protohub/descripcion.js` y no aquí: un LLM sentado a
+        // una mesa de una página tiene que leer LO MISMO que un LLM del banco de
+        // pruebas, o los dos números dejan de ser comparables sin que se note.
         describe() {
             if (reglas.describir) return reglas.describir(this.p);
-            const e = this._estado();
-            const puedes = (e.legal_moves ?? []).slice(0, 12).join(', ');
-            return `${ProtoHubEnvMeta(juego)}. Puntos: ${this._puntosDe(e)}.`
-                 + ` Turno: ${e.turn ?? 'único'}.`
-                 + (e.is_game_over ? ' La partida ha terminado.'
-                                   : ` Puedes: ${puedes || '(nada)'}.`);
+            return describirEstado(juego, this._estado());
         }
 
         affordances() {
@@ -267,7 +274,7 @@ export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
     };
 }
 
-/** Nombre legible sin depender de que el módulo lo declare. */
-function ProtoHubEnvMeta(juego) {
-    return juego.charAt(0).toUpperCase() + juego.slice(1);
-}
+// `ProtoHubEnvMeta` vivía aquí y se ha ido con la descripción a
+// `protohub/descripcion.js`, donde se llama `nombreLegible`. Se borra en vez de
+// dejarla: una función muerta con nombre sensato es una invitación a que alguien
+// la use y vuelva a haber dos verdades sobre el mismo texto.

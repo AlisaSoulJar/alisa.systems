@@ -1,0 +1,1079 @@
+{
+ "piezas": [
+  {
+   "ruta": "index.js",
+   "nombre": "index",
+   "familia": "raiz",
+   "kb": 3.7
+  },
+  {
+   "ruta": "extensions/alisa-colony/index.js",
+   "nombre": "index",
+   "familia": "alisa-colony",
+   "kb": 4.2
+  },
+  {
+   "ruta": "extensions/alisa-colony/avatar-pipeline/ArachneIngestionSystem.js",
+   "nombre": "ArachneIngestionSystem",
+   "familia": "avatar-pipeline",
+   "kb": 13.4
+  },
+  {
+   "ruta": "extensions/alisa-colony/avatar-pipeline/GeppettoChoreographySystem.js",
+   "nombre": "GeppettoChoreographySystem",
+   "familia": "avatar-pipeline",
+   "kb": 16.1
+  },
+  {
+   "ruta": "extensions/alisa-colony/avatar-pipeline/MorpheusSimulationSystem.js",
+   "nombre": "MorpheusSimulationSystem",
+   "familia": "avatar-pipeline",
+   "kb": 11.7
+  },
+  {
+   "ruta": "extensions/alisa-colony/avatar-pipeline/PygmalionTopologySystem.js",
+   "nombre": "PygmalionTopologySystem",
+   "familia": "avatar-pipeline",
+   "kb": 31.6
+  },
+  {
+   "ruta": "extensions/alisa-colony/plugins/ColonialPassportPlugin.js",
+   "nombre": "ColonialPassportPlugin",
+   "familia": "plugins",
+   "kb": 5.1
+  },
+  {
+   "ruta": "extensions/alisa-colony/plugins/ColonialTerminalPlugin.js",
+   "nombre": "ColonialTerminalPlugin",
+   "familia": "plugins",
+   "kb": 8.2
+  },
+  {
+   "ruta": "extensions/alisa-colony/plugins/JobBoardDisplayPlugin.js",
+   "nombre": "JobBoardDisplayPlugin",
+   "familia": "plugins",
+   "kb": 3.1
+  },
+  {
+   "ruta": "extensions/alisa-colony/plugins/PythonTelemetrySensor.js",
+   "nombre": "PythonTelemetrySensor",
+   "familia": "plugins",
+   "kb": 3.0
+  },
+  {
+   "ruta": "extensions/alisa-colony/plugins/SovereignAvatarSystem.js",
+   "nombre": "SovereignAvatarSystem",
+   "familia": "plugins",
+   "kb": 28.3
+  },
+  {
+   "ruta": "extensions/alisa-colony/plugins/SovereignHaloPlugin.js",
+   "nombre": "SovereignHaloPlugin",
+   "familia": "plugins",
+   "kb": 4.5
+  },
+  {
+   "ruta": "extensions/alisa-colony/plugins/SovereignTickerPlugin.js",
+   "nombre": "SovereignTickerPlugin",
+   "familia": "plugins",
+   "kb": 6.3
+  },
+  {
+   "ruta": "extensions/alisa-colony/psyche/EntityCardSystem.js",
+   "nombre": "EntityCardSystem",
+   "familia": "psyche",
+   "kb": 32.5
+  },
+  {
+   "ruta": "extensions/alisa-colony/psyche/TerminalInteractionEngine.js",
+   "nombre": "TerminalInteractionEngine",
+   "familia": "psyche",
+   "kb": 12.5
+  },
+  {
+   "ruta": "extensions/alisa-colony/psyche/TerminalUIEngine.js",
+   "nombre": "TerminalUIEngine",
+   "familia": "psyche",
+   "kb": 30.2
+  },
+  {
+   "ruta": "extensions/alisa-colony/systems/ColonialMetabolismSystem.js",
+   "nombre": "ColonialMetabolismSystem",
+   "familia": "systems",
+   "kb": 4.4
+  },
+  {
+   "ruta": "extensions/alisa-colony/systems/HubCartographerSystem.js",
+   "nombre": "HubCartographerSystem",
+   "familia": "systems",
+   "kb": 1.4
+  },
+  {
+   "ruta": "extensions/alisa-colony/utils/HubClient.js",
+   "nombre": "HubClient",
+   "familia": "utils",
+   "kb": 3.3
+  },
+  {
+   "ruta": "extensions/avatar-pipeline/ArachneEnvironmentFactory.js",
+   "nombre": "ArachneEnvironmentFactory",
+   "familia": "avatar-pipeline",
+   "kb": 1.4
+  },
+  {
+   "ruta": "extensions/avatar-pipeline/ArachneSoftBodyPhysics.js",
+   "nombre": "ArachneSoftBodyPhysics",
+   "familia": "avatar-pipeline",
+   "kb": 5.0
+  },
+  {
+   "ruta": "extensions/avatar-pipeline/ArtDirectionPipeline.js",
+   "nombre": "ArtDirectionPipeline",
+   "familia": "avatar-pipeline",
+   "kb": 18.4
+  },
+  {
+   "ruta": "extensions/avatar-pipeline/BaseEnvironmentFactory.js",
+   "nombre": "BaseEnvironmentFactory",
+   "familia": "avatar-pipeline",
+   "kb": 0.2
+  },
+  {
+   "ruta": "extensions/avatar-pipeline/BaseSimulationSystem.js",
+   "nombre": "BaseSimulationSystem",
+   "familia": "avatar-pipeline",
+   "kb": 0.2
+  },
+  {
+   "ruta": "extensions/avatar-pipeline/GeppettoEnvironmentFactory.js",
+   "nombre": "GeppettoEnvironmentFactory",
+   "familia": "avatar-pipeline",
+   "kb": 4.8
+  },
+  {
+   "ruta": "extensions/avatar-pipeline/GeppettoKinematics.js",
+   "nombre": "GeppettoKinematics",
+   "familia": "avatar-pipeline",
+   "kb": 3.5
+  },
+  {
+   "ruta": "extensions/avatar-pipeline/MorpheusEnvironmentFactory.js",
+   "nombre": "MorpheusEnvironmentFactory",
+   "familia": "avatar-pipeline",
+   "kb": 1.6
+  },
+  {
+   "ruta": "extensions/avatar-pipeline/PygmalionEnvironmentFactory.js",
+   "nombre": "PygmalionEnvironmentFactory",
+   "familia": "avatar-pipeline",
+   "kb": 10.5
+  },
+  {
+   "ruta": "gym/GymBridge.js",
+   "nombre": "GymBridge",
+   "familia": "gym",
+   "kb": 6.5
+  },
+  {
+   "ruta": "gym/GymEnv.js",
+   "nombre": "GymEnv",
+   "familia": "gym",
+   "kb": 6.9
+  },
+  {
+   "ruta": "gym/GymIdentity.js",
+   "nombre": "GymIdentity",
+   "familia": "gym",
+   "kb": 5.0
+  },
+  {
+   "ruta": "gym/GymRecorder.js",
+   "nombre": "GymRecorder",
+   "familia": "gym",
+   "kb": 5.1
+  },
+  {
+   "ruta": "gym/ProtoHubEnv.js",
+   "nombre": "ProtoHubEnv",
+   "familia": "gym",
+   "kb": 13.5
+  },
+  {
+   "ruta": "gym/registro.js",
+   "nombre": "registro",
+   "familia": "gym",
+   "kb": 13.3
+  },
+  {
+   "ruta": "gym/envs/AsteroidsEnv.js",
+   "nombre": "AsteroidsEnv",
+   "familia": "envs",
+   "kb": 8.8
+  },
+  {
+   "ruta": "gym/envs/CabinetEscapeEnv.js",
+   "nombre": "CabinetEscapeEnv",
+   "familia": "envs",
+   "kb": 9.8
+  },
+  {
+   "ruta": "gym/envs/ChopperAquariumEnv.js",
+   "nombre": "ChopperAquariumEnv",
+   "familia": "envs",
+   "kb": 7.5
+  },
+  {
+   "ruta": "gym/envs/CuccoSwarmEnv.js",
+   "nombre": "CuccoSwarmEnv",
+   "familia": "envs",
+   "kb": 8.4
+  },
+  {
+   "ruta": "gym/envs/RaccoonSpaceEnv.js",
+   "nombre": "RaccoonSpaceEnv",
+   "familia": "envs",
+   "kb": 6.3
+  },
+  {
+   "ruta": "gym/envs/RueDelPercebeEnv.js",
+   "nombre": "RueDelPercebeEnv",
+   "familia": "envs",
+   "kb": 12.5
+  },
+  {
+   "ruta": "psyche/FSMSystem.js",
+   "nombre": "FSMSystem",
+   "familia": "psyche",
+   "kb": 6.4
+  },
+  {
+   "ruta": "psyche/SteeringSystem.js",
+   "nombre": "SteeringSystem",
+   "familia": "psyche",
+   "kb": 6.0
+  },
+  {
+   "ruta": "soma/AlisaRenderCore.js",
+   "nombre": "AlisaRenderCore",
+   "familia": "soma",
+   "kb": 8.2
+  },
+  {
+   "ruta": "soma/ArachneEngine.js",
+   "nombre": "ArachneEngine",
+   "familia": "soma",
+   "kb": 5.3
+  },
+  {
+   "ruta": "soma/AssetManager.js",
+   "nombre": "AssetManager",
+   "familia": "soma",
+   "kb": 32.4
+  },
+  {
+   "ruta": "soma/AssetResolver.js",
+   "nombre": "AssetResolver",
+   "familia": "soma",
+   "kb": 3.5
+  },
+  {
+   "ruta": "soma/MotionBank.js",
+   "nombre": "MotionBank",
+   "familia": "soma",
+   "kb": 7.2
+  },
+  {
+   "ruta": "soma/ProceduralKinematics.js",
+   "nombre": "ProceduralKinematics",
+   "familia": "soma",
+   "kb": 37.2
+  },
+  {
+   "ruta": "soma/ProceduralRigging.js",
+   "nombre": "ProceduralRigging",
+   "familia": "soma",
+   "kb": 70.6
+  },
+  {
+   "ruta": "soma/ProceduralScanner.js",
+   "nombre": "ProceduralScanner",
+   "familia": "soma",
+   "kb": 5.3
+  },
+  {
+   "ruta": "soma/PygmalionEngine.js",
+   "nombre": "PygmalionEngine",
+   "familia": "soma",
+   "kb": 12.8
+  },
+  {
+   "ruta": "soma/RenderBackend.js",
+   "nombre": "RenderBackend",
+   "familia": "soma",
+   "kb": 3.3
+  },
+  {
+   "ruta": "soma/morphology/ProceduralAnimator.js",
+   "nombre": "ProceduralAnimator",
+   "familia": "morphology",
+   "kb": 10.7
+  },
+  {
+   "ruta": "soma/morphology/ProceduralItem.js",
+   "nombre": "ProceduralItem",
+   "familia": "morphology",
+   "kb": 2.7
+  },
+  {
+   "ruta": "soma/morphology/ProceduralRigging.js",
+   "nombre": "ProceduralRigging",
+   "familia": "morphology",
+   "kb": 8.7
+  },
+  {
+   "ruta": "soma/morphology/ProceduralSPE.js",
+   "nombre": "ProceduralSPE",
+   "familia": "morphology",
+   "kb": 6.0
+  },
+  {
+   "ruta": "soma/morphology/ProceduralTexture.js",
+   "nombre": "ProceduralTexture",
+   "familia": "morphology",
+   "kb": 17.3
+  },
+  {
+   "ruta": "soma/morphology/ProportionalAtlas.js",
+   "nombre": "ProportionalAtlas",
+   "familia": "morphology",
+   "kb": 10.9
+  },
+  {
+   "ruta": "soma/morphology/SemanticAnatomy.js",
+   "nombre": "SemanticAnatomy",
+   "familia": "morphology",
+   "kb": 7.0
+  },
+  {
+   "ruta": "soma/morphology/SkeletalScanner.js",
+   "nombre": "SkeletalScanner",
+   "familia": "morphology",
+   "kb": 5.9
+  },
+  {
+   "ruta": "soma/plugins/AlisaBloomEngine.js",
+   "nombre": "AlisaBloomEngine",
+   "familia": "plugins",
+   "kb": 2.0
+  },
+  {
+   "ruta": "soma/plugins/AnomalyLensPlugin.js",
+   "nombre": "AnomalyLensPlugin",
+   "familia": "plugins",
+   "kb": 5.6
+  },
+  {
+   "ruta": "soma/plugins/ArcadeFXPlugin.js",
+   "nombre": "ArcadeFXPlugin",
+   "familia": "plugins",
+   "kb": 7.0
+  },
+  {
+   "ruta": "soma/plugins/BSPRenderPlugin.js",
+   "nombre": "BSPRenderPlugin",
+   "familia": "plugins",
+   "kb": 4.1
+  },
+  {
+   "ruta": "soma/plugins/CSS3DHologramPlugin.js",
+   "nombre": "CSS3DHologramPlugin",
+   "familia": "plugins",
+   "kb": 25.7
+  },
+  {
+   "ruta": "soma/plugins/CabinetBSPPlugin.js",
+   "nombre": "CabinetBSPPlugin",
+   "familia": "plugins",
+   "kb": 6.0
+  },
+  {
+   "ruta": "soma/plugins/CascadedShadowPlugin.js",
+   "nombre": "CascadedShadowPlugin",
+   "familia": "plugins",
+   "kb": 4.7
+  },
+  {
+   "ruta": "soma/plugins/CinematicCameraPlugin.js",
+   "nombre": "CinematicCameraPlugin",
+   "familia": "plugins",
+   "kb": 3.9
+  },
+  {
+   "ruta": "soma/plugins/CinematicPipelinePlugin.js",
+   "nombre": "CinematicPipelinePlugin",
+   "familia": "plugins",
+   "kb": 8.1
+  },
+  {
+   "ruta": "soma/plugins/ConstructMaterializerPlugin.js",
+   "nombre": "ConstructMaterializerPlugin",
+   "familia": "plugins",
+   "kb": 3.0
+  },
+  {
+   "ruta": "soma/plugins/EnvironmentPBRPlugin.js",
+   "nombre": "EnvironmentPBRPlugin",
+   "familia": "plugins",
+   "kb": 1.6
+  },
+  {
+   "ruta": "soma/plugins/GLTFModelPool.js",
+   "nombre": "GLTFModelPool",
+   "familia": "plugins",
+   "kb": 7.1
+  },
+  {
+   "ruta": "soma/plugins/GLTFPlugin.js",
+   "nombre": "GLTFPlugin",
+   "familia": "plugins",
+   "kb": 2.0
+  },
+  {
+   "ruta": "soma/plugins/InputControllerPlugin.js",
+   "nombre": "InputControllerPlugin",
+   "familia": "plugins",
+   "kb": 5.7
+  },
+  {
+   "ruta": "soma/plugins/MatrioshkaPlugin.js",
+   "nombre": "MatrioshkaPlugin",
+   "familia": "plugins",
+   "kb": 4.9
+  },
+  {
+   "ruta": "soma/plugins/MorphologyImporterPlugin.js",
+   "nombre": "MorphologyImporterPlugin",
+   "familia": "plugins",
+   "kb": 5.0
+  },
+  {
+   "ruta": "soma/plugins/RadarPlugin.js",
+   "nombre": "RadarPlugin",
+   "familia": "plugins",
+   "kb": 6.9
+  },
+  {
+   "ruta": "soma/plugins/ResonanceFieldPlugin.js",
+   "nombre": "ResonanceFieldPlugin",
+   "familia": "plugins",
+   "kb": 6.5
+  },
+  {
+   "ruta": "soma/plugins/ScummInteractionPlugin.js",
+   "nombre": "ScummInteractionPlugin",
+   "familia": "plugins",
+   "kb": 9.3
+  },
+  {
+   "ruta": "soma/plugins/SkyRenderPlugin.js",
+   "nombre": "SkyRenderPlugin",
+   "familia": "plugins",
+   "kb": 1.7
+  },
+  {
+   "ruta": "soma/plugins/SparkSystem.js",
+   "nombre": "SparkSystem",
+   "familia": "plugins",
+   "kb": 5.0
+  },
+  {
+   "ruta": "soma/plugins/SpatialAudioPlugin.js",
+   "nombre": "SpatialAudioPlugin",
+   "familia": "plugins",
+   "kb": 5.4
+  },
+  {
+   "ruta": "soma/plugins/VolumetricsPlugin.js",
+   "nombre": "VolumetricsPlugin",
+   "familia": "plugins",
+   "kb": 8.7
+  },
+  {
+   "ruta": "soma/tools/CrossSectionDrawTool.js",
+   "nombre": "CrossSectionDrawTool",
+   "familia": "tools",
+   "kb": 13.1
+  },
+  {
+   "ruta": "soma/utils/AnimationUtils.js",
+   "nombre": "AnimationUtils",
+   "familia": "utils",
+   "kb": 2.1
+  },
+  {
+   "ruta": "soma/utils/MMOClient.js",
+   "nombre": "MMOClient",
+   "familia": "utils",
+   "kb": 2.3
+  },
+  {
+   "ruta": "world/AABBSystem.js",
+   "nombre": "AABBSystem",
+   "familia": "world",
+   "kb": 1.4
+  },
+  {
+   "ruta": "world/BSPSystem.js",
+   "nombre": "BSPSystem",
+   "familia": "world",
+   "kb": 9.1
+  },
+  {
+   "ruta": "world/BspPropSystem.js",
+   "nombre": "BspPropSystem",
+   "familia": "world",
+   "kb": 4.2
+  },
+  {
+   "ruta": "world/CabinetBSPEngine.js",
+   "nombre": "CabinetBSPEngine",
+   "familia": "world",
+   "kb": 4.9
+  },
+  {
+   "ruta": "world/CroupierSystem.js",
+   "nombre": "CroupierSystem",
+   "familia": "world",
+   "kb": 5.0
+  },
+  {
+   "ruta": "world/OverworldECS.js",
+   "nombre": "OverworldECS",
+   "familia": "world",
+   "kb": 3.3
+  },
+  {
+   "ruta": "world/core/BaseEnvironmentFactory.js",
+   "nombre": "BaseEnvironmentFactory",
+   "familia": "core",
+   "kb": 7.7
+  },
+  {
+   "ruta": "world/core/BaseSimulationSystem.js",
+   "nombre": "BaseSimulationSystem",
+   "familia": "core",
+   "kb": 4.2
+  },
+  {
+   "ruta": "world/core/DeterministicScope.js",
+   "nombre": "DeterministicScope",
+   "familia": "core",
+   "kb": 7.8
+  },
+  {
+   "ruta": "world/core/FlickerSystem.js",
+   "nombre": "FlickerSystem",
+   "familia": "core",
+   "kb": 4.7
+  },
+  {
+   "ruta": "world/core/GeometryBaker.js",
+   "nombre": "GeometryBaker",
+   "familia": "core",
+   "kb": 1.4
+  },
+  {
+   "ruta": "world/core/InstancedRenderPool.js",
+   "nombre": "InstancedRenderPool",
+   "familia": "core",
+   "kb": 4.5
+  },
+  {
+   "ruta": "world/core/ParticleEmitter.js",
+   "nombre": "ParticleEmitter",
+   "familia": "core",
+   "kb": 7.4
+  },
+  {
+   "ruta": "world/core/ProceduralLocomotion.js",
+   "nombre": "ProceduralLocomotion",
+   "familia": "core",
+   "kb": 2.4
+  },
+  {
+   "ruta": "world/core/ProceduralTextureFactory.js",
+   "nombre": "ProceduralTextureFactory",
+   "familia": "core",
+   "kb": 13.0
+  },
+  {
+   "ruta": "world/core/SeededRNG.js",
+   "nombre": "SeededRNG",
+   "familia": "core",
+   "kb": 2.6
+  },
+  {
+   "ruta": "world/factories/AquariumEnvironmentFactory.js",
+   "nombre": "AquariumEnvironmentFactory",
+   "familia": "factories",
+   "kb": 26.1
+  },
+  {
+   "ruta": "world/factories/ArcadeDojoFactory.js",
+   "nombre": "ArcadeDojoFactory",
+   "familia": "factories",
+   "kb": 6.4
+  },
+  {
+   "ruta": "world/factories/ArcadeRoomManager.js",
+   "nombre": "ArcadeRoomManager",
+   "familia": "factories",
+   "kb": 19.3
+  },
+  {
+   "ruta": "world/factories/ArcadeTableRoomFactory.js",
+   "nombre": "ArcadeTableRoomFactory",
+   "familia": "factories",
+   "kb": 9.3
+  },
+  {
+   "ruta": "world/factories/ArchetypeEnvironmentFactory.js",
+   "nombre": "ArchetypeEnvironmentFactory",
+   "familia": "factories",
+   "kb": 4.9
+  },
+  {
+   "ruta": "world/factories/AsteroidsFactory.js",
+   "nombre": "AsteroidsFactory",
+   "familia": "factories",
+   "kb": 8.7
+  },
+  {
+   "ruta": "world/factories/BiolabEnvironmentFactory.js",
+   "nombre": "BiolabEnvironmentFactory",
+   "familia": "factories",
+   "kb": 16.0
+  },
+  {
+   "ruta": "world/factories/CabinetEnvironmentFactory.js",
+   "nombre": "CabinetEnvironmentFactory",
+   "familia": "factories",
+   "kb": 15.7
+  },
+  {
+   "ruta": "world/factories/CarverEnvironmentFactory.js",
+   "nombre": "CarverEnvironmentFactory",
+   "familia": "factories",
+   "kb": 58.0
+  },
+  {
+   "ruta": "world/factories/ChopperFlightFactory.js",
+   "nombre": "ChopperFlightFactory",
+   "familia": "factories",
+   "kb": 7.2
+  },
+  {
+   "ruta": "world/factories/ColonialControlRoomFactory.js",
+   "nombre": "ColonialControlRoomFactory",
+   "familia": "factories",
+   "kb": 5.5
+  },
+  {
+   "ruta": "world/factories/CompizEnvironmentFactory.js",
+   "nombre": "CompizEnvironmentFactory",
+   "familia": "factories",
+   "kb": 7.7
+  },
+  {
+   "ruta": "world/factories/CuccoEnvironmentFactory.js",
+   "nombre": "CuccoEnvironmentFactory",
+   "familia": "factories",
+   "kb": 29.3
+  },
+  {
+   "ruta": "world/factories/DojoEnvironmentFactory.js",
+   "nombre": "DojoEnvironmentFactory",
+   "familia": "factories",
+   "kb": 7.1
+  },
+  {
+   "ruta": "world/factories/EnvironmentFactory.js",
+   "nombre": "EnvironmentFactory",
+   "familia": "factories",
+   "kb": 19.7
+  },
+  {
+   "ruta": "world/factories/InteractionLabFactory.js",
+   "nombre": "InteractionLabFactory",
+   "familia": "factories",
+   "kb": 20.3
+  },
+  {
+   "ruta": "world/factories/KatamariFactory.js",
+   "nombre": "KatamariFactory",
+   "familia": "factories",
+   "kb": 4.9
+  },
+  {
+   "ruta": "world/factories/LocomotionEnvironmentFactory.js",
+   "nombre": "LocomotionEnvironmentFactory",
+   "familia": "factories",
+   "kb": 14.7
+  },
+  {
+   "ruta": "world/factories/NeonSignFactory.js",
+   "nombre": "NeonSignFactory",
+   "familia": "factories",
+   "kb": 3.5
+  },
+  {
+   "ruta": "world/factories/ProceduralBuildingFactory.js",
+   "nombre": "ProceduralBuildingFactory",
+   "familia": "factories",
+   "kb": 46.5
+  },
+  {
+   "ruta": "world/factories/ProceduralPropsFactory.js",
+   "nombre": "ProceduralPropsFactory",
+   "familia": "factories",
+   "kb": 8.3
+  },
+  {
+   "ruta": "world/factories/RaccoonEnvironmentFactory.js",
+   "nombre": "RaccoonEnvironmentFactory",
+   "familia": "factories",
+   "kb": 18.4
+  },
+  {
+   "ruta": "world/factories/TrafficEnvironmentFactory.js",
+   "nombre": "TrafficEnvironmentFactory",
+   "familia": "factories",
+   "kb": 13.8
+  },
+  {
+   "ruta": "world/factories/TreadmillEnvironmentFactory.js",
+   "nombre": "TreadmillEnvironmentFactory",
+   "familia": "factories",
+   "kb": 7.4
+  },
+  {
+   "ruta": "world/factories/VoxelGlitchFactory.js",
+   "nombre": "VoxelGlitchFactory",
+   "familia": "factories",
+   "kb": 15.7
+  },
+  {
+   "ruta": "world/systems/AsteroidsEngine.js",
+   "nombre": "AsteroidsEngine",
+   "familia": "systems",
+   "kb": 9.2
+  },
+  {
+   "ruta": "world/systems/AsteroidsSystem.js",
+   "nombre": "AsteroidsSystem",
+   "familia": "systems",
+   "kb": 21.5
+  },
+  {
+   "ruta": "world/systems/BoidsSystem.js",
+   "nombre": "BoidsSystem",
+   "familia": "systems",
+   "kb": 7.0
+  },
+  {
+   "ruta": "world/systems/BulletHeavenEngine.js",
+   "nombre": "BulletHeavenEngine",
+   "familia": "systems",
+   "kb": 21.3
+  },
+  {
+   "ruta": "world/systems/CabinetEscapeSystem.js",
+   "nombre": "CabinetEscapeSystem",
+   "familia": "systems",
+   "kb": 10.4
+  },
+  {
+   "ruta": "world/systems/CabinetJumpscareSystem.js",
+   "nombre": "CabinetJumpscareSystem",
+   "familia": "systems",
+   "kb": 4.5
+  },
+  {
+   "ruta": "world/systems/CarverEntitySystem.js",
+   "nombre": "CarverEntitySystem",
+   "familia": "systems",
+   "kb": 2.7
+  },
+  {
+   "ruta": "world/systems/CarverSystem.js",
+   "nombre": "CarverSystem",
+   "familia": "systems",
+   "kb": 12.1
+  },
+  {
+   "ruta": "world/systems/ChopperAquariumEngine.js",
+   "nombre": "ChopperAquariumEngine",
+   "familia": "systems",
+   "kb": 17.3
+  },
+  {
+   "ruta": "world/systems/CorporateSeekerSystem.js",
+   "nombre": "CorporateSeekerSystem",
+   "familia": "systems",
+   "kb": 13.5
+  },
+  {
+   "ruta": "world/systems/CuccoGameSystem.js",
+   "nombre": "CuccoGameSystem",
+   "familia": "systems",
+   "kb": 10.8
+  },
+  {
+   "ruta": "world/systems/EcosystemSystem.js",
+   "nombre": "EcosystemSystem",
+   "familia": "systems",
+   "kb": 22.6
+  },
+  {
+   "ruta": "world/systems/ElevatorSystem.js",
+   "nombre": "ElevatorSystem",
+   "familia": "systems",
+   "kb": 1.3
+  },
+  {
+   "ruta": "world/systems/EnergySystem.js",
+   "nombre": "EnergySystem",
+   "familia": "systems",
+   "kb": 1.0
+  },
+  {
+   "ruta": "world/systems/FileSystemDioramaSystem.js",
+   "nombre": "FileSystemDioramaSystem",
+   "familia": "systems",
+   "kb": 54.0
+  },
+  {
+   "ruta": "world/systems/FoodChainSystem.js",
+   "nombre": "FoodChainSystem",
+   "familia": "systems",
+   "kb": 30.5
+  },
+  {
+   "ruta": "world/systems/HidingSpotSystem.js",
+   "nombre": "HidingSpotSystem",
+   "familia": "systems",
+   "kb": 0.6
+  },
+  {
+   "ruta": "world/systems/IDMSystem.js",
+   "nombre": "IDMSystem",
+   "familia": "systems",
+   "kb": 9.4
+  },
+  {
+   "ruta": "world/systems/InteractionLabEngine.js",
+   "nombre": "InteractionLabEngine",
+   "familia": "systems",
+   "kb": 6.7
+  },
+  {
+   "ruta": "world/systems/KataSequenceSystem.js",
+   "nombre": "KataSequenceSystem",
+   "familia": "systems",
+   "kb": 3.1
+  },
+  {
+   "ruta": "world/systems/KatamariEngine.js",
+   "nombre": "KatamariEngine",
+   "familia": "systems",
+   "kb": 1.1
+  },
+  {
+   "ruta": "world/systems/KatamariScaleSystem.js",
+   "nombre": "KatamariScaleSystem",
+   "familia": "systems",
+   "kb": 15.9
+  },
+  {
+   "ruta": "world/systems/KatamariSystem.js",
+   "nombre": "KatamariSystem",
+   "familia": "systems",
+   "kb": 7.5
+  },
+  {
+   "ruta": "world/systems/KinematicControllerSystem.js",
+   "nombre": "KinematicControllerSystem",
+   "familia": "systems",
+   "kb": 4.2
+  },
+  {
+   "ruta": "world/systems/KinematicRageSystem.js",
+   "nombre": "KinematicRageSystem",
+   "familia": "systems",
+   "kb": 4.0
+  },
+  {
+   "ruta": "world/systems/LinearNavAgentSystem.js",
+   "nombre": "LinearNavAgentSystem",
+   "familia": "systems",
+   "kb": 2.4
+  },
+  {
+   "ruta": "world/systems/NavMeshAgentSystem.js",
+   "nombre": "NavMeshAgentSystem",
+   "familia": "systems",
+   "kb": 8.4
+  },
+  {
+   "ruta": "world/systems/NavMeshExtractionEngine.js",
+   "nombre": "NavMeshExtractionEngine",
+   "familia": "systems",
+   "kb": 4.9
+  },
+  {
+   "ruta": "world/systems/NeuralDrivingSystem.js",
+   "nombre": "NeuralDrivingSystem",
+   "familia": "systems",
+   "kb": 3.7
+  },
+  {
+   "ruta": "world/systems/OrbitalKinematicsSystem.js",
+   "nombre": "OrbitalKinematicsSystem",
+   "familia": "systems",
+   "kb": 10.1
+  },
+  {
+   "ruta": "world/systems/PhantomFSMSystem.js",
+   "nombre": "PhantomFSMSystem",
+   "familia": "systems",
+   "kb": 5.3
+  },
+  {
+   "ruta": "world/systems/PheromoneGrid.js",
+   "nombre": "PheromoneGrid",
+   "familia": "systems",
+   "kb": 4.9
+  },
+  {
+   "ruta": "world/systems/ProceduralRiggingEngine.js",
+   "nombre": "ProceduralRiggingEngine",
+   "familia": "systems",
+   "kb": 4.6
+  },
+  {
+   "ruta": "world/systems/RLGymBridge.js",
+   "nombre": "RLGymBridge",
+   "familia": "systems",
+   "kb": 1.7
+  },
+  {
+   "ruta": "world/systems/RaccoonCitySystem.js",
+   "nombre": "RaccoonCitySystem",
+   "familia": "systems",
+   "kb": 2.8
+  },
+  {
+   "ruta": "world/systems/RaccoonPlanetSystem.js",
+   "nombre": "RaccoonPlanetSystem",
+   "familia": "systems",
+   "kb": 1.5
+  },
+  {
+   "ruta": "world/systems/RaccoonSpaceCore.js",
+   "nombre": "RaccoonSpaceCore",
+   "familia": "systems",
+   "kb": 12.1
+  },
+  {
+   "ruta": "world/systems/RaccoonSpaceSystem.js",
+   "nombre": "RaccoonSpaceSystem",
+   "familia": "systems",
+   "kb": 4.5
+  },
+  {
+   "ruta": "world/systems/RoboticArmSystem.js",
+   "nombre": "RoboticArmSystem",
+   "familia": "systems",
+   "kb": 30.8
+  },
+  {
+   "ruta": "world/systems/ScummInteractionEngine.js",
+   "nombre": "ScummInteractionEngine",
+   "familia": "systems",
+   "kb": 3.4
+  },
+  {
+   "ruta": "world/systems/ScummOverworldEngine.js",
+   "nombre": "ScummOverworldEngine",
+   "familia": "systems",
+   "kb": 2.1
+  },
+  {
+   "ruta": "world/systems/SimonSaysSystem.js",
+   "nombre": "SimonSaysSystem",
+   "familia": "systems",
+   "kb": 8.0
+  },
+  {
+   "ruta": "world/systems/StealthSightSystem.js",
+   "nombre": "StealthSightSystem",
+   "familia": "systems",
+   "kb": 4.1
+  },
+  {
+   "ruta": "world/systems/TelemetryBridge.js",
+   "nombre": "TelemetryBridge",
+   "familia": "systems",
+   "kb": 3.0
+  },
+  {
+   "ruta": "world/systems/TimedRelaySystem.js",
+   "nombre": "TimedRelaySystem",
+   "familia": "systems",
+   "kb": 0.9
+  },
+  {
+   "ruta": "world/systems/TrafficSurvivalSystem.js",
+   "nombre": "TrafficSurvivalSystem",
+   "familia": "systems",
+   "kb": 20.0
+  },
+  {
+   "ruta": "world/systems/TrafficSystem.js",
+   "nombre": "TrafficSystem",
+   "familia": "systems",
+   "kb": 5.3
+  },
+  {
+   "ruta": "world/systems/TurretCombatSystem.js",
+   "nombre": "TurretCombatSystem",
+   "familia": "systems",
+   "kb": 6.2
+  },
+  {
+   "ruta": "world/systems/WorldBuilderSystem.js",
+   "nombre": "WorldBuilderSystem",
+   "familia": "systems",
+   "kb": 12.9
+  },
+  {
+   "ruta": "world/systems/ml_dqn_idm.js",
+   "nombre": "ml_dqn_idm",
+   "familia": "systems",
+   "kb": 5.8
+  },
+  {
+   "ruta": "world/utils/ModelUtils.js",
+   "nombre": "ModelUtils",
+   "familia": "utils",
+   "kb": 1.2
+  },
+  {
+   "ruta": "world/utils/ObservationRewardResolver.js",
+   "nombre": "ObservationRewardResolver",
+   "familia": "utils",
+   "kb": 7.1
+  }
+ ],
+ "total": 179
+}

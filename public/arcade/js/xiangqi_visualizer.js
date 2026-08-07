@@ -11,7 +11,25 @@ let redMat, blackMat, boardMat, pieceGeo;
 const engine = new SovereignBoardEngine({
     gameId: 'xiangqi',
     onInit3D: function(scene, camera, renderer) {
-        camera.position.set(0, 10, 8);
+        // ⚠️ MÁS LEJOS QUE LOS DEMÁS, PORQUE ESTE TABLERO ES MÁS GRANDE.
+        // Estaba en `(0, 10, 8)` — la misma cámara que reversi y damas, que son
+        // 8×8. El xiangqi es 9×10, así que se salía por abajo del encuadre: se
+        // veía bien pero incompleto, y con el ratón recién puesto eso molesta de
+        // verdad, porque hay casillas a las que hay que ir orbitando.
+        camera.position.set(0, 13, 11);
+
+        // El ratón, mismo módulo que go y reversi pero en modo MOVER: aquí una
+        // jugada son dos casillas (`a6a5`), no una. La geometría sale de cómo
+        // coloca sus propias piezas — `mesh.position.set(c - 4, 0.08, r - 4.5)` —
+        // y las filas se numeran desde 0, que es lo que dicen sus jugadas.
+        import('./raton_tablero.js').then(({ engancharRaton, nombrarLetraNumero }) => {
+            engancharRaton({
+                engine, modo: 'mover',
+                columnas: GRID_COLS + 1, filas: GRID_ROWS + 1, paso: SPACING,
+                origen: { x: -4, z: -4.5 },
+                nombrar: nombrarLetraNumero({ filas: GRID_ROWS + 1, desdeCero: true }),
+            });
+        });
         camera.lookAt(0, 0, 0);
 
         engine.controls = new THREE.OrbitControls(camera, renderer.domElement);

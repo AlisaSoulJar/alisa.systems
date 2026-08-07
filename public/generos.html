@@ -1,0 +1,90 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA — matriz de géneros</title>
+<meta name="alisa-escaparate" content="motor">
+<style>
+:root{color-scheme:light dark}
+body{margin:0;padding:2.5rem 1.25rem;background:#f4f6f8;color:#1a2230;
+     font:15px/1.6 ui-sans-serif,system-ui,sans-serif}
+main{max-width:56rem;margin:0 auto}
+h1{font:600 1.5rem/1.2 ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase}
+p.sub{color:#4a5866;max-width:44rem}
+table{border-collapse:collapse;width:100%;margin:1.5rem 0;background:#fff;
+      border:1px solid #d9e0e7;font-size:14px}
+th,td{padding:.4rem .6rem;border-bottom:1px solid #eef2f5;text-align:center}
+thead th{font:600 11px/1.4 ui-monospace,monospace;text-transform:uppercase;
+         letter-spacing:.06em;color:#4a5866;text-align:center}
+tbody th{text-align:left;font-weight:500}
+tbody th a{color:#1a2230;text-decoration:none;border-bottom:1px solid #c9d3dd}
+tbody th a:hover{border-bottom-color:#1a2230}
+i{font-style:normal}.si{color:#1a2230}.no{color:#c2ccd6}.nd{color:#c0392b}
+td.var{color:#4a5866;font-size:13px}
+ul.ejes,ul.perf{list-style:none;padding:0}
+ul.ejes li{margin:.3rem 0}ul.ejes code,ul.perf code{background:#e9eef3;padding:.1rem .35rem;border-radius:3px}
+ul.perf li{margin:.35rem 0}ul.perf span{color:#4a5866}
+footer{margin-top:2.5rem;color:#7f8c8d;font-size:13px}
+@media(prefers-color-scheme:dark){
+ body{background:#12171d;color:#e6ecf2}table{background:#1a2028;border-color:#2b3540}
+ th,td{border-bottom-color:#232c36}tbody th a{color:#e6ecf2;border-bottom-color:#3a4550}
+ .si{color:#e6ecf2}.no{color:#3d4854}ul.ejes code,ul.perf code{background:#232c36}
+ p.sub,thead th,ul.perf span,td.var{color:#9aa8b5}}
+</style></head><body><main>
+<h1>Matriz de géneros</h1>
+<p class="sub">Qué estructuras de decisión cubre el motor. <b>Nada de esta tabla está
+escrito a mano</b>: se generó jugando los 26 juegos y observando cómo se
+comportan. <i class="si">●</i> medido presente · <i class="no">·</i> medido ausente ·
+<i class="nd">?</i> no observable. Cada juego enlaza a su tablero — si dudas de una
+fila, ábrela y juega.</p>
+<p class="sub">Se clasifica por estructura de decisión y no por género de tienda,
+porque «puzle» o «cartas» no dicen qué hay que saber hacer para jugar bien: ajedrez
+y go se venden en estanterías distintas y plantean el mismo problema, mientras que
+sokoban y cripta comparten estantería y no se parecen en nada donde importa.</p>
+<ul class="ejes"><li><code>espacial</code> — hay una rejilla: el problema tiene geometría</li><li><code>oculto</code> — hay estado que el jugador NO ve</li><li><code>rival</code> — decide alguien más (a favor o en contra: ver cooperativo)</li><li><code>autonomo</code> — hay agentes que se mueven decidas lo que decidas</li><li><code>irreversible</code> — hay jugadas que no se pueden deshacer</li><li><code>simultaneo</code> — se decide a la vez: el segundo no ve lo que eligió el primero</li><li><code>cooperativo</code> — los dos asientos ganan o pierden juntos</li></ul>
+<table><thead><tr><th>juego</th><th>espacial</th><th>oculto</th><th>rival</th><th>autonomo</th><th>irreversible</th><th>simultaneo</th><th>cooperativo</th><th>depende de<br>quién juega</th></tr></thead>
+<tbody><tr><th><a href="/arcade/jugar.html?juego=ajedrez">ajedrez</a></th><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="nd">?</i></td><td class="var">—</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=go">go</a></th><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="nd">?</i></td><td class="var">—</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=reversi">reversi</a></th><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="nd">?</i></td><td class="var">—</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=damas">damas</a></th><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="nd">?</i></td><td class="var">—</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=xiangqi">xiangqi</a></th><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="nd">?</i></td><td class="var">—</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=mancala">mancala</a></th><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="nd">?</i></td><td class="var">—</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=snake">snake</a></th><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="no">·</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="no">·</i></td><td class="var">—</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=fagocito">fagocito</a></th><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="no">·</i></td><td class="var">—</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=peaton">peaton</a></th><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="no">·</i></td><td class="var">—</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=blackjack">blackjack</a></th><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="nd">?</i></td><td class="var">sí</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=poker">poker</a></th><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="nd">?</i></td><td class="var">sí</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=brisca">brisca</a></th><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="no">·</i></td><td class="var">sí</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=tute">tute</a></th><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="no">·</i></td><td class="var">sí</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=hearts">hearts</a></th><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="nd">?</i></td><td class="var">sí</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=spades">spades</a></th><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="no">·</i></td><td class="var">sí</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=guerra">guerra</a></th><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="no">·</i></td><td class="var">sí</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=gofish">gofish</a></th><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="nd">?</i></td><td class="var">sí</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=unit">unit</a></th><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="no">·</i></td><td class="var">sí</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=entropy">entropy</a></th><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="no">·</i></td><td class="var">sí</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=sokoban">sokoban</a></th><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="no">·</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="no">·</i></td><td class="var">sí</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=cripta">cripta</a></th><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="no">·</i></td><td class="var">sí</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=flota">flota</a></th><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="no">·</i></td><td class="var">sí</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=defensa">defensa</a></th><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="no">·</i></td><td class="var">sí</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=sigilo">sigilo</a></th><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="no">·</i></td><td class="var">sí</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=frentes">frentes</a></th><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="nd">?</i></td><td class="var">—</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=relevo">relevo</a></th><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td><i class="no">·</i></td><td><i class="si">●</i></td><td class="var">sí</td></tr></tbody></table>
+<h2 style="font:600 1rem/1.2 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase">
+Perfiles demostrados</h2>
+<p class="sub">Que los cinco ejes estén cubiertos no significa que lo estén sus
+combinaciones, y son las combinaciones las que duelen: tener juegos con rival y
+juegos con información oculta no equivale a tener uno con las dos cosas —el farol
+sólo existe en la intersección. <b>11 de 128
+posibles.</b></p>
+<ul class="perf"><li><code>oculto+rival+irreversible</code> <span>blackjack, poker, brisca, tute, hearts, spades, gofish, unit, entropy</span></li>
+<li><code>espacial+rival+irreversible</code> <span>ajedrez, go, reversi, damas, xiangqi, mancala</span></li>
+<li><code>espacial+irreversible</code> <span>snake, sokoban</span></li>
+<li><code>espacial+autonomo+irreversible</code> <span>fagocito, peaton</span></li>
+<li><code>oculto+irreversible</code> <span>guerra</span></li>
+<li><code>espacial+oculto+autonomo+irreversible</code> <span>cripta</span></li>
+<li><code>espacial+oculto+rival+irreversible</code> <span>flota</span></li>
+<li><code>espacial+rival+autonomo+irreversible</code> <span>defensa</span></li>
+<li><code>espacial+oculto+rival+autonomo+irreversible</code> <span>sigilo</span></li>
+<li><code>espacial+rival+irreversible+simultaneo</code> <span>frentes</span></li>
+<li><code>espacial+oculto+rival+irreversible+cooperativo</code> <span>relevo</span></li></ul>
+<footer>Generado por <code>matriz_generos.mjs</code> en cada empaquetado.
+Si una fila miente, la prueba está en <code>/arcade/jugar.html</code>.</footer>
+</main></body></html>

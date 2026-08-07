@@ -223,4 +223,27 @@ function onPointerDown(ev) {
     seleccion = null;
 }
 
+/**
+ * ⚠️ ESTA PÁGINA NO MONTABA EL HUD, Y NADIE LO HABÍA NOTADO.
+ *
+ * Las otras cinco páginas de tablero llaman a `mountAgentHUD` y ésta no. Sin él
+ * no había ni panel de asientos —o sea que no se podía poner una política ni un
+ * modelo a jugar— ni caja para escribir una jugada. Sólo el ratón.
+ *
+ * Es justo lo que pasa cuando el mismo andamio está copiado en seis sitios: una
+ * copia se queda atrás y sigue pareciendo que funciona, porque funciona… menos
+ * en lo que le falta. Se vio al estandarizar los asientos: `checkers` era la
+ * única que escribía `engine,engine` en la dirección, porque leía unos
+ * desplegables que no existían.
+ *
+ * El bloque de arriba es el mismo que usa `reversi_visualizer.js` — los dos
+ * cuentan fichas— y `ui-forced` es lo suyo: el aviso de captura obligada.
+ */
+engine.mountAgentHUD('hud-container', 'Sovereign Checkers', `
+    <div class="disc-counts">
+        <span class="white-count">⚪ <span id="white-discs">12</span></span>
+        <span class="black-count">⚫ <span id="black-discs">12</span></span>
+    </div>
+    <div id="ui-forced" style="font-size:10px; color:#FF4081; min-height:12px; text-align:center;"></div>
+`);
 engine.start();

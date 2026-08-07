@@ -40,8 +40,8 @@ const impo = (rel) => import(pathToFileURL(path.join(AQUI, rel)).href);
 const { CATALOGO } = await impo('public/js/alisa-engine/src/gym/registro.js');
 const { verificar } = await impo('public/arcade/js/protohub/Verificador.js');
 const { cargarReglas } = await impo('public/arcade/js/protohub/rules/index.js');
-const { jugarEpisodio } = await impo('agentes/llm.mjs');
-const { ollama, eco, azar } = await impo('agentes/proveedores.mjs');
+const { jugarEpisodio } = await impo('public/arcade/js/agentes/llm.js');
+const { ollama, eco, azar } = await impo('public/arcade/js/agentes/proveedores.js');
 
 // ── argumentos ───────────────────────────────────────────────────
 const args = {};

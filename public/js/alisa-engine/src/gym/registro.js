@@ -63,6 +63,39 @@ const PROTOHUB = [
     // cartas tapadas salen `null` en el estado, también las propias. Y la regla
     // de anular columnas hace que un rey pueda ser la mejor carta del mazo.
     { juego: 'entropy', titulo: 'Entropy', crear: 'crearEntropy' },
+    // ⚠️ El primero SIN azar y sin rival: pura planificación en una rejilla, con
+    // movimientos que no se pueden deshacer. Cubre una estructura de decisión
+    // que no tenía ninguno de los diecinueve anteriores.
+    //
+    // Y el primero que publica `sustrato(p)` nativo, así que su dibujo 2D, su
+    // escena 3D y su texto salieron el mismo día que las reglas — sin escribir
+    // un visualizador. No lleva `crear` porque su módulo exporta el objeto de
+    // reglas directamente, sin fábrica: no necesita leer el catálogo de cartas.
+    { juego: 'sokoban', titulo: 'Sokoban', nombre: 'sokoban' },
+    // Cripta es el primer entorno del gym con OBSERVABILIDAD PARCIAL: la
+    // observación no es el estado, es lo que el agente ha visto. Los veinte
+    // anteriores entregan el tablero entero, así que un agente sin memoria no
+    // pierde nada por no tenerla; aquí sí. Es el único que puntúa recordar.
+    { juego: 'cripta', titulo: 'Cripta', nombre: 'cripta' },
+    // Flota es el primer entorno con observación POR ASIENTO: dos agentes, dos
+    // vistas distintas del mismo estado, y ninguno puede ver la del otro.
+    { juego: 'flota', titulo: 'Flota', nombre: 'flota' },
+    // Defensa es el primer entorno con economía: la recompensa de una acción no
+    // llega en el paso siguiente sino varios después, cuando el oro que ahorraste
+    // hace falta. Es el único que castiga de verdad la política miope.
+    { juego: 'defensa', titulo: 'Defensa', nombre: 'defensa' },
+    // Sigilo es el primer entorno ASIMETRICO: los dos asientos no hacen la misma
+    // tarea ni cobran por lo mismo. Un agente puede ser bueno huyendo y malo
+    // cazando, y hasta ahora no teniamos donde verlo.
+    { juego: 'sigilo', titulo: 'Sigilo', nombre: 'sigilo' },
+    // Frentes es el primer entorno SIMULTÁNEO: la observación no contiene la
+    // jugada pendiente del rival porque todavía no existe. Un agente no puede
+    // planear contra el estado, tiene que modelar a quien tiene enfrente.
+    { juego: 'frentes', titulo: 'Frentes', nombre: 'frentes' },
+    // Relevo es el primer entorno COOPERATIVO: la recompensa es compartida, así
+    // que un agente no puede maximizar la suya a costa del otro. Mide entenderse
+    // sin hablar, que es lo que ninguno de los veintiséis anteriores puntuaba.
+    { juego: 'relevo', titulo: 'Relevo', nombre: 'relevo' },
 ];
 
 /** Entornos escritos a mano, cada uno con su propio módulo. */

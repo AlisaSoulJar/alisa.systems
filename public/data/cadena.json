@@ -27,6 +27,22 @@
     [
       "sala",
       "estación en la Sala del Huevo"
+    ],
+    [
+      "tablero3d",
+      "tablero 3D propio, no sólo la mesa funcional"
+    ],
+    [
+      "raton",
+      "se juega clicando el tablero, no escribiendo la jugada"
+    ],
+    [
+      "asientos",
+      "cada silla admite persona, política o modelo"
+    ],
+    [
+      "compartida",
+      "dos seres pueden sentarse a la MISMA partida"
     ]
   ],
   "juegos": [
@@ -40,9 +56,13 @@
         "marcador": true,
         "casa": true,
         "lab": true,
-        "sala": true
+        "sala": true,
+        "tablero3d": true,
+        "raton": true,
+        "asientos": true,
+        "compartida": true
       },
-      "completos": 7
+      "completos": 11
     },
     {
       "juego": "go",
@@ -54,9 +74,13 @@
         "marcador": true,
         "casa": true,
         "lab": true,
-        "sala": true
+        "sala": true,
+        "tablero3d": true,
+        "raton": true,
+        "asientos": true,
+        "compartida": true
       },
-      "completos": 7
+      "completos": 11
     },
     {
       "juego": "reversi",
@@ -68,9 +92,13 @@
         "marcador": true,
         "casa": true,
         "lab": true,
-        "sala": true
+        "sala": true,
+        "tablero3d": true,
+        "raton": true,
+        "asientos": true,
+        "compartida": true
       },
-      "completos": 7
+      "completos": 11
     },
     {
       "juego": "damas",
@@ -82,9 +110,13 @@
         "marcador": true,
         "casa": true,
         "lab": true,
-        "sala": true
+        "sala": true,
+        "tablero3d": true,
+        "raton": true,
+        "asientos": true,
+        "compartida": true
       },
-      "completos": 7
+      "completos": 11
     },
     {
       "juego": "xiangqi",
@@ -96,9 +128,13 @@
         "marcador": true,
         "casa": true,
         "lab": true,
-        "sala": true
+        "sala": true,
+        "tablero3d": true,
+        "raton": true,
+        "asientos": true,
+        "compartida": true
       },
-      "completos": 7
+      "completos": 11
     },
     {
       "juego": "mancala",
@@ -110,9 +146,13 @@
         "marcador": true,
         "casa": true,
         "lab": true,
-        "sala": true
+        "sala": true,
+        "tablero3d": true,
+        "raton": true,
+        "asientos": true,
+        "compartida": true
       },
-      "completos": 7
+      "completos": 11
     },
     {
       "juego": "snake",
@@ -124,9 +164,13 @@
         "marcador": true,
         "casa": true,
         "lab": false,
-        "sala": false
+        "sala": false,
+        "tablero3d": false,
+        "raton": false,
+        "asientos": true,
+        "compartida": false
       },
-      "completos": 5
+      "completos": 6
     },
     {
       "juego": "fagocito",
@@ -138,9 +182,13 @@
         "marcador": true,
         "casa": true,
         "lab": false,
-        "sala": false
+        "sala": false,
+        "tablero3d": false,
+        "raton": false,
+        "asientos": true,
+        "compartida": false
       },
-      "completos": 5
+      "completos": 6
     },
     {
       "juego": "peaton",
@@ -152,9 +200,13 @@
         "marcador": true,
         "casa": true,
         "lab": false,
-        "sala": true
+        "sala": true,
+        "tablero3d": false,
+        "raton": false,
+        "asientos": true,
+        "compartida": false
       },
-      "completos": 6
+      "completos": 7
     },
     {
       "juego": "blackjack",
@@ -166,9 +218,13 @@
         "marcador": true,
         "casa": true,
         "lab": false,
-        "sala": true
+        "sala": true,
+        "tablero3d": false,
+        "raton": false,
+        "asientos": true,
+        "compartida": false
       },
-      "completos": 6
+      "completos": 7
     },
     {
       "juego": "poker",
@@ -180,9 +236,13 @@
         "marcador": true,
         "casa": true,
         "lab": true,
-        "sala": true
+        "sala": true,
+        "tablero3d": false,
+        "raton": false,
+        "asientos": true,
+        "compartida": false
       },
-      "completos": 7
+      "completos": 8
     },
     {
       "juego": "brisca",
@@ -194,9 +254,13 @@
         "marcador": true,
         "casa": true,
         "lab": false,
-        "sala": true
+        "sala": true,
+        "tablero3d": false,
+        "raton": false,
+        "asientos": true,
+        "compartida": true
       },
-      "completos": 6
+      "completos": 8
     },
     {
       "juego": "tute",
@@ -208,9 +272,13 @@
         "marcador": true,
         "casa": true,
         "lab": false,
-        "sala": true
+        "sala": true,
+        "tablero3d": false,
+        "raton": false,
+        "asientos": true,
+        "compartida": true
       },
-      "completos": 6
+      "completos": 8
     },
     {
       "juego": "hearts",
@@ -222,9 +290,13 @@
         "marcador": true,
         "casa": true,
         "lab": false,
-        "sala": true
+        "sala": true,
+        "tablero3d": false,
+        "raton": false,
+        "asientos": true,
+        "compartida": true
       },
-      "completos": 6
+      "completos": 8
     },
     {
       "juego": "spades",
@@ -236,9 +308,13 @@
         "marcador": true,
         "casa": true,
         "lab": false,
-        "sala": true
+        "sala": true,
+        "tablero3d": false,
+        "raton": false,
+        "asientos": true,
+        "compartida": true
       },
-      "completos": 6
+      "completos": 8
     },
     {
       "juego": "guerra",
@@ -250,9 +326,13 @@
         "marcador": true,
         "casa": true,
         "lab": false,
-        "sala": true
+        "sala": true,
+        "tablero3d": false,
+        "raton": false,
+        "asientos": true,
+        "compartida": false
       },
-      "completos": 6
+      "completos": 7
     },
     {
       "juego": "gofish",
@@ -264,9 +344,13 @@
         "marcador": true,
         "casa": true,
         "lab": false,
-        "sala": true
+        "sala": true,
+        "tablero3d": false,
+        "raton": false,
+        "asientos": true,
+        "compartida": true
       },
-      "completos": 6
+      "completos": 8
     },
     {
       "juego": "unit",
@@ -278,9 +362,13 @@
         "marcador": true,
         "casa": true,
         "lab": false,
-        "sala": true
+        "sala": true,
+        "tablero3d": false,
+        "raton": false,
+        "asientos": true,
+        "compartida": true
       },
-      "completos": 6
+      "completos": 8
     },
     {
       "juego": "entropy",
@@ -292,19 +380,45 @@
         "marcador": true,
         "casa": true,
         "lab": false,
-        "sala": true
+        "sala": true,
+        "tablero3d": false,
+        "raton": false,
+        "asientos": true,
+        "compartida": true
       },
-      "completos": 6
+      "completos": 8
+    },
+    {
+      "juego": "sokoban",
+      "titulo": "Sokoban",
+      "tiene": {
+        "reglas": true,
+        "pagina": true,
+        "gym": true,
+        "marcador": true,
+        "casa": true,
+        "lab": false,
+        "sala": false,
+        "tablero3d": false,
+        "raton": false,
+        "asientos": true,
+        "compartida": true
+      },
+      "completos": 7
     }
   ],
   "total": {
-    "reglas": 19,
-    "pagina": 19,
-    "gym": 19,
-    "marcador": 19,
-    "casa": 19,
+    "reglas": 20,
+    "pagina": 20,
+    "gym": 20,
+    "marcador": 20,
+    "casa": 20,
     "lab": 7,
-    "sala": 17
+    "sala": 17,
+    "tablero3d": 6,
+    "raton": 6,
+    "asientos": 20,
+    "compartida": 14
   },
-  "fecha": 1786025398332
+  "fecha": 1786120864413
 }
