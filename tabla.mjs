@@ -236,6 +236,8 @@ for (const e of entornos) {
 const normalizados = new Map();
 const incertidumbres = new Map();
 const juegosUtiles = [];
+/** Juegos donde el azar supera al rival de la casa: su columna se lee mal. */
+const techosFlojos = [];
 for (const [juego, fila] of datos) {
     if (descartes.get(juego)) continue;
     // El CUÁNTO se normaliza sobre las mismas semillas que jugaron los modelos.
@@ -287,6 +289,27 @@ for (const [juego, fila] of datos) {
         inc[part.nombre] = r?.error || serie.length < 2 ? null
             : 2 * errorTipico(serie) / Math.abs(hueco);
     }
+    /**
+     * ⚠️ SI EL AZAR LE GANA A LA CASA, LA CASA NO ES UN TECHO.
+     *
+     * Ya se descarta el juego cuyo techo no supera al suelo —la escala se
+     * invertiría—, pero faltaba el caso de en medio y apareció midiendo de
+     * verdad: en `rebaño` el azar sacó **2,39** y en `relevo` **1,80**, sobre una
+     * escala donde 1,00 es «tan bueno como el rival de la casa».
+     *
+     * No invalida el juego: sigue separando a quien juega de quien no. Lo que
+     * invalida es la LECTURA de su columna, porque un agente mediocre puede salir
+     * por encima de uno y parecer que ha batido al techo cuando lo que ha batido
+     * es una heurística mía que resultó peor que dar tumbos.
+     *
+     * Se avisa en vez de descartar. Descartarlo escondería el problema; decirlo
+     * lo pone donde se puede arreglar, que es en la política de la casa.
+     */
+    const azarN = n['azar'], casaN = n['casa (techo blando)'];
+    if (Number.isFinite(azarN) && Number.isFinite(casaN) && azarN > casaN) {
+        techosFlojos.push({ juego, azar: azarN });
+    }
+
     incertidumbres.set(juego, inc);
     normalizados.set(juego, n);
 }
@@ -343,6 +366,13 @@ for (const part of participantes) {
         + `${Math.min(...vals).toFixed(2).padStart(7)}${Math.max(...vals).toFixed(2).padStart(8)}`
         + `${String(tot('forzadas')).padStart(11)}${(tot('tokens') / 1000).toFixed(1).padStart(10)}k`
         + `${(tot('ms') / 1000).toFixed(0).padStart(7)}   ${verif}/${esperadas}`);
+}
+
+if (techosFlojos.length) {
+    console.log(`\n  ${rojo('⚠ techo flojo')} — el azar supera al rival de la casa en: `
+        + techosFlojos.map(t => `${t.juego} (${t.azar.toFixed(2)})`).join(', '));
+    console.log(gris('    Su columna sigue ordenando, pero el 1,00 deja de ser un techo:'));
+    console.log(gris('    ahí la política de la casa es peor que dar tumbos, y hay que arreglarla.'));
 }
 
 // ── por juego ────────────────────────────────────────────────────
@@ -452,6 +482,11 @@ volvieron a jugar entero contra el mismo fichero de reglas y dieron el mismo res
 <b>Lo que no verifica, no puntúa</b> — y no hay ningún modelo juez en ninguna parte.</p>
 <h2>Por juego</h2>
 <table><thead><tr><th>juego</th>${cab}</tr></thead><tbody>${porJuego}</tbody></table>
+${techosFlojos.length ? `<h2>Techos flojos</h2><p class="sub">En estos juegos <b>el azar
+supera al rival de la casa</b>, así que el 1,00 de su columna deja de ser un techo y un
+agente mediocre puede parecer que lo bate: ${techosFlojos.map(t => `<b>${t.juego}</b> (${t.azar.toFixed(2)})`).join(', ')}.
+Se dice en vez de esconderlo — el juego sigue ordenando, lo que hay que arreglar es
+nuestra política, no la tabla.</p>` : ''}
 ${fuera.length ? `<h2>Fuera de la media, y por qué</h2><ul class="sub">`
     + fuera.map(([j, m]) => `<li><b>${j}</b> — ${m}</li>`).join('') + '</ul>' : ''}
 <footer>Generada por <code>tabla.mjs</code> el ${new Date().toISOString().slice(0, 10)},
