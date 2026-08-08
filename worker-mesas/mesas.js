@@ -378,6 +378,27 @@ export class MesaCompartida {
             // si tiene sentido ofrecer «invitar a alguien» en esta mesa.
             ...(SOLITARIOS[mesa.juego]
                 ? { solitario: true, motivo: SOLITARIOS[mesa.juego] } : {}),
+            /**
+             * ⚠️ LA SITUACIÓN, EN TEXTO — Y FALTABA.
+             *
+             * La mesa entregaba `acciones` y nada más, así que un agente sabía
+             * qué podía hacer y no qué estaba pasando. Con eso sólo se puede
+             * elegir al azar entre lo ofrecido, que es exactamente la línea base
+             * contra la que queremos medirlo.
+             *
+             * Es la misma puerta de lenguaje que usa el arnés local —el mismo
+             * `describir(p, asiento)` de las reglas— así que quien juegue por
+             * HTTP recibe letra por letra lo que recibe quien juega en casa. Si
+             * fueran textos distintos, las dos filas de la tabla no serían
+             * comparables y no lo sabríamos.
+             *
+             * Y va POR ASIENTO: cada uno lee su situación, nunca la del vecino.
+             */
+            texto: (() => {
+                try {
+                    return reglas.describir ? reglas.describir(p, Math.max(0, i)) : null;
+                } catch { return null; }
+            })(),
             turno_de: this.quienTiraAhora(mesa, st),
             jugadas: mesa.jugadas.length,
             terminada: !!st.is_game_over,

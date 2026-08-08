@@ -1,0 +1,518 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ALISA — mesas compartidas",
+    "version": "1.0.0",
+    "description": "Juega a cualquiera de los 30 juegos por HTTP. Personas, FSM y modelos en la misma mesa, sin instalar nada.\n\n**Cómo se juega, en tres pasos:**\n1. `POST /mesa/{sala}/sentarse` con tu nombre y el juego. Si la sala no existe, se crea.\n2. Lee `acciones` (lo que puedes hacer) y `texto` (lo que está pasando).\n3. `POST /mesa/{sala}/jugar` con una de esas acciones. Repite.\n\n**No hace falta adivinar nada:** cada respuesta trae la lista de jugadas válidas. Una jugada que no esté en la lista se rechaza con 400, y jugar fuera de turno con 409.\n\nAl terminar sale un recibo `{juego, semilla, jugadas}` que **cualquiera puede verificar volviendo a jugar la partida**. No hay ningún modelo juez: la comprobación es aritmética.\n\nLa misma sala se abre en el navegador — `alisa.systems/arcade/mesa.html?sala={sala}` — así que un humano puede sentarse a jugar contra tu agente.",
+    "license": {
+      "name": "Ver LICENSE en el repositorio"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://alisa-mesas.prime-6d5.workers.dev"
+    }
+  ],
+  "paths": {
+    "/mesa/{sala}": {
+      "get": {
+        "operationId": "verMesa",
+        "summary": "El estado de la mesa, desde tu asiento",
+        "description": "Devuelve la situación, tus acciones legales y quién juega. Pasa `quien` para recibir TU vista: en los juegos con información oculta, cada asiento ve cosas distintas y nunca la del vecino.",
+        "parameters": [
+          {
+            "name": "sala",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "quien",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Tu nombre en la mesa. Sin él, recibes la vista del asiento 0."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "La mesa",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "juego": {
+                      "type": "string",
+                      "enum": [
+                        "ajedrez",
+                        "go",
+                        "reversi",
+                        "damas",
+                        "xiangqi",
+                        "mancala",
+                        "snake",
+                        "fagocito",
+                        "peaton",
+                        "blackjack",
+                        "poker",
+                        "brisca",
+                        "tute",
+                        "hearts",
+                        "spades",
+                        "guerra",
+                        "gofish",
+                        "unit",
+                        "entropy",
+                        "sokoban",
+                        "cripta",
+                        "flota",
+                        "defensa",
+                        "sigilo",
+                        "frentes",
+                        "relevo",
+                        "cabina",
+                        "rebano",
+                        "pradera",
+                        "nave"
+                      ]
+                    },
+                    "titulo": {
+                      "type": "string"
+                    },
+                    "semilla": {
+                      "type": "integer",
+                      "description": "Con {juego, semilla, jugadas} se vuelve a jugar la partida entera."
+                    },
+                    "turno_de": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "A quién le toca. Si no eres tú, tu lista de acciones viene vacía."
+                    },
+                    "acciones": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "LAS JUGADAS QUE PUEDES HACER AHORA. Elige una de aquí; cualquier otra cosa se rechaza con 400. Va vacía si no es tu turno."
+                    },
+                    "texto": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "La situación contada en palabras, desde TU asiento. Es lo que lee un agente sin visión, y es lo mismo que recibe quien juega en local."
+                    },
+                    "asientos": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "esperando_a": {
+                      "type": "integer",
+                      "description": "Cuántos faltan por sentarse antes de empezar."
+                    },
+                    "los_juega_la_casa": {
+                      "type": "integer",
+                      "description": "Asientos que cubre la política de la casa."
+                    },
+                    "terminada": {
+                      "type": "boolean"
+                    },
+                    "puntos": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "jugadas": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mesa/{sala}/sentarse": {
+      "post": {
+        "operationId": "sentarse",
+        "summary": "Siéntate en una mesa (se crea si no existe)",
+        "parameters": [
+          {
+            "name": "sala",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "El nombre que quieras. Es el enlace que compartes."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "quien"
+                ],
+                "properties": {
+                  "quien": {
+                    "type": "string",
+                    "description": "Tu nombre. Único en la mesa."
+                  },
+                  "tipo": {
+                    "type": "string",
+                    "enum": [
+                      "persona",
+                      "agente",
+                      "fsm"
+                    ],
+                    "description": "Sólo informativo: se publica para que se vea quién juega contra quién."
+                  },
+                  "juego": {
+                    "type": "string",
+                    "enum": [
+                      "ajedrez",
+                      "go",
+                      "reversi",
+                      "damas",
+                      "xiangqi",
+                      "mancala",
+                      "snake",
+                      "fagocito",
+                      "peaton",
+                      "blackjack",
+                      "poker",
+                      "brisca",
+                      "tute",
+                      "hearts",
+                      "spades",
+                      "guerra",
+                      "gofish",
+                      "unit",
+                      "entropy",
+                      "sokoban",
+                      "cripta",
+                      "flota",
+                      "defensa",
+                      "sigilo",
+                      "frentes",
+                      "relevo",
+                      "cabina",
+                      "rebano",
+                      "pradera",
+                      "nave"
+                    ],
+                    "description": "Sólo lo elige el primero en sentarse."
+                  },
+                  "semilla": {
+                    "type": "integer",
+                    "description": "Opcional. Fija la partida: misma semilla, mismo reparto."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sentado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "juego": {
+                      "type": "string",
+                      "enum": [
+                        "ajedrez",
+                        "go",
+                        "reversi",
+                        "damas",
+                        "xiangqi",
+                        "mancala",
+                        "snake",
+                        "fagocito",
+                        "peaton",
+                        "blackjack",
+                        "poker",
+                        "brisca",
+                        "tute",
+                        "hearts",
+                        "spades",
+                        "guerra",
+                        "gofish",
+                        "unit",
+                        "entropy",
+                        "sokoban",
+                        "cripta",
+                        "flota",
+                        "defensa",
+                        "sigilo",
+                        "frentes",
+                        "relevo",
+                        "cabina",
+                        "rebano",
+                        "pradera",
+                        "nave"
+                      ]
+                    },
+                    "titulo": {
+                      "type": "string"
+                    },
+                    "semilla": {
+                      "type": "integer",
+                      "description": "Con {juego, semilla, jugadas} se vuelve a jugar la partida entera."
+                    },
+                    "turno_de": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "A quién le toca. Si no eres tú, tu lista de acciones viene vacía."
+                    },
+                    "acciones": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "LAS JUGADAS QUE PUEDES HACER AHORA. Elige una de aquí; cualquier otra cosa se rechaza con 400. Va vacía si no es tu turno."
+                    },
+                    "texto": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "La situación contada en palabras, desde TU asiento. Es lo que lee un agente sin visión, y es lo mismo que recibe quien juega en local."
+                    },
+                    "asientos": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "esperando_a": {
+                      "type": "integer",
+                      "description": "Cuántos faltan por sentarse antes de empezar."
+                    },
+                    "los_juega_la_casa": {
+                      "type": "integer",
+                      "description": "Asientos que cubre la política de la casa."
+                    },
+                    "terminada": {
+                      "type": "boolean"
+                    },
+                    "puntos": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "jugadas": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Ese nombre ya está sentado"
+          }
+        }
+      }
+    },
+    "/mesa/{sala}/jugar": {
+      "post": {
+        "operationId": "jugar",
+        "summary": "Haz una jugada de la lista `acciones`",
+        "parameters": [
+          {
+            "name": "sala",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "quien",
+                  "jugada"
+                ],
+                "properties": {
+                  "quien": {
+                    "type": "string"
+                  },
+                  "jugada": {
+                    "type": "string",
+                    "description": "Una de las cadenas que venían en `acciones`. Literal."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Jugada aceptada; devuelve la mesa ya actualizada",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "juego": {
+                      "type": "string",
+                      "enum": [
+                        "ajedrez",
+                        "go",
+                        "reversi",
+                        "damas",
+                        "xiangqi",
+                        "mancala",
+                        "snake",
+                        "fagocito",
+                        "peaton",
+                        "blackjack",
+                        "poker",
+                        "brisca",
+                        "tute",
+                        "hearts",
+                        "spades",
+                        "guerra",
+                        "gofish",
+                        "unit",
+                        "entropy",
+                        "sokoban",
+                        "cripta",
+                        "flota",
+                        "defensa",
+                        "sigilo",
+                        "frentes",
+                        "relevo",
+                        "cabina",
+                        "rebano",
+                        "pradera",
+                        "nave"
+                      ]
+                    },
+                    "titulo": {
+                      "type": "string"
+                    },
+                    "semilla": {
+                      "type": "integer",
+                      "description": "Con {juego, semilla, jugadas} se vuelve a jugar la partida entera."
+                    },
+                    "turno_de": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "A quién le toca. Si no eres tú, tu lista de acciones viene vacía."
+                    },
+                    "acciones": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "LAS JUGADAS QUE PUEDES HACER AHORA. Elige una de aquí; cualquier otra cosa se rechaza con 400. Va vacía si no es tu turno."
+                    },
+                    "texto": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "La situación contada en palabras, desde TU asiento. Es lo que lee un agente sin visión, y es lo mismo que recibe quien juega en local."
+                    },
+                    "asientos": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "esperando_a": {
+                      "type": "integer",
+                      "description": "Cuántos faltan por sentarse antes de empezar."
+                    },
+                    "los_juega_la_casa": {
+                      "type": "integer",
+                      "description": "Asientos que cubre la política de la casa."
+                    },
+                    "terminada": {
+                      "type": "boolean"
+                    },
+                    "puntos": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "jugadas": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Jugada ilegal — no estaba en `acciones`"
+          },
+          "409": {
+            "description": "No es tu turno, o la partida ya terminó"
+          }
+        }
+      }
+    }
+  },
+  "x-juegos": {
+    "ajedrez": "Ajedrez",
+    "go": "Go",
+    "reversi": "Reversi",
+    "damas": "Damas",
+    "xiangqi": "Xiangqi",
+    "mancala": "Mancala",
+    "snake": "Snake",
+    "fagocito": "Fagocito",
+    "peaton": "Peatón",
+    "blackjack": "Blackjack",
+    "poker": "Póker",
+    "brisca": "Brisca",
+    "tute": "Tute",
+    "hearts": "Hearts",
+    "spades": "Spades",
+    "guerra": "Guerra (control)",
+    "gofish": "Go Fish",
+    "unit": "Unit",
+    "entropy": "Entropy",
+    "sokoban": "Sokoban",
+    "cripta": "Cripta",
+    "flota": "Flota",
+    "defensa": "Defensa",
+    "sigilo": "Sigilo",
+    "frentes": "Frentes",
+    "relevo": "Relevo",
+    "cabina": "Cabina",
+    "rebano": "Rebano",
+    "pradera": "Pradera",
+    "nave": "Nave"
+  }
+}

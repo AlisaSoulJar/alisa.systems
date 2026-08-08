@@ -49,7 +49,7 @@
     "verificar": "node servidor_verificador.mjs",
     "censo": "python censo.py",
     "//empaquetar": "El manifiesto del motor y el escaparate se REGENERAN antes de empaquetar. Si no, se quedan viejos callando: el escaparate seguiria enseniando lo de la semana pasada y el catalogo listaria piezas que ya no estan, sin un solo error. Un generador que hay que acordarse de lanzar acaba sin lanzarse.",
-    "empaquetar": "node matriz_generos.mjs --md docs/matriz_generos.md --html public/generos.html && python gen_motor_manifest.py && node --import ./resolver_three.mjs clasificar_piezas.mjs && python gen_escaparate.py && python empaquetar.py",
+    "empaquetar": "node gen_openapi.mjs && node matriz_generos.mjs --md docs/matriz_generos.md --html public/generos.html && python gen_motor_manifest.py && node --import ./resolver_three.mjs clasificar_piezas.mjs && python gen_escaparate.py && python empaquetar.py",
     "//piezas": "Clasifica las 179 piezas del motor LEYENDO el codigo, y deja el resultado en public/data/clasificacion_piezas.json. El catalogo del navegador (labs/catalogo.html) hace lo mismo EJECUTANDOLAS, que es mas fiable pero vive solo en la pestania: esto se versiona, entra en npm test y se puede diffear entre semanas. Si se contradicen, manda el catalogo.",
     "piezas": "node --import ./resolver_three.mjs clasificar_piezas.mjs",
     "secretos": "python check_secretos.py",
