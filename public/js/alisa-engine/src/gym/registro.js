@@ -96,6 +96,13 @@ const PROTOHUB = [
     // que un agente no puede maximizar la suya a costa del otro. Mide entenderse
     // sin hablar, que es lo que ninguno de los veintiséis anteriores puntuaba.
     { juego: 'relevo', titulo: 'Relevo', nombre: 'relevo' },
+    // Cabina es el primer entorno con CANAL: hay acciones cuyo único efecto es
+    // cambiar lo que sabe el otro agente. Es la familia donde un modelo de
+    // lenguaje puede demostrar algo que una FSM no puede ni intentar.
+    { juego: 'cabina', titulo: 'Cabina', nombre: 'cabina' },
+    // Rebaño es el primero cuya física la pone el MOTOR y no las reglas: envuelve
+    // `BoidsSystem`. Mide conducir un sistema emergente que no obedece órdenes.
+    { juego: 'rebano', titulo: 'Rebaño', nombre: 'rebano' },
 ];
 
 /** Entornos escritos a mano, cada uno con su propio módulo. */

@@ -99,6 +99,17 @@ export const REGLAS = {
     // estaba tan metido que hasta el instrumento que mide la tabla lo daba por
     // hecho y no habría sabido reconocer un cooperativo aunque lo tuviera delante.
     relevo: () => import('./relevo.js').then(m => m.relevo),
+    // Y el octavo llena el hueco que destapó el censo de géneros: COMUNICACIÓN.
+    // En los veintisiete anteriores una silla sólo puede decirle algo a otra
+    // jugando. Aquí las seis acciones de la guía no tocan el mundo — sólo cambian
+    // lo que sabe el piloto, y no hay otra forma de ganar.
+    cabina: () => import('./cabina.js').then(m => m.cabina),
+    // ⚠️ EL PRIMERO QUE CORRE SOBRE UNA PIEZA DEL MOTOR. Toda su física es
+    // `BoidsSystem`, que llevaba ahí sin usar porque no se podía repetir. Con dos
+    // arreglos de cuatro líneas —semilla inyectable y no importar el renderizador—
+    // salió un juego con una estructura que no teníamos: influir en un sistema
+    // emergente que no obedece. Si esto escala, quedan 23 sistemas por sembrar.
+    rebano: () => import('./rebano.js').then(m => m.rebano),
 };
 
 export const JUEGOS = Object.keys(REGLAS);

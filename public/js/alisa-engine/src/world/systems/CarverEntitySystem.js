@@ -1,5 +1,7 @@
 export class CarverEntitySystem {
     constructor(config = {}) {
+        // Semilla inyectable, como en el resto del lote. Ver `prueba_semillas.mjs`.
+        this.rng = config.rng || Math.random;
         this.entities = [];
         this.w = config.w || 40;
         this.h = config.h || 40;
@@ -53,7 +55,7 @@ export class CarverEntitySystem {
         }
         
         if (options.length > 0) {
-            let choice = options[Math.floor(Math.random() * options.length)];
+            let choice = options[Math.floor(this.rng() * options.length)];
             boid.lastX = boid.x; boid.lastY = boid.y;
             boid.tx = choice.x; boid.ty = choice.y;
         }

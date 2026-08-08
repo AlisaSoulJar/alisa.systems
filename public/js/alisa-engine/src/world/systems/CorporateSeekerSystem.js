@@ -1,5 +1,9 @@
 export class CorporateSeekerSystem {
-    constructor() {
+    constructor(config = {}) {
+        // Semilla inyectable: un perseguidor que elige planta al azar sin semilla
+        // convierte cada partida en irrepetible, y con ella el recibo. Por
+        // defecto se comporta igual que siempre. Ver `prueba_semillas.mjs`.
+        this.rng = config.rng || Math.random;
         this.phase = 'PICK_FLOOR';
         this.aiTargetFloor = -1;
         this.exploredFloors = new Set();
@@ -218,7 +222,7 @@ export class CorporateSeekerSystem {
             const currentHasElev = (state.seekerData.floor > 0 && state.seekerData.floor < state.totalFloors);
             
             if (dist === 1) {
-                let useElevator = (state.elevatorData.currentFloor === state.seekerData.floor) || (Math.random() < 0.6);
+                let useElevator = (state.elevatorData.currentFloor === state.seekerData.floor) || (this.rng() < 0.6);
                 if (fd.stairX === null || fd.stairX === undefined) useElevator = true;
                 if (!currentHasElev) useElevator = false;
                 this.travelMode = useElevator ? 'elevator' : 'stairs';

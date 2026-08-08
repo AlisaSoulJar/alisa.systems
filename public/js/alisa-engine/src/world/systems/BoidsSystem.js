@@ -1,7 +1,23 @@
 import { SteeringSystem } from '../../psyche/SteeringSystem.js';
-import * as THREE from 'three';
 
-// BoidsSystem.js - Pure Headless Boids Flocking Logic (Reynolds)
+/**
+ * BoidsSystem.js - Pure Headless Boids Flocking Logic (Reynolds)
+ *
+ * ⚠️ SIN `import * as THREE`, Y ESO ES LO QUE LO HACE UTILIZABLE.
+ *
+ * El fichero se anunciaba como «pure headless» y arrastraba el motor de render
+ * en la primera línea. Con eso no se puede importar desde Node —ni desde una
+ * prueba, ni desde un banco de medidas— aunque el noventa por ciento del código
+ * sea matemática pura que no lo necesita.
+ *
+ * Es el **segundo tipo de bloqueo** que separa este motor de ser medible, y no
+ * lo había contado: el primero es el azar sin semilla, éste es traerse el
+ * renderizador al importar. Los dos tienen la misma causa —se escribió para una
+ * demo, donde THREE siempre está— y los dos se arreglan sin tocar la lógica.
+ *
+ * Aquí sobraba entero: sólo se usaba para construir un vector y pasárselo a
+ * `mesh.lookAt`, que acepta tres números desde siempre.
+ */
 
 export class BoidsSystem {
     /**
@@ -13,6 +29,10 @@ export class BoidsSystem {
      * @param {number} config.maxForce 
      */
     constructor(config = {}) {
+        // Semilla inyectable: sin ella una bandada no se puede volver a volar
+        // igual, y un entorno que no se repite no se puede verificar. Por
+        // defecto, el comportamiento de siempre. Ver `prueba_semillas.mjs`.
+        this.rng = config.rng || Math.random;
         this.separationRadius = config.separationRadius || 1.5;
         this.alignmentRadius = config.alignmentRadius || 4.0;
         this.cohesionRadius = config.cohesionRadius || 4.0;
@@ -39,14 +59,14 @@ export class BoidsSystem {
             this.flock.push({
                 id: i,
                 position: { 
-                    x: bounds.minX + Math.random() * (bounds.maxX - bounds.minX),
-                    y: bounds.minY + Math.random() * (bounds.maxY - bounds.minY),
-                    z: bounds.minZ + Math.random() * (bounds.maxZ - bounds.minZ)
+                    x: bounds.minX + this.rng() * (bounds.maxX - bounds.minX),
+                    y: bounds.minY + this.rng() * (bounds.maxY - bounds.minY),
+                    z: bounds.minZ + this.rng() * (bounds.maxZ - bounds.minZ)
                 },
                 velocity: {
-                    x: (Math.random() - 0.5) * this.maxSpeed,
-                    y: (Math.random() - 0.5) * this.maxSpeed,
-                    z: (Math.random() - 0.5) * this.maxSpeed
+                    x: (this.rng() - 0.5) * this.maxSpeed,
+                    y: (this.rng() - 0.5) * this.maxSpeed,
+                    z: (this.rng() - 0.5) * this.maxSpeed
                 }
             });
 
@@ -76,13 +96,14 @@ export class BoidsSystem {
                 const mesh = this.meshes[i];
                 mesh.position.set(this.flock[i].position.x, this.flock[i].position.y, this.flock[i].position.z);
                 
-                // Calculate look direction
-                const lookAtVec = new THREE.Vector3(
+                // Mira hacia donde va. `lookAt` acepta (x, y, z) sueltos, así que
+                // no hace falta construir un Vector3 —ni, por tanto, importar el
+                // motor de render en un fichero de matemáticas.
+                mesh.lookAt(
                     this.flock[i].position.x + this.flock[i].velocity.x,
                     this.flock[i].position.y + this.flock[i].velocity.y,
                     this.flock[i].position.z + this.flock[i].velocity.z
                 );
-                mesh.lookAt(lookAtVec);
             }
         }
     }

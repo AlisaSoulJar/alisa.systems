@@ -1,6 +1,6 @@
 # Matriz de géneros
 
-> Generado por `matriz_generos.mjs` **jugando** los 26 juegos.
+> Generado por `matriz_generos.mjs` **jugando** los 27 juegos.
 > No hay ninguna etiqueta escrita a mano: `●` medido presente, `·` medido ausente,
 > `?` no observable. Se clasifica por estructura de decisión y no por género de
 > tienda, porque «puzle» o «cartas» no dicen qué hay que saber hacer para jugar bien.
@@ -12,45 +12,48 @@
 - **irreversible** — hay jugadas que no se pueden deshacer
 - **simultaneo** — se decide a la vez: el segundo no ve lo que eligió el primero
 - **cooperativo** — los dos asientos ganan o pierden juntos
+- **comunicacion** — hay jugadas que sólo cambian lo que sabe el otro
 
-| juego | espacial | oculto | rival | autonomo | irreversible | simultaneo | cooperativo | el resultado depende de quién juega |
-|---|---|---|---|---|---|---|---|---|
-| ajedrez | ● | · | ● | · | ● | · | ? | no |
-| go | ● | · | ● | · | ● | · | ? | no |
-| reversi | ● | · | ● | · | ● | · | ? | no |
-| damas | ● | · | ● | · | ● | · | ? | no |
-| xiangqi | ● | · | ● | · | ● | · | ? | no |
-| mancala | ● | · | ● | · | ● | · | ? | no |
-| snake | ● | · | · | · | ● | · | · | no |
-| fagocito | ● | · | · | ● | ● | · | · | no |
-| peaton | ● | · | · | ● | ● | · | · | no |
-| blackjack | · | ● | ● | · | ● | · | ? | sí |
-| poker | · | ● | ● | · | ● | · | ? | sí |
-| brisca | · | ● | ● | · | ● | · | · | sí |
-| tute | · | ● | ● | · | ● | · | · | sí |
-| hearts | · | ● | ● | · | ● | · | ? | sí |
-| spades | · | ● | ● | · | ● | · | · | sí |
-| guerra | · | ● | · | · | ● | · | · | sí |
-| gofish | · | ● | ● | · | ● | · | ? | sí |
-| unit | · | ● | ● | · | ● | · | · | sí |
-| entropy | · | ● | ● | · | ● | · | · | sí |
-| sokoban | ● | · | · | · | ● | · | · | sí |
-| cripta | ● | ● | · | ● | ● | · | · | sí |
-| flota | ● | ● | ● | · | ● | · | · | sí |
-| defensa | ● | · | ● | ● | ● | · | · | sí |
-| sigilo | ● | ● | ● | ● | ● | · | · | sí |
-| frentes | ● | · | ● | · | ● | ● | ? | no |
-| relevo | ● | ● | ● | · | ● | · | ● | sí |
+| juego | espacial | oculto | rival | autonomo | irreversible | simultaneo | cooperativo | comunicacion | el resultado depende de quién juega |
+|---|---|---|---|---|---|---|---|---|---|
+| ajedrez | ● | · | ● | · | ● | · | ? | · | no |
+| go | ● | · | ● | · | ● | · | ? | · | no |
+| reversi | ● | · | ● | · | ● | · | ? | · | no |
+| damas | ● | · | ● | · | ● | · | ? | · | no |
+| xiangqi | ● | · | ● | · | ● | · | ? | · | no |
+| mancala | ● | · | ● | · | ● | · | ? | · | no |
+| snake | ● | · | · | · | ● | · | · | · | no |
+| fagocito | ● | · | · | ● | ● | · | · | · | no |
+| peaton | ● | · | · | ● | ● | · | · | · | no |
+| blackjack | · | ● | ● | · | ● | · | ? | · | sí |
+| poker | · | ● | ● | · | ● | · | ? | · | sí |
+| brisca | · | ● | ● | · | ● | · | · | · | sí |
+| tute | · | ● | ● | · | ● | · | · | · | sí |
+| hearts | · | ● | ● | · | ● | · | ? | · | sí |
+| spades | · | ● | ● | · | ● | · | · | · | sí |
+| guerra | · | ● | · | · | ● | · | · | · | sí |
+| gofish | · | ● | ● | · | ● | · | ? | · | sí |
+| unit | · | ● | ● | · | ● | · | · | · | sí |
+| entropy | · | ● | ● | · | ● | · | · | · | sí |
+| sokoban | ● | · | · | · | ● | · | · | · | sí |
+| cripta | ● | ● | · | ● | ● | · | · | · | sí |
+| flota | ● | ● | ● | · | ● | · | · | · | sí |
+| defensa | ● | · | ● | ● | ● | · | · | · | sí |
+| sigilo | ● | ● | ● | ● | ● | · | · | · | sí |
+| frentes | ● | · | ● | · | ● | ● | ? | · | no |
+| relevo | ● | ● | ● | · | ● | · | ● | · | sí |
+| cabina | ● | · | ● | · | ● | · | ● | ● | sí |
 
 ## Cobertura
 
-- `espacial`: **16/26**
-- `oculto`: **14/26**
-- `rival`: **20/26**
-- `autonomo`: **5/26**
-- `irreversible`: **26/26**
-- `simultaneo`: **1/26**
-- `cooperativo`: **1/26**
+- `espacial`: **17/27**
+- `oculto`: **14/27**
+- `rival`: **21/27**
+- `autonomo`: **5/27**
+- `irreversible`: **27/27**
+- `simultaneo`: **1/27**
+- `cooperativo`: **2/27**
+- `comunicacion`: **1/27**
 
 ## Perfiles demostrados
 
@@ -65,3 +68,4 @@
 - `espacial+oculto+rival+autonomo+irreversible` — sigilo
 - `espacial+rival+irreversible+simultaneo` — frentes
 - `espacial+oculto+rival+irreversible+cooperativo` — relevo
+- `espacial+rival+irreversible+cooperativo+comunicacion` — cabina

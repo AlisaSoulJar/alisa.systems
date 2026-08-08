@@ -60,6 +60,7 @@ const EJES = {
     irreversible: 'hay jugadas que no se pueden deshacer',
     simultaneo:   'se decide a la vez: el segundo no ve lo que eligió el primero',
     cooperativo:  'los dos asientos ganan o pierden juntos',
+    comunicacion: 'hay jugadas que sólo cambian lo que sabe el otro',
 };
 
 /** Huella del sustrato: dos estados iguales dan la misma cadena. */
@@ -105,7 +106,7 @@ const jugables = (st) => (st.legal_moves ?? []).filter(m => m !== 'nueva' && m !
 
 async function sondear(juego) {
     const eje = { espacial: false, oculto: false, rival: false, autonomo: false,
-                  irreversible: null, simultaneo: null, cooperativo: null };
+                  irreversible: null, simultaneo: null, cooperativo: null, comunicacion: null };
     const puntos = [];
     let jugadas = [], turnos = new Set(), notas = [];
 
@@ -389,6 +390,77 @@ async function sondear(juego) {
         } catch (e) { notas.push(`cooperativo: ${e.message}`); }
     }
 
+    /**
+     * ⚠️ COMUNICACIÓN — Y ES LA COMPLEMENTARIA EXACTA DE LA SIMULTANEIDAD.
+     *
+     * Simultáneo: eliges y **no cambia nada en ninguna parte** hasta que el otro
+     * también elige. Comunicación: eliges, **el mundo sigue igual** —nadie se ha
+     * movido, no hay ficha nueva— **pero lo que sabe el otro ha cambiado**.
+     *
+     * Las dos se miden con las mismas dos ramas, y se distinguen en una sola
+     * pregunta: ¿el otro nota algo? Si no nota nada, decidisteis a la vez. Si lo
+     * nota sin que se haya movido nada, le has hablado.
+     *
+     * Que salga de ahí y no de buscar la palabra «mensaje» en el código importa:
+     * un juego puede llamarlo pista, seña, apuesta o acusación, y esto lo
+     * reconoce igual porque mira el efecto, no el nombre.
+     */
+    if (!eje.rival) eje.comunicacion = false;
+    else if (jugadas.length >= 3) {
+        try {
+            // ⚠️ Se cuenta lo comprobado para poder decir «·» (medido y no hay) en
+            // vez de «?» (no lo sé). La sonda sólo sabía afirmar, así que un juego
+            // sin canal salía como no observable — confundir ausencia con
+            // ignorancia es el error que esta tabla existe para no cometer.
+            let miradas = 0;
+            for (const k of puntosDeCorte) {
+                if (eje.comunicacion) break;
+                const base = await rejugar(juego, SEMILLAS[0], jugadas.slice(0, k));
+                const opciones = jugables(base.st).slice(0, 2);
+                if (!base.completa || opciones.length < 2) continue;
+                /**
+                 * ⚠️ EL MUNDO QUIETO SE COMPRUEBA DESDE LAS DOS SILLAS, Y ANTES
+                 * NO — POR ESO **SIGILO** SALÍA MARCADO SIN TENER CANAL.
+                 *
+                 * Se miraba sólo el cuadro del asiento 0. Cuando el guardia se
+                 * mueve sin que el ladrón lo vea, ese cuadro no cambia, así que
+                 * parecía que nadie se había movido… y como el guardia sí sabía
+                 * algo nuevo (dónde está él), la sonda cantaba «le ha hablado».
+                 *
+                 * Pero moverse a escondidas no es hablar: es moverse. La
+                 * diferencia está en que quien habla **no se mueve**, y eso se ve
+                 * mirando también su propio cuadro. Con las dos vistas quietas,
+                 * lo único que puede haber cambiado es lo que alguien sabe.
+                 */
+                // ⚠️ Y se pide el sustrato POR SILLA. `obtenerSustrato` llama a
+                // `reglas.sustrato(p)` sin asiento, así que devolvía el mismo
+                // cuadro dos veces y la comprobación de arriba no comprobaba
+                // nada: sigilo seguía saliendo marcado. Un adaptador que ignora
+                // un parámetro en silencio se lleva por delante a quien confía.
+                const quietud = (reglas, est) => BANDOS_SILLAS
+                    .map(i => huella(reglas.sustrato
+                        ? reglas.sustrato(est, i)
+                        : obtenerSustrato(juego, reglas, est, reglas.estado(est, i)))).join('|');
+                const mundoAntes = quietud(base.reglas, base.p);
+                const ramas = [];
+                for (const m of opciones) {
+                    const r = await rejugar(juego, SEMILLAS[0], [...jugadas.slice(0, k), m]);
+                    if (!r.completa) { ramas.length = 0; break; }
+                    ramas.push({
+                        mundo: quietud(r.reglas, r.p),
+                        vistas: BANDOS_SILLAS.map(i => JSON.stringify(r.reglas.estado(r.p, i))),
+                    });
+                }
+                if (ramas.length < 2) continue;
+                miradas++;
+                const mundoQuieto = ramas.every(x => x.mundo === mundoAntes);
+                const alguienSeEntera = BANDOS_SILLAS.some(i => ramas[0].vistas[i] !== ramas[1].vistas[i]);
+                if (mundoQuieto && alguienSeEntera) eje.comunicacion = true;
+            }
+            if (miradas && eje.comunicacion === null) eje.comunicacion = false;
+        } catch (e) { notas.push(`comunicacion: ${e.message}`); }
+    }
+
     const varia = puntos.length > 1 && new Set(puntos).size > 1;
     return { juego, eje, varia, puntos, notas };
 }
@@ -520,6 +592,13 @@ juegos con información oculta no equivale a tener uno con las dos cosas —el f
 sólo existe en la intersección. <b>${perfiles.size} de ${2 ** clavesEje.length}
 posibles.</b></p>
 <ul class="perf">${perfilesHtml}</ul>
+<h2>De qué NO habla esta tabla</h2>
+<p class="sub">Mide los ${filas.length} juegos por turnos del arcade y <b>no mira los seis
+entornos nativos del gym</b> —Asteroids, Cucco Swarm, Raccoon Space, Cabinet Escape, Rue
+del Percebe y Chopper Terrarium—, que son justamente los de <b>tiempo real y acción</b>,
+con física propia. Se dice aquí porque un instrumento que calla de qué no habla invita a
+leer sus silencios como ausencias: de esta tabla sola se concluiría que el motor no hace
+juegos de acción, y los hace.</p>
 <footer>Generado por <code>matriz_generos.mjs</code> en cada empaquetado.
 Si una fila miente, la prueba está en <code>/arcade/jugar.html</code>.</footer>
 </main></body></html>
