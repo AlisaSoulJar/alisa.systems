@@ -1,0 +1,61 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA — clasificación</title>
+<meta name="alisa-escaparate" content="motor">
+<style>
+:root{color-scheme:light dark}
+body{margin:0;padding:2.5rem 1.25rem;background:#f4f6f8;color:#1a2230;
+     font:15px/1.6 ui-sans-serif,system-ui,sans-serif}
+main{max-width:56rem;margin:0 auto}
+h1{font:600 1.5rem/1.2 ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase}
+h2{font:600 1rem/1.2 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;margin-top:2.2rem}
+p.sub{color:#4a5866;max-width:46rem}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;background:#fff;
+      border:1px solid #d9e0e7;font-size:14px}
+th,td{padding:.42rem .6rem;border-bottom:1px solid #eef2f5}
+thead th{font:600 11px/1.4 ui-monospace,monospace;text-transform:uppercase;
+         letter-spacing:.06em;color:#4a5866;text-align:right}
+thead th:first-child{text-align:left}
+tbody th{text-align:left;font-weight:500}
+tbody th a{color:#1a2230;text-decoration:none;border-bottom:1px solid #c9d3dd}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.gris{color:#7f8c8d}
+.escala{background:#e9eef3;padding:.7rem .9rem;border-radius:4px;max-width:46rem}
+footer{margin-top:2.5rem;color:#7f8c8d;font-size:13px}
+@media(prefers-color-scheme:dark){
+ body{background:#12171d;color:#e6ecf2}table{background:#1a2028;border-color:#2b3540}
+ th,td{border-bottom-color:#232c36}tbody th a{color:#e6ecf2;border-bottom-color:#3a4550}
+ p.sub,thead th,.gris{color:#9aa8b5}.escala{background:#1a2028}}
+</style></head><body><main>
+<h1>Clasificación</h1>
+<p class="sub">Modelos y líneas base en las mismas filas, medidos en la misma tanda.
+2 semillas por juego para los modelos y 60 para las bases —no
+cuestan tokens, así que el metro se mide con más partidas que lo que se mide con él.</p>
+<p class="escala"><b>0,00</b> = tan bueno como elegir siempre la primera opción legal.<br>
+<b>1,00</b> = tan bueno como el rival de casa del juego.<br>
+<span class="gris">Las puntuaciones crudas no son comparables entre juegos —el xiangqi va
+en miles y el Go Fish en unidades— así que sumarlas daría un número que sólo habla del
+juego de escala más grande. Cada juego se lleva a esta escala común antes de promediar.</span></p>
+<table><thead><tr><th>participante</th><th>mediana</th><th>media</th><th>±</th>
+<th>jugadas forzadas</th><th>tokens</th><th>recibos verificados</th></tr></thead>
+<tbody></tbody></table>
+<p class="sub"><b>El titular es la mediana, y la media va al lado a propósito.</b>
+Normalizar obliga a dividir por el hueco entre suelo y techo, así que un juego con
+hueco pequeño convierte una partida floja en un número enorme. Medido aquí: una sola
+casilla de brisca valía <b>−10,25</b> y arrastraba el promedio de los otros catorce —
+el resultado describía a brisca, no al participante. Es el motivo por el que los bancos
+de Atari publican mediana normalizada. <b>Cuando las dos columnas se separan mucho, hay
+un juego mandando</b>, y merece la pena ir a mirar cuál en la tabla de abajo.</p>
+<p class="sub"><b>Las dos columnas que importan para desconfiar.</b> «Forzadas» son las
+veces que el participante no dio una jugada válida y hubo que elegir por él: si ese número
+sube, la fila mide el arnés y no al modelo. «Recibos verificados» son las partidas que se
+volvieron a jugar entero contra el mismo fichero de reglas y dieron el mismo resultado.
+<b>Lo que no verifica, no puntúa</b> — y no hay ningún modelo juez en ninguna parte.</p>
+<h2>Por juego</h2>
+<table><thead><tr><th>juego</th><th>primera (suelo)</th><th>azar</th><th>casa (techo blando)</th><th>qwen2.5:7b</th><th>gemma4:latest</th><th>phi4-mini-reasoning:latest</th></tr></thead><tbody></tbody></table>
+<h2>Fuera de la media, y por qué</h2><ul class="sub"><li><b>ajedrez</b> — el tope de 220 decisiones corta la partida</li><li><b>go</b> — el tope de 220 decisiones corta la partida</li><li><b>reversi</b> — el tope de 220 decisiones corta la partida</li><li><b>damas</b> — el tope de 220 decisiones corta la partida</li><li><b>xiangqi</b> — el tope de 220 decisiones corta la partida</li><li><b>mancala</b> — el tope de 220 decisiones corta la partida</li><li><b>snake</b> — el tope de 220 decisiones corta la partida</li><li><b>fagocito</b> — el tope de 220 decisiones corta la partida</li><li><b>peaton</b> — el tope de 220 decisiones corta la partida</li><li><b>blackjack</b> — el tope de 220 decisiones corta la partida</li><li><b>poker</b> — el tope de 220 decisiones corta la partida</li><li><b>brisca</b> — el tope de 220 decisiones corta la partida</li><li><b>tute</b> — el tope de 220 decisiones corta la partida</li><li><b>hearts</b> — el tope de 220 decisiones corta la partida</li><li><b>spades</b> — el tope de 220 decisiones corta la partida</li><li><b>guerra</b> — la casa no supera al suelo: la escala se invertiría</li><li><b>gofish</b> — el tope de 220 decisiones corta la partida</li><li><b>unit</b> — el tope de 220 decisiones corta la partida</li><li><b>entropy</b> — el tope de 220 decisiones corta la partida</li><li><b>sokoban</b> — el tope de 220 decisiones corta la partida</li><li><b>cripta</b> — el tope de 220 decisiones corta la partida</li><li><b>flota</b> — el tope de 220 decisiones corta la partida</li><li><b>defensa</b> — el tope de 220 decisiones corta la partida</li><li><b>sigilo</b> — el tope de 220 decisiones corta la partida</li><li><b>frentes</b> — el tope de 220 decisiones corta la partida</li><li><b>relevo</b> — el tope de 220 decisiones corta la partida</li></ul>
+<footer>Generada por <code>tabla.mjs</code> el 2026-08-07,
+tope 220 decisiones. Los juegos cuyo hueco entre líneas base no supera al ruido salen
+de la media con el motivo puesto: un juego que no distingue a quien lo juega no puede
+ordenar a nadie. · <a href="/generos.html">Qué estructuras cubre el motor</a></footer>
+</main></body></html>

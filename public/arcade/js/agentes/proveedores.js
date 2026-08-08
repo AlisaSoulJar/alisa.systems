@@ -27,6 +27,27 @@ const estimarTokens = (s) => Math.ceil((s ?? '').length / 4);
  * partidas distintas, y entonces la fila de la tabla no se puede repetir. El
  * entorno es reproducible; el agente debe intentarlo también.
  */
+/**
+ * ⚠️ EL PRESUPUESTO DE SALIDA ERA **24 TOKENS**, Y ESO EXPULSABA A LOS MODELOS
+ * QUE RAZONAN.
+ *
+ * Veinticuatro sobran para contestar «7», que es lo que hace un modelo pequeño.
+ * Pero uno que piensa en voz alta gasta cientos antes de decidir, así que se
+ * quedaba sin frase a mitad del razonamiento y no llegaba nunca a la jugada.
+ * Medido: `qwen3:8b` y `phi4-mini-reasoning` fallaban **la mitad exacta** de sus
+ * jugadas, 11 de 22 las dos.
+ *
+ * Y lo peligroso es cómo se leía ese número. `forzadas` existe para detectar
+ * modelos que no saben elegir; aquí decía que dos modelos capaces jugaban fatal
+ * cuando lo que pasaba es que les cortábamos la boca. Una tabla publicada con
+ * eso habría ordenado a los participantes por «¿escupe el token pelado?» — y hoy
+ * casi todos los modelos punteros piensan antes de responder.
+ *
+ * El límite alto no sale caro a los demás: un modelo terso emite su respuesta y
+ * para. Sólo gasta quien necesita gastar.
+ */
+const TOPE_SALIDA = Number(process.env?.ALISA_TOPE_SALIDA ?? 1536);
+
 export function ollama({ modelo, url = 'http://127.0.0.1:11434', temperatura = 0 } = {}) {
     const fn = async (prompt) => {
         const t0 = Date.now();
@@ -36,7 +57,7 @@ export function ollama({ modelo, url = 'http://127.0.0.1:11434', temperatura = 0
             body: JSON.stringify({
                 model: modelo,
                 stream: false,
-                options: { temperature: temperatura, num_predict: 24 },
+                options: { temperature: temperatura, num_predict: TOPE_SALIDA },
                 messages: [
                     { role: 'system', content: 'Eres un jugador. Respondes SOLO con el número de la opción elegida. Nada más.' },
                     { role: 'user', content: prompt },
@@ -45,8 +66,26 @@ export function ollama({ modelo, url = 'http://127.0.0.1:11434', temperatura = 0
         });
         if (!r.ok) throw new Error(`ollama ${r.status}: ${(await r.text()).slice(0, 120)}`);
         const j = await r.json();
+        /**
+         * ⚠️ HAY MODELOS QUE ESCRIBEN EN OTRO CAMPO, Y LOS DÁBAMOS POR MUDOS.
+         *
+         * Ollama separa el razonamiento (`message.thinking`) de la respuesta
+         * (`message.content`) en los modelos que piensan. Medido con `qwen3:8b`:
+         * `content` venía **vacío** con 512 tokens gastados. Leíamos el campo
+         * equivocado y lo anotábamos como «no dio una jugada válida» — un modelo
+         * capaz saliendo en la tabla como incapaz, que es la peor clase de error
+         * que puede cometer un banco de pruebas.
+         *
+         * Se prefiere `content`, y si viene vacío se lee el pensamiento: la
+         * conclusión suele estar al final. `truncado` viaja aparte porque
+         * quedarse sin presupuesto NO es lo mismo que no saber elegir, y hasta
+         * hoy las dos cosas caían en el mismo contador.
+         */
+        const contenido = j?.message?.content?.trim() ? j.message.content
+                        : (j?.message?.thinking ?? '');
         return {
-            texto: j?.message?.content ?? '',
+            texto: contenido,
+            truncado: j?.done_reason === 'length',
             entrada: j?.prompt_eval_count ?? estimarTokens(prompt),
             salida: j?.eval_count ?? estimarTokens(j?.message?.content),
             medidos: j?.eval_count !== undefined,

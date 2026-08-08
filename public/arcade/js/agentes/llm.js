@@ -62,7 +62,25 @@ export function construirPrompt(env, opciones, estricto = false) {
  * ANTES que el número.
  */
 export function interpretar(texto, opciones) {
-    const t = String(texto ?? '').trim();
+    let t = String(texto ?? '').trim();
+    if (!t) return -1;
+
+    /**
+     * ⚠️ SE LEE LA CONCLUSIÓN, NO EL RAZONAMIENTO.
+     *
+     * Un modelo que piensa en voz alta baraja media docena de opciones antes de
+     * decidirse —«podría jugar la 3… aunque la 5 protege mejor… voy con la 5»—.
+     * Buscar la primera coincidencia en todo el texto devuelve la 3: se le está
+     * leyendo la duda en vez de la respuesta, y encima con cara de haber
+     * entendido.
+     *
+     * Así que el bloque de pensamiento se descarta. Si quedó abierto —el modelo
+     * se quedó sin tokens a mitad de pensar— no hay conclusión que leer y vale
+     * más devolver «no sé» que adivinar entre las opciones que estaba sopesando.
+     */
+    if (t.includes('</think>')) t = t.slice(t.lastIndexOf('</think>') + 8).trim();
+    else if (/<think>/i.test(t)) return -1;
+    t = t.replace(/<\/?[a-z_]+>/gi, ' ').trim();
     if (!t) return -1;
 
     // 1. ¿Ha escrito el verbo? Se mira primero, y el más largo gana para que
@@ -92,7 +110,20 @@ export async function jugarEpisodio(Clase, proveedor, { semilla = 1, tope = 60, 
     const env = new Clase();
     env.reset(semilla);
 
-    let llamadas = 0, forzadas = 0, reintentos = 0;
+    /**
+     * ⚠️ `truncadas` NACE SEPARADA DE `forzadas`, Y LA DISTINCIÓN IMPORTA.
+     *
+     * `forzadas` responde a «¿supo elegir?». Quedarse sin presupuesto de tokens
+     * a mitad de pensar responde a otra cosa: «¿le dejamos terminar?». Hasta hoy
+     * las dos caían en el mismo contador, y con eso `qwen3:8b` y
+     * `phi4-mini-reasoning` salían fallando la mitad de las jugadas cuando lo que
+     * pasaba es que les cortábamos la frase a los 512 tokens.
+     *
+     * Publicar eso habría ordenado la tabla por brevedad y no por juego. Y el
+     * daño va en la dirección peor: un banco de pruebas que llama incapaz a un
+     * modelo capaz se equivoca a favor de quien lo escribió.
+     */
+    let llamadas = 0, forzadas = 0, reintentos = 0, truncadas = 0;
     let tokEntrada = 0, tokSalida = 0, ms = 0, medidos = true;
     let error = null;
 
@@ -139,6 +170,7 @@ export async function jugarEpisodio(Clase, proveedor, { semilla = 1, tope = 60, 
             tokSalida  += respuesta.salida ?? 0;
             ms += respuesta.ms ?? 0;
             if (respuesta.medidos === false) medidos = false;
+            if (respuesta.truncado) truncadas++;
 
             elegida = interpretar(respuesta.texto, opciones);
 
@@ -168,7 +200,7 @@ export async function jugarEpisodio(Clase, proveedor, { semilla = 1, tope = 60, 
     return {
         puntos: marcador.score ?? 0,
         metricas: marcador.metrics ?? {},
-        pasos, llamadas, forzadas, reintentos, error,
+        pasos, llamadas, forzadas, reintentos, truncadas, error,
         tokens: { entrada: tokEntrada, salida: tokSalida, medidos },
         ms,
         // El recibo, sólo lo tienen los entornos del ProtoHub. Los nativos

@@ -186,8 +186,29 @@ for (const e of entornos) {
     datos.set(e.juego, fila);
 
     const c = fila['casa (techo blando)'], p = fila['primera (suelo)'];
-    const cortadas = participantes.some(x => {
-        const r = fila[x.nombre];
+    /**
+     * ⚠️ SI UN JUEGO PUNTÚA O NO LO DECIDEN LAS REFERENCIAS, NO LOS CONCURSANTES.
+     *
+     * Esto era `participantes.some(...)`, o sea: **si un solo participante no
+     * terminaba un juego, el juego se caía para todos**. Con un modelo apenas se
+     * notaba. Con tres, la tabla salió literalmente vacía — `0/26 juegos con
+     * hueco`, «sin datos» en todas las filas, incluidas las líneas base que
+     * habían jugado sus sesenta semillas enteras sin un fallo.
+     *
+     * El error de fondo es de atribución. Que un juego sepa ordenar a quien lo
+     * juega es una propiedad DEL JUEGO, y se demuestra con el suelo y el techo,
+     * que son deterministas y baratos. Que un modelo concreto no llegue al final
+     * es un dato SOBRE ESE MODELO — pertenece a su fila, no puede borrar el
+     * juego del banco de pruebas.
+     *
+     * Dicho de otro modo: un concursante lento no puede descalificar la prueba.
+     * Y aquí lo hizo literalmente — `gemma4` tarda diez segundos por jugada
+     * (sesenta veces más que qwen2.5) y con eso se llevó por delante los
+     * veintiséis juegos y las tres líneas base.
+     */
+    const REFERENCIAS = ['primera (suelo)', 'casa (techo blando)'];
+    const cortadas = REFERENCIAS.some(nombre => {
+        const r = fila[nombre];
         return r && (r.terminadas ?? 0) < (r.semillas ?? SEMILLAS);
     });
     // El veredicto de SI el juego puntúa se toma con los promedios largos.
@@ -227,7 +248,21 @@ for (const [juego, fila] of datos) {
     const inc = {};
     for (const part of participantes) {
         const r = fila[part.nombre];
-        n[part.nombre] = r?.error ? null : (r.puntosCortos - suelo) / hueco;
+        /**
+         * ⚠️ Y LO QUE NO SE TERMINÓ NO SE PUNTÚA — PERO SÓLO A QUIEN NO LO
+         * TERMINÓ.
+         *
+         * La otra mitad del arreglo de arriba. Una partida cortada por el tope no
+         * es un mal resultado, es un resultado que no existe: falta el desenlace,
+         * que es donde se reparte casi todo el marcador. Contarla como si fuera
+         * una puntuación baja castiga al lento como si fuera malo, que son cosas
+         * distintas y sólo una de las dos se está midiendo aquí.
+         *
+         * Así que su casilla va vacía y su fila lo dice. El juego sigue en pie
+         * para los demás.
+         */
+        const incompleta = !r?.error && (r?.terminadas ?? 0) < (r?.semillas ?? SEMILLAS);
+        n[part.nombre] = (r?.error || incompleta) ? null : (r.puntosCortos - suelo) / hueco;
         /**
          * ⚠️ LA INCERTIDUMBRE VIAJA CON EL NÚMERO.
          * Un modelo se mide con 3 partidas porque cuesta dinero, y 3 partidas de
@@ -258,13 +293,35 @@ for (const [juego, fila] of datos) {
 
 // ── la tabla ─────────────────────────────────────────────────────
 console.log(`\n  ${verde('CLASIFICACIÓN')}  ${gris(`0 = elegir la primera · 1 = rival de casa · ${juegosUtiles.length}/${entornos.length} juegos con hueco`)}\n`);
-console.log(gris('  participante            media      ±   peor   mejor   forzadas    tokens      s   recibos'));
+console.log(gris('  participante          mediana   media      ±   peor   mejor   forzadas    tokens      s   recibos'));
 
 const resumen = [];
 for (const part of participantes) {
     const vals = juegosUtiles.map(j => normalizados.get(j)[part.nombre]).filter(v => v !== null);
     if (!vals.length) { console.log(`  ${rojo('✗')} ${part.nombre.padEnd(22)} sin datos`); continue; }
     const media = vals.reduce((a, b) => a + b, 0) / vals.length;
+    /**
+     * ⚠️ EL TITULAR ES LA MEDIANA, Y NO ES UN TECNICISMO: LA MEDIA MENTÍA.
+     *
+     * Medido en la primera tanda completa: `qwen2.5:7b` salía con media −1,02 y
+     * mediana −0,10; el azar, con media −0,19 y mediana +0,20. Dos historias
+     * distintas de los mismos quince juegos.
+     *
+     * La culpa la tiene la normalización, y es inevitable: dividir por el hueco
+     * entre suelo y techo convierte un hueco pequeño en un multiplicador enorme.
+     * En brisca ese hueco es mínimo, así que una partida floja daba **−10,25** y
+     * esa sola casilla se llevaba por delante el promedio de los otros catorce.
+     * El número resultante no describía al participante: describía a brisca.
+     *
+     * No es un problema nuestro ni nuevo — es por lo que los bancos de Atari
+     * publican mediana normalizada desde hace años. La media se sigue enseñando
+     * al lado, porque la distancia entre las dos ES el dato: cuando se separan,
+     * hay un juego dominando y conviene ir a mirarlo.
+     */
+    const ord = [...vals].sort((a, b) => a - b);
+    const mediana = ord.length % 2
+        ? ord[(ord.length - 1) / 2]
+        : (ord[ord.length / 2 - 1] + ord[ord.length / 2]) / 2;
     // Las incertidumbres de juegos independientes se suman en cuadratura.
     const incs = juegosUtiles.map(j => incertidumbres.get(j)[part.nombre]).filter(v => v !== null);
     // Sin ninguna dispersión medible no hay dispersión que publicar: `null`, no
@@ -274,14 +331,15 @@ for (const part of participantes) {
     const tot = (k) => juegosUtiles.reduce((a, j) => a + (datos.get(j)[part.nombre]?.[k] ?? 0), 0);
     // Cada participante juega las semillas que le tocan: las bases muchas más.
     const verif = tot('verificadas'), esperadas = tot('semillas');
-    resumen.push({ participante: part.nombre, tipo: part.tipo, media, incertidumbre: inc,
+    resumen.push({ participante: part.nombre, tipo: part.tipo, mediana, media, incertidumbre: inc,
                    tokens: tot('tokens'), segundos: tot('ms') / 1000,
                    forzadas: tot('forzadas'), llamadas: tot('llamadas'),
                    verificadas: verif, esperadas,
                    porJuego: Object.fromEntries(juegosUtiles.map(j => [j, normalizados.get(j)[part.nombre]])) });
 
     console.log(`  ${verif === esperadas ? verde('✓') : rojo('✗')} ${part.nombre.padEnd(22)}`
-        + `${media.toFixed(2).padStart(7)}${(inc === null ? '—' : '±' + inc.toFixed(2)).padStart(7)}`
+        + `${mediana.toFixed(2).padStart(7)}${media.toFixed(2).padStart(8)}`
+        + `${(inc === null ? '—' : '±' + inc.toFixed(2)).padStart(7)}`
         + `${Math.min(...vals).toFixed(2).padStart(7)}${Math.max(...vals).toFixed(2).padStart(8)}`
         + `${String(tot('forzadas')).padStart(11)}${(tot('tokens') / 1000).toFixed(1).padStart(10)}k`
         + `${(tot('ms') / 1000).toFixed(0).padStart(7)}   ${verif}/${esperadas}`);
@@ -321,7 +379,8 @@ await writeFile(path.join(dir, 'tabla.json'), JSON.stringify(
 if (args.html) {
     const pct = (r) => r.llamadas ? (r.forzadas / r.llamadas * 100).toFixed(0) : '0';
     const filas = resumen.map(r => `<tr><th>${r.participante}</th>`
-        + `<td class="n"><b>${r.media.toFixed(2)}</b></td>`
+        + `<td class="n"><b>${r.mediana.toFixed(2)}</b></td>`
+        + `<td class="n gris">${r.media.toFixed(2)}</td>`
         + `<td class="n gris">${r.incertidumbre === null
               ? '<span title="una sola partida: la dispersión no se ha medido">—</span>'
               : '±' + r.incertidumbre.toFixed(2)}</td>`
@@ -376,9 +435,16 @@ cuestan tokens, así que el metro se mide con más partidas que lo que se mide c
 <span class="gris">Las puntuaciones crudas no son comparables entre juegos —el xiangqi va
 en miles y el Go Fish en unidades— así que sumarlas daría un número que sólo habla del
 juego de escala más grande. Cada juego se lleva a esta escala común antes de promediar.</span></p>
-<table><thead><tr><th>participante</th><th>media</th><th>±</th>
+<table><thead><tr><th>participante</th><th>mediana</th><th>media</th><th>±</th>
 <th>jugadas forzadas</th><th>tokens</th><th>recibos verificados</th></tr></thead>
 <tbody>${filas}</tbody></table>
+<p class="sub"><b>El titular es la mediana, y la media va al lado a propósito.</b>
+Normalizar obliga a dividir por el hueco entre suelo y techo, así que un juego con
+hueco pequeño convierte una partida floja en un número enorme. Medido aquí: una sola
+casilla de brisca valía <b>−10,25</b> y arrastraba el promedio de los otros catorce —
+el resultado describía a brisca, no al participante. Es el motivo por el que los bancos
+de Atari publican mediana normalizada. <b>Cuando las dos columnas se separan mucho, hay
+un juego mandando</b>, y merece la pena ir a mirar cuál en la tabla de abajo.</p>
 <p class="sub"><b>Las dos columnas que importan para desconfiar.</b> «Forzadas» son las
 veces que el participante no dio una jugada válida y hubo que elegir por él: si ese número
 sube, la fila mide el arnés y no al modelo. «Recibos verificados» son las partidas que se
@@ -408,9 +474,13 @@ if (args.md) {
         `Los modelos juegan ${SEMILLAS} semillas por juego; las líneas base, ${SEMILLAS_BASE}.`,
         'Las base no cuestan tokens, así que el metro se mide con muchas más partidas',
         'que lo que se mide con él. El ± es la incertidumbre real de cada fila.', '',
-        '| participante | media | ± | forzadas | tokens | recibos verificados |',
-        '|---|---|---|---|---|---|',
-        ...resumen.map(r => `| ${r.participante} | ${r.media.toFixed(2)} `
+        'El titular es la **mediana**: normalizar divide por el hueco entre suelo y techo,',
+        'así que un juego con hueco pequeño convierte una partida floja en un número enorme',
+        'y se lleva por delante el promedio. La media va al lado — cuando se separan mucho,',
+        'hay un juego mandando. Es por lo que los bancos de Atari publican mediana.', '',
+        '| participante | mediana | media | ± | forzadas | tokens | recibos verificados |',
+        '|---|---|---|---|---|---|---|',
+        ...resumen.map(r => `| ${r.participante} | **${r.mediana.toFixed(2)}** | ${r.media.toFixed(2)} `
             + `| ${r.incertidumbre === null ? '— (sin medir)' : '±' + r.incertidumbre.toFixed(2)} | ${r.forzadas}/${r.llamadas} `
             + `| ${(r.tokens / 1000).toFixed(1)}k | ${r.verificadas}/${r.esperadas} |`),
         '', `Juegos que puntúan: ${juegosUtiles.join(', ')}.`, '',
