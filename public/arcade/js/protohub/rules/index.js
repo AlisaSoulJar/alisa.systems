@@ -110,6 +110,17 @@ export const REGLAS = {
     // salió un juego con una estructura que no teníamos: influir en un sistema
     // emergente que no obedece. Si esto escala, quedan 23 sistemas por sembrar.
     rebano: () => import('./rebano.js').then(m => m.rebano),
+    // ⚠️ UN MUNDO QUE SE PUEDE MATAR, y la estructura que ni el censo supo
+    // nombrar: los veintinueve anteriores castigan en el acto, aquí el castigo
+    // llega cuarenta turnos después. La jugada que más puntúa ahora es la que te
+    // mata luego. Física de presas: `FoodChainSystem`, otra pieza del motor.
+    pradera: () => import('./pradera.js').then(m => m.pradera),
+    // ⚠️ DEDUCCIÓN SOCIAL, y no inventa ni un mecanismo: junta el reloj propio de
+    // pradera, el `esperar` de relevo, el compromiso simultáneo de frentes y la
+    // vista por asiento de flota. Es la primera vez que hay algo que MENTIR — un
+    // agente podía jugar mal, nunca engañar. Lo único que una FSM no puede
+    // intentar, y por eso lo que más dice de un modelo de lenguaje.
+    nave: () => import('./nave.js').then(m => m.nave),
 };
 
 export const JUEGOS = Object.keys(REGLAS);

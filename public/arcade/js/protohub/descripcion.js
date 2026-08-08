@@ -317,7 +317,7 @@ export function describirSustrato(sus) {
     const t = [];
 
     if (sus.rejilla) {
-        const { ancho, alto, celdas, niebla } = sus.rejilla;
+        const { ancho, alto, celdas, niebla, sinVista } = sus.rejilla;
         const SUELO = { 0: '.', 1: '#', 2: 'o' };   // vacío · muro · destino
         const mapa = Array.from({ length: alto }, (_, y) =>
             Array.from({ length: ancho }, (_, x) => {
@@ -337,6 +337,14 @@ export function describirSustrato(sus) {
                  */
                 if (niebla?.[y * ancho + x]) return '?';
                 const v = celdas?.[y * ancho + x] ?? 0;
+                /**
+                 * ⚠️ `sinVista` es OTRA ignorancia, y se lee distinto.
+                 * `?` es «no sé qué hay aquí». La coma es «sé qué hay y no veo
+                 * quién anda»: conoces el pasillo, no sabes si está vacío. Sin
+                 * distinguirlas, un modelo leería como desconocido un sitio que
+                 * conoce de sobra, y como despejado uno que no está mirando.
+                 */
+                if (sinVista?.[y * ancho + x] && v === 0) return ',';
                 // Una celda con número grande es una CUENTA (mancala), no terreno.
                 return SUELO[v] ?? (v > 2 ? String(v % 10) : '.');
             }));
@@ -360,6 +368,7 @@ export function describirSustrato(sus) {
         const clave = Object.entries(sus.leyenda ?? {})
             .map(([k, v]) => `${simbolos[k] ?? String(k)[0].toUpperCase()}=${v}`).join(', ');
         t.push(`Mapa (# muro, o destino, . libre${niebla ? ', ? sin explorar' : ''}`
+             + `${sinVista ? ', , fuera de tu vista' : ''}`
              + `${clave ? `, ${clave}` : ''}):\n`
              + mapa.map(f => f.join('')).join('\n'));
     }

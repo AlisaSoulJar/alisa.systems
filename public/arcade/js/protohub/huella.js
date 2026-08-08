@@ -70,5 +70,35 @@ export function huellaDeReglas(reglas) {
         triunfo: e.triunfo ?? null,
         marcador: e.marcador ?? null,
         tablero: e.board ?? null,
+        /**
+         * ⚠️ Y EL SUSTRATO, PORQUE LA HUELLA SE QUEDÓ CIEGA POR SEGUNDA VEZ.
+         *
+         * Pasó con hearts y spades —está contado arriba— y acaba de repetirse con
+         * **cripta y pradera**: dos juegos que no se parecen en nada abren con las
+         * mismas cuatro direcciones y `turn: 'player'`, y todo lo demás en nulo.
+         * La firma sólo veía lo que tenían en común, otra vez.
+         *
+         * No es mala suerte: es que la lista de campos se escribió cuando los
+         * juegos eran de cartas y tablero, y ahora hay **nueve de rejilla** cuyas
+         * jugadas legales se llaman igual. Añadir campos sueltos aplazaría el
+         * problema hasta el décimo.
+         *
+         * El sustrato lo resuelve de raíz porque es, por definición, todo lo que
+         * distingue una posición de otra: la rejilla, sus muros y sus destinos, y
+         * qué piezas hay dónde. Un juego nuevo entra ya distinguido sin tocar esta
+         * lista — que es lo que hay que exigirle a una firma.
+         */
+        sustrato: reglas.sustrato ? resumenDeSustrato(reglas.sustrato(p)) : null,
     });
+}
+
+/** Lo que define una posición, en corto: forma del terreno y reparto de piezas. */
+function resumenDeSustrato(s) {
+    if (!s) return null;
+    return {
+        rejilla: s.rejilla ? [s.rejilla.ancho, s.rejilla.alto, resumir(s.rejilla.celdas ?? [])] : null,
+        niebla: s.rejilla?.niebla ? s.rejilla.niebla.filter(Boolean).length : null,
+        piezas: resumir((s.piezas ?? []).map(z => `${z.t}@${z.x},${z.y}#${z.de}`).sort()),
+        zonas: resumir((s.zonas ?? []).map(z => `${z.id}:${z.items?.length ?? 0}+${z.ocultas ?? 0}`).sort()),
+    };
 }

@@ -202,7 +202,7 @@
    "ruta": "gym/registro.js",
    "nombre": "registro",
    "familia": "gym",
-   "kb": 13.3
+   "kb": 13.8
   },
   {
    "ruta": "gym/envs/AsteroidsEnv.js",
@@ -778,7 +778,7 @@
    "ruta": "world/systems/BoidsSystem.js",
    "nombre": "BoidsSystem",
    "familia": "systems",
-   "kb": 7.0
+   "kb": 8.2
   },
   {
    "ruta": "world/systems/BulletHeavenEngine.js",
@@ -802,7 +802,7 @@
    "ruta": "world/systems/CarverEntitySystem.js",
    "nombre": "CarverEntitySystem",
    "familia": "systems",
-   "kb": 2.7
+   "kb": 2.8
   },
   {
    "ruta": "world/systems/CarverSystem.js",
@@ -820,7 +820,7 @@
    "ruta": "world/systems/CorporateSeekerSystem.js",
    "nombre": "CorporateSeekerSystem",
    "familia": "systems",
-   "kb": 13.5
+   "kb": 13.8
   },
   {
    "ruta": "world/systems/CuccoGameSystem.js",
@@ -832,7 +832,7 @@
    "ruta": "world/systems/EcosystemSystem.js",
    "nombre": "EcosystemSystem",
    "familia": "systems",
-   "kb": 22.6
+   "kb": 23.8
   },
   {
    "ruta": "world/systems/ElevatorSystem.js",

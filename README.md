@@ -256,7 +256,7 @@ npm run calibrar  # ¿miden algo?
 npm run tabla     # ¿quién juega mejor, y cuánto cuesta?
 ```
 
-**`npm test`** — cuatro etapas de dentro afuera: las reglas de los 28 juegos se
+**`npm test`** — cuatro etapas de dentro afuera: las reglas de los 30 juegos se
 juegan, se repiten y se verifican, y ninguna comparte huella; los entornos del
 gym arrancan; el verificador de producción responde; y la lista de antes de
 publicar sale limpia. Cada juego se juega dos veces, con una política floja y con
@@ -322,7 +322,7 @@ Un proyecto cuyo argumento es *«la puntuación es una prueba, no un informe»* 
 puede tener un inventario que nadie pueda auditar.
 
 **Funciona**
-- **28 juegos con reglas propias en JavaScript**, sin backend y sin una sola
+- **30 juegos con reglas propias en JavaScript**, sin backend y sin una sola
   llamada de red (comprobado espiando `fetch`, no fiándose:
   `labs/croupier_sin_hub.html`)
 - **Siete estructuras de decisión cubiertas, y medidas jugando** — geometría,

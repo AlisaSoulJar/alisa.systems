@@ -122,7 +122,11 @@ async function sondear(juego) {
 
             const antes = obtenerSustrato(juego, reglas, p, st);
             if (antes.rejilla) eje.espacial = true;
+            // Las dos ignorancias cuentan: no saber QUÉ hay (`niebla`) y no saber
+            // QUIÉN hay (`sinVista`). Son campos distintos porque son cosas
+            // distintas, pero las dos son estado que el jugador no ve.
             if (antes.rejilla?.niebla?.some(Boolean)) eje.oculto = true;
+            if (antes.rejilla?.sinVista?.some(Boolean)) eje.oculto = true;
             if (antes.zonas?.some(z => z.ocultas > 0)) eje.oculto = true;
 
             const m = reglas.sugerencia?.(p) ?? jugables(st)[0];

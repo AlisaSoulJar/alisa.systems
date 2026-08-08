@@ -26,6 +26,7 @@ const COLOR = {
     celda: '#ffffff', celdaAlt: '#e9eef3',
     jugador0: '#1a2230', jugador1: '#c0392b', neutro: '#7f8c8d',
     texto: '#1a2230', oculto: '#b9c4d0', sinVer: '#dde3ea',
+    velo: 'rgba(58,72,92,0.34)',
 };
 
 /** Cómo se dibuja cada tipo de pieza. Lo que no esté aquí sale como disco. */
@@ -56,7 +57,7 @@ export function pintar2d(ctx, sus, { ancho, alto } = {}) {
 }
 
 function pintarRejilla(ctx, sus, W, H) {
-    const { ancho: cols, alto: filas, celdas, niebla } = sus.rejilla;
+    const { ancho: cols, alto: filas, celdas, niebla, sinVista } = sus.rejilla;
     if (!(cols > 0 && filas > 0)) return;
 
     // Celdas cuadradas y centradas: un tablero deformado se lee mal y, peor,
@@ -102,6 +103,24 @@ function pintarRejilla(ctx, sus, W, H) {
                 ctx.font = `${Math.floor(lado * 0.45)}px ui-monospace, monospace`;
                 ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                 ctx.fillText(String(v), cx, cy);
+            }
+        }
+    }
+
+    /**
+     * ⚠️ `sinVista` NO ES NIEBLA: el terreno SE PINTA, y encima va un velo.
+     *
+     * Son dos ignorancias distintas y por eso son dos campos. `niebla` es «no sé
+     * qué hay aquí» —se tapa entero—; `sinVista` es «conozco el sitio pero ahora
+     * mismo no lo veo», que es lo que pasa en la nave: sabes dónde está el
+     * pasillo, no sabes quién está en él. El velo dice exactamente eso: se ve la
+     * forma, no la ocupación.
+     */
+    if (sinVista) {
+        ctx.fillStyle = COLOR.velo;
+        for (let f = 0; f < filas; f++) {
+            for (let c = 0; c < cols; c++) {
+                if (sinVista[f * cols + c]) ctx.fillRect(x0 + c * lado, y0 + f * lado, lado - 1, lado - 1);
             }
         }
     }

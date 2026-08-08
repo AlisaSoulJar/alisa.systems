@@ -27,6 +27,14 @@
 
 export class FoodChainSystem {
     constructor(config = {}) {
+        /**
+         * Semilla inyectable. Este sistema ya venía escrito pensando en agentes
+         * —publica `getPreyObservation` y `getPredatorObservation`— y aun así no
+         * podía usarse en un banco de pruebas, porque sin semilla la misma
+         * partida da dos ecosistemas distintos y el recibo no verifica.
+         * Ver `prueba_semillas.mjs`: es el defecto que comparten 24 de los 54.
+         */
+        this.rng = config.rng || Math.random;
         this.arenaSize = config.arenaSize || 18;
 
         // Prey defaults
@@ -284,10 +292,10 @@ export class FoodChainSystem {
             // FORAGE
             if (prey.timer <= 0) {
                 prey.phase = 'forage';
-                prey.target.x = closestCheese.position.x + (Math.random() - 0.5) * 0.8;
-                prey.target.z = closestCheese.position.z + (Math.random() - 0.5) * 0.8;
-                prey.timer = 0.5 + Math.random() * 0.5;
-                prey.speed = this.preyForageSpeed + Math.random() * 2.0;
+                prey.target.x = closestCheese.position.x + (this.rng() - 0.5) * 0.8;
+                prey.target.z = closestCheese.position.z + (this.rng() - 0.5) * 0.8;
+                prey.timer = 0.5 + this.rng() * 0.5;
+                prey.speed = this.preyForageSpeed + this.rng() * 2.0;
                 prey.hopAmp = 0.05;
                 prey.hopFreq = 22;
             }
@@ -295,12 +303,12 @@ export class FoodChainSystem {
         } else if (prey.timer <= 0) {
             // WANDER
             prey.phase = 'wander';
-            prey.target.x = (Math.random() - 0.5) * 20;
-            prey.target.z = (Math.random() - 0.5) * 20;
-            prey.speed = 1.0 + Math.random() * 2.0;
-            prey.timer = 1 + Math.random() * 3;
-            prey.hopAmp = 0.02 + Math.random() * 0.05;
-            prey.hopFreq = 15 + Math.random() * 10;
+            prey.target.x = (this.rng() - 0.5) * 20;
+            prey.target.z = (this.rng() - 0.5) * 20;
+            prey.speed = 1.0 + this.rng() * 2.0;
+            prey.timer = 1 + this.rng() * 3;
+            prey.hopAmp = 0.02 + this.rng() * 0.05;
+            prey.hopFreq = 15 + this.rng() * 10;
         }
 
         // ── Stamina ──
@@ -384,7 +392,7 @@ export class FoodChainSystem {
         if (!pred.commitTargetId || !preyList.find(p => p.id === pred.commitTargetId) || pred.commitTimer <= 0) {
             const best = closestVisible || closestPrey;
             pred.commitTargetId = best ? best.id : null;
-            pred.commitTimer = this.predCommitTime + Math.random() * 0.5;
+            pred.commitTimer = this.predCommitTime + this.rng() * 0.5;
         }
         // Switch to MUCH closer visible prey
         const commitTarget = preyList.find(p => p.id === pred.commitTargetId);

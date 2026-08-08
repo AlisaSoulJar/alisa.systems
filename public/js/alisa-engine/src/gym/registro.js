@@ -103,6 +103,12 @@ const PROTOHUB = [
     // Rebaño es el primero cuya física la pone el MOTOR y no las reglas: envuelve
     // `BoidsSystem`. Mide conducir un sistema emergente que no obedece órdenes.
     { juego: 'rebano', titulo: 'Rebaño', nombre: 'rebano' },
+    // Pradera mide abstenerse: el unico entorno donde la accion mas rentable
+    // ahora es la que arruina la partida cuarenta turnos despues.
+    { juego: 'pradera', titulo: 'Pradera', nombre: 'pradera' },
+    // Nave es DEDUCCION SOCIAL: roles ocultos, compromiso simultaneo y votacion.
+    // El unico entorno donde un agente puede enganar a otro, no solo superarlo.
+    { juego: 'nave', titulo: 'Nave', nombre: 'nave' },
 ];
 
 /** Entornos escritos a mano, cada uno con su propio módulo. */

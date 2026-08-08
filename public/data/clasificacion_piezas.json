@@ -828,7 +828,7 @@
    "ruta": "gym/registro.js",
    "nombre": "registro",
    "familia": "gym",
-   "kb": 13.3,
+   "kb": 13.8,
    "clase": "apagada",
    "exporta": [
     "CATALOGO",
@@ -2862,7 +2862,7 @@
     "syncKatamariConsumption"
    ],
    "objetos": 54,
-   "mallas": 132,
+   "mallas": 136,
    "luces": 4
   },
   {
@@ -3269,7 +3269,7 @@
    "ruta": "world/systems/BoidsSystem.js",
    "nombre": "BoidsSystem",
    "familia": "systems",
-   "kb": 7,
+   "kb": 8.2,
    "clase": "apagada",
    "exporta": [
     "BoidsSystem"
@@ -3372,7 +3372,7 @@
    "ruta": "world/systems/CarverEntitySystem.js",
    "nombre": "CarverEntitySystem",
    "familia": "systems",
-   "kb": 2.7,
+   "kb": 2.8,
    "clase": "apagada",
    "exporta": [
     "CarverEntitySystem"
@@ -3455,7 +3455,7 @@
    "ruta": "world/systems/CorporateSeekerSystem.js",
    "nombre": "CorporateSeekerSystem",
    "familia": "systems",
-   "kb": 13.5,
+   "kb": 13.8,
    "clase": "apagada",
    "exporta": [
     "CorporateSeekerSystem"
@@ -3512,7 +3512,7 @@
    "ruta": "world/systems/EcosystemSystem.js",
    "nombre": "EcosystemSystem",
    "familia": "systems",
-   "kb": 22.6,
+   "kb": 23.8,
    "clase": "gym",
    "exporta": [
     "EcosystemSystem"
