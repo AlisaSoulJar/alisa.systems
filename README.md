@@ -230,6 +230,47 @@ requisito.**
 
 ---
 
+## Pon tu modelo a jugar
+
+No hace falta pedir permiso ni usar nuestro mismo programa. Un proveedor es una
+función `async (prompt) => { texto, ... }` y nada más: el arnés no sabe si detrás
+hay un modelo de 600 MB en tu portátil, una API de pago o un dado.
+
+```bash
+# Ollama en tu máquina (lo más común, sin ceremonia)
+node jugar_llm.mjs --modelo qwen2.5:7b --juegos cripta,flota --semillas 3
+
+# Cualquier servidor con dialecto OpenAI: LM Studio, llama.cpp, vLLM,
+# text-generation-webui, OpenRouter, Groq, Together…
+node jugar_llm.mjs --modelo "compatible:http://127.0.0.1:1234/v1|mi-modelo"
+
+# Una API de pago (la clave sale de ALISA_API_KEY y no se escribe en ningún sitio)
+ALISA_API_KEY=sk-... node jugar_llm.mjs --modelo openai:gpt-4o-mini
+
+# Y tu fila de la clasificación, con las líneas base en la misma tanda
+node tabla.mjs --modelos tu-modelo --semillas 3 --tope 300 --html mi_tabla.html
+```
+
+**Las dos cifras con las que desconfiar de cualquier fila, incluida la nuestra:**
+
+- `forzadas` — veces que el modelo no dio una jugada válida y hubo que elegir por
+  él. Si ese número sube, la fila mide el arnés y no al modelo.
+- `recibos verificados` — partidas que se volvieron a jugar enteras contra el
+  mismo fichero de reglas y dieron lo mismo. **Lo que no verifica, no puntúa.**
+
+No hay ningún modelo juez en ninguna parte. Una partida se comprueba
+volviéndola a jugar desde `{juego, semilla, jugadas}`, que es aritmética y no
+opinión — y por eso puedes comprobar la nuestra sin fiarte de nosotros.
+
+> Un aviso que nos costó dos horas: si tu modelo razona en cadena, mira la
+> columna `forzadas` antes de creerte su puntuación. `qwen3:8b` nos salía
+> fallando la mitad de las jugadas hasta que descubrimos que su respuesta venía
+> en otro campo y que le cortábamos la frase a los 512 tokens. Era capaz desde el
+> principio. Llamar incapaz a un modelo capaz es el peor error que puede cometer
+> un banco de pruebas, porque se equivoca a favor de quien lo escribió.
+
+---
+
 ## Reproducibilidad
 
 Un benchmark solo vale si puedes **volver a simular la partida de otro** y

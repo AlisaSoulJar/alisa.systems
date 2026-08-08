@@ -41,7 +41,7 @@ const { CATALOGO } = await impo('public/js/alisa-engine/src/gym/registro.js');
 const { verificar } = await impo('public/arcade/js/protohub/Verificador.js');
 const { cargarReglas } = await impo('public/arcade/js/protohub/rules/index.js');
 const { jugarEpisodio } = await impo('public/arcade/js/agentes/llm.js');
-const { ollama, eco, azar } = await impo('public/arcade/js/agentes/proveedores.js');
+const { proveedorDesde } = await impo('public/arcade/js/agentes/proveedores.js');
 
 // ── argumentos ───────────────────────────────────────────────────
 const args = {};
@@ -59,9 +59,7 @@ if (args.listar) {
 }
 
 const nombreModelo = String(args.modelo ?? 'eco');
-const proveedor = nombreModelo === 'eco' ? eco()
-                : nombreModelo === 'azar' ? azar(7)
-                : ollama({ modelo: nombreModelo });
+const proveedor = proveedorDesde(nombreModelo);
 
 const SEMILLAS = Number(args.semillas ?? 3);
 const TOPE = Number(args.tope ?? 40);

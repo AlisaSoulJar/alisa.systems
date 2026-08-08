@@ -98,6 +98,70 @@ export function ollama({ modelo, url = 'http://127.0.0.1:11434', temperatura = 0
 }
 
 /**
+ * Cualquier servidor que hable el dialecto de OpenAI (`/v1/chat/completions`).
+ *
+ * ⚠️ ESTE PROVEEDOR EXISTE PARA QUE NO SEAMOS LOS ÚNICOS JUGANDO.
+ *
+ * Hasta ahora sólo se podía entrar por Ollama. Quien llegue con LM Studio,
+ * llama.cpp, vLLM, text-generation-webui, OpenRouter, Groq, Together o una API
+ * de pago se quedaba fuera — y un banco de pruebas al que sólo puede subir su
+ * fila quien usa tu mismo programa no es un banco de pruebas, es un diario.
+ *
+ * No hace falta un adaptador por servicio: todos esos hablan el mismo dialecto.
+ * Uno solo los cubre, y el que venga mañana también.
+ *
+ *   node jugar_llm.mjs --modelo openai:gpt-4o-mini
+ *   node jugar_llm.mjs --modelo compatible:http://127.0.0.1:1234/v1|mi-modelo
+ *
+ * ⚠️ LA CLAVE SE LEE DEL ENTORNO Y NUNCA SE ESCRIBE EN NINGÚN SITIO.
+ * Ni en el recibo, ni en la tabla, ni en el JSON de resultados. Lo que se
+ * publica de una tanda son jugadas y tokens; una credencial no es un resultado.
+ */
+export function compatible({ modelo, url = 'https://api.openai.com/v1',
+                             clave = null, temperatura = 0, coste = null } = {}) {
+    const fn = async (prompt) => {
+        const t0 = Date.now();
+        const cabeceras = { 'content-type': 'application/json' };
+        const llave = clave ?? globalThis.process?.env?.ALISA_API_KEY ?? null;
+        if (llave) cabeceras.authorization = `Bearer ${llave}`;
+
+        const r = await fetch(`${String(url).replace(/\/$/, '')}/chat/completions`, {
+            method: 'POST', headers: cabeceras,
+            body: JSON.stringify({
+                model: modelo,
+                temperature: temperatura,
+                max_tokens: TOPE_SALIDA,
+                messages: [
+                    { role: 'system', content: 'Eres un jugador. Respondes SOLO con el número de la opción elegida. Nada más.' },
+                    { role: 'user', content: prompt },
+                ],
+            }),
+        });
+        if (!r.ok) throw new Error(`${modelo} ${r.status}: ${(await r.text()).slice(0, 140)}`);
+        const j = await r.json();
+        const m = j?.choices?.[0]?.message ?? {};
+        /**
+         * Igual que en Ollama: si `content` viene vacío se mira el razonamiento.
+         * Varios servicios devuelven la cadena de pensamiento en `reasoning` o
+         * `reasoning_content` y dejan `content` a cero cuando se cortan. Leer el
+         * campo equivocado ya nos hizo llamar incapaz a un modelo capaz una vez.
+         */
+        const texto = m.content?.trim() ? m.content : (m.reasoning_content ?? m.reasoning ?? '');
+        return {
+            texto,
+            entrada: j?.usage?.prompt_tokens ?? estimarTokens(prompt),
+            salida: j?.usage?.completion_tokens ?? estimarTokens(texto),
+            medidos: j?.usage?.completion_tokens !== undefined,
+            truncado: j?.choices?.[0]?.finish_reason === 'length',
+            ms: Date.now() - t0,
+        };
+    };
+    fn.nombre = `compatible/${modelo}`;
+    fn.coste = coste;      // €/millón de tokens, si quien lo lanza lo sabe
+    return fn;
+}
+
+/**
  * Un «modelo» falso y determinista: siempre elige la primera opción.
  *
  * No es un juguete: es el CONTROL del arnés. Sale exactamente igual que la
@@ -130,4 +194,33 @@ export function azar(semilla = 1) {
     return fn;
 }
 
-export const PROVEEDORES = { ollama, eco, azar };
+export const PROVEEDORES = { ollama, compatible, eco, azar };
+
+/**
+ * Traduce lo que escribe una persona en la línea de órdenes a un proveedor.
+ *
+ * ⚠️ VIVE AQUÍ Y NO EN CADA HERRAMIENTA. `jugar_llm.mjs` y `tabla.mjs` tenían
+ * cada uno su propia cadena de `if`, así que un proveedor nuevo había que darlo
+ * de alta dos veces — y el día que se olvidara una, la herramienta seguiría
+ * funcionando con un modelo distinto del pedido, sin avisar. Es el mismo fallo
+ * que arreglamos con `rules/index.js` cuando había seis listas de juegos.
+ *
+ *   eco | azar                       las líneas base del arnés
+ *   qwen2.5:7b                       Ollama, por defecto
+ *   ollama:mixtral                   Ollama, explícito
+ *   openai:gpt-4o-mini               api.openai.com (clave en ALISA_API_KEY)
+ *   compatible:URL|modelo            cualquier servidor con dialecto OpenAI
+ */
+export function proveedorDesde(texto) {
+    const s = String(texto ?? 'eco');
+    if (s === 'eco') return eco();
+    if (s === 'azar') return azar(7);
+    if (s.startsWith('ollama:')) return ollama({ modelo: s.slice(7) });
+    if (s.startsWith('openai:')) return compatible({ modelo: s.slice(7) });
+    if (s.startsWith('compatible:')) {
+        const [url, modelo] = s.slice(11).split('|');
+        if (!modelo) throw new Error('formato: compatible:URL|modelo');
+        return compatible({ url, modelo });
+    }
+    return ollama({ modelo: s });      // lo más común, sin ceremonia
+}

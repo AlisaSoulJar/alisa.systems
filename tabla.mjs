@@ -49,7 +49,7 @@ const { CATALOGO } = await impo('public/js/alisa-engine/src/gym/registro.js');
 const { verificar } = await impo('public/arcade/js/protohub/Verificador.js');
 const { cargarReglas, TITULOS } = await impo('public/arcade/js/protohub/rules/index.js');
 const { jugarEpisodio } = await impo('public/arcade/js/agentes/llm.js');
-const { ollama } = await impo('public/arcade/js/agentes/proveedores.js');
+const { proveedorDesde } = await impo('public/arcade/js/agentes/proveedores.js');
 const { POLITICAS } = await impo('public/arcade/js/agentes/politicas.js');
 
 const args = {};
@@ -91,7 +91,7 @@ const participantes = [
     { nombre: 'primera (suelo)', tipo: 'base', politica: POLITICAS.primera() },
     { nombre: 'azar',            tipo: 'base', politica: POLITICAS.azar() },
     { nombre: 'casa (techo blando)', tipo: 'base', politica: POLITICAS.casa() },
-    ...modelos.map(m => ({ nombre: m, tipo: 'modelo', proveedor: ollama({ modelo: m }) })),
+    ...modelos.map(m => ({ nombre: m, tipo: 'modelo', proveedor: proveedorDesde(m) })),
 ];
 
 console.log(`\n  ${entornos.length} juegos · ${SEMILLAS} semillas · tope ${TOPE}`
