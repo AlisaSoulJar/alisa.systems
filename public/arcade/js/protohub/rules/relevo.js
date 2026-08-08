@@ -32,6 +32,7 @@
  */
 import { mulberry32 } from './azar.js';
 import { describirSustrato } from '../descripcion.js';
+import { DIRS, suma, hayLinea, primerPaso } from '../rejilla.js';
 
 const ANCHO = 19, ALTO = 13;
 const MURO_X = 9;                    // la pared que parte el almacén
@@ -39,7 +40,9 @@ const SILLAS = ['uno', 'dos'];
 const VISTA = 3;
 const TOPE = 260;
 
-const DIRS = { arriba: [0, -1], abajo: [0, 1], izquierda: [-1, 0], derecha: [1, 0] };
+
+/** Adaptador para `hayLinea`: los muros de este juego, como función. */
+const esMuroDe = (p) => (x, y) => p.muros.has(y * ANCHO + x);
 
 export const relevo = {
     nuevaPartida(opts = {}) {
@@ -344,7 +347,6 @@ export const relevo = {
 const dentro = (x, y) => x >= 0 && y >= 0 && x < ANCHO && y < ALTO;
 const idx = (q) => q.y * ANCHO + q.x;
 const punto = (i) => ({ x: i % ANCHO, y: Math.floor(i / ANCHO) });
-const suma = (q, [dx, dy]) => ({ x: q.x + dx, y: q.y + dy });
 const distancia = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 const otra = (s) => SILLAS[1 - SILLAS.indexOf(s)];
 
@@ -402,48 +404,12 @@ function campoVision(p, quien) {
         for (let dx = -VISTA; dx <= VISTA; dx++) {
             const x = o.x + dx, y = o.y + dy;
             if (!dentro(x, y) || dx * dx + dy * dy > VISTA * VISTA + 1) continue;
-            if (hayLinea(p, o, { x, y })) visto.add(y * ANCHO + x);
+            if (hayLinea(esMuroDe(p), o, { x, y })) visto.add(y * ANCHO + x);
         }
     }
     return visto;
 }
 
-function hayLinea(p, a, b) {
-    let x = a.x, y = a.y;
-    const dx = Math.abs(b.x - x), dy = Math.abs(b.y - y);
-    const sx = x < b.x ? 1 : -1, sy = y < b.y ? 1 : -1;
-    let err = dx - dy;
-    for (;;) {
-        if (x === b.x && y === b.y) return true;
-        const esPuerta = x === p.puerta.x && y === p.puerta.y;
-        if (!(x === a.x && y === a.y) && p.muros.has(y * ANCHO + x) && !esPuerta) return false;
-        const e2 = 2 * err;
-        if (e2 > -dy) { err -= dy; x += sx; }
-        if (e2 < dx) { err += dx; y += sy; }
-    }
-}
 
 const mirar = (p, quien) => { for (const i of campoVision(p, quien)) p[quien].visto.add(i); };
 
-function primerPaso(sus, desde, esMeta) {
-    const { ancho, celdas, niebla } = sus.rejilla;
-    const inicio = desde.y * ancho + desde.x;
-    if (esMeta(inicio)) return null;
-    const visto = new Set([inicio]);
-    const cola = [{ q: desde, primera: null }];
-    while (cola.length) {
-        const n = cola.shift();
-        for (const [dir, d] of Object.entries(DIRS)) {
-            const q = suma(n.q, d);
-            if (!dentro(q.x, q.y)) continue;
-            const i = q.y * ancho + q.x;
-            if (visto.has(i)) continue;
-            visto.add(i);
-            const primera = n.primera ?? dir;
-            if (esMeta(i)) return primera;
-            if (niebla[i] === 1 || celdas[i] === 1) continue;
-            cola.push({ q, primera });
-        }
-    }
-    return null;
-}

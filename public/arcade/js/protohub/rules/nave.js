@@ -28,6 +28,8 @@
  */
 import { mulberry32 } from './azar.js';
 import { describirSustrato } from '../descripcion.js';
+import { BSPSystem } from '../../../../js/alisa-engine/src/world/BSPSystem.js';
+import { DIRS, suma, hayLinea, primerPaso } from '../rejilla.js';
 
 /**
  * ⚠️ LA NAVE ES GRANDE Y TIENE MAMPARAS PORQUE EL GÉNERO NECESITA INTIMIDAD.
@@ -48,46 +50,55 @@ const VISTA = 4;
 const TAREAS = 6, TAREAS_PARA_GANAR = 6;
 const RONDAS = 90;
 
-const DIRS = { arriba: [0, -1], abajo: [0, 1], izquierda: [-1, 0], derecha: [1, 0] };
 const dentro = (x, y) => x >= 1 && y >= 1 && x < ANCHO - 1 && y < ALTO - 1;
 const idx = (q) => q.y * ANCHO + q.x;
 const punto = (i) => ({ x: i % ANCHO, y: Math.floor(i / ANCHO) });
-const suma = (q, [dx, dy]) => ({ x: q.x + dx, y: q.y + dy });
 const cerca = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+
+/** Adaptador para `hayLinea`: los muros de este juego, como función. */
+const esMuroDe = (p) => (x, y) => p.muros.has(y * ANCHO + x);
 
 export const nave = {
     nuevaPartida(opts = {}) {
         const semilla = (opts.semilla ?? opts.seed ?? (Math.random() * 2 ** 32)) >>> 0;
         const azar = mulberry32(semilla);
 
-        const muros = new Set();
-        for (let y = 0; y < ALTO; y++) {
-            for (let x = 0; x < ANCHO; x++) {
-                if (x === 0 || y === 0 || x === ANCHO - 1 || y === ALTO - 1) muros.add(y * ANCHO + x);
-            }
-        }
         /**
-         * Mamparas LARGAS, no manchas sueltas. Un tabique de una casilla no tapa
-         * nada: hacen falta paredes que corten la vista y creen salas con puerta,
-         * que es donde uno se queda solo sin darse cuenta.
+         * ⚠️ LA NAVE LA REPARTE `BSPSystem`, NO UN APAÑO MÍO.
+         *
+         * La primera versión echaba seis mamparas largas al azar con una puerta
+         * cada una. Funcionaba, y era exactamente el tipo de cosa que este
+         * proyecto lleva un día quitando: código propio haciendo peor lo que una
+         * pieza del motor hace bien. La partición binaria da **salas de verdad
+         * conectadas por pasillos**, que es la topología que pide el género —
+         * cuartos donde te quedas solo sin darte cuenta, y corredores donde te
+         * cruzas con alguien sin saber de dónde venía.
+         *
+         * Tercer juego que se apoya en el mismo sistema, después de cripta y
+         * sigilo. Que se pueda reusar así es consecuencia directa de haberle
+         * inyectado la semilla: sin eso no habría entrado en ninguno de los tres.
          */
-        for (let k = 0; k < 6; k++) {
-            const horizontal = azar() < 0.5;
-            const largo = 4 + Math.floor(azar() * 5);
-            let x = 2 + Math.floor(azar() * (ANCHO - 5));
-            let y = 2 + Math.floor(azar() * (ALTO - 5));
-            const puerta = Math.floor(azar() * largo);      // toda mampara tiene paso
-            for (let i = 0; i < largo; i++) {
-                if (i === puerta) continue;
-                const q = horizontal ? { x: x + i, y } : { x, y: y + i };
-                if (dentro(q.x, q.y)) muros.add(q.y * ANCHO + q.x);
-            }
-        }
+        const bsp = new BSPSystem({ minLeafSize: 5, maxLeafSize: 8, rng: azar });
+        const { rooms, halls } = bsp.generate(ANCHO, ALTO, 4);
 
-        const libres = [];
-        for (let y = 1; y < ALTO - 1; y++) {
-            for (let x = 1; x < ANCHO - 1; x++) if (!muros.has(y * ANCHO + x)) libres.push(y * ANCHO + x);
-        }
+        const muros = new Set(Array.from({ length: ANCHO * ALTO }, (_, i) => i));
+        const cavar = (r) => {
+            for (let y = r.y; y < r.y + Math.max(1, r.height); y++) {
+                for (let x = r.x; x < r.x + Math.max(1, r.width); x++) {
+                    if (dentro(x, y)) muros.delete(y * ANCHO + x);
+                }
+            }
+        };
+        rooms.forEach(cavar); halls.forEach(cavar);
+
+        // Todo se coloca sobre lo alcanzable desde una sala: la lección de sokoban
+        // y de cripta. Una tarea en un cuarto sellado no es difícil, es imposible,
+        // y encima parecería que la tripulación juega mal.
+        const centro = rooms[0]
+            ? { x: Math.floor(rooms[0].x + rooms[0].width / 2), y: Math.floor(rooms[0].y + rooms[0].height / 2) }
+            : { x: 1, y: 1 };
+        muros.delete(idx(centro));
+        const libres = [...alcanzables(muros, centro)];
         const sacar = () => libres.splice(Math.floor(azar() * libres.length), 1)[0];
 
         const tareas = Array.from({ length: TAREAS }, () => ({ i: sacar(), hecha: false }));
@@ -152,7 +163,7 @@ export const nave = {
         for (let i = 0; i < n; i++) {
             const q = punto(i);
             celdas[i] = p.muros.has(i) ? 1 : 0;
-            if (cerca(q, yo) <= VISTA && hayLinea(p, yo, q)) sinVista[i] = 0;
+            if (cerca(q, yo) <= VISTA && hayLinea(esMuroDe(p), yo, q)) sinVista[i] = 0;
         }
         /**
          * ⚠️ LAS TAREAS SE VEN SIEMPRE, TAMBIÉN EN LA NIEBLA.
@@ -172,7 +183,7 @@ export const nave = {
         for (const c of p.cadaveres) if (!sinVista[c.i]) piezas.push({ ...punto(c.i), t: 'cadaver', de: 1 });
         for (const g of p.gente) {
             if (!g.vivo || g.silla === yo.silla) continue;
-            if (cerca(g, yo) <= VISTA && hayLinea(p, yo, g)) {
+            if (cerca(g, yo) <= VISTA && hayLinea(esMuroDe(p), yo, g)) {
                 piezas.push({ x: g.x, y: g.y, t: `tripulante_${g.silla}`, de: 2 });
             }
         }
@@ -330,7 +341,7 @@ export const nave = {
         // La junta se convoca sola en cuanto alguien vivo ve un cadáver.
         for (const c of p.cadaveres) {
             if (c.avisado) continue;
-            if (p.gente.some(g => g.vivo && cerca(punto(c.i), g) <= VISTA && hayLinea(p, g, punto(c.i)))) {
+            if (p.gente.some(g => g.vivo && cerca(punto(c.i), g) <= VISTA && hayLinea(esMuroDe(p), g, punto(c.i)))) {
                 c.avisado = true; p.junta = true;
                 p.historial.push(`ronda ${p.ronda}: cadáver de ${c.silla}`);
             }
@@ -433,46 +444,19 @@ export const nave = {
     deshacer() { return false; },
 };
 
-/**
- * Bresenham: la mampara del final se ve, lo de detrás no.
- * Las esquinas esconden — y esconderse es la mitad de este juego.
- */
-function hayLinea(p, a, b) {
-    let x = a.x, y = a.y;
-    const dx = Math.abs(b.x - x), dy = Math.abs(b.y - y);
-    const sx = x < b.x ? 1 : -1, sy = y < b.y ? 1 : -1;
-    let err = dx - dy;
-    for (;;) {
-        if (x === b.x && y === b.y) return true;
-        if (!(x === a.x && y === a.y) && p.muros.has(y * ANCHO + x)) return false;
-        const e2 = 2 * err;
-        if (e2 > -dy) { err -= dy; x += sx; }
-        if (e2 < dx) { err += dx; y += sy; }
-    }
-}
-
-function primerPaso(sus, desde, esMeta) {
-    const { ancho, celdas } = sus.rejilla;
-    const inicio = desde.y * ancho + desde.x;
-    if (esMeta(inicio)) return null;
-    const visto = new Set([inicio]);
-    const cola = [{ q: desde, primera: null }];
+/** Lo pisable desde un punto. Sin esto, una sala sellada arruina la partida. */
+function alcanzables(muros, desde) {
+    const visto = new Set([idx(desde)]);
+    const cola = [desde];
     while (cola.length) {
         const n = cola.shift();
-        for (const [dir, d] of Object.entries(DIRS)) {
-            const q = suma(n.q, d);
-            if (!dentro(q.x, q.y)) continue;
-            const i = q.y * ancho + q.x;
-            if (visto.has(i)) continue;
-            visto.add(i);
-            const primera = n.primera ?? dir;
-            if (esMeta(i)) return primera;
-            // ⚠️ Aquí SÍ se cruza la niebla: el plano de la nave es público, así
-            // que se puede planificar por salas que ahora mismo no ves. Lo que no
-            // sabes es quién hay dentro — y eso no impide caminar.
-            if (celdas[i] === 1) continue;
-            cola.push({ q, primera });
+        for (const d of Object.values(DIRS)) {
+            const q = suma(n, d);
+            if (!dentro(q.x, q.y) || muros.has(idx(q)) || visto.has(idx(q))) continue;
+            visto.add(idx(q)); cola.push(q);
         }
     }
-    return null;
+    return visto;
 }
+
+

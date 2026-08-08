@@ -32,6 +32,7 @@
  */
 import { mulberry32 } from './azar.js';
 import { describirSustrato } from '../descripcion.js';
+import { DIRS, suma, primerPaso } from '../rejilla.js';
 
 const ANCHO = 15, ALTO = 11;
 const SILLAS = ['guia', 'piloto'];
@@ -53,7 +54,6 @@ const VIDAS = 3;
 const POZOS = 8;
 const TOPE = 160;
 
-const DIRS = { arriba: [0, -1], abajo: [0, 1], izquierda: [-1, 0], derecha: [1, 0] };
 /**
  * El vocabulario entero. Cuatro rumbos, un alto y un aviso de peligro — que es
  * lo mínimo con lo que se puede guiar a alguien a ciegas, y ni una palabra más.
@@ -280,7 +280,9 @@ export const cabina = {
         if (p.turno === 'guia') {
             const pozos = new Set(sus.piezas.filter(z => z.t === 'pozo').map(z => idx(z)));
             const meta = sus.rejilla.celdas.findIndex(v => v === 2);
-            const paso = primerPaso(sus, yo, i => i === meta, pozos);
+            // `evitar` con nombre: la versión compartida acepta opciones, no un
+            // cuarto argumento posicional que hubiera que recordar.
+            const paso = primerPaso(sus, yo, i => i === meta, { evitar: pozos });
             if (!paso) return 'di:alto';
             const destino = suma(yo, DIRS[paso]);
             if (!pozos.has(idx(destino))) return `di:${paso}`;
@@ -347,7 +349,6 @@ export const cabina = {
 const dentro = (x, y) => x >= 0 && y >= 0 && x < ANCHO && y < ALTO;
 const idx = (q) => q.y * ANCHO + q.x;
 const punto = (i) => ({ x: i % ANCHO, y: Math.floor(i / ANCHO) });
-const suma = (q, [dx, dy]) => ({ x: q.x + dx, y: q.y + dy });
 const distancia = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 
 function hayRuta(muros, desde, hasta) {
@@ -365,28 +366,3 @@ function hayRuta(muros, desde, hasta) {
     return false;
 }
 
-/** Camino más corto sobre el sustrato, penalizando los pozos conocidos. */
-function primerPaso(sus, desde, esMeta, evitar = new Set()) {
-    const { ancho, celdas, niebla } = sus.rejilla;
-    const inicio = desde.y * ancho + desde.x;
-    if (esMeta(inicio)) return null;
-    for (const pasada of [true, false]) {          // primero limpio, luego a la fuerza
-        const visto = new Set([inicio]);
-        const cola = [{ q: desde, primera: null }];
-        while (cola.length) {
-            const n = cola.shift();
-            for (const [dir, d] of Object.entries(DIRS)) {
-                const q = suma(n.q, d);
-                if (!dentro(q.x, q.y)) continue;
-                const i = q.y * ancho + q.x;
-                if (visto.has(i) || (pasada && evitar.has(i))) continue;
-                visto.add(i);
-                const primera = n.primera ?? dir;
-                if (esMeta(i)) return primera;
-                if (celdas[i] === 1 || niebla?.[i] === 1) continue;
-                cola.push({ q, primera });
-            }
-        }
-    }
-    return null;
-}

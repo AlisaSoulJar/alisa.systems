@@ -143,5 +143,63 @@ if (nuevos.length) {
     console.log(`\n  ↓ un entorno inerte se arregló. Quítalo de INERTES.`);
 }
 
-console.log(fallos ? '\n  ✗ semillas: hay algo que no se puede medir\n' : '\n  ✓ semillas: la deuda no crece y los entornos usan su semilla\n');
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * TERCERA PARTE — ¿ESTAMOS USANDO LO QUE YA TENEMOS?
+ *
+ * La regla del proyecto es reusar antes que crear, y si hay que crear, seguir el
+ * estándar de lo que hay. Una regla así no sobrevive en la cabeza de nadie: se
+ * cumple mientras alguien se acuerda y luego aparece la sexta copia de
+ * Bresenham. Aquí se cuenta.
+ *
+ * Dos números, y los dos van en la dirección contraria a una deuda:
+ *
+ *   · **piezas del motor que usan los juegos** — sólo puede SUBIR. Empezó en 1
+ *     (BSPSystem, y por accidente) y hoy son tres sistemas sosteniendo cinco
+ *     juegos.
+ *   · **copias de un mismo algoritmo** — no puede volver a aparecer una función
+ *     que ya vive en `protohub/rejilla.js`. Escribí Bresenham tres veces y la
+ *     búsqueda de camino cinco antes de darme cuenta; cada copia funcionaba, y
+ *     por eso el fallo de una nunca llegaba a las otras.
+ */
+const RULES = join(AQUI, 'public/arcade/js/protohub/rules');
+const COMPARTIDAS = ['hayLinea', 'primerPaso'];
+const PIEZAS_MINIMAS = 3;
+
+const reglas = readdirSync(RULES).filter(f => f.endsWith('.js'));
+const piezas = new Set();
+const copias = [];
+for (const f of reglas) {
+    const t = readFileSync(join(RULES, f), 'utf-8');
+    // El último segmento de la ruta, no lo que sobre: `[\w/]*` es voraz y se
+    // comía el nombre dejando una letra suelta. Un contador que cuenta mal es
+    // peor que no contar, porque parece que cuenta.
+    for (const m of t.matchAll(/alisa-engine\/src\/(?:[\w-]+\/)*([\w-]+)\.js/g)) piezas.add(m[1]);
+    for (const n of COMPARTIDAS) {
+        if (t.includes(`function ${n}(`)) copias.push(`${f}: ${n}`);
+    }
+}
+
+console.log('\n¿Usamos lo que ya tenemos?\n');
+console.log(`  piezas del motor usadas por los juegos: ${piezas.size} (mínimo ${PIEZAS_MINIMAS})`);
+console.log(`    ${[...piezas].join(', ')}`);
+if (piezas.size < PIEZAS_MINIMAS) {
+    fallos++;
+    console.log(`  ✗ bajó: había ${PIEZAS_MINIMAS} y quedan ${piezas.size}.`);
+} else if (piezas.size > PIEZAS_MINIMAS) {
+    console.log(`  ↑ subió. Actualiza PIEZAS_MINIMAS a ${piezas.size}.`);
+}
+
+if (copias.length) {
+    fallos++;
+    console.log(`\n  ✗ algoritmo copiado en vez de importado de protohub/rejilla.js:`);
+    for (const c of copias) console.log(`      ${c}`);
+    console.log(`    Cada copia funciona, y ése es el problema: el día que se arregle`);
+    console.log(`    una, las otras seguirán mal. Ya pasó con la política oscilante de`);
+    console.log(`    sokoban, que renació calcada en la cabina.`);
+} else {
+    console.log(`  ✓ sin copias de ${COMPARTIDAS.join(' ni ')} en las reglas`);
+}
+
+console.log(fallos ? '\n  ✗ semillas: hay algo que no se puede medir\n' : '\n  ✓ semillas: la deuda no crece, los entornos usan su semilla y no hay copias\n');
 process.exit(fallos ? 1 : 0);

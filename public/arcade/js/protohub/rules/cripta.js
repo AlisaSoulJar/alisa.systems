@@ -31,6 +31,7 @@
 import { mulberry32 } from './azar.js';
 import { describirSustrato } from '../descripcion.js';
 import { BSPSystem } from '../../../../js/alisa-engine/src/world/BSPSystem.js';
+import { DIRS, suma, hayLinea, primerPaso } from '../rejilla.js';
 
 const ANCHO = 24, ALTO = 18;
 const VISTA = 4;            // radio de visión, en casillas
@@ -53,9 +54,9 @@ const TESOROS = 3;
 const BICHOS = 4;
 const TOPE = 400;
 
-const DIRS = {
-    arriba: [0, -1], abajo: [0, 1], izquierda: [-1, 0], derecha: [1, 0],
-};
+
+/** Adaptador para `hayLinea`: los muros de este juego, como función. */
+const esMuroDe = (p) => (x, y) => p.muros.has(y * ANCHO + x);
 
 export const cripta = {
     /**
@@ -379,7 +380,6 @@ export const cripta = {
 const dentro = (x, y) => x >= 0 && y >= 0 && x < ANCHO && y < ALTO;
 const idx = (q) => q.y * ANCHO + q.x;
 const punto = (i) => ({ x: i % ANCHO, y: Math.floor(i / ANCHO) });
-const suma = (q, [dx, dy]) => ({ x: q.x + dx, y: q.y + dy });
 const distancia = (a, b) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 
 /** Distancia al bicho visible más cercano. Sólo mira el sustrato, como todo. */
@@ -432,26 +432,13 @@ function campoVision(p) {
         for (let dx = -VISTA; dx <= VISTA; dx++) {
             const x = p.heroe.x + dx, y = p.heroe.y + dy;
             if (!dentro(x, y) || dx * dx + dy * dy > VISTA * VISTA + 1) continue;
-            if (hayLinea(p, p.heroe, { x, y })) visto.add(y * ANCHO + x);
+            if (hayLinea(esMuroDe(p), p.heroe, { x, y })) visto.add(y * ANCHO + x);
         }
     }
     return visto;
 }
 
 /** Bresenham. El muro del final se ve; lo que hay detrás, no. */
-function hayLinea(p, a, b) {
-    let x = a.x, y = a.y;
-    const dx = Math.abs(b.x - x), dy = Math.abs(b.y - y);
-    const sx = x < b.x ? 1 : -1, sy = y < b.y ? 1 : -1;
-    let err = dx - dy;
-    for (;;) {
-        if (x === b.x && y === b.y) return true;
-        if (!(x === a.x && y === a.y) && p.muros.has(y * ANCHO + x)) return false;
-        const e2 = 2 * err;
-        if (e2 > -dy) { err -= dy; x += sx; }
-        if (e2 < dx) { err += dx; y += sy; }
-    }
-}
 
 /** Lo que se ve ahora pasa a lo que se sabe. La memoria del jugador. */
 function mirar(p) {
@@ -468,7 +455,7 @@ function mirar(p) {
  */
 function moverBichos(p) {
     for (const b of p.bichos) {
-        if (distancia(b, p.heroe) > DESPIERTA || !hayLinea(p, b, p.heroe)) continue;
+        if (distancia(b, p.heroe) > DESPIERTA || !hayLinea(esMuroDe(p), b, p.heroe)) continue;
         if (distancia(b, p.heroe) === 1) { p.vida--; p.golpes++; continue; }
 
         const dx = Math.sign(p.heroe.x - b.x), dy = Math.sign(p.heroe.y - b.y);
@@ -486,33 +473,3 @@ function moverBichos(p) {
     }
 }
 
-/**
- * Primer paso del camino más corto hasta una meta, SOBRE EL SUSTRATO.
- *
- * Se expande sólo por lo conocido y pisable, pero se puede ENTRAR en la niebla
- * y ahí se para: una casilla sin explorar es un destino válido y un callejón
- * para el algoritmo, porque no se puede planificar a través de lo que no se
- * sabe. Eso es literalmente la exploración por frontera.
- */
-function primerPaso(sus, desde, esMeta) {
-    const { ancho, celdas, niebla } = sus.rejilla;
-    const inicio = desde.y * ancho + desde.x;
-    if (esMeta(inicio)) return null;
-    const visto = new Set([inicio]);
-    const cola = [{ q: desde, primera: null }];
-    while (cola.length) {
-        const n = cola.shift();
-        for (const [dir, d] of Object.entries(DIRS)) {
-            const q = suma(n.q, d);
-            if (!dentro(q.x, q.y)) continue;
-            const i = q.y * ancho + q.x;
-            if (visto.has(i)) continue;
-            visto.add(i);
-            const primera = n.primera ?? dir;
-            if (esMeta(i)) return primera;
-            if (niebla[i] === 1 || celdas[i] === 1) continue;   // no se sigue
-            cola.push({ q, primera });
-        }
-    }
-    return null;
-}

@@ -27,6 +27,7 @@
 import { mulberry32 } from './azar.js';
 import { describirSustrato } from '../descripcion.js';
 import { BoidsSystem } from '../../../../js/alisa-engine/src/world/systems/BoidsSystem.js';
+import { DIRS, suma } from '../rejilla.js';
 
 const ANCHO = 19, ALTO = 13;
 const OVEJAS = 12;
@@ -48,7 +49,6 @@ const SUBPASOS = 6, DT = 0.055;
 const RADIO_PERRO = 4.5;
 const TOPE = 140;
 
-const DIRS = { arriba: [0, -1], abajo: [0, 1], izquierda: [-1, 0], derecha: [1, 0] };
 
 const dentro = (x, y) => x >= 1 && y >= 1 && x < ANCHO - 1 && y < ALTO - 1;
 const enRedil = (q) => q.x >= REDIL.x0 && q.x <= REDIL.x1 && q.y >= REDIL.y0 && q.y <= REDIL.y1;
@@ -241,4 +241,3 @@ export const rebano = {
     deshacer() { return false; },
 };
 
-const suma = (q, [dx, dy]) => ({ x: q.x + dx, y: q.y + dy });

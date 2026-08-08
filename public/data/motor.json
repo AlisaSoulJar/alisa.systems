@@ -202,7 +202,7 @@
    "ruta": "gym/registro.js",
    "nombre": "registro",
    "familia": "gym",
-   "kb": 13.8
+   "kb": 14.2
   },
   {
    "ruta": "gym/envs/AsteroidsEnv.js",
@@ -856,7 +856,7 @@
    "ruta": "world/systems/FoodChainSystem.js",
    "nombre": "FoodChainSystem",
    "familia": "systems",
-   "kb": 30.5
+   "kb": 30.9
   },
   {
    "ruta": "world/systems/HidingSpotSystem.js",
