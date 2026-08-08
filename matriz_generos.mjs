@@ -610,6 +610,27 @@ Si una fila miente, la prueba está en <code>/arcade/jugar.html</code>.</footer>
     console.log(`\n  → ${ruta}`);
 }
 
+/**
+ * ⚠️ JSON PORQUE ESTA TABLA HAY QUE CRUZARLA, NO SÓLO LEERLA.
+ *
+ * Hasta ahora salía en markdown y en HTML: las dos para ojos humanos. Pero el
+ * perfil de un JUGADOR se calcula cruzando qué ejes ejercita cada juego con cómo
+ * le fue en cada juego, y para eso hace falta el dato, no su maquetación.
+ *
+ * La alternativa era parsear el markdown, que es exactamente el pecado que este
+ * proyecto lleva quitando: derivar de una presentación en vez de del origen.
+ */
+const json = process.argv.indexOf('--json');
+if (json > 0 && process.argv[json + 1]) {
+    await mkdir(dirname(process.argv[json + 1]), { recursive: true });
+    await writeFile(process.argv[json + 1], JSON.stringify({
+        generado: new Date().toISOString(),
+        ejes: EJES,
+        juegos: Object.fromEntries(filas.map(f => [f.juego, f.eje])),
+    }, null, 2) + '\n', 'utf-8');
+    console.log(`\n  → ${process.argv[json + 1]}`);
+}
+
 const md = process.argv.indexOf('--md');
 if (md > 0 && process.argv[md + 1]) {
     const ruta = process.argv[md + 1];

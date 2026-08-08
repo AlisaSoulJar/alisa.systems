@@ -34,13 +34,47 @@ export const primera = () => 0;
  */
 export function azar(semilla = 20260802) {
     let a = semilla >>> 0;
-    return (env, opciones) => {
+    const elegir = (env, opciones) => {
         a = (a + 0x6D2B79F5) >>> 0;
         let t = a;
         t = Math.imul(t ^ (t >>> 15), t | 1);
         t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
         return ((t ^ (t >>> 14)) >>> 0) % opciones.length;
     };
+    /**
+     * ⚠️ RESEMBRAR ANTES DE CADA PARTIDA, Y ANTES NO SE HACÍA.
+     *
+     * Esta política se creaba UNA vez y su estado interno viajaba de juego en
+     * juego y de semilla en semilla durante toda la tanda. Consecuencia: la
+     * partida aleatoria de `cripta` dependía de cuántas jugadas había gastado
+     * `brisca` antes que ella.
+     *
+     * O sea que **el suelo de un juego cambiaba según con qué otros juegos se
+     * midiera**. Correr `--juegos rebano,relevo` daba un número distinto que
+     * correr el catálogo entero, y ninguna de las dos medidas era reproducible
+     * por separado. Lo destapó Fable verificando un arreglo: la comprobación
+     * aislada no reproducía el fallo que sí aparecía con los 30.
+     *
+     * Con puntuaciones que valen algo eso es un agujero, no una curiosidad: la
+     * línea base contra la que se normaliza a todo el mundo dependería de la
+     * composición de la tanda, que la elige quien la lanza.
+     *
+     * Ahora cada partida siembra con `(juego, semilla)`, así que la misma
+     * partida da siempre lo mismo, se mida sola o acompañada.
+     */
+    elegir.sembrar = (nueva) => { a = (nueva >>> 0) || 1; };
+    return elegir;
+}
+
+/** Mezcla un nombre de juego y una semilla en un entero estable (FNV-1a). */
+export function semillaDe(juego, semilla) {
+    let h = 0x811c9dc5;
+    const s = `${juego}#${semilla}`;
+    for (let i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    return h >>> 0;
 }
 
 /**

@@ -93,6 +93,32 @@ export const relevo = {
         const hueco = Object.values(DIRS).map(d => suma(inicio, d))
             .find(q => dentro(q.x, q.y) && !muros.has(idx(q)));
         if (hueco) { p.dos.x = hueco.x; p.dos.y = hueco.y; }
+
+        /**
+         * ⚠️ UNA PLACA OCUPADA AL EMPEZAR ESTÁ PISADA. Y ANTES NO LO ESTABA.
+         *
+         * `pisadas[k]` sólo se marcaba dentro de `mover()`, al LLEGAR a la placa.
+         * Si el reparto inicial colocaba a un autómata justo encima de una, nunca
+         * hubo un movimiento que la registrara: el juego lo veía de pie sobre la
+         * placa y creía que nadie la pisaba. La puerta no se abría y la partida
+         * era inganable sin que nada fallara.
+         *
+         * Lo destapó Fable trazando partidas casa-contra-casa paso a paso — los
+         * agregados de la tabla no bastaban para verlo. Como le había prohibido
+         * tocar las reglas, lo rodeó en la política: bajarse un paso y volver a
+         * subir para registrar la pisada.
+         *
+         * Ese rodeo funcionaba y era exactamente lo que no hay que dejar puesto.
+         * **Una política compensando un fallo de las reglas envejece fatal**: el
+         * día que alguien escriba otra política, el juego volverá a ser inganable
+         * y nadie sabrá por qué, porque el arreglo vivía en un sitio que no era
+         * el roto. Se arregla donde estaba el fallo y se quita el parche.
+         */
+        p.placas.forEach((pl, k) => {
+            if ((p.uno.x === pl.x && p.uno.y === pl.y)
+             || (p.dos.x === pl.x && p.dos.y === pl.y)) p.pisadas[k] = true;
+        });
+
         mirar(p, 'uno'); mirar(p, 'dos');
         return p;
     },
@@ -265,6 +291,37 @@ export const relevo = {
      * ⚠️ Lee su sustrato, así que ninguno de los dos sabe dónde está el otro
      * salvo cuando lo tiene delante. Si mirara el estado se coordinarían por
      * telepatía y el techo mediría un equipo que no existe.
+     *
+     * ⚠️ MEDIDO: ESTA POLÍTICA PERDÍA CONTRA EL AZAR. `tabla.mjs` (catálogo
+     * completo) sacaba `azar 1.30` sobre una escala donde `1,00` es la propia
+     * casa — jugando contra sí misma, la casa se atascaba más de lo que
+     * fallaba una pareja al azar. Jugando casa-contra-casa semilla a semilla
+     * (`node prueba_relevo_debug.mjs`, no incluido, script de mano) salían
+     * partidas enteras con `pisadas: [true, false]` clavado desde el turno 30
+     * hasta el tope de 260 — la puerta se abría una vez y no volvía a pasar
+     * nada. Dos fallos distintos, los dos en esta función:
+     *
+     * 1. **La regla «sobre placa, esperar» no distinguía QUIÉN sostiene.**
+     *    Los dos autómatas SALEN DEL MISMO LADO del muro —el reparto de
+     *    asientos no cambia eso—, así que la placa de ese lado es «la mía»
+     *    para los dos mientras ninguno haya cruzado. Si el dos llegaba a
+     *    pisarla —a veces por reparto inicial, la casilla contigua de sobra
+     *    caía justo encima— se quedaba sosteniendo ahí PARA SIEMPRE, igual que
+     *    el uno, y la placa de la derecha no la pisaba nadie en toda la
+     *    partida. Sostener es el trabajo del uno (`sostengo`); el dos sólo
+     *    tiene que pisar y seguir — por eso ahora la espera lleva el guardián
+     *    `sostengo`.
+     * 2. **Empezar YA encima de tu propia placa no la pisaba.** `pisadas[k]` se
+     *    marcaba dentro de `mover()` al LLEGAR con un movimiento real; si el
+     *    reparto colocaba al autómata desde el principio sobre su placa, nunca
+     *    hubo movimiento que lo registrara y «esperar» sostenía una presión que
+     *    el juego no había visto nunca.
+     *
+     *    ⚠️ Éste NO era un fallo de la política, era de las reglas, y aquí se
+     *    rodeó porque quien lo encontró tenía prohibido tocarlas. **El rodeo ya
+     *    no está**: `nuevaPartida` marca las placas ocupadas al repartir, que es
+     *    donde estaba el roto. Un parche en la política habría hecho que el
+     *    juego volviera a ser inganable el día que alguien escribiera otra.
      */
     sugerencia(p) {
         const asiento = SILLAS.indexOf(p.turno);
@@ -278,6 +335,16 @@ export const relevo = {
         const salida = sus.rejilla.celdas.findIndex(v => v === 2);
         const puertaVista = [...tipos('puerta'), ...tipos('puerta_abierta')][0];
         const miLado = (q) => (yo.x < MURO_X) === (q.x < MURO_X);
+        // Convención pública, no telepatía: qué silla ocupas se sabe de
+        // antemano, así que «el uno sostiene, el dos cruza» es un acuerdo
+        // sobre algo que los dos ya saben, tomado sin mirar al otro.
+        const sostengo = st.silla === SILLAS[0];
+
+        // (Aquí vivía un rodeo: si te encontrabas encima de una placa que el
+        // sustrato seguía llamando 'placa', te bajabas un paso para volver a
+        // subir y registrar la pisada de verdad. Ya no hace falta — el fallo
+        // estaba en `nuevaPartida`, que no marcaba las placas ocupadas al
+        // repartir, y se arregló allí. Ver el comentario de aquel sitio.)
 
         /**
          * ⚠️ EL ORDEN DE ESTAS TRES REGLAS ES TODA LA COORDINACIÓN.
@@ -305,7 +372,11 @@ export const relevo = {
          */
         const enSalida = p[p.turno].x === p.salida.x && p[p.turno].y === p.salida.y;
         if (enSalida && st.placas_pisadas === 2) return 'esperar';
-        if (st.sobre_placa && st.placas_pisadas < 2) return 'esperar';
+        // Fallo 1: sólo espera QUIEN SOSTIENE. Sin `sostengo`, el que cruza se
+        // quedaba pegado a la placa de salida —la de su propio lado, que los
+        // dos ven porque los dos arrancan del mismo— en cuanto la pisaba de
+        // camino a algo mejor, y la del otro lado no la pisaba nadie jamás.
+        if (st.sobre_placa && st.placas_pisadas < 2 && sostengo) return 'esperar';
 
         /**
          * ⚠️ PAPELES REPARTIDOS POR EL NÚMERO DE SILLA — Y NO ES TELEPATÍA.
@@ -313,14 +384,7 @@ export const relevo = {
          * Sin repartir, los dos autómatas iban a la MISMA placa —la que tenían
          * más cerca, que era la misma para ambos porque salen juntos— y nadie
          * cruzaba. Cada uno hacía lo razonable y el equipo no hacía nada.
-         *
-         * Qué silla ocupas es información pública, así que acordar de antemano
-         * «el uno sostiene, el dos cruza» es exactamente cómo se coordinan dos
-         * personas que no pueden hablar: una convención sobre lo que los dos ya
-         * saben. No mira el estado del otro ni su sustrato; sólo su propio
-         * número. Ahí está la diferencia entre convención y trampa.
          */
-        const sostengo = st.silla === SILLAS[0];
         const placa = tipos('placa').filter(z => miLado(z))[0];
         if (placa && !st.sobre_placa && (sostengo || st.placas_pisadas === 1)) {
             const d = primerPaso(sus, yo, i => i === idx(placa));
@@ -331,9 +395,56 @@ export const relevo = {
             const d = primerPaso(sus, yo, i => i === idx(puertaVista));
             if (d && legales.includes(d)) return d;
         }
-        if (salida >= 0 && miLado(punto(salida))) {
+        /**
+         * ⚠️ IR A LA SALIDA SIN HABER PISADO LA PLACA PROPIA ES ABANDONAR EL
+         * TRABAJO A MEDIAS — Y ADEMÁS SE QUEDABA DANDO VUELTAS ALLÍ.
+         *
+         * `st.placas_pisadas` cuenta las dos, no «la mía»: sin este guardián,
+         * el que cruza podía llegar a la salida habiendo visto la puerta pero
+         * sin haber encontrado nunca la placa de su lado nuevo, porque nada
+         * en la regla comprobaba que su parte estuviera hecha. Y una vez ahí,
+         * `primerPaso` hacia la propia casilla donde ya estás devuelve `null`
+         * —no hay paso que dar—, así que la siguiente jugada exploraba un
+         * paso hacia fuera y la de después volvía a traer para acá: un vaivén
+         * de dos casillas hasta el tope. Medido con partidas trazadas a mano.
+         */
+        if (salida >= 0 && miLado(punto(salida)) && st.placas_pisadas === 2) {
             const d = primerPaso(sus, yo, i => i === salida);
             if (d && legales.includes(d)) return d;
+        }
+        /**
+         * ⚠️ EXPLORAR «LO MÁS CERCA» NO BASTA PARA ENCONTRAR LA PUERTA — PERO
+         * SÓLO CUANDO LA PUERTA ES LO QUE TOCA BUSCAR.
+         *
+         * `primerPaso` a secas va a la niebla más cercana EN DISTANCIA DE
+         * CAMINO. Eso es exactamente lo que hace falta para encontrar la PLACA
+         * PROPIA —puede estar en cualquier rincón, no tiene nada que ver con el
+         * muro— pero es un mal criterio para encontrar la PUERTA, que siempre
+         * está sobre `MURO_X`. La primera versión de este sesgo lo aplicaba
+         * siempre, sin distinguir, y salió PEOR que sin sesgo: empujaba a los
+         * dos autómatas pegados al muro desde el primer paso, con lo que
+         * agotaban la niebla cercana al muro sin haber visto nunca su propia
+         * placa —que podía estar en la esquina opuesta— y se quedaban parados
+         * ahí para siempre. Medido: de 100 partidas pasaron a fallar 196 de
+         * 200, casi todas con `pisadas: [false,false]` y las dos posiciones
+         * clavadas en `x=8`, justo al lado del muro y sin haber pisado nada.
+         *
+         * El sesgo sólo tiene sentido mientras la puerta sigue sin verse — una
+         * vez vista, ya no hay nada que el muro pueda enseñar de más, y seguir
+         * empujando hacia él es lo que provocaba un segundo fallo, más fino:
+         * de pie EN la puerta (`x === MURO_X`), la celda más cercana al muro
+         * ES la propia puerta, así que el sesgo mandaba entrar y volver a
+         * salir en bucle en vez de seguir explorando el lado nuevo para
+         * encontrar la segunda placa. Con `!puertaVista` el sesgo se apaga en
+         * cuanto ha hecho su trabajo, y el resto —cruzar, buscar la placa que
+         * falta, ir a la salida— vuelve a las reglas normales de abajo.
+         */
+        if (st.placas_pisadas >= 1 && !puertaVista) {
+            const frontera = fronteraHaciaElMuro(sus, yo);
+            if (frontera !== null) {
+                const d = primerPaso(sus, yo, i => i === frontera);
+                if (d && legales.includes(d)) return d;
+            }
         }
         const d = primerPaso(sus, yo, i => sus.rejilla.niebla[i] === 1);
         return (d && legales.includes(d)) ? d : legales[0];
@@ -412,4 +523,42 @@ function campoVision(p, quien) {
 
 
 const mirar = (p, quien) => { for (const i of campoVision(p, quien)) p[quien].visto.add(i); };
+
+/**
+ * La celda de niebla alcanzable más cercana AL MURO, no la más cercana a
+ * secas — usada por `sugerencia`, nunca por el juego.
+ *
+ * Mismo recorrido que hace `primerPaso` por dentro (BFS sobre lo ya visto,
+ * parando en el primer paso de niebla de cada rama), pero en vez de devolver
+ * la primera frontera que encuentra, las puntúa todas por columna y se queda
+ * con la más cercana a `MURO_X`. En este mapa lo único que hace falta
+ * encontrar —la puerta, la placa del otro lado— está siempre sobre esa
+ * columna, así que sesgar la exploración hacia ahí no es trampa: es la misma
+ * ventaja pública que ya usa `miLado` para saber de qué lado está cada cosa.
+ */
+function fronteraHaciaElMuro(sus, desde) {
+    const { ancho, alto, celdas, niebla } = sus.rejilla;
+    const inicio = desde.y * ancho + desde.x;
+    const visto = new Set([inicio]);
+    const cola = [desde];
+    let mejor = null, mejorPuntuacion = Infinity;
+    while (cola.length) {
+        const n = cola.shift();
+        for (const d of Object.values(DIRS)) {
+            const q = suma(n, d);
+            if (q.x < 0 || q.y < 0 || q.x >= ancho || q.y >= alto) continue;
+            const i = q.y * ancho + q.x;
+            if (visto.has(i)) continue;
+            visto.add(i);
+            if (niebla?.[i] === 1) {
+                const puntuacion = Math.abs(q.x - MURO_X);
+                if (puntuacion < mejorPuntuacion) { mejorPuntuacion = puntuacion; mejor = i; }
+                continue;   // no se sigue explorando más allá de la niebla
+            }
+            if (celdas[i] === 1) continue;
+            cola.push(q);
+        }
+    }
+    return mejor;
+}
 

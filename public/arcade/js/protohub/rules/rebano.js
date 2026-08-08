@@ -205,12 +205,27 @@ export const rebano = {
 
     /**
      * El pastor de la casa: colocarse detrás del rebaño, en la línea que va al
-     * redil.
+     * redil — pero repartiendo rezagadas y respetando el radio de miedo, que es
+     * justo lo que la primera versión no hacía.
      *
-     * Es la heurística clásica del pastoreo y no es un solucionador: no reparte
-     * ovejas rezagadas ni evita dispersar el grupo al acercarse. Techo blando,
-     * pero uno que entiende la idea del juego — **no persigue ovejas, se pone
-     * donde su huida sirve de algo**.
+     * ⚠️ MEDIDO: EL AZAR GANABA AL TECHO. `tabla.mjs` (todo el catálogo, no sólo
+     * este juego) sacaba `azar 1.66` sobre una escala donde `1,00` es la casa —
+     * dar tumbos rendía más que la heurística. La pista estaba en el propio
+     * fichero: el offset de la meta era `2.4`, que es el valor QUE TENÍA
+     * `RADIO_PERRO` antes de arreglarlo (ver el comentario de arriba, «es un
+     * radio aunque el motor lo llame power»). Se corrigió el radio a 4.5 pero no
+     * el offset, así que la meta seguía pensada para un perro que asusta a 2,4 —
+     * bastante MÁS DENTRO del radio real de 4,5. El perro llegaba pegado al
+     * rebaño en vez de a su borde, y pegado es justo la distancia que dispersa:
+     * el rebaño no huye en bloque hacia el redil, huye en todas direcciones
+     * porque el miedo ya no tiene un lado claro de dónde venir.
+     *
+     * Segundo fallo, más fácil de ver jugando que leyendo: promediar TODAS las
+     * sueltas esconde a la rezagada. Si once ovejas están juntas y una se quedó
+     * atrás, el centro de masas apenas se mueve hacia la rezagada — se queda
+     * cerca del grupo grande, y la rezagada no vuelve a sentir al perro cerca en
+     * toda la partida. Once entran, una se queda fuera para siempre y el tope de
+     * pasos llega antes de que alguien note el porqué.
      */
     sugerencia(p) {
         const st = this.estado(p);
@@ -220,14 +235,31 @@ export const rebano = {
 
         const sueltas = sus.piezas.filter(z => z.t === 'oveja');
         if (!sueltas.length) return legales[0];
+        const distRedil = (o) => Math.hypot(o.x - centroRedil.x, o.y - centroRedil.y);
         const centro = {
             x: sueltas.reduce((s, o) => s + o.x, 0) / sueltas.length,
             y: sueltas.reduce((s, o) => s + o.y, 0) / sueltas.length,
         };
-        // El punto de empuje: detrás del rebaño visto desde el redil.
-        const dx = centro.x - centroRedil.x, dy = centro.y - centroRedil.y;
+
+        // La rezagada: la suelta más lejos del redil. Si está bastante más lejos
+        // que la media del resto, se va a por ella sola en vez de al centro del
+        // grupo — si no, un rebaño compacto con una descolgada nunca la recoge.
+        let rezagada = sueltas[0], peorD = distRedil(sueltas[0]);
+        for (const o of sueltas) {
+            const d = distRedil(o);
+            if (d > peorD) { peorD = d; rezagada = o; }
+        }
+        const mediaResto = sueltas.reduce((s, o) => s + distRedil(o), 0) / sueltas.length;
+        const objetivo = (sueltas.length > 1 && peorD > mediaResto + 3) ? rezagada : centro;
+
+        // El punto de empuje: detrás del objetivo visto desde el redil, a la
+        // distancia a la que el miedo empuja sin dispersar — cerca del borde del
+        // radio real, no de su mitad.
+        const dx = objetivo.x - centroRedil.x, dy = objetivo.y - centroRedil.y;
         const n = Math.hypot(dx, dy) || 1;
-        const meta = { x: centro.x + (dx / n) * 2.4, y: centro.y + (dy / n) * 2.4 };
+        const distanciaIdeal = RADIO_PERRO * 0.82;
+        const meta = { x: objetivo.x + (dx / n) * distanciaIdeal,
+                        y: objetivo.y + (dy / n) * distanciaIdeal };
 
         let mejor = legales[0], mejorD = Infinity;
         for (const m of legales) {

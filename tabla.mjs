@@ -50,7 +50,7 @@ const { verificar } = await impo('public/arcade/js/protohub/Verificador.js');
 const { cargarReglas, TITULOS } = await impo('public/arcade/js/protohub/rules/index.js');
 const { jugarEpisodio } = await impo('public/arcade/js/agentes/llm.js');
 const { proveedorDesde } = await impo('public/arcade/js/agentes/proveedores.js');
-const { POLITICAS } = await impo('public/arcade/js/agentes/politicas.js');
+const { POLITICAS, semillaDe } = await impo('public/arcade/js/agentes/politicas.js');
 
 const args = {};
 for (let i = 2; i < process.argv.length; i++) {
@@ -105,6 +105,13 @@ async function correr(part, e, Clase, reglas) {
     let puntos = 0, forzadas = 0, llamadas = 0, tokens = 0, ms = 0, ok = 0, fin = 0;
     const serie = [];      // la puntuación de cada semilla, para medir el ruido
     for (let s = 1; s <= N; s++) {
+        /**
+         * ⚠️ CADA PARTIDA SIEMBRA LA SUYA. Sin esto, la política de azar arrastra
+         * su estado de un juego al siguiente y el suelo de `cripta` depende de
+         * cuántas jugadas gastó `brisca` antes. Una línea base que cambia según
+         * con quién se mida no es una línea base.
+         */
+        part.politica?.sembrar?.(semillaDe(e.juego, s));
         const r = await jugarEpisodio(Clase, part.proveedor ?? (async () => ({ texto: '1' })), {
             semilla: s, tope: TOPE, politica: part.politica,
         });

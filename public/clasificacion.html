@@ -38,7 +38,9 @@ en miles y el Go Fish en unidades— así que sumarlas daría un número que só
 juego de escala más grande. Cada juego se lleva a esta escala común antes de promediar.</span></p>
 <table><thead><tr><th>participante</th><th>mediana</th><th>media</th><th>±</th>
 <th>jugadas forzadas</th><th>tokens</th><th>recibos verificados</th></tr></thead>
-<tbody></tbody></table>
+<tbody><tr><th>primera (suelo)</th><td class="n"><b>0.00</b></td><td class="n gris">0.00</td><td class="n gris">±0.06</td><td class="n">0/0 <span class="gris">(0%)</span></td><td class="n gris">0.0k</td><td class="n">1020/1020</td></tr>
+<tr><th>azar</th><td class="n"><b>0.14</b></td><td class="n gris">0.20</td><td class="n gris">±0.25</td><td class="n">0/0 <span class="gris">(0%)</span></td><td class="n gris">0.0k</td><td class="n">1020/1020</td></tr>
+<tr><th>casa (techo blando)</th><td class="n"><b>1.00</b></td><td class="n gris">1.00</td><td class="n gris">±0.11</td><td class="n">0/0 <span class="gris">(0%)</span></td><td class="n gris">0.0k</td><td class="n">1020/1020</td></tr></tbody></table>
 <p class="sub"><b>El titular es la mediana, y la media va al lado a propósito.</b>
 Normalizar obliga a dividir por el hueco entre suelo y techo, así que un juego con
 hueco pequeño convierte una partida floja en un número enorme. Medido aquí: una sola
@@ -52,10 +54,31 @@ sube, la fila mide el arnés y no al modelo. «Recibos verificados» son las par
 volvieron a jugar entero contra el mismo fichero de reglas y dieron el mismo resultado.
 <b>Lo que no verifica, no puntúa</b> — y no hay ningún modelo juez en ninguna parte.</p>
 <h2>Por juego</h2>
-<table><thead><tr><th>juego</th><th>primera (suelo)</th><th>azar</th><th>casa (techo blando)</th><th>qwen2.5:7b</th><th>gemma4:latest</th><th>phi4-mini-reasoning:latest</th></tr></thead><tbody></tbody></table>
-<h2>Fuera de la media, y por qué</h2><ul class="sub"><li><b>ajedrez</b> — el tope de 220 decisiones corta la partida</li><li><b>go</b> — el tope de 220 decisiones corta la partida</li><li><b>reversi</b> — el tope de 220 decisiones corta la partida</li><li><b>damas</b> — el tope de 220 decisiones corta la partida</li><li><b>xiangqi</b> — el tope de 220 decisiones corta la partida</li><li><b>mancala</b> — el tope de 220 decisiones corta la partida</li><li><b>snake</b> — el tope de 220 decisiones corta la partida</li><li><b>fagocito</b> — el tope de 220 decisiones corta la partida</li><li><b>peaton</b> — el tope de 220 decisiones corta la partida</li><li><b>blackjack</b> — el tope de 220 decisiones corta la partida</li><li><b>poker</b> — el tope de 220 decisiones corta la partida</li><li><b>brisca</b> — el tope de 220 decisiones corta la partida</li><li><b>tute</b> — el tope de 220 decisiones corta la partida</li><li><b>hearts</b> — el tope de 220 decisiones corta la partida</li><li><b>spades</b> — el tope de 220 decisiones corta la partida</li><li><b>guerra</b> — la casa no supera al suelo: la escala se invertiría</li><li><b>gofish</b> — el tope de 220 decisiones corta la partida</li><li><b>unit</b> — el tope de 220 decisiones corta la partida</li><li><b>entropy</b> — el tope de 220 decisiones corta la partida</li><li><b>sokoban</b> — el tope de 220 decisiones corta la partida</li><li><b>cripta</b> — el tope de 220 decisiones corta la partida</li><li><b>flota</b> — el tope de 220 decisiones corta la partida</li><li><b>defensa</b> — el tope de 220 decisiones corta la partida</li><li><b>sigilo</b> — el tope de 220 decisiones corta la partida</li><li><b>frentes</b> — el tope de 220 decisiones corta la partida</li><li><b>relevo</b> — el tope de 220 decisiones corta la partida</li></ul>
-<footer>Generada por <code>tabla.mjs</code> el 2026-08-07,
-tope 220 decisiones. Los juegos cuyo hueco entre líneas base no supera al ruido salen
+<table><thead><tr><th>juego</th><th>primera (suelo)</th><th>azar</th><th>casa (techo blando)</th></tr></thead><tbody><tr><th><a href="/arcade/jugar.html?juego=ajedrez">Ajedrez</a></th><td class="n">0.00</td><td class="n">—</td><td class="n">1.00</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=reversi">Reversi</a></th><td class="n">0.00</td><td class="n">-0.78</td><td class="n">1.00</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=mancala">Mancala</a></th><td class="n">0.00</td><td class="n">0.54</td><td class="n">1.00</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=peaton">Peatón</a></th><td class="n">0.00</td><td class="n">-1.06</td><td class="n">1.00</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=blackjack">Blackjack</a></th><td class="n">0.00</td><td class="n">0.32</td><td class="n">1.00</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=poker">Póker</a></th><td class="n">0.00</td><td class="n">3.43</td><td class="n">1.00</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=hearts">Hearts</a></th><td class="n">0.00</td><td class="n">0.80</td><td class="n">1.00</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=gofish">Go Fish</a></th><td class="n">0.00</td><td class="n">0.57</td><td class="n">1.00</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=entropy">Entropy</a></th><td class="n">0.00</td><td class="n">-0.36</td><td class="n">1.00</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=sokoban">Sokoban</a></th><td class="n">0.00</td><td class="n">0.49</td><td class="n">1.00</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=flota">Flota</a></th><td class="n">0.00</td><td class="n">-1.47</td><td class="n">1.00</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=defensa">Defensa</a></th><td class="n">0.00</td><td class="n">0.05</td><td class="n">1.00</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=frentes">Frentes</a></th><td class="n">0.00</td><td class="n">0.14</td><td class="n">1.00</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=relevo">Relevo</a></th><td class="n">0.00</td><td class="n">0.01</td><td class="n">1.00</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=cabina">Cabina</a></th><td class="n">0.00</td><td class="n">0.14</td><td class="n">1.00</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=rebano">Rebano</a></th><td class="n">0.00</td><td class="n">0.09</td><td class="n">1.00</td></tr>
+<tr><th><a href="/arcade/jugar.html?juego=pradera">Pradera</a></th><td class="n">0.00</td><td class="n">0.33</td><td class="n">1.00</td></tr></tbody></table>
+<h2>Techos flojos</h2><p class="sub">En estos juegos <b>el azar
+supera al rival de la casa</b>, así que el 1,00 de su columna deja de ser un techo y un
+agente mediocre puede parecer que lo bate: <b>poker</b> (3.43).
+Se dice en vez de esconderlo — el juego sigue ordenando, lo que hay que arreglar es
+nuestra política, no la tabla.</p>
+<h2>Fuera de la media, y por qué</h2><ul class="sub"><li><b>go</b> — el tope de 300 decisiones corta la partida</li><li><b>damas</b> — el tope de 300 decisiones corta la partida</li><li><b>xiangqi</b> — el tope de 300 decisiones corta la partida</li><li><b>snake</b> — el tope de 300 decisiones corta la partida</li><li><b>fagocito</b> — el tope de 300 decisiones corta la partida</li><li><b>tute</b> — el hueco (3.4) no supera al ruido de la medida (±6.3)</li><li><b>guerra</b> — la casa no supera al suelo: la escala se invertiría</li><li><b>unit</b> — el hueco (10.9) no supera al ruido de la medida (±37.2)</li><li><b>cripta</b> — el tope de 300 decisiones corta la partida</li></ul>
+<footer>Generada por <code>tabla.mjs</code> el 2026-08-08,
+tope 300 decisiones. Los juegos cuyo hueco entre líneas base no supera al ruido salen
 de la media con el motivo puesto: un juego que no distingue a quien lo juega no puede
 ordenar a nadie. · <a href="/generos.html">Qué estructuras cubre el motor</a></footer>
 </main></body></html>

@@ -1,7 +1,7 @@
 # Clasificación
 
-Generada por `tabla.mjs` el 2026-08-07.
-2 semillas por juego, tope 220 decisiones.
+Generada por `tabla.mjs` el 2026-08-08.
+2 semillas por juego, tope 300 decisiones.
 
 **0,00** = tan bueno como elegir siempre la primera opción legal.
 **1,00** = tan bueno como el rival de casa del juego.
@@ -18,37 +18,23 @@ hay un juego mandando. Es por lo que los bancos de Atari publican mediana.
 
 | participante | mediana | media | ± | forzadas | tokens | recibos verificados |
 |---|---|---|---|---|---|---|
+| primera (suelo) | **0.00** | 0.00 | ±0.06 | 0/0 | 0.0k | 1020/1020 |
+| azar | **0.14** | 0.20 | ±0.25 | 0/0 | 0.0k | 1020/1020 |
+| casa (techo blando) | **1.00** | 1.00 | ±0.11 | 0/0 | 0.0k | 1020/1020 |
 
-Juegos que puntúan: .
+Juegos que puntúan: ajedrez, reversi, mancala, peaton, blackjack, poker, hearts, gofish, entropy, sokoban, flota, defensa, frentes, relevo, cabina, rebano, pradera.
 
 Fuera de la media, y por qué:
 
-- **ajedrez** — el tope de 220 decisiones corta la partida
-- **go** — el tope de 220 decisiones corta la partida
-- **reversi** — el tope de 220 decisiones corta la partida
-- **damas** — el tope de 220 decisiones corta la partida
-- **xiangqi** — el tope de 220 decisiones corta la partida
-- **mancala** — el tope de 220 decisiones corta la partida
-- **snake** — el tope de 220 decisiones corta la partida
-- **fagocito** — el tope de 220 decisiones corta la partida
-- **peaton** — el tope de 220 decisiones corta la partida
-- **blackjack** — el tope de 220 decisiones corta la partida
-- **poker** — el tope de 220 decisiones corta la partida
-- **brisca** — el tope de 220 decisiones corta la partida
-- **tute** — el tope de 220 decisiones corta la partida
-- **hearts** — el tope de 220 decisiones corta la partida
-- **spades** — el tope de 220 decisiones corta la partida
+- **go** — el tope de 300 decisiones corta la partida
+- **damas** — el tope de 300 decisiones corta la partida
+- **xiangqi** — el tope de 300 decisiones corta la partida
+- **snake** — el tope de 300 decisiones corta la partida
+- **fagocito** — el tope de 300 decisiones corta la partida
+- **tute** — el hueco (3.4) no supera al ruido de la medida (±6.3)
 - **guerra** — la casa no supera al suelo: la escala se invertiría
-- **gofish** — el tope de 220 decisiones corta la partida
-- **unit** — el tope de 220 decisiones corta la partida
-- **entropy** — el tope de 220 decisiones corta la partida
-- **sokoban** — el tope de 220 decisiones corta la partida
-- **cripta** — el tope de 220 decisiones corta la partida
-- **flota** — el tope de 220 decisiones corta la partida
-- **defensa** — el tope de 220 decisiones corta la partida
-- **sigilo** — el tope de 220 decisiones corta la partida
-- **frentes** — el tope de 220 decisiones corta la partida
-- **relevo** — el tope de 220 decisiones corta la partida
+- **unit** — el hueco (10.9) no supera al ruido de la medida (±37.2)
+- **cripta** — el tope de 300 decisiones corta la partida
 
 
 Cada partida se re-simula contra el mismo fichero de reglas antes de contarse.

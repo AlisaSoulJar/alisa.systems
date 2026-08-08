@@ -34,8 +34,9 @@
  * vez, un recibo: al terminar se puede verificar y aportar como cualquier otra.
  * ═══════════════════════════════════════════════════════════════════════════
  */
-import { JUEGOS, TITULOS, cargarReglas } from '../public/arcade/js/protohub/rules/index.js';
+import { JUEGOS, TITULOS, SILLAS, cargarReglas } from '../public/arcade/js/protohub/rules/index.js';
 import { puntuacionDe } from '../public/arcade/js/protohub/Verificador.js';
+import { describirEstado } from '../public/arcade/js/protohub/descripcion.js';
 
 const CABECERAS = {
     'content-type': 'application/json; charset=utf-8',
@@ -270,16 +271,77 @@ export class MesaCompartida {
                 ...await this.retratoDe(mesa, quien),
             });
         }
-        mesa.asientos.push({ quien, tipo: ['persona', 'agente', 'politica'].includes(d?.tipo) ? d.tipo : 'persona', desde: Date.now() });
+        /**
+         * ⚠️ NO CABE UN CUARTO EN UNA MESA DE DOS.
+         *
+         * Antes el número de asientos se averiguaba JUGANDO —se subía cada vez
+         * que se veía cambiar el turno— y por eso en una mesa recién abierta
+         * entraba todo el mundo. Pasó de verdad: cuatro sentados a un ajedrez,
+         * los dos primeros con las piezas y la invitada de verdad mirando con la
+         * lista de acciones vacía, sin que nada fallara ni avisara.
+         *
+         * Ahora el dato se declara en `rules/index.js` y aquí sólo se comprueba.
+         * Un dato que se descubre por accidente no puede vigilarse; uno declarado,
+         * sí — y `prueba_sillas.mjs` compara lo declarado contra lo que se ve
+         * jugando, por si algún día dejan de coincidir.
+         */
+        const tope = SILLAS[mesa.juego] ?? Infinity;
+        if (mesa.asientos.length >= tope) {
+            return responder(409, {
+                error: `la mesa está completa: ${TITULOS[mesa.juego] ?? mesa.juego} es de ${tope} `
+                     + `${tope === 1 ? 'jugador' : 'jugadores'}`,
+                sugerencia: 'abre otra sala con el nombre que quieras, o mira ésta sin sentarte',
+                ...await this.retratoDe(mesa, quien),
+            });
+        }
+
+        /**
+         * ⚠️ UN SECRETO POR ASIENTO — SIN ESTO, EL NOMBRE NO ES UNA IDENTIDAD.
+         *
+         * Hasta aquí `quien` era sólo una etiqueta: cualquiera que supiera el
+         * nombre de la sala podía mandar `{quien:'motoko', jugada:...}` y jugar
+         * las piezas de otra. Entre nosotros da igual; con el enlace circulando
+         * por internet es cuestión de horas que alguien lo pruebe, y no por
+         * maldad — porque está ahí.
+         *
+         * Se entrega al sentarse y se exige al jugar. No es criptografía: es la
+         * diferencia entre decir tu nombre y demostrar que eres tú, que es lo
+         * mínimo para que una partida signifique algo.
+         *
+         * Mirar la mesa NO lo pide: la partida es pública, como debe ser en algo
+         * que se comparte para que lo vean. Lo que se protege es MOVER.
+         */
+        const secreto = crypto.randomUUID().replace(/-/g, '').slice(0, 24);
+        mesa.asientos.push({
+            quien, tipo: ['persona', 'agente', 'politica'].includes(d?.tipo) ? d.tipo : 'persona',
+            desde: Date.now(), secreto,
+        });
         await this.estado.storage.put('mesa', mesa);
-        return responder(200, { sentado: quien, ...await this.retratoDe(mesa, quien) });
+        return responder(200, { sentado: quien, secreto, ...await this.retratoDe(mesa, quien) });
     }
 
     async jugar(d, quien) {
         const mesa = await this.cargar();
         if (!mesa) return responder(404, { error: 'mesa vacía' });
-        if (!mesa.asientos.some(a => a.quien === quien)) {
-            return responder(403, { error: 'no estás sentado en esta mesa' });
+        const silla = mesa.asientos.find(a => a.quien === quien);
+        if (!silla) return responder(403, { error: 'no estás sentado en esta mesa' });
+        /**
+         * ⚠️ HAY QUE DEMOSTRAR QUE ERES TÚ, NO SÓLO DECIRLO.
+         *
+         * Sin esto, `quien` era una etiqueta: cualquiera con el nombre de la sala
+         * podía mandar `{quien:'motoko', jugada:…}` y mover sus piezas. El
+         * secreto se entrega al sentarse y se exige aquí.
+         *
+         * Las mesas abiertas ANTES de este cambio no tienen secreto guardado, y
+         * se las deja seguir: romper partidas en curso para cerrar una puerta es
+         * pagar el arreglo con el trabajo de otro. Las nuevas lo llevan desde el
+         * primer segundo.
+         */
+        if (silla.secreto && String(d?.secreto ?? '') !== silla.secreto) {
+            return responder(403, {
+                error: 'ese asiento no es tuyo: falta el `secreto` que te dio la mesa al sentarte',
+                pista: 'lo devuelve `POST /mesa/{sala}/sentarse` en el campo `secreto`. Guárdalo.',
+            });
         }
         const { reglas, p } = await this.reconstruir(mesa);
         let st = reglas.estado(p);
@@ -360,7 +422,25 @@ export class MesaCompartida {
             semilla: mesa.semilla,
             // Cada quién con el asiento que le toca en el juego, para que se vea
             // desde fuera quién es 'white' o quién es 'cpu1'.
-            asientos: mesa.asientos.map((a, i) => ({ ...a, asiento: mesa.ordenAsientos[i] ?? null })),
+            /**
+             * ⚠️ EL SECRETO NO SALE DE AQUÍ. NI EL TUYO.
+             *
+             * Esto era `{...a}`, que copia el asiento entero — y al añadir el
+             * secreto por asiento habría repartido el de todos a todo el mundo en
+             * cada respuesta. El arreglo de seguridad abriendo, él solo, un
+             * agujero mayor que el que venía a cerrar.
+             *
+             * Se enumeran los campos que se publican en vez de excluir los que
+             * no. Excluir es una lista negra: el día que alguien añada un campo
+             * sensible al asiento, se publicará solo. Enumerar se equivoca hacia
+             * el silencio, que es el lado correcto.
+             *
+             * El secreto se entrega UNA vez, al sentarse, y nunca más.
+             */
+            asientos: mesa.asientos.map((a, i) => ({
+                quien: a.quien, tipo: a.tipo, desde: a.desde,
+                asiento: mesa.ordenAsientos[i] ?? null,
+            })),
             // Los asientos del juego que todavía no ocupa nadie: los juega la
             // casa. Un cuatro-jugadores con dos personas sentadas NO está
             // esperando a nadie, y quien mire la mesa tiene derecho a saberlo.
@@ -394,9 +474,21 @@ export class MesaCompartida {
              *
              * Y va POR ASIENTO: cada uno lee su situación, nunca la del vecino.
              */
+            /**
+             * ⚠️ Y SI EL JUEGO NO TIENE `describir` PROPIO, LO CUENTA EL
+             * DESCRIPTOR COMPARTIDO. Sin este respaldo, los diecinueve clásicos
+             * —ajedrez incluido— entregaban jugadas legales y ningún tablero: un
+             * agente recibía «a2a3, a2a4, b2b3…» sin saber qué está pasando, que
+             * es pedirle que juegue a ciegas.
+             *
+             * Lo destapé montando una partida de ajedrez para jugar de verdad, no
+             * probando el código. Es el tipo de hueco que sólo aparece cuando
+             * usas la cosa para lo que sirve.
+             */
             texto: (() => {
                 try {
-                    return reglas.describir ? reglas.describir(p, Math.max(0, i)) : null;
+                    if (reglas.describir) return reglas.describir(p, Math.max(0, i));
+                    return describirEstado(mesa.juego, mío);
                 } catch { return null; }
             })(),
             turno_de: this.quienTiraAhora(mesa, st),

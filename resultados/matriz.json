@@ -1,0 +1,315 @@
+{
+  "generado": "2026-08-08T16:14:34.971Z",
+  "ejes": {
+    "espacial": "hay una rejilla: el problema tiene geometría",
+    "oculto": "hay estado que el jugador NO ve",
+    "rival": "decide alguien más (a favor o en contra: ver cooperativo)",
+    "autonomo": "hay agentes que se mueven decidas lo que decidas",
+    "irreversible": "hay jugadas que no se pueden deshacer",
+    "simultaneo": "se decide a la vez: el segundo no ve lo que eligió el primero",
+    "cooperativo": "los dos asientos ganan o pierden juntos",
+    "comunicacion": "hay jugadas que sólo cambian lo que sabe el otro"
+  },
+  "juegos": {
+    "ajedrez": {
+      "espacial": true,
+      "oculto": false,
+      "rival": true,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": null,
+      "comunicacion": false
+    },
+    "go": {
+      "espacial": true,
+      "oculto": false,
+      "rival": true,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": null,
+      "comunicacion": false
+    },
+    "reversi": {
+      "espacial": true,
+      "oculto": false,
+      "rival": true,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": null,
+      "comunicacion": false
+    },
+    "damas": {
+      "espacial": true,
+      "oculto": false,
+      "rival": true,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": null,
+      "comunicacion": false
+    },
+    "xiangqi": {
+      "espacial": true,
+      "oculto": false,
+      "rival": true,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": null,
+      "comunicacion": false
+    },
+    "mancala": {
+      "espacial": true,
+      "oculto": false,
+      "rival": true,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": null,
+      "comunicacion": false
+    },
+    "snake": {
+      "espacial": true,
+      "oculto": false,
+      "rival": false,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": false,
+      "comunicacion": false
+    },
+    "fagocito": {
+      "espacial": true,
+      "oculto": false,
+      "rival": false,
+      "autonomo": true,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": false,
+      "comunicacion": false
+    },
+    "peaton": {
+      "espacial": true,
+      "oculto": false,
+      "rival": false,
+      "autonomo": true,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": false,
+      "comunicacion": false
+    },
+    "blackjack": {
+      "espacial": false,
+      "oculto": true,
+      "rival": true,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": null,
+      "comunicacion": false
+    },
+    "poker": {
+      "espacial": false,
+      "oculto": true,
+      "rival": true,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": null,
+      "comunicacion": false
+    },
+    "brisca": {
+      "espacial": false,
+      "oculto": true,
+      "rival": true,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": false,
+      "comunicacion": false
+    },
+    "tute": {
+      "espacial": false,
+      "oculto": true,
+      "rival": true,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": false,
+      "comunicacion": false
+    },
+    "hearts": {
+      "espacial": false,
+      "oculto": true,
+      "rival": true,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": null,
+      "comunicacion": false
+    },
+    "spades": {
+      "espacial": false,
+      "oculto": true,
+      "rival": true,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": false,
+      "comunicacion": false
+    },
+    "guerra": {
+      "espacial": false,
+      "oculto": true,
+      "rival": false,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": false,
+      "comunicacion": false
+    },
+    "gofish": {
+      "espacial": false,
+      "oculto": true,
+      "rival": true,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": null,
+      "comunicacion": false
+    },
+    "unit": {
+      "espacial": false,
+      "oculto": true,
+      "rival": true,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": false,
+      "comunicacion": false
+    },
+    "entropy": {
+      "espacial": false,
+      "oculto": true,
+      "rival": true,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": false,
+      "comunicacion": false
+    },
+    "sokoban": {
+      "espacial": true,
+      "oculto": false,
+      "rival": false,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": false,
+      "comunicacion": false
+    },
+    "cripta": {
+      "espacial": true,
+      "oculto": true,
+      "rival": false,
+      "autonomo": true,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": false,
+      "comunicacion": false
+    },
+    "flota": {
+      "espacial": true,
+      "oculto": true,
+      "rival": true,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": false,
+      "comunicacion": false
+    },
+    "defensa": {
+      "espacial": true,
+      "oculto": false,
+      "rival": true,
+      "autonomo": true,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": false,
+      "comunicacion": false
+    },
+    "sigilo": {
+      "espacial": true,
+      "oculto": true,
+      "rival": true,
+      "autonomo": true,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": false,
+      "comunicacion": false
+    },
+    "frentes": {
+      "espacial": true,
+      "oculto": false,
+      "rival": true,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": true,
+      "cooperativo": null,
+      "comunicacion": false
+    },
+    "relevo": {
+      "espacial": true,
+      "oculto": true,
+      "rival": true,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": true,
+      "comunicacion": false
+    },
+    "cabina": {
+      "espacial": true,
+      "oculto": false,
+      "rival": true,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": true,
+      "comunicacion": true
+    },
+    "rebano": {
+      "espacial": true,
+      "oculto": false,
+      "rival": false,
+      "autonomo": true,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": false,
+      "comunicacion": false
+    },
+    "pradera": {
+      "espacial": true,
+      "oculto": false,
+      "rival": false,
+      "autonomo": true,
+      "irreversible": true,
+      "simultaneo": false,
+      "cooperativo": false,
+      "comunicacion": false
+    },
+    "nave": {
+      "espacial": true,
+      "oculto": true,
+      "rival": true,
+      "autonomo": false,
+      "irreversible": true,
+      "simultaneo": true,
+      "cooperativo": null,
+      "comunicacion": false
+    }
+  }
+}

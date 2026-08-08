@@ -87,6 +87,15 @@ const entrada = await pedir('/sentarse', {
     jugadores: Number(arg('jugadores', 1)),
     ...(SEMILLA !== undefined ? { semilla: Number(SEMILLA) } : {}),
 });
+/**
+ * ⚠️ EL SECRETO DEL ASIENTO. Sin él, `jugar` responde 403.
+ *
+ * La mesa lo entrega una sola vez, al sentarte, y lo exige en cada jugada.
+ * Antes bastaba con decir un nombre: cualquiera que supiera el de la sala podía
+ * mover las piezas de otro. Decir quién eres y demostrarlo son cosas distintas,
+ * y sólo la segunda sirve cuando el enlace circula por internet.
+ */
+const secreto = entrada?.secreto ?? null;
 if (entrada.codigo !== 200) {
     console.log(`no se pudo sentar: ${entrada.error}`);
     if (entrada.motivo) console.log(`  motivo: ${entrada.motivo}`);
@@ -145,7 +154,7 @@ for (let vuelta = 0; vuelta < TOPE; vuelta++) {
     }
 
     const antes = mesa.jugadas;
-    mesa = await pedir('/jugar', { quien: YO, jugada });
+    mesa = await pedir('/jugar', { quien: YO, jugada, secreto });
     if (mesa.codigo !== 200) { console.log(`  rechazada: ${mesa.error}`); break; }
     mias++;
     process.stdout.write(`  ${String(antes).padStart(3)} ${YO} → ${jugada}\n`);

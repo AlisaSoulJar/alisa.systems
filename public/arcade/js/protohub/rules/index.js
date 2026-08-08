@@ -144,6 +144,42 @@ const TITULOS_PROPIOS = {
 export const TITULOS = Object.fromEntries(JUEGOS.map(
     j => [j, TITULOS_PROPIOS[j] ?? j.charAt(0).toUpperCase() + j.slice(1)]));
 
+/**
+ * Cuántas sillas admite cada juego. **Se declara, no se deduce.**
+ *
+ * ⚠️ POR QUÉ EXISTE ESTE OBJETO, Y CUÁNTO COSTÓ NO TENERLO
+ *
+ * El árbitro de las mesas compartidas averiguaba el número de asientos
+ * JUGANDO: empezaba suponiendo uno y lo subía cada vez que veía cambiar el
+ * turno. Es ingenioso y está roto en el único momento que importa — **antes de
+ * la primera jugada no puede saber nada**, así que en una mesa recién abierta
+ * acepta a todo el que llegue.
+ *
+ * Pasó de verdad, montando una partida de ajedrez entre dos agentes: se sentaron
+ * cuatro. Los dos primeros se llevaron las piezas y a la invitada de verdad le
+ * tocó mirar con la lista de acciones vacía, sin que nada fallara ni avisara.
+ *
+ * No es que faltara una comprobación: es que la comprobación **no podía existir**
+ * mientras el dato se descubriera por accidente. Con el número declarado, el
+ * árbitro puede decir «no cabes» desde el primer segundo, y `prueba_sillas.mjs`
+ * compara lo declarado contra lo que se ve jugando — si algún día no cuadran,
+ * salta antes de que alguien se quede de pie.
+ *
+ * `1` significa que sentar a un segundo no cambia nada: o es un solitario, o el
+ * rival no es una silla sino el reglamento (el crupier del blackjack, la casa
+ * del póker, las cartas de guerra).
+ */
+export const SILLAS = {
+    ajedrez: 2, go: 2, reversi: 2, damas: 2, xiangqi: 2, mancala: 2,
+    snake: 1, fagocito: 1, peaton: 1,
+    blackjack: 1, poker: 1, guerra: 1,
+    brisca: 4, tute: 4, hearts: 4, spades: 4, unit: 4,
+    gofish: 3, entropy: 2,
+    sokoban: 1, cripta: 1, rebano: 1, pradera: 1,
+    flota: 2, defensa: 2, sigilo: 2, frentes: 2, relevo: 2, cabina: 2,
+    nave: 4,
+};
+
 /** Carga las reglas de un juego. `opts.url` para los que leen la biblioteca. */
 export async function cargarReglas(juego, opts) {
     const f = REGLAS[juego];

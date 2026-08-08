@@ -232,7 +232,37 @@ const enLaSala = {
         } : undefined);
         return { codigo: r.status, ...(await r.json()) };
     },
+    /**
+     * ⚠️ ABRIR EL ENLACE NO TE SIENTA SI LA MESA YA ESTÁ LLENA.
+     *
+     * Antes esto sentaba a cualquiera que abriera la página. Pasó jugando: abrí
+     * una partida de ajedrez para otra agente, alguien entró a MIRAR desde el
+     * navegador y **se llevó las negras**; la invitada se quedó de pie con las
+     * acciones vacías y el turno no le llegaba nunca.
+     *
+     * El error de fondo es tratar «mirar» y «jugar» como la misma acción. Un
+     * enlace que se comparte lo abre mucha más gente de la que va a jugar, así
+     * que lo seguro es entrar como espectador y sentarse sólo si sobra sitio.
+     *
+     * Se pregunta primero. Si la mesa ya tiene todos los asientos que el juego
+     * ha revelado, se mira y punto — y se dice, en vez de aparentar que juegas.
+     */
+    async mirarPrimero() {
+        await this.refrescar();
+        const m = this.ultimo ?? {};
+        const ocupados = (m.asientos ?? []).length;
+        const sillas = m.asientos_del_juego ?? 1;
+        const yaEstoy = (m.asientos ?? []).some(a => a.quien === yo);
+        // Con la partida ya empezada, el número de sillas es fiable: se ha visto
+        // cambiar el turno. Antes de la primera jugada aún no, así que se deja
+        // pasar — es el único momento en que no se puede saber.
+        return yaEstoy || m.jugadas === 0 || ocupados < sillas;
+    },
     async entrar() {
+        if (!(await this.mirarPrimero())) {
+            this.espectador = true;
+            return true;                 // se ve la partida, no se juega
+        }
         const r = await this.pedir('/sentarse', { quien: yo, tipo: 'persona', juego, semilla });
         // Un «no» con motivo se enseña tal cual. La mesa se toma la molestia de
         // explicar por qué en algunos juegos no cabe un segundo; tragarse esa
