@@ -164,6 +164,49 @@ if (JUEGOS.includes('guerra')) {
         + ` misma semilla ⇒ mismo marcador · 50 partidas sin perder una carta`);
 }
 
+/**
+ * ⚠️ NINGUNA CARTA DESAPARECE. EN TODOS LOS QUE LO DECLARAN, NO SÓLO EN GUERRA.
+ *
+ * `cartas_intactas` la publican guerra, unit y entropy, y hasta aquí sólo se
+ * miraba la de guerra. La de entropy llevaba con un comentario encima diciendo
+ * que fue **la lección más cara del original** —el recuento daba 95 de 96 porque
+ * la carta en la mano vivía fuera del estado, así que el verificador no podía
+ * repetir la partida— y nadie la comprobaba. Un dato publicado que nadie lee es
+ * exactamente igual de útil que no publicarlo.
+ *
+ * Se juega con el RIVAL DE LA CASA, no con la primera jugada legal: es el único
+ * que recorre las mecánicas raras. Aquí eso importa porque entropy mueve cartas
+ * por tres caminos distintos —cambiarlas, apartar un comodín a otro hueco, y
+ * llevarse uno recién destapado— y cada uno es una ocasión de perder una por el
+ * camino sin que nadie se entere hasta que el marcador no cuadre.
+ */
+const CONSERVAN = [];
+for (const juego of JUEGOS) {
+    const reglas = await cargarReglas(juego, {});
+    const muestra = reglas.nuevaPartida({ semilla: 1, seed: 1 });
+    if (reglas.estado(muestra).cartas_intactas === undefined) continue;
+    CONSERVAN.push(juego);
+
+    let perdidas = null;
+    for (let s = 1; s <= 30 && !perdidas; s++) {
+        const p = reglas.nuevaPartida({ semilla: s, seed: s });
+        for (let i = 0; i < 400; i++) {
+            const st = reglas.estado(p);
+            if (st.cartas_intactas === false) { perdidas = `semilla ${s}, jugada ${i}`; break; }
+            if (st.is_game_over) break;
+            const m = reglas.sugerencia?.(p)
+                ?? (st.legal_moves ?? []).filter(x => x !== 'nueva' && x !== 'reset')[0];
+            if (!m || !reglas.mover(p, m)) break;
+        }
+    }
+    if (perdidas) {
+        fallos++;
+        console.log(`\n  ${rojo('✗')} ${juego}: pierde cartas por el camino (${perdidas})`);
+    }
+}
+console.log(`\n  ${verde('✓')} nadie pierde una carta:`
+    + ` ${CONSERVAN.join(', ')} — 30 partidas cada uno, jugadas por el rival de la casa`);
+
 console.log(`\n  ${fallos === 0
     ? verde(`${JUEGOS.length} de ${JUEGOS.length} juegos se juegan, se repiten y se verifican`)
     : rojo(`${fallos} juego(s) con problemas`)}\n`);
