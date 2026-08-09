@@ -251,9 +251,24 @@ class SovereignCardEngine {
             } else {
                 // Was a click (no drag) → Inspect fullscreen
                 const isFaceDown = this.draggedCard.rotation.x > 0;
-                window.dispatchEvent(new CustomEvent('cardInspect', { detail: { 
+                /**
+                 * ⚠️ QUÉ carta se ha clicado, no sólo qué CARA tiene.
+                 *
+                 * Esto mandaba `cardId`, que es la cara —«un 12»— y con eso no se
+                 * puede jugar: en la caja de entropy hay ocho huecos y dos pueden
+                 * tener el mismo número. Sin saber CUÁL se ha tocado, un clic no
+                 * se puede traducir a `cambiar:5`.
+                 *
+                 * `zona` es la clave con la que se dibujó (`caja_0_0`, `mazo_mesa_1`)
+                 * y `indice` la posición dentro de ella, que en una rejilla ES la
+                 * casilla. Con eso un visualizador convierte clics en jugadas sin
+                 * mantener su propio mapa de mallas, que se desincronizaría.
+                 */
+                window.dispatchEvent(new CustomEvent('cardInspect', { detail: {
                     cardId: this.draggedCard.userData.visualId,
-                    faceDown: isFaceDown 
+                    faceDown: isFaceDown,
+                    zona: this.draggedCard.userData.zona ?? null,
+                    indice: this.draggedCard.userData.indice ?? null,
                 }}));
                 // Return card to its position gently
                 new TWEEN.Tween(this.draggedCard.position).to({ y: this.draggedCard.userData.restY || 0.1 }, 200).start();
@@ -1331,6 +1346,13 @@ class SovereignCardEngine {
             }
             mesh.userData.visualId = visualId;
             mesh.userData.active = true;
+            // ⚠️ De dónde salió esta carta, anotado AQUÍ, que es el único sitio
+            // donde se sabe. El identificador de pista (`zona_cara_idx`) no se
+            // puede volver a partir: la cara puede llevar guiones bajos dentro
+            // —`num_7|E6A817|◆`— y cualquier expresión regular se equivoca de
+            // corte. Un dato que se puede guardar no se deduce.
+            mesh.userData.zona = zoneName;
+            mesh.userData.indice = idx;
             
             let targetX = startX;
             let targetY = (this.tableY !== undefined ? this.tableY : 0.1);

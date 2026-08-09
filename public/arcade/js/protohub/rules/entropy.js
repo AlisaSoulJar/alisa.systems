@@ -123,6 +123,23 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
     };
     const TOTAL = montar().length;
 
+    const huecoValido = (i) => Number.isInteger(i) && i >= 0 && i < HUECOS;
+    const esComodin = (c) => ESPECIALES.some(e => rango(c) === e.id);
+
+    /**
+     * ¿Poner `carta` en el hueco `i` formaría pareja con la otra de su columna,
+     * y esa otra está A LA VISTA?
+     *
+     * Lo de «a la vista» no es un detalle de comodidad: si valiera con una carta
+     * tapada, la jugada aparecería en la lista de legales exactamente cuando
+     * coincide, y de ahí se deduce el valor de una carta que no has mirado.
+     */
+    function parejaALaVista(caja, i, carta) {
+        const otro = i < COLUMNAS ? i + COLUMNAS : i - COLUMNAS;
+        const h = caja[otro];
+        return !!h?.visible && rango(h.carta) === rango(carta);
+    }
+
     /**
      * Suma la caja anulando las columnas emparejadas. El corazón del juego.
      * Cuenta TODAS las cartas, tapadas incluidas — es la puntuación real, no la
@@ -205,6 +222,17 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
                     legales = p.cajas[pid].map((_, i) => `cambiar:${i}`);
                     const tapadas = p.cajas[pid]
                         .map((h, i) => (h.visible ? -1 : i)).filter(i => i >= 0);
+
+                    // Apartar el comodín: sólo donde HAY comodín, la pareja se ve
+                    // y queda algún hueco tapado adonde correrlo.
+                    for (let i = 0; i < HUECOS; i++) {
+                        if (!esComodin(p.cajas[pid][i].carta)) continue;
+                        if (!parejaALaVista(p.cajas[pid], i, p.robada)) continue;
+                        for (const m of tapadas) {
+                            if (m !== i) legales.push(`cambiar:${i}:mueve:${m}`);
+                        }
+                    }
+
                     legales = legales.concat(tapadas.length
                         ? tapadas.map(i => `descartar_y_voltear:${i}`)
                         : ['descartar']);
@@ -267,7 +295,25 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
                 // nada: están para que ocho cartas iguales no sean un muro de
                 // números idénticos.
                 palos: PALOS_MAPA,
-                robada: p.robada,
+                /**
+                 * ⚠️ LO QUE ROBAS DEL MAZO ES TUYO Y DE NADIE MÁS.
+                 *
+                 * Esto era `robada: p.robada` a secas, sin mirar quién pregunta:
+                 * el rival veía la carta que acababas de robar del mazo antes de
+                 * que decidieras qué hacer con ella. Del descarte da igual —esa la
+                 * ha visto todo el mundo— pero del mazo es información privada, y
+                 * es justo la que decide la jugada.
+                 *
+                 * En un juego cuya gracia es la memoria, eso no es una fuga
+                 * pequeña: un agente que lea el estado del rival deja de tener que
+                 * recordar nada. El entorno mediría lectura, no memoria.
+                 *
+                 * `robada_de` SÍ sigue saliendo para todos: que alguien ha robado,
+                 * y de dónde, se ve desde la silla de enfrente. Lo que no se ve es
+                 * QUÉ. Ocultar la carta y anunciar el gesto es exactamente lo que
+                 * pasa en una mesa de verdad.
+                 */
+                robada: (yo === pid || p.robadaDe === 'descarte') ? p.robada : null,
                 robada_de: p.robadaDe,
                 descarte: p.descarte[p.descarte.length - 1] ?? null,
                 descarte_restante: p.descarte.length,
@@ -308,10 +354,48 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
                 p.turnos += 1; p.historial.push(j);
                 return true;
             }
+            /**
+             * ⚠️ EL COMODÍN SE APARTA EN VEZ DE TIRARSE — Y TÚ ELIGES ADÓNDE.
+             *
+             * `cambiar:N:mueve:M`. En el juego del que viene esto, el tuki es la
+             * ÚNICA carta que se mueve: cuando entra una del mismo valor que la
+             * otra de su columna, el comodín no se descarta, se corre a otro hueco
+             * boca abajo y la que estaba allí se va al descarte.
+             *
+             * Es lo que hace que un comodín no se desperdicie nunca: en vez de
+             * elegir entre «formo la pareja» y «conservo el 0», te llevas las dos
+             * cosas — y encima decides dónde plantarlo, que es donde está la
+             * jugada de verdad (sobre el hueco que ya sospechas malo).
+             *
+             * ⚠️ SÓLO SE OFRECE SI LA PAREJA SE VE.
+             * Si la otra carta de la columna estuviera boca abajo, ofrecer esta
+             * jugada sería CONTAR SU VALOR: aparecería en la lista de legales
+             * justo cuando coincide, y con eso se deduce la carta tapada sin
+             * haberla mirado. En un juego cuya gracia es la memoria, la lista de
+             * jugadas legales es una puerta por la que también se filtra.
+             */
+            if (/^cambiar:\d+:mueve:\d+$/.test(j)) {
+                if (!p.robada) return false;
+                const [, sN, sM] = j.match(/^cambiar:(\d+):mueve:(\d+)$/);
+                const i = Number(sN), m = Number(sM);
+                if (!huecoValido(i) || !huecoValido(m) || i === m) return false;
+                if (!esComodin(p.cajas[pid][i].carta)) return false;
+                if (!parejaALaVista(p.cajas[pid], i, p.robada)) return false;
+                if (p.cajas[pid][m].visible) return false;   // se corre a una tapada
+
+                const comodin = p.cajas[pid][i].carta;
+                p.descarte.push(p.cajas[pid][m].carta);      // la desplazada sí se va
+                p.cajas[pid][m] = { carta: comodin, visible: true };
+                p.cajas[pid][i] = { carta: p.robada, visible: true };
+                p.robada = null; p.robadaDe = null;
+                p.turnos += 1; p.historial.push(j);
+                cerrarTurno(p, pid);
+                return true;
+            }
             if (j.startsWith('cambiar:')) {
                 if (!p.robada) return false;
                 const i = Number(j.slice(8));
-                if (!Number.isInteger(i) || i < 0 || i >= HUECOS) return false;
+                if (!huecoValido(i)) return false;
                 const fuera = p.cajas[pid][i].carta;
                 p.cajas[pid][i] = { carta: p.robada, visible: true };
                 p.descarte.push(fuera);

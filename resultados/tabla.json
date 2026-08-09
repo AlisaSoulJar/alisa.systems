@@ -1,5 +1,5 @@
 {
-  "fecha": "2026-08-09T16:08:23.500Z",
+  "fecha": "2026-08-09T17:00:44.803Z",
   "semillas": 8,
   "tope": 200,
   "juegos": [
@@ -28,7 +28,7 @@
       "tipo": "base",
       "mediana": -0.26436781609195403,
       "media": -0.26436781609195403,
-      "incertidumbre": 0.08750968680639463,
+      "incertidumbre": 0.08924953843140646,
       "tokens": 0,
       "segundos": 0,
       "forzadas": 0,

@@ -98,6 +98,37 @@ for (const juego of JUEGOS) {
         }
     }
 
+    /**
+     * 2c. ⚠️ LO QUE SE ROBA A CIEGAS NO SE PUBLICA A LOS DEMÁS.
+     *
+     * Y ESTA COMPROBACIÓN MIRA EL ESTADO, NO EL TEXTO — que es el hueco que tenía
+     * la de arriba. La 2 pregunta «¿dice el texto algo que el estado no declare
+     * público?», o sea que **usa el estado como definición de lo público**: una
+     * fuga metida en el propio estado le resulta invisible por construcción. Era
+     * una prueba de seguridad que sólo vigilaba una de las dos puertas, y los
+     * agentes entran por la otra.
+     *
+     * Pasó en entropy: `robada: p.robada` se publicaba sin mirar quién pregunta,
+     * así que el rival veía la carta que acababas de sacar del mazo antes de que
+     * decidieras qué hacer con ella. Del descarte es pública —la ha visto todo el
+     * mundo—; del mazo es lo único privado que hay en ese turno.
+     *
+     * En un juego cuya gracia es la memoria, un agente que lea el estado del rival
+     * deja de tener que recordar: el entorno mediría lectura, no memoria.
+     */
+    const conRobo = reglas.nuevaPartida({ semilla: 11, seed: 11 });
+    const stRobo = reglas.estado(conRobo);
+    if ((stRobo.legal_moves ?? []).includes('robar_mazo') && reglas.estado(conRobo, 1)) {
+        reglas.mover(conRobo, 'robar_mazo');
+        const mia = reglas.estado(conRobo, 0);
+        const suya = reglas.estado(conRobo, 1);
+        if (mia.robada && suya.robada && mia.robada === suya.robada
+            && mia.robada_de !== 'descarte') {
+            mal(`${juego}: publica al rival la carta robada del mazo (${mia.robada}) `
+              + '— es lo único privado del turno');
+        }
+    }
+
     // 3. ¿Es determinista? Dos partidas con la misma semilla, el mismo texto.
     const q = reglas.nuevaPartida({ semilla: 9, seed: 9 });
     for (let i = 0; i < 6; i++) {

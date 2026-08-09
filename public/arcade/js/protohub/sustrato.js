@@ -210,6 +210,21 @@ export function sustratoDe(juego, st = {}) {
     });
     if (lista(st.caja).length) zonas.push(conCasillas(st.caja, 0));
     lista(st.cajas_rivales).forEach((c, i) => zonas.push(conCasillas(c, i + 1)));
+    /**
+     * ⚠️ LA CARTA QUE TIENES EN LA MANO TAMBIÉN ES UNA ZONA.
+     *
+     * No estaba, y era la que más falta hacía: robabas y **no se dibujaba en
+     * ninguna parte**. Sabías que tenías algo porque los botones cambiaban, pero
+     * no qué — que es justo lo único que decide la jugada siguiente. Se veía
+     * jugar sin poder jugar.
+     *
+     * Sólo se publica cuando el estado la trae: las reglas ya deciden si te toca
+     * verla (la robada del mazo es privada de quien la roba; la del descarte la
+     * ha visto todo el mundo). Aquí no se decide nada de eso, sólo se dibuja lo
+     * que llega.
+     */
+    if (st.robada) zonas.push({ id: 'robada', de: 0, items: [st.robada], ocultas: 0 });
+
     if (typeof st.descarte === 'string') zonas.push({ id: 'descarte', de: null, items: [st.descarte], ocultas: 0 });
     if (st.cima) zonas.push({ id: 'descarte', de: null, items: [st.cima], ocultas: 0 });
     if (Number.isFinite(st.mazo_restante)) {

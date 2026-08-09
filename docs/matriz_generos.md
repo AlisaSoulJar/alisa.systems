@@ -34,7 +34,7 @@
 | guerra | · | ● | · | · | ● | · | · | · | sí |
 | gofish | · | ● | ● | · | ● | · | ? | · | sí |
 | unit | · | ● | ● | · | ● | · | · | · | sí |
-| entropy | · | ● | ● | · | ● | · | · | ● | sí |
+| entropy | · | ● | ● | · | ● | · | · | · | sí |
 | sokoban | ● | · | · | · | ● | · | · | · | sí |
 | cripta | ● | ● | · | ● | ● | · | · | · | sí |
 | flota | ● | ● | ● | · | ● | · | · | · | sí |
@@ -56,16 +56,15 @@
 - `irreversible`: **30/30**
 - `simultaneo`: **2/30**
 - `cooperativo`: **2/30**
-- `comunicacion`: **2/30**
+- `comunicacion`: **1/30**
 
 ## Perfiles demostrados
 
-- `oculto+rival+irreversible` — blackjack, poker, brisca, tute, hearts, spades, gofish, unit
+- `oculto+rival+irreversible` — blackjack, poker, brisca, tute, hearts, spades, gofish, unit, entropy
 - `espacial+rival+irreversible` — ajedrez, go, reversi, damas, xiangqi, mancala
 - `espacial+autonomo+irreversible` — fagocito, peaton, rebano, pradera
 - `espacial+irreversible` — snake, sokoban
 - `oculto+irreversible` — guerra
-- `oculto+rival+irreversible+comunicacion` — entropy
 - `espacial+oculto+autonomo+irreversible` — cripta
 - `espacial+oculto+rival+irreversible` — flota
 - `espacial+rival+autonomo+irreversible` — defensa

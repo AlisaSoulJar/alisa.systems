@@ -190,6 +190,36 @@ if (piezas.size < PIEZAS_MINIMAS) {
     console.log(`  ↑ subió. Actualiza PIEZAS_MINIMAS a ${piezas.size}.`);
 }
 
+/**
+ * ⚠️ TECHO DE COPIAS DE «MARCAR DÓNDE PUEDES JUGAR», Y SÓLO PUEDE BAJAR.
+ *
+ * Esto ya vive en dos sitios legítimos: `Entrada.js` lo hace para los tableros
+ * (y de paso resuelve el clic entero), y `protohub/marcas.js` para los
+ * visualizadores que son MÓDULOS, que no pueden llamar a un script clásico.
+ *
+ * Aparte de esos dos hay copias a mano, cada una con su `marcas = []`, su
+ * `borrarMarcas()` y su geometría. Ninguna ha divergido todavía — que es
+ * justamente el momento de contarlas, porque la siguiente ya no se parecerá.
+ *
+ * Bajarlo es engancharlas a `Entrada.js`, que además les daría el clic hecho.
+ * Lo que este techo impide es que aparezca una copia NUEVA mientras tanto.
+ */
+const VISUALIZADORES = join(AQUI, 'public/arcade/js');
+const TECHO_MARCAS = 2;
+const conMarcas = readdirSync(VISUALIZADORES)
+    .filter(f => f.endsWith('_visualizer.js'))
+    .filter(f => /function\s+borrarMarcas\s*\(/.test(readFileSync(join(VISUALIZADORES, f), 'utf-8')));
+
+console.log(`\n  visualizadores con marcas propias: ${conMarcas.length} (techo ${TECHO_MARCAS})`);
+if (conMarcas.length) console.log(`    ${conMarcas.join(', ')}`);
+if (conMarcas.length > TECHO_MARCAS) {
+    fallos++;
+    console.log(`  ✗ subió: alguien ha vuelto a escribir a mano lo que hay en`);
+    console.log(`    protohub/marcas.js. Impórtalo, no lo copies.`);
+} else if (conMarcas.length < TECHO_MARCAS) {
+    console.log(`  ↓ bajó. Actualiza TECHO_MARCAS a ${conMarcas.length}.`);
+}
+
 if (copias.length) {
     fallos++;
     console.log(`\n  ✗ algoritmo copiado en vez de importado de protohub/rejilla.js:`);

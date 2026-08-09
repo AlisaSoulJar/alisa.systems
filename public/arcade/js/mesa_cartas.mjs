@@ -35,7 +35,8 @@
  * adaptador perdía la mano tapada del póker y el dibujo afirmaba que el
  * contrario iba con las manos vacías.
  */
-import { obtenerSustrato, sustratoDe } from './protohub/sustrato.js';
+import { sustratoDe } from './protohub/sustrato.js';
+import { crearMarcas, VERDE, MORADO, ACIERTO } from './protohub/marcas.js';
 
 /**
  * Dónde se sienta cada zona. La mesa mira desde el asiento 0, abajo.
@@ -59,6 +60,17 @@ const SITIO = {
      * separan lo suficiente para que se vea de quién es cada cosa sin leer el HUD.
      */
     mesa: { x:  0.0, z:  0.0, layout: 'line', reparto: 'x', paso: 11 },
+};
+
+/**
+ * Sitios que NO dependen de quién sea la zona, sino de qué es.
+ *
+ * La carta que acabas de robar es «tuya» (`de: 0`), pero ponerla junto a tu caja
+ * la metía en el mismo reparto y desplazaba la rejilla del centro. Va delante de
+ * todo, entre tú y tu caja, que es donde la tendrías en la mano.
+ */
+const SITIO_ZONA = {
+    robada: { x: 0, z: 5.6, layout: 'line', paso: 0 },
 };
 
 /** El mismo hueco entre cartas que usa la mesa de póker. */
@@ -87,6 +99,104 @@ const SEPARA = 6;
  * es un montón porque no cabe, no porque se llame mazo.
  */
 const CABEN = 9;
+
+/**
+ * ═══ JUGAR CON EL RATÓN ═════════════════════════════════════════════════════
+ *
+ * Los botones del panel son la interfaz COMPLETA: ahí está toda jugada legal,
+ * con su nombre, igual que la ve un agente. Esto de aquí no quita ninguna — es
+ * un atajo encima para que un humano no tenga que traducir «cambiar:5» a un
+ * hueco contando casillas.
+ *
+ * Se hace como en las damas, que es el patrón que ya tiene la casa: se clica y
+ * se marcan los destinos posibles, sacados SIEMPRE de `legal_moves`. Nunca de lo
+ * que el visualizador crea que se puede hacer — esa lista y las reglas se
+ * separarían el primer día.
+ */
+let marcas = null;            // se crea con la escena, en el primer dibujo
+let estadoActual = null;      // el último estado, para traducir clics
+let cajaActual = null;        // mis casillas, para saber qué empareja
+let esperandoTuki = null;     // hueco cuyo comodín hay que recolocar
+
+/**
+ * El halo va DEBAJO de la carta y no sobre ella: los materiales del motor están
+ * cacheados por cara, así que teñir uno teñiría todas las cartas de ese número.
+ */
+function marcar(motor, x, z, color) {
+    if (!marcas) marcas = crearMarcas(motor.scene, { y: (motor.tableY ?? 0.1) - 0.02 });
+    marcas.poner(x, z, { color });
+}
+const borrarMarcas = () => marcas?.limpiar();
+
+/** Dónde está dibujada una casilla concreta, para poder marcarla. */
+function posicionDe(motor, zona, indice) {
+    for (const [, malla] of Object.entries(motor.cardMeshes)) {
+        if (malla.userData.zona === zona && malla.userData.indice === indice) return malla.position;
+    }
+    return null;
+}
+
+/**
+ * ⚠️ LA SUGERENCIA SÓLO MIRA LO QUE TÚ VES.
+ *
+ * Marca los huecos donde poner la carta robada anularía la columna. Se calcula
+ * con `casillas`, que trae `null` en lo tapado — así que es literalmente
+ * imposible que sugiera usando una carta que no has visto. Si mirara el estado
+ * interno sería un chivato: te diría dónde están tus cartas buenas y el juego
+ * dejaría de medir memoria.
+ */
+function huecosQueEmparejan(caja, valorRobado, valores) {
+    if (!caja || valorRobado == null) return [];
+    const cols = 4;
+    const salen = [];
+    for (let i = 0; i < caja.length; i++) {
+        const otro = i < cols ? i + cols : i - cols;
+        const c = caja[otro];
+        if (!c) continue;                               // tapada: no se sabe, no se sugiere
+        const v = valores?.[String(c).split('_').slice(1).join('_')];
+        if (v !== undefined && v === valorRobado) salen.push(i);
+    }
+    return salen;
+}
+
+function repintarMarcas(motor) {
+    borrarMarcas();
+    const st = estadoActual;
+    if (!st || st.is_game_over) return;
+    const legales = st.legal_moves ?? [];
+
+    // Recolocando el comodín: sólo se marcan los destinos que la regla permite.
+    if (esperandoTuki !== null) {
+        for (const m of legales) {
+            const c = m.match(new RegExp(`^cambiar:${esperandoTuki}:mueve:(\\d+)$`));
+            if (!c) continue;
+            const p = posicionDe(motor, 'caja_0_0', Number(c[1]));
+            if (p) marcar(motor, p.x, p.z, MORADO);
+        }
+        return;
+    }
+
+    // Sin carta en la mano: de dónde se puede robar.
+    if (!st.robada) {
+        for (const [zona, color] of [['mazo', VERDE], ['descarte', VERDE]]) {
+            if (!legales.includes(zona === 'mazo' ? 'robar_mazo' : 'robar_descarte')) continue;
+            for (const malla of Object.values(motor.cardMeshes)) {
+                if (String(malla.userData.zona).startsWith(zona + '_')) {
+                    marcar(motor, malla.position.x, malla.position.z, color);
+                    break;
+                }
+            }
+        }
+        return;
+    }
+
+    // Con carta en la mano: dónde formaría pareja. Ésa es LA sugerencia.
+    const valor = st.valores?.[String(st.robada).split('_').slice(1).join('_')];
+    for (const i of huecosQueEmparejan(cajaActual, valor, st.valores)) {
+        const p = posicionDe(motor, 'caja_0_0', i);
+        if (p) marcar(motor, p.x, p.z, ACIERTO);
+    }
+}
 
 /**
  * ⚠️ UNA MESA DONDE NO SE PUEDE JUGAR ES UN CUADRO.
@@ -150,11 +260,11 @@ const engine = new SovereignCardEngine({
         // ⚠️ MÁS ATRÁS QUE LA DE PÓKER, Y NO POR GUSTO.
         //
         // Póker mira desde (0, 5, 8) porque enseña dos cartas por jugador. Aquí
-        // una mano de entropy son ocho y el abanico ocupa cinco unidades y media:
-        // con la cámara de póker la mano de abajo —la TUYA, la única que puedes
-        // jugar— se salía por el borde inferior de la pantalla.
-        camera.position.set(0, 8, 11);
-        camera.lookAt(0, 0, 0.4);
+        // una caja de entropy son ocho en rejilla y además está la carta que
+        // tienes en la mano, delante de todo: con la cámara de póker lo tuyo
+        // —lo único que puedes jugar— se salía por el borde inferior.
+        camera.position.set(0, 9.5, 12.5);
+        camera.lookAt(0, 0, 1.3);
 
         // Fieltro. Ovalado, como el de póker: una mesa redonda hace que las
         // manos de arriba y abajo queden demasiado lejos en pantalla.
@@ -192,39 +302,32 @@ const engine = new SovereignCardEngine({
         this.gcCards();
 
         const juego = this.gameId;
-        const proto = window.ALISA_PROTOHUB;
-        const p = proto?.partida?.(juego) ?? null;
-        const reglas = proto?.reglas?.get?.(juego) ?? null;
 
         /**
-         * ⚠️ EN UNA SALA, LA PARTIDA DE ESTA PESTAÑA NO ES LA PARTIDA.
+         * ⚠️ SE DIBUJA LO QUE EL JUEGO PUBLICA. NADA MÁS, Y DESDE UN SOLO SITIO.
          *
-         * Fuera de la sala el sustrato se saca del objeto local, que es el bueno
-         * porque las reglas corren aquí. Con `?sala=` corren en el árbitro: el
-         * `p` de esta pestaña es una partida distinta que nadie está jugando, y
-         * dibujarla sería enseñar una mesa inventada con toda la seguridad del
-         * mundo — exactamente el tipo de mentira muda que este proyecto persigue.
+         * Esto tenía dos caminos —en una sala, el estado del árbitro; en local,
+         * `reglas.sustrato(partida)`— y el segundo era una trampa armada:
+         * `ProtoHub.partida()` no devuelve la partida viva, devuelve el RECIBO
+         * `{juego, semilla, jugadas}`. Hoy no rompe nada porque ninguno de los
+         * diez juegos de cartas publica sustrato nativo y todos caen al derivado,
+         * que sólo mira el estado. El día que uno lo publique, la mesa le pasaría
+         * un recibo donde espera una partida y dibujaría cualquier cosa sin dar
+         * un error.
          *
-         * Así que se dibuja lo que manda el árbitro, y sólo eso. `sustratoDe`
-         * deriva las zonas del ESTADO publicado sin tocar ninguna partida, y ese
-         * estado ya viene recortado a tu asiento por el `?quien=` de `sala.js`:
-         * lo que no te toca ver no llega al navegador, no es que se dibuje menos.
+         * `sustratoDe(juego, estado)` es el camino bueno para las dos: deriva las
+         * zonas de lo PUBLICADO. Comprobado que da zonas idénticas en los diez.
+         *
+         * Y hace verdad la tesis del motor. Si el dibujo necesitara mirar dentro
+         * del objeto de la partida, no sería un espectador: sería una segunda
+         * fuente de verdad, y las dos se separarían el día que una cambie.
+         *
+         * ⚠️ De paso desaparece `?asiento=`, que esta página anunciaba y NUNCA
+         * hizo nada: pasaba por la rama nativa, que en cartas no existe. Quien
+         * quiera mirar desde otra silla tiene la mesa compartida con `?quien=`,
+         * donde el recorte lo hace el árbitro y no una opción de la pantalla.
          */
-        let sus;
-        if (this.backend?.tipo === 'sala') {
-            sus = sustratoDe(juego, data);
-        } else {
-            /**
-             * ⚠️ EL SUSTRATO SE PIDE CON EL ASIENTO DESDE EL QUE SE MIRA.
-             * En un juego de información oculta eso no es cosmética: decide qué
-             * cartas se ven. `?asiento=1` abre la vista del otro, que es como se
-             * comprueba —con dos pestañas— que no se filtra nada.
-             */
-            const asiento = Number(new URLSearchParams(location.search).get('asiento')) || 0;
-            sus = reglas?.sustrato
-                ? reglas.sustrato(p, asiento)
-                : obtenerSustrato(juego, reglas, p, data);
-        }
+        const sus = sustratoDe(juego, data);
 
         /**
          * ⚠️ LA CARA DE LA CARTA LA ELIGE EL JUEGO, NO LA MESA.
@@ -265,13 +368,18 @@ const engine = new SovereignCardEngine({
         // puede repartirle el sitio.
         const porDueno = new Map();
         for (const z of zonas) {
-            const clave = z.de === null || z.de === undefined ? 'mesa' : z.de;
+            // Las zonas con sitio propio se agrupan aparte, o entrarían en el
+            // reparto de su dueño y desplazarían lo demás.
+            const clave = SITIO_ZONA[z.id] ? `@${z.id}`
+                : (z.de === null || z.de === undefined ? 'mesa' : z.de);
             if (!porDueno.has(clave)) porDueno.set(clave, []);
             porDueno.get(clave).push(z);
         }
 
         for (const [clave, lote] of porDueno) {
-            const sitio = SITIO[clave] ?? SITIO.mesa;
+            const sitio = String(clave).startsWith('@')
+                ? SITIO_ZONA[String(clave).slice(1)]
+                : (SITIO[clave] ?? SITIO.mesa);
             lote.forEach((z, i) => {
                 const desvio = (i - (lote.length - 1) / 2) * (sitio.paso ?? SEPARA);
                 const cx = sitio.x + (sitio.reparto === 'x' ? desvio : 0);
@@ -359,6 +467,14 @@ const engine = new SovereignCardEngine({
           + `<div id="mesa-jugadas" class="mesa-jugadas"></div>`;
 
         pintarJugadas(this, data);
+
+        // Lo que necesita la capa de clics: el estado de verdad y mis casillas.
+        // Se guardan aquí y no se vuelven a deducir en ningún sitio.
+        estadoActual = data;
+        cajaActual = zonas.find(z => z.id === 'caja' && z.de === 0)?.casillas ?? null;
+        // Si la partida avanzó, el comodín a medio recolocar ya no significa nada.
+        if (!data.robada) esperandoTuki = null;
+        repintarMarcas(this);
     },
 });
 
@@ -372,6 +488,48 @@ const engine = new SovereignCardEngine({
  *
  * Se publica con el mismo nombre que ya usan las páginas de tablero.
  */
+/**
+ * Un clic sobre una carta, traducido a jugada.
+ *
+ * Toda salida de aquí se comprueba contra `legal_moves` antes de enviarse. Un
+ * atajo que pudiera mandar algo ilegal sería un atajo que se cree las reglas, y
+ * eso ya nos costó caro con el ProtoHub: doscientos clics, cero jugadas grabadas
+ * y ni un error en consola.
+ */
+window.addEventListener('cardInspect', (ev) => {
+    const { zona, indice } = ev.detail ?? {};
+    const st = estadoActual;
+    if (!zona || !st || st.is_game_over) return;
+    const legales = st.legal_moves ?? [];
+    const enviar = (m) => { if (legales.includes(m)) engine.sendMove(m); };
+
+    // Segundo clic del comodín: adónde se corre.
+    if (esperandoTuki !== null) {
+        if (zona === 'caja_0_0') enviar(`cambiar:${esperandoTuki}:mueve:${indice}`);
+        esperandoTuki = null;
+        repintarMarcas(engine);
+        return;
+    }
+
+    if (!st.robada) {
+        if (String(zona).startsWith('mazo_'))     enviar('robar_mazo');
+        if (String(zona).startsWith('descarte_')) enviar('robar_descarte');
+        return;
+    }
+
+    // Con carta en la mano, clicar el descarte es tirarla; entonces hay que
+    // decir qué destapas, y eso son los botones (o el siguiente clic).
+    if (String(zona).startsWith('descarte_')) { enviar('descartar'); return; }
+
+    if (zona === 'caja_0_0') {
+        // Si ahí hay un comodín que puede apartarse, se pregunta adónde antes de
+        // tirarlo: es estrictamente mejor y sería una pena perderlo por un clic.
+        const hayTuki = legales.some(m => m.startsWith(`cambiar:${indice}:mueve:`));
+        if (hayTuki) { esperandoTuki = indice; repintarMarcas(engine); return; }
+        enviar(`cambiar:${indice}`);
+    }
+});
+
 window.ALISA_MESA = engine;
 
 engine.mountAgentHUD('hud-container',
