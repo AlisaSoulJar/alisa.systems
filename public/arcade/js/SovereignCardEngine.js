@@ -654,6 +654,38 @@ class SovereignCardEngine {
     }
 
     // ═══ COURT CARD PORTRAIT (Geometric/Abstract) ═══
+    /**
+     * ⚠️ UNA FIGURA SIN LÁMINA TIENE QUE PODER LEERSE IGUAL.
+     *
+     * `_drawCourtCard` dibuja la silueta entera con `globalAlpha` entre 0,08 y
+     * 0,2: es un fantasma pensado para ir DEBAJO de una lámina, no para sustituirla.
+     * Y sólo hay láminas de la baraja inglesa (`H_J`, `S_Q`…), así que la sota, el
+     * caballo y el rey españoles salían en blanco.
+     *
+     * En la mesa eso no se veía como un fallo de dibujo, se veía como una carta en
+     * blanco — y una carta que no se puede leer es una carta que no se puede jugar.
+     * Toca a entropy, la brisca y el tute por igual.
+     *
+     * Encima de la silueta va lo que de verdad identifica la carta: la letra, y el
+     * palo debajo por si el color no basta.
+     */
+    _drawFiguraLegible(ctx, rank, suitId, color, W, H) {
+        const NOMBRE = { S: 'SOTA', C: 'CABALLO', R: 'REY', J: 'JACK', Q: 'QUEEN', K: 'KING' };
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = color;
+        ctx.font = 'bold 132px Georgia';
+        ctx.fillText(rank, W / 2, H / 2 - 24);
+        this._drawSuit(ctx, suitId, W / 2, H / 2 + 68, 30);
+        if (NOMBRE[rank]) {
+            ctx.font = 'bold 20px Georgia';
+            ctx.globalAlpha = 0.65;
+            ctx.fillText(NOMBRE[rank], W / 2, H / 2 + 118);
+        }
+        ctx.restore();
+    }
+
     _drawCourtCard(ctx, rank, suitId, color, W, H) {
         const cx = W/2, cy = H/2;
         
@@ -933,6 +965,7 @@ class SovereignCardEngine {
                 ctx.globalAlpha = 1.0;
             } else {
                 this._drawCourtCard(ctx, rank, suitId, color, W, H);
+                this._drawFiguraLegible(ctx, rank, suitId, color, W, H);
             }
             return canvas;
         }
@@ -1069,10 +1102,25 @@ class SovereignCardEngine {
         const layout = options.layout || (options === true ? 'line' : 'line');
         const faceDown = typeof options === 'object' ? (options.faceDown || false) : false;
         const spacing = options.spacing || 1.35;
-        
+
         cardList.forEach((card, idx) => {
             const baseId = typeof card === 'string' ? card : (card.id || card.rank+card.suit || `c_${idx}`);
             const visualId = baseId; // Always forge the true card. Physical rotation will hide it.
+
+            // ⚠️ UNA CARTA PUEDE IR TAPADA POR SÍ MISMA, no sólo la zona entera.
+            //
+            // `faceDown` es de la llamada, así que una mano con dos cartas vistas y
+            // seis tapadas —lo normal en entropy, y en cualquier juego con robo—
+            // obligaba a DOS llamadas. Y dos llamadas es lo que rompía el dibujo:
+            // cada una calculaba su abanico como si fuera la mano completa, con su
+            // propio centro, y las dos mitades se montaban una encima de otra.
+            //
+            // Con `{ id, oculta: true }` la zona se dibuja de una vez y el reparto
+            // —centro, ángulos, solape— se calcula sobre el total, que es la única
+            // forma de que salga bien. Sin `oculta` manda `faceDown` como siempre,
+            // así que el póker y los demás visualizadores no se enteran.
+            const oculta = (card && typeof card === 'object' && card.oculta !== undefined)
+                ? !!card.oculta : faceDown;
             const trackId = `${zoneName}_${baseId}_${idx}`;
             
             let mesh = this.cardMeshes[trackId];
@@ -1094,7 +1142,7 @@ class SovereignCardEngine {
             let targetX = startX;
             let targetY = (this.tableY !== undefined ? this.tableY : 0.1);
             let targetZ = startZ;
-            let targetRotX = faceDown ? Math.PI/2 : -Math.PI / 2;
+            let targetRotX = oculta ? Math.PI/2 : -Math.PI / 2;
             let targetRotY = 0;
             let targetRotZ = 0;
 
@@ -1171,7 +1219,24 @@ class SovereignCardEngine {
 
             mesh.userData.restY = targetY; // Permanent rest height for hover math
 
-            if (typeof TWEEN !== 'undefined') {
+            /**
+             * ⚠️ CON LA PESTAÑA OCULTA NO SE ANIMA: SE COLOCA Y YA.
+             *
+             * Chrome congela `requestAnimationFrame` en pestañas que no se ven, y
+             * el bucle de este motor es quien llama a `TWEEN.update`. O sea que
+             * mientras miras otra pestaña nadie avanza las animaciones — pero el
+             * sondeo sigue cada segundo creando dos por carta. Medido en una mesa
+             * de 96 cartas: 13.632 animaciones pendientes en un minuto, y las
+             * cartas congeladas a un tercio de camino de su sitio.
+             *
+             * Al volver, todas se resuelven de golpe. El jugador que se va a otra
+             * pestaña y regresa es el caso NORMAL en una partida por turnos contra
+             * un agente, así que esto no es un caso raro: es el caso.
+             *
+             * Sin animación el estado final es idéntico — que es justo lo que hace
+             * que la mesa se pueda comprobar con una captura.
+             */
+            if (typeof TWEEN !== 'undefined' && !document.hidden) {
                 const animDelay = options.sequenceDelay ? (idx * options.sequenceDelay) : 0;
                 
                 // Spin Throw logic

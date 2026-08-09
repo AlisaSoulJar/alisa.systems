@@ -1,5 +1,5 @@
 {
- "fecha": "2026-08-08",
+ "fecha": "2026-08-09",
  "total": 179,
  "cuenta": {
   "apagada": 120,
@@ -828,7 +828,7 @@
    "ruta": "gym/registro.js",
    "nombre": "registro",
    "familia": "gym",
-   "kb": 13.8,
+   "kb": 14.2,
    "clase": "apagada",
    "exporta": [
     "CATALOGO",
@@ -2862,7 +2862,7 @@
     "syncKatamariConsumption"
    ],
    "objetos": 54,
-   "mallas": 136,
+   "mallas": 138,
    "luces": 4
   },
   {
@@ -3615,7 +3615,7 @@
    "ruta": "world/systems/FoodChainSystem.js",
    "nombre": "FoodChainSystem",
    "familia": "systems",
-   "kb": 30.5,
+   "kb": 30.9,
    "clase": "gym",
    "exporta": [
     "FoodChainSystem"

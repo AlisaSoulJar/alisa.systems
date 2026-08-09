@@ -40,11 +40,47 @@ const ANDAMIO = [
     '/vendor/three-r128/OrbitControls.js',
     '/vendor/tween/tween.umd.js',
     'js/Entrada.js',
-    'js/SovereignBoardEngine.js',
 ];
 
+/**
+ * ⚠️ QUÉ MOTOR HACE FALTA LO DICE EL SUSTRATO, NO UNA LISTA.
+ *
+ * Hay dos: `SovereignBoardEngine` para tableros y `SovereignCardEngine` para
+ * cartas. Se podría poner en la configuración de cada página —`motor:'cartas'`—
+ * y sería otra lista paralela que se separa el día que alguien añada un juego y
+ * se olvide de tocarla. Es literalmente el fallo que este proyecto ha arreglado
+ * seis veces.
+ *
+ * El sustrato ya lo dice: un juego que publica **zonas y ninguna rejilla** es de
+ * cartas. No hay que declarar nada porque el dato ya existe, sólo había que
+ * mirarlo.
+ */
+const MOTOR_TABLERO = ['js/SovereignBoardEngine.js'];
+const MOTOR_CARTAS  = ['js/arcade_mats.js', 'js/SovereignCardEngine.js'];
+
 const cargar = (src) => new Promise((listo, falla) => {
+    /**
+     * ⚠️ LO QUE YA ESTÁ EN LA PÁGINA NO SE VUELVE A CARGAR.
+     *
+     * `entropy.html` conservaba los tres <script> de vendor del cascarón viejo y
+     * esto los cargaba otra vez. Con three sólo salía un aviso; con tween salió
+     * caro: dos objetos TWEEN distintos, uno recibiendo los movimientos de las
+     * cartas y otro siendo el que se actualiza en cada fotograma. Las cartas se
+     * quedaban clavadas donde nacen, la mesa parecía vacía y **no había ni un
+     * error en consola** — el peor tipo de fallo que existe.
+     *
+     * Se comprueba aquí y no en cada página porque las páginas se copian entre
+     * ellas: la próxima que herede un <script> de más ya no romperá nada.
+     */
+    const url = new URL(src, location.href).href;
+    if ([...document.scripts].some(s => s.src === url)) return listo();
+
     const s = document.createElement('script');
+    // ⚠️ `.mjs` se carga como módulo. Los visualizadores viejos son scripts
+    // clásicos que hablan por variables globales; los nuevos importan el
+    // sustrato, que es un módulo. Distinguirlos por la extensión evita tener que
+    // declarar en la configuración algo que el nombre del fichero ya dice.
+    if (src.endsWith('.mjs')) s.type = 'module';
     s.src = src;
     s.onload = listo;
     // Un script que no carga tiene que decirlo aquí y no veinte líneas después
@@ -97,6 +133,18 @@ export async function montarMesa(cfg) {
     window.ALISA_PROTOHUB = new ProtoHub().registrar(idJuego, reglas);
 
     for (const s of ANDAMIO) await cargar(s);
+
+    // Una partida de muestra basta para saber de qué está hecho el juego.
+    const { obtenerSustrato } = await import('./protohub/sustrato.js');
+    let deCartas = false;
+    try {
+        const q = reglas.nuevaPartida({ semilla: 1, seed: 1 });
+        const sus = reglas.sustrato ? reglas.sustrato(q, 0)
+                                    : obtenerSustrato(juego, reglas, q, reglas.estado(q));
+        deCartas = !!(sus?.zonas?.length) && !sus?.rejilla;
+    } catch { /* si no se puede mirar, tablero: es lo de siempre */ }
+
+    for (const s of (deCartas ? MOTOR_CARTAS : MOTOR_TABLERO)) await cargar(s);
     if (visualizador) await cargar(`js/${visualizador}`);
     return window.ALISA_PROTOHUB;
 }

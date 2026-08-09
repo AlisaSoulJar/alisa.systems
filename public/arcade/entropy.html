@@ -1,30 +1,41 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALISA Arcade — Entropy</title>
-    <link rel="stylesheet" href="css/arcade.css">
-    
-    <script src="/vendor/three-r128/three.min.js"></script>
-    <script src="/vendor/three-r128/OrbitControls.js"></script>
-    <script src="/vendor/tween/tween.umd.js"></script>
-    
-    <link rel="stylesheet" href="css/card_hud.css">
-    <link rel="stylesheet" href="/vendor/fonts/fuentes.css">
-</head>
-<body>
-    <div id="canvas-container"></div>
-    <div id="hud-container"></div>
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA Arcade — Entropy</title>
+<!--
+  ⚠️ UNA PÁGINA DE JUEGO ES UNA LÍNEA DE CONFIGURACIÓN.
 
-    <script type="module">
-        import { ProtoHub } from './js/protohub/ProtoHub.js';
-        import { crearEntropy } from './js/protohub/rules/entropy.js';
-        
-        window.ALISA_PROTOHUB = new ProtoHub().registrar('entropy', await crearEntropy());
-    </script>
-    <script src="js/arcade_mats.js"></script>
-    <script src="js/SovereignCardEngine.js"></script>
-    <script src="js/entropy_visualizer.js"></script>
-</body>
-</html>
+  Y AQUÍ NO SE CARGA NINGÚN VENDOR. Esta página tenía los tres <script> de
+  three/OrbitControls/tween heredados del cascarón viejo, y `montarMesa` los carga
+  otra vez: dos copias de TWEEN, una recibiendo los movimientos y otra siendo la
+  que se actualiza en cada fotograma. Resultado: las cartas se quedaban en el
+  punto donde nacen y la mesa salía vacía, sin un solo error en consola. Ese es el
+  precio de repetir el andamio — el mismo que justifica que exista `montarMesa`.
+
+  Antes esto era un cascarón de 1 KB: cargaba THREE y no dibujaba nada, porque
+  `montarMesa` exige un visualizador y entropy no tenía.
+
+  Lleva `mesa_cartas.mjs`, que NO es el visualizador número quince: es el
+  primero que lee el SUSTRATO en vez de los campos de un juego concreto. El de
+  póker hace `data.player_hand` y `data.community_cards` —nombres suyos— y por
+  eso hubo que escribir uno por juego. Éste lee `zonas: [{id, de, items,
+  ocultas}]`, que publican los diez juegos de cartas por igual.
+
+  Así que entropy lo estrena y la brisca, el tute, hearts, spades, guerra,
+  gofish y unit lo heredan cambiando una línea.
+
+    ?semilla=7    fija el reparto
+    ?asiento=1    mira desde la otra silla — así se comprueba que no filtra
+
+  Para jugar VARIAS PERSONAS a la vez esta página no es el sitio: la mesa
+  compartida es `mesa.html?sala=<loquesea>&juego=entropy`, con árbitro, turnos
+  y recibo verificable.
+-->
+<script>
+  window.ALISA_JUEGO = 'entropy';
+  window.ALISA_TITULO = 'Entropy';
+</script>
+<script type="module">
+  import { montarMesa } from './js/montarMesa.js';
+  montarMesa({ juego: 'entropy', visualizador: 'mesa_cartas.mjs' });
+</script>

@@ -46,6 +46,19 @@ class SinCache(http.server.SimpleHTTPRequestHandler):
     # el título de Corporate Building. Se dice una vez aquí y deja de pasar en
     # todos los ficheros, en vez de ir parcheando <meta> uno a uno.
     def guess_type(self, path):
+        # ⚠️ `.mjs` ES JAVASCRIPT, Y AQUÍ SALÍA COMO `text/plain`.
+        #
+        # Python no lo conoce, así que un módulo con esa extensión se servía como
+        # texto y el navegador se NEGABA a ejecutarlo — con el mensaje inútil «no
+        # se pudo cargar», que apunta al fichero y no al servidor. El fichero
+        # estaba perfecto.
+        #
+        # Y lo peor de este fallo es que sólo pasa en local: Cloudflare Pages sí
+        # manda el tipo correcto. O sea que era de los que funcionan publicados y
+        # se rompen en la máquina de quien viene a colaborar, que es la peor
+        # dirección posible para un proyecto que quiere gente de fuera.
+        if str(path).endswith(".mjs"):
+            return "application/javascript; charset=utf-8"
         tipo = super().guess_type(path)
         if tipo.startswith(("text/", "application/javascript")) and "charset=" not in tipo:
             return tipo + "; charset=utf-8"
