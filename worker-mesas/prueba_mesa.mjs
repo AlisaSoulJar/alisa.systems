@@ -66,6 +66,46 @@ async function pedir(ruta, cuerpo) {
 
 console.log(`\nMesa compartida · ${JUEGO} · sala '${SALA}'\n${MESAS}\n`);
 
+/**
+ * ⚠️ 0. ¿EL ÁRBITRO JUEGA CON LAS MISMAS REGLAS QUE ESTE REPOSITORIO?
+ *
+ * El worker se despliega APARTE del sitio. Así que un cambio de reglas llega a
+ * la página de un jugador en cuanto se publica, y a las salas compartidas sólo
+ * cuando alguien se acuerda de lanzar `npm run desplegar:mesas`. Entre una cosa
+ * y otra, dos personas en la misma sala juegan a algo distinto de lo que la
+ * página les cuenta — y nada falla: la partida avanza, los turnos se reparten y
+ * el recibo verifica, porque el verificador es OTRO servicio que puede estar
+ * igual de viejo.
+ *
+ * Pasó hoy: se cambió la baraja de entropy y se añadieron comodines, y la sala
+ * siguió repartiendo la española durante horas. Se vio mirando los nombres de
+ * las cartas a ojo, que no es forma.
+ *
+ * El reparto de una semilla fija ES la huella de las reglas: depende de la
+ * baraja, de su orden y de cuántas cartas se reparten. Si el árbitro y este
+ * repositorio dan el mismo reparto, están jugando al mismo juego.
+ */
+const SEMILLA_HUELLA = 4242;
+{
+  const salaH = `${SALA}-huella`;
+  const r = await pedir(`/mesa/${salaH}/sentarse`,
+      { quien: 'huella', tipo: 'agente', juego: JUEGO, semilla: SEMILLA_HUELLA });
+  const { cargarReglas } = await import('../public/arcade/js/protohub/rules/index.js');
+  const reglas = await cargarReglas(JUEGO, {});
+  const local = reglas.estado(reglas.nuevaPartida({ semilla: SEMILLA_HUELLA, seed: SEMILLA_HUELLA }));
+
+  // Se comparan los campos que delatan la baraja: lo repartido y lo que queda.
+  const huella = (st) => JSON.stringify([
+      st?.caja ?? st?.mano ?? st?.player_hand ?? null,
+      st?.mazo_restante ?? null, st?.descarte ?? st?.cima ?? null,
+  ]);
+  const suya = huella(r.estado), mia = huella(local);
+  comprobar(suya === mia,
+      `el árbitro reparte lo mismo que este repositorio (semilla ${SEMILLA_HUELLA})`
+      + (suya === mia ? '' : `\n     árbitro: ${suya}\n     aquí:    ${mia}`
+                           + `\n     → el worker va con reglas viejas: \`npm run desplegar:mesas\``));
+}
+
 // ── 1. Dos seres se sientan ──────────────────────────────────────────────
 const a = await pedir(`/mesa/${SALA}/sentarse`, { quien: 'ana', tipo: 'persona', juego: JUEGO, semilla: 7 });
 comprobar(a.codigo === 200 && a.sentado === 'ana', `se sienta ana — ${a.titulo}, semilla ${a.semilla}`, a._json);
