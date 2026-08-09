@@ -177,6 +177,49 @@ if (desfasadas.length) {
     console.log(`  ✓ README    dice ${JUEGOS.length} juegos, y hay ${JUEGOS.length}`);
 }
 
+/**
+ * ⚠️ 2.ter — QUE `montarMesa` SIGA ELIGIENDO EL MOTOR DE CARTAS PARA LOS QUE
+ * REPARTEN CARTAS.
+ *
+ * `mesa_cartas.mjs` es UNA mesa de casino para los diez juegos de cartas, y
+ * sustituye a la costumbre de escribir un visualizador por juego —la costumbre
+ * que dejó al go meses sin dibujar sus piedras—. Pero no se elige por una lista:
+ * `montarMesa` mira el sustrato de una partida recién repartida y decide que es
+ * de cartas si publica **zonas y ninguna rejilla**.
+ *
+ * Eso es lo bueno (el dato ya existe, no hay que declarar nada) y también lo
+ * frágil: el día que un juego de cartas publique además una rejilla —para un
+ * tapete, para unas casillas de apuesta— `montarMesa` cogerá el motor de TABLERO
+ * y la mesa saldrá mal SIN UN SOLO ERROR. Es la forma exacta de fallo que este
+ * proyecto lleva media docena de veces persiguiendo.
+ *
+ * Así que el número es un SUELO: diez juegos se dibujan hoy con la mesa
+ * compartida y no pueden ser menos. Si baja, alguien ha desconectado uno.
+ */
+const SUELO_MESA_CARTAS = 10;
+const conMesa = [];
+const ambiguos = [];
+for (const juego of JUEGOS) {
+    const reglas = await cargarReglas(juego, {});
+    // Igual que `montarMesa`: una partida de muestra, sin jugar.
+    const q = reglas.nuevaPartida({ semilla: 1, seed: 1 });
+    const sus = reglas.sustrato ? reglas.sustrato(q, 0)
+                                : obtenerSustrato(juego, reglas, q, reglas.estado(q));
+    if (!sus?.zonas?.length) continue;
+    if (sus.rejilla) ambiguos.push(juego); else conMesa.push(juego);
+}
+if (ambiguos.length) {
+    mal(`${ambiguos.join(', ')}: reparte cartas Y publica rejilla, así que `
+      + '`montarMesa` elegiría el motor de tablero y la mesa saldría mal en silencio.');
+}
+if (conMesa.length < SUELO_MESA_CARTAS) {
+    mal(`la mesa compartida sirve a ${conMesa.length} juegos y servía a ${SUELO_MESA_CARTAS}. `
+      + `Faltan: se han desconectado de \`mesa_cartas.mjs\`.`);
+} else {
+    console.log(`  ✓ mesa      ${conMesa.length} juegos de cartas usan la mesa compartida `
+              + `(suelo: ${SUELO_MESA_CARTAS})`);
+}
+
 // 3. La deuda.
 console.log(`\n${derivados}/${JUEGOS.length} juegos dependen del adaptador (techo: ${TECHO_DERIVADOS})`);
 if (derivados > TECHO_DERIVADOS) {
