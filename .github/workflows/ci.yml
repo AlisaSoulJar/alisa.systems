@@ -105,12 +105,26 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
+      # ⚠️ SÍ, HACE FALTA EL CÓDIGO, AUNQUE SÓLO SE SUBAN FICHEROS ESTÁTICOS.
+      #
+      # Este trabajo se limitaba a bajar el paquete, así que corría en un
+      # directorio VACÍO: sin `wrangler.toml` —que es donde vive la configuración
+      # del proyecto desde que la sacamos del panel web— y sin `package.json`,
+      # que es lo primero que busca la acción para saber cómo instalarse.
+      #
+      # En local funciona porque ahí está todo. Otra vez la misma forma del fallo:
+      # el mismo comando, dos entornos distintos, y el que falla es el que nadie
+      # mira.
+      - uses: actions/checkout@v4
+
+      # El paquete viene del trabajo de pruebas, ya construido y ya medido. Se
+      # baja DESPUÉS del checkout: al revés, el checkout lo borraría.
       - name: descargar paquete construido
         uses: actions/download-artifact@v4
         with:
           name: dist_publico
           path: dist_publico
-      
+
       # ⚠️ `cloudflare/pages-action@v1` YA NO EXISTE, Y ESO NOS DEJÓ SIN PUBLICAR.
       #
       # Las pruebas pasaban en verde y este paso fallaba solo, así que el sitio se
