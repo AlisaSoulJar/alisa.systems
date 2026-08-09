@@ -125,6 +125,37 @@ jobs:
           name: dist_publico
           path: dist_publico
 
+      # ⚠️ LAS CREDENCIALES, ANTES DE INTENTARLO, Y DICIENDO CUÁL FALTA.
+      #
+      # Este paso no arregla nada: hace que el fallo se pueda leer. Costó una hora
+      # averiguar por qué no publicaba, porque lo único que decía era «failure» en
+      # el único trabajo que nadie abre —los tres de arriba estaban en verde— y el
+      # registro de Actions no se puede consultar sin un token de GitHub.
+      #
+      # Ojo con el diagnóstico fácil: que `wrangler` funcione en la máquina de
+      # casa NO dice nada de esto. En local entra con la Global API Key de la
+      # cuenta; aquí, con un token con permisos acotados. Son dos credenciales
+      # distintas, y la de aquí es la única que puede caducar sin que nadie use la
+      # otra para nada.
+      #
+      # El token necesita **Cloudflare Pages — Edit** sobre la cuenta del sitio.
+      # Se renueva en dash.cloudflare.com → Manage Account → API Tokens, y se
+      # guarda en Settings → Secrets del repositorio.
+      - name: ¿están las credenciales?
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CUENTA: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          falta=0
+          [ -n "$TOKEN" ]  || { echo "::error::falta el secreto CLOUDFLARE_API_TOKEN"; falta=1; }
+          [ -n "$CUENTA" ] || { echo "::error::falta el secreto CLOUDFLARE_ACCOUNT_ID"; falta=1; }
+          if [ "$falta" = 1 ]; then
+            echo "Sin eso no se publica. Se guardan en Settings → Secrets and variables → Actions."
+            echo "El token necesita el permiso 'Cloudflare Pages — Edit'."
+            exit 1
+          fi
+          echo "las dos están puestas — si el despliegue falla ahora, es por lo que dicen, no por que falten"
+
       # ⚠️ `cloudflare/pages-action@v1` YA NO EXISTE, Y ESO NOS DEJÓ SIN PUBLICAR.
       #
       # Las pruebas pasaban en verde y este paso fallaba solo, así que el sitio se
