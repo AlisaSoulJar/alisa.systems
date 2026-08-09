@@ -545,7 +545,10 @@ const engine = new SovereignCardEngine({
         const marcador = data.puntos ?? data.score ?? data.marcador;
         const hud = document.getElementById('hud-content');
         hud.innerHTML =
-            (this.sala ? fila('Sala', this.sala.espectador ? 'mirando' : 'sentado', '#9ecbff') : '')
+            // Quién eres en la mesa, no sólo que estás sentado: con nombre
+            // automático, «le toca a invitado-k3f9» no dice nada si no sabes que
+            // ése eres tú, y te quedas esperando tu propio turno.
+            (this.sala ? fila('Tú', this.sala.espectador ? `mirando (${this.sala.yo})` : this.sala.yo, '#9ecbff') : '')
           + (data.turn !== undefined ? fila('Turno', data.turn, '#00ffaa') : '')
           + (marcador !== undefined ? fila('Puntos', marcador, '#FFD700') : '')
           + zonas.map(z => fila(

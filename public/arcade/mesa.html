@@ -104,7 +104,7 @@ import { JUEGOS, TITULOS, cargarReglas } from './js/protohub/rules/index.js';
 import { puntuacionDe } from './js/protohub/Verificador.js';
 import { CONTROLADORES, crearControlador, esPersona, leerAsientos, pintarPanel }
     from './js/protohub/asientos.js';
-import { crearSala, MESAS, limpiar, nombreSuelto } from './js/protohub/sala.js';
+import { crearSala, MESAS, limpiar, nombreParaSala } from './js/protohub/sala.js';
 
 const params = new URLSearchParams(location.search);
 const juego = JUEGOS.includes(params.get('juego')) ? params.get('juego') : 'brisca';
@@ -129,7 +129,7 @@ const semilla = Number(params.get('semilla')) || Math.floor(Math.random() * 1e6)
 const sala = limpiar(params.get('sala'), 40);
 // Un nombre por defecto para quien no ponga el suyo. No identifica a nadie: sólo
 // distingue un asiento de otro, que es todo lo que la mesa necesita saber.
-const yo = limpiar(params.get('yo'), 24) || nombreSuelto();
+const yo = nombreParaSala(sala, params.get('yo'));
 
 const reglas = await cargarReglas(juego);
 const hub = new ProtoHub().registrar(juego, reglas);

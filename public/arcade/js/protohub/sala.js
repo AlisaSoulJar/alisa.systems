@@ -33,6 +33,37 @@ export const limpiar = (v, max) => String(v ?? '').replace(/[^a-zA-Z0-9_-]/g, ''
 export const nombreSuelto = () => 'invitado-' + Math.random().toString(36).slice(2, 6);
 
 /**
+ * El almacén del navegador, sin poder tumbar la página.
+ *
+ * En modo privado y con las cookies bloqueadas, `localStorage` LANZA al leerlo —
+ * no devuelve null—. Una mesa que reviente por no poder recordar un nombre sería
+ * peor que una que no recuerda nada.
+ */
+const leer = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
+const guardar = (k, v) => { try { localStorage.setItem(k, v); } catch { /* da igual */ } };
+
+/**
+ * ⚠️ QUIÉN ERES EN ESTA SALA, Y QUE SIGAS SIENDO EL MISMO AL RECARGAR.
+ *
+ * Sin `?yo=` se inventaba un `invitado-xxxx` en cada carga. Eso es lo que permite
+ * repartir UN solo enlace —cada navegador coge un nombre distinto y por tanto una
+ * silla distinta— pero al recargar salía otro nombre: la mesa te veía como
+ * alguien nuevo, las dos sillas estaban ocupadas (por el otro y por tu yo
+ * anterior) y entrabas de espectador a tu propia partida.
+ *
+ * Se recuerda por sala. El enlace único sigue funcionando y una recarga te
+ * devuelve a tu sitio.
+ */
+export function nombreParaSala(sala, pedido) {
+    const limpio = limpiar(pedido, 24);
+    if (limpio) return limpio;
+    const clave = `alisa:sala:${sala}:yo`;
+    let guardado = leer(clave);
+    if (!guardado) { guardado = nombreSuelto(); guardar(clave, guardado); }
+    return guardado;
+}
+
+/**
  * @param {object} cfg
  *   sala, yo, juego, semilla   qué partida y quién eres
  *   mesas       opcional: otro árbitro (para pruebas)
@@ -60,12 +91,30 @@ export function crearSala({ sala, yo, juego, semilla, mesas = MESAS,
      * del objeto entero. La mesa ya se llevó un susto publicando asientos con
      * `{...a}` y repartiendo los secretos de todos.
      */
-    let secreto = null;
+    /**
+     * ⚠️ Y SOBREVIVE A UNA RECARGA, PORQUE SI NO TE QUEDAS FUERA DE TU SILLA.
+     *
+     * Vivía sólo en memoria. Al recargar la página, el nombre volvía en la URL
+     * pero el secreto no: la mesa contestaba «ya estás sentado» —sin devolverlo,
+     * y hace bien, dárselo a quien diga tu nombre sería regalar la identidad— y a
+     * partir de ahí TODA jugada daba 403. Con un mensaje que además parece culpa
+     * tuya: «ese asiento no es tuyo».
+     *
+     * Recargar no es un caso raro: es lo primero que hace cualquiera cuando algo
+     * se ve lento. Se guarda por sala y por nombre; si mañana entras a otra sala,
+     * ese secreto no sirve para nada.
+     */
+    const LLAVE = `alisa:sala:${sala}:${yo}:secreto`;
+    let secreto = leer(LLAVE);
 
     return {
         compartida: true,
         espectador: false,
         ultimo: null,
+        // Con quién nombre estás sentado. Importa enseñarlo cuando NO lo has
+        // elegido tú: si la mesa dice «le toca a invitado-k3f9» y no sabes que
+        // ése eres tú, te quedas esperando tu propio turno.
+        yo,
 
         async pedir(ruta, cuerpo) {
             const r = await fetch(`${mesas}/mesa/${sala}${ruta}`, cuerpo ? {
@@ -123,8 +172,13 @@ export function crearSala({ sala, yo, juego, semilla, mesas = MESAS,
             // explicar por qué en algunos juegos no cabe un segundo; tragarse esa
             // explicación y dejar la pantalla en blanco sería desperdiciarla.
             if (r.codigo !== 200) { this.ultimo = r; return false; }
-            // Se guarda ANTES de nada: es la única vez que la mesa lo dice.
-            secreto = r.secreto ?? null;
+            /**
+             * Sólo se pisa el secreto si llega uno NUEVO. Cuando vuelves tras
+             * recargar, la mesa responde `ya_sentado` sin secreto: machacar el
+             * guardado con ese `undefined` sería tirar la llave que acabábamos de
+             * recuperar, y volveríamos al 403 que esto viene a arreglar.
+             */
+            if (r.secreto) { secreto = r.secreto; guardar(LLAVE, secreto); }
             this.ultimo = r;
             return true;
         },

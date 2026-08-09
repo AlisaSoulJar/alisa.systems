@@ -365,15 +365,20 @@ class SovereignCardEngine {
         const sala = new URLSearchParams(location.search).get('sala');
         if (sala && proto && proto.soporta(this.gameId)) {
             try {
-                const { crearSala, limpiar, nombreSuelto } =
+                const { crearSala, limpiar, nombreParaSala } =
                     await import('/arcade/js/protohub/sala.js');
                 const params = new URLSearchParams(location.search);
+                const salaLimpia = limpiar(sala, 40);
                 const mesa = crearSala({
-                    sala: limpiar(sala, 40),
-                    yo: limpiar(params.get('yo'), 24) || nombreSuelto(),
+                    sala: salaLimpia,
+                    // Sin `?yo=` se coge un nombre de invitado y SE RECUERDA: así
+                    // un solo enlace sirve para todos y una recarga te devuelve a
+                    // tu silla en vez de dejarte mirando desde fuera.
+                    yo: nombreParaSala(salaLimpia, params.get('yo')),
                     juego: this.gameId,
                     semilla: Number(params.get('semilla')) || 1,
                 });
+                this.yoEnLaSala = mesa.yo;
                 await mesa.entrar();
                 this.sala = mesa;                   // el visualizador lo mira para saber si es espectador
                 this.backend = {
