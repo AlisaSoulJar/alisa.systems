@@ -79,10 +79,21 @@ const PALOS_RESPALDO = [
  * también la brisca y el tute, y se habrían encontrado dos comodines en la mesa
  * sin que nadie tocara sus reglas.
  *
- * Van sin palo, con el prefijo `W_` que ya usa [unit.js] para lo mismo. Y valen
- * 0: lo mejor que te puede tocar y nada más — no emparejan con nada ni anulan
- * columnas, así que la regla del juego no cambia, sólo aparece una carta muy
- * buena que hay que saber colocar.
+ * Van sin palo, con el prefijo `W_` que ya usa [unit.js] para lo mismo. Valen 0
+ * y no emparejan con nada: no anulan columnas por sí solos.
+ *
+ * Lo suyo es que SE MUEVEN, y son las únicas cartas que lo hacen. Dos ocasiones:
+ *
+ *   · llega una carta que empareja con la otra de su columna → el comodín se
+ *     aparta a un hueco tapado que tú eliges (`cambiar:N:mueve:M`), y la que
+ *     estaba allí se descarta. Formas la pareja SIN perder el comodín;
+ *   · lo destapas de tu propia caja → te lo llevas a la columna que quieras
+ *     (`mover_comodin:M`), intercambiándolo. Ahí no sale ninguna carta: sólo
+ *     cambian de sitio, y la que venía tapada sigue tapada.
+ *
+ * Por eso un comodín no se desperdicia nunca. Y por eso las dos jugadas se
+ * ofrecen con cuidado de no delatar lo que hay debajo — ver las notas en
+ * `parejaALaVista` y en la lista de legales.
  */
 const ESPECIALES_RESPALDO = [{ id: 'JK', count: 2, suitless: true, symbol: '🃏' }];
 
@@ -191,6 +202,9 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
             const p = {
                 semilla, jugadores, cajas: [], mazo: [], descarte: [],
                 robada: null, robadaDe: null, turno: 0, turnos: 0, recicles: 0,
+                // Hueco de un comodín recién destapado, a la espera de que su
+                // dueño decida adónde se lo lleva. `null` el resto del tiempo.
+                comodinDestapado: null,
                 historial: [], fin: false, puntosFinales: null,
                 biblioteca: baraja.biblioteca,
             };
@@ -218,7 +232,29 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
             const pid = p.turno;
             let legales = [];
             if (!p.fin) {
-                if (p.robada) {
+                /**
+                 * ⚠️ DESTAPAR UN COMODÍN ABRE UNA DECISIÓN, Y VA EN DOS TIEMPOS.
+                 *
+                 * El tuki también se mueve cuando lo DESTAPAS: acabas de
+                 * descubrirlo en tu caja y puedes llevártelo a la columna que
+                 * quieras. Pero eso no se puede ofrecer de una sola vez.
+                 *
+                 * Si en la lista de legales apareciera `descartar_y_voltear:3:mueve:5`,
+                 * esa jugada estaría ANUNCIANDO que en el hueco 3 hay un comodín —
+                 * y entonces nadie destaparía a ciegas: se leería la lista y ya.
+                 * El juego dejaría de medir memoria en el mismo momento.
+                 *
+                 * Así que se destapa primero y se decide después, que es lo que
+                 * pasa en una mesa: le das la vuelta, lo ves, y entonces eliges.
+                 */
+                if (p.comodinDestapado !== null && p.comodinDestapado !== undefined) {
+                    legales = p.cajas[pid]
+                        .map((_, i) => i)
+                        .filter(i => i !== p.comodinDestapado)
+                        .map(i => `mover_comodin:${i}`);
+                    // Moverlo es opcional: a veces está mejor donde estaba.
+                    legales.push('dejar_comodin');
+                } else if (p.robada) {
                     legales = p.cajas[pid].map((_, i) => `cambiar:${i}`);
                     const tapadas = p.cajas[pid]
                         .map((h, i) => (h.visible ? -1 : i)).filter(i => i >= 0);
@@ -315,6 +351,9 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
                  */
                 robada: (yo === pid || p.robadaDe === 'descarte') ? p.robada : null,
                 robada_de: p.robadaDe,
+                // Qué hueco tiene un comodín recién destapado esperando destino.
+                // Es público: el comodín ya está boca arriba, lo ha visto la mesa.
+                comodin_destapado: p.comodinDestapado ?? null,
                 descarte: p.descarte[p.descarte.length - 1] ?? null,
                 descarte_restante: p.descarte.length,
                 mazo_restante: p.mazo.length,
@@ -404,15 +443,45 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
                 cerrarTurno(p, pid);
                 return true;
             }
+            /**
+             * ⚠️ EL SEGUNDO TIEMPO: adónde llevas el comodín que acabas de
+             * destapar. Es un INTERCAMBIO, no un descarte — aquí no sale ninguna
+             * carta de la caja, sólo cambian de sitio. Y la que venía tapada
+             * sigue tapada: la has movido, no la has mirado.
+             */
+            if (j.startsWith('mover_comodin:')) {
+                const n = p.comodinDestapado;
+                if (n === null || n === undefined) return false;
+                const m = Number(j.slice(14));
+                if (!huecoValido(m) || m === n) return false;
+                const caja = p.cajas[pid];
+                [caja[n], caja[m]] = [caja[m], caja[n]];
+                p.comodinDestapado = null;
+                p.turnos += 1; p.historial.push(j);
+                cerrarTurno(p, pid);
+                return true;
+            }
+            if (j === 'dejar_comodin') {
+                if (p.comodinDestapado === null || p.comodinDestapado === undefined) return false;
+                p.comodinDestapado = null;
+                p.turnos += 1; p.historial.push(j);
+                cerrarTurno(p, pid);
+                return true;
+            }
             if (j.startsWith('descartar_y_voltear:')) {
                 if (!p.robada) return false;
                 const i = Number(j.slice(20));
-                if (!Number.isInteger(i) || i < 0 || i >= HUECOS) return false;
+                if (!huecoValido(i)) return false;
                 if (p.cajas[pid][i].visible) return false;
                 p.descarte.push(p.robada);
                 p.robada = null; p.robadaDe = null;
                 p.cajas[pid][i].visible = true;
                 p.turnos += 1; p.historial.push(j);
+
+                // Si lo que había debajo era un comodín, el turno NO se cierra:
+                // queda la decisión de adónde llevarlo.
+                if (esComodin(p.cajas[pid][i].carta)) { p.comodinDestapado = i; return true; }
+
                 cerrarTurno(p, pid);
                 return true;
             }
@@ -442,11 +511,64 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
             const pid = p.turno;
             const caja = p.cajas[pid];
 
+            /**
+             * ⚠️ EL RIVAL DE LA CASA TIENE QUE CONOCER LAS REGLAS NUEVAS.
+             *
+             * Por dos motivos, y el segundo es el que importa. El primero: si
+             * devolviera una jugada que ya no es legal, `mover` diría que no, el
+             * arnés se quedaría sin jugada y la partida terminaría a medias — con
+             * una puntuación que parece buena porque no ha llegado al final.
+             *
+             * El segundo: esto ES el techo contra el que se mide a todo el mundo.
+             * Una casa que ignora una mecánica no es un techo, es un suelo con
+             * pretensiones: cualquiera que lea las reglas le gana sin jugar mejor,
+             * sólo por usar algo que ella no usa. El hueco mediría lectura del
+             * reglamento, no habilidad.
+             *
+             * ⚠️ Y MOVER EL COMODÍN NO CAMBIA LA SUMA POR SÍ SOLO.
+             * Vale 0 esté donde esté: lo único que puede mejorar es que la carta
+             * que ocupa su sitio ANULE esa columna. Por eso sólo se mueve cuando
+             * hay una coincidencia de rango a la vista, y si no, se queda — que es
+             * exactamente igual de bueno y no rompe lo que ya estaba emparejado.
+             */
+            if (p.comodinDestapado !== null && p.comodinDestapado !== undefined) {
+                const n = p.comodinDestapado;
+                const pareja = n < COLUMNAS ? n + COLUMNAS : n - COLUMNAS;
+                const a = caja[pareja];
+                if (a?.visible) {
+                    for (let m = 0; m < HUECOS; m++) {
+                        if (m === n || !caja[m].visible) continue;
+                        if (rango(caja[m].carta) !== rango(a.carta)) continue;
+                        // No romper una columna que YA estaba anulada.
+                        const suPareja = m < COLUMNAS ? m + COLUMNAS : m - COLUMNAS;
+                        const b = caja[suPareja];
+                        if (b?.visible && rango(b.carta) === rango(caja[m].carta)) continue;
+                        return `mover_comodin:${m}`;
+                    }
+                }
+                return 'dejar_comodin';
+            }
+
             if (!p.robada) {
                 const cima = p.descarte[p.descarte.length - 1];
                 if (cima && valorDe(cima) <= 4 && p.descarte.length) return 'robar_descarte';
                 if (p.mazo.length) return 'robar_mazo';
                 return p.descarte.length ? 'robar_descarte' : null;
+            }
+
+            /**
+             * ⚠️ APARTAR EL COMODÍN ES ESTRICTAMENTE MEJOR QUE TIRARLO.
+             *
+             * Cuando cabe `cambiar:N:mueve:M`, la alternativa `cambiar:N` forma la
+             * misma pareja pero manda el comodín al descarte. Aquí se conserva y
+             * lo que se pierde es una carta TAPADA, que de media vale seis y pico.
+             * Cambiar un 0 seguro por un 6,5 esperado no lo haría nadie.
+             */
+            for (let i = 0; i < HUECOS; i++) {
+                if (!esComodin(caja[i].carta)) continue;
+                if (!parejaALaVista(caja, i, p.robada)) continue;
+                const m = caja.findIndex((h, k) => !h.visible && k !== i);
+                if (m >= 0) return `cambiar:${i}:mueve:${m}`;
             }
 
             // ¿Mejora algún hueco que YA veo? El peor visible, si es peor que ésta.

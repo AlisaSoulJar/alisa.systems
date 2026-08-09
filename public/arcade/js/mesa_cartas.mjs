@@ -165,6 +165,21 @@ function repintarMarcas(motor) {
     if (!st || st.is_game_over) return;
     const legales = st.legal_moves ?? [];
 
+    /**
+     * Acabas de destapar un comodín y el juego espera adónde te lo llevas. No es
+     * un modo de la pantalla: es un estado de la PARTIDA —`comodin_destapado`—
+     * así que se ve igual desde una sala compartida y sobrevive a una recarga.
+     */
+    if (st.comodin_destapado !== null && st.comodin_destapado !== undefined) {
+        for (const m of legales) {
+            const c = m.match(/^mover_comodin:(\d+)$/);
+            if (!c) continue;
+            const p = posicionDe(motor, 'caja_0_0', Number(c[1]));
+            if (p) marcar(motor, p.x, p.z, MORADO);
+        }
+        return;
+    }
+
     // Recolocando el comodín: sólo se marcan los destinos que la regla permite.
     if (esperandoTuki !== null) {
         for (const m of legales) {
@@ -502,6 +517,12 @@ window.addEventListener('cardInspect', (ev) => {
     if (!zona || !st || st.is_game_over) return;
     const legales = st.legal_moves ?? [];
     const enviar = (m) => { if (legales.includes(m)) engine.sendMove(m); };
+
+    // Comodín recién destapado: el clic dice adónde se lo lleva.
+    if (st.comodin_destapado !== null && st.comodin_destapado !== undefined) {
+        if (zona === 'caja_0_0') enviar(`mover_comodin:${indice}`);
+        return;
+    }
 
     // Segundo clic del comodín: adónde se corre.
     if (esperandoTuki !== null) {
