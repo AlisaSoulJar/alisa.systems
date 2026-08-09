@@ -615,7 +615,7 @@ son los entornos ideales para un LLM: discretos, por verbos, sin reflejos.
 | pieza | tamaño | qué es |
 |---|---|---|
 | `engines/sovereign_card_rules.py` | 23 KB | **motor de reglas en Python, dirigido por datos** |
-| `data/card_library.json` | 23 KB | **24 juegos + 6 barajas**, como DATOS |
+| `data/card_library.json` | 23 KB | **25 juegos + 7 barajas**, como DATOS |
 | `js/SovereignCardEngine.js` | 1093 líneas | controlador universal 3D; **dibuja las cartas proceduralmente** — baraja francesa Y ESPAÑOLA (`_drawOro/_drawCopa/_drawEspada/_drawBasto`) |
 | `js/SovereignBoardEngine.js` | 441 líneas | motor de tablero |
 | `js/SovereignArcadeNode.js` | 684 líneas | nodo del arcade |
@@ -623,7 +623,7 @@ son los entornos ideales para un LLM: discretos, por verbos, sin reflejos.
 | 16 visualizadores | — | chess, go, reversi, backgammon, mancala, xiangqi, mtg, vgc, balatro, poker, blackjack, snake, pacman, frogger, replays, **checkers (0 bytes — baja)** |
 | assets | — | figuras de baraja (K/Q/J, png+webp) y **GLBs de ajedrez** (peón, torre, caballo, alfil, dama, rey) |
 
-**Las 6 barajas:** french_52, french_54, spanish_40, spanish_48, uno_108, tarot_78.
+**Las 7 barajas:** french_52, french_54, spanish_40, spanish_48, unit_108, tarot_78, alisa_48.
 **Los 24 juegos:** texas_holdem, omaha, five_card_draw, blackjack, **brisca, tute,
 mus, chinchón**, gin_rummy, hearts, spades, bridge, uno, crazy_eights, go_fish,
 memory, klondike, spider, war, baccarat, old_maid, sevens, rummy, canasta.

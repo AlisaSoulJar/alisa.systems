@@ -233,7 +233,7 @@ necesario»*. Existía, y es mucho más de lo que yo daba por hecho:
 
 | pieza | qué es |
 |---|---|
-| `arcade/data/card_library.json` | **6 barajas y 25 juegos DECLARADOS**: zonas, fases, verbos, valores, `multi_deck`, `stand_on_17` |
+| `arcade/data/card_library.json` | **7 barajas y 25 juegos DECLARADOS**: zonas, fases, verbos, valores, `multi_deck`, `stand_on_17` |
 | `arcade/engines/sovereign_card_rules.py` | 77 KB — `SovereignCardGame` (controlador universal que lee la biblioteca), `DeckFactory`, `CardVerbs`, `PokerHandEvaluator`, y motores de Blackjack, Brisca, Tute, Hearts, Spades, GoFish, Unit, Entropy, Guerra |
 | `arcade/engines/alisa_gym_cards.py` | `CartasEnv` — el gym de cartas (`reset`/`step`/`affordances`) |
 | `arcade/engines/bench_suite.py` | el banco con agentes de referencia y **la Guerra como control** (sin decisiones ⇒ todos DEBEN empatar) |

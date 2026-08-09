@@ -961,7 +961,29 @@ class SovereignCardEngine {
      * no. Un comodín o cualquier cosa que no sea un número se dibuja tal cual, sin
      * inventarse un valor que no tiene.
      */
-    _drawCartaNumero(ctx, W, H, texto) {
+    _drawCartaNumero(ctx, W, H, spec) {
+        /**
+         * `spec` es `texto|colorDelPalo|símboloDelPalo`, y las dos últimas
+         * sobran. Ejemplos: `12|E6A817|◆`, `7`, `🃏`.
+         *
+         * ⚠️ DOS COLORES EN UNA CARTA SERÍAN DOS COLORES QUE NO SIGNIFICAN LO
+         * MISMO, así que cada uno tiene su sitio y no se mezclan:
+         *
+         *   · el NÚMERO va en color por TRAMO (verde bajo → rojo alto). Aquí gana
+         *     quien menos suma, así que ese color es información: dice si la carta
+         *     es buena antes de leerla. Y hace que dos doces se parezcan, que es
+         *     justo lo que hay que detectar para anular una columna.
+         *
+         *   · el PALO va en su pinta pequeña, arriba y abajo. No decide nada en
+         *     las reglas: está para que ocho cartas del mismo número no sean un
+         *     muro idéntico. Si el palo tiñera el número, dos doces se verían
+         *     distintos — que es lo contrario de lo que hace falta.
+         *
+         * El símbolo acompaña siempre al color del palo: dos palos que sólo se
+         * distinguieran por el color serían el mismo para quien no distinga esos
+         * dos colores.
+         */
+        const [texto, colorPalo, simboloPalo] = String(spec).split('|');
         const n = Number(texto);
         const esNumero = Number.isFinite(n);
         const color = !esNumero ? '#6A1B9A'
@@ -1035,6 +1057,15 @@ class SovereignCardEngine {
         ctx.rotate(Math.PI);
         ctx.fillText(texto, 0, 0);
         ctx.restore();
+
+        // La pinta del palo, en la esquina contraria a la cifra. Pequeña y en su
+        // propio color: identifica la carta sin competir con el número.
+        if (colorPalo && simboloPalo) {
+            ctx.fillStyle = colorPalo.startsWith('#') ? colorPalo : `#${colorPalo}`;
+            ctx.font = '38px "Segoe UI Symbol","Noto Sans Symbols2",sans-serif';
+            ctx.fillText(simboloPalo, W - 34, 34);
+            ctx.fillText(simboloPalo, 34, H - 34);
+        }
     }
 
     // ═══ MAIN CARD RENDERER ═══

@@ -45,6 +45,12 @@ export const RESPALDO = {
                   ranks: ['2','3','4','5','6','7','8','9','10','J','Q','K','A'] },
     unit_108:   { suits: ['R', 'B', 'G', 'Y'],
                   ranks: ['0','1','2','3','4','5','6','7','8','9'] },
+    // La nuestra: cuatro colores y doce números, sin figuras. Entropy repartía
+    // con la española de 48 y no miraba el palo ni una vez — se dibujaban oros y
+    // copas para un juego que sólo suma valores, y había que traducir «R» a 12
+    // de cabeza. Aquí la carta ES su número.
+    alisa_48:   { suits: ['A', 'V', 'C', 'M'],
+                  ranks: ['1','2','3','4','5','6','7','8','9','10','11','12'] },
 };
 
 const id = (x) => (typeof x === 'string' ? x : x?.id ?? x?.rank);

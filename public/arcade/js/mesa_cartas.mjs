@@ -240,13 +240,18 @@ const engine = new SovereignCardEngine({
          * el estado y en el recibo, y la partida se re-simula igual.
          */
         const porValor = data.cara === 'valor' && data.valores;
+        const paloDe  = (c) => String(c).split('_')[0];
         const rangoDe = (c) => String(c).split('_').slice(1).join('_');
         const caraDe = (c) => {
             if (!porValor) return c;
             const r = rangoDe(c);
             // Un comodín vale 0, pero pintar un «0» lo confundiría con una carta
             // normal muy buena. Lleva su símbolo, que declara el catálogo.
-            return `num_${data.simbolos?.[r] ?? data.valores[r] ?? r}`;
+            const texto = data.simbolos?.[r] ?? data.valores[r] ?? r;
+            // Y la pinta del palo va detrás, separada por `|`. El comodín no tiene
+            // palo, así que no lleva ninguna: se queda sólo con su emoji.
+            const p = data.palos?.[paloDe(c)];
+            return p ? `num_${texto}|${p.color}|${p.simbolo}` : `num_${texto}`;
         };
 
         const zonas = sus?.zonas ?? [];

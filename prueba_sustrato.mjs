@@ -204,6 +204,29 @@ if (desfasadas.length) {
 }
 
 /**
+ * ⚠️ 2.bis.bis — Y QUE LOS DOCUMENTOS NO MIENTAN SOBRE CUÁNTAS BARAJAS HAY.
+ *
+ * Cinco sitios decían «6 barajas» el día que se añadió la séptima, y ninguno dio
+ * error: un número viejo nunca da error, sólo deja de ser cierto. Es la quinta
+ * vez que pasa esto mismo con otro número (los juegos del README, el escaparate,
+ * el catálogo del gym, «los veinte juegos» de la página de jugar).
+ *
+ * El patrón es siempre el mismo, así que la respuesta también: se cuenta lo que
+ * hay y se compara con lo que se dice.
+ */
+const lib = JSON.parse(await readFile(new URL('./public/arcade/data/card_library.json', import.meta.url), 'utf-8'));
+const NBARAJAS = Object.keys(lib.decks ?? {}).length;
+for (const doc of ['README.md', 'docs/que_juegos_caben.md', 'docs/INVENTARIO.md',
+                   'docs/CUADERNO_ESTUDIO_MOTOR.md', 'docs/HALL_SALA_DEL_HUEVO.md']) {
+    let texto;
+    try { texto = await readFile(new URL('./' + doc, import.meta.url), 'utf-8'); } catch { continue; }
+    const dichas = [...texto.matchAll(/(\d+)\s+barajas/g)].map(m => Number(m[1]));
+    const malas = dichas.filter(n => n !== NBARAJAS);
+    if (malas.length) mal(`${doc} dice "${malas.join(', ')} barajas" y hay ${NBARAJAS}`);
+}
+if (!fallos) console.log(`  ✓ barajas   los documentos dicen ${NBARAJAS}, y hay ${NBARAJAS}`);
+
+/**
  * ⚠️ 2.ter — QUE `montarMesa` SIGA ELIGIENDO EL MOTOR DE CARTAS PARA LOS QUE
  * REPARTEN CARTAS.
  *

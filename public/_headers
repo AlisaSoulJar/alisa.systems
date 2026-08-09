@@ -1,0 +1,58 @@
+# ═══════════════════════════════════════════════════════════════════════════
+#  _headers — que un despliegue llegue ENTERO, no a medias
+# ═══════════════════════════════════════════════════════════════════════════
+# ⚠️ QUÉ ESTABA PASANDO EN PRODUCCIÓN (9 de agosto de 2026)
+#
+# Cloudflare Pages pone la caché por extensión, y no la pone igual para todo:
+#
+#     .html  .mjs  .json  →  max-age=0       se revalidan en cada carga
+#     .js    .css         →  max-age=14400   CUATRO HORAS sin preguntar
+#
+# O sea que un despliegue no llega tarde: llega A MEDIAS. Durante cuatro horas,
+# quien ya hubiera entrado se llevaba el HTML nuevo y los módulos `.mjs` nuevos
+# **ejecutándose contra las reglas viejas en `.js`**. No es una versión antigua,
+# que sería recuperable: es una mezcla que nunca existió en el repositorio.
+#
+# Se vio así: se desplegó la caja de entropy en rejilla de 2×4 con cartas
+# numéricas, el servidor devolvía los ficheros nuevos —comprobado con `fetch`
+# desde la propia página— y la mesa seguía dibujando abanicos con la baraja
+# española. El fichero era el nuevo; el módulo que corría era el viejo. El mismo
+# engaño que ya documentamos en `servir.py` para el desarrollo local, ahora en el
+# sitio publicado y con cuatro horas de duración.
+#
+# Y lo peor de esta forma: NO da error. Un `mesa_cartas.mjs` nuevo que pide
+# `casillas` a un sustrato viejo que no las publica se cae al camino de antes y
+# dibuja bien... otra cosa.
+#
+# ⚠️ Y POR QUÉ ES `/*` Y NO `/*.js`
+# Pages no admite comodines por extensión: `/*.js` no casa con nada y se ignora
+# en silencio (probado contra el sitio en vivo — la cabecera seguía diciendo
+# 14400). El splat sí cruza carpetas, así que se aplica a todo y se exceptúa lo
+# pesado más abajo.
+#
+# Referencia: developers.cloudflare.com/pages/configuration/headers/
+
+# Todo se revalida. `max-age=0` NO significa volver a descargar: el navegador
+# pregunta con su ETag y se lleva un 304 vacío si no ha cambiado. Se paga una
+# vuelta de red por fichero, y a cambio nadie ejecuta media versión.
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+  # Esta marca se queda. No es depuración: es la única forma de saber DESDE FUERA
+  # si este fichero ha llegado ya al dominio. Cuando se escribió, `alisa.systems`
+  # tardaba entre diez y quince minutos en reflejar un despliegue, y sin una
+  # marca no hay manera de distinguir «aún no ha llegado» de «no funciona» —
+  # media hora se fue exactamente en esa duda. `curl -I` y se acabó.
+  X-Alisa-Cabeceras: propias
+
+# ── LO PESADO SÍ SE GUARDA ──────────────────────────────────────────────────
+# 42 de los 63 MB del paquete son modelos y texturas. No son código: no deciden
+# ninguna partida, no entran en ningún recibo, y cambian de nombre cuando cambian
+# de verdad. Revalidar mil props en cada visita sería pagar latencia por nada.
+/props/*
+  Cache-Control: public, max-age=86400
+
+/textures/*
+  Cache-Control: public, max-age=86400
+
+/vendor/fonts/*
+  Cache-Control: public, max-age=86400

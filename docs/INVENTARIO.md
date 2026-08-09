@@ -58,7 +58,7 @@ sensación de haber mirado**; por eso existe `mapa_del_sitio.py`.
 - `bench_suite.py` — banco con agentes de referencia y **la Guerra como
   control** (sin decisiones ⇒ todos deben empatar). 9 juegos, todos
   reproducibles y sensibles a la semilla.
-- `data/card_library.json` — 6 barajas, **25 juegos declarados**.
+- `data/card_library.json` — 7 barajas, **25 juegos declarados**.
 
 ### `js/sfx.js` — 36 KB, 66 efectos, CERO usuarios
 Motor de sonido procedural entero (Web Audio, sin un solo `.wav`): `jump`,

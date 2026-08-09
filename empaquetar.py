@@ -240,6 +240,19 @@ def main():
             dejados["licencia"].append((p, motivo_licencia))
             continue
 
+        # ⚠️ LA CONFIGURACIÓN DE CLOUDFLARE NO TIENE EXTENSIÓN, Y AQUÍ TODO SE
+        # DECIDE POR EXTENSIÓN.
+        #
+        # `_headers` y `_redirects` se llaman así por diseño: sin punto y sin
+        # sufijo. Este filtro los mandaba al taller sin decir nada, así que el
+        # paquete salía sin ellos y las reglas de caché que arreglan el despliegue
+        # a medias simplemente no llegaban al sitio. Un fichero que se queda fuera
+        # del paquete no da error: sencillamente no hace nada, y cuesta media hora
+        # entender por qué la cabecera sigue diciendo `max-age=14400`.
+        if p.name in ("_headers", "_redirects"):
+            llevados.append(p)
+            continue
+
         ext = p.suffix.lower()
         if ext in TALLER or (ext not in WEB and ext):
             dejados["taller"].append((p, ext))

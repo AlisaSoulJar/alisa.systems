@@ -319,6 +319,64 @@
       "jokers": 0,
       "back": "uno_black",
       "total": 108
+    },
+    "alisa_48": {
+      "name": "ALISA (4 colores x 12 numeros)",
+      "suits": [
+        {
+          "id": "A",
+          "name": "Ambar",
+          "color": "#E6A817",
+          "symbol": "◆"
+        },
+        {
+          "id": "V",
+          "name": "Verde",
+          "color": "#1B7F3B",
+          "symbol": "●"
+        },
+        {
+          "id": "C",
+          "name": "Cian",
+          "color": "#2E6DA4",
+          "symbol": "▲"
+        },
+        {
+          "id": "M",
+          "name": "Magenta",
+          "color": "#B0308A",
+          "symbol": "■"
+        }
+      ],
+      "ranks": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12"
+      ],
+      "rank_values": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4,
+        "5": 5,
+        "6": 6,
+        "7": 7,
+        "8": 8,
+        "9": 9,
+        "10": 10,
+        "11": 11,
+        "12": 12
+      },
+      "total": 48
     }
   },
   "games": {
@@ -1750,7 +1808,7 @@
     "entropy": {
       "name": "Entropy",
       "category": "descarte",
-      "deck": "spanish_48",
+      "deck": "alisa_48",
       "multi_deck": 2,
       "players": {
         "min": 2,
@@ -1807,9 +1865,9 @@
         "7": 7,
         "8": 8,
         "9": 9,
-        "S": 10,
-        "C": 11,
-        "R": 12,
+        "10": 10,
+        "11": 11,
+        "12": 12,
         "JK": 0
       },
       "rules_engine": "entropy_rules",

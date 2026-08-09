@@ -35,8 +35,8 @@ Juego por turnos, discreto, con acciones enumerables y azar sembrado:
 ## Lo que existe como DATO y no como código
 
 `arcade/data/card_library.json` declara **25 juegos** (baraja, fases, reglas) y
-**6 barajas** (`french_52`, `french_54`, `spanish_40`, `spanish_48`, `tarot_78`,
-`unit_108`). Sólo 7 tienen módulo de reglas.
+**7 barajas** (`french_52`, `french_54`, `spanish_40`, `spanish_48`, `tarot_78`,
+`unit_108`, `alisa_48`). Sólo 7 tienen módulo de reglas.
 
 Sin módulo todavía, descontando los que ya existen con otro nombre (`go_fish`,
 `war` y `texas_holdem` son nuestros `gofish`, `guerra` y `poker`):

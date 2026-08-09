@@ -44,9 +44,32 @@ const COLUMNAS = 4, FILAS = 2, HUECOS = COLUMNAS * FILAS;
 /** Tope de turnos: sin él, un agente que cambie siempre el mismo hueco no destapa nada y la partida no acaba jamás. */
 const HORIZONTE = 120;
 
-const VALORES_RESPALDO = { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6,
-                           '7': 7, '8': 8, '9': 9, 'S': 10, 'C': 11, 'R': 12,
-                           'JK': 0 };
+/**
+ * ⚠️ LA CARTA ES SU NÚMERO. LA BARAJA ES NUESTRA.
+ *
+ * Esto repartía con la española de 48 y **no miraba el palo ni una sola vez**:
+ * se suman valores y se anulan dos iguales en columna, nada más. O sea que se
+ * dibujaban oros y copas para decorar, la sota valía 10 y había que traducir «R»
+ * a 12 de cabeza para poder jugar.
+ *
+ * `alisa_48` son cuatro colores por doce números, que es exactamente lo que el
+ * juego necesita y ni una carta más. El palo sigue sin pintar nada en las reglas
+ * —está para que la mesa no sea un muro de números idénticos— y por eso cada uno
+ * lleva además su SÍMBOLO: dos palos que sólo se distinguieran por el color
+ * serían el mismo palo para quien no distinga esos dos colores, y esto se
+ * publica.
+ *
+ * Y la baraja es de la casa, sin nombre comercial de nadie. Mismo cuidado que en
+ * [unit.js] y por la misma razón.
+ */
+const VALORES_RESPALDO = Object.fromEntries(
+    [...Array(12)].map((_, i) => [String(i + 1), i + 1]).concat([['JK', 0]]));
+
+/** Respaldo de los palos, por si la biblioteca no carga. Debe coincidir con ella. */
+const PALOS_RESPALDO = [
+    { id: 'A', color: '#E6A817', symbol: '◆' }, { id: 'V', color: '#1B7F3B', symbol: '●' },
+    { id: 'C', color: '#2E6DA4', symbol: '▲' }, { id: 'M', color: '#B0308A', symbol: '■' },
+];
 
 /**
  * ⚠️ LOS COMODINES SON DEL JUEGO, NO DE LA BARAJA ESPAÑOLA.
@@ -64,18 +87,22 @@ const VALORES_RESPALDO = { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6,
 const ESPECIALES_RESPALDO = [{ id: 'JK', count: 2, suitless: true, symbol: '🃏' }];
 
 export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, barajas = 2 } = {}) {
-    const baraja = await cargarBaraja('spanish_48', url);
-    let VALORES = VALORES_RESPALDO, ESPECIALES = ESPECIALES_RESPALDO, TOTAL_LIB = null;
+    const baraja = await cargarBaraja('alisa_48', url);
+    let VALORES = VALORES_RESPALDO, ESPECIALES = ESPECIALES_RESPALDO;
+    let PALOS = PALOS_RESPALDO, TOTAL_LIB = null;
     try {
         const lib = await fetch(new URL(url, import.meta.url)).then(r => r.json());
         VALORES = lib?.games?.entropy?.card_values ?? VALORES_RESPALDO;
         ESPECIALES = lib?.games?.entropy?.specials ?? ESPECIALES_RESPALDO;
+        PALOS = lib?.decks?.alisa_48?.suits ?? PALOS_RESPALDO;
         TOTAL_LIB = lib?.games?.entropy?.total ?? null;
     } catch { /* respaldo; `baraja.biblioteca` ya lo dice */ }
 
     const valorDe = (c) => VALORES[rango(c)] ?? 0;
     const SIMBOLOS = Object.fromEntries(
         ESPECIALES.filter(e => e.symbol).map(e => [e.id, e.symbol]));
+    const PALOS_MAPA = Object.fromEntries(
+        PALOS.map(s => [s.id, { color: s.color, simbolo: s.symbol }]));
 
     /** La baraja de esta mesa: los mazos completos más los comodines. */
     const montar = () => {
@@ -236,6 +263,10 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
                 // Un comodín vale 0, pero enseñar un «0» lo confundiría con nada:
                 // se dibuja con su símbolo. Lo declara el catálogo, no la mesa.
                 simbolos: SIMBOLOS,
+                // Los cuatro palos, para que la mesa pueda pintarlos. No deciden
+                // nada: están para que ocho cartas iguales no sean un muro de
+                // números idénticos.
+                palos: PALOS_MAPA,
                 robada: p.robada,
                 robada_de: p.robadaDe,
                 descarte: p.descarte[p.descarte.length - 1] ?? null,
