@@ -89,6 +89,30 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
     word-wrap: break-word; line-height: 1.5;
 }
 
+/*
+ * Las jugadas, como BOTONES.
+ *
+ * `.legal-moves` de arriba las enseña como texto gris a 9px, que es informativo
+ * y nada más: la mesa de casino en 3D se veía preciosa y no dejaba jugar. Estos
+ * son los mismos `legal_moves` que recibe un agente por la puerta de texto —
+ * misma lista, mismo juego— pero pulsables.
+ */
+.mesa-jugadas {
+    margin-top: 12px; padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    display: flex; flex-wrap: wrap; gap: 5px;
+    max-height: 190px; overflow-y: auto;
+}
+.mesa-jugada {
+    font: inherit; font-size: 11px; line-height: 1;
+    padding: 6px 9px; border-radius: 6px; cursor: pointer;
+    color: #e8e8f0; background: rgba(138,43,226,0.16);
+    border: 1px solid rgba(161,128,255,0.35);
+}
+.mesa-jugada:hover:not(:disabled) { background: rgba(138,43,226,0.34); border-color: #a180ff; }
+.mesa-jugada:disabled { opacity: 0.35; cursor: default; }
+.mesa-jugadas .dato { font-size: 11px; color: rgba(255,255,255,0.4); }
+
 /* Resplandor de fondo */
 body::before {
     content: ''; position: fixed; inset: 0;

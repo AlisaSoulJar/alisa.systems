@@ -35,7 +35,7 @@
  * adaptador perdía la mano tapada del póker y el dibujo afirmaba que el
  * contrario iba con las manos vacías.
  */
-import { obtenerSustrato } from './protohub/sustrato.js';
+import { obtenerSustrato, sustratoDe } from './protohub/sustrato.js';
 
 /**
  * Dónde se sienta cada zona. La mesa mira desde el asiento 0, abajo.
@@ -72,6 +72,61 @@ const SEPARA = 6;
  * es un montón porque no cabe, no porque se llame mazo.
  */
 const CABEN = 9;
+
+/**
+ * ⚠️ UNA MESA DONDE NO SE PUEDE JUGAR ES UN CUADRO.
+ *
+ * `SovereignCardEngine.updateHUD` sólo LISTA las jugadas legales como texto; los
+ * botones los ponía cada página por su cuenta. Así que una mesa nueva nacía
+ * preciosa y muda: se veía la partida avanzar y no había por dónde meter mano.
+ *
+ * Los botones son `legal_moves` y nada más — los mismos que ve un agente por la
+ * puerta de texto. Ésa es la propiedad que sostiene el banco de pruebas entero:
+ * si la persona tuviera acciones que el agente no tiene, dejarían de estar
+ * jugando al mismo juego y la tabla no compararía nada.
+ *
+ * Va suelto y no dentro de la configuración porque el motor sólo copia tres
+ * ganchos (`onInit3D`, `onStateSync`, `onResize`): cualquier otra cosa puesta ahí
+ * se pierde en silencio. Y además es del visualizador, no del motor.
+ */
+function pintarJugadas(motor, data) {
+    const caja = document.getElementById('mesa-jugadas');
+    if (!caja) return;
+
+    // En una sala manda el árbitro: sus acciones, y sólo si te toca a ti.
+    const enSala = motor.backend?.tipo === 'sala';
+    const acciones = (enSala ? motor.sala.acciones()
+                             : (data.legal_moves ?? data.legal_actions ?? []))
+        .filter(m => m !== 'nueva' && m !== 'reset');
+
+    if (data.is_game_over) { caja.innerHTML = '<span class="dato">partida terminada</span>'; return; }
+    if (enSala && motor.sala.espectador) {
+        caja.innerHTML = '<span class="dato">la mesa estaba llena — miras</span>';
+        return;
+    }
+    if (enSala && !motor.sala.meToca()) {
+        caja.innerHTML = `<span class="dato">le toca a ${motor.sala.ultimo?.turno_de ?? 'otro asiento'}…</span>`;
+        return;
+    }
+    if (!acciones.length) { caja.innerHTML = '<span class="dato">—</span>'; return; }
+
+    caja.innerHTML = '';
+    for (const m of acciones) {
+        const b = document.createElement('button');
+        b.className = 'mesa-jugada';
+        b.textContent = String(m).replace(/^jugar:|^pedir:/, '');
+        b.title = m;
+        b.onclick = async () => {
+            // Se apagan TODOS, no sólo el pulsado: en una sala el viaje de ida y
+            // vuelta dura lo suyo, y sin esto se mandan tres jugadas antes de que
+            // conteste la primera. El árbitro rechazaría las de más, pero quien
+            // juega vería tres errores por un clic de más.
+            [...caja.children].forEach(x => { x.disabled = true; });
+            await motor.sendMove(m);
+        };
+        caja.appendChild(b);
+    }
+}
 
 const engine = new SovereignCardEngine({
     gameId: window.ALISA_JUEGO ?? 'entropy',
@@ -127,15 +182,34 @@ const engine = new SovereignCardEngine({
         const reglas = proto?.reglas?.get?.(juego) ?? null;
 
         /**
-         * ⚠️ EL SUSTRATO SE PIDE CON EL ASIENTO DESDE EL QUE SE MIRA.
-         * En un juego de información oculta eso no es cosmética: decide qué
-         * cartas se ven. `?asiento=1` abre la vista del otro, que es como se
-         * comprueba —con dos pestañas— que no se filtra nada.
+         * ⚠️ EN UNA SALA, LA PARTIDA DE ESTA PESTAÑA NO ES LA PARTIDA.
+         *
+         * Fuera de la sala el sustrato se saca del objeto local, que es el bueno
+         * porque las reglas corren aquí. Con `?sala=` corren en el árbitro: el
+         * `p` de esta pestaña es una partida distinta que nadie está jugando, y
+         * dibujarla sería enseñar una mesa inventada con toda la seguridad del
+         * mundo — exactamente el tipo de mentira muda que este proyecto persigue.
+         *
+         * Así que se dibuja lo que manda el árbitro, y sólo eso. `sustratoDe`
+         * deriva las zonas del ESTADO publicado sin tocar ninguna partida, y ese
+         * estado ya viene recortado a tu asiento por el `?quien=` de `sala.js`:
+         * lo que no te toca ver no llega al navegador, no es que se dibuje menos.
          */
-        const asiento = Number(new URLSearchParams(location.search).get('asiento')) || 0;
-        const sus = reglas?.sustrato
-            ? reglas.sustrato(p, asiento)
-            : obtenerSustrato(juego, reglas, p, data);
+        let sus;
+        if (this.backend?.tipo === 'sala') {
+            sus = sustratoDe(juego, data);
+        } else {
+            /**
+             * ⚠️ EL SUSTRATO SE PIDE CON EL ASIENTO DESDE EL QUE SE MIRA.
+             * En un juego de información oculta eso no es cosmética: decide qué
+             * cartas se ven. `?asiento=1` abre la vista del otro, que es como se
+             * comprueba —con dos pestañas— que no se filtra nada.
+             */
+            const asiento = Number(new URLSearchParams(location.search).get('asiento')) || 0;
+            sus = reglas?.sustrato
+                ? reglas.sustrato(p, asiento)
+                : obtenerSustrato(juego, reglas, p, data);
+        }
 
         const zonas = sus?.zonas ?? [];
         if (!zonas.length) {
@@ -201,13 +275,18 @@ const engine = new SovereignCardEngine({
             `<div class="status-row"><span>${k}</span>`
           + `<span class="val"${color ? ` style="color:${color}"` : ''}>${v}</span></div>`;
         const marcador = data.puntos ?? data.score ?? data.marcador;
-        document.getElementById('hud-content').innerHTML =
-            (data.turn !== undefined ? fila('Turno', data.turn, '#00ffaa') : '')
+        const hud = document.getElementById('hud-content');
+        hud.innerHTML =
+            (this.sala ? fila('Sala', this.sala.espectador ? 'mirando' : 'sentado', '#9ecbff') : '')
+          + (data.turn !== undefined ? fila('Turno', data.turn, '#00ffaa') : '')
           + (marcador !== undefined ? fila('Puntos', marcador, '#FFD700') : '')
           + zonas.map(z => fila(
                 `${z.id}${z.de === null || z.de === undefined ? '' : ' · ' + z.de}`,
                 `${z.items.length} vistas${z.ocultas ? ` + ${z.ocultas} tapadas` : ''}`)).join('')
-          + (data.is_game_over ? fila('Estado', data.desenlace ?? 'Terminada', '#ff8080') : '');
+          + (data.is_game_over ? fila('Estado', data.desenlace ?? 'Terminada', '#ff8080') : '')
+          + `<div id="mesa-jugadas" class="mesa-jugadas"></div>`;
+
+        pintarJugadas(this, data);
     },
 });
 

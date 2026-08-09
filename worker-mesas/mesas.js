@@ -450,6 +450,24 @@ export class MesaCompartida {
             // quede en 1 para siempre no admite compañía —`guerra` es así a
             // propósito: es el control, ahí nadie decide nada.
             asientos_del_juego: mesa.ordenAsientos.length,
+            /**
+             * ⚠️ Y EL TOPE DECLARADO, QUE ES EL QUE DECIDE SI CABES.
+             *
+             * Este número ya estaba aquí —es el que devuelve el 409 de mesa
+             * completa— pero no salía, así que los clientes decidían si sentarse
+             * mirando `asientos_del_juego`, que se DESCUBRE jugando y vale 1 hasta
+             * que el turno cambia de manos por primera vez.
+             *
+             * Se vio jugando: en una partida de entropy a dos, la segunda jugadora
+             * abrió el enlace después del primer robo y antes del cambio de turno.
+             * El árbitro decía todavía «una silla», así que entró como espectadora
+             * — a una mesa con un asiento libre y declarado. Se quedó fuera de una
+             * partida en la que cabía, y no había forma de saber por qué.
+             *
+             * Ésta es la misma lección de la vez anterior con otra ropa: un dato
+             * que se descubre por accidente no sirve para decidir. El declarado sí.
+             */
+            sillas: SILLAS[mesa.juego] ?? null,
             // Cuántos faltan por sentarse antes de que la mesa eche a andar. Un
             // cliente sin pantalla necesita saberlo para esperar en vez de creer
             // que la partida está atascada.

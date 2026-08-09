@@ -80,6 +80,25 @@ if (a.codigo !== 200) { console.log(`\n✗ la mesa no abre; nada más que probar
  * respuesta está razonada. Una lista aquí y otra allí se separan solas.
  */
 const b = await pedir(`/mesa/${SALA}/sentarse`, { quien: 'bruno', tipo: 'agente' });
+
+/**
+ * ⚠️ EL SECRETO DE CADA SILLA, QUE ESTA PRUEBA NO GUARDABA.
+ *
+ * La mesa lo entrega al sentarse y lo exige para mover. Se blindó el árbitro y no
+ * se tocó ni un cliente: esta prueba mandaba `/jugar` sin él y contestaba 403 con
+ * el motivo escrito y la pista puesta.
+ *
+ * Y lo grave no es el 403, es lo que TAPÓ: siete comprobaciones de más abajo
+ * —que los dos juegan, que cada uno tiene su asiento, que el verificador acepta
+ * el recibo— fallaban todas por la misma causa y ninguna estaba midiendo ya lo
+ * suyo. Una prueba en rojo por un motivo deja de vigilar los otros veinte.
+ *
+ * Se descubrió por ser la única prueba que NO corre `npm test` —toca la red— y
+ * por tanto la única que puede estar rota una semana sin que nadie lo note.
+ */
+const SECRETOS = { ana: a.secreto ?? null, bruno: b.secreto ?? null };
+const jugarComo = (quien, jugada) =>
+    pedir(`/mesa/${SALA}/jugar`, { quien, jugada, secreto: SECRETOS[quien] });
 const soloUno = b.codigo === 409 && b.solitario === true;
 if (soloUno) {
     // Se exige que HAYA motivo, no que sea largo. La primera versión pedía más
@@ -105,7 +124,7 @@ if (b.biblioteca === undefined) {
 // En una mesa de dos, a quien no le toca. En una de uno, a un desconocido — que
 // es el mismo principio: nadie mueve por otro.
 const toca = b.turno_de;
-const fuera = await pedir(`/mesa/${SALA}/jugar`, { quien: 'bruno', jugada: b.acciones[0] });
+const fuera = await jugarComo('bruno', b.acciones[0]);
 soloUno
     ? comprobar(fuera.codigo === 403 && /no estás sentado/.test(fuera.error ?? ''),
         `bruno, que no pudo sentarse, tampoco puede jugar → ${fuera.codigo} «${fuera.error}»`)
@@ -113,7 +132,7 @@ soloUno
         `bruno intenta jugar fuera de turno → ${fuera.codigo} «${fuera.error}»`);
 
 // ── 3. …y una jugada que no existe ───────────────────────────────────────
-const inventada = await pedir(`/mesa/${SALA}/jugar`, { quien: toca, jugada: 'jugar:CARTA_INVENTADA' });
+const inventada = await jugarComo(toca, 'jugar:CARTA_INVENTADA');
 comprobar(inventada.codigo === 400 && /ilegal/.test(inventada.error ?? ''),
     `${toca} intenta una jugada inventada → ${inventada.codigo} «${inventada.error}»`);
 
@@ -135,7 +154,7 @@ while (!st.terminada && vueltas++ < TOPE) {
     if (!acc.length) { mal(`${quien} no recibe jugadas legales en su turno`); break; }
     const j = quien === 'ana' ? acc[0] : acc[acc.length - 1];
     quien === 'ana' ? deAna++ : deBruno++;
-    st = await pedir(`/mesa/${SALA}/jugar`, { quien, jugada: j });
+    st = await jugarComo(quien, j);
     if (st.codigo !== 200) { mal(`jugada rechazada: ${st.error}`); break; }
 }
 /**

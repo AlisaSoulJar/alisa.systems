@@ -79,6 +79,26 @@ jobs:
           name: dist_publico
           path: dist_publico/
 
+  # ⚠️ ESTA PRUEBA ESTABA FUERA DE CI, Y POR ESO PUDO ESTAR ROTA SIN QUE SE VIERA.
+  #
+  # Se dejó aparte de `npm test` porque toca la red, que es un motivo legítimo. La
+  # consecuencia no lo era: el árbitro empezó a exigir un `secreto` por asiento y
+  # **ningún cliente del navegador se enteró**. Toda partida compartida contestaba
+  # 403 desde la web, con el motivo escrito, y nadie lo leyó. La prueba lo decía —
+  # sólo que no la corría nadie.
+  #
+  # Va en su propio trabajo y NO bloquea el despliegue: que el árbitro compartido
+  # tenga un mal día no debe impedir publicar un arreglo del sitio estático. Pero
+  # sale en rojo en el commit, que es lo que hace falta para enterarse.
+  mesas:
+    name: la mesa compartida sigue en pie
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm run prueba:mesas
+
   despliegue:
     name: desplegar a cloudflare pages
     needs: pruebas
@@ -91,12 +111,24 @@ jobs:
           name: dist_publico
           path: dist_publico
       
+      # ⚠️ `cloudflare/pages-action@v1` YA NO EXISTE, Y ESO NOS DEJÓ SIN PUBLICAR.
+      #
+      # Las pruebas pasaban en verde y este paso fallaba solo, así que el sitio se
+      # quedó congelado mientras el repositorio seguía avanzando. Se descubrió al
+      # mirar por qué no llegaba a producción un fichero recién empujado — no por
+      # el aviso, que decía «failure» sin decir de qué, en un trabajo que casi
+      # nadie abre porque los dos de arriba estaban en verde.
+      #
+      # Cloudflare archivó esa acción y su sustituto es `wrangler-action`, que
+      # ejecuta el mismo `wrangler` que usamos en local (`npm run desplegar:mesas`)
+      # y lee la misma `wrangler.toml`. Una herramienta menos que mantener.
       - name: publicar en cloudflare pages
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: alisa-systems
-          directory: dist_publico
-          # La función de Cloudflare está dentro de dist_publico/functions (gracias a empaquetar.py)
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          # `--branch=main` marca el despliegue como el de PRODUCCIÓN. Sin eso
+          # entra como vista previa: se sube, contesta 200 en su propia dirección
+          # y alisa.systems sigue enseñando lo de antes. Otra forma de desplegar
+          # sin publicar.
+          command: pages deploy dist_publico --project-name=alisa-systems --branch=main

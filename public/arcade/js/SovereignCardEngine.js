@@ -330,6 +330,61 @@ class SovereignCardEngine {
             } catch { /* sin hub */ }
         }
 
+        /**
+         * ⚠️ CON `?sala=` LA PARTIDA NO OCURRE AQUÍ: OCURRE EN EL ÁRBITRO.
+         *
+         * Es lo que convierte esta mesa de casino en una mesa para VARIAS
+         * personas. Dos que abran la misma dirección —o una persona y el agente
+         * de otra— se sientan a la misma partida, con turnos de verdad y el mismo
+         * recibo `{juego, semilla, jugadas}` que verifica `/api/verificar`.
+         *
+         * El cliente del árbitro NO se escribe aquí: es el mismo `sala.js` que usa
+         * la mesa de texto. Escribirlo otra vez habría sido volver a escribir el
+         * rechazo de la mesa llena y el `?quien=` que hace que veas tu mano — dos
+         * cosas que ya costaron caro una vez.
+         *
+         * Se entra MIRANDO. Quien abre un enlace compartido casi nunca es quien va
+         * a jugar, y ya pasó: un espectador se llevó las negras de una partida y
+         * la invitada se quedó de pie.
+         */
+        const sala = new URLSearchParams(location.search).get('sala');
+        if (sala && proto && proto.soporta(this.gameId)) {
+            try {
+                const { crearSala, limpiar, nombreSuelto } =
+                    await import('/arcade/js/protohub/sala.js');
+                const params = new URLSearchParams(location.search);
+                const mesa = crearSala({
+                    sala: limpiar(sala, 40),
+                    yo: limpiar(params.get('yo'), 24) || nombreSuelto(),
+                    juego: this.gameId,
+                    semilla: Number(params.get('semilla')) || 1,
+                });
+                await mesa.entrar();
+                this.sala = mesa;                   // el visualizador lo mira para saber si es espectador
+                this.backend = {
+                    tipo: 'sala',
+                    state: async () => { await mesa.refrescar(); return mesa.estado(); },
+                    move: async (a) => {
+                        // ⚠️ `params.action` PRIMERO, y no es un detalle.
+                        // `sendMove` envuelve la jugada en
+                        // `{ action:'move', params:{ action: <jugada> } }`, así que
+                        // leer `a.action` da la palabra «move» — y el árbitro
+                        // recibiría esa cadena como jugada, la rechazaría, y el
+                        // motivo apuntaría al juego en vez de a este desempaquetado.
+                        const j = typeof a === 'string' ? a
+                            : (a?.params?.action ?? a?.params?.uci ?? a?.params?.move
+                               ?? a?.move ?? a?.uci ?? a);
+                        await mesa.jugar(j);
+                        return { ok: true };
+                    },
+                };
+                console.log(`[Arcade] sala '${sala}' — '${this.gameId}' con árbitro compartido.`);
+                return;
+            } catch (e) {
+                console.warn(`[Arcade] no se pudo entrar en la sala '${sala}':`, e);
+            }
+        }
+
         if (proto && proto.soporta(this.gameId)) {
             this.backend = {
                 tipo: 'local',
