@@ -1517,6 +1517,8 @@ class SovereignCardEngine {
             <div class="hud-panel" id="main-hud">
                 <div class="hud-header" id="dockBtnToggle">
                     <h1>🃏 ${title}</h1>
+                    <button class="collapse-btn" id="hudPlegar"
+                            aria-label="plegar el panel" aria-expanded="true">▾</button>
                 </div>
                 <div id="hud-content">
                     ${customUpperHtml}
@@ -1533,6 +1535,63 @@ class SovereignCardEngine {
         </div>`;
         container.innerHTML = html;
         document.getElementById('autoToggleBtn').addEventListener('click', () => this.toggleAutoMode());
+
+        /**
+         * ⚠️ EL PANEL SE PLIEGA. ESTABA A MEDIO HACER Y NADIE LO SABÍA.
+         *
+         * `mesa3d.css` tiene desde siempre la regla `.collapsed #hud-content` con
+         * su transición, y esta cabecera ya llevaba `id="dockBtnToggle"` — un
+         * nombre que sólo tiene sentido si algo lo pulsa. No había botón ni había
+         * quien lo escuchara: la mitad visual hecha y la mitad viva sin escribir.
+         *
+         * En un móvil deja de ser un adorno: el panel tapa media mesa, y jugar
+         * consiste en mirar la mesa. Por eso ahí empieza plegado.
+         *
+         * La preferencia se recuerda. Un panel que se despliega solo en cada
+         * jugada —el sondeo repinta cada segundo— sería peor que no plegarlo.
+         */
+        const panel = document.getElementById('main-hud');
+        const boton = document.getElementById('hudPlegar');
+        const CLAVE = 'alisa:hud-plegado';
+
+        const aplicar = (plegado) => {
+            panel.classList.toggle('collapsed', plegado);
+            boton.textContent = plegado ? '▸' : '▾';
+            boton.setAttribute('aria-expanded', String(!plegado));
+            boton.setAttribute('aria-label', plegado ? 'desplegar el panel' : 'plegar el panel');
+        };
+
+        const guardado = localStorage.getItem(CLAVE);
+        aplicar(guardado === null ? this.esPantallaEstrecha() : guardado === '1');
+
+        document.getElementById('dockBtnToggle').addEventListener('click', () => {
+            const plegado = !panel.classList.contains('collapsed');
+            aplicar(plegado);
+            localStorage.setItem(CLAVE, plegado ? '1' : '0');
+        });
+    }
+
+    /**
+     * Un móvil en vertical, o una ventana muy estrecha. Se pregunta en varios
+     * sitios —la mesa, el encuadre, el panel— y hace falta que todos digan lo
+     * mismo, así que vive aquí y no en tres constantes que se separarían.
+     */
+    esPantallaEstrecha() {
+        /**
+         * ⚠️ CERO NO ES ESTRECHO: ES «NO LO SÉ».
+         *
+         * Esto era `innerWidth < 820` a secas, y `innerWidth` vale 0 en una
+         * pestaña que todavía no se ha compuesto. Cero es menor que 820, así que
+         * un monitor de 27 pulgadas se llevaba la vista de teléfono — la mesa sin
+         * bordes y la cámara cenital— y sólo se veía al abrir la página en según
+         * qué momento. Un fallo que depende de cuándo mires es de los que se
+         * cierran como «no lo reproduzco».
+         *
+         * Sin una medida fiable se responde lo de siempre, que es lo que había
+         * antes de que existiera esta función: la mesa de escritorio.
+         */
+        const ancho = window.innerWidth || document.documentElement?.clientWidth || 0;
+        return ancho > 0 && ancho < 820;
     }
 
     updateHUD(data) {

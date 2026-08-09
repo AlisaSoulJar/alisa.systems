@@ -46,21 +46,27 @@ import { crearMarcas, VERDE, MORADO, ACIERTO } from './protohub/marcas.js';
  * sitio a lo ancho; los de los lados, a lo hondo. Apilarlas todas hacia el centro
  * —que es lo que hacía esto antes— las montaba unas sobre otras.
  */
-const SITIO = {
+/**
+ * Dónde va cada zona. Depende de la FORMA DE LA PANTALLA, no del juego.
+ *
+ * ⚠️ EN UN TELÉFONO LA MESA ES ALTA Y ESTRECHA, Y EL REPARTO ANCHO NO CABE.
+ *
+ * En horizontal el mazo y el descarte van a los lados (x ±6,5), que es donde
+ * sobra sitio y donde se ve de un vistazo que no son de nadie. En un móvil en
+ * vertical eso obliga a alejar la cámara hasta que las cartas son ilegibles: lo
+ * ancho manda sobre lo alto aunque la pantalla diga lo contrario.
+ *
+ * Así que en estrecho se meten EN MEDIO, entre las dos cajas, y la mesa entera
+ * pasa a ser un rectángulo alto de unos 5 de ancho por 11 de fondo — que es
+ * justo la forma de un teléfono. Mismo juego, mismas zonas, otra colocación.
+ */
+const sitios = (estrecha) => ({
     0:    { x:  0.0, z:  2.9, layout: 'fan',  reparto: 'x', paso: 6 },  // tú, cerca de la cámara
     1:    { x:  0.0, z: -2.9, layout: 'fan',  reparto: 'x', paso: 6 },  // el de enfrente
-    2:    { x: -6.5, z:  0.0, layout: 'fan',  reparto: 'z', paso: 4 },
-    3:    { x:  6.5, z:  0.0, layout: 'fan',  reparto: 'z', paso: 4 },
-    /**
-     * Lo de nadie —descarte, comunes, mazo— va a los LADOS y no en medio.
-     *
-     * Con manos en abanico el centro estaba libre y esto cabía ahí. En cuanto la
-     * caja de entropy pasó a ser una rejilla de 2×4, las dos cajas ocupan el
-     * centro entero y el descarte quedaba pegado a su columna izquierda. Se
-     * separan lo suficiente para que se vea de quién es cada cosa sin leer el HUD.
-     */
-    mesa: { x:  0.0, z:  0.0, layout: 'line', reparto: 'x', paso: 11 },
-};
+    2:    { x: estrecha ? -3.2 : -6.5, z: 0.0, layout: 'fan', reparto: 'z', paso: 4 },
+    3:    { x: estrecha ?  3.2 :  6.5, z: 0.0, layout: 'fan', reparto: 'z', paso: 4 },
+    mesa: { x:  0.0, z:  0.0, layout: 'line', reparto: 'x', paso: estrecha ? 3.6 : 11 },
+});
 
 /**
  * Sitios que NO dependen de quién sea la zona, sino de qué es.
@@ -99,6 +105,40 @@ const SEPARA = 6;
  * es un montón porque no cabe, no porque se llame mazo.
  */
 const CABEN = 9;
+
+/**
+ * Pone la cámara y elige mesa o tapiz según la forma de la pantalla.
+ *
+ * ⚠️ EN VERTICAL SE MIRA CASI DESDE ARRIBA, y no es un capricho de estilo.
+ *
+ * La mesa mide unas 5 unidades de ancho por 11 de fondo. En una vista tumbada,
+ * la profundidad se aplasta por la perspectiva y las cartas del rival quedan
+ * diminutas mientras sobra pantalla a los lados. Mirando desde arriba, «fondo»
+ * se convierte en «alto» — que es justo lo que un teléfono tiene de sobra.
+ *
+ * Va suelta y no dentro de la configuración porque el motor sólo copia tres
+ * ganchos (`onInit3D`, `onStateSync`, `onResize`): cualquier otra cosa puesta
+ * ahí se pierde en silencio. Ya me pasó con `pintarJugadas`.
+ */
+function encuadrar(motor) {
+    const estrecha = motor.esPantallaEstrecha();
+    const { mesa, canto, tapiz } = motor.piezasMesa ?? {};
+    if (mesa)  mesa.visible  = !estrecha;
+    if (canto) canto.visible = !estrecha;
+    if (tapiz) tapiz.visible = estrecha;
+
+    if (estrecha) {
+        motor.camera.position.set(0, 13.5, 5.2);
+        motor.camera.lookAt(0, 0, 0.9);
+    } else {
+        // Póker mira desde (0, 5, 8) porque enseña dos cartas por jugador. Aquí
+        // una caja son ocho en rejilla y además está la carta que tienes en la
+        // mano, delante de todo: con esa cámara lo tuyo se salía por abajo.
+        motor.camera.position.set(0, 9.5, 12.5);
+        motor.camera.lookAt(0, 0, 1.3);
+    }
+    if (motor.controls) { motor.controls.target.set(0, 0, estrecha ? 0.9 : 1.3); motor.controls.update(); }
+}
 
 /**
  * ═══ JUGAR CON EL RATÓN ═════════════════════════════════════════════════════
@@ -272,15 +312,6 @@ const engine = new SovereignCardEngine({
     gameId: window.ALISA_JUEGO ?? 'entropy',
 
     onInit3D(scene, camera) {
-        // ⚠️ MÁS ATRÁS QUE LA DE PÓKER, Y NO POR GUSTO.
-        //
-        // Póker mira desde (0, 5, 8) porque enseña dos cartas por jugador. Aquí
-        // una caja de entropy son ocho en rejilla y además está la carta que
-        // tienes en la mano, delante de todo: con la cámara de póker lo tuyo
-        // —lo único que puedes jugar— se salía por el borde inferior.
-        camera.position.set(0, 9.5, 12.5);
-        camera.lookAt(0, 0, 1.3);
-
         // Fieltro. Ovalado, como el de póker: una mesa redonda hace que las
         // manos de arriba y abajo queden demasiado lejos en pantalla.
         const geo = new THREE.CylinderGeometry(10, 10, 0.4, 64);
@@ -302,6 +333,33 @@ const engine = new SovereignCardEngine({
         canto.position.y = -0.15;
         scene.add(canto);
 
+        /**
+         * ⚠️ Y EN UN MÓVIL, TAPIZ A PANTALLA COMPLETA: NADA DE MESA.
+         *
+         * Una mesa ovalada es bonita porque se ve entera, y verla entera en un
+         * teléfono significa alejar la cámara hasta que las cartas no se leen. El
+         * canto de madera y el óvalo son entonces lo peor de los dos mundos:
+         * ocupan pantalla y no aportan información.
+         *
+         * Así que en estrecho se apagan y queda un fieltro sin bordes, con la
+         * cámara pegada. Se pierde el marco y se gana lo único que importa: que
+         * un 12 se distinga de un 2 sin acercar el ojo.
+         *
+         * Se construyen las DOS y se enseña una. Al girar el teléfono cambia la
+         * forma de la pantalla, y reconstruir la escena entera en ese momento
+         * sería perder las cartas de vista mientras se rehace.
+         */
+        const tapiz = new THREE.Mesh(
+            new THREE.PlaneGeometry(80, 80),
+            new THREE.MeshStandardMaterial({ color: 0x073b18, roughness: 0.95 }));
+        tapiz.rotation.x = -Math.PI / 2;
+        tapiz.position.y = -0.02;
+        tapiz.receiveShadow = true;
+        scene.add(tapiz);
+
+        this.piezasMesa = { mesa, canto, tapiz };
+        encuadrar(this);
+
         const foco = new THREE.SpotLight(0xffffff, 0.9, 0, Math.PI / 4, 0.5, 1);
         foco.position.set(0, 6.5, 0);
         foco.castShadow = true;
@@ -310,6 +368,17 @@ const engine = new SovereignCardEngine({
 
         this.preloadCourtImages('/arcade/assets/cards/courts');
         this.activeDeckBack = 'classic_red';
+    },
+
+    /**
+     * Girar el teléfono cambia la forma de la pantalla, y con ella dónde va cada
+     * zona. Se vuelve a encuadrar y se REPINTA con el último estado: si sólo se
+     * moviera la cámara, el mazo seguiría a un lado en una pantalla donde ya no
+     * cabe. Sin pedir nada a la red — el estado que hay es el bueno.
+     */
+    onResize() {
+        encuadrar(this);
+        if (estadoActual) this.onStateSync(estadoActual);
     },
 
     onStateSync(data) {
@@ -390,6 +459,10 @@ const engine = new SovereignCardEngine({
             if (!porDueno.has(clave)) porDueno.set(clave, []);
             porDueno.get(clave).push(z);
         }
+
+        // La colocación se pregunta AQUÍ y no se guarda: en un móvil que gira,
+        // una tabla calculada al arrancar sería la de la orientación anterior.
+        const SITIO = sitios(this.esPantallaEstrecha());
 
         for (const [clave, lote] of porDueno) {
             const sitio = String(clave).startsWith('@')

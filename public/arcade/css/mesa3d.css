@@ -113,6 +113,34 @@ body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
 .mesa-jugada:disabled { opacity: 0.35; cursor: default; }
 .mesa-jugadas .dato { font-size: 11px; color: rgba(255,255,255,0.4); }
 
+/**
+ * ═══ EN UN MÓVIL, LA MESA ES LA PANTALLA ═══════════════════════════════════
+ *
+ * El panel mide 320 px y ocupa un tercio de un teléfono en vertical: tapa
+ * justamente lo que hay que mirar para jugar. Aquí se hace estrecho, se pega
+ * arriba y arranca PLEGADO (eso lo decide el motor), de modo que por defecto se
+ * ve un título y nada más.
+ *
+ * Y los botones pasan a tamaño de DEDO. Los de ratón miden 11 px de alto: en un
+ * teléfono eso no es un botón pequeño, es un botón que se falla. Con `cambiar:3`
+ * y `cambiar:4` pegados, fallar significa jugar otra cosa — y en este juego una
+ * casilla de diferencia son doce puntos.
+ */
+@media (max-width: 820px) {
+    .overlay { padding: 8px; gap: 8px; }
+    .hud-panel {
+        max-width: none; width: calc(100vw - 16px);
+        padding: 10px 12px; border-radius: 10px;
+    }
+    .hud-header { padding-bottom: 6px; margin-bottom: 8px; }
+    .hud-header h1 { font-size: 15px; }
+    .collapse-btn { font-size: 20px; padding: 4px 10px; }
+
+    .hud-panel .status-row { font-size: 11px; }
+    .mesa-jugadas { max-height: 34vh; gap: 7px; }
+    .mesa-jugada { font-size: 13px; padding: 10px 13px; }
+}
+
 /* Resplandor de fondo */
 body::before {
     content: ''; position: fixed; inset: 0;
