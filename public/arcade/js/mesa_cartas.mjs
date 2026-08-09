@@ -46,17 +46,32 @@ import { obtenerSustrato, sustratoDe } from './protohub/sustrato.js';
  * —que es lo que hacía esto antes— las montaba unas sobre otras.
  */
 const SITIO = {
-    0:    { x:  0.0, z:  2.6, layout: 'fan',  reparto: 'x' },  // tú, cerca de la cámara
-    1:    { x:  0.0, z: -2.6, layout: 'fan',  reparto: 'x' },  // el de enfrente
-    2:    { x: -5.5, z:  0.0, layout: 'fan',  reparto: 'z' },
-    3:    { x:  5.5, z:  0.0, layout: 'fan',  reparto: 'z' },
-    mesa: { x:  0.0, z:  0.0, layout: 'line', reparto: 'x' },  // de nadie: descarte, comunes, mazo
+    0:    { x:  0.0, z:  2.9, layout: 'fan',  reparto: 'x', paso: 6 },  // tú, cerca de la cámara
+    1:    { x:  0.0, z: -2.9, layout: 'fan',  reparto: 'x', paso: 6 },  // el de enfrente
+    2:    { x: -6.5, z:  0.0, layout: 'fan',  reparto: 'z', paso: 4 },
+    3:    { x:  6.5, z:  0.0, layout: 'fan',  reparto: 'z', paso: 4 },
+    /**
+     * Lo de nadie —descarte, comunes, mazo— va a los LADOS y no en medio.
+     *
+     * Con manos en abanico el centro estaba libre y esto cabía ahí. En cuanto la
+     * caja de entropy pasó a ser una rejilla de 2×4, las dos cajas ocupan el
+     * centro entero y el descarte quedaba pegado a su columna izquierda. Se
+     * separan lo suficiente para que se vea de quién es cada cosa sin leer el HUD.
+     */
+    mesa: { x:  0.0, z:  0.0, layout: 'line', reparto: 'x', paso: 11 },
 };
 
 /** El mismo hueco entre cartas que usa la mesa de póker. */
 const ESPACIO = 0.9;
 
-/** Cuánto se separan dos zonas del mismo dueño. Poco más que un abanico lleno. */
+/**
+ * Y en una rejilla las cartas NO se solapan: se ven enteras las ocho.
+ * La carta mide 1,2 × 1,8 tumbada, así que el hueco va por encima de eso.
+ */
+const REJILLA_X = 1.4;
+const REJILLA_Z = 2.0;
+
+/** Cuánto se separan dos zonas del mismo dueño, si su sitio no dice otra cosa. */
 const SEPARA = 6;
 
 /**
@@ -211,6 +226,29 @@ const engine = new SovereignCardEngine({
                 : obtenerSustrato(juego, reglas, p, data);
         }
 
+        /**
+         * ⚠️ LA CARA DE LA CARTA LA ELIGE EL JUEGO, NO LA MESA.
+         *
+         * Con `cara: 'valor'` se dibuja el número y no el palo. Entropy lo pide
+         * porque ninguna de sus reglas mira el palo —se suman valores y se anulan
+         * dos iguales en la misma columna—, así que oros y copas sólo obligaban a
+         * traducir «R» a 12 de cabeza. La brisca y el tute NO lo piden, y ahí el
+         * palo es el juego: por eso se declara en vez de deducirse de que haya
+         * una tabla de valores, que la tienen los tres.
+         *
+         * Cambia lo que se ve, no lo que se juega: la carta sigue siendo `R_4` en
+         * el estado y en el recibo, y la partida se re-simula igual.
+         */
+        const porValor = data.cara === 'valor' && data.valores;
+        const rangoDe = (c) => String(c).split('_').slice(1).join('_');
+        const caraDe = (c) => {
+            if (!porValor) return c;
+            const r = rangoDe(c);
+            // Un comodín vale 0, pero pintar un «0» lo confundiría con una carta
+            // normal muy buena. Lleva su símbolo, que declara el catálogo.
+            return `num_${data.simbolos?.[r] ?? data.valores[r] ?? r}`;
+        };
+
         const zonas = sus?.zonas ?? [];
         if (!zonas.length) {
             document.getElementById('hud-content').innerHTML =
@@ -230,7 +268,7 @@ const engine = new SovereignCardEngine({
         for (const [clave, lote] of porDueno) {
             const sitio = SITIO[clave] ?? SITIO.mesa;
             lote.forEach((z, i) => {
-                const desvio = (i - (lote.length - 1) / 2) * SEPARA;
+                const desvio = (i - (lote.length - 1) / 2) * (sitio.paso ?? SEPARA);
                 const cx = sitio.x + (sitio.reparto === 'x' ? desvio : 0);
                 const cz = sitio.z + (sitio.reparto === 'z' ? desvio : 0);
 
@@ -247,9 +285,38 @@ const engine = new SovereignCardEngine({
                  * boca abajo que por dentro es el as de picas se lee abriendo la
                  * consola.
                  */
+                /**
+                 * ⚠️ UNA ZONA CON CASILLAS SE DIBUJA EN SU SITIO, CASILLA A CASILLA.
+                 *
+                 * La caja de entropy son ocho huecos en dos filas de cuatro —así
+                 * es el juego del que viene, donde a esa disposición la llaman «la
+                 * caja»— y las casillas son parte de las reglas: `cambiar:5` nombra
+                 * un hueco fijo, y dos cartas iguales EN LA MISMA COLUMNA se anulan.
+                 *
+                 * Antes esto amontonaba las vistas a un lado y las tapadas al otro,
+                 * o sea que inventaba un orden. Con eso no se puede señalar
+                 * `cambiar:5` ni ver una columna: la regla que hace interesante al
+                 * juego era invisible en la mesa que lo dibuja.
+                 */
+                if (z.casillas) {
+                    const cols = z.columnas || z.casillas.length;
+                    const filas = Math.ceil(z.casillas.length / cols);
+                    const cartas = z.casillas.map((c) =>
+                        c === null || c === undefined
+                            ? { id: 'back', oculta: true }
+                            : { id: caraDe(c), oculta: false });
+                    this.drawZone(cartas, `${z.id}_${clave}_${i}`,
+                        cx - ((cols - 1) * REJILLA_X) / 2,
+                        cz - ((filas - 1) * REJILLA_Z) / 2,
+                        { layout: 'grid', columns: cols,
+                          spacing: REJILLA_X, spacingZ: REJILLA_Z });
+                    return;
+                }
+
                 const cartas = [
-                    ...z.items.map(c => (c && typeof c === 'object' ? { ...c, oculta: false }
-                                                                   : { id: c, oculta: false })),
+                    ...z.items.map(c => (c && typeof c === 'object'
+                        ? { ...c, id: caraDe(c.id ?? c), oculta: false }
+                        : { id: caraDe(c), oculta: false })),
                     ...Array.from({ length: z.ocultas ?? 0 }, () => ({ id: 'back', oculta: true })),
                 ];
                 if (!cartas.length) return;

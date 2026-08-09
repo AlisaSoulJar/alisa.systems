@@ -181,13 +181,35 @@ export function sustratoDe(juego, st = {}) {
     if (lista(st.community_cards).length) {
         zonas.push({ id: 'comunes', de: null, items: [...st.community_cards], ocultas: 0 });
     }
-    if (lista(st.caja).length) {
-        zonas.push({ id: 'caja', de: 0, items: st.caja.filter(Boolean),
-                     ocultas: st.caja.filter(c => !c).length });
-    }
-    lista(st.cajas_rivales).forEach((c, i) =>
-        zonas.push({ id: 'caja', de: i + 1, items: c.filter(Boolean),
-                     ocultas: c.filter(x => !x).length }));
+    /**
+     * ⚠️ UNA CAJA TIENE CASILLAS, Y `filter(Boolean)` LAS BORRABA.
+     *
+     * Esto publicaba sólo las cartas destapadas, así que ocho huecos con tres
+     * cartas vistas salían como «tres cartas y cinco tapadas» — un montón, sin
+     * decir cuál estaba dónde. Y en entropy las casillas SON el juego: `cambiar:5`
+     * nombra un hueco fijo, y la regla que lo hace interesante —dos cartas iguales
+     * en la misma COLUMNA se anulan— sólo se puede pensar viendo la rejilla.
+     *
+     * O sea que la mesa dibujaba las vistas amontonadas a un lado y las tapadas al
+     * otro: un reparto que no existe, en el que no se puede señalar `cambiar:5` ni
+     * ver una columna. Se veía bien y era ilegible, que es la peor combinación.
+     *
+     * `casillas` conserva el array tal cual, con `null` donde hay carta boca abajo
+     * — que es exactamente como lo publica el juego. `items` y `ocultas` siguen
+     * igual para quien ya los leía: esto añade, no cambia.
+     */
+    const conCasillas = (caja, de) => ({
+        id: 'caja', de,
+        items: caja.filter(Boolean),
+        ocultas: caja.filter(c => !c).length,
+        casillas: [...caja],
+        // Cuántas casillas por fila. Lo DECLARA el juego —entropy publica
+        // `columnas: 4`— porque una rejilla de 8 huecos podría ser 2×4 o 4×2 y
+        // eso no se deduce del número de cartas. Sin ello, una sola fila.
+        ...(Number.isFinite(st.columnas) ? { columnas: st.columnas } : {}),
+    });
+    if (lista(st.caja).length) zonas.push(conCasillas(st.caja, 0));
+    lista(st.cajas_rivales).forEach((c, i) => zonas.push(conCasillas(c, i + 1)));
     if (typeof st.descarte === 'string') zonas.push({ id: 'descarte', de: null, items: [st.descarte], ocultas: 0 });
     if (st.cima) zonas.push({ id: 'descarte', de: null, items: [st.cima], ocultas: 0 });
     if (Number.isFinite(st.mazo_restante)) {

@@ -45,18 +45,56 @@ const COLUMNAS = 4, FILAS = 2, HUECOS = COLUMNAS * FILAS;
 const HORIZONTE = 120;
 
 const VALORES_RESPALDO = { '1': 1, '2': 2, '3': 3, '4': 4, '5': 5, '6': 6,
-                           '7': 7, '8': 8, '9': 9, 'S': 10, 'C': 11, 'R': 12 };
+                           '7': 7, '8': 8, '9': 9, 'S': 10, 'C': 11, 'R': 12,
+                           'JK': 0 };
+
+/**
+ * ⚠️ LOS COMODINES SON DEL JUEGO, NO DE LA BARAJA ESPAÑOLA.
+ *
+ * Se declaran en `games.entropy.specials` y no en `decks.spanish_48`, que es lo
+ * que parecía más ordenado y habría sido un desastre: esa baraja la reparten
+ * también la brisca y el tute, y se habrían encontrado dos comodines en la mesa
+ * sin que nadie tocara sus reglas.
+ *
+ * Van sin palo, con el prefijo `W_` que ya usa [unit.js] para lo mismo. Y valen
+ * 0: lo mejor que te puede tocar y nada más — no emparejan con nada ni anulan
+ * columnas, así que la regla del juego no cambia, sólo aparece una carta muy
+ * buena que hay que saber colocar.
+ */
+const ESPECIALES_RESPALDO = [{ id: 'JK', count: 2, suitless: true, symbol: '🃏' }];
 
 export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, barajas = 2 } = {}) {
     const baraja = await cargarBaraja('spanish_48', url);
-    let VALORES = VALORES_RESPALDO;
+    let VALORES = VALORES_RESPALDO, ESPECIALES = ESPECIALES_RESPALDO, TOTAL_LIB = null;
     try {
         const lib = await fetch(new URL(url, import.meta.url)).then(r => r.json());
         VALORES = lib?.games?.entropy?.card_values ?? VALORES_RESPALDO;
+        ESPECIALES = lib?.games?.entropy?.specials ?? ESPECIALES_RESPALDO;
+        TOTAL_LIB = lib?.games?.entropy?.total ?? null;
     } catch { /* respaldo; `baraja.biblioteca` ya lo dice */ }
 
     const valorDe = (c) => VALORES[rango(c)] ?? 0;
-    const TOTAL = baraja.suits.length * baraja.ranks.length * barajas;
+    const SIMBOLOS = Object.fromEntries(
+        ESPECIALES.filter(e => e.symbol).map(e => [e.id, e.symbol]));
+
+    /** La baraja de esta mesa: los mazos completos más los comodines. */
+    const montar = () => {
+        const cartas = [];
+        for (let k = 0; k < barajas; k++) cartas.push(...cartasDe(baraja));
+        for (const e of ESPECIALES) {
+            for (let i = 0; i < (e.count ?? 0); i++) cartas.push(`W_${e.id}`);
+        }
+        // Se comprueba contra lo que dice el catálogo, igual que en unit: si algún
+        // día cambia la biblioteca y esto no, salta al montar la baraja y no en
+        // mitad de una partida con un descuadre de una carta —que es exactamente
+        // el fallo más caro que tuvo el original.
+        if (TOTAL_LIB && cartas.length !== TOTAL_LIB) {
+            throw new Error(`baraja de entropy mal montada: ${cartas.length} cartas, `
+                          + `la biblioteca dice ${TOTAL_LIB}`);
+        }
+        return cartas;
+    };
+    const TOTAL = montar().length;
 
     /**
      * Suma la caja anulando las columnas emparejadas. El corazón del juego.
@@ -104,9 +142,7 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
 
         nuevaPartida(opts = {}) {
             const semilla = (opts.semilla ?? opts.seed ?? Date.now()) >>> 0;
-            const todas = [];
-            for (let k = 0; k < barajas; k++) todas.push(...cartasDe(baraja));
-            const cartas = barajar(todas, mulberry32(semilla));
+            const cartas = barajar(montar(), mulberry32(semilla));
 
             const p = {
                 semilla, jugadores, cajas: [], mazo: [], descarte: [],
@@ -176,6 +212,30 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
                 caja: verCaja(p.cajas[yo]),
                 cajas_rivales: p.cajas.filter((_, i) => i !== yo).map(verCaja),
                 columnas: COLUMNAS,
+                /**
+                 * ⚠️ AQUÍ EL PALO NO PINTA NADA, Y CONVIENE DECIRLO.
+                 *
+                 * Se reparte con la española de 48 porque da 12 valores limpios,
+                 * pero ninguna regla mira el palo: se suma el valor y se anulan
+                 * dos iguales en la misma columna. El oro y la copa son
+                 * decoración — y decoración cara, porque la sota, el caballo y el
+                 * rey se dibujaban ilegibles y hay que traducir «R» a 12 de
+                 * cabeza para jugar.
+                 *
+                 * Con esto la mesa puede enseñar el NÚMERO, que es lo único que
+                 * el jugador necesita. Es una proyección, no un cambio de reglas:
+                 * la carta sigue siendo `R_4`, el recibo no cambia y la partida
+                 * se re-simula igual. El render es un espectador.
+                 *
+                 * Se declara aquí y no se deduce: la brisca y el tute también
+                 * tienen valores por carta y ahí el palo ES el juego. Mirar si
+                 * hay `valores` y decidir por eso les borraría los palos.
+                 */
+                cara: 'valor',
+                valores: VALORES,
+                // Un comodín vale 0, pero enseñar un «0» lo confundiría con nada:
+                // se dibuja con su símbolo. Lo declara el catálogo, no la mesa.
+                simbolos: SIMBOLOS,
                 robada: p.robada,
                 robada_de: p.robadaDe,
                 descarte: p.descarte[p.descarte.length - 1] ?? null,

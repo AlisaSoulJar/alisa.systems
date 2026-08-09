@@ -72,6 +72,32 @@ for (const juego of JUEGOS) {
     for (const z of sus.zonas) {
         if (!Array.isArray(z.items)) mal(`${juego}: zona '${z.id}' sin items`);
         if (!Number.isFinite(z.ocultas)) mal(`${juego}: zona '${z.id}' no dice cuántas oculta`);
+
+        /**
+         * ⚠️ UNA ZONA CON CASILLAS NO PUEDE PERDER NINGUNA.
+         *
+         * `items` sólo trae las cartas destapadas y `ocultas` es un número, así
+         * que juntos dicen CUÁNTAS hay y no DÓNDE. Para la caja de entropy eso no
+         * basta: `cambiar:5` nombra un hueco fijo y dos cartas iguales en la misma
+         * columna se anulan. El sustrato hacía `filter(Boolean)` y borraba las
+         * posiciones; la mesa dibujaba las vistas a un lado y las tapadas al otro,
+         * o sea un orden inventado, y la regla que hace interesante al juego era
+         * invisible en la mesa que lo dibuja.
+         *
+         * `casillas` conserva el array con `null` donde hay carta boca abajo. Si
+         * su longitud deja de cuadrar con vistas + tapadas, alguien ha vuelto a
+         * filtrar por el camino.
+         */
+        if (z.casillas) {
+            const esperado = z.items.length + z.ocultas;
+            if (z.casillas.length !== esperado) {
+                mal(`${juego}: zona '${z.id}' declara ${z.casillas.length} casillas `
+                  + `y trae ${esperado} cartas (${z.items.length} vistas + ${z.ocultas} tapadas)`);
+            }
+            if (z.columnas !== undefined && !(z.columnas > 0)) {
+                mal(`${juego}: zona '${z.id}' dice columnas=${z.columnas}`);
+            }
+        }
     }
     for (const pz of sus.piezas) {
         if (!Number.isFinite(pz.x) || !Number.isFinite(pz.y)) mal(`${juego}: pieza sin posición`);

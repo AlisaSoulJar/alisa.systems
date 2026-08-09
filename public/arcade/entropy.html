@@ -24,12 +24,22 @@
   Así que entropy lo estrena y la brisca, el tute, hearts, spades, guerra,
   gofish y unit lo heredan cambiando una línea.
 
-    ?semilla=7    fija el reparto
-    ?asiento=1    mira desde la otra silla — así se comprueba que no filtra
+    ?semilla=7              fija el reparto: la misma dirección, la misma mano
+    ?sala=cocina&yo=oscar   la misma partida que quien abra ese enlace
+    ?asiento=1              mira desde la otra silla — así se comprueba que no filtra
 
-  Para jugar VARIAS PERSONAS a la vez esta página no es el sitio: la mesa
-  compartida es `mesa.html?sala=<loquesea>&juego=entropy`, con árbitro, turnos
-  y recibo verificable.
+  LO QUE SE VE Y POR QUÉ
+
+  La caja son ocho huecos en DOS FILAS DE CUATRO, que es como se juega: `cambiar:5`
+  nombra un hueco fijo y dos cartas iguales en la misma COLUMNA se anulan. Dibujarla
+  como un abanico —vistas a un lado, tapadas al otro— escondía la única regla que
+  hace interesante al juego.
+
+  Y las cartas llevan su NÚMERO, no el palo. Se reparte con la española de 48 porque
+  da doce valores limpios, pero ninguna regla mira el palo: enseñar oros y copas
+  obligaba a traducir «R» a 12 de cabeza. Los dos comodines 🃏 valen 0 — lo mejor que
+  te puede tocar. La puerta de texto dice lo mismo, para que la persona y el agente
+  lean la misma mesa.
 -->
 <script>
   window.ALISA_JUEGO = 'entropy';

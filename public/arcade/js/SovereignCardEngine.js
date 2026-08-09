@@ -951,6 +951,92 @@ class SovereignCardEngine {
         ctx.fill();
     }
 
+    /**
+     * Una carta cuya cara es su valor. El número grande y centrado, y repetido
+     * pequeño en las dos esquinas como en cualquier baraja: así se lee también
+     * cuando la de delante la tapa a medias.
+     *
+     * El color va por tramos —bajo es bueno en los juegos de minimizar— para que
+     * la caja se lea de un vistazo sin sumar: verde lo que quieres, rojo lo que
+     * no. Un comodín o cualquier cosa que no sea un número se dibuja tal cual, sin
+     * inventarse un valor que no tiene.
+     */
+    _drawCartaNumero(ctx, W, H, texto) {
+        const n = Number(texto);
+        const esNumero = Number.isFinite(n);
+        const color = !esNumero ? '#6A1B9A'
+            : n <= 3 ? '#1B7F3B'
+            : n <= 6 ? '#2E6DA4'
+            : n <= 9 ? '#B26A00'
+            : '#C62828';
+
+        ctx.fillStyle = '#FAFAFA';
+        ctx.beginPath(); ctx.roundRect(0, 0, W, H, 12); ctx.fill();
+        ctx.strokeStyle = '#D0D0D0'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(2, 2, W - 4, H - 4, 10); ctx.stroke();
+
+        // Una banda del color arriba y abajo: identifica el tramo aunque la carta
+        // esté girada o medio tapada por la de al lado.
+        ctx.fillStyle = color;
+        ctx.globalAlpha = 0.14;
+        ctx.fillRect(8, 8, W - 16, 26);
+        ctx.fillRect(8, H - 34, W - 16, 26);
+        ctx.globalAlpha = 1;
+
+        /**
+         * ⚠️ LO QUE NO ES UN NÚMERO VA SOBRE FONDO, Y NO POR ADORNO.
+         *
+         * Un emoji es multicolor y CLARO. Sobre blanco, y visto desde la cámara de
+         * la mesa, competía fatal con una cifra negra: la carta del comodín se
+         * leía como una carta en blanco aunque el lienzo estuviera perfecto. Es el
+         * tercer «se ve blanco» de esta mesa por tres causas distintas —sin lámina,
+         * sin glifo, y ahora sin contraste— y las tres se veían igual.
+         *
+         * Con el fondo teñido se reconoce que es una carta especial antes incluso
+         * de distinguir qué emoji es, que es justo lo que hace falta de un vistazo.
+         */
+        if (!esNumero) {
+            // Sólido, no teñido: a 0,20 quedaba un lavanda que sobre el fieltro
+            // verde y a la distancia de la cámara no se distinguía del blanco.
+            ctx.fillStyle = color;
+            ctx.beginPath(); ctx.roundRect(16, 44, W - 32, H - 88, 14); ctx.fill();
+        }
+
+        /**
+         * ⚠️ GEORGIA NO TIENE EMOJIS, Y UN COMODÍN SALÍA EN BLANCO.
+         *
+         * El canvas no avisa cuando le falta un glifo: dibuja nada y sigue. La
+         * carta se veía perfecta, blanca y vacía — que es lo mismo que le pasaba a
+         * la sota española por no tener lámina, sólo que por otra causa. Un tipo de
+         * carta nuevo que no se ve no da error en ninguna parte.
+         *
+         * La pila cubre Windows, Android/Linux y Apple; el `sans-serif` del final
+         * es para que algo salga siempre.
+         */
+        const TIPO = esNumero
+            ? 'Georgia'
+            : '"Segoe UI Emoji","Noto Color Emoji","Apple Color Emoji",sans-serif';
+
+        ctx.fillStyle = color;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        // ⚠️ Y MÁS GRANDE QUE UN NÚMERO, no igual: a la misma altura de fuente el
+        // glifo de un emoji ocupa la mitad que una cifra, así que a 120px la carta
+        // parecía vacía desde la cámara aunque el canvas estuviera bien. Se
+        // comprobó pintando el lienzo en pantalla, que es la única forma de
+        // distinguir «no se dibuja» de «se dibuja y no se ve».
+        ctx.font = `bold ${esNumero ? 150 : 215}px ${TIPO}`;
+        ctx.fillText(texto, W / 2, H / 2);
+
+        ctx.font = `bold ${esNumero ? 34 : 40}px ${TIPO}`;
+        ctx.fillText(texto, 34, 32);
+        ctx.save();
+        ctx.translate(W - 34, H - 32);
+        ctx.rotate(Math.PI);
+        ctx.fillText(texto, 0, 0);
+        ctx.restore();
+    }
+
     // ═══ MAIN CARD RENDERER ═══
     getCardCanvas(cardId) {
         const W = 256, H = 384;
@@ -962,6 +1048,27 @@ class SovereignCardEngine {
         if (cardId.startsWith("back")) {
             const deckType = cardId.replace('back_', '') || 'classic_red';
             this._drawCardBack(ctx, W, H, deckType === 'back' ? 'classic_red' : deckType);
+            return canvas;
+        }
+
+        /**
+         * --- CARTA DE NÚMERO ---
+         *
+         * ⚠️ HAY JUEGOS DONDE EL PALO NO PINTA NADA, Y ENSEÑARLO ESTORBA.
+         *
+         * Entropy se reparte con la española de 48 porque da doce valores
+         * limpios, pero ninguna regla mira el palo: se suma el valor y se anulan
+         * dos iguales en la misma columna. Enseñar oros y copas obligaba a
+         * traducir «R» a 12 de cabeza para jugar — y encima la sota, el caballo y
+         * el rey salían casi en blanco por no haber lámina española.
+         *
+         * `num_12` dibuja un 12 y punto. No es un tipo de carta nuevo: es otra
+         * cara para la misma carta, igual que el dorso. El juego lo pide
+         * declarándolo (`cara: 'valor'`), así que la brisca y el tute —donde el
+         * palo ES el juego— no se ven afectados.
+         */
+        if (cardId.startsWith('num_')) {
+            this._drawCartaNumero(ctx, W, H, cardId.slice(4));
             return canvas;
         }
 

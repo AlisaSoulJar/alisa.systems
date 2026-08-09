@@ -1809,11 +1809,23 @@
         "9": 9,
         "S": 10,
         "C": 11,
-        "R": 12
+        "R": 12,
+        "JK": 0
       },
       "rules_engine": "entropy_rules",
       "objetivo": "menor_puntuacion",
-      "rondas": 5
+      "rondas": 5,
+      "specials": [
+        {
+          "id": "JK",
+          "name": "Comodin",
+          "count": 2,
+          "suitless": true,
+          "symbol": "🃏",
+          "color": "#6A1B9A"
+        }
+      ],
+      "total": 98
     }
   }
 }

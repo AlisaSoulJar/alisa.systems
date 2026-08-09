@@ -130,7 +130,25 @@ export async function montarMesa(cfg) {
 
     // Primero las reglas: el visualizador las espera en `window`.
     const reglas = await cargarReglas(juego, {});
-    window.ALISA_PROTOHUB = new ProtoHub().registrar(idJuego, reglas);
+    const hub = new ProtoHub().registrar(idJuego, reglas);
+    window.ALISA_PROTOHUB = hub;
+
+    /**
+     * ⚠️ `?semilla=` NO SE APLICABA, Y LAS PÁGINAS PROMETÍAN QUE SÍ.
+     *
+     * Esto registraba las reglas y dejaba que la primera consulta creara la
+     * partida sola — y `nuevaPartida()` sin semilla usa `Date.now()`. O sea que
+     * abrir dos veces la misma dirección daba dos repartos distintos, mientras el
+     * comentario de la página decía «?semilla=7 fija el reparto». La mesa de texto
+     * sí lo hacía (`hub.reset(juego, { semilla })`); estas páginas no, y nadie lo
+     * notó porque una partida con otro reparto sigue siendo una partida válida.
+     *
+     * Y no es cosmético: compartir «juega esta mano» es un enlace, comparar dos
+     * agentes exige el mismo reparto, y un recibo sin semilla declarada no se
+     * puede re-simular. Es la misma dirección = la misma partida, o no es nada.
+     */
+    const semilla = Number(new URLSearchParams(location.search).get('semilla'));
+    if (Number.isFinite(semilla) && semilla > 0) hub.reset(idJuego, { semilla, seed: semilla });
 
     for (const s of ANDAMIO) await cargar(s);
 

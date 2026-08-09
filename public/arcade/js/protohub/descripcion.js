@@ -221,7 +221,28 @@ function contarLaMesa(st, juego) {
     if (Array.isArray(st.mano) && st.mano.length) t.push(`Tu mano: ${lista(st.mano)}`);
     if (Array.isArray(st.player_hand) && st.player_hand.length) t.push(`Tu mano: ${lista(st.player_hand)}`);
     if (Array.isArray(st.jugador) && st.jugador.length) t.push(`Tus cartas: ${lista(st.jugador)}`);
-    if (Array.isArray(st.caja)) t.push(`Tu caja: ${st.caja.map(c => c ?? '?').join(' ')}`);
+    /**
+     * ⚠️ SI LA MESA ENSEÑA UN 12, AQUÍ NO PUEDE PONER `B_R`.
+     *
+     * Un juego puede declarar `cara: 'valor'`: que su palo no pinta nada y lo que
+     * identifica a la carta es su valor. Entropy lo hace —se suman valores y se
+     * anulan dos iguales en la misma columna— y la mesa de casino ya dibuja el
+     * número.
+     *
+     * Si esta puerta siguiera diciendo `B_R`, la persona jugaría leyendo un 12 y
+     * el agente tendría que saberse de memoria que el rey de bastos vale doce. Y
+     * entonces las dos filas de la tabla dejarían de ser comparables: no estarían
+     * jugando al mismo juego, estarían jugando a juegos con distinta dificultad de
+     * lectura. La puerta de texto y la mesa tienen que contar lo MISMO.
+     */
+    const cara = (c) => {
+        if (c === null || c === undefined) return '?';
+        if (st.cara !== 'valor' || !st.valores) return c;
+        const r = String(c).split('_').slice(1).join('_');
+        return String(st.simbolos?.[r] ?? st.valores[r] ?? r);
+    };
+
+    if (Array.isArray(st.caja)) t.push(`Tu caja: ${st.caja.map(cara).join(' ')}`);
 
     // Lo de todos.
     if (st.triunfo) t.push(`Triunfo: ${st.triunfo}`);
@@ -229,13 +250,13 @@ function contarLaMesa(st, juego) {
         t.push(`En la baza: ${st.baza.map(j => `${j.jugador} juega ${j.carta}`).join(', ')}`);
     }
     if (st.cima) t.push(`Cima del descarte: ${st.cima}${st.color ? ` (color ${st.color})` : ''}`);
-    if (typeof st.descarte === 'string') t.push(`Descarte: ${st.descarte}`);
+    if (typeof st.descarte === 'string') t.push(`Descarte: ${cara(st.descarte)}`);
     if (Array.isArray(st.community_cards) && st.community_cards.length) {
         t.push(`Cartas comunes: ${lista(st.community_cards)}`);
     }
     if (Array.isArray(st.casa) && st.casa.length) t.push(`La casa muestra: ${lista(st.casa)}`);
     if (Array.isArray(st.cajas_rivales)) {
-        t.push(`Cajas rivales: ${st.cajas_rivales.map(c => c.map(x => x ?? '?').join('')).join(' | ')}`);
+        t.push(`Cajas rivales: ${st.cajas_rivales.map(c => c.map(cara).join(' ')).join(' | ')}`);
     }
 
     // Lo que se puede contar de los demás sin ver sus cartas.
