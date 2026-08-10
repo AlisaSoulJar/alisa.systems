@@ -1,0 +1,182 @@
+{
+  "ajedrez": {
+    "pagina": "chess.html",
+    "propia": true,
+    "titulo": "Ajedrez",
+    "sillas": 2
+  },
+  "go": {
+    "pagina": "go.html",
+    "propia": true,
+    "titulo": "Go",
+    "sillas": 2
+  },
+  "reversi": {
+    "pagina": "reversi.html",
+    "propia": true,
+    "titulo": "Reversi",
+    "sillas": 2
+  },
+  "damas": {
+    "pagina": "checkers.html",
+    "propia": true,
+    "titulo": "Damas",
+    "sillas": 2
+  },
+  "xiangqi": {
+    "pagina": "xiangqi.html",
+    "propia": true,
+    "titulo": "Xiangqi",
+    "sillas": 2
+  },
+  "mancala": {
+    "pagina": "mancala.html",
+    "propia": true,
+    "titulo": "Mancala",
+    "sillas": 2
+  },
+  "snake": {
+    "pagina": "snake.html",
+    "propia": true,
+    "titulo": "Snake",
+    "sillas": 1
+  },
+  "fagocito": {
+    "pagina": "fagocito.html",
+    "propia": true,
+    "titulo": "Fagocito",
+    "sillas": 1
+  },
+  "peaton": {
+    "pagina": "peaton.html",
+    "propia": true,
+    "titulo": "Peatón",
+    "sillas": 1
+  },
+  "blackjack": {
+    "pagina": "blackjack.html",
+    "propia": true,
+    "titulo": "Blackjack",
+    "sillas": 1
+  },
+  "poker": {
+    "pagina": "poker.html",
+    "propia": true,
+    "titulo": "Póker",
+    "sillas": 1
+  },
+  "brisca": {
+    "pagina": "mesa.html",
+    "propia": false,
+    "titulo": "Brisca",
+    "sillas": 4
+  },
+  "tute": {
+    "pagina": "mesa.html",
+    "propia": false,
+    "titulo": "Tute",
+    "sillas": 4
+  },
+  "hearts": {
+    "pagina": "mesa.html",
+    "propia": false,
+    "titulo": "Hearts",
+    "sillas": 4
+  },
+  "spades": {
+    "pagina": "mesa.html",
+    "propia": false,
+    "titulo": "Spades",
+    "sillas": 4
+  },
+  "guerra": {
+    "pagina": "mesa.html",
+    "propia": false,
+    "titulo": "Guerra (control)",
+    "sillas": 1
+  },
+  "gofish": {
+    "pagina": "mesa.html",
+    "propia": false,
+    "titulo": "Go Fish",
+    "sillas": 3
+  },
+  "unit": {
+    "pagina": "mesa.html",
+    "propia": false,
+    "titulo": "Unit",
+    "sillas": 4
+  },
+  "entropy": {
+    "pagina": "entropy.html",
+    "propia": true,
+    "titulo": "Entropy",
+    "sillas": 2
+  },
+  "sokoban": {
+    "pagina": "mesa.html",
+    "propia": false,
+    "titulo": "Sokoban",
+    "sillas": 1
+  },
+  "cripta": {
+    "pagina": "mesa.html",
+    "propia": false,
+    "titulo": "Cripta",
+    "sillas": 1
+  },
+  "flota": {
+    "pagina": "mesa.html",
+    "propia": false,
+    "titulo": "Flota",
+    "sillas": 2
+  },
+  "defensa": {
+    "pagina": "mesa.html",
+    "propia": false,
+    "titulo": "Defensa",
+    "sillas": 2
+  },
+  "sigilo": {
+    "pagina": "mesa.html",
+    "propia": false,
+    "titulo": "Sigilo",
+    "sillas": 2
+  },
+  "frentes": {
+    "pagina": "mesa.html",
+    "propia": false,
+    "titulo": "Frentes",
+    "sillas": 2
+  },
+  "relevo": {
+    "pagina": "mesa.html",
+    "propia": false,
+    "titulo": "Relevo",
+    "sillas": 2
+  },
+  "cabina": {
+    "pagina": "mesa.html",
+    "propia": false,
+    "titulo": "Cabina",
+    "sillas": 2
+  },
+  "rebano": {
+    "pagina": "mesa.html",
+    "propia": false,
+    "titulo": "Rebano",
+    "sillas": 1
+  },
+  "pradera": {
+    "pagina": "mesa.html",
+    "propia": false,
+    "titulo": "Pradera",
+    "sillas": 1
+  },
+  "nave": {
+    "pagina": "mesa.html",
+    "propia": false,
+    "titulo": "Nave",
+    "sillas": 4
+  }
+}

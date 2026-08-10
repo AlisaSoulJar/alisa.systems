@@ -1,0 +1,235 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA Arcade — Entrar</title>
+<link rel="stylesheet" href="css/arcade.css">
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+<!--
+  entrar.html — la puerta: eliges con quién juegas y a qué, y sales con el enlace
+  ═══════════════════════════════════════════════════════════════════════════════
+
+  ⚠️ POR QUÉ EXISTE, Y NO ES COMODIDAD.
+
+  Hasta hoy, invitar a alguien era fabricar una dirección a mano. En una sola
+  tarde eso falló dos veces, las dos en silencio:
+
+    · se compartió un enlace con `&yo=NOMBRE` y alguien lo abrió TAL CUAL — se
+      sentó a la mesa llamándose «NOMBRE» y ocupó una de las dos sillas;
+    · y una sala que ya había servido para probar se repartió como si estuviera
+      limpia, con un asiento gastado dentro.
+
+  Ninguna de las dos dio error. La mesa hizo exactamente lo que se le pidió. El
+  fallo estaba antes: en que hubiera que escribir la dirección.
+
+  Aquí no hay nada que sustituir ni que recordar. Eliges, y el enlace se fabrica
+  solo — sin `?yo=`, para que cada quien coja su nombre y su silla al entrar.
+
+  ⚠️ Y NO TRAE NINGUNA LISTA DE JUEGOS.
+  Los treinta salen de `rules/index.js`, y a qué página va cada uno de
+  `data/paginas.json`, que se GENERA leyendo las propias páginas. Este proyecto
+  ya ha tenido cinco listas escritas a mano separándose de la realidad sin avisar
+  —los juegos del README, el escaparate, el catálogo del gym, las barajas— y la
+  sexta no va a nacer aquí.
+-->
+<style>
+    .puerta { max-width: 680px; margin: 0 auto; padding: 28px 18px 60px; }
+    .puerta h1 { font-size: 26px; margin: 0 0 4px; }
+    .puerta .sub { color: rgba(255,255,255,0.45); font-size: 13px; margin-bottom: 26px; }
+
+    .campo { margin-bottom: 22px; }
+    .campo > label { display: block; font-size: 12px; letter-spacing: 0.5px;
+                     text-transform: uppercase; color: rgba(255,255,255,0.5);
+                     margin-bottom: 8px; }
+    .campo input[type=text], .campo select {
+        width: 100%; box-sizing: border-box; font: inherit; font-size: 15px;
+        padding: 12px 14px; border-radius: 9px; color: #e8e8f0;
+        background: rgba(12,12,22,0.8); border: 1px solid rgba(138,43,226,0.35);
+    }
+    .campo input:focus, .campo select:focus { outline: none; border-color: #a180ff; }
+
+    .opciones { display: flex; flex-wrap: wrap; gap: 8px; }
+    .opcion { flex: 1 1 190px; text-align: left; font: inherit; font-size: 14px;
+              padding: 13px 15px; border-radius: 9px; cursor: pointer; color: #e8e8f0;
+              background: rgba(12,12,22,0.8); border: 1px solid rgba(138,43,226,0.3); }
+    .opcion small { display: block; margin-top: 3px; font-size: 11.5px;
+                    color: rgba(255,255,255,0.42); }
+    .opcion[aria-pressed=true] { background: rgba(138,43,226,0.28); border-color: #a180ff; }
+    .opcion:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .ir { width: 100%; font: inherit; font-size: 16px; font-weight: 700;
+          padding: 15px; border-radius: 10px; cursor: pointer; color: #fff;
+          background: linear-gradient(135deg, #7b3fe4, #a180ff); border: none; }
+    .ir:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .invitacion { margin-top: 22px; padding: 15px; border-radius: 10px;
+                  background: rgba(12,12,22,0.8); border: 1px solid rgba(138,43,226,0.25); }
+    .invitacion label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;
+                        color: rgba(255,255,255,0.5); }
+    .invitacion .fila { display: flex; gap: 8px; margin-top: 8px; }
+    .invitacion input { flex: 1; min-width: 0; font: inherit; font-size: 13px;
+                        padding: 10px 12px; border-radius: 8px; color: #cfc6ff;
+                        background: rgba(0,0,0,0.35); border: 1px solid rgba(138,43,226,0.25); }
+    .invitacion button { font: inherit; font-size: 13px; padding: 10px 16px; border-radius: 8px;
+                         cursor: pointer; color: #e8e8f0; background: rgba(138,43,226,0.25);
+                         border: 1px solid rgba(161,128,255,0.4); }
+    .nota { margin-top: 10px; font-size: 12px; color: rgba(255,255,255,0.45); line-height: 1.5; }
+    .aviso { margin-top: 10px; font-size: 13px; color: #ffcf8b; }
+</style>
+
+<div class="puerta">
+    <h1>Entrar a jugar</h1>
+    <div class="sub">Eliges, y el enlace para invitar se hace solo.</div>
+
+    <div class="campo">
+        <label for="nombre">Tu nombre en la mesa</label>
+        <input type="text" id="nombre" maxlength="24" placeholder="como quieras que te llamen"
+               autocomplete="off" spellcheck="false">
+    </div>
+
+    <div class="campo">
+        <label for="juego">A qué</label>
+        <select id="juego"></select>
+    </div>
+
+    <div class="campo">
+        <label>Con quién</label>
+        <div class="opciones">
+            <button class="opcion" id="op-casa" aria-pressed="true">Contra la casa
+                <small>tú solo, aquí mismo</small></button>
+            <button class="opcion" id="op-gente" aria-pressed="false">Con más gente
+                <small>una sala, y un enlace para invitar</small></button>
+        </div>
+        <div class="aviso" id="aviso"></div>
+    </div>
+
+    <div class="campo" id="campo-sala" hidden>
+        <label for="sala">Sala</label>
+        <input type="text" id="sala" maxlength="40" autocomplete="off" spellcheck="false">
+        <div class="nota">Se ha inventado una libre. Si te han pasado una, pégala aquí.</div>
+    </div>
+
+    <button class="ir" id="ir">Jugar</button>
+
+    <div class="invitacion" id="invitacion" hidden>
+        <label>Enlace para invitar</label>
+        <div class="fila">
+            <input type="text" id="enlace" readonly>
+            <button id="copiar">Copiar</button>
+        </div>
+        <div class="nota">
+            No lleva tu nombre a propósito: cada quien coge el suyo y su silla al entrar.
+            Compártelo y sentaos.
+        </div>
+    </div>
+</div>
+
+<script type="module">
+import { JUEGOS, TITULOS, SILLAS } from './js/protohub/rules/index.js';
+import { limpiar, nombreParaSala } from './js/protohub/sala.js';
+
+const $ = (id) => document.getElementById(id);
+
+/** A qué página va cada juego. Generado leyendo las páginas — ver gen_paginas.mjs. */
+const paginas = await fetch('/data/paginas.json').then(r => r.json()).catch(() => ({}));
+const paginaDe = (j) => paginas[j]?.pagina ?? 'mesa.html';
+
+/**
+ * ⚠️ UN NOMBRE DE SALA QUE SE PUEDA DICTAR POR TELÉFONO.
+ *
+ * Sin `l`/`1`, `o`/`0` ni `i`: no es purismo, es que este nombre se copia, se
+ * pega y a veces se lee en voz alta. Un `1` que alguien teclea como `l` manda a
+ * dos personas a dos salas distintas, y las dos ven una mesa vacía preguntándose
+ * dónde está el otro. Ese fallo no da error en ninguna parte.
+ */
+const salaNueva = () => {
+    const abc = '23456789abcdefghjkmnpqrstuvwxyz';
+    return Array.from({ length: 5 }, () => abc[Math.floor(Math.random() * abc.length)]).join('');
+};
+
+// ── Los juegos, ordenados por título, con sus sillas ──────────────────────
+const orden = [...JUEGOS].sort((a, b) =>
+    (TITULOS[a] ?? a).localeCompare(TITULOS[b] ?? b, 'es'));
+$('juego').innerHTML = orden.map(j => {
+    const n = SILLAS[j] ?? 1;
+    return `<option value="${j}">${TITULOS[j] ?? j} — ${n === 1 ? 'un jugador' : n + ' jugadores'}</option>`;
+}).join('');
+
+// Si vienes de un enlace, la antesala ya sabe a qué venías.
+const p = new URLSearchParams(location.search);
+if (JUEGOS.includes(p.get('juego'))) $('juego').value = p.get('juego');
+$('sala').value = limpiar(p.get('sala'), 40) || salaNueva();
+$('nombre').value = limpiar(p.get('yo'), 24)
+    || (localStorage.getItem('alisa:nombre') ?? '');
+
+let conGente = !!p.get('sala');
+
+function pintar() {
+    const juego = $('juego').value;
+    const sillas = SILLAS[juego] ?? 1;
+
+    /**
+     * ⚠️ UN SOLITARIO NO ADMITE COMPAÑÍA, Y SE DICE ANTES DE INTENTARLO.
+     *
+     * El árbitro ya lo rechaza con su motivo, pero enterarte DESPUÉS de haber
+     * compartido un enlace es enterarte tarde: el otro ya ha abierto una mesa
+     * donde no cabe. Aquí el botón se apaga y se explica por qué.
+     */
+    const solitario = sillas <= 1;
+    $('op-gente').disabled = solitario;
+    if (solitario && conGente) conGente = false;
+    $('aviso').textContent = solitario
+        ? `${TITULOS[juego] ?? juego} es de un jugador: no hay sala que compartir.`
+        : '';
+
+    $('op-casa').setAttribute('aria-pressed', String(!conGente));
+    $('op-gente').setAttribute('aria-pressed', String(conGente));
+    $('campo-sala').hidden = !conGente;
+    $('invitacion').hidden = !conGente;
+
+    if (conGente) {
+        const sala = limpiar($('sala').value, 40) || salaNueva();
+        $('enlace').value = `${location.origin}/arcade/${paginaDe(juego)}`
+            + `?sala=${sala}` + (paginaDe(juego) === 'mesa.html' ? `&juego=${juego}` : '');
+    }
+}
+
+const enlaceFinal = () => {
+    const juego = $('juego').value;
+    const nombre = limpiar($('nombre').value, 24);
+    const args = new URLSearchParams();
+    if (conGente) args.set('sala', limpiar($('sala').value, 40) || salaNueva());
+    // `mesa.html` sirve a los treinta, así que necesita saber a qué se juega.
+    if (paginaDe(juego) === 'mesa.html') args.set('juego', juego);
+    if (nombre) args.set('yo', nombre);
+    return `${paginaDe(juego)}?${args}`;
+};
+
+$('juego').onchange = pintar;
+$('sala').oninput = pintar;
+$('op-casa').onclick = () => { conGente = false; pintar(); };
+$('op-gente').onclick = () => { conGente = true; pintar(); };
+
+$('nombre').oninput = () => {
+    // Se recuerda para la próxima: escribir tu nombre cada vez es la clase de
+    // fricción que hace que la gente no vuelva.
+    const n = limpiar($('nombre').value, 24);
+    if (n) localStorage.setItem('alisa:nombre', n);
+};
+
+$('copiar').onclick = async () => {
+    try {
+        await navigator.clipboard.writeText($('enlace').value);
+        $('copiar').textContent = 'Copiado';
+        setTimeout(() => { $('copiar').textContent = 'Copiar'; }, 1600);
+    } catch {
+        // Sin permiso de portapapeles —o sin https— se selecciona para copiar a
+        // mano. Un botón que no hace nada y no lo dice es peor que no tenerlo.
+        $('enlace').select();
+        $('copiar').textContent = 'Cópialo tú';
+    }
+};
+
+$('ir').onclick = () => { location.href = enlaceFinal(); };
+
+pintar();
+</script>
