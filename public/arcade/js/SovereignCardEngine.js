@@ -93,7 +93,27 @@ class SovereignCardEngine {
         this.scene = new THREE.Scene();
         this.scene.fog = new THREE.FogExp2(0x05050A, 0.015);
 
-        this.camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+        /**
+         * ⚠️ UN ASPECTO `NaN` DEJA LA PANTALLA EN NEGRO, SIN DECIR NADA.
+         *
+         * Esto era `window.innerWidth / window.innerHeight` a pelo. Si la página
+         * se monta antes de que el navegador haya compuesto la ventana —pasa en
+         * una pestaña de fondo, y pasa en algunos móviles al restaurar—, las dos
+         * medidas valen 0: `0/0` es `NaN`, la matriz de proyección se corrompe
+         * entera y **no se dibuja un solo píxel**.
+         *
+         * Y no salta ningún error: Three multiplica con `NaN` tan tranquilo. Se
+         * cazó lanzando un rayo desde la cámara y viendo que su dirección era
+         * `[null, null, null]` mientras la escena estaba perfectamente montada.
+         *
+         * Es el mismo cero de `esPantallaEstrecha()`: no es una medida pequeña,
+         * es «todavía no lo sé». Se responde 16:9 y `onWindowResize` lo corrige
+         * en cuanto haya una medida de verdad.
+         */
+        const aspecto = (window.innerWidth > 0 && window.innerHeight > 0)
+            ? window.innerWidth / window.innerHeight
+            : 16 / 9;
+        this.camera = new THREE.PerspectiveCamera(45, aspecto, 0.1, 100);
         this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -127,6 +147,11 @@ class SovereignCardEngine {
 
     onWindowResize() {
         if (!this.camera || !this.renderer) return;
+        // Mismo cuidado que al crearla: un `resize` a 0×0 —minimizar la ventana,
+        // cambiar de pestaña en algunos navegadores— metería `NaN` en la matriz y
+        // dejaría la pantalla en negro AL VOLVER, que es cuando nadie lo asocia
+        // con haberla minimizado.
+        if (!(window.innerWidth > 0 && window.innerHeight > 0)) return;
         this.camera.aspect = window.innerWidth / window.innerHeight;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(window.innerWidth, window.innerHeight);

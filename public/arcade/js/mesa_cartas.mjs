@@ -37,6 +37,7 @@
  */
 import { sustratoDe } from './protohub/sustrato.js';
 import { crearMarcas, VERDE, MORADO, ACIERTO } from './protohub/marcas.js';
+import { amueblar } from './protohub/habitacion.js';
 
 /**
  * Dónde se sienta cada zona. La mesa mira desde el asiento 0, abajo.
@@ -126,6 +127,16 @@ function encuadrar(motor) {
     if (mesa)  mesa.visible  = !estrecha;
     if (canto) canto.visible = !estrecha;
     if (tapiz) tapiz.visible = estrecha;
+
+    // Girar el teléfono cambia qué se ve: en horizontal cabe la habitación, en
+    // vertical no. Se quita y se pone de verdad —no se esconde— para que la
+    // niebla vuelva a ser la del motor, que es distinta de la de la sala.
+    const quiereSitio = new URLSearchParams(location.search).get('sitio') !== 'no';
+    if (quiereSitio && !estrecha && !motor.habitacion) motor.habitacion = amueblar(motor.scene);
+    if ((estrecha || !quiereSitio) && motor.habitacion) {
+        motor.habitacion.quitar();
+        motor.habitacion = null;
+    }
 
     if (estrecha) {
         motor.camera.position.set(0, 13.5, 5.2);
@@ -358,6 +369,24 @@ const engine = new SovereignCardEngine({
         scene.add(tapiz);
 
         this.piezasMesa = { mesa, canto, tapiz };
+
+        /**
+         * ⚠️ LA MESA, DENTRO DE UN SITIO.
+         *
+         * Hasta ahora flotaba en negro. Una habitación no es adorno: da escala
+         * —sin paredes no sabes si la mesa mide un metro o diez— y da sombra, que
+         * es lo que hace que las cartas parezcan estar APOYADAS y no pegadas.
+         *
+         * Sólo en pantalla ancha, por lo mismo que el óvalo: en un teléfono la
+         * mesa ocupa la pantalla entera y las paredes no llegan a verse, así que
+         * serían seis mallas que nadie mira.
+         *
+         * `?sitio=no` la apaga. No es un ajuste para el jugador: es para poder
+         * comparar las dos versiones sin recompilar nada cuando algo se vea raro.
+         */
+        const quiere = new URLSearchParams(location.search).get('sitio') !== 'no';
+        if (quiere && !this.esPantallaEstrecha()) this.habitacion = amueblar(scene);
+
         encuadrar(this);
 
         const foco = new THREE.SpotLight(0xffffff, 0.9, 0, Math.PI / 4, 0.5, 1);
