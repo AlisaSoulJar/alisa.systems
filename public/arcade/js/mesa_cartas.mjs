@@ -62,12 +62,27 @@ import { pintarJugadas as pintarBotones } from './protohub/jugadas.js';
  * pasa a ser un rectángulo alto de unos 5 de ancho por 11 de fondo — que es
  * justo la forma de un teléfono. Mismo juego, mismas zonas, otra colocación.
  */
-const sitios = (estrecha) => ({
+/**
+ * ⚠️ Y DEPENDE DE SI HAY ALGUIEN SENTADO A LOS LADOS.
+ *
+ * Las zonas de nadie —mazo, descarte, baza— se separaban 11 en horizontal, o sea
+ * a x ±5,5. Eso era libre en entropy, que se juega entre DOS: los lados estaban
+ * vacíos. La brisca se juega entre cuatro, y sus asientos laterales ocupan de 5,69
+ * a 7,31... justo encima. La baza y el mazo se dibujaban DENTRO de las manos de
+ * los rivales, y como todo son cartas blancas sobre fieltro verde, no parecía un
+ * error: parecía que el mazo había desaparecido.
+ *
+ * No se arregla moviendo el mazo a mano, que sería volver a calibrar mirando un
+ * juego. Se arregla preguntando lo único que decide el sitio: si esos asientos
+ * están ocupados. Con dos jugadores el centro sigue teniendo toda la anchura.
+ */
+const sitios = (estrecha, conLaterales = false) => ({
     0:    { x:  0.0, z:  2.9, layout: 'fan',  reparto: 'x', paso: 6 },  // tú, cerca de la cámara
     1:    { x:  0.0, z: -2.9, layout: 'fan',  reparto: 'x', paso: 6 },  // el de enfrente
     2:    { x: estrecha ? -3.2 : -6.5, z: 0.0, layout: 'fan', reparto: 'z', paso: 4 },
     3:    { x: estrecha ?  3.2 :  6.5, z: 0.0, layout: 'fan', reparto: 'z', paso: 4 },
-    mesa: { x:  0.0, z:  0.0, layout: 'line', reparto: 'x', paso: estrecha ? 3.6 : 11 },
+    mesa: { x:  0.0, z:  0.0, layout: 'line', reparto: 'x',
+            paso: estrecha ? 3.6 : (conLaterales ? 5 : 11) },
 });
 
 /**
@@ -160,6 +175,72 @@ function encuadrar(motor) {
         motor.camera.lookAt(0, 0, 1.3);
     }
     if (motor.controls) { motor.controls.target.set(0, 0, estrecha ? 0.9 : 1.3); motor.controls.update(); }
+}
+
+/**
+ * ⚠️ Y ACERCARSE HASTA QUE LO REPARTIDO LLENE LA PANTALLA.
+ *
+ * Las posiciones de arriba se calibraron mirando ENTROPY, que extiende una rejilla
+ * de ocho por jugador. La brisca reparte tres cartas a cada uno: ocupa 16 unidades
+ * de ancho donde esa cámara encuadra 30, o sea que la mitad de la pantalla era
+ * fieltro vacío y las cartas salían a cincuenta píxeles — ilegibles por lejanas, no
+ * por mal dibujadas. Es el mismo error que agrandar la letra de un cartel que está
+ * demasiado lejos.
+ *
+ * Una posición fija no puede servir a diez juegos que reparten cantidades muy
+ * distintas, y una tabla de posiciones por juego sería otra lista escrita a mano
+ * que se separa de la realidad en cuanto alguien cambie un reparto. Así que se
+ * MIDE: se coge lo que hay repartido y se acerca la cámara por su propio eje hasta
+ * que quepa justo, con un margen.
+ *
+ * Se itera porque al acercarse cambia la perspectiva y con ella lo que ocupa: cinco
+ * pasadas bastan para converger. Y sólo se acerca —nunca se aleja más allá de lo
+ * calibrado—, para que un juego con MÁS cartas que entropy siga cabiendo.
+ */
+function acercar(motor, margen = 1.12) {
+    if (motor.invitado || !motor.camera || !motor.scene) return;
+    const caja = new THREE.Box3();
+    let hay = false;
+    motor.scene.traverse((o) => {
+        if (o.isMesh && o.userData && o.userData.zona !== undefined) { caja.expandByObject(o); hay = true; }
+    });
+    if (!hay || caja.isEmpty()) return;   // sin repartir todavía: no hay qué encuadrar
+
+    const objetivo = motor.controls ? motor.controls.target.clone()
+                                    : new THREE.Vector3(0, 0, 1.3);
+    const eje = motor.camera.position.clone().sub(objetivo);
+    const lejos = eje.length();
+    if (!(lejos > 0.001)) return;
+    eje.normalize();
+
+    const esquinas = [];
+    for (const x of [caja.min.x, caja.max.x])
+        for (const y of [caja.min.y, caja.max.y])
+            for (const z of [caja.min.z, caja.max.z]) esquinas.push(new THREE.Vector3(x, y, z));
+
+    const tanV = Math.tan((motor.camera.fov * Math.PI) / 360);
+    const tanH = tanV * motor.camera.aspect;
+
+    let d = lejos;
+    for (let paso = 0; paso < 5; paso++) {
+        motor.camera.position.copy(objetivo).addScaledVector(eje, d);
+        motor.camera.lookAt(objetivo);
+        motor.camera.updateMatrixWorld(true);
+        const inv = motor.camera.matrixWorldInverse;
+        let peor = 0;
+        for (const e of esquinas) {
+            const v = e.clone().applyMatrix4(inv);
+            const prof = -v.z;
+            if (prof <= 0.01) return;     // algo detrás de la cámara: mejor no tocar
+            peor = Math.max(peor, Math.abs(v.x) / (prof * tanH), Math.abs(v.y) / (prof * tanV));
+        }
+        if (!(peor > 0)) return;
+        d *= peor * margen;
+        if (d > lejos) d = lejos;         // nunca más lejos de lo calibrado
+    }
+    motor.camera.position.copy(objetivo).addScaledVector(eje, d);
+    motor.camera.lookAt(objetivo);
+    if (motor.controls) motor.controls.update();
 }
 
 /**
@@ -305,8 +386,28 @@ function pintarJugadas(motor, data) {
     });
 }
 
+/**
+ * ⚠️ AQUÍ HABÍA UN `?? 'entropy'`, Y SE COMIÓ SIETE JUEGOS SIN DAR UN ERROR.
+ *
+ * Esta mesa se carga como `<script type="module">` que se monta solo, así que
+ * recibe el juego por `window.ALISA_JUEGO`. `entropy.html` lo ponía a mano y
+ * `montarMesa` no —de modo que la brisca, el tute y los otros cinco abrían la
+ * mesa, la dibujaban entera... y repartían ENTROPY—. Lo único que se veía era un
+ * «Repartiendo…» eterno y un aviso en consola nombrando un juego que no era el de
+ * la dirección.
+ *
+ * El valor por defecto es lo que lo hizo invisible: el único caso probado era
+ * justo el del defecto, así que la trampa estaba tapada por quien la puso. Ahora
+ * no hay defecto — quien monte esta mesa declara a qué se juega o revienta aquí
+ * mismo, en voz alta, en la línea que tiene la culpa.
+ */
+if (!window.ALISA_JUEGO) {
+    throw new Error('mesa_cartas: falta `window.ALISA_JUEGO`. Lo pone `montarMesa` '
+                  + '(o la sala que hospeda). Sin eso no se sabe qué se reparte.');
+}
+
 const engine = new SovereignCardEngine({
-    gameId: window.ALISA_JUEGO ?? 'entropy',
+    gameId: window.ALISA_JUEGO,
 
     /**
      * ⚠️ SI ALGUIEN HA PUESTO UNA SALA, SE JUEGA DENTRO DE ELLA.
@@ -510,7 +611,8 @@ const engine = new SovereignCardEngine({
 
         // La colocación se pregunta AQUÍ y no se guarda: en un móvil que gira,
         // una tabla calculada al arrancar sería la de la orientación anterior.
-        const SITIO = sitios(this.esPantallaEstrecha());
+        const SITIO = sitios(this.esPantallaEstrecha(),
+                             porDueno.has(2) || porDueno.has(3));
 
         for (const [clave, lote] of porDueno) {
             const sitio = String(clave).startsWith('@')
@@ -614,6 +716,10 @@ const engine = new SovereignCardEngine({
         // Si la partida avanzó, el comodín a medio recolocar ya no significa nada.
         if (!data.robada) esperandoTuki = null;
         repintarMarcas(this);
+
+        // Con las cartas ya colocadas se puede medir qué ocupan, que es lo único
+        // que dice a qué distancia hay que ponerse. Antes de repartir no hay nada.
+        acercar(this);
     },
 });
 

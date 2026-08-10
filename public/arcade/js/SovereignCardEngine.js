@@ -1217,21 +1217,41 @@ class SovereignCardEngine {
             return canvas;
         }
 
-        // --- CORNER INDICES ---
+        /**
+         * --- ÍNDICES DE ESQUINA ---
+         *
+         * ⚠️ ESTABAN CALIBRADOS PARA UNA CARTA QUE SE TIENE EN LA MANO, Y ÉSTAS
+         * ESTÁN SOBRE UNA MESA.
+         *
+         * Un 32px sobre una textura de 256 se ve perfecto si la miras a tamaño
+         * completo. En la mesa la carta ocupa unos 50 píxeles de ancho, así que ese
+         * índice acaba midiendo seis: una manchita. Se midió contando tinta sobre la
+         * propia textura, y salió que las cartas de número llevaban 1,0–1,8 % frente
+         * al 7,1 % de `num_12`, que sí se lee, y al 14–31 % de las figuras.
+         *
+         * Y no era cosa de la baraja española: `S_2` daba 1,73 %. O sea que TODAS
+         * las cartas bajas del arcade llevaban desde siempre casi en blanco, y no se
+         * notó porque el único juego que se miraba —entropy— usa la cara `num_`, y
+         * poker y blackjack tienen visualizador propio. Una carta ilegible sigue
+         * siendo una carta válida: no da error, sólo hace el juego injugable.
+         *
+         * Los tamaños de aquí abajo no son gusto, son el mínimo que pasa el suelo de
+         * `_tintaDeCara()`. Si alguien los baja, la prueba lo dice.
+         */
         ctx.fillStyle = color;
-        // Top-left
+        // Arriba a la izquierda
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.font = 'bold 32px Georgia';
-        ctx.fillText(rank, 30, 36);
-        this._drawSuit(ctx, suitId, 30, 62, 11);
-        // Bottom-right (rotated 180°)
+        ctx.font = 'bold 58px Georgia';
+        ctx.fillText(rank, 44, 48);
+        this._drawSuit(ctx, suitId, 44, 100, 20);
+        // Abajo a la derecha, girada 180°
         ctx.save();
-        ctx.translate(W - 30, H - 36);
+        ctx.translate(W - 44, H - 48);
         ctx.rotate(Math.PI);
         ctx.fillStyle = color;
-        ctx.font = 'bold 32px Georgia';
+        ctx.font = 'bold 58px Georgia';
         ctx.fillText(rank, 0, 0);
-        this._drawSuit(ctx, suitId, 0, 26, 11);
+        this._drawSuit(ctx, suitId, 0, 52, 20);
         ctx.restore();
 
         // --- COURT CARDS ---
@@ -1259,31 +1279,63 @@ class SovereignCardEngine {
             return canvas;
         }
 
-        // --- PIP CARDS (A through 10) ---
+        /**
+         * --- CARTAS DE NÚMERO ---
+         *
+         * ⚠️ AQUÍ HABÍA UNA REJILLA DE PINTAS, Y ES LA DE UNA CARTA QUE SE SOSTIENE
+         * EN LA MANO.
+         *
+         * Estas cartas están TUMBADAS sobre una mesa y se ven en escorzo desde unos
+         * treinta y siete grados. En esa postura la mitad de arriba se comprime y
+         * las esquinas son el peor sitio posible para lo único que hay que leer.
+         * Agrandar los índices ayudó y no bastó: se veían dos pintas y un número
+         * que había que adivinar.
+         *
+         * Y la solución ya estaba escrita. `_drawCartaNumero` —la cara que se hizo
+         * para entropy— pone el valor enorme en el centro, mide 7,1 % de tinta y se
+         * lee de un vistazo. Aquí se hace lo mismo conservando el palo, que en la
+         * brisca y el tute ES el juego: número grande en medio y la pinta debajo,
+         * dibujada con el mismo `_drawSuit` de siempre.
+         *
+         * Se pierde la rejilla tradicional. Es una pérdida real y se acepta a
+         * sabiendas: una carta bonita que no se puede leer no es una carta bonita.
+         */
         const pipPositions = this._getPipPositions(rank);
         if (pipPositions) {
-            const pipArea = { x: 40, y: 90, w: W - 80, h: H - 180 };
-            const isAce = rank === 'A';
-            const pipSize = isAce ? 40 : 18;
+            // Los oros son #E6A817, que sobre papel blanco casi no se ve. Para las
+            // formas rellenas va bien; para un glifo hace falta contraste.
+            const tinta = color === '#E6A817' ? '#A9750B' : color;
 
-            ctx.fillStyle = color;
-            for (const [col, row, rotated] of pipPositions) {
-                const px = pipArea.x + col * pipArea.w;
-                const py = pipArea.y + row * pipArea.h;
-                
-                if (rotated) {
-                    ctx.save();
-                    ctx.translate(px, py);
-                    ctx.rotate(Math.PI);
-                    this._drawSuit(ctx, suitId, 0, 0, pipSize);
-                    ctx.restore();
-                } else {
-                    this._drawSuit(ctx, suitId, px, py, pipSize);
-                }
-            }
+            ctx.fillStyle = tinta;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.font = 'bold 168px Georgia';
+            ctx.fillText(rank, W / 2, H * 0.44);
+
+            this._drawSuit(ctx, suitId, W / 2, H * 0.76, 44);
         }
-        
+
         return canvas;
+    }
+
+    /**
+     * ⚠️ CUÁNTA TINTA LLEVA UNA CARA. EL ÚNICO MODO DE VER «CASI EN BLANCO».
+     *
+     * Este proyecto lleva media docena de cartas invisibles: los comodines sin
+     * glifo, las figuras españolas sin lámina, y ahora todas las de número. Ninguna
+     * dio nunca un error, porque una textura en blanco es una textura válida — y
+     * mirar una captura no basta: el ojo perdona un 1,8 % que en la mesa no se lee.
+     *
+     * Así que se cuenta. Devuelve el porcentaje de píxeles que no son el papel ni
+     * su borde. `laboratorio_caras.html` lo recorre entero contra `SUELO_TINTA`.
+     */
+    _tintaDeCara(cardId) {
+        const c = this.getCardCanvas(cardId);
+        const d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
+        let n = 0;
+        for (let i = 0; i < d.length; i += 4) {
+            if (d[i] < 200 || d[i + 1] < 200 || d[i + 2] < 160) n++;
+        }
+        return (100 * n) / (c.width * c.height);
     }
 
     getProceduralMaterial(cardId) {

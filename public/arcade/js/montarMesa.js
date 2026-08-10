@@ -111,7 +111,8 @@ export async function montarMesa(cfg) {
         throw new Error(`'${juego}' no está en rules/index.js — y esa es la única lista`);
     }
 
-    document.title = `ALISA Arcade — ${titulo ?? TITULOS[juego] ?? juego}`;
+    const nombre = titulo ?? TITULOS[juego] ?? juego;
+    document.title = `ALISA Arcade — ${nombre}`;
     hoja('css/arcade.css');
     hoja('css/mesa3d.css');
     hoja('/vendor/fonts/fuentes.css');
@@ -132,6 +133,21 @@ export async function montarMesa(cfg) {
     const reglas = await cargarReglas(juego, {});
     const hub = new ProtoHub().registrar(idJuego, reglas);
     window.ALISA_PROTOHUB = hub;
+
+    /**
+     * ⚠️ Y A QUÉ SE JUEGA. NO ES REDUNDANTE CON EL HUB.
+     *
+     * Los visualizadores se cargan como `<script type="module">` que se montan
+     * solos: no hay a quién pasarle argumentos, así que leen `window.ALISA_JUEGO`.
+     * `entropy.html` lo ponía a mano de cuando era una página escrita entera, y al
+     * convertir las demás en una línea de configuración nadie lo trajo aquí — con
+     * lo cual siete juegos abrían su mesa y repartían ENTROPY, en silencio, porque
+     * `mesa_cartas` tenía un `?? 'entropy'` que tapaba justo el único caso probado.
+     *
+     * Va antes de `cargar()` a propósito: el módulo lo lee al montarse.
+     */
+    window.ALISA_JUEGO = idJuego;
+    window.ALISA_TITULO = nombre;  // el nombre pelado: el HUD ya pone lo demás
 
     /**
      * ⚠️ `?semilla=` NO SE APLICABA, Y LAS PÁGINAS PROMETÍAN QUE SÍ.
