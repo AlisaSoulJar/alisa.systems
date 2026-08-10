@@ -214,7 +214,7 @@ export const cabina = {
                 : p.fuera ? 'El piloto ha salido'
                 : p.vidas <= 0 ? 'El piloto se quedó en los pozos' : 'Se acabó el tiempo',
             semilla: p.semilla,
-            legal_moves: legales, legal_actions: legales,
+            legal_moves: legales,
             is_game_over: terminada,
         };
     },

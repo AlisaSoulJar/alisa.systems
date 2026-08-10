@@ -203,7 +203,7 @@ export async function crearBlackjack({ url = RUTA_BIBLIOTECA } = {}) {
                 semilla: p.semilla,
                 mazo_restante: p.mazo.length,
                 manos: p.manos, ganadas: p.ganadas, perdidas: p.perdidas, empates: p.empates,
-                legal_moves: acciones, legal_actions: acciones,
+                legal_moves: acciones,
                 // La SESIÓN termina cuando se acaba el zapato; que una mano se
                 // resuelva no termina nada. Esta distinción es la que hacía
                 // fallar la verificación.

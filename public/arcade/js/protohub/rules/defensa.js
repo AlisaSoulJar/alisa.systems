@@ -210,7 +210,7 @@ export const defensa = {
                 : gane ? 'Has derribado su base'
                 : mio.vida <= 0 ? 'Te han derribado la base' : 'Tablas por tiempo',
             semilla: p.semilla,
-            legal_moves: legales, legal_actions: legales,
+            legal_moves: legales,
             is_game_over: terminada,
         };
     },

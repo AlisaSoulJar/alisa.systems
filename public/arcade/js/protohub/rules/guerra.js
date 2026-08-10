@@ -69,7 +69,6 @@ export async function crearGuerra({ url = RUTA_BIBLIOTECA, jugadores = 2 } = {})
                 biblioteca: p.biblioteca,
                 turn: 'player',
                 legal_moves: terminada ? ['nueva'] : ['voltear'],
-                legal_actions: terminada ? ['nueva'] : ['voltear'],
                 is_game_over: terminada,
             };
         },

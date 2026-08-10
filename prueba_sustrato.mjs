@@ -269,6 +269,117 @@ if (conMesa.length < SUELO_MESA_CARTAS) {
               + `(suelo: ${SUELO_MESA_CARTAS})`);
 }
 
+/**
+ * ⚠️ 2.quater — DOS NOMBRES PARA EL MISMO DATO. TECHO, Y SÓLO PUEDE BAJAR.
+ *
+ * Un juego que publica `legal_moves` y `legal_actions` con el mismo valor no
+ * tiene dos campos: tiene uno y una trampa. El día que alguien quite el que
+ * sobra, quien leyera el otro se queda sin nada — y no dará error, porque
+ * `undefined.length` en un `??` es silencio. Pasó a punto de pasar: la mesa de
+ * cartas leía el alias y no el canónico.
+ *
+ * ⚠️ SE MIDE POR VALOR, NO POR UNA LISTA DE SOSPECHOSOS.
+ *
+ * Una lista a mano es lo que ya falló seis veces en este proyecto — la última,
+ * dentro de `desajustes.mjs`, que juraba que `legal_actions` no lo leía nadie
+ * porque su lista de consumidores no incluía el motor de cartas.
+ *
+ * Comparar por valor tiene además una virtud: descarta solo los falsos
+ * positivos. `result` y `desenlace` NO coexisten en ningún juego —uno es
+ * notación de ajedrez (`1-0`), el otro una frase («Has salido de la cripta»)—
+ * así que jamás pueden dar el mismo valor y nunca aparecen aquí. Y `score` de
+ * go, reversi y mancala es un objeto `{black, white}` mientras `puntos` es tu
+ * escalar: distintos, y con razón — esa distinción nació del peor fallo del
+ * proyecto, un go que daba el marcador del rival como propio.
+ *
+ * La idea es de Fable 5, revisando esto como consultor externo.
+ */
+/**
+ * Hoy vale 1, y ese uno es `puntos / score` en cuatro juegos.
+ *
+ * No se arregla aquí a propósito: bajarlo a cero obliga a elegir cuál de los dos
+ * es el canónico, y ésa es una decisión de CONTRATO, no de limpieza. `score` es
+ * el nombre que entiende cualquier agente de gym; `puntos` lo publican veintisiete
+ * juegos y sale en el openapi de las mesas. Cambiar cualquiera de los dos toca a
+ * gente de fuera que no podemos auditar —`package.json` exporta `./reglas/*`—, así
+ * que se decide y se hace de una vez, no de pasada.
+ *
+ * Lo que este número garantiza mientras tanto es que no aparezca un segundo.
+ */
+const TECHO_SINONIMOS = 1;
+
+/**
+ * ⚠️ COINCIDIR UNA VEZ NO ES SER EL MISMO DATO.
+ *
+ * La primera versión contaba cualquier par que coincidiera en algún momento y
+ * daba SEIS, de los que la mitad eran ruido: `biblioteca` y `cartas_intactas`
+ * son dos booleanos que valen `true` los dos, y `explorado` y `puntos` cruzan el
+ * mismo número al pasar. Un detector con falsos positivos se ignora, y entonces
+ * deja de detectar.
+ *
+ * Se exige que coincidan en TODAS las jugadas medidas y que no diverjan NUNCA:
+ * dos nombres del mismo dato se mueven juntos siempre, y dos datos distintos que
+ * se cruzan un turno acaban separándose. Y los booleanos quedan fuera: que dos
+ * preguntas tengan la misma respuesta no las hace la misma pregunta.
+ */
+/**
+ * ⚠️ Y SE LLEVA LA CUENTA POR JUEGO, NO EN GLOBAL.
+ *
+ * Con una sola lista de «pares que han divergido», que `score` y `puntos` sean
+ * cosas distintas en go —allí `score` es `{black, white}` y `puntos` tu escalar—
+ * bastaría para absolver ese par en los OTROS seis juegos donde sí son el mismo
+ * número con dos nombres. Un falso negativo cómodo: da cero y no molesta.
+ *
+ * Dos campos pueden ser sinónimos en un juego y datos distintos en otro, y lo
+ * que hay que arreglar es sólo lo primero.
+ */
+const juntos = new Map();       // par -> juegos donde coinciden SIEMPRE
+const separados = new Set();    // "juego|par" que ha divergido alguna vez
+
+for (const juego of JUEGOS) {
+    const reglas = await cargarReglas(juego, {});
+    const p = reglas.nuevaPartida({ semilla: 6, seed: 6 });
+    for (let paso = 0; paso < 8; paso++) {
+        const st = reglas.estado(p);
+        const claves = Object.keys(st).filter(k => {
+            const v = st[k];
+            if (v === undefined || v === null || typeof v === 'boolean') return false;
+            if (v === 0 || v === '') return false;
+            if (Array.isArray(v)) return v.length > 0;
+            if (typeof v === 'object') return Object.keys(v).length > 0;
+            return true;
+        });
+        for (let i = 0; i < claves.length; i++) {
+            for (let j = i + 1; j < claves.length; j++) {
+                const par = [claves[i], claves[j]].sort().join(' / ');
+                if (JSON.stringify(st[claves[i]]) === JSON.stringify(st[claves[j]])) {
+                    if (!juntos.has(par)) juntos.set(par, new Set());
+                    juntos.get(par).add(juego);
+                } else {
+                    separados.add(`${juego}|${par}`);   // en ESTE juego, no lo son
+                }
+            }
+        }
+        if (st.is_game_over) break;
+        const m = reglas.sugerencia?.(p)
+            ?? (st.legal_moves ?? []).filter(x => x !== 'nueva' && x !== 'reset')[0];
+        if (!m || !reglas.mover(p, m)) break;
+    }
+}
+// En varios juegos, y en cada uno sin haberse separado jamás: ya no es casualidad.
+const repetidos = [...juntos]
+    .map(([par, js]) => [par, new Set([...js].filter(j => !separados.has(`${j}|${par}`)))])
+    .filter(([, js]) => js.size >= 2);
+console.log(`\n${repetidos.length} pares de campos son el mismo dato con dos nombres `
+          + `(techo: ${TECHO_SINONIMOS})`);
+for (const [par, js] of repetidos) console.log(`    ${par}  — en ${js.size} juegos`);
+if (repetidos.length > TECHO_SINONIMOS) {
+    mal(`SUBIÓ: ${repetidos.length} > ${TECHO_SINONIMOS}. Un juego nuevo publica `
+      + 'dos nombres para el mismo dato. Quita el que sobre, no subas el techo.');
+} else if (repetidos.length < TECHO_SINONIMOS) {
+    console.log(`  ↓ bajó. Actualiza TECHO_SINONIMOS a ${repetidos.length}.`);
+}
+
 // 3. La deuda.
 console.log(`\n${derivados}/${JUEGOS.length} juegos dependen del adaptador (techo: ${TECHO_DERIVADOS})`);
 if (derivados > TECHO_DERIVADOS) {

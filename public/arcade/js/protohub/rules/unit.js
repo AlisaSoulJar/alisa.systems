@@ -231,7 +231,6 @@ export async function crearUnit({ url = RUTA_BIBLIOTECA, jugadores = 4, mano = 7
                     p.manos.reduce((s, m) => s + m.length, 0) + p.mazo.length + p.descarte.length
                     === total,
                 legal_moves: legales,
-                legal_actions: legales,
                 is_game_over: p.fin,
             };
         },

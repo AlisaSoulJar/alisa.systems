@@ -168,7 +168,7 @@ export const rebano = {
                     - p.pasos - Math.round(lejania),
             turn: 'player',
             semilla: p.semilla,
-            legal_moves: legales, legal_actions: legales,
+            legal_moves: legales,
             is_game_over: terminada,
         };
     },

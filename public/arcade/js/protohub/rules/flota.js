@@ -182,7 +182,6 @@ export const flota = {
                 : gane ? 'Has hundido su flota' : perdi ? 'Te han hundido la flota' : 'Tablas por tiempo',
             semilla: p.semilla,
             legal_moves: legales,
-            legal_actions: legales,
             is_game_over: terminada,
         };
     },

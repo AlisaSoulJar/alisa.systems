@@ -1718,7 +1718,24 @@ class SovereignCardEngine {
         const stateObj = data.state || data;
         const movesEl = document.getElementById('ui-moves');
         if (movesEl) {
-             const mStr = (stateObj.legal_actions || []).join(", ");
+             /**
+              * ⚠️ `legal_moves` PRIMERO. Esta línea leía sólo `legal_actions`.
+              *
+              * Los dos campos son el mismo dato con dos nombres —veintiún juegos
+              * publican ambos con idéntico valor— y el canónico es `legal_moves`:
+              * lo publican los treinta, y `legal_actions` sólo veintiuno.
+              *
+              * Que esto leyera el alias y no el canónico convertía un duplicado
+              * inofensivo en una dependencia real: al quitar el campo sobrante, el
+              * panel de jugadas de TODA mesa de cartas habría empezado a decir
+              * «None» sin dar un error.
+              *
+              * Y lo peor: `desajustes.mjs` —la herramienta que existe justo para
+              * cazar esto— afirmaba que `legal_actions` no lo leía nadie, porque su
+              * lista de consumidores era a mano y no incluía este fichero. La
+              * encontró Fable 5 revisándolo de fuera.
+              */
+             const mStr = (stateObj.legal_moves ?? stateObj.legal_actions ?? []).join(", ");
              movesEl.innerText = mStr.length > 0 ? (mStr.length > 50 ? mStr.substring(0, 46) + "..." : mStr) : "None";
         }
     }

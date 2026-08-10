@@ -383,7 +383,7 @@ export async function crearPoker({ url = RUTA_BIBLIOTECA } = {}) {
                 mi_mano: p.comunes.length ? nombreDeMano(evaluar([...p.jugador, ...p.comunes])) : null,
                 puntos: p.fichasJugador - FICHAS_INICIALES,   // fichas netas
                 ganadas: p.ganadas, perdidas: p.perdidas,
-                legal_moves: acciones, legal_actions: acciones,
+                legal_moves: acciones,
                 is_game_over: p.estado !== 'jugando',
                 mano_resuelta: !!p.resultado,
             };

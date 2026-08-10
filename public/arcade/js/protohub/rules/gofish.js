@@ -156,7 +156,6 @@ export async function crearGoFish({ url = RUTA_BIBLIOTECA, jugadores = 3, mano =
                 biblioteca: p.biblioteca,
                 atascada,
                 legal_moves: legales,
-                legal_actions: legales,
                 is_game_over: terminada,
             };
         },

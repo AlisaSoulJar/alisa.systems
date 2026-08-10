@@ -65,17 +65,63 @@ for (const juego of JUEGOS) {
 }
 
 // ── 2. Quién LEE campos de estado ───────────────────────────────────────
-const CONSUMIDORES = [
-    'arcade/mesa.html',
-    'arcade/js/protohub/descripcion.js',
-    'arcade/js/protohub/Verificador.js',
-    'arcade/js/protohub/asientos.js',
-    'arcade/js/SovereignBoardEngine.js',
-    'js/alisa-engine/src/gym/ProtoHubEnv.js',
+/**
+ * ⚠️ ESTA LISTA ERA A MANO, Y ESO LE DABA FALSOS NEGATIVOS. LOS PEORES.
+ *
+ * Eran seis ficheros escritos aquí más los `*_visualizer.js`. Faltaban, entre
+ * otros, `SovereignCardEngine.js` —el motor de TODAS las mesas de cartas— y
+ * `worker-mesas/mesas.js`, que es el árbitro por el que juegan los agentes.
+ *
+ * Consecuencia verificada: esta herramienta afirmaba que `legal_actions` «se
+ * publica y no lo lee nadie». Es falso. `SovereignCardEngine.js` lo lee en su
+ * `updateHUD()` SIN caer a `legal_moves` si falta. Borrar ese campo fiándose de
+ * aquí habría dejado el panel de jugadas de toda mesa de cartas diciendo «None»
+ * en silencio.
+ *
+ * O sea: la herramienta que existe para cazar «uno publica X y otro lee Y»
+ * tenía dentro exactamente esa enfermedad, en forma de lista que se separa de la
+ * realidad sin avisar. Es la sexta vez que este proyecto la sufre —los juegos
+ * del README, el escaparate, el catálogo del gym, las barajas, las páginas— y la
+ * primera que se esconde dentro del detector.
+ *
+ * Un falso negativo aquí es peor que no tener la herramienta: no dice «no sé»,
+ * dice «no lo lee nadie», y con esa frase se borran campos.
+ *
+ * Ahora se BUSCA quién lee. Cualquier fichero que toque un estado de partida
+ * entra, esté donde esté. Lo encontró Fable 5 revisando esto como consultor.
+ */
+const RAICES = [
+    { base: PUB, sub: ['arcade', 'js/alisa-engine/src'] },
+    { base: path.join(PUB, '..'), sub: ['worker-mesas'] },
 ];
-const dirVis = path.join(PUB, 'arcade/js');
-for (const f of await readdir(dirVis)) {
-    if (f.endsWith('_visualizer.js')) CONSUMIDORES.push('arcade/js/' + f);
+/** Lo que delata a un consumidor: mira dentro de un estado de partida. */
+const HUELLA = /\b(?:st|state|stateObj|estado|data|partida)\??\.(?:\w+)|reglas\.estado\(|\.legal_moves\b|\.legal_actions\b/;
+
+async function* recorrer(dir) {
+    let entradas;
+    try { entradas = await readdir(dir, { withFileTypes: true }); } catch { return; }
+    for (const e of entradas) {
+        const p = path.join(dir, e.name);
+        // `vendor` y `legacy` son código de fuera o congelado: leerlo daría
+        // consumidores que ya no existen y taparía los que sí.
+        if (e.isDirectory()) {
+            if (['vendor', 'legacy', 'node_modules', '_archive'].includes(e.name)) continue;
+            yield* recorrer(p);
+        } else if (/\.(js|mjs|html)$/.test(e.name)) {
+            yield p;
+        }
+    }
+}
+
+const CONSUMIDORES = [];
+for (const { base, sub } of RAICES) {
+    for (const s of sub) {
+        for await (const abs of recorrer(path.join(base, s))) {
+            let txt;
+            try { txt = await readFile(abs, 'utf8'); } catch { continue; }
+            if (HUELLA.test(txt)) CONSUMIDORES.push(path.relative(PUB, abs).replace(/\\/g, '/'));
+        }
+    }
 }
 
 const leido = new Map();              // campo -> Set(ficheros)

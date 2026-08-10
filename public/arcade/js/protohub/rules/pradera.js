@@ -145,7 +145,7 @@ export const pradera = {
                            : 'La pradera te sobrevivió, y tú a ella',
             turn: 'player',
             semilla: p.semilla,
-            legal_moves: legales, legal_actions: legales,
+            legal_moves: legales,
             is_game_over: terminada,
         };
     },

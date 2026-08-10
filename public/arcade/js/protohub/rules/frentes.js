@@ -153,7 +153,7 @@ export const frentes = {
                 : mios > suyos ? 'Dominas más frentes'
                 : mios < suyos ? 'Domina más frentes él' : 'Empate en frentes',
             semilla: p.semilla,
-            legal_moves: legales, legal_actions: legales,
+            legal_moves: legales,
             is_game_over: terminada,
         };
     },

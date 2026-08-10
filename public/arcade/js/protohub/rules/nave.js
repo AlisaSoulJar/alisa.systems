@@ -295,7 +295,7 @@ export const nave = {
                 : ganaImpostor ? `El impostor (${p.impostor}) se quedó solo`
                 : 'Se acabó el turno de guardia',
             semilla: p.semilla,
-            legal_moves: legales, legal_actions: legales,
+            legal_moves: legales,
             is_game_over: terminada,
         };
     },

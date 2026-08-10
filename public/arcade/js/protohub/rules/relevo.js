@@ -241,7 +241,7 @@ export const relevo = {
             desenlace: !terminada ? null
                 : ambos ? 'Habéis salido los dos' : 'Se acabó el tiempo dentro',
             semilla: p.semilla,
-            legal_moves: legales, legal_actions: legales,
+            legal_moves: legales,
             is_game_over: terminada,
         };
     },

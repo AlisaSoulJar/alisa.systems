@@ -208,7 +208,7 @@ export const sigilo = {
                 : p.atrapado ? 'El guardia ha atrapado al ladrón'
                 : 'Se acabó el turno de noche',
             semilla: p.semilla,
-            legal_moves: legales, legal_actions: legales,
+            legal_moves: legales,
             is_game_over: terminada,
         };
     },

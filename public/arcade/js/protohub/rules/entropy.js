@@ -388,7 +388,6 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
                     p.cajas.reduce((s, c) => s + c.length, 0)
                     + p.mazo.length + p.descarte.length + (p.robada ? 1 : 0) === TOTAL,
                 legal_moves: legales,
-                legal_actions: legales,
                 is_game_over: p.fin,
             };
         },

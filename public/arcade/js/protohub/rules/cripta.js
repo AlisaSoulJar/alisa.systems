@@ -251,7 +251,6 @@ export const cripta = {
             turn: 'player',
             semilla: p.semilla,
             legal_moves: legales,
-            legal_actions: legales,
             is_game_over: terminada,
         };
     },

@@ -166,7 +166,6 @@ export function crearBazas(cfg) {
                 semilla: p.semilla,
                 biblioteca: p.biblioteca,
                 legal_moves: legales,
-                legal_actions: legales,
                 is_game_over: terminada,
             };
         },
