@@ -1,0 +1,19 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA Arcade — Go Fish</title>
+<!--
+  Tres asientos y una zona de mesa. Lo que de verdad se juega aquí es el
+  historial de peticiones, que va en el texto y no en el tapete.
+
+  La mesa es la misma que la de entropy y la brisca: `mesa_cartas.mjs` lee el
+  SUSTRATO —zonas, cartas vistas y cuántas hay tapadas— así que no sabe a qué se
+  juega ni le hace falta. El porqué de todo esto está escrito en `brisca.html`.
+
+      ?semilla=7              fija el reparto
+      ?sala=cocina&yo=oscar   la misma partida que quien abra ese enlace
+-->
+<script type="module">
+  import { montarMesa } from './js/montarMesa.js';
+  montarMesa({ juego: 'gofish', visualizador: 'mesa_cartas.mjs' });
+</script>

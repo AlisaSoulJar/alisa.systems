@@ -1,0 +1,19 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA Arcade — Tute</title>
+<!--
+  Cuatro manos y bazas, como la brisca. Las cuarenta cartas de la
+  española, y el palo importa: aquí no se dibujan números.
+
+  La mesa es la misma que la de entropy y la brisca: `mesa_cartas.mjs` lee el
+  SUSTRATO —zonas, cartas vistas y cuántas hay tapadas— así que no sabe a qué se
+  juega ni le hace falta. El porqué de todo esto está escrito en `brisca.html`.
+
+      ?semilla=7              fija el reparto
+      ?sala=cocina&yo=oscar   la misma partida que quien abra ese enlace
+-->
+<script type="module">
+  import { montarMesa } from './js/montarMesa.js';
+  montarMesa({ juego: 'tute', visualizador: 'mesa_cartas.mjs' });
+</script>

@@ -265,8 +265,45 @@ if (conMesa.length < SUELO_MESA_CARTAS) {
     mal(`la mesa compartida sirve a ${conMesa.length} juegos y servía a ${SUELO_MESA_CARTAS}. `
       + `Faltan: se han desconectado de \`mesa_cartas.mjs\`.`);
 } else {
-    console.log(`  ✓ mesa      ${conMesa.length} juegos de cartas usan la mesa compartida `
+    console.log(`  ✓ mesa      ${conMesa.length} juegos de cartas PODRÍAN usar la mesa compartida `
               + `(suelo: ${SUELO_MESA_CARTAS})`);
+}
+
+/**
+ * ⚠️ 2.ter — Y CUÁNTOS LA USAN DE VERDAD. SUELO, Y SÓLO PUEDE SUBIR.
+ *
+ * El número de arriba lleva meses diciendo diez y estaba en verde mientras OCHO
+ * de esos diez no tenían página: mide lo que el sustrato PERMITE, no lo que
+ * alguien puede abrir en el navegador. Un juego capaz de dibujarse en la mesa y
+ * sin página que la monte está tan invisible como el go sin sus piedras — y la
+ * prueba no se enteraba, que es lo que la hacía peligrosa y no sólo incompleta.
+ *
+ * Así que se cuenta la otra mitad: páginas que montan `mesa_cartas.mjs`. Los dos
+ * números juntos dicen algo que ninguno dice solo — capacidad menos uso es
+ * exactamente el trabajo que queda.
+ *
+ * Hoy son ocho. Blackjack y poker conservan visualizador propio a propósito:
+ * funcionan y nadie los ha comparado con la mesa compartida todavía. Ese es el
+ * hueco, y está aquí escrito en vez de en la cabeza de alguien.
+ */
+const SUELO_PAGINAS_MESA = 8;
+const montanMesa = [];
+for (const juego of conMesa) {
+    let html;
+    try { html = await readFile(new URL(`./public/arcade/${juego}.html`, import.meta.url), 'utf-8'); }
+    catch { continue; }  // sin página propia: va por mesa.html, que ya la monta
+    if (/visualizador:\s*'mesa_cartas\.mjs'/.test(html)) montanMesa.push(juego);
+}
+const sinMontar = conMesa.filter((j) => !montanMesa.includes(j));
+if (montanMesa.length < SUELO_PAGINAS_MESA) {
+    mal(`${montanMesa.length} páginas montan la mesa compartida y eran ${SUELO_PAGINAS_MESA}. `
+      + `Alguien ha devuelto un juego a su visualizador propio: ${sinMontar.join(', ')}.`);
+} else {
+    console.log(`  ✓ páginas   ${montanMesa.length} la montan de verdad (suelo: ${SUELO_PAGINAS_MESA})`
+              + (sinMontar.length ? ` · con visualizador propio: ${sinMontar.join(', ')}` : ''));
+    if (montanMesa.length > SUELO_PAGINAS_MESA) {
+        console.log(`  ↑ subió. Actualiza SUELO_PAGINAS_MESA a ${montanMesa.length}.`);
+    }
 }
 
 /**

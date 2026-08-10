@@ -1,0 +1,28 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA Arcade — Brisca</title>
+<!--
+  ⚠️ ESTA PÁGINA ES LA PRUEBA DE QUE LO DE ENTROPY ERA UNA LECCIÓN Y NO UNA
+  ANÉCDOTA.
+
+  `mesa_cartas.mjs` se escribió para entropy y se dijo entonces que los otros
+  nueve juegos de cartas lo heredarían cambiando una línea. Eso era una promesa,
+  y una promesa medida en un solo caso no vale nada.
+
+  Aquí está el caso más distinto que había: cuatro jugadores en vez de dos, bazas
+  en vez de rejilla, manos en abanico en vez de casillas, y la baraja española con
+  sus palos —que en brisca SÍ importan, porque el triunfo es un palo—. Si la mesa
+  sirviera sólo para lo que se parece a entropy, aquí se habría notado.
+
+  No ha hecho falta tocar `mesa_cartas.mjs`. El sustrato ya publicaba todo:
+  `mano` de cada asiento (la tuya con cartas, las demás con un número de tapadas),
+  `baza` en el centro y `mazo`. La mesa dibuja eso sin saber a qué se juega.
+
+      ?semilla=7              fija el reparto
+      ?sala=cocina&yo=oscar   la misma partida que quien abra ese enlace
+-->
+<script type="module">
+  import { montarMesa } from './js/montarMesa.js';
+  montarMesa({ juego: 'brisca', visualizador: 'mesa_cartas.mjs' });
+</script>

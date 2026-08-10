@@ -66,44 +66,44 @@
     "sillas": 1
   },
   "brisca": {
-    "pagina": "mesa.html",
-    "propia": false,
+    "pagina": "brisca.html",
+    "propia": true,
     "titulo": "Brisca",
     "sillas": 4
   },
   "tute": {
-    "pagina": "mesa.html",
-    "propia": false,
+    "pagina": "tute.html",
+    "propia": true,
     "titulo": "Tute",
     "sillas": 4
   },
   "hearts": {
-    "pagina": "mesa.html",
-    "propia": false,
+    "pagina": "hearts.html",
+    "propia": true,
     "titulo": "Hearts",
     "sillas": 4
   },
   "spades": {
-    "pagina": "mesa.html",
-    "propia": false,
+    "pagina": "spades.html",
+    "propia": true,
     "titulo": "Spades",
     "sillas": 4
   },
   "guerra": {
-    "pagina": "mesa.html",
-    "propia": false,
+    "pagina": "guerra.html",
+    "propia": true,
     "titulo": "Guerra (control)",
     "sillas": 1
   },
   "gofish": {
-    "pagina": "mesa.html",
-    "propia": false,
+    "pagina": "gofish.html",
+    "propia": true,
     "titulo": "Go Fish",
     "sillas": 3
   },
   "unit": {
-    "pagina": "mesa.html",
-    "propia": false,
+    "pagina": "unit.html",
+    "propia": true,
     "titulo": "Unit",
     "sillas": 4
   },
