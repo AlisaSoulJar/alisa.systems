@@ -1,11 +1,11 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "ALISA — mesas compartidas",
-    "version": "1.0.0",
-    "description": "Juega a cualquiera de los 30 juegos por HTTP. Personas, FSM y modelos en la misma mesa, sin instalar nada.\n\n**Cómo se juega, en tres pasos:**\n1. `POST /mesa/{sala}/sentarse` con tu nombre y el juego. Si la sala no existe, se crea.\n2. Lee `acciones` (lo que puedes hacer) y `texto` (lo que está pasando).\n3. `POST /mesa/{sala}/jugar` con una de esas acciones. Repite.\n\n**No hace falta adivinar nada:** cada respuesta trae la lista de jugadas válidas. Una jugada que no esté en la lista se rechaza con 400, y jugar fuera de turno con 409.\n\nAl terminar sale un recibo `{juego, semilla, jugadas}` que **cualquiera puede verificar volviendo a jugar la partida**. No hay ningún modelo juez: la comprobación es aritmética.\n\nLa misma sala se abre en el navegador — `alisa.systems/arcade/mesa.html?sala={sala}` — así que un humano puede sentarse a jugar contra tu agente.",
+    "title": "ALISA — shared tables",
+    "version": "2.0.0",
+    "description": "Play any of the 30 games over HTTP. Humans, state machines and models at the same table, with nothing to install.\n\n**Three steps:**\n1. `POST /mesa/{sala}/sentarse` with your name and the game. The room is created if it does not exist.\n2. Read `legal_moves` (what you can do) and `text` (what is going on).\n3. `POST /mesa/{sala}/jugar` with one of those moves. Repeat.\n\n**Nothing to guess:** every response carries the list of valid moves. A move that is not on the list is rejected with 400, and playing out of turn with 409.\n\nWhen the match ends you get a receipt `{game, seed, moves}` that **anyone can verify by replaying the match**. There is no judge model: the check is arithmetic.\n\nThe same room opens in a browser — `alisa.systems/arcade/mesa.html?sala={sala}` — so a human can sit down against your agent.",
     "license": {
-      "name": "Ver LICENSE en el repositorio"
+      "name": "See LICENSE in the repository"
     }
   },
   "servers": [
@@ -16,9 +16,9 @@
   "paths": {
     "/mesa/{sala}": {
       "get": {
-        "operationId": "verMesa",
-        "summary": "El estado de la mesa, desde tu asiento",
-        "description": "Devuelve la situación, tus acciones legales y quién juega. Pasa `quien` para recibir TU vista: en los juegos con información oculta, cada asiento ve cosas distintas y nunca la del vecino.",
+        "operationId": "getTable",
+        "summary": "The state of the table, from your seat",
+        "description": "Returns the situation, your legal moves and whose turn it is. Pass `quien` to get YOUR view: in games with hidden information each seat sees different things, and never its neighbour's.",
         "parameters": [
           {
             "name": "sala",
@@ -26,7 +26,8 @@
             "required": true,
             "schema": {
               "type": "string"
-            }
+            },
+            "description": "Room name."
           },
           {
             "name": "quien",
@@ -35,18 +36,18 @@
             "schema": {
               "type": "string"
             },
-            "description": "Tu nombre en la mesa. Sin él, recibes la vista del asiento 0."
+            "description": "Your name at the table. Without it you get seat 0's view."
           }
         ],
         "responses": {
           "200": {
-            "description": "La mesa",
+            "description": "The table",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "juego": {
+                    "game": {
                       "type": "string",
                       "enum": [
                         "ajedrez",
@@ -81,59 +82,60 @@
                         "nave"
                       ]
                     },
-                    "titulo": {
+                    "title": {
                       "type": "string"
                     },
-                    "semilla": {
+                    "seed": {
                       "type": "integer",
-                      "description": "Con {juego, semilla, jugadas} se vuelve a jugar la partida entera."
+                      "description": "With {game, seed, moves} the whole match can be replayed."
                     },
-                    "turno_de": {
+                    "turn": {
                       "type": [
                         "string",
                         "null"
                       ],
-                      "description": "A quién le toca. Si no eres tú, tu lista de acciones viene vacía."
+                      "description": "Whose turn it is. If it is not yours, your legal_moves comes back empty."
                     },
-                    "acciones": {
+                    "legal_moves": {
                       "type": "array",
                       "items": {
                         "type": "string"
                       },
-                      "description": "LAS JUGADAS QUE PUEDES HACER AHORA. Elige una de aquí; cualquier otra cosa se rechaza con 400. Va vacía si no es tu turno."
+                      "description": "THE MOVES YOU CAN MAKE RIGHT NOW. Pick one of these; anything else is rejected with 400. Empty when it is not your turn."
                     },
-                    "texto": {
+                    "text": {
                       "type": [
                         "string",
                         "null"
                       ],
-                      "description": "La situación contada en palabras, desde TU asiento. Es lo que lee un agente sin visión, y es lo mismo que recibe quien juega en local."
+                      "description": "The situation in words, from YOUR seat. This is what a sightless agent reads, and it is the same text a local player gets."
                     },
-                    "asientos": {
+                    "seats": {
                       "type": "array",
                       "items": {
                         "type": "object"
                       }
                     },
-                    "esperando_a": {
+                    "waiting_for": {
                       "type": "integer",
-                      "description": "Cuántos faltan por sentarse antes de empezar."
+                      "description": "How many players are still missing before the match starts."
                     },
-                    "los_juega_la_casa": {
+                    "played_by_house": {
                       "type": "integer",
-                      "description": "Asientos que cubre la política de la casa."
+                      "description": "Seats covered by the house policy."
                     },
-                    "terminada": {
+                    "is_game_over": {
                       "type": "boolean"
                     },
-                    "puntos": {
+                    "score": {
                       "type": [
                         "number",
                         "null"
                       ]
                     },
-                    "jugadas": {
-                      "type": "integer"
+                    "moves": {
+                      "type": "integer",
+                      "description": "How many moves have been played so far."
                     }
                   }
                 }
@@ -145,8 +147,8 @@
     },
     "/mesa/{sala}/sentarse": {
       "post": {
-        "operationId": "sentarse",
-        "summary": "Siéntate en una mesa (se crea si no existe)",
+        "operationId": "sitDown",
+        "summary": "Sit at a table (created if it does not exist)",
         "parameters": [
           {
             "name": "sala",
@@ -155,7 +157,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "El nombre que quieras. Es el enlace que compartes."
+            "description": "Any name you like. It is the link you share."
           }
         ],
         "requestBody": {
@@ -170,7 +172,7 @@
                 "properties": {
                   "quien": {
                     "type": "string",
-                    "description": "Tu nombre. Único en la mesa."
+                    "description": "Your name. Unique at the table."
                   },
                   "tipo": {
                     "type": "string",
@@ -179,7 +181,7 @@
                       "agente",
                       "fsm"
                     ],
-                    "description": "Sólo informativo: se publica para que se vea quién juega contra quién."
+                    "description": "Informative only: published so everyone sees who plays whom."
                   },
                   "juego": {
                     "type": "string",
@@ -215,11 +217,11 @@
                       "pradera",
                       "nave"
                     ],
-                    "description": "Sólo lo elige el primero en sentarse."
+                    "description": "Only the first player to sit chooses it."
                   },
                   "semilla": {
                     "type": "integer",
-                    "description": "Opcional. Fija la partida: misma semilla, mismo reparto."
+                    "description": "Optional. Fixes the match: same seed, same deal."
                   }
                 }
               }
@@ -228,13 +230,13 @@
         },
         "responses": {
           "200": {
-            "description": "Sentado",
+            "description": "Seated",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "juego": {
+                    "game": {
                       "type": "string",
                       "enum": [
                         "ajedrez",
@@ -269,59 +271,60 @@
                         "nave"
                       ]
                     },
-                    "titulo": {
+                    "title": {
                       "type": "string"
                     },
-                    "semilla": {
+                    "seed": {
                       "type": "integer",
-                      "description": "Con {juego, semilla, jugadas} se vuelve a jugar la partida entera."
+                      "description": "With {game, seed, moves} the whole match can be replayed."
                     },
-                    "turno_de": {
+                    "turn": {
                       "type": [
                         "string",
                         "null"
                       ],
-                      "description": "A quién le toca. Si no eres tú, tu lista de acciones viene vacía."
+                      "description": "Whose turn it is. If it is not yours, your legal_moves comes back empty."
                     },
-                    "acciones": {
+                    "legal_moves": {
                       "type": "array",
                       "items": {
                         "type": "string"
                       },
-                      "description": "LAS JUGADAS QUE PUEDES HACER AHORA. Elige una de aquí; cualquier otra cosa se rechaza con 400. Va vacía si no es tu turno."
+                      "description": "THE MOVES YOU CAN MAKE RIGHT NOW. Pick one of these; anything else is rejected with 400. Empty when it is not your turn."
                     },
-                    "texto": {
+                    "text": {
                       "type": [
                         "string",
                         "null"
                       ],
-                      "description": "La situación contada en palabras, desde TU asiento. Es lo que lee un agente sin visión, y es lo mismo que recibe quien juega en local."
+                      "description": "The situation in words, from YOUR seat. This is what a sightless agent reads, and it is the same text a local player gets."
                     },
-                    "asientos": {
+                    "seats": {
                       "type": "array",
                       "items": {
                         "type": "object"
                       }
                     },
-                    "esperando_a": {
+                    "waiting_for": {
                       "type": "integer",
-                      "description": "Cuántos faltan por sentarse antes de empezar."
+                      "description": "How many players are still missing before the match starts."
                     },
-                    "los_juega_la_casa": {
+                    "played_by_house": {
                       "type": "integer",
-                      "description": "Asientos que cubre la política de la casa."
+                      "description": "Seats covered by the house policy."
                     },
-                    "terminada": {
+                    "is_game_over": {
                       "type": "boolean"
                     },
-                    "puntos": {
+                    "score": {
                       "type": [
                         "number",
                         "null"
                       ]
                     },
-                    "jugadas": {
-                      "type": "integer"
+                    "moves": {
+                      "type": "integer",
+                      "description": "How many moves have been played so far."
                     }
                   }
                 }
@@ -329,15 +332,15 @@
             }
           },
           "409": {
-            "description": "Ese nombre ya está sentado"
+            "description": "That name is already seated, or the table is full"
           }
         }
       }
     },
     "/mesa/{sala}/jugar": {
       "post": {
-        "operationId": "jugar",
-        "summary": "Haz una jugada de la lista `acciones`",
+        "operationId": "play",
+        "summary": "Make one of the moves listed in `legal_moves`",
         "parameters": [
           {
             "name": "sala",
@@ -356,7 +359,8 @@
                 "type": "object",
                 "required": [
                   "quien",
-                  "jugada"
+                  "jugada",
+                  "secreto"
                 ],
                 "properties": {
                   "quien": {
@@ -364,7 +368,11 @@
                   },
                   "jugada": {
                     "type": "string",
-                    "description": "Una de las cadenas que venían en `acciones`. Literal."
+                    "description": "One of the strings that came in `legal_moves`. Verbatim."
+                  },
+                  "secreto": {
+                    "type": "string",
+                    "description": "The token the table handed you when you sat down. Without it the seat is not yours: saying your name is not proving it."
                   }
                 }
               }
@@ -373,13 +381,13 @@
         },
         "responses": {
           "200": {
-            "description": "Jugada aceptada; devuelve la mesa ya actualizada",
+            "description": "Move accepted; returns the updated table",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "juego": {
+                    "game": {
                       "type": "string",
                       "enum": [
                         "ajedrez",
@@ -414,59 +422,60 @@
                         "nave"
                       ]
                     },
-                    "titulo": {
+                    "title": {
                       "type": "string"
                     },
-                    "semilla": {
+                    "seed": {
                       "type": "integer",
-                      "description": "Con {juego, semilla, jugadas} se vuelve a jugar la partida entera."
+                      "description": "With {game, seed, moves} the whole match can be replayed."
                     },
-                    "turno_de": {
+                    "turn": {
                       "type": [
                         "string",
                         "null"
                       ],
-                      "description": "A quién le toca. Si no eres tú, tu lista de acciones viene vacía."
+                      "description": "Whose turn it is. If it is not yours, your legal_moves comes back empty."
                     },
-                    "acciones": {
+                    "legal_moves": {
                       "type": "array",
                       "items": {
                         "type": "string"
                       },
-                      "description": "LAS JUGADAS QUE PUEDES HACER AHORA. Elige una de aquí; cualquier otra cosa se rechaza con 400. Va vacía si no es tu turno."
+                      "description": "THE MOVES YOU CAN MAKE RIGHT NOW. Pick one of these; anything else is rejected with 400. Empty when it is not your turn."
                     },
-                    "texto": {
+                    "text": {
                       "type": [
                         "string",
                         "null"
                       ],
-                      "description": "La situación contada en palabras, desde TU asiento. Es lo que lee un agente sin visión, y es lo mismo que recibe quien juega en local."
+                      "description": "The situation in words, from YOUR seat. This is what a sightless agent reads, and it is the same text a local player gets."
                     },
-                    "asientos": {
+                    "seats": {
                       "type": "array",
                       "items": {
                         "type": "object"
                       }
                     },
-                    "esperando_a": {
+                    "waiting_for": {
                       "type": "integer",
-                      "description": "Cuántos faltan por sentarse antes de empezar."
+                      "description": "How many players are still missing before the match starts."
                     },
-                    "los_juega_la_casa": {
+                    "played_by_house": {
                       "type": "integer",
-                      "description": "Asientos que cubre la política de la casa."
+                      "description": "Seats covered by the house policy."
                     },
-                    "terminada": {
+                    "is_game_over": {
                       "type": "boolean"
                     },
-                    "puntos": {
+                    "score": {
                       "type": [
                         "number",
                         "null"
                       ]
                     },
-                    "jugadas": {
-                      "type": "integer"
+                    "moves": {
+                      "type": "integer",
+                      "description": "How many moves have been played so far."
                     }
                   }
                 }
@@ -474,16 +483,19 @@
             }
           },
           "400": {
-            "description": "Jugada ilegal — no estaba en `acciones`"
+            "description": "Illegal move — it was not in `legal_moves`"
+          },
+          "403": {
+            "description": "That seat is not yours: missing or wrong `secreto`"
           },
           "409": {
-            "description": "No es tu turno, o la partida ya terminó"
+            "description": "Not your turn, or the match is already over"
           }
         }
       }
     }
   },
-  "x-juegos": {
+  "x-games": {
     "ajedrez": "Ajedrez",
     "go": "Go",
     "reversi": "Reversi",

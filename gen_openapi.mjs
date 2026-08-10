@@ -21,121 +21,154 @@ import { JUEGOS, TITULOS } from './public/arcade/js/protohub/rules/index.js';
 
 const BASE = process.env.ALISA_MESAS ?? 'https://alisa-mesas.prime-6d5.workers.dev';
 
+/**
+ * ⚠️ ESTA PUERTA HABLA INGLÉS, Y CON LOS NOMBRES QUE EL ESTADO YA USA.
+ *
+ * Publicaba `acciones`, `turno_de`, `terminada`, `puntos` — mientras el estado
+ * que hay detrás publica `legal_moves`, `turn`, `is_game_over`, `score`. Los
+ * mismos datos con dos vocabularios según por qué puerta entres, y un agente que
+ * jugara por HTTP y luego por el gym tenía que aprenderse las dos tablas.
+ *
+ * No es una traducción por quedar bien: es que ya HABÍA un vocabulario canónico
+ * —el que entiende cualquiera que haya visto un entorno de gym— y esta puerta se
+ * lo saltaba. Ahora las dos dicen lo mismo, que es lo que hace que se puedan
+ * comparar las filas de la tabla.
+ *
+ * `text` se queda como `text` y no como `observation`: es literalmente texto para
+ * leer, y llamarlo observación sugeriría un vector.
+ */
 const mesa = {
     type: 'object',
     properties: {
-        juego: { type: 'string', enum: JUEGOS },
-        titulo: { type: 'string' },
-        semilla: { type: 'integer', description: 'Con {juego, semilla, jugadas} se vuelve a jugar la partida entera.' },
-        turno_de: { type: ['string', 'null'], description: 'A quién le toca. Si no eres tú, tu lista de acciones viene vacía.' },
-        acciones: {
+        game: { type: 'string', enum: JUEGOS },
+        title: { type: 'string' },
+        seed: { type: 'integer', description: 'With {game, seed, moves} the whole match can be replayed.' },
+        turn: { type: ['string', 'null'], description: 'Whose turn it is. If it is not yours, your legal_moves comes back empty.' },
+        legal_moves: {
             type: 'array', items: { type: 'string' },
-            description: 'LAS JUGADAS QUE PUEDES HACER AHORA. Elige una de aquí; '
-                       + 'cualquier otra cosa se rechaza con 400. Va vacía si no es tu turno.',
+            description: 'THE MOVES YOU CAN MAKE RIGHT NOW. Pick one of these; '
+                       + 'anything else is rejected with 400. Empty when it is not your turn.',
         },
-        texto: {
+        text: {
             type: ['string', 'null'],
-            description: 'La situación contada en palabras, desde TU asiento. '
-                       + 'Es lo que lee un agente sin visión, y es lo mismo que recibe quien juega en local.',
+            description: 'The situation in words, from YOUR seat. '
+                       + 'This is what a sightless agent reads, and it is the same text a local player gets.',
         },
-        asientos: { type: 'array', items: { type: 'object' } },
-        esperando_a: { type: 'integer', description: 'Cuántos faltan por sentarse antes de empezar.' },
-        los_juega_la_casa: { type: 'integer', description: 'Asientos que cubre la política de la casa.' },
-        terminada: { type: 'boolean' },
-        puntos: { type: ['number', 'null'] },
-        jugadas: { type: 'integer' },
+        seats: { type: 'array', items: { type: 'object' } },
+        waiting_for: { type: 'integer', description: 'How many players are still missing before the match starts.' },
+        played_by_house: { type: 'integer', description: 'Seats covered by the house policy.' },
+        is_game_over: { type: 'boolean' },
+        score: { type: ['number', 'null'] },
+        moves: { type: 'integer', description: 'How many moves have been played so far.' },
     },
 };
 
 const doc = {
     openapi: '3.1.0',
     info: {
-        title: 'ALISA — mesas compartidas',
-        version: '1.0.0',
+        title: 'ALISA — shared tables',
+        version: '2.0.0',
         description:
-            `Juega a cualquiera de los ${JUEGOS.length} juegos por HTTP. Personas, FSM y modelos `
-          + `en la misma mesa, sin instalar nada.\n\n`
-          + `**Cómo se juega, en tres pasos:**\n`
-          + `1. \`POST /mesa/{sala}/sentarse\` con tu nombre y el juego. Si la sala no existe, se crea.\n`
-          + `2. Lee \`acciones\` (lo que puedes hacer) y \`texto\` (lo que está pasando).\n`
-          + `3. \`POST /mesa/{sala}/jugar\` con una de esas acciones. Repite.\n\n`
-          + `**No hace falta adivinar nada:** cada respuesta trae la lista de jugadas válidas. `
-          + `Una jugada que no esté en la lista se rechaza con 400, y jugar fuera de turno con 409.\n\n`
-          + `Al terminar sale un recibo \`{juego, semilla, jugadas}\` que **cualquiera puede verificar `
-          + `volviendo a jugar la partida**. No hay ningún modelo juez: la comprobación es aritmética.\n\n`
-          + `La misma sala se abre en el navegador — \`alisa.systems/arcade/mesa.html?sala={sala}\` — `
-          + `así que un humano puede sentarse a jugar contra tu agente.`,
-        license: { name: 'Ver LICENSE en el repositorio' },
+            `Play any of the ${JUEGOS.length} games over HTTP. Humans, state machines and models `
+          + `at the same table, with nothing to install.\n\n`
+          + `**Three steps:**\n`
+          + `1. \`POST /mesa/{sala}/sentarse\` with your name and the game. The room is created if it does not exist.\n`
+          + `2. Read \`legal_moves\` (what you can do) and \`text\` (what is going on).\n`
+          + `3. \`POST /mesa/{sala}/jugar\` with one of those moves. Repeat.\n\n`
+          + `**Nothing to guess:** every response carries the list of valid moves. `
+          + `A move that is not on the list is rejected with 400, and playing out of turn with 409.\n\n`
+          + `When the match ends you get a receipt \`{game, seed, moves}\` that **anyone can verify by `
+          + `replaying the match**. There is no judge model: the check is arithmetic.\n\n`
+          + `The same room opens in a browser — \`alisa.systems/arcade/mesa.html?sala={sala}\` — `
+          + `so a human can sit down against your agent.`,
+        license: { name: 'See LICENSE in the repository' },
     },
     servers: [{ url: BASE }],
     paths: {
+        /**
+         * ⚠️ LAS RUTAS SE QUEDAN EN CASTELLANO, Y NO ES INCOHERENCIA.
+         *
+         * Una ruta no es un nombre: es una dirección que ya circula. `/mesa/…`
+         * está en enlaces compartidos, en el worker desplegado y en las salas que
+         * hay abiertas ahora mismo. Cambiarla rompe partidas en curso a cambio de
+         * nada — un agente lee la ruta del propio contrato, no la escribe de
+         * memoria.
+         *
+         * Lo que sí importa que hable un solo idioma son los CAMPOS, porque son
+         * los que un agente compara entre esta puerta y la del gym.
+         */
         '/mesa/{sala}': {
             get: {
-                operationId: 'verMesa',
-                summary: 'El estado de la mesa, desde tu asiento',
-                description: 'Devuelve la situación, tus acciones legales y quién juega. '
-                           + 'Pasa `quien` para recibir TU vista: en los juegos con información '
-                           + 'oculta, cada asiento ve cosas distintas y nunca la del vecino.',
+                operationId: 'getTable',
+                summary: 'The state of the table, from your seat',
+                description: 'Returns the situation, your legal moves and whose turn it is. '
+                           + 'Pass `quien` to get YOUR view: in games with hidden information '
+                           + 'each seat sees different things, and never its neighbour\'s.',
                 parameters: [
-                    { name: 'sala', in: 'path', required: true, schema: { type: 'string' } },
+                    { name: 'sala', in: 'path', required: true, schema: { type: 'string' },
+                      description: 'Room name.' },
                     { name: 'quien', in: 'query', required: false, schema: { type: 'string' },
-                      description: 'Tu nombre en la mesa. Sin él, recibes la vista del asiento 0.' },
+                      description: 'Your name at the table. Without it you get seat 0\'s view.' },
                 ],
-                responses: { 200: { description: 'La mesa', content: { 'application/json': { schema: mesa } } } },
+                responses: { 200: { description: 'The table', content: { 'application/json': { schema: mesa } } } },
             },
         },
         '/mesa/{sala}/sentarse': {
             post: {
-                operationId: 'sentarse',
-                summary: 'Siéntate en una mesa (se crea si no existe)',
+                operationId: 'sitDown',
+                summary: 'Sit at a table (created if it does not exist)',
                 parameters: [{ name: 'sala', in: 'path', required: true, schema: { type: 'string' },
-                              description: 'El nombre que quieras. Es el enlace que compartes.' }],
+                              description: 'Any name you like. It is the link you share.' }],
                 requestBody: {
                     required: true,
                     content: { 'application/json': { schema: {
                         type: 'object', required: ['quien'],
                         properties: {
-                            quien: { type: 'string', description: 'Tu nombre. Único en la mesa.' },
+                            quien: { type: 'string', description: 'Your name. Unique at the table.' },
                             tipo: { type: 'string', enum: ['persona', 'agente', 'fsm'],
-                                    description: 'Sólo informativo: se publica para que se vea quién juega contra quién.' },
+                                    description: 'Informative only: published so everyone sees who plays whom.' },
                             juego: { type: 'string', enum: JUEGOS,
-                                     description: 'Sólo lo elige el primero en sentarse.' },
-                            semilla: { type: 'integer', description: 'Opcional. Fija la partida: misma semilla, mismo reparto.' },
+                                     description: 'Only the first player to sit chooses it.' },
+                            semilla: { type: 'integer', description: 'Optional. Fixes the match: same seed, same deal.' },
                         },
                     } } },
                 },
                 responses: {
-                    200: { description: 'Sentado', content: { 'application/json': { schema: mesa } } },
-                    409: { description: 'Ese nombre ya está sentado' },
+                    200: { description: 'Seated', content: { 'application/json': { schema: mesa } } },
+                    409: { description: 'That name is already seated, or the table is full' },
                 },
             },
         },
         '/mesa/{sala}/jugar': {
             post: {
-                operationId: 'jugar',
-                summary: 'Haz una jugada de la lista `acciones`',
+                operationId: 'play',
+                summary: 'Make one of the moves listed in `legal_moves`',
                 parameters: [{ name: 'sala', in: 'path', required: true, schema: { type: 'string' } }],
                 requestBody: {
                     required: true,
                     content: { 'application/json': { schema: {
-                        type: 'object', required: ['quien', 'jugada'],
+                        type: 'object', required: ['quien', 'jugada', 'secreto'],
                         properties: {
                             quien: { type: 'string' },
                             jugada: { type: 'string',
-                                      description: 'Una de las cadenas que venían en `acciones`. Literal.' },
+                                      description: 'One of the strings that came in `legal_moves`. Verbatim.' },
+                            secreto: { type: 'string',
+                                       description: 'The token the table handed you when you sat down. '
+                                                  + 'Without it the seat is not yours: saying your name is not proving it.' },
                         },
                     } } },
                 },
                 responses: {
-                    200: { description: 'Jugada aceptada; devuelve la mesa ya actualizada',
+                    200: { description: 'Move accepted; returns the updated table',
                            content: { 'application/json': { schema: mesa } } },
-                    400: { description: 'Jugada ilegal — no estaba en `acciones`' },
-                    409: { description: 'No es tu turno, o la partida ya terminó' },
+                    400: { description: 'Illegal move — it was not in `legal_moves`' },
+                    403: { description: 'That seat is not yours: missing or wrong `secreto`' },
+                    409: { description: 'Not your turn, or the match is already over' },
                 },
             },
         },
     },
-    'x-juegos': Object.fromEntries(JUEGOS.map(j => [j, TITULOS[j] ?? j])),
+    'x-games': Object.fromEntries(JUEGOS.map(j => [j, TITULOS[j] ?? j])),
 };
 
 const ruta = process.argv[2] ?? 'public/openapi.json';

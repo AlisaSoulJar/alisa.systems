@@ -265,7 +265,7 @@ function pintar() {
   if (st.preguntas?.length)  dec('última pregunta', (p => `${p.de}→${p.a} pide ${p.rango}: ${p.acierta ? 'sí' : 'no'}`)(st.preguntas.at(-1)));
   if (st.manos_rivales)      dec('rivales', st.manos_rivales.join(' · ') + ' cartas');
   if (st.mazo_restante != null) dec('mazo', st.mazo_restante);
-  dec('turno', mesa.meToca() ? 'tuyo' : (mesa.ultimo?.turno_de ?? st.turn ?? '—'));
+  dec('turno', mesa.meToca() ? 'tuyo' : (mesa.ultimo?.turn ?? st.turn ?? '—'));
   if (mesa.resumen()) filas.unshift(`<div>${mesa.resumen()}</div>`);
   $('mesa').innerHTML = filas.join('');
 
@@ -274,7 +274,7 @@ function pintar() {
   if (!mesa.meToca()) {
     // En una mesa compartida no «juega la casa»: espera alguien con nombre.
     $('jugadas').innerHTML = mesa.compartida
-        ? `<span class="dato">le toca a ${mesa.ultimo?.turno_de ?? 'otro asiento'}…</span>`
+        ? `<span class="dato">le toca a ${mesa.ultimo?.turn ?? 'otro asiento'}…</span>`
         : '<span class="dato">juega la casa…</span>';
     return;
   }

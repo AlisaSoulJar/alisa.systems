@@ -298,7 +298,7 @@ function pintarJugadas(motor, data) {
         acciones: enSala ? motor.sala.acciones()
                          : (data.legal_moves ?? data.legal_actions ?? []),
         meToca: !enSala || motor.sala.meToca(),
-        turnoDe: enSala ? motor.sala.ultimo?.turno_de : null,
+        turnoDe: enSala ? motor.sala.ultimo?.turn : null,
         terminada: !!data.is_game_over,
         espectador: enSala && motor.sala.espectador,
         enviar: (m) => motor.sendMove(m),

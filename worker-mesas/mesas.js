@@ -258,7 +258,7 @@ export class MesaCompartida {
             };
         }
         if (mesa.asientos.some(a => a.quien === quien)) {
-            return responder(200, { ya_sentado: true, ...await this.retratoDe(mesa, quien) });
+            return responder(200, { already_seated: true, ...await this.retratoDe(mesa, quien) });
         }
         // Decir que no, con el motivo, en vez de admitir a alguien que nunca
         // llegaría a jugar. Un «no» explicado se arregla; un turno que no llega
@@ -266,8 +266,8 @@ export class MesaCompartida {
         if (mesa.asientos.length >= 1 && SOLITARIOS[mesa.juego]) {
             return responder(409, {
                 error: `en ${TITULOS[mesa.juego] ?? mesa.juego} sólo se sienta uno`,
-                solitario: true,
-                motivo: SOLITARIOS[mesa.juego],
+                solitaire: true,
+                reason: SOLITARIOS[mesa.juego],
                 ...await this.retratoDe(mesa, quien),
             });
         }
@@ -317,7 +317,7 @@ export class MesaCompartida {
             desde: Date.now(), secreto,
         });
         await this.estado.storage.put('mesa', mesa);
-        return responder(200, { sentado: quien, secreto, ...await this.retratoDe(mesa, quien) });
+        return responder(200, { seated: quien, secret: secreto, ...await this.retratoDe(mesa, quien) });
     }
 
     async jugar(d, quien) {
@@ -418,8 +418,8 @@ export class MesaCompartida {
         const i = mesa.asientos.findIndex(a => a.quien === quien);
         const mío = i > 0 ? reglas.estado(p, i) : st;
         return {
-            juego: mesa.juego, titulo: TITULOS[mesa.juego] ?? mesa.juego,
-            semilla: mesa.semilla,
+            game: mesa.juego, title: TITULOS[mesa.juego] ?? mesa.juego,
+            seed: mesa.semilla,
             // Cada quién con el asiento que le toca en el juego, para que se vea
             // desde fuera quién es 'white' o quién es 'cpu1'.
             /**
@@ -437,19 +437,19 @@ export class MesaCompartida {
              *
              * El secreto se entrega UNA vez, al sentarse, y nunca más.
              */
-            asientos: mesa.asientos.map((a, i) => ({
-                quien: a.quien, tipo: a.tipo, desde: a.desde,
-                asiento: mesa.ordenAsientos[i] ?? null,
+            seats: mesa.asientos.map((a, i) => ({
+                who: a.quien, kind: a.tipo, since: a.desde,
+                seat: mesa.ordenAsientos[i] ?? null,
             })),
             // Los asientos del juego que todavía no ocupa nadie: los juega la
             // casa. Un cuatro-jugadores con dos personas sentadas NO está
             // esperando a nadie, y quien mire la mesa tiene derecho a saberlo.
-            los_juega_la_casa: Math.max(0, mesa.ordenAsientos.length - mesa.asientos.length),
+            played_by_house: Math.max(0, mesa.ordenAsientos.length - mesa.asientos.length),
             // Cuántos asientos ha llegado a tener este juego. Se descubre
             // jugando, así que al abrir vale 1 y va creciendo. Un juego que se
             // quede en 1 para siempre no admite compañía —`guerra` es así a
             // propósito: es el control, ahí nadie decide nada.
-            asientos_del_juego: mesa.ordenAsientos.length,
+            seats_seen: mesa.ordenAsientos.length,
             /**
              * ⚠️ Y EL TOPE DECLARADO, QUE ES EL QUE DECIDE SI CABES.
              *
@@ -467,15 +467,15 @@ export class MesaCompartida {
              * Ésta es la misma lección de la vez anterior con otra ropa: un dato
              * que se descubre por accidente no sirve para decidir. El declarado sí.
              */
-            sillas: SILLAS[mesa.juego] ?? null,
+            max_seats: SILLAS[mesa.juego] ?? null,
             // Cuántos faltan por sentarse antes de que la mesa eche a andar. Un
             // cliente sin pantalla necesita saberlo para esperar en vez de creer
             // que la partida está atascada.
-            esperando_a: Math.max(0, (mesa.esperaA ?? 1) - mesa.asientos.length),
+            waiting_for: Math.max(0, (mesa.esperaA ?? 1) - mesa.asientos.length),
             // Se publica ANTES de que nadie lo intente, para que un cliente sepa
             // si tiene sentido ofrecer «invitar a alguien» en esta mesa.
             ...(SOLITARIOS[mesa.juego]
-                ? { solitario: true, motivo: SOLITARIOS[mesa.juego] } : {}),
+                ? { solitaire: true, reason: SOLITARIOS[mesa.juego] } : {}),
             /**
              * ⚠️ LA SITUACIÓN, EN TEXTO — Y FALTABA.
              *
@@ -503,19 +503,19 @@ export class MesaCompartida {
              * probando el código. Es el tipo de hueco que sólo aparece cuando
              * usas la cosa para lo que sirve.
              */
-            texto: (() => {
+            text: (() => {
                 try {
                     if (reglas.describir) return reglas.describir(p, Math.max(0, i));
                     return describirEstado(mesa.juego, mío);
                 } catch { return null; }
             })(),
-            turno_de: this.quienTiraAhora(mesa, st),
-            jugadas: mesa.jugadas.length,
-            terminada: !!st.is_game_over,
+            turn: this.quienTiraAhora(mesa, st),
+            moves: mesa.jugadas.length,
+            is_game_over: !!st.is_game_over,
             // Se publica siempre que el juego lo diga: quien mire la mesa tiene
             // que poder saber con qué baraja se está jugando.
-            ...(st.biblioteca === undefined ? {} : { biblioteca: st.biblioteca }),
-            puntos: puntuacionDe(st),
+            ...(st.biblioteca === undefined ? {} : { library: st.biblioteca }),
+            score: puntuacionDe(st),
             // ⚠️ LAS JUGADAS LEGALES SÓLO PARA QUIEN LE TOCA. ANTES IBAN A TODOS.
             //
             // `legal_moves` son las jugadas de quien mueve, y en un juego de
@@ -528,13 +528,13 @@ export class MesaCompartida {
             // que se enseña y se dejó abierto lo que se ofrece. Lo cazó
             // `prueba_lenguaje.mjs` comparando las cartas del texto contra las que
             // el juego declara públicas.
-            acciones: this.quienTiraAhora(mesa, st) === quien
+            legal_moves: this.quienTiraAhora(mesa, st) === quien
                 ? (st.legal_moves ?? []).filter(m => m !== 'nueva' && m !== 'reset')
                 : [],
-            estado: mío,
+            state: mío,
             // El recibo, en cualquier momento: la mesa no guarda nada que no
             // sea verificable por un tercero.
-            recibo: { juego: mesa.juego, semilla: mesa.semilla, jugadas: mesa.jugadas },
+            receipt: { game: mesa.juego, seed: mesa.semilla, moves: mesa.jugadas },
         };
     }
 }

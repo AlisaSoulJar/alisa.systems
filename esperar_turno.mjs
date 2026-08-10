@@ -48,23 +48,23 @@ for (let vuelta = 0; vuelta < TOPE; vuelta++) {
     try { m = await mirar(); }
     catch (e) { console.log(`  (mesa ilocalizable: ${e.message})`); await new Promise(r => setTimeout(r, ESPERA)); continue; }
 
-    if (m.jugadas !== previas) {
-        previas = m.jugadas;
-        console.log(`  jugada ${m.jugadas} · le toca a ${m.turno_de}`);
+    if (m.moves !== previas) {
+        previas = m.moves;
+        console.log(`  jugada ${m.moves} · le toca a ${m.turn}`);
     }
 
-    if (m.terminada) {
+    if (m.is_game_over) {
         console.log(`\n── PARTIDA TERMINADA ──`);
-        console.log(String(m.texto ?? '').split('\n').slice(0, 14).join('\n'));
+        console.log(String(m.text ?? '').split('\n').slice(0, 14).join('\n'));
         console.log(`\nrecibo verificable: {juego: ${m.juego}, semilla: ${m.semilla}, jugadas: ${m.jugadas}}`);
         process.exit(0);
     }
 
-    if (m.turno_de === YO) {
+    if (m.turn === YO) {
         console.log(`\n── TE TOCA (${YO}) ──`);
-        console.log(String(m.texto ?? '(sin texto)').split('\n').slice(0, 16).join('\n'));
-        console.log(`\njugadas legales (${(m.acciones ?? []).length}):`);
-        console.log('  ' + (m.acciones ?? []).join(' '));
+        console.log(String(m.text ?? '(sin texto)').split('\n').slice(0, 16).join('\n'));
+        console.log(`\njugadas legales (${(m.legal_moves ?? []).length}):`);
+        console.log('  ' + (m.legal_moves ?? []).join(' '));
         process.exit(0);
     }
     await new Promise(r => setTimeout(r, ESPERA));

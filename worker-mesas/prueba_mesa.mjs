@@ -99,7 +99,7 @@ const SEMILLA_HUELLA = 4242;
       st?.caja ?? st?.mano ?? st?.player_hand ?? null,
       st?.mazo_restante ?? null, st?.descarte ?? st?.cima ?? null,
   ]);
-  const suya = huella(r.estado), mia = huella(local);
+  const suya = huella(r.state), mia = huella(local);
   comprobar(suya === mia,
       `el árbitro reparte lo mismo que este repositorio (semilla ${SEMILLA_HUELLA})`
       + (suya === mia ? '' : `\n     árbitro: ${suya}\n     aquí:    ${mia}`
@@ -108,7 +108,7 @@ const SEMILLA_HUELLA = 4242;
 
 // ── 1. Dos seres se sientan ──────────────────────────────────────────────
 const a = await pedir(`/mesa/${SALA}/sentarse`, { quien: 'ana', tipo: 'persona', juego: JUEGO, semilla: 7 });
-comprobar(a.codigo === 200 && a.sentado === 'ana', `se sienta ana — ${a.titulo}, semilla ${a.semilla}`, a._json);
+comprobar(a.codigo === 200 && a.seated === 'ana', `se sienta ana — ${a.title}, semilla ${a.seed}`, a._json);
 // Si la mesa ni siquiera abre, lo que sigue sólo produciría ruido encima.
 if (a.codigo !== 200) { console.log(`\n✗ la mesa no abre; nada más que probar\n`); process.exit(1); }
 
@@ -136,35 +136,35 @@ const b = await pedir(`/mesa/${SALA}/sentarse`, { quien: 'bruno', tipo: 'agente'
  * Se descubrió por ser la única prueba que NO corre `npm test` —toca la red— y
  * por tanto la única que puede estar rota una semana sin que nadie lo note.
  */
-const SECRETOS = { ana: a.secreto ?? null, bruno: b.secreto ?? null };
+const SECRETOS = { ana: a.secret ?? null, bruno: b.secret ?? null };
 const jugarComo = (quien, jugada) =>
     pedir(`/mesa/${SALA}/jugar`, { quien, jugada, secreto: SECRETOS[quien] });
-const soloUno = b.codigo === 409 && b.solitario === true;
+const soloUno = b.codigo === 409 && b.solitaire === true;
 if (soloUno) {
     // Se exige que HAYA motivo, no que sea largo. La primera versión pedía más
     // de 20 caracteres y suspendía a «es de un jugador», que son 16 y lo dice
     // todo. Medir la calidad de una explicación por su longitud premia al que se
     // enrolla.
-    comprobar(typeof b.motivo === 'string' && b.motivo.trim() !== '',
-        `no admite un segundo, y lo explica: «${b.motivo}»`, b._json);
+    comprobar(typeof b.reason === 'string' && b.reason.trim() !== '',
+        `no admite un segundo, y lo explica: «${b.reason}»`, b._json);
 } else {
-    comprobar(b.codigo === 200 && b.asientos?.length === 2,
-        `se sienta bruno — asientos: ${b.asientos?.map(x => x.quien).join(', ')}`, b._json);
+    comprobar(b.codigo === 200 && b.seats?.length === 2,
+        `se sienta bruno — asientos: ${b.seats?.map(x => x.who).join(', ')}`, b._json);
 }
 // Sólo los juegos de cartas publican esta marca; el ajedrez no tiene baraja y
 // exigírsela era un fallo de la prueba, no del juego. Que cada juego de cartas
 // la publique lo vigila `prueba_biblioteca.mjs`, así que aquí no se pierde nada.
-if (b.biblioteca === undefined) {
+if (b.library === undefined) {
     console.log('  · no usa baraja, así que no hay catálogo que comprobar');
 } else {
-    comprobar(b.biblioteca === true, `la baraja sale del catálogo (biblioteca: ${b.biblioteca})`, b._json);
+    comprobar(b.library === true, `la baraja sale del catálogo (library: ${b.library})`, b._json);
 }
 
 // ── 2. El árbitro rechaza a quien no está en su sitio ────────────────────
 // En una mesa de dos, a quien no le toca. En una de uno, a un desconocido — que
 // es el mismo principio: nadie mueve por otro.
-const toca = b.turno_de;
-const fuera = await jugarComo('bruno', b.acciones[0]);
+const toca = b.turn;
+const fuera = await jugarComo('bruno', b.legal_moves[0]);
 soloUno
     ? comprobar(fuera.codigo === 403 && /no estás sentado/.test(fuera.error ?? ''),
         `bruno, que no pudo sentarse, tampoco puede jugar → ${fuera.codigo} «${fuera.error}»`)
@@ -180,8 +180,8 @@ comprobar(inventada.codigo === 400 && /ilegal/.test(inventada.error ?? ''),
 const TOPE = Number(arg('tope', 400));
 let st = await pedir(`/mesa/${SALA}`);
 let vueltas = 0, deAna = 0, deBruno = 0;
-while (!st.terminada && vueltas++ < TOPE) {
-    const quien = st.turno_de;
+while (!st.is_game_over && vueltas++ < TOPE) {
+    const quien = st.turn;
     if (!quien) { mal('la mesa se quedó sin turno de nadie'); break; }
     // Cada uno elige distinto — no es cosmético: si los dos jugaran igual, la
     // partida no distinguiría un asiento del otro y el reparto no probaría nada.
@@ -190,7 +190,7 @@ while (!st.terminada && vueltas++ < TOPE) {
     // lista ES su mano—, un `GET` anónimo devuelve `acciones: []`. No es un fallo:
     // es la fuga tapada.
     const mio = await pedir(`/mesa/${SALA}?quien=${encodeURIComponent(quien)}`);
-    const acc = mio.acciones ?? [];
+    const acc = mio.legal_moves ?? [];
     if (!acc.length) { mal(`${quien} no recibe jugadas legales en su turno`); break; }
     const j = quien === 'ana' ? acc[0] : acc[acc.length - 1];
     quien === 'ana' ? deAna++ : deBruno++;
@@ -206,12 +206,12 @@ while (!st.terminada && vueltas++ < TOPE) {
  * vale — que es justo lo que necesita quien se levanta de la mesa antes del
  * final.
  */
-if (st.terminada) {
-    bien(`partida terminada en ${st.jugadas} jugadas — ana ${deAna}, bruno ${deBruno}`);
+if (st.is_game_over) {
+    bien(`partida terminada en ${st.moves} jugadas — ana ${deAna}, bruno ${deBruno}`);
 } else {
     console.log(`  · sin terminar en el tope de ${TOPE} jugadas — ana ${deAna}, bruno ${deBruno}`
               + ` (normal en go y xiangqi; se comprueba el recibo a medias)`);
-    comprobar(st.jugadas >= TOPE, `la partida avanzó de verdad: ${st.jugadas} jugadas`, st._json);
+    comprobar(st.moves >= TOPE, `la partida avanzó de verdad: ${st.moves} jugadas`, st._json);
 }
 if (soloUno) {
     comprobar(deAna > 0 && deBruno === 0, `jugó ana sola, como corresponde — ${deAna} jugadas`);
@@ -223,23 +223,25 @@ if (soloUno) {
     // Que dos se sienten no prueba que dos jueguen.
     comprobar(deAna > 0 && deBruno > 0,
         `jugaron los dos, no uno solo — ana ${deAna}, bruno ${deBruno}`);
-    comprobar(st.asientos?.every(a => a.asiento),
-        `cada quién tiene su asiento del juego — ${st.asientos?.map(a => `${a.quien}=${a.asiento}`).join(', ')}`
-        + (st.los_juega_la_casa ? ` (+${st.los_juega_la_casa} de la casa)` : ''),
+    comprobar(st.seats?.every(a => a.seat),
+        `cada quién tiene su asiento del juego — ${st.seats?.map(a => `${a.who}=${a.seat}`).join(', ')}`
+        + (st.played_by_house ? ` (+${st.played_by_house} de la casa)` : ''),
         st._json);
 }
 
 // ── 5. Y el recibo vale fuera de la mesa ─────────────────────────────────
-const rec = st.recibo;
+const rec = st.receipt;
 const v = await fetch(`${SITIO}/api/verificar`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ ...rec, puntos: st.puntos }),
+    // El verificador habla su propio contrato, que no ha cambiado.
+      body: JSON.stringify({ juego: rec.game, semilla: rec.seed,
+                             jugadas: rec.moves, puntos: st.score }),
 }).then(r => r.json());
 comprobar(v.valida === true,
     `el verificador acepta el recibo — válida: ${v.valida}, puntos ${v.puntos} vs declarados ${v.declarados}`);
-comprobar(v.puntos === st.puntos,
-    `los puntos de la mesa (${st.puntos}) y los del verificador (${v.puntos}) coinciden`);
+comprobar(v.puntos === st.score,
+    `los puntos de la mesa (${st.score}) y los del verificador (${v.puntos}) coinciden`);
 
 console.log(`\n${fallos === 0 ? '✓ todo en pie' : `✗ ${fallos} fallo(s)`}\n`);
 process.exit(fallos === 0 ? 0 : 1);

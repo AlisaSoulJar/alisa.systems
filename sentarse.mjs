@@ -95,16 +95,16 @@ const entrada = await pedir('/sentarse', {
  * mover las piezas de otro. Decir quién eres y demostrarlo son cosas distintas,
  * y sólo la segunda sirve cuando el enlace circula por internet.
  */
-const secreto = entrada?.secreto ?? null;
+const secreto = entrada?.secret ?? null;
 if (entrada.codigo !== 200) {
     console.log(`no se pudo sentar: ${entrada.error}`);
     if (entrada.motivo) console.log(`  motivo: ${entrada.motivo}`);
     process.exit(1);
 }
-const juego = entrada.juego;
+const juego = entrada.game;
 console.log(`\n${YO} se sienta a ${TITULOS[juego] ?? juego} en '${SALA}' como ${COMO}`);
-console.log(`  asientos: ${entrada.asientos.map(a => a.quien).join(', ')}`
-          + (entrada.los_juega_la_casa ? ` (+${entrada.los_juega_la_casa} de la casa)` : ''));
+console.log(`  asientos: ${entrada.seats.map(a => a.who).join(', ')}`
+          + (entrada.played_by_house ? ` (+${entrada.played_by_house} de la casa)` : ''));
 
 // ── Las reglas, en local ─────────────────────────────────────────────────
 // Se cargan del catálogo del sitio y no de disco: son las MISMAS que usa el
@@ -115,37 +115,37 @@ const ctrl = crearControlador(COMO, { juego, reglas, llm });
 
 /** Re-simula la partida desde el recibo, para las políticas que miran dentro. */
 const reconstruir = (recibo) => {
-    const p = reglas.nuevaPartida({ semilla: recibo.semilla, seed: recibo.semilla });
-    for (const j of recibo.jugadas) reglas.mover(p, j);
+    const p = reglas.nuevaPartida({ semilla: recibo.seed, seed: recibo.seed });
+    for (const j of recibo.moves) reglas.mover(p, j);
     return p;
 };
 
 // ── Jugar ────────────────────────────────────────────────────────────────
 let mesa = entrada, mias = 0, esperas = 0, avisado = false;
 for (let vuelta = 0; vuelta < TOPE; vuelta++) {
-    if (mesa.terminada) break;
+    if (mesa.is_game_over) break;
 
     // Esperar a que se llene la mesa NO es estar atascado, y conviene decirlo:
     // un proceso callado durante un minuto parece colgado.
-    if (mesa.esperando_a > 0) {
-        if (!avisado) { console.log(`  esperando a ${mesa.esperando_a} más…`); avisado = true; }
+    if (mesa.waiting_for > 0) {
+        if (!avisado) { console.log(`  esperando a ${mesa.waiting_for} más…`); avisado = true; }
         await new Promise(r => setTimeout(r, ESPERA));
         mesa = await pedir(`?quien=${encodeURIComponent(YO)}`);
         continue;
     }
 
-    if (mesa.turno_de !== YO) {
+    if (mesa.turn !== YO) {
         esperas++;
         await new Promise(r => setTimeout(r, ESPERA));
         mesa = await pedir(`?quien=${encodeURIComponent(YO)}`);
         continue;
     }
 
-    const acciones = mesa.acciones ?? [];
+    const acciones = mesa.legal_moves ?? [];
     if (!acciones.length) { console.log('  sin jugadas legales y la partida no ha terminado'); break; }
 
     const jugada = await ctrl.elegir({
-        juego, st: mesa.estado, acciones, reglas, p: reconstruir(mesa.recibo),
+        juego, st: mesa.state, acciones, reglas, p: reconstruir(mesa.receipt),
     });
     if (!jugada) {
         console.log(`\n✗ «${ctrl.etiqueta}» no eligió ninguna de las ${acciones.length} legales.`);
@@ -153,7 +153,7 @@ for (let vuelta = 0; vuelta < TOPE; vuelta++) {
         process.exit(2);
     }
 
-    const antes = mesa.jugadas;
+    const antes = mesa.moves;
     mesa = await pedir('/jugar', { quien: YO, jugada, secreto });
     if (mesa.codigo !== 200) { console.log(`  rechazada: ${mesa.error}`); break; }
     mias++;
@@ -161,13 +161,16 @@ for (let vuelta = 0; vuelta < TOPE; vuelta++) {
 }
 
 // ── El recibo, que es lo que vale ────────────────────────────────────────
-console.log(`\n${mesa.terminada ? 'partida terminada' : 'sin terminar'}`
-          + ` · ${mesa.jugadas} jugadas (${mias} mías, ${esperas} esperas) · ${mesa.puntos} puntos`);
+console.log(`\n${mesa.is_game_over ? 'partida terminada' : 'sin terminar'}`
+          + ` · ${mesa.moves} jugadas (${mias} mías, ${esperas} esperas) · ${mesa.score} puntos`);
 
 const v = await fetch(`${SITIO}/api/verificar`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ ...mesa.recibo, puntos: mesa.puntos }),
+    // El verificador sigue esperando el recibo en castellano: es OTRO
+        // contrato, el de `/api/verificar`, y no ha cambiado.
+        body: JSON.stringify({ juego: mesa.receipt.game, semilla: mesa.receipt.seed,
+                               jugadas: mesa.receipt.moves, puntos: mesa.score }),
 }).then(r => r.json()).catch(e => ({ error: e.message }));
 console.log(`verificador: ${JSON.stringify(v)}\n`);
 process.exit(v.valida ? 0 : 1);

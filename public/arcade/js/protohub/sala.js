@@ -140,7 +140,7 @@ export function crearSala({ sala, yo, juego, semilla, mesas = MESAS,
         async mirarPrimero() {
             await this.refrescar();
             const m = this.ultimo ?? {};
-            const ocupados = (m.asientos ?? []).length;
+            const ocupados = (m.seats ?? []).length;
             /**
              * ⚠️ EL TOPE DECLARADO MANDA SOBRE EL DESCUBIERTO.
              *
@@ -155,11 +155,11 @@ export function crearSala({ sala, yo, juego, semilla, mesas = MESAS,
              * mismo número con el que el árbitro rechaza a quien sobra. Se deja el
              * descubierto de respaldo para mesas servidas por un worker viejo.
              */
-            const sillas = m.sillas ?? m.asientos_del_juego ?? 1;
-            const yaEstoy = (m.asientos ?? []).some(a => a.quien === yo);
+            const sillas = m.max_seats ?? m.seats_seen ?? 1;
+            const yaEstoy = (m.seats ?? []).some(a => a.who === yo);
             // Antes de la primera jugada se deja pasar igualmente: si ni siquiera
             // hay tope declarado, es el único momento en que no se puede saber.
-            return yaEstoy || m.jugadas === 0 || ocupados < sillas;
+            return yaEstoy || m.moves === 0 || ocupados < sillas;
         },
 
         async entrar() {
@@ -178,7 +178,7 @@ export function crearSala({ sala, yo, juego, semilla, mesas = MESAS,
              * guardado con ese `undefined` sería tirar la llave que acabábamos de
              * recuperar, y volveríamos al 403 que esto viene a arreglar.
              */
-            if (r.secreto) { secreto = r.secreto; guardar(LLAVE, secreto); }
+            if (r.secret) { secreto = r.secret; guardar(LLAVE, secreto); }
             this.ultimo = r;
             return true;
         },
@@ -187,19 +187,21 @@ export function crearSala({ sala, yo, juego, semilla, mesas = MESAS,
         // Sin él se recibe la vista canónica, que es la del primero que se sentó.
         async refrescar() { this.ultimo = await this.pedir(`?quien=${encodeURIComponent(yo)}`); },
 
-        estado() { return this.ultimo?.estado ?? {}; },
+        estado() { return this.ultimo?.state ?? {}; },
 
         /**
          * ⚠️ EN UNA SALA SÓLO MANDAS SOBRE TU SILLA.
          * Las demás las lleva quien se haya sentado en ellas, en su propia pestaña.
          */
         miIndice: () => 0,
-        indiceTurno() { return this.ultimo?.turno_de === yo ? 0 : -1; },
-        meToca() { return this.ultimo?.turno_de === yo && puedoJugar(); },
-        acciones() { return this.ultimo?.acciones ?? []; },
+        indiceTurno() { return this.ultimo?.turn === yo ? 0 : -1; },
+        meToca() { return this.ultimo?.turn === yo && puedoJugar(); },
+        acciones() { return this.ultimo?.legal_moves ?? []; },
 
         async jugar(m) {
             const r = await this.pedir('/jugar', { quien: yo, jugada: m, secreto });
+            // (`quien`, `jugada` y `secreto` son de ENTRADA: los lee el worker,
+            //  y sus nombres viven en las rutas, que no se traducen.)
             if (r.codigo === 200) { this.ultimo = r; avisar(''); return; }
             // El árbitro dijo que no, y casi siempre por un motivo legítimo: otro se
             // adelantó entre que se pintó el botón y se pulsó. Se adopta SU estado,
@@ -208,16 +210,16 @@ export function crearSala({ sala, yo, juego, semilla, mesas = MESAS,
             if (r.estado) this.ultimo = r; else await this.refrescar();
         },
 
-        recibo() { return this.ultimo?.recibo; },
+        recibo() { return this.ultimo?.receipt; },
 
         resumen() {
             const m = this.ultimo;
-            if (!m?.asientos) return '';
-            const quien = m.asientos.map(a =>
-                `${a.quien === yo ? '<b>' + a.quien + ' (tú)</b>' : a.quien}`
-                + `<span class="dato"> · ${a.asiento ?? '—'}</span>`).join(' &nbsp;·&nbsp; ');
-            const casa = m.los_juega_la_casa
-                ? ` &nbsp;·&nbsp; <span class="dato">+${m.los_juega_la_casa} de la casa</span>` : '';
+            if (!m?.seats) return '';
+            const quien = m.seats.map(a =>
+                `${a.who === yo ? '<b>' + a.who + ' (tú)</b>' : a.who}`
+                + `<span class="dato"> · ${a.seat ?? '—'}</span>`).join(' &nbsp;·&nbsp; ');
+            const casa = m.played_by_house
+                ? ` &nbsp;·&nbsp; <span class="dato">+${m.played_by_house} de la casa</span>` : '';
             return `sala <b>${sala}</b> &nbsp;·&nbsp; ${quien}${casa}`;
         },
     };
