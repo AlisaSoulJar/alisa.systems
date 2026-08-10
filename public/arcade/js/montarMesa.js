@@ -34,6 +34,25 @@
 import { ProtoHub } from './protohub/ProtoHub.js';
 import { JUEGOS, TITULOS, cargarReglas } from './protohub/rules/index.js';
 
+/**
+ * ⚠️ LA VERSIÓN QUE VIAJA EN LA URL. NO ES COSMÉTICA: IMPIDE MEZCLAR.
+ *
+ * Un despliegue llegó a medias y costó una tarde: el navegador tenía el
+ * `mesa_cartas.mjs` nuevo y el `montarMesa.js` viejo, una combinación que NUNCA
+ * existió en el repositorio. Se arregló en el panel de Cloudflare, pero eso deja
+ * la salud del sitio dependiendo de un desplegable que ya estuvo mal una vez.
+ *
+ * Con la versión pegada a la URL el problema no puede darse: si cambia el código,
+ * cambia la dirección, y una copia guardada de la anterior sencillamente no se
+ * pide. Y lo importante es que el número vive AQUÍ, dentro del propio fichero que
+ * carga a los demás — así que un `montarMesa.js` viejo pide sus compañeros viejos.
+ * Viejo y coherente es un estado que existió y se probó; mezclado, no.
+ *
+ * `prueba_version.mjs` comprueba que corresponde a lo que hay en disco y, si no,
+ * dice el valor que toca. No hay que acordarse: hay que hacer caso a la prueba.
+ */
+const VERSION = '566f6102';
+
 /** Lo que toda página de tablero necesitaba y repetía. En orden. */
 const ANDAMIO = [
     '/vendor/three-r128/three.min.js',
@@ -72,7 +91,10 @@ const cargar = (src) => new Promise((listo, falla) => {
      * Se comprueba aquí y no en cada página porque las páginas se copian entre
      * ellas: la próxima que herede un <script> de más ya no romperá nada.
      */
-    const url = new URL(src, location.href).href;
+    // El vendor no cambia con el proyecto y ya viene con su versión en la ruta
+    // (`three-r128`), así que sellarlo sólo obligaría a redescargarlo sin motivo.
+    const sellado = src.startsWith('/vendor/') ? src : `${src}?v=${VERSION}`;
+    const url = new URL(sellado, location.href).href;
     if ([...document.scripts].some(s => s.src === url)) return listo();
 
     const s = document.createElement('script');
@@ -81,7 +103,7 @@ const cargar = (src) => new Promise((listo, falla) => {
     // sustrato, que es un módulo. Distinguirlos por la extensión evita tener que
     // declarar en la configuración algo que el nombre del fichero ya dice.
     if (src.endsWith('.mjs')) s.type = 'module';
-    s.src = src;
+    s.src = sellado;
     s.onload = listo;
     // Un script que no carga tiene que decirlo aquí y no veinte líneas después
     // como un `X is not defined` que no señala a nada.
