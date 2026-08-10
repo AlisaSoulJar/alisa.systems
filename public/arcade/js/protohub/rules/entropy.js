@@ -269,9 +269,27 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
                         }
                     }
 
-                    legales = legales.concat(tapadas.length
-                        ? tapadas.map(i => `descartar_y_voltear:${i}`)
-                        : ['descartar']);
+                    legales = legales.concat(tapadas.map(i => `descartar_y_voltear:${i}`));
+
+                    /**
+                     * ⚠️ DESCARTAR SIN DESTAPAR: SÓLO DEL MAZO Y CON UNA TAPADA.
+                     *
+                     * Antes esto era `: ['descartar']` cuando NO quedaban tapadas
+                     * — y eso no pasa nunca, porque destapar la última cierra la
+                     * ronda. Medido: se ofreció 0 veces en 744 turnos. Código
+                     * muerto que además tapaba una regla de verdad.
+                     *
+                     * Con una sola tapada, destaparla CIERRA la ronda. Así que
+                     * poder descartar sin destapar no es comodidad: es elegir si
+                     * cierras ahora o sigues intentando mejorar. Es la decisión
+                     * más cara del final de partida.
+                     *
+                     * ⚠️ Y SÓLO SI LA ROBASTE DEL MAZO. Devolver al descarte lo
+                     * que acabas de coger del descarte deja la mesa exactamente
+                     * como estaba: sería pasar turno gratis, y un juego donde se
+                     * puede pasar gratis no se acaba nunca.
+                     */
+                    if (p.robadaDe === 'mazo' && tapadas.length <= 1) legales.push('descartar');
                 } else {
                     if (!p.mazo.length) reciclar(p);
                     if (p.mazo.length) legales.push('robar_mazo');
@@ -487,7 +505,10 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
             }
             if (j === 'descartar') {
                 if (!p.robada) return false;
-                if (p.cajas[pid].some(h => !h.visible)) return false;   // hay que voltear
+                // Del descarte no: volvería al mismo sitio y sería pasar gratis.
+                if (p.robadaDe !== 'mazo') return false;
+                // Con dos o más tapadas hay que pagar destapando una.
+                if (p.cajas[pid].filter(h => !h.visible).length > 1) return false;
                 p.descarte.push(p.robada);
                 p.robada = null; p.robadaDe = null;
                 p.turnos += 1; p.historial.push(j);
@@ -582,6 +603,27 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
             if (peor >= 0) return `cambiar:${peor}`;
 
             const tapadas = caja.map((h, i) => (h.visible ? -1 : i)).filter(i => i >= 0);
+
+            /**
+             * ⚠️ CON UNA SOLA TAPADA, DESTAPARLA CIERRA LA RONDA. Y eso se decide,
+             * no se hace por inercia.
+             *
+             * Cerrar congela el marcador de TODOS, así que interesa cuando vas
+             * por delante y perjudica cuando vas por detrás. La casa compara lo
+             * que ve de su caja con lo que ve de las demás: si va ganando cierra,
+             * y si va perdiendo descarta sin destapar para seguir intentándolo.
+             *
+             * Sin esto la casa cerraría siempre, y bastaría con ir ganando por lo
+             * visible para que la mesa te regalara la ronda — el hueco mediría
+             * quién conoce esta regla, no quién juega mejor.
+             */
+            if (tapadas.length === 1 && p.robadaDe === 'mazo') {
+                const suma = (c) => c.reduce((s, h) => s + (h.visible ? valorDe(h.carta) : 0), 0);
+                const mio = suma(caja);
+                const mejorRival = Math.min(...p.cajas.map((c, i) => (i === pid ? Infinity : suma(c))));
+                if (mio > mejorRival) return 'descartar';        // voy perdiendo: no cierro
+            }
+
             if (tapadas.length) return `descartar_y_voltear:${tapadas[0]}`;
             return 'descartar';
         },

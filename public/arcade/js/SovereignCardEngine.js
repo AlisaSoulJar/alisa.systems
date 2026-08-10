@@ -1334,7 +1334,26 @@ class SovereignCardEngine {
             // así que el póker y los demás visualizadores no se enteran.
             const oculta = (card && typeof card === 'object' && card.oculta !== undefined)
                 ? !!card.oculta : faceDown;
-            const trackId = `${zoneName}_${baseId}_${idx}`;
+            /**
+             * ⚠️ EN UNA REJILLA, LA CARTA SE IDENTIFICA POR SU HUECO — NO POR SU CARA.
+             *
+             * Esto era siempre `${zona}_${cara}_${idx}`. En un abanico está bien:
+             * las cartas se mueven y conviene seguir a cada una. En una rejilla es
+             * al revés — el hueco 3 es el hueco 3 pase lo que pase, y lo que
+             * cambia es qué carta lo ocupa.
+             *
+             * Con la cara dentro del identificador, cambiar la carta del hueco 3
+             * hacía que la malla vieja se destruyera y naciera otra: en vez de ver
+             * un cambio, veías una carta salir volando desde el origen. Ése era el
+             * «movimiento confuso» — no era la animación, era que la carta no era
+             * la misma para el motor.
+             *
+             * Por hueco, la malla PERSISTE y sólo cambia su material, así que la
+             * transición es la que ya existe para dar la vuelta a una carta.
+             */
+            const trackId = layout === 'grid'
+                ? `${zoneName}_${idx}`
+                : `${zoneName}_${baseId}_${idx}`;
             
             let mesh = this.cardMeshes[trackId];
             
@@ -1461,17 +1480,37 @@ class SovereignCardEngine {
                 
                 // Spin Throw logic
                 if (mesh.userData.spawnedThisFrame) {
-                    // Start spinning wildly from origin
-                    mesh.rotation.set(
-                        (Math.random()-0.5)*Math.PI, 
-                        (Math.random()-0.5)*Math.PI, 
-                        (Math.random()-0.5)*Math.PI
-                    );
                     mesh.userData.spawnedThisFrame = false;
-                    
-                    new TWEEN.Tween(mesh.position).to({ x: targetX, y: targetY, z: targetZ }, 600).delay(animDelay).easing(TWEEN.Easing.Quadratic.Out).start();
-                    new TWEEN.Tween(mesh.rotation).to({ x: targetRotX, y: targetRotY, z: targetRotZ }, 600).delay(animDelay).easing(TWEEN.Easing.Quadratic.Out).start();
-                } 
+
+                    /**
+                     * ⚠️ EN UNA REJILLA NO SE REPARTE DANDO TUMBOS.
+                     *
+                     * La carta nacía con una rotación aleatoria en los tres ejes y
+                     * viajaba girando hasta su sitio. Repartiendo una mano de
+                     * póker eso es precisamente la gracia; sobre una rejilla es
+                     * ruido, porque ahí la POSICIÓN es la información y una carta
+                     * dando volteretas no dice a qué hueco va hasta que para.
+                     *
+                     * Aquí baja recta desde arriba, ya orientada. Se sigue viendo
+                     * que es nueva —cae— sin tener que adivinar dónde aterriza.
+                     */
+                    if (layout === 'grid') {
+                        mesh.position.set(targetX, targetY + 2.5, targetZ);
+                        mesh.rotation.set(targetRotX, targetRotY, targetRotZ);
+                        new TWEEN.Tween(mesh.position)
+                            .to({ x: targetX, y: targetY, z: targetZ }, 320)
+                            .delay(animDelay).easing(TWEEN.Easing.Quadratic.Out).start();
+                    } else {
+                        // Start spinning wildly from origin
+                        mesh.rotation.set(
+                            (Math.random()-0.5)*Math.PI,
+                            (Math.random()-0.5)*Math.PI,
+                            (Math.random()-0.5)*Math.PI
+                        );
+                        new TWEEN.Tween(mesh.position).to({ x: targetX, y: targetY, z: targetZ }, 600).delay(animDelay).easing(TWEEN.Easing.Quadratic.Out).start();
+                        new TWEEN.Tween(mesh.rotation).to({ x: targetRotX, y: targetRotY, z: targetRotZ }, 600).delay(animDelay).easing(TWEEN.Easing.Quadratic.Out).start();
+                    }
+                }
                 else if (Math.abs(mesh.rotation.x - targetRotX) > 1.0) {
                     // FLIP REVEAL LOGIC!
                     // If target rotation X drastically shifted (e.g. going from FaceDown Math.PI to FaceUp 0), do a hop+flip
@@ -1608,13 +1647,26 @@ class SovereignCardEngine {
         }
     }
 
-    flip(zoneName, cardIndex) {
-        // Find the mesh
-        const trackId = zoneName + '_' + cardIndex;
-        if (this.cardMeshes[trackId]) {
-            // Target face down/up
-            // We just trigger a re-draw with the flipped property maybe?
-            // Actually it's easier to handle this at the visualizer layer since Engine is stateless
-        }
-    }
+    /**
+     * ⚠️ AQUÍ HABÍA UN `flip(zona, indice)` VACÍO, Y CONTABA UNA HISTORIA.
+     *
+     * Su cuerpo entero eran tres comentarios y un `if` sin nada dentro. Empezaba
+     * así:
+     *
+     *     const trackId = zoneName + '_' + cardIndex;
+     *
+     * …que es EXACTAMENTE el identificador que las mallas de una rejilla usan
+     * desde hoy. Quien lo escribió dio por hecho que una carta se identifica por
+     * su hueco, se encontró con que el identificador llevaba dentro la cara —así
+     * que cambiar una carta destruía la malla en vez de darle la vuelta—, y lo
+     * dejó a medias con un «es más fácil manejarlo en el visualizador».
+     *
+     * Nadie lo llamaba. Y ya no hace falta: con el identificador por hueco, la
+     * malla persiste y `drawZone` dispara solo su transición de volteo cuando la
+     * carta cambia de cara. La animación que este método iba a hacer a mano la
+     * hace ahora el camino normal.
+     *
+     * Se quita en vez de dejarlo: un método público vacío promete algo que no
+     * cumple, y el siguiente que lo lea perderá el mismo rato.
+     */
 }
