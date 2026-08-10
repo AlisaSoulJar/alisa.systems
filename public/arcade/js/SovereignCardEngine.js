@@ -14,6 +14,32 @@ class SovereignCardEngine {
         this.onInit3D = config.onInit3D || function(scene, camera, renderer) {};
         this.onStateSync = config.onStateSync || function(data) {};
         this.onResize = config.onResize || function() {};
+
+        /**
+         * ⚠️ INVITADO EN VEZ DE DUEÑO: `config.anfitrion`.
+         *
+         * Este motor creaba SIEMPRE su propia escena, su cámara con
+         * `window.innerWidth`, su renderer dentro de `#canvas-container` y su
+         * propio bucle. Es dueño de la página, y por eso la Sala del Huevo sólo
+         * podía enseñar un juego «abduciéndote» a un iframe a pantalla completa:
+         * era la única forma de darle una página entera para él solo.
+         *
+         * Con `anfitrion: { grupo, escena, camara }` no monta nada de eso: dibuja
+         * dentro del grupo que le den y deja que el bucle lo lleve otro. Entonces
+         * las cartas son objetos de la escena de la sala — con su sombra, y
+         * clicables con el raycaster que la sala ya tiene.
+         *
+         * La escala deja de importar, que es la otra mitad del problema: las
+         * cartas de aquí miden 1,2×1,8 y las de la Sala del Huevo 0,088×0,123,
+         * catorce veces menos. Un grupo se escala entero, y la sala ya lo hace
+         * con los tableros: `conjunto.scale.setScalar(1.28 / max(ancho, largo))`.
+         *
+         * Todo el dibujo (`drawZone`) sólo usa `this.scene` y coordenadas, así
+         * que no distingue quién es el dueño. Por eso el cambio cabe aquí y no
+         * hay que tocar una línea de lo que pinta.
+         */
+        this.anfitrion = config.anfitrion ?? null;
+        this.invitado = !!this.anfitrion;
         
         // Agent UI State
         this.autoMode = false;
@@ -87,6 +113,31 @@ class SovereignCardEngine {
     }
 
     init3D() {
+        /**
+         * De invitado no se monta nada: ni escena, ni cámara, ni renderer, ni
+         * bucle. Se dibuja en el grupo que da el anfitrión y él sigue mandando
+         * en su sala.
+         *
+         * `this.scene` apunta al GRUPO, no a la escena: es lo que `drawZone` usa
+         * para colgar las cartas, y colgarlas de la escena directamente las
+         * dejaría fuera del grupo — sin heredar su posición ni su escala, o sea
+         * sueltas por la sala a tamaño gigante.
+         */
+        if (this.invitado) {
+            const { grupo, escena, camara } = this.anfitrion;
+            this.scene = grupo;
+            this.escenaReal = escena ?? grupo;
+            this.camera = camara ?? null;
+            this.renderer = null;
+
+            this.cardGeo = new THREE.BoxGeometry(1.2, 1.8, 0.05);
+            this.cardMatFront = new THREE.MeshLambertMaterial({ color: 0xE8ECEF });
+            this.cardMatBack = new THREE.MeshLambertMaterial({ color: 0x882222 });
+
+            this.onInit3D(this.scene, this.camera, null);
+            return;   // ni `animate()`: el anfitrión ya tiene su bucle
+        }
+
         const container = document.getElementById('canvas-container');
         if (!container) return;
 

@@ -1,0 +1,226 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA — Sala</title>
+<link rel="stylesheet" href="css/arcade.css">
+<link rel="stylesheet" href="css/mesa3d.css">
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+<!--
+  sala.html — una mesa, en un sitio, a escala de persona
+  ═══════════════════════════════════════════════════════════════════════════
+
+  ⚠️ QUÉ PRUEBA ESTO, QUE ES MÁS QUE UNA PÁGINA BONITA.
+
+  Sentarse a una mesa de la Sala del Huevo y entrar por `/arcade/entrar` tienen
+  que ser LO MISMO. Hoy no lo son: la Sala del Huevo te «abduce» a un iframe a
+  pantalla completa, porque el motor de cartas creaba siempre su propia escena,
+  su cámara y su bucle — era dueño de la página, así que la única forma de
+  enseñarlo era darle una página entera.
+
+  Aquí el motor entra de INVITADO (`window.ALISA_ANFITRION`): dibuja dentro de un
+  grupo que le damos, y el bucle lo llevamos nosotros. Las cartas pasan a ser
+  objetos de ESTA escena, con la sombra de ESTA lámpara.
+
+  ⚠️ Y RESUELVE LA OTRA MITAD: LA ESCALA.
+
+  Las cartas del arcade miden 1,2 × 1,8. Las de la Sala del Huevo, 0,088 × 0,123
+  — catorce veces menos, porque allí todo está en metros de verdad y la cámara
+  mira desde 1,62, la altura de los ojos de alguien de pie.
+
+  No se reescala nada a mano: se mide la caja del grupo y se encoge entero hasta
+  que quepa en el tablero. Es exactamente lo que la Sala del Huevo ya hace con
+  los tableros —`conjunto.scale.setScalar(1.28 / max(ancho, largo))`— y lo que le
+  faltaba para las cartas.
+
+  La geometría de la mesa está copiada de allí a propósito: mismo radio, mismo
+  pie, mismos taburetes. Si las dos salas se ven distintas, no son la misma casa.
+
+      sala.html?juego=entropy&sala=cocina
+-->
+<script src="/vendor/three-r128/three.min.js"></script>
+<script src="/vendor/three-r128/OrbitControls.js"></script>
+<script src="/vendor/tween/tween.umd.js"></script>
+
+<div id="canvas-container"></div>
+<div id="hud-container"></div>
+
+<script type="module">
+import { JUEGOS, TITULOS, cargarReglas } from './js/protohub/rules/index.js';
+import { ProtoHub } from './js/protohub/ProtoHub.js';
+
+const p = new URLSearchParams(location.search);
+const juego = JUEGOS.includes(p.get('juego')) ? p.get('juego') : 'entropy';
+window.ALISA_JUEGO = juego;
+window.ALISA_TITULO = TITULOS[juego] ?? juego;
+document.title = `ALISA — ${window.ALISA_TITULO}`;
+
+// ── La sala ───────────────────────────────────────────────────────────────
+const escena = new THREE.Scene();
+escena.fog = new THREE.Fog(0x0d0b12, 6, 22);
+
+const camara = new THREE.PerspectiveCamera(
+    50,
+    // Mismo cuidado que en el motor: `0/0` es NaN, la proyección se corrompe y
+    // no se dibuja un píxel sin dar ningún error.
+    (innerWidth > 0 && innerHeight > 0) ? innerWidth / innerHeight : 16 / 9,
+    0.05, 60);
+// 1,62 son los ojos de alguien sentado-de-pie junto a la mesa. Es la altura que
+// usa la Sala del Huevo al sentarte, y copiarla es lo que hace que las dos
+// salas se sientan el mismo sitio.
+camara.position.set(0, 1.62, 2.15);
+camara.lookAt(0, 0.95, 0);
+
+const render = new THREE.WebGLRenderer({ antialias: true });
+render.setSize(innerWidth, innerHeight);
+render.setPixelRatio(Math.min(devicePixelRatio, 2));
+render.shadowMap.enabled = true;
+render.shadowMap.type = THREE.PCFSoftShadowMap;
+document.getElementById('canvas-container').appendChild(render.domElement);
+
+const controles = new THREE.OrbitControls(camara, render.domElement);
+controles.target.set(0, 0.95, 0);
+controles.maxPolarAngle = Math.PI / 2.05;   // no meter la cámara bajo el suelo
+controles.minDistance = 0.9;
+controles.maxDistance = 4.5;
+controles.update();
+
+const matClara = new THREE.MeshStandardMaterial({ color: 0xd8d4e0, roughness: 0.85 });
+const matOscura = new THREE.MeshStandardMaterial({ color: 0x241f2b, roughness: 0.9 });
+
+// Suelo, muro y techo — el sitio.
+const suelo = new THREE.Mesh(new THREE.CircleGeometry(11, 48),
+    new THREE.MeshStandardMaterial({ color: 0x2b211c, roughness: 0.95 }));
+suelo.rotation.x = -Math.PI / 2;
+suelo.receiveShadow = true;
+escena.add(suelo);
+
+const muro = new THREE.Mesh(new THREE.CylinderGeometry(11, 11, 5, 48, 1, true),
+    new THREE.MeshStandardMaterial({ color: 0x191521, roughness: 1, side: THREE.BackSide }));
+muro.position.y = 2.5;
+escena.add(muro);
+
+const techo = new THREE.Mesh(new THREE.CircleGeometry(11, 48),
+    new THREE.MeshStandardMaterial({ color: 0x120f18, roughness: 1 }));
+techo.rotation.x = Math.PI / 2;
+techo.position.y = 5;
+escena.add(techo);
+
+/**
+ * ⚠️ LA MESA, COPIADA DE LA SALA DEL HUEVO. Mismos números a propósito:
+ * tablero de radio 1,5 a 0,92 de alto, pie cónico y tres taburetes alrededor.
+ * Cambiar cualquiera de ellos haría que la misma mesa se viera distinta según
+ * por dónde entres, y entonces no sería la misma mesa.
+ */
+const mesa = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.5, 0.11, 40), matClara);
+mesa.position.y = 0.92;
+mesa.castShadow = mesa.receiveShadow = true;
+escena.add(mesa);
+
+const pie = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.34, 0.92, 20), matOscura);
+pie.position.y = 0.46;
+escena.add(pie);
+
+for (let i = 0; i < 3; i++) {
+    const t = (i / 3) * Math.PI * 2 + 0.7;
+    const tab = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.5, 16), matClara);
+    tab.position.set(Math.cos(t) * 2.5, 0.25, Math.sin(t) * 2.5);
+    tab.castShadow = true;
+    escena.add(tab);
+}
+
+// Tapete: es lo que dice «aquí se juega», y además recibe la sombra de las cartas.
+const tapete = new THREE.Mesh(new THREE.BoxGeometry(2.68, 0.005, 2.68),
+    new THREE.MeshLambertMaterial({ color: 0x14352a }));
+tapete.position.y = 0.98;
+tapete.receiveShadow = true;
+escena.add(tapete);
+
+// ── La luz ────────────────────────────────────────────────────────────────
+escena.add(new THREE.HemisphereLight(0xbfd4e6, 0x1a1420, 0.55));
+const foco = new THREE.SpotLight(0xfff2d0, 1.1, 12, Math.PI / 4.2, 0.5, 1.2);
+foco.position.set(0, 3.2, 0);
+foco.target.position.set(0, 0.98, 0);
+foco.castShadow = true;
+escena.add(foco, foco.target);
+
+const pantalla = new THREE.Mesh(new THREE.ConeGeometry(0.55, 0.32, 20, 1, true),
+    new THREE.MeshStandardMaterial({ color: 0x2a2233, roughness: 0.8, side: THREE.DoubleSide }));
+pantalla.position.y = 3.2;
+escena.add(pantalla);
+
+// ── El juego, dentro de la mesa ───────────────────────────────────────────
+const grupo = new THREE.Group();
+grupo.position.y = 0.985;
+escena.add(grupo);
+
+window.ALISA_ANFITRION = { grupo, escena, camara };
+
+const reglas = await cargarReglas(juego, {});
+const hub = new ProtoHub().registrar(juego, reglas);
+window.ALISA_PROTOHUB = hub;
+const semilla = Number(p.get('semilla'));
+if (Number.isFinite(semilla) && semilla > 0) hub.reset(juego, { semilla, seed: semilla });
+
+/**
+ * ⚠️ LA ESCALA LA MANDA LA CARTA, NO LA MESA.
+ *
+ * El primer intento encogía el grupo hasta LLENAR la mesa, que es lo que la Sala
+ * del Huevo hace con los tableros — y ahí está bien, porque un tablero de
+ * ajedrez ocupa toda la mesa de verdad. Con cartas da un resultado absurdo:
+ * medido, salían de 24 × 36 cm. Naipes de juguete gigante.
+ *
+ * El motivo es que la mesa de la Sala del Huevo mide tres metros, pensada para
+ * un mazo decorativo apilado, no para un juego repartido. Llenarla obliga a
+ * inflar las cartas.
+ *
+ * Así que se fija lo único que tiene una medida real —el ancho de una carta— y
+ * el juego ocupa lo que ocupe. Si un día no cabe, se encoge; pero primero manda
+ * que una carta parezca una carta.
+ *
+ *   `?carta=15` en centímetros, para ajustarlo a ojo sin tocar el código. Esto
+ *   es estética y se decide mirando, no midiendo.
+ */
+const ANCHO_CARTA_MOTOR = 1.2;                       // lo que mide en el arcade
+const cm = Number(p.get('carta'));
+const ANCHO_CM = (Number.isFinite(cm) && cm > 2) ? cm : 11;   // 8,8 es la real
+const CABE_EN = 2.55;
+
+function ajustar() {
+    if (!grupo.children.length) return;
+    const porCarta = (ANCHO_CM / 100) / ANCHO_CARTA_MOTOR;
+
+    // Y si con ese tamaño el juego se sale de la mesa, manda la mesa: una carta
+    // creíble en el suelo no le sirve a nadie.
+    grupo.scale.setScalar(porCarta);
+    grupo.updateMatrixWorld(true);
+    const t = new THREE.Box3().setFromObject(grupo).getSize(new THREE.Vector3());
+    const mayor = Math.max(t.x, t.z, 0.001);
+    if (mayor > CABE_EN) grupo.scale.setScalar(porCarta * (CABE_EN / mayor));
+}
+
+await import('./js/arcade_mats.js').catch(() => {});
+await new Promise((listo, falla) => {
+    const s = document.createElement('script');
+    s.src = 'js/SovereignCardEngine.js';
+    s.onload = listo; s.onerror = () => falla(new Error('sin motor de cartas'));
+    document.head.appendChild(s);
+});
+await import('./js/mesa_cartas.mjs');
+
+// ── El bucle, que aquí lo llevamos nosotros ───────────────────────────────
+function tick(t) {
+    requestAnimationFrame(tick);
+    if (typeof TWEEN !== 'undefined') TWEEN.update(t);
+    ajustar();
+    controles.update();
+    render.render(escena, camara);
+}
+tick();
+
+addEventListener('resize', () => {
+    if (!(innerWidth > 0 && innerHeight > 0)) return;
+    camara.aspect = innerWidth / innerHeight;
+    camara.updateProjectionMatrix();
+    render.setSize(innerWidth, innerHeight);
+});
+</script>

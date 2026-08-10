@@ -122,6 +122,16 @@ const CABEN = 9;
  * ahí se pierde en silencio. Ya me pasó con `pintarJugadas`.
  */
 function encuadrar(motor) {
+    /**
+     * ⚠️ DE INVITADO NO SE TOCA LA CÁMARA NI SE AMUEBLA NADA.
+     *
+     * Cuando esta mesa vive dentro de otra sala, la cámara es de la sala y el
+     * sitio ya existe. Mover su cámara sería arrancarle el punto de vista al
+     * anfitrión en mitad de su propia escena, y amueblar sería meter un segundo
+     * suelo y un segundo techo dentro de una habitación que ya los tiene.
+     */
+    if (motor.invitado) return;
+
     const estrecha = motor.esPantallaEstrecha();
     const { mesa, canto, tapiz } = motor.piezasMesa ?? {};
     if (mesa)  mesa.visible  = !estrecha;
@@ -322,7 +332,40 @@ function pintarJugadas(motor, data) {
 const engine = new SovereignCardEngine({
     gameId: window.ALISA_JUEGO ?? 'entropy',
 
+    /**
+     * ⚠️ SI ALGUIEN HA PUESTO UNA SALA, SE JUEGA DENTRO DE ELLA.
+     *
+     * `window.ALISA_ANFITRION = { grupo, escena, camara }` — lo pone la página
+     * que hospeda, antes de cargar este visualizador. Sin eso, esta mesa monta
+     * su propia escena como siempre y nadie nota la diferencia.
+     *
+     * Va por `window` y no por parámetro porque este fichero se carga como un
+     * `<script type="module">` que se monta solo: no hay nadie a quien pasarle
+     * argumentos. Es el mismo camino que ya usan `ALISA_JUEGO` y `ALISA_TITULO`.
+     */
+    anfitrion: window.ALISA_ANFITRION ?? null,
+
     onInit3D(scene, camera) {
+        /**
+         * ⚠️ DE INVITADO NO SE CONSTRUYE EL MUEBLE. NI SIQUIERA OCULTO.
+         *
+         * La primera versión lo creaba y lo ponía `visible = false`, que parece
+         * lo mismo y no lo es: `Box3.setFromObject` mide TAMBIÉN lo invisible.
+         * El anfitrión encoge el grupo hasta que quepa en su mesa, así que un
+         * tapiz oculto de 80×80 le hacía calcular sobre ochenta unidades — y las
+         * cartas salían a 3,8 cm en vez de a 8,8, la mitad de pequeñas de lo que
+         * debían, sin que nada fallara.
+         *
+         * Se vio en el número: escala 0,0313 × 80 = 2,5, exactamente el ancho que
+         * le habíamos pedido. La cuenta era correcta; lo que medía, no.
+         */
+        if (this.invitado) {
+            this.piezasMesa = {};
+            this.preloadCourtImages('/arcade/assets/cards/courts');
+            this.activeDeckBack = 'classic_red';
+            return;
+        }
+
         // Fieltro. Ovalado, como el de póker: una mesa redonda hace que las
         // manos de arriba y abajo queden demasiado lejos en pantalla.
         const geo = new THREE.CylinderGeometry(10, 10, 0.4, 64);
