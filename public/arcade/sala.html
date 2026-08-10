@@ -180,6 +180,14 @@ if (Number.isFinite(semilla) && semilla > 0) hub.reset(juego, { semilla, seed: s
  *   `?carta=15` en centímetros, para ajustarlo a ojo sin tocar el código. Esto
  *   es estética y se decide mirando, no midiendo.
  */
+/**
+ * De qué está hecho este juego. Se decide ANTES de nada porque manda en dos
+ * cosas —con qué se dibuja y cómo se escala— y dejarlo para después obligaría a
+ * confiar en el orden en que se ejecutan las líneas de este fichero.
+ */
+const muestra = hub.sustrato(juego);
+const deCartas = !!(muestra?.zonas?.length) && !muestra?.rejilla;
+
 const ANCHO_CARTA_MOTOR = 1.2;                       // lo que mide en el arcade
 const cm = Number(p.get('carta'));
 const ANCHO_CM = (Number.isFinite(cm) && cm > 2) ? cm : 11;   // 8,8 es la real
@@ -187,6 +195,43 @@ const CABE_EN = 2.55;
 
 function ajustar() {
     if (!grupo.children.length) return;
+
+    /**
+     * ⚠️ CADA TIPO DE JUEGO SE ESCALA CON UN CRITERIO DISTINTO, Y NO ES CAPRICHO.
+     *
+     * UN TABLERO LLENA LA MESA. Un ajedrez de verdad ocupa el tablero entero:
+     * si lo encogieras a «tamaño de casilla creíble» quedaría un sello en medio
+     * de tres metros de madera. Es el criterio que la Sala del Huevo ya usa.
+     *
+     * UNAS CARTAS NO. Aquí manda el ancho de la carta, porque estas mesas miden
+     * tres metros —pensadas para un mazo decorativo apilado, no para un juego
+     * repartido— y llenarlas da naipes de 24 cm. Medido antes de decidirlo.
+     *
+     * Aplicar el criterio del uno al otro se ve enseguida: el ajedrez salió a
+     * escala de carta, o sea un tablero de once centímetros en una mesa de tres
+     * metros. Nadie lo habría jugado, pero tampoco habría dado error.
+     */
+    if (!deCartas) {
+        grupo.scale.setScalar(1);
+        grupo.updateMatrixWorld(true);
+        const t = new THREE.Box3().setFromObject(grupo).getSize(new THREE.Vector3());
+        const mayor = Math.max(t.x, t.z);
+        /**
+         * ⚠️ SI NO HAY NADA QUE MEDIR, NO SE ESCALA.
+         *
+         * Un `Math.max(t.x, t.z, 0.001)` evita dividir por cero, pero produce
+         * algo peor que un error: escala 2550. Pasó con cripta cuando su sustrato
+         * llegaba vacío —la mesa salía sin nada encima y con las jugadas legales
+         * perfectamente listadas al lado—, y ese 2550 no llamaba la atención
+         * porque el resultado visible era el mismo que el de una mesa vacía.
+         *
+         * Un grupo sin tamaño no es un grupo pequeño: es un grupo que todavía no
+         * está. Se deja como está y se vuelve a mirar en el siguiente fotograma.
+         */
+        if (mayor > 0.001) grupo.scale.setScalar(CABE_EN / mayor);
+        return;
+    }
+
     const porCarta = (ANCHO_CM / 100) / ANCHO_CARTA_MOTOR;
 
     // Y si con ese tamaño el juego se sale de la mesa, manda la mesa: una carta
@@ -198,14 +243,64 @@ function ajustar() {
     if (mayor > CABE_EN) grupo.scale.setScalar(porCarta * (CABE_EN / mayor));
 }
 
-await import('./js/arcade_mats.js').catch(() => {});
-await new Promise((listo, falla) => {
-    const s = document.createElement('script');
-    s.src = 'js/SovereignCardEngine.js';
-    s.onload = listo; s.onerror = () => falla(new Error('sin motor de cartas'));
-    document.head.appendChild(s);
-});
-await import('./js/mesa_cartas.mjs');
+/**
+ * ⚠️ QUÉ SE PINTA LO DICE EL SUSTRATO, IGUAL QUE EN `montarMesa`.
+ *
+ * Un juego que publica ZONAS y ninguna REJILLA es de cartas y lo dibuja la mesa
+ * de casino. Todo lo demás —tableros, laberintos, flotas, rebaños— tiene rejilla
+ * y piezas, y lo dibuja `crearPintor3d`, que ya existía y ya recibía la escena
+ * por parámetro: nació invitado.
+ *
+ * No hay lista de qué juego usa qué. El dato ya está en lo que cada juego
+ * publica; sólo había que mirarlo.
+ */
+if (deCartas) {
+    await import('./js/arcade_mats.js').catch(() => {});
+    await new Promise((listo, falla) => {
+        const s = document.createElement('script');
+        s.src = 'js/SovereignCardEngine.js';
+        s.onload = listo; s.onerror = () => falla(new Error('sin motor de cartas'));
+        document.head.appendChild(s);
+    });
+    await import('./js/mesa_cartas.mjs');
+} else {
+    /**
+     * ⚠️ EL PINTOR UNIVERSAL, Y LOS BOTONES QUE YA COMPARTE LA MESA DE CARTAS.
+     *
+     * `crearPintor3d` dibuja la matriz y las piezas, pero no sabe nada de turnos
+     * ni de jugadas: eso lo pone `pintarJugadas`, el mismo módulo que usa la mesa
+     * de cartas. Copiar aquí esos botones habría sido copiar su regla de oro —«no
+     * se manda nada que no esté en `legal_moves`»— con la posibilidad de que una
+     * de las dos copias se la saltara.
+     */
+    const { crearPintor3d } = await import('./js/protohub/render/pintar3d.js');
+    const { pintarJugadas } = await import('./js/protohub/jugadas.js');
+    const pintor = crearPintor3d(grupo, THREE);
+
+    document.getElementById('hud-container').innerHTML =
+        `<div class="overlay"><div class="hud-panel"><div class="hud-header">`
+      + `<h1>🎲 ${window.ALISA_TITULO}</h1></div>`
+      + `<div id="hud-content"><div id="estado-txt" class="status-row"></div>`
+      + `<div id="mesa-jugadas" class="mesa-jugadas"></div></div></div></div>`;
+
+    const refrescar = () => {
+        const st = hub.state(juego);
+        pintor.pintar(hub.sustrato(juego));
+        const marcador = st.puntos ?? st.score ?? st.marcador;
+        document.getElementById('estado-txt').innerHTML =
+            `<span>Turno</span><span class="val">${st.turn ?? '—'}</span>`
+          + (marcador !== undefined ? ` <span>·</span><span class="val">${marcador}</span>` : '');
+        pintarJugadas(document.getElementById('mesa-jugadas'), {
+            acciones: st.legal_moves ?? st.legal_actions ?? [],
+            terminada: !!st.is_game_over,
+            enviar: (m) => { hub.move(juego, { move: m }); refrescar(); },
+        });
+    };
+    refrescar();
+    // El mundo de algunos juegos avanza solo (rebaño, pradera), así que no basta
+    // con repintar cuando alguien juega.
+    setInterval(refrescar, 1000);
+}
 
 // ── El bucle, que aquí lo llevamos nosotros ───────────────────────────────
 function tick(t) {

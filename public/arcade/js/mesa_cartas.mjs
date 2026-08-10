@@ -38,6 +38,7 @@
 import { sustratoDe } from './protohub/sustrato.js';
 import { crearMarcas, VERDE, MORADO, ACIERTO } from './protohub/marcas.js';
 import { amueblar } from './protohub/habitacion.js';
+import { pintarJugadas as pintarBotones } from './protohub/jugadas.js';
 
 /**
  * Dónde se sienta cada zona. La mesa mira desde el asiento 0, abajo.
@@ -291,42 +292,17 @@ function repintarMarcas(motor) {
  * se pierde en silencio. Y además es del visualizador, no del motor.
  */
 function pintarJugadas(motor, data) {
-    const caja = document.getElementById('mesa-jugadas');
-    if (!caja) return;
-
     // En una sala manda el árbitro: sus acciones, y sólo si te toca a ti.
     const enSala = motor.backend?.tipo === 'sala';
-    const acciones = (enSala ? motor.sala.acciones()
-                             : (data.legal_moves ?? data.legal_actions ?? []))
-        .filter(m => m !== 'nueva' && m !== 'reset');
-
-    if (data.is_game_over) { caja.innerHTML = '<span class="dato">partida terminada</span>'; return; }
-    if (enSala && motor.sala.espectador) {
-        caja.innerHTML = '<span class="dato">la mesa estaba llena — miras</span>';
-        return;
-    }
-    if (enSala && !motor.sala.meToca()) {
-        caja.innerHTML = `<span class="dato">le toca a ${motor.sala.ultimo?.turno_de ?? 'otro asiento'}…</span>`;
-        return;
-    }
-    if (!acciones.length) { caja.innerHTML = '<span class="dato">—</span>'; return; }
-
-    caja.innerHTML = '';
-    for (const m of acciones) {
-        const b = document.createElement('button');
-        b.className = 'mesa-jugada';
-        b.textContent = String(m).replace(/^jugar:|^pedir:/, '');
-        b.title = m;
-        b.onclick = async () => {
-            // Se apagan TODOS, no sólo el pulsado: en una sala el viaje de ida y
-            // vuelta dura lo suyo, y sin esto se mandan tres jugadas antes de que
-            // conteste la primera. El árbitro rechazaría las de más, pero quien
-            // juega vería tres errores por un clic de más.
-            [...caja.children].forEach(x => { x.disabled = true; });
-            await motor.sendMove(m);
-        };
-        caja.appendChild(b);
-    }
+    pintarBotones(document.getElementById('mesa-jugadas'), {
+        acciones: enSala ? motor.sala.acciones()
+                         : (data.legal_moves ?? data.legal_actions ?? []),
+        meToca: !enSala || motor.sala.meToca(),
+        turnoDe: enSala ? motor.sala.ultimo?.turno_de : null,
+        terminada: !!data.is_game_over,
+        espectador: enSala && motor.sala.espectador,
+        enviar: (m) => motor.sendMove(m),
+    });
 }
 
 const engine = new SovereignCardEngine({

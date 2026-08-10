@@ -36,6 +36,8 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
+import { sustratoDe } from './sustrato.js';
+
 export class ProtoHub {
     constructor() {
         /** @type {Map<string, Object>} juego → módulo de reglas */
@@ -94,6 +96,43 @@ export class ProtoHub {
 
     /** ¿Sabemos jugar a esto sin hub? */
     soporta(juegoId) { return this.reglas.has(juegoId); }
+
+    /**
+     * La matriz plana de la partida en curso — nativa si el juego la publica,
+     * derivada del estado si no.
+     *
+     * ⚠️ POR QUÉ ESTO VIVE AQUÍ Y NO EN CADA PÁGINA.
+     *
+     * Elegir entre las dos vías parece trivial y ya se ha fallado dos veces en un
+     * mismo día:
+     *
+     *   · la mesa de cartas llamaba a `reglas.sustrato(p)` pasándole lo que
+     *     devuelve `partida()` — que NO es la partida, es el recibo
+     *     `{juego, semilla, jugadas}`. No rompía nada sólo porque ninguno de los
+     *     diez juegos de cartas publica sustrato nativo;
+     *   · y la sala nueva usaba `sustratoDe(juego, estado)` para los treinta, que
+     *     sólo DERIVA: los once juegos con sustrato propio salían vacíos. Cripta
+     *     apareció como una mesa sin nada encima, con sus jugadas legales
+     *     perfectamente listadas al lado.
+     *
+     * Los dos fallos son el mismo: el que dibuja no tiene por qué saber cuál de
+     * las dos vías toca, y si tiene que saberlo, se equivocará. Aquí sí se sabe,
+     * porque aquí están la partida viva y las reglas.
+     *
+     * @param {string} juegoId
+     * @param {number} [asiento] desde qué silla se mira. En los juegos de
+     *        información oculta decide QUÉ se ve, así que no es cosmético.
+     */
+    sustrato(juegoId, asiento = 0) {
+        const reglas = this.reglas.get(juegoId);
+        if (!reglas) return null;
+        if (!this.partidas.has(juegoId)) this.reset(juegoId);
+        const partida = this.partidas.get(juegoId);
+        if (typeof reglas.sustrato === 'function') {
+            return { ...reglas.sustrato(partida, asiento), derivado: false };
+        }
+        return sustratoDe(juegoId, reglas.estado(partida, asiento));
+    }
 
     /** Equivalente a GET /arcade/{juego}/state */
     state(juegoId) {
