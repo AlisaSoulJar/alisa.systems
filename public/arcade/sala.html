@@ -217,7 +217,111 @@ const deCartas = !!(muestra?.zonas?.length) && !muestra?.rejilla;
 const ANCHO_CARTA_MOTOR = 1.2;                       // lo que mide en el arcade
 const cm = Number(p.get('carta'));
 const ANCHO_CM = (Number.isFinite(cm) && cm > 2) ? cm : 11;   // 8,8 es la real
+
+/**
+ * ⚠️ Y EL TABLERO TAMBIÉN SE MIDE EN CENTÍMETROS, POR EL MISMO MOTIVO.
+ *
+ * Debajo estaba escrito «un tablero llena la mesa» y se llenaba: medido, el
+ * ajedrez salía de 2,55 m con piezas de 48 cm, sobre una mesa de 1,5 de radio a
+ * la que estás SENTADO. No se ve un ajedrez: se ve el interior de un ajedrez.
+ *
+ * Lo gracioso es que el motivo ya estaba escrito tres párrafos más arriba, para
+ * las cartas: esta mesa mide tres metros porque viene de una sala donde es
+ * decorativa, así que llenarla infla lo que le pongas encima. Valía igual para
+ * los tableros y no se aplicó — el razonamiento estaba, sólo faltaba usarlo dos
+ * veces.
+ *
+ * 55 cm es un tablero de verdad: un ajedrez de torneo mide 50 y un go 45. Y lo
+ * mismo sirve para los que no son juegos de mesa —el laberinto, el rebaño, la
+ * flota—, que sobre una mesa son un diorama y un diorama tiene su tamaño.
+ *
+ *   `?tablero=80` en centímetros, para ajustarlo a ojo. Esto es estética y se
+ *   decide mirando, igual que `?carta=`.
+ */
+const tcm = Number(p.get('tablero'));
+const TABLERO_CM = (Number.isFinite(tcm) && tcm > 5) ? tcm : 55;
+
+/** Lo que cabe en el tapete sin colgar por el borde. Es el TECHO, no el objetivo. */
 const CABE_EN = 2.55;
+
+/**
+ * ⚠️ `Box3.setFromObject` MIENTE CON LAS MALLAS INSTANCIADAS, Y AQUÍ TODAS LO SON.
+ *
+ * `crearPintor3d` dibuja el tablero con cuatro `InstancedMesh` —una por tipo de
+ * pieza, con una matriz por casilla—, que es lo correcto: así un tablero de 19×19
+ * cuesta cuatro objetos y no trescientos sesenta.
+ *
+ * Pero el three que usamos (r128) NO mira las matrices de instancia al calcular
+ * una caja: devuelve la de la geometría BASE, centrada en el origen. Medido:
+ * cuatro mallas, todas «en (0,0)», extensión 0 × 0. Un tablero entero informando
+ * de que no ocupa nada.
+ *
+ * Y no fallaba con un error, fallaba con un NÚMERO: la escala se calculaba
+ * dividiendo por el tamaño de UNA casilla, así que el tablero salía ocho veces
+ * más grande de lo pedido. Nadie lo habría llamado un fallo de medición mirando
+ * la pantalla; parecía una decisión estética discutible.
+ *
+ * Esto recorre las matrices a mano. Es lo que hace three moderno, y aquí lo hace
+ * falta porque la versión que servimos es la de entonces.
+ */
+function cajaReal(raiz) {
+    const caja = new THREE.Box3();
+    const m = new THREE.Matrix4();
+    const b = new THREE.Box3();
+    raiz.updateMatrixWorld(true);
+    raiz.traverse((o) => {
+        if (!o.isMesh || !o.geometry) return;
+        if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+        if (o.isInstancedMesh && o.instanceMatrix) {
+            for (let i = 0; i < o.count; i++) {
+                o.getMatrixAt(i, m);
+                m.premultiply(o.matrixWorld);
+                b.copy(o.geometry.boundingBox).applyMatrix4(m);
+                caja.union(b);
+            }
+        } else {
+            b.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld);
+            caja.union(b);
+        }
+    });
+    return caja;
+}
+
+/**
+ * ⚠️ Y UNA VEZ SE SABE QUÉ HAY, HAY QUE PODER VERLO.
+ *
+ * Con el tamaño arreglado, el ajedrez ocupaba el 12,6 % del ancho de la pantalla:
+ * medida correcta, partida injugable. Es lo que pasa al sentarse a una mesa de
+ * TRES METROS —copiada así a propósito de la Sala del Huevo— con un tablero de
+ * 55 cm en medio: alguien de verdad se inclinaría sobre él.
+ *
+ * Así que la cámara se acerca por su propio eje hasta que lo repartido llene algo
+ * más de la mitad del ancho. Se hace UNA vez, cuando aparece el contenido, y a
+ * partir de ahí manda el ratón: un encuadre que se recolocara solo pelearía con
+ * quien está orbitando.
+ */
+let encuadrado = false;
+function encuadrar(caja) {
+    if (encuadrado) return;
+    const t = caja.getSize(new THREE.Vector3());
+    const mayor = Math.max(t.x, t.z);
+    if (!(mayor > 0.01)) return;
+
+    const centro = caja.getCenter(new THREE.Vector3());
+    controles.target.copy(centro);
+    const eje = camara.position.clone().sub(centro);
+    const lejos = eje.length();
+    if (!(lejos > 0.01)) return;
+    eje.normalize();
+
+    // A qué distancia un objeto de `mayor` ocupa la fracción que queremos.
+    const tanH = Math.tan((camara.fov * Math.PI) / 360) * camara.aspect;
+    const quiero = mayor / (2 * tanH * 0.55);
+    const d = Math.max(controles.minDistance, Math.min(lejos, quiero));
+    camara.position.copy(centro).addScaledVector(eje, d);
+    controles.update();
+    encuadrado = true;
+}
 
 function ajustar() {
     if (!grupo.children.length) return;
@@ -225,11 +329,13 @@ function ajustar() {
     /**
      * ⚠️ CADA TIPO DE JUEGO SE ESCALA CON UN CRITERIO DISTINTO, Y NO ES CAPRICHO.
      *
-     * UN TABLERO LLENA LA MESA. Un ajedrez de verdad ocupa el tablero entero:
-     * si lo encogieras a «tamaño de casilla creíble» quedaría un sello en medio
-     * de tres metros de madera. Es el criterio que la Sala del Huevo ya usa.
+     * UN TABLERO MIDE LO QUE MIDE UN TABLERO — 55 cm, como uno de torneo. Antes
+     * llenaba la mesa, que es lo que hace la Sala del Huevo, y allí está bien
+     * porque allí la mesa se mira de pie y de lejos. Sentado a ella sale un
+     * ajedrez de 2,55 m con piezas de medio metro: no ves un ajedrez, ves su
+     * interior.
      *
-     * UNAS CARTAS NO. Aquí manda el ancho de la carta, porque estas mesas miden
+     * UNAS CARTAS TAMPOCO. Aquí manda el ancho de la carta, porque estas mesas miden
      * tres metros —pensadas para un mazo decorativo apilado, no para un juego
      * repartido— y llenarlas da naipes de 24 cm. Medido antes de decidirlo.
      *
@@ -239,8 +345,7 @@ function ajustar() {
      */
     if (!deCartas) {
         grupo.scale.setScalar(1);
-        grupo.updateMatrixWorld(true);
-        const t = new THREE.Box3().setFromObject(grupo).getSize(new THREE.Vector3());
+        const t = cajaReal(grupo).getSize(new THREE.Vector3());
         const mayor = Math.max(t.x, t.z);
         /**
          * ⚠️ SI NO HAY NADA QUE MEDIR, NO SE ESCALA.
@@ -254,7 +359,12 @@ function ajustar() {
          * Un grupo sin tamaño no es un grupo pequeño: es un grupo que todavía no
          * está. Se deja como está y se vuelve a mirar en el siguiente fotograma.
          */
-        if (mayor > 0.001) grupo.scale.setScalar(CABE_EN / mayor);
+        if (mayor > 0.001) {
+            // El tamaño lo manda el tablero; la mesa sólo pone el techo.
+            const porTablero = (TABLERO_CM / 100) / mayor;
+            grupo.scale.setScalar(Math.min(porTablero, CABE_EN / mayor));
+            encuadrar(cajaReal(grupo));
+        }
         return;
     }
 
@@ -263,10 +373,10 @@ function ajustar() {
     // Y si con ese tamaño el juego se sale de la mesa, manda la mesa: una carta
     // creíble en el suelo no le sirve a nadie.
     grupo.scale.setScalar(porCarta);
-    grupo.updateMatrixWorld(true);
-    const t = new THREE.Box3().setFromObject(grupo).getSize(new THREE.Vector3());
+    const t = cajaReal(grupo).getSize(new THREE.Vector3());
     const mayor = Math.max(t.x, t.z, 0.001);
     if (mayor > CABE_EN) grupo.scale.setScalar(porCarta * (CABE_EN / mayor));
+    encuadrar(cajaReal(grupo));
 }
 
 /**
