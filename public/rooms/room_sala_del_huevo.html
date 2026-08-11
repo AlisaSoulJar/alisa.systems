@@ -1111,11 +1111,19 @@ function materializar(e) {
         tapete.position.set(0, 1.0, 0); g.add(tapete);
       }
     }
-    const p = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.125),
-                             new THREE.MeshBasicMaterial({ color:0x0d1218,
-                                                           transparent:true, opacity:0.9 }));
-    p.position.set(0, 1.72, 0);
-    g.add(p); e.pantalla = p;
+    /**
+     * ⚠️ AQUÍ FLOTABA UNA PANTALLA SOBRE CADA MESA, Y YA NO PINTA NADA.
+     *
+     * Un plano de 1,5 × 1,125 a 1,72 m de altura, en medio del aire encima del
+     * tapete. Existía porque las mesas se jugaban como los recreativos: el juego
+     * se proyectaba ahí con el holograma CSS3D. Desde que se sientan en la sala de
+     * bolsillo, ese cristal no recibe nada — es un monitor flotando sobre una mesa
+     * de ajedrez, que es exactamente la imagen que queríamos quitar.
+     *
+     * Las máquinas y los terminales SÍ conservan la suya: un recreativo sin
+     * pantalla no es un recreativo.
+     */
+    e.pantalla = null;
   } else if (MODELOS[e.tipo]) {
     const mueble = MODELOS[e.tipo].clone(true);
     mueble.rotation.y = -Math.PI / 2;
@@ -1176,7 +1184,19 @@ holograma.acento = '#93a7bd';
 holograma.setStandUpCallback(() => { levantarse(); });
 
 function sentarse(e) {
-    if (!e?.pantalla) return;
+    /**
+     * ⚠️ LA CONDICIÓN ERA «TIENE PANTALLA», Y ESO YA NO ES LO QUE HACE FALTA.
+     *
+     * Servía de dos cosas a la vez: comprobar que el mueble está construido —se
+     * materializa al acercarte— y que hay dónde proyectar. Al quitarles la
+     * pantalla a las mesas, esa línea las dejaba fuera: te acercabas, ponía
+     * SENTARSE, pulsabas y no pasaba nada. Sin error, claro.
+     *
+     * Se pregunta por separado lo que son dos cosas distintas: que exista el
+     * mueble, y que haya cristal sólo si el juego va a proyectarse en él.
+     */
+    if (!e?.grupo) return;                       // aún no materializado
+    if (!e.pocket && !e.pantalla) return;        // va al holograma y no hay dónde
     sentadoEn = e;
     holograma.setSeated(true);
     const mueble = e.grupo.position;
