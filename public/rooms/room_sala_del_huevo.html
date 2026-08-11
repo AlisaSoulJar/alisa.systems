@@ -435,6 +435,9 @@ const MESAS = [
 {
   const { JUEGOS, cargarReglas } = await import('../arcade/js/protohub/rules/index.js');
   const { obtenerSustrato } = await import('../arcade/js/protohub/sustrato.js');
+  // El paño, el mismo que verás al sentarte. Se importa aquí arriba porque el
+  // mueble se construye más tarde y no puede esperar a un `await` en mitad.
+  window.crearTapete = (await import('../arcade/js/protohub/tapete.js')).crearTapete;
   const desconocidos = MESAS.filter(m => !JUEGOS.includes(m.juego)).map(m => m.juego);
   if (desconocidos.length) {
     console.error(`[Sala] mesas que nombran juegos inexistentes: ${desconocidos.join(', ')}`);
@@ -1083,7 +1086,19 @@ function materializar(e) {
       tab.position.set(Math.cos(t)*2.5, 0.25, Math.sin(t)*2.5); g.add(tab);
     }
     if (e.cartas) {
-      const tapete = ArcadeTableRoomFactory.crearTapete(1.34, 0x14352a);
+      /**
+       * ⚠️ 2,10 Y NO 1,34, Y EL NÚMERO SALE DE MEDIR, NO DE ELEGIR.
+       *
+       * Este tapete medía 1,34 y el de `sala.html` 2,68 — el doble—, así que al
+       * sentarte cambiaba de tamaño debajo de las manos. Y ninguno de los dos
+       * estaba bien: la brisca reparte 1,47 de ancho y UNIT 1,79, o sea que se
+       * salían del pequeño y nadaban en el grande.
+       *
+       * 2,10 es el mayor reparto más margen. Va igual en las dos salas: si un día
+       * un juego reparte más ancho, sube en los dos sitios o vuelve a haber dos
+       * mesas distintas con el mismo nombre.
+       */
+      const tapete = crearTapete(THREE, 2.10);
       tapete.position.set(0, 1.0, 0); g.add(tapete);
       const baraja = ArcadeTableRoomFactory.crearBaraja();
       baraja.position.set(0.34, 1.005, 0.2); g.add(baraja);

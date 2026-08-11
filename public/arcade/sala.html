@@ -110,8 +110,18 @@ controles.minDistance = 0.9;
 controles.maxDistance = 4.5;
 controles.update();
 
-const matClara = new THREE.MeshStandardMaterial({ color: 0xd8d4e0, roughness: 0.85 });
-const matOscura = new THREE.MeshStandardMaterial({ color: 0x241f2b, roughness: 0.9 });
+/**
+ * ⚠️ LOS MISMOS COLORES QUE LA SALA DEL HUEVO, MEDIDOS DE ELLA.
+ *
+ * Esta mesa decía estar copiada de allí «mismos números a propósito», y los
+ * números lo estaban: Ø3,0 × 0,11 a 0,92 de alto, pie Ø0,68, tres taburetes Ø0,6.
+ * Todo cuadra. Lo que no se copió fueron los colores — tapa `#d8d4e0` contra
+ * `#ffffff`, pie `#241f2b` contra `#1b232e` — y eso basta para que al sentarte
+ * notes que has cambiado de sitio, que es justo lo que esta sala existe para
+ * evitar. Se comprobó recorriendo las dos escenas y comparando malla a malla.
+ */
+const matClara = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85 });
+const matOscura = new THREE.MeshStandardMaterial({ color: 0x1b232e, roughness: 0.9 });
 
 // Suelo, muro y techo — el sitio.
 const suelo = new THREE.Mesh(new THREE.CircleGeometry(11, 48),
@@ -154,9 +164,34 @@ for (let i = 0; i < 3; i++) {
     escena.add(tab);
 }
 
-// Tapete: es lo que dice «aquí se juega», y además recibe la sombra de las cartas.
-const tapete = new THREE.Mesh(new THREE.BoxGeometry(2.68, 0.005, 2.68),
-    new THREE.MeshLambertMaterial({ color: 0x14352a }));
+/**
+ * Tapete: es lo que dice «aquí se juega», y además recibe la sombra de las cartas.
+ *
+ * ⚠️ NI 1,34 NI 2,68: LO QUE MIDE LO REPARTIDO.
+ *
+ * La Sala del Huevo pone 1,34 y esta sala ponía 2,68 — el doble— así que al
+ * sentarte el tapete cambiaba de tamaño. Ninguno de los dos estaba bien: medido,
+ * la brisca reparte 1,47 de ancho y UNIT 1,79, o sea que se salían del pequeño y
+ * nadaban en el grande. Dos números elegidos a ojo, cada uno mal por su lado.
+ *
+ * 2,10 es el mayor reparto (1,79) más un margen que se vea. Va aquí como
+ * constante compartida y no como gusto de cada sala: si mañana un juego reparte
+ * más ancho, este número sube en los dos sitios o vuelve a haber dos mesas.
+ */
+const LADO_TAPETE = 2.10;
+const { crearTapete } = await import('./js/protohub/tapete.js');
+const tapete = crearTapete(THREE, LADO_TAPETE);
+/**
+ * ⚠️ 0,98 Y NO 1,00, Y ESOS DOS CENTÍMETROS NO SON UNA DISCREPANCIA.
+ *
+ * Al ver que la Sala del Huevo lo pone a 1,00 lo subí «para igualar», y la mesa
+ * salió vacía: las cartas se posan a 0,99 y el tapete, que tiene medio centímetro
+ * de grosor, pasó a taparlas. Cuarenta cartas puestas y medidas, debajo del
+ * fieltro, con sus jugadas legales perfectamente listadas al lado.
+ *
+ * Allí el tapete es decoración y no lleva nada encima; aquí lleva la partida. La
+ * misma altura habría sido copiar el número sin copiar el motivo.
+ */
 tapete.position.y = 0.98;
 tapete.receiveShadow = true;
 escena.add(tapete);
@@ -213,6 +248,13 @@ if (Number.isFinite(semilla) && semilla > 0) hub.reset(juego, { semilla, seed: s
  */
 const muestra = hub.sustrato(juego);
 const deCartas = !!(muestra?.zonas?.length) && !muestra?.rejilla;
+
+/**
+ * Y el tapete verde sólo si se reparte. La Sala del Huevo hace exactamente esto
+ * —`if (e.cartas)` pone tapete, y si no, el tablero va directo sobre la tapa—, así
+ * que un ajedrez sobre fieltro de casino sería otra diferencia entre las dos mesas.
+ */
+tapete.visible = deCartas;
 
 const ANCHO_CARTA_MOTOR = 1.2;                       // lo que mide en el arcade
 const cm = Number(p.get('carta'));
@@ -312,13 +354,33 @@ function encuadrar(caja) {
     const eje = camara.position.clone().sub(centro);
     const lejos = eje.length();
     if (!(lejos > 0.01)) return;
-    eje.normalize();
 
     // A qué distancia un objeto de `mayor` ocupa la fracción que queremos.
     const tanH = Math.tan((camara.fov * Math.PI) / 360) * camara.aspect;
     const quiero = mayor / (2 * tanH * 0.55);
     const d = Math.max(controles.minDistance, Math.min(lejos, quiero));
-    camara.position.copy(centro).addScaledVector(eje, d);
+
+    /**
+     * ⚠️ Y DESDE ARRIBA, NO DESDE EL BORDE DE LA MESA.
+     *
+     * La primera versión conservaba el eje original y sólo cambiaba la distancia.
+     * Con la brisca —que reparte 1,48 de ancho— eso dejaba la cámara a 1,51 m: a
+     * quince centímetros del tapete. Unas cartas planas vistas de canto no se ven,
+     * así que la mesa salía VACÍA, con sus jugadas legales perfectamente listadas
+     * al lado. Las cuarenta cartas estaban puestas y medidas.
+     *
+     * Quien se sienta a jugar mira su mesa desde arriba. Así que se conserva la
+     * dirección horizontal —de dónde vienes— y se fija la inclinación: 38°, que es
+     * mirar tu propia mesa, no asomarte a ella.
+     */
+    const INCLINACION = 38 * Math.PI / 180;
+    const plano = Math.hypot(eje.x, eje.z) || 1;
+    camara.position.set(
+        centro.x + (eje.x / plano) * d * Math.cos(INCLINACION),
+        centro.y + d * Math.sin(INCLINACION),
+        centro.z + (eje.z / plano) * d * Math.cos(INCLINACION),
+    );
+    camara.lookAt(centro);
     controles.update();
     encuadrado = true;
 }
