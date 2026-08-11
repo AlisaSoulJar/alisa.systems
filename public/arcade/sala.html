@@ -49,7 +49,33 @@ import { JUEGOS, TITULOS, cargarReglas } from './js/protohub/rules/index.js';
 import { ProtoHub } from './js/protohub/ProtoHub.js';
 
 const p = new URLSearchParams(location.search);
-const juego = JUEGOS.includes(p.get('juego')) ? p.get('juego') : 'entropy';
+
+/**
+ * ⚠️ AQUÍ HABÍA OTRO `: 'entropy'`, Y ES EL MISMO DE ESTA MAÑANA.
+ *
+ * Un juego que no estuviera en la lista caía en entropy sin decir nada. Así que
+ * `?juego=chess` abría esta sala, la montaba entera y repartía ENTROPY — y no es
+ * un caso rebuscado: la clave del ajedrez es `ajedrez`, y `chess` es justo lo que
+ * escribe cualquiera que venga de `chess.html`. Media hora de mirar por qué la
+ * sala «no funcionaba con tableros» cuando lo que pasaba es que nunca le llegó uno.
+ *
+ * Un valor por defecto en el sitio donde se decide QUÉ se juega no es un defecto
+ * amable: convierte una dirección equivocada en una partida distinta y silenciosa.
+ * Si no se conoce el juego, se dice — en la propia sala, que es donde se mira.
+ */
+const pedido = p.get('juego') ?? '';
+if (!JUEGOS.includes(pedido)) {
+    document.body.innerHTML =
+        `<div style="max-width:640px;margin:12vh auto;padding:0 20px;`
+      + `font-family:'JetBrains Mono',monospace;color:#e2e2f0">`
+      + `<h1 style="font-family:Inter,sans-serif">No conozco «${pedido || '(nada)'}»</h1>`
+      + `<p style="color:#8a8a9e">Esta sala sirve a cualquiera de los treinta, pero por su `
+      + `clave de reglas — el ajedrez es <b>ajedrez</b>, no <code>chess</code>.</p>`
+      + `<p style="color:#8a8a9e">${JUEGOS.map(j => `<code>${j}</code>`).join(' · ')}</p>`
+      + `<p><a href="entrar" style="color:#a180ff">← elegir en la puerta</a></p></div>`;
+    throw new Error(`sala: '${pedido}' no está en rules/index.js`);
+}
+const juego = pedido;
 window.ALISA_JUEGO = juego;
 window.ALISA_TITULO = TITULOS[juego] ?? juego;
 document.title = `ALISA — ${window.ALISA_TITULO}`;
