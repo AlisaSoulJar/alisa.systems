@@ -232,6 +232,45 @@ export async function crearUnit({ url = RUTA_BIBLIOTECA, jugadores = 4, mano = 7
                     === total,
                 legal_moves: legales,
                 is_game_over: p.fin,
+
+                /**
+                 * ⚠️ CÓMO SE DIBUJA UNA CARTA DE UNIT, DICHO POR UNIT.
+                 *
+                 * La mesa sabía leer dos barajas: la francesa (`SHDC`) y la
+                 * española (`OEPB`). Las de aquí son `G_SKIP`, `R_6`, `Y_8`… y no
+                 * encajaban en ninguna, así que salían como un textito centrado
+                 * ilegible —1 % de tinta— y, lo peor, `B_5` empezaba por B y se
+                 * dibujaba como un CINCO DE BASTOS. No una carta fea: una carta
+                 * distinta que parecía legítima.
+                 *
+                 * No se arregla enseñándole a la mesa a reconocer un tercer mazo:
+                 * eso sería una lista de barajas dentro del dibujante, y la
+                 * siguiente volvería a romperla. Se declara aquí, que es donde se
+                 * sabe, con el mismo mecanismo que ya usa entropy.
+                 *
+                 * `cara: 'color'` y no `'valor'` porque aquí el color ES la carta.
+                 * La cara de entropy tiñe el número por tramos (verde bajo → rojo
+                 * alto) porque allí gana quien menos suma; aplicarlo aquí pintaría
+                 * un dos rojo de verde y haría que dos cartas del mismo color se
+                 * vieran distintas, que es justo lo contrario de lo que hay que ver.
+                 */
+                cara: 'color',
+                palos: {
+                    R: { color: '#D32F2F', simbolo: '' },
+                    G: { color: '#2E7D32', simbolo: '' },
+                    B: { color: '#1565C0', simbolo: '' },
+                    Y: { color: '#F9A825', simbolo: '' },
+                },
+                // Los especiales no son números, así que llevan una marca corta y
+                // legible de lejos. Es lo que HACEN, no un adorno.
+                simbolos: { SKIP: '⊘', REV: '⇄', D2: '+2', WILD: '★', WD4: '+4' },
+                // La tabla que ya usa el marcador. Se publica porque la cara la
+                // necesita y porque un agente sin vista también la quiere.
+                valores: {
+                    ...Object.fromEntries(baraja.ranks
+                        .filter(r => /^\d+$/.test(r)).map(r => [r, Number(r)])),
+                    ...VALOR_ESPECIAL,
+                },
             };
         },
 

@@ -575,7 +575,15 @@ const engine = new SovereignCardEngine({
          * Cambia lo que se ve, no lo que se juega: la carta sigue siendo `R_4` en
          * el estado y en el recibo, y la partida se re-simula igual.
          */
-        const porValor = data.cara === 'valor' && data.valores;
+        /**
+         * `'color'` es lo mismo que `'valor'` con una diferencia: quién tiñe el
+         * número. En entropy lo tiñe su tramo, porque allí el valor es lo que se
+         * suma; en UNIT lo tiñe el palo, porque allí el color ES la carta. Se
+         * declara en vez de deducirse: las dos publican `valores` y `palos`, así
+         * que no hay nada en el dato que distinga un caso del otro.
+         */
+        const porColor = data.cara === 'color';
+        const porValor = (data.cara === 'valor' || porColor) && data.valores;
         const paloDe  = (c) => String(c).split('_')[0];
         const rangoDe = (c) => String(c).split('_').slice(1).join('_');
         const caraDe = (c) => {
@@ -587,7 +595,11 @@ const engine = new SovereignCardEngine({
             // Y la pinta del palo va detrás, separada por `|`. El comodín no tiene
             // palo, así que no lleva ninguna: se queda sólo con su emoji.
             const p = data.palos?.[paloDe(c)];
-            return p ? `num_${texto}|${p.color}|${p.simbolo}` : `num_${texto}`;
+            if (!p) return `num_${texto}`;
+            // El cuarto trozo dice «tiñe con el color del palo». Va como bandera y
+            // no como color suelto para que el dibujante siga recibiendo el palo
+            // completo: la pinta pequeña lo sigue necesitando.
+            return `num_${texto}|${p.color}|${p.simbolo}${porColor ? '|palo' : ''}`;
         };
 
         const zonas = sus?.zonas ?? [];

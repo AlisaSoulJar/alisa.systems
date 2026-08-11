@@ -1079,10 +1079,21 @@ class SovereignCardEngine {
          * distinguieran por el color serían el mismo para quien no distinga esos
          * dos colores.
          */
-        const [texto, colorPalo, simboloPalo] = String(spec).split('|');
+        const [texto, colorPalo, simboloPalo, mandaPalo] = String(spec).split('|');
         const n = Number(texto);
         const esNumero = Number.isFinite(n);
-        const color = !esNumero ? '#6A1B9A'
+        /**
+         * ⚠️ Y HAY JUEGOS DONDE EL COLOR NO ES UN TRAMO: ES LA CARTA.
+         *
+         * Todo lo de arriba vale para entropy, donde gana quien menos suma. En UNIT
+         * el color decide qué puedes jugar, así que teñir por tramos pintaría un dos
+         * rojo de verde y haría que dos cartas del mismo color se vieran distintas.
+         * Lo dice el juego con `cara: 'color'`, que llega hasta aquí como esta
+         * bandera — no se adivina de que haya `palos`, que los tienen los dos.
+         */
+        const tiñePalo = mandaPalo === 'palo' && colorPalo;
+        const color = tiñePalo ? (colorPalo.startsWith('#') ? colorPalo : `#${colorPalo}`)
+            : !esNumero ? '#6A1B9A'
             : n <= 3 ? '#1B7F3B'
             : n <= 6 ? '#2E6DA4'
             : n <= 9 ? '#B26A00'
@@ -1135,7 +1146,21 @@ class SovereignCardEngine {
             ? 'Georgia'
             : '"Segoe UI Emoji","Noto Color Emoji","Apple Color Emoji",sans-serif';
 
-        ctx.fillStyle = color;
+        /**
+         * ⚠️ Y EL GLIFO NO PUEDE IR DEL MISMO COLOR QUE SU PROPIO FONDO.
+         *
+         * Esto pintaba el panel con `color` y encima el símbolo TAMBIÉN con
+         * `color`. Con el comodín 🃏 no se notó nunca porque un emoji es un mapa de
+         * bits multicolor e ignora el relleno — así que la trampa quedó armada y
+         * esperando. UNIT trajo `⊘` y `⇄`, que son glifos monocromos: verde sobre
+         * verde, la cuarta forma distinta de «se ve en blanco» de esta mesa.
+         *
+         * El medidor de tinta tampoco lo pillaba: contaba el panel y daba 68 %, o
+         * sea «carta bien pintada». Un número alto no prueba que se lea.
+         *
+         * En las esquinas sigue mandando `color`: ahí no hay panel, es papel blanco.
+         */
+        ctx.fillStyle = esNumero ? color : '#FFFFFF';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         // ⚠️ Y MÁS GRANDE QUE UN NÚMERO, no igual: a la misma altura de fuente el
@@ -1146,6 +1171,7 @@ class SovereignCardEngine {
         ctx.font = `bold ${esNumero ? 150 : 215}px ${TIPO}`;
         ctx.fillText(texto, W / 2, H / 2);
 
+        ctx.fillStyle = color;
         ctx.font = `bold ${esNumero ? 34 : 40}px ${TIPO}`;
         ctx.fillText(texto, 34, 32);
         ctx.save();
