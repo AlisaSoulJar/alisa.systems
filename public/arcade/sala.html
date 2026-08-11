@@ -107,7 +107,9 @@ const controles = new THREE.OrbitControls(camara, render.domElement);
 controles.target.set(0, 0.95, 0);
 controles.maxPolarAngle = Math.PI / 2.05;   // no meter la cámara bajo el suelo
 controles.minDistance = 0.9;
-controles.maxDistance = 4.5;
+// 4,5 se quedaba corto en un teléfono en vertical: ahí la partida necesita 6 m
+// para caber de lado a lado. Sigue estando dentro de la sala (el muro está a 11).
+controles.maxDistance = 6.5;
 controles.update();
 
 /**
@@ -358,7 +360,21 @@ function encuadrar(caja) {
     // A qué distancia un objeto de `mayor` ocupa la fracción que queremos.
     const tanH = Math.tan((camara.fov * Math.PI) / 360) * camara.aspect;
     const quiero = mayor / (2 * tanH * 0.55);
-    const d = Math.max(controles.minDistance, Math.min(lejos, quiero));
+    /**
+     * ⚠️ AQUÍ PONÍA `Math.min(lejos, quiero)`, Y ESO SÓLO SABÍA ACERCARSE.
+     *
+     * Lo copié del encuadre de `mesa_cartas`, donde tiene sentido: allí la cámara
+     * arranca lejos y sólo hay que avanzar. Aquí el encuadre se REHACE al cambiar
+     * la pantalla, y entonces la cámara ya está cerca — así que al girar el
+     * teléfono necesitaba retroceder a 6,1 m y el `min` se lo impedía. La partida
+     * se salía por los lados y la cuenta era correcta: sólo estaba mirando el
+     * límite equivocado.
+     *
+     * Los límites de verdad son los del propio control: si un humano puede
+     * alejarse hasta ahí con la rueda, el encuadre también.
+     */
+    const d = Math.min(controles.maxDistance,
+                       Math.max(controles.minDistance, quiero));
 
     /**
      * ⚠️ Y DESDE ARRIBA, NO DESDE EL BORDE DE LA MESA.
@@ -515,5 +531,23 @@ addEventListener('resize', () => {
     camara.aspect = innerWidth / innerHeight;
     camara.updateProjectionMatrix();
     render.setSize(innerWidth, innerHeight);
+
+    /**
+     * ⚠️ Y SE VUELVE A ENCUADRAR, QUE ES LA MITAD QUE FALTABA.
+     *
+     * Esto sólo cambiaba la proporción de la cámara. El encuadre se había
+     * calculado UNA vez, al cargar, con la pantalla que hubiera entonces — así que
+     * en un móvil en vertical la partida se salía por los lados y nadie se
+     * enteraba desde un escritorio.
+     *
+     * Medido forzando la proporción sobre una brisca ya repartida: en apaisado
+     * ocupa el 70 % del ancho, en cuadrado el 151 % y en vertical de teléfono el
+     * 321 %. Tres veces lo que cabe. La mesa no fallaba: estaba encuadrada para
+     * otra pantalla.
+     *
+     * `mesa_cartas` ya hacía esto en su `onResize` desde el primer día. Aquí no,
+     * porque el encuadre automático se añadió después y no se miró al lado.
+     */
+    encuadrado = false;
 });
 </script>
