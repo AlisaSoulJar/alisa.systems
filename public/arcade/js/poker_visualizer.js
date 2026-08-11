@@ -74,8 +74,34 @@ const engine = new SovereignCardEngine({
                 <span>Phase</span>
                 <span class="val" style="color:#00ffaa; font-weight:bold;">${data.phase || 'Pre-Flop'}</span>
             </div>
+            <div id="mesa-jugadas" class="mesa-jugadas"></div>
         `;
         document.getElementById('hud-content').innerHTML = html;
+
+        /**
+         * ⚠️ ESTA MESA ENSEÑABA UNA PARTIDA QUE NO SE PODÍA JUGAR.
+         *
+         * El HUD contaba el bote, las fichas y la fase, y ahí acababa. Con
+         * `legal_moves: ['check','raise']` y el turno tuyo, en pantalla no había ni
+         * un botón: una mesa preciosa, perfectamente dibujada, y sin forma de mover.
+         * No daba error porque no falta nada — sencillamente nunca se pintó.
+         *
+         * Se cae en la cuenta comparando: blackjack, que es su hermano de
+         * visualizador propio, sí tiene PEDIR/PLANTARSE/DOBLAR. Uno lo hizo y el
+         * otro no, que es lo que pasa cuando cada página pinta sus botones.
+         *
+         * Por eso se usa `pintarJugadas`, el mismo de la mesa compartida: ahí vive
+         * la regla de oro —no se ofrece nada que no esté en `legal_moves`— y una
+         * copia suya es una copia con la posibilidad de saltársela. Va por `import()`
+         * dinámico porque este visualizador es un script clásico, no un módulo.
+         */
+        import('./protohub/jugadas.js').then(({ pintarJugadas }) => {
+            pintarJugadas(document.getElementById('mesa-jugadas'), {
+                acciones: data.legal_moves ?? data.legal_actions ?? [],
+                terminada: !!data.is_game_over,
+                enviar: (m) => engine.sendMove(m),
+            });
+        });
     }
 });
 

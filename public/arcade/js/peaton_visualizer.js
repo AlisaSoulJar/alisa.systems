@@ -154,13 +154,52 @@ function _hueco(id, texto, color) {
     if (color) el.style.color = color;
 }
 
+/**
+ * ⚠️ ESTA PÁGINA ESCRIBÍA EN UN HUD QUE NO EXISTÍA, Y LLEVA ASÍ DESDE SIEMPRE.
+ *
+ * `_hueco()` busca `ui-tick`, `ui-conn` y `ui-agent`… y ninguno estaba en el
+ * documento: la página traía un `<div id="hud-container">` VACÍO y nada lo
+ * llenaba —los otros visualizadores llaman a `mountAgentHUD`, y éste no, porque
+ * no usa el motor de tablero: lleva su propio bucle—. Y como `_hueco` sale de
+ * puntillas cuando el hueco falta (con razón: antes tumbaba el refresco entero),
+ * el resultado era jugar a ciegas, sin marcador y sin saber si habías muerto,
+ * con cero errores en consola.
+ *
+ * Se monta aquí, una vez, con las clases que ya tiene la hoja compartida. Y las
+ * jugadas van por `pintarJugadas`, el mismo de todas las mesas: es donde vive la
+ * regla de que no se ofrece nada que no esté en `legal_moves`.
+ */
+function _montarHUD() {
+    const caja = document.getElementById('hud-container');
+    if (!caja || caja.children.length) return;
+    caja.innerHTML = `
+        <div class="hud-panel">
+          <div class="hud-header"><h1>Peatón</h1></div>
+          <div id="hud-content">
+            <div class="status-row"><span>Estado</span><span class="val" id="ui-agent">—</span></div>
+            <div class="status-row"><span>Tick</span><span class="val" id="ui-tick">0</span></div>
+            <div class="status-row"><span>Conexión</span><span class="val" id="ui-conn">…</span></div>
+            <div id="mesa-jugadas" class="mesa-jugadas"></div>
+          </div>
+        </div>`;
+}
+
 function updateHUD(data) {
+    _montarHUD();
     _hueco('ui-conn', 'SYNCED', '#4CAF50');
     if (data.status !== 'ok') return;
 
     const state = data.state;
     cachedState = state;
     _hueco('ui-tick', state.tick);
+
+    import('./protohub/jugadas.js').then(({ pintarJugadas }) => {
+        pintarJugadas(document.getElementById('mesa-jugadas'), {
+            acciones: state.legal_moves ?? state.acciones ?? [],
+            terminada: !!state.game_over,
+            enviar: (m) => sendMove(m),
+        });
+    });
 
     if (state.game_over) {
         isGameOver = true;
@@ -196,6 +235,11 @@ function _adaptar(st) {
             tick: st.t,
             game_over: st.is_game_over,
             winner: st.result === 'white',
+            // Las jugadas legales viven al lado de `state`, no dentro, así que
+            // este adaptador las dejaba fuera y el HUD no tenía qué ofrecer. Es
+            // el sitio donde arreglarlo: aquí es donde se traduce un formato al
+            // otro, y cualquier otro sitio sería volver a deducirlas.
+            legal_moves: st.legal_moves ?? [],
         },
     };
 }

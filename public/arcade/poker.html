@@ -1,33 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALISA Arcade — Texas Hold'em</title>
-    <link rel="stylesheet" href="css/arcade.css">
-    
-    <script src="/vendor/three-r128/three.min.js"></script>
-    <script src="/vendor/three-r128/OrbitControls.js"></script>
-    <script src="/vendor/tween/tween.umd.js"></script>
-    
-    <link rel="stylesheet" href="css/card_hud.css">
-<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
-</head>
-<body>
-    <div id="canvas-container"></div>
-    <div id="hud-container"></div>
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA Arcade — Texas Hold'em</title>
+<!--
+  ⚠️ ESTA PÁGINA ERA DEL FORMATO VIEJO, Y LE FALTABA TODO LO QUE SE ARREGLÓ FUERA.
 
-    <!-- Las reglas, dentro del navegador. Texas Hold'em heads-up a límite fijo:
-         cuatro acciones (fold/check/call/raise), que es lo que permite que una
-         partida se re-simule exactamente. Va ANTES del visualizador para que
-         `window.ALISA_PROTOHUB` exista cuando el motor lo busque. -->
-    <script type="module">
-        import { ProtoHub }  from './js/protohub/ProtoHub.js';
-        import { crearPoker } from './js/protohub/rules/poker.js';
-        window.ALISA_PROTOHUB = new ProtoHub().registrar('poker', await crearPoker());
-    </script>
-    <script src="js/arcade_mats.js"></script>
-    <script src="js/SovereignCardEngine.js"></script>
-    <script src="js/poker_visualizer.js"></script>
-</body>
-</html>
+  Traía sus tres <script> de vendor a mano, su propio arranque y su lista de
+  ficheros. Eso significa que se quedó fuera de tres arreglos que ya existían:
+
+    · `?semilla=` no hacía nada. La página anunciaba una partida fija y repartía
+      una al azar —se vio en el número: `semilla: 3426103106` con `?semilla=7`
+      en la barra—. Compartir «juega esta mano» es un enlace; sin esto, no lo era.
+    · Los scripts no llevaban el sello `?v=`, así que un despliegue podía llegarle
+      a medias, que es lo que costó una tarde entera.
+    · Y el guardián de vendor duplicado tampoco la cubría — el fallo que dejó las
+      cartas congeladas sin un solo error en consola.
+
+  Nada de eso se arregla aquí: se arregla usando `montarMesa`, donde ya estaba
+  arreglado. El visualizador propio se conserva tal cual, que funciona y es bonito.
+
+      ?semilla=7   ahora sí fija el reparto
+-->
+<script type="module">
+  import { montarMesa } from './js/montarMesa.js';
+  montarMesa({ juego: 'poker', visualizador: 'poker_visualizer.js',
+               titulo: "Texas Hold'em" });
+</script>

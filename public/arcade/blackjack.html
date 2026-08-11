@@ -1,38 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALISA Arcade — Casino Blackjack</title>
-    <link rel="stylesheet" href="css/arcade.css">
-    
-    <script src="/vendor/three-r128/three.min.js"></script>
-    <script src="/vendor/three-r128/OrbitControls.js"></script>
-    <script src="/vendor/tween/tween.umd.js"></script>
-    
-    <link rel="stylesheet" href="css/card_hud.css">
-<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
-<meta name="alisa-escaparate" content="juegos">
-<meta name="alisa-muestra" content="Mesa de cartas 3D leyendo el catálogo de barajas, no cartas escritas a mano">
-</head>
-<body>
-    <div id="canvas-container"></div>
-    <div id="hud-container"></div>
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA Arcade — Casino Blackjack</title>
+<!--
+  Misma conversión que `poker.html`, y por los mismos tres motivos: `?semilla=`,
+  el sello `?v=` de los scripts y el guardián de vendor duplicado. El porqué largo
+  está escrito allí.
 
-    <!-- Las reglas, dentro del navegador. Mismo gesto que chess.html: el
-         ProtoHub habla el idioma del hub de la colonia, así que conectarse a
-         ALISA cambia el endpoint y nada más. Este módulo va ANTES que el
-         visualizador para que `window.ALISA_PROTOHUB` ya exista cuando el
-         motor lo busque. -->
-    <script type="module">
-        import { ProtoHub }      from './js/protohub/ProtoHub.js';
-        import { crearBlackjack } from './js/protohub/rules/blackjack.js';
-        // `await` porque las reglas se leen de `data/card_library.json`, la
-        // misma ficha que usa el motor Python. Una sola verdad sobre las normas.
-        window.ALISA_PROTOHUB = new ProtoHub().registrar('blackjack', await crearBlackjack());
-    </script>
-    <script src="js/arcade_mats.js"></script>
-    <script src="js/SovereignCardEngine.js"></script>
-    <script src="js/blackjack_visualizer.js"></script>
-</body>
-</html>
+  El visualizador propio se conserva: éste sí pintaba sus jugadas —PEDIR,
+  PLANTARSE, DOBLAR—, que es precisamente lo que a poker se le había olvidado.
+
+      ?semilla=7   fija el reparto
+-->
+<script type="module">
+  import { montarMesa } from './js/montarMesa.js';
+  montarMesa({ juego: 'blackjack', visualizador: 'blackjack_visualizer.js',
+               titulo: 'Casino Blackjack' });
+</script>
