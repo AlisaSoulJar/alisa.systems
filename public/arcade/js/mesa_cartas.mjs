@@ -579,7 +579,44 @@ const engine = new SovereignCardEngine({
          * quiera mirar desde otra silla tiene la mesa compartida con `?quien=`,
          * donde el recorte lo hace el árbitro y no una opción de la pantalla.
          */
-        const sus = sustratoDe(juego, data);
+        /**
+         * ⚠️ Y AQUÍ SE IGNORABA EL SUSTRATO NATIVO, QUE LLEVABA UN DÍA MINTIENDO.
+         *
+         * El comentario de arriba se escribió cuando era cierto que «ninguno de los
+         * diez juegos de cartas publica sustrato nativo». El remigio lo publica
+         * desde el mismo día, así que la premisa caducó sin que nada avisara — y
+         * las dos versiones YA no coinciden:
+         *
+         *     nativo    descarte 1 vista + 2 debajo
+         *     derivado  descarte 1 vista + 0
+         *
+         * El adaptador no sabe que un descarte tiene montón, así que la mesa lleva
+         * todo el día dibujando la pila sin su fondo. Poca cosa; el problema es que
+         * es una SEGUNDA FUENTE DE VERDAD, y las dos se separan el día que una
+         * cambie — que es exactamente lo que pasó.
+         *
+         * Y el siguiente en pisarlo se rompería del todo: un juego de dados publica
+         * zonas que el adaptador no conoce (`dados`, `guardados`), así que saldría
+         * un tapete vacío con «este juego no reparte cartas» y sin un error.
+         *
+         * `ProtoHub.sustrato()` ya decide bien entre las dos vías, y lo hace donde
+         * se puede decidir: donde están la partida viva y las reglas. Lo escribí
+         * ayer para esto mismo y esta mesa era la única que no lo usaba.
+         *
+         * EN UNA SALA COMPARTIDA sigue mandando el derivado, y no es una excepción
+         * caprichosa: allí el estado lo manda el árbitro por la red y aquí no hay
+         * partida viva que preguntar. Derivar de lo publicado es lo único posible.
+         */
+        // ⚠️ `enSala` se calcula AQUÍ y no se toma prestado. La primera versión
+        // usaba el de `pintarJugadas`, que vive en otra función: `ReferenceError`,
+        // muere el repintado entero y con él los botones. El laboratorio lo cazó en
+        // cuatro mesas de cinco — y lo cazó por los BOTONES, no por el dibujo,
+        // porque la escena anterior se queda en pantalla y parece que todo va bien.
+        const enPartidaCompartida = this.backend?.tipo === 'sala';
+        const hub = window.ALISA_PROTOHUB;
+        const sus = (!enPartidaCompartida && hub?.soporta?.(juego))
+            ? hub.sustrato(juego, 0)
+            : sustratoDe(juego, data);
 
         /**
          * ⚠️ LA CARA DE LA CARTA LA ELIGE EL JUEGO, NO LA MESA.

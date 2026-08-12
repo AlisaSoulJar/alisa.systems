@@ -78,14 +78,37 @@ for (const juego of JUEGOS) {
  * eso al propio juego cubre las dos direcciones a la vez: uno que deje de
  * publicar la marca sale como ausente, y uno nuevo entra solo.
  */
+/**
+ * ⚠️ «ZONAS Y NINGUNA REJILLA» NO ES «ES DE CARTAS», Y AQUÍ SE VIO.
+ *
+ * Ésa era la definición que usaba esto —la misma que usa `montarMesa` para elegir
+ * motor— y sirvió hasta que llegó la GENERALA: cinco dados, ningún tablero, o sea
+ * zonas sin rejilla. La prueba la acusó de no publicar `biblioteca` y de estar
+ * jugando con otra baraja que el navegador. La generala no tiene baraja.
+ *
+ * Es la misma sobreaproximación que Fable encontró esta mañana en la guarda
+ * `ambiguos` de `prueba_sustrato.mjs`, cometida por mí en otro fichero el mismo
+ * día. Y el arreglo es el suyo: un juego es de cartas si sus items SON CARTAS DE
+ * LA BIBLIOTECA. Se comprueba contra el catálogo de verdad, no contra una lista:
+ * `S_A` está en la francesa, `d6_5` no está en ninguna.
+ */
 const { obtenerSustrato } = await import('./public/arcade/js/protohub/sustrato.js');
+const catalogo = JSON.parse(bruto.toString('utf-8'));
+const idDe = (x) => (typeof x === 'string' ? x : x?.id ?? x?.rank);
+const TODAS = new Set();
+for (const d of Object.values(catalogo.decks ?? {})) {
+    for (const s of (d.suits ?? [])) {
+        for (const r of (d.ranks ?? [])) TODAS.add(`${idDe(s)}_${idDe(r)}`);
+    }
+}
 const CON_CARTAS = [];
 for (const juego of JUEGOS) {
     const reglas = await cargarReglas(juego, { url: URL_CATALOGO });
     const q = reglas.nuevaPartida({ semilla: 1, seed: 1 });
     const sus = reglas.sustrato ? reglas.sustrato(q, 0)
                                 : obtenerSustrato(juego, reglas, q, reglas.estado(q));
-    if (sus?.zonas?.length && !sus?.rejilla) CON_CARTAS.push(juego);
+    const items = (sus?.zonas ?? []).flatMap(z => (z.items ?? []).map(idDe));
+    if (items.some(c => TODAS.has(String(c)))) CON_CARTAS.push(juego);
 }
 const mudos = CON_CARTAS.filter(j => !DE_CARTAS.includes(j));
 if (mudos.length) {

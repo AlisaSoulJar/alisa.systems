@@ -1,0 +1,32 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA Arcade — La Oca</title>
+<!--
+  De la salida a la 63. Tiras un dado y decides CUÁL de tus dos fichas avanza.
+  De oca a oca y tiro porque me toca; de puente a puente; la posada te para un
+  turno, la cárcel dos, el pozo hasta que otra ficha te releve, el laberinto te
+  devuelve a la 30 y la muerte al principio. Gana quien cae JUSTO en la 63 — si
+  te pasas, retrocedes lo que sobre.
+
+  ⚠️ ESTA PÁGINA ENSEÑA LA REJILLA CON VOCABULARIO.
+
+  El parchís sólo tenía que distinguir pista de seguro y le bastó con el `0` y el
+  `2` del contrato del terreno. La oca tiene ocho tipos de casilla y cada uno
+  hace algo distinto, así que usa el tramo `>2` —«se dibuja como CUENTA»— y el
+  tablero sale con el tipo de cada casilla ESCRITO encima. Se ve dónde está la
+  muerte antes de caer en ella, sin abrir el código.
+
+  Y la única decisión del juego es cuál de las dos fichas gasta la tirada: la
+  rezagada es un amortiguador, y saber cuándo quemarla es todo el juego. Con una
+  sola ficha esto sería un control de laboratorio como `guerra`, no una prueba.
+
+  No ha necesitado ni un motor ni un renderizador: lo dibuja `mesa_tablero.mjs`,
+  la misma que los demás.
+
+      ?semilla=7   fija las tiradas
+-->
+<script type="module">
+  import { montarMesa } from './js/montarMesa.js';
+  montarMesa({ juego: 'oca' });
+</script>

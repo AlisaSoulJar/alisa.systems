@@ -1,0 +1,36 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA Arcade — Generala</title>
+<!--
+  Cinco dados. Tiras, apartas los que te sirven, vuelves a tirar hasta dos veces
+  más y anotas en una de las once casillas de la hoja. Cada casilla se usa UNA vez,
+  y si no entra nada se tacha con cero. Gana quien más suma al llenarla.
+
+  ⚠️ ESTA PÁGINA ES EL EXTREMO CONTRARIO DE `parchis.html`.
+
+  El parchís demostró que un dado cabe en el contrato usando las TRES estructuras
+  del sustrato a la vez: rejilla, piezas y zonas. La generala prueba lo otro — que
+  también cabe un juego SIN NINGÚN TABLERO: `rejilla: null`, `piezas: []`, y todo el
+  estado visible en dos montones sobre la mesa (los dados sueltos y los apartados)
+  más la hoja de cada jugador. Ni una línea de `sustrato.js` ha tenido que cambiar
+  para los dos extremos.
+
+  ⚠️ POR QUÉ DECLARA VISUALIZADOR, SI NINGUNA OTRA PÁGINA NUEVA LO HACE.
+
+  `montarMesa` elige la mesa por lo que el juego PUBLICA: «zonas y ninguna rejilla»
+  es de cartas. Y esta forma es exactamente ésa, así que le tocaría la mesa de
+  casino. Pero `mesa_cartas.mjs` no mira el sustrato NATIVO: mira
+  `sustratoDe(juego, estado)`, el adaptador, que sólo sabe de manos, mazos y
+  descartes. Con generala no encontraría ninguna zona y pintaría un fieltro vacío
+  con el cartel «Este juego no reparte cartas» — sin un solo error en consola, que
+  es el modo de fallo de la casa. `mesa_tablero.mjs` sí lee el sustrato nativo y
+  `crearPintor3d` ya sabe dibujar montones con la cara de cada dado (lo hizo para
+  el parchís). El día que la mesa de cartas lea el nativo, esta línea sobra.
+
+      ?semilla=7   fija las tiradas
+-->
+<script type="module">
+  import { montarMesa } from './js/montarMesa.js';
+  montarMesa({ juego: 'generala', visualizador: 'mesa_tablero.mjs' });
+</script>

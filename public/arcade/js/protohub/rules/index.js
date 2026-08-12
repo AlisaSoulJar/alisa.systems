@@ -135,6 +135,22 @@ export const REGLAS = {
     // cara, o sea una zona con un item. Es además el primer juego que usa las TRES
     // estructuras del sustrato a la vez: rejilla, piezas y zonas.
     parchis: (o) => import('./parchis.js').then(m => m.crearParchis(o)),
+    // ⚠️ EL RINCÓN OPUESTO DEL PARCHÍS EN EL CONTRATO: cinco dados y NINGÚN
+    // tablero, o sea sólo zonas. Si los dos extremos entran sin tocar nada, el
+    // contrato aguanta lo que hay en medio. Y es el primero cuya decisión no es
+    // dónde mover sino QUÉ APARTAR y CUÁNDO PARAR de tirar.
+    generala: (o) => import('./generala.js').then(m => m.crearGenerala(o)),
+    // La oca: tablero y dado, pero con las CASILLAS haciendo el trabajo — cada
+    // tipo hace algo distinto y hay que verlo sin leer el código. Va con dos
+    // fichas por jugador a propósito: con una sola no se decide nada y sería un
+    // segundo `guerra`, que ya tenemos y basta con uno.
+    oca: (o) => import('./oca.js').then(m => m.crearOca(o)),
+    // ⚠️ TABLERO **Y** BARAJA, que era la combinación que faltaba por probar. Mismo
+    // tablero que el parchís a propósito: así los dos se diferencian en UNA sola
+    // cosa —dado contra mano de cartas— y comparar un agente en ambos mide justo
+    // eso. Con dado no eliges tu tirada; con cartas eliges cuál gastas y cuál
+    // guardas, y eso es información oculta que el dado no tiene.
+    canadiense: (o) => import('./canadiense.js').then(m => m.crearCanadiense(o)),
 };
 
 export const JUEGOS = Object.keys(REGLAS);
@@ -198,6 +214,8 @@ export const SILLAS = {
     remigio: 2,
     // Cuatro colores, como el de verdad.
     parchis: 4,
+    generala: 2, oca: 2,
+    canadiense: 4,
 };
 
 /** Carga las reglas de un juego. `opts.url` para los que leen la biblioteca. */

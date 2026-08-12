@@ -125,6 +125,12 @@ const PROTOHUB = [
     // estructuras del sustrato —rejilla, piezas y zonas— y la prueba de que un
     // dado no necesitaba un motor propio.
     { juego: 'parchis', titulo: 'Parchís', crear: 'crearParchis' },
+    { juego: 'generala', titulo: 'Generala', crear: 'crearGenerala' },
+    { juego: 'oca', titulo: 'La Oca', crear: 'crearOca' },
+    // Canadiense: el MISMO tablero que el parchis pero con mano de cartas en vez de
+    // dado. Es el par controlado del banco — un agente medido en los dos se compara
+    // consigo mismo con y sin informacion oculta, que es lo unico que cambia.
+    { juego: 'canadiense', titulo: 'Parchis canadiense', crear: 'crearCanadiense' },
 ];
 
 /** Entornos escritos a mano, cada uno con su propio módulo. */

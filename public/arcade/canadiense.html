@@ -1,0 +1,38 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA Arcade — Parchís Canadiense</title>
+<!--
+  El parchís, pero sin dado: mueves gastando una carta de tu MANO. El as saca
+  ficha de casa o avanza 1; el 4 retrocede —y por eso es la mejor carta del mazo,
+  porque cuatro pasos atrás desde tu salida te dejan a cuatro del pasillo—; el 7
+  se puede repartir entre dos fichas tuyas; la jota intercambia una ficha tuya
+  con una del rival. Robas una al final del turno.
+
+  ⚠️ ESTAS REGLAS SON LAS NUESTRAS, NO «LAS» REGLAS.
+
+  El juego existe con muchos nombres —Tock, Toc, Dog— y las variantes regionales
+  no coinciden entre sí. La versión que se juega aquí está declarada entera en la
+  cabecera de `js/protohub/rules/canadiense.js`, para que nadie compare un
+  marcador de esta mesa con el de otra implementación creyendo que son el mismo
+  juego.
+
+  ⚠️ Y ES EL PRIMER JUEGO QUE USA LAS DOS FAMILIAS DE MOTOR A LA VEZ.
+
+  Los de tablero publican `rejilla` y `piezas`; los de cartas publican `zonas`.
+  `montarMesa.js` elige incluso el motor con esa frontera —«zonas y ninguna
+  rejilla ⇒ es de cartas»—, y nadie había escrito hasta hoy un juego que
+  necesitara las dos. Éste publica las tres estructuras del sustrato: el anillo
+  de 68 casillas, las dieciséis fichas y los montones —tu mano, las manos tapadas
+  de los rivales, el mazo, el descarte y las fichas que esperan en casa—.
+
+  Esta página, como la del parchís y la del remigio, no sabe a qué se juega: no
+  dibuja nada ni declara motor. Lo pinta `mesa_tablero.mjs` leyendo el sustrato.
+
+      ?semilla=7              fija el reparto
+      ?sala=cocina&yo=oscar   la misma partida que quien abra ese enlace
+-->
+<script type="module">
+  import { montarMesa } from './js/montarMesa.js';
+  montarMesa({ juego: 'canadiense' });
+</script>

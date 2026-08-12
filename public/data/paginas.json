@@ -190,5 +190,23 @@
     "propia": true,
     "titulo": "Parchis",
     "sillas": 4
+  },
+  "generala": {
+    "pagina": "generala.html",
+    "propia": true,
+    "titulo": "Generala",
+    "sillas": 2
+  },
+  "oca": {
+    "pagina": "oca.html",
+    "propia": true,
+    "titulo": "Oca",
+    "sillas": 2
+  },
+  "canadiense": {
+    "pagina": "canadiense.html",
+    "propia": true,
+    "titulo": "Canadiense",
+    "sillas": 4
   }
 }

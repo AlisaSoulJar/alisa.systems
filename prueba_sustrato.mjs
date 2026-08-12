@@ -275,14 +275,29 @@ for (const juego of JUEGOS) {
      * Y el riesgo original tampoco queda descubierto: si brisca perdiera su mesa de
      * casino, `SUELO_MESA_CARTAS` baja y la prueba falla igual, aquí abajo.
      */
-    const deBiblioteca = (reglas.estado(q).biblioteca ?? reglas.biblioteca) !== undefined;
-    if (sus.rejilla) { if (deBiblioteca) ambiguos.push(juego); }
-    else conMesa.push(juego);
+    if (sus.rejilla) ambiguos.push(juego); else conMesa.push(juego);
 }
+/**
+ * ⚠️ Y NO SE SUSPENDE A NADIE POR SER HÍBRIDO. HICIERON FALTA DOS INTENTOS.
+ *
+ * Esto era un FALLO —«zonas y rejilla a la vez»— hasta que llegó el parchís, que
+ * tiene tablero, fichas y un dado sobre la mesa. Se afinó entonces a «items que
+ * son cartas de la biblioteca», y aguantó hasta el parchís canadiense, que reparte
+ * cartas de verdad SOBRE un tablero. Dos afinados y dos falsos positivos: la señal
+ * no existe. No hay forma de distinguir «juego de cartas que perdió su mesa» de
+ * «juego de tablero con cartas encima» mirando el sustrato, porque son lo mismo.
+ *
+ * Y no hace falta: el riesgo que esto protegía —que una brisca ganara una rejilla
+ * y perdiera en silencio la mesa de casino— lo caza `SUELO_MESA_CARTAS` por el
+ * otro lado, que es un suelo y sólo puede subir. Si brisca se cayera de la mesa
+ * compartida, `conMesa` baja y la prueba falla igual, tres líneas más abajo.
+ *
+ * Los híbridos se cuentan aparte y se dicen. No son un error: son la respuesta a
+ * la pregunta de si el contrato admite combinaciones, y la respuesta fue que sí.
+ */
 if (ambiguos.length) {
-    mal(`${ambiguos.join(', ')}: reparte CARTAS DE LA BIBLIOTECA y además publica `
-      + 'rejilla, así que `montarMesa` elegiría el motor de tablero y su mesa de '
-      + 'casino saldría mal en silencio.');
+    console.log(`  · híbridos  ${ambiguos.join(', ')} — tablero Y montones a la vez. `
+              + 'Van al motor de tablero, que los dibuja los dos.');
 }
 if (conMesa.length < SUELO_MESA_CARTAS) {
     mal(`la mesa compartida sirve a ${conMesa.length} juegos y servía a ${SUELO_MESA_CARTAS}. `
