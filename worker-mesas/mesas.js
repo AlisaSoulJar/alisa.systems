@@ -190,6 +190,45 @@ export class MesaCompartida {
         const url = new URL(request.url);
         const accion = url.pathname.split('/').filter(Boolean).pop();
 
+        /**
+         * ⚠️ EL BUZÓN. Ver la nota del enrutador: esta instancia no es una mesa.
+         *
+         * `POST /reporte`  guarda un aviso
+         * `GET  /reportes` los devuelve, del más nuevo al más viejo
+         *
+         * Se guarda una LISTA acotada y no una clave por aviso: un buzón que crece
+         * sin techo es un buzón que un día no se puede leer. Doscientos es más de
+         * lo que una tanda de betatesters produce, y el que sobra se cae por abajo.
+         */
+        if (accion === 'reporte' || accion === 'reportes') {
+            const TOPE = 200;
+            if (request.method === 'GET') {
+                const avisos = (await this.estado.storage.get('avisos')) ?? [];
+                return responder(200, { avisos: avisos.slice().reverse(), cuantos: avisos.length });
+            }
+            if (request.method !== 'POST') return responder(405, { error: 'usa POST o GET' });
+            let aviso;
+            try { aviso = await request.json(); } catch { return responder(400, { error: 'JSON inválido' }); }
+            const texto = String(aviso?.comentario ?? '').trim();
+            if (!texto) return responder(400, { error: 'hace falta un comentario' });
+
+            const avisos = (await this.estado.storage.get('avisos')) ?? [];
+            avisos.push({
+                comentario: texto.slice(0, 2000),
+                juego: limpio(aviso?.juego, 24),
+                pagina: String(aviso?.pagina ?? '').slice(0, 200),
+                // El recibo entero: es lo único que permite VOLVER A JUGAR la
+                // partida, que es todo el motivo de que esto exista.
+                recibo: aviso?.recibo ?? null,
+                estado: aviso?.estado ?? null,
+                pantalla: aviso?.pantalla ?? null,
+                agente: String(aviso?.agente ?? '').slice(0, 180),
+                cuando: new Date().toISOString(),
+            });
+            await this.estado.storage.put('avisos', avisos.slice(-TOPE));
+            return responder(200, { guardado: true, cuantos: Math.min(avisos.length, TOPE) });
+        }
+
         if (request.method === 'GET') {
             const mesa = await this.cargar();
             if (!mesa) return responder(404, { error: 'mesa vacía', sentarse: 'POST …/sentarse' });
@@ -544,6 +583,26 @@ export default {
         if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: CABECERAS });
         const url = new URL(request.url);
         const partes = url.pathname.split('/').filter(Boolean);   // mesa / {sala} / {accion}
+
+        /**
+         * ⚠️ EL BUZÓN DE AVISOS. Lo que manda `arcade/js/protohub/reportar.js`.
+         *
+         * Un aviso trae el RECIBO de la partida —{juego, semilla, jugadas}—, así que
+         * no es una queja: es algo que se puede volver a jugar exactamente igual. Por
+         * eso vive aquí y no en un formulario cualquiera; aquí ya está el código que
+         * sabe re-simular una partida.
+         *
+         * ⚠️ Y COMPARTE ALMACÉN CON LAS MESAS, QUE NO ES ELEGANTE Y SE DICE.
+         * Un buzón no es una mesa. Tener su propia clase Durable Object obligaría a
+         * una migración del worker, y eso es riesgo de despliegue para guardar una
+         * lista. Va a una instancia con nombre fijo y su propia clave de almacén; el
+         * día que haga falta algo más, ése es el momento de separarlo.
+         */
+        if (partes[0] === 'reporte' || partes[0] === 'reportes') {
+            const id = env.MESAS.idFromName('__buzon');
+            return env.MESAS.get(id).fetch(request);
+        }
+
         if (partes[0] !== 'mesa' || !partes[1]) {
             return responder(200, {
                 que_es: 'Mesas compartidas: personas y agentes en la misma partida.',

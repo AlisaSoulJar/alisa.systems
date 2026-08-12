@@ -219,5 +219,24 @@ export async function montarMesa(cfg) {
      * declarado sigue mandando, para los que tienen uno a medida y bonito.
      */
     await cargar(`js/${visualizador ?? (deCartas ? 'mesa_cartas.mjs' : 'mesa_tablero.mjs')}`);
+
+    /**
+     * ⚠️ EL BOTÓN DE «ALGO VA RARO», EN LAS TREINTA Y CINCO DE UNA LÍNEA.
+     *
+     * Va aquí y no en cada página por el mismo motivo que todo lo demás de este
+     * fichero: una cosa que hay que acordarse de poner en cada página acaba
+     * faltando en una, y será justo en la que falle algo.
+     *
+     * Y lo que manda no es un comentario: es un comentario CON EL RECIBO de la
+     * partida. Aquí una partida se vuelve a jugar con `{juego, semilla, jugadas}`,
+     * así que un aviso de un desconocido pasa de anécdota a caso reproducible. Los
+     * fallos de esta semana —la brisca repartiendo entropy, las cartas ilegibles,
+     * el póker sin botones— no los habría encontrado ningún informe; todos salieron
+     * de MIRAR una partida concreta. Esto es dar a otro la forma de señalar cuál.
+     *
+     * No manda nada solo: sólo lo que alguien escriba y pulse, y lo enseña antes.
+     */
+    import('./protohub/reportar.js').catch(() => { /* sin buzón se juega igual */ });
+
     return window.ALISA_PROTOHUB;
 }
