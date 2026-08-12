@@ -104,8 +104,13 @@ if (caja && !caja.querySelector('#mesa-jugadas')) {
     caja.innerHTML =
         `<div class="overlay"><div class="hud-panel"><div class="hud-header">`
       + `<h1>${window.ALISA_TITULO ?? juego}</h1></div>`
-      + `<div id="hud-content"><div id="estado-txt" class="status-row"></div>`
-      + `<div id="mesa-jugadas" class="mesa-jugadas"></div></div></div></div>`;
+      + `<div id="hud-content"><div id="estado-txt" class="status-row"></div></div>`
+      // ⚠️ La caja de jugadas va FUERA de `#hud-content`, hermana suya. Plegar el
+      // panel deja `#hud-content` con `max-height: 0` y `overflow: hidden`, y en
+      // pantalla estrecha el panel arranca plegado: con los botones dentro, la mesa
+      // se ve entera y no hay forma de jugar. Lo encontró un betatester en un móvil
+      // de 276 px, y el mismo fallo estaba en la mesa de cartas.
+      + `<div id="mesa-jugadas" class="mesa-jugadas"></div></div></div>`;
 }
 
 /**

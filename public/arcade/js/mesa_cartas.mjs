@@ -808,6 +808,26 @@ const engine = new SovereignCardEngine({
           + (data.is_game_over ? fila('Estado', data.desenlace ?? 'Terminada', '#ff8080') : '')
           + `<div id="mesa-jugadas" class="mesa-jugadas"></div>`;
 
+        /**
+         * ⚠️ PLEGAR EL PANEL NO PUEDE ESCONDER LA FORMA DE JUGAR.
+         *
+         * Lo encontró un betatester y lo dijo así: «no me deja coger la carta del
+         * descarte». Estaba en un móvil de 276 px — lo sabemos porque el aviso trae
+         * el tamaño de pantalla, y por eso lo trae.
+         *
+         * En pantalla estrecha el panel arranca PLEGADO, que lo puse yo para que se
+         * viera la mesa. Plegado, `#hud-content` queda con `max-height: 0` y
+         * `overflow: hidden`… y los botones de jugar vivían dentro. Resultado: la
+         * mesa se ve, las cartas se ven, y no hay ninguna forma de jugar. Sin un
+         * error, y en escritorio no pasa nunca porque allí el panel arranca abierto.
+         *
+         * Plegar tiene que esconder los DATOS —turno, puntos, cuántas cartas hay en
+         * cada montón— y nunca las jugadas. Así que la caja de botones se saca a
+         * hermana de `#hud-content`, fuera de lo que se recorta.
+         */
+        const jugadas = hud.querySelector('#mesa-jugadas');
+        if (jugadas && hud.parentElement) hud.parentElement.appendChild(jugadas);
+
         pintarJugadas(this, data);
 
         // Lo que necesita la capa de clics: el estado de verdad y mis casillas.

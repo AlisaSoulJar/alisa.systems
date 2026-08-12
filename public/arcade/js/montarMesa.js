@@ -51,7 +51,7 @@ import { JUEGOS, TITULOS, cargarReglas } from './protohub/rules/index.js';
  * `prueba_version.mjs` comprueba que corresponde a lo que hay en disco y, si no,
  * dice el valor que toca. No hay que acordarse: hay que hacer caso a la prueba.
  */
-const VERSION = '6a4f0264';
+const VERSION = '8b441af0';
 
 /** Lo que toda página de tablero necesitaba y repetía. En orden. */
 const ANDAMIO = [
@@ -137,6 +137,10 @@ export async function montarMesa(cfg) {
     document.title = `ALISA Arcade — ${nombre}`;
     hoja('css/arcade.css');
     hoja('css/mesa3d.css');
+    // Va la ÚLTIMA a propósito: revierte el `pointer-events: none` que las otras
+    // ponen en la capa del HUD, y sólo para los botones de jugar. El porqué está
+    // escrito en el fichero, y lo encontró un betatester en un móvil de 276 px.
+    hoja('css/jugables.css');
     hoja('/vendor/fonts/fuentes.css');
 
     // El lienzo y el HUD, que también estaban copiados en las seis páginas.

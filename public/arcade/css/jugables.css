@@ -1,0 +1,28 @@
+/**
+ * jugables.css — que los botones de jugar se puedan pulsar, caigan donde caigan
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ⚠️ ESTO LO ENCONTRÓ UN BETATESTER, Y LO DIJO ASÍ: «no me deja coger la carta
+ * del descarte».
+ *
+ * Estaba en un móvil de 276 px de ancho — lo sabemos porque el aviso viaja con el
+ * tamaño de pantalla, y por eso viaja.
+ *
+ * `.overlay` lleva `pointer-events: none` a propósito, para poder girar la mesa
+ * arrastrando por las zonas vacías alrededor del panel; sólo `.hud-panel` lo
+ * vuelve a activar. En una pantalla estrecha los botones se apilan en vertical y
+ * REBASAN el panel, y ahí fuera heredan el `none`: el clic los atraviesa y se lo
+ * come el lienzo, que está debajo con `z-index: 1`.
+ *
+ * O sea: botones perfectamente visibles, que responden al ratón por encima, y que
+ * no hacen absolutamente nada. Cero errores en consola. En un escritorio no pasa
+ * nunca, porque ahí el panel es más ancho que su contenido — y por eso ha estado
+ * meses así sin que nadie lo viera.
+ *
+ * Se arregla en el BOTÓN y no en el panel, para que dé igual dónde acabe cayendo
+ * el día que alguien cambie la caja. Que es exactamente lo que pasó aquí.
+ */
+.mesa-jugada,
+#mesa-jugadas,
+.jugadas,
+.jugadas button { pointer-events: auto; }
