@@ -51,7 +51,7 @@ import { JUEGOS, TITULOS, cargarReglas } from './protohub/rules/index.js';
  * `prueba_version.mjs` comprueba que corresponde a lo que hay en disco y, si no,
  * dice el valor que toca. No hay que acordarse: hay que hacer caso a la prueba.
  */
-const VERSION = '92a05858';
+const VERSION = '4cc260a9';
 
 /** Lo que toda página de tablero necesitaba y repetía. En orden. */
 const ANDAMIO = [
@@ -201,6 +201,23 @@ export async function montarMesa(cfg) {
     } catch { /* si no se puede mirar, tablero: es lo de siempre */ }
 
     for (const s of (deCartas ? MOTOR_CARTAS : MOTOR_TABLERO)) await cargar(s);
-    if (visualizador) await cargar(`js/${visualizador}`);
+
+    /**
+     * ⚠️ SIN VISUALIZADOR PROPIO NO SE QUEDA EN BLANCO: SALE LA VISTA GENÉRICA.
+     *
+     * Antes, un juego sin `visualizador` cargaba el motor y nada más — o sea una
+     * página con HUD y un lienzo vacío. Por eso los once juegos nuevos vivían en
+     * `mesa.html`, que es de TEXTO: era eso o nada.
+     *
+     * Y no hacía falta escribir un renderizador para ninguno. `crearPintor3d`
+     * lleva meses dibujando rejilla, piezas y montones sin saber a qué se juega;
+     * lo único que faltaba era que alguien lo montara. `mesa_tablero.mjs` hace por
+     * los tableros lo que `mesa_cartas.mjs` por las cartas.
+     *
+     * Se elige por lo que el juego PUBLICA —igual que el motor—, no por una lista:
+     * si reparte cartas, la mesa de casino; si no, la de tablero. Un `visualizador`
+     * declarado sigue mandando, para los que tienen uno a medida y bonito.
+     */
+    await cargar(`js/${visualizador ?? (deCartas ? 'mesa_cartas.mjs' : 'mesa_tablero.mjs')}`);
     return window.ALISA_PROTOHUB;
 }

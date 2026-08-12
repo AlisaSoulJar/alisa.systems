@@ -1,0 +1,19 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA Arcade — Sigilo</title>
+<!--
+  Este juego NO tiene visualizador propio, y no le hace falta: `mesa_tablero.mjs`
+  lee el SUSTRATO —rejilla, piezas y montones— y lo dibuja sin saber a qué se
+  juega. La misma pieza que dibuja los otros diez de esta tanda.
+
+  Hasta hoy sólo se podía abrir como pagina de TEXTO (`mesa.html`), teniendo la
+  vista 3D hecha y funcionando desde hace meses dentro de `sala.html`, que a su vez
+  no estaba enlazada desde ningun sitio. Lo que faltaba era el cable.
+
+      ?semilla=7   fija la partida
+-->
+<script type="module">
+  import { montarMesa } from './js/montarMesa.js';
+  montarMesa({ juego: 'sigilo' });
+</script>

@@ -487,33 +487,19 @@ if (deCartas) {
      * se manda nada que no esté en `legal_moves`»— con la posibilidad de que una
      * de las dos copias se la saltara.
      */
-    const { crearPintor3d } = await import('./js/protohub/render/pintar3d.js');
-    const { pintarJugadas } = await import('./js/protohub/jugadas.js');
-    const pintor = crearPintor3d(grupo, THREE);
-
-    document.getElementById('hud-container').innerHTML =
-        `<div class="overlay"><div class="hud-panel"><div class="hud-header">`
-      + `<h1>🎲 ${window.ALISA_TITULO}</h1></div>`
-      + `<div id="hud-content"><div id="estado-txt" class="status-row"></div>`
-      + `<div id="mesa-jugadas" class="mesa-jugadas"></div></div></div></div>`;
-
-    const refrescar = () => {
-        const st = hub.state(juego);
-        pintor.pintar(hub.sustrato(juego));
-        const marcador = st.puntos ?? st.score ?? st.marcador;
-        document.getElementById('estado-txt').innerHTML =
-            `<span>Turno</span><span class="val">${st.turn ?? '—'}</span>`
-          + (marcador !== undefined ? ` <span>·</span><span class="val">${marcador}</span>` : '');
-        pintarJugadas(document.getElementById('mesa-jugadas'), {
-            acciones: st.legal_moves ?? st.legal_actions ?? [],
-            terminada: !!st.is_game_over,
-            enviar: (m) => { hub.move(juego, { move: m }); refrescar(); },
-        });
-    };
-    refrescar();
-    // El mundo de algunos juegos avanza solo (rebaño, pradera), así que no basta
-    // con repintar cuando alguien juega.
-    setInterval(refrescar, 1000);
+    /**
+     * ⚠️ ESTO ERAN TREINTA LÍNEAS AQUÍ SUELTAS, Y AHORA SON UNA PIEZA.
+     *
+     * Montaban el pintor universal, el HUD y los botones. Funcionaba — y era la
+     * única forma de ver en 3D once juegos, porque nada más usaba `crearPintor3d`.
+     * En cuanto `montarMesa` necesitó lo mismo para darles página propia, había que
+     * elegir entre copiarlo o sacarlo, y copiar esto es copiar la regla de oro de
+     * `pintarJugadas` con la posibilidad de que una de las dos copias se la salte.
+     *
+     * `mesa_tablero.mjs` se monta sola y respeta `ALISA_ANFITRION`, así que aquí
+     * dibuja DENTRO de esta sala igual que hacía el trozo que sustituye.
+     */
+    await import('./js/mesa_tablero.mjs');
 }
 
 // ── El bucle, que aquí lo llevamos nosotros ───────────────────────────────

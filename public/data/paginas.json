@@ -114,68 +114,68 @@
     "sillas": 2
   },
   "sokoban": {
-    "pagina": "mesa.html",
-    "propia": false,
+    "pagina": "sokoban.html",
+    "propia": true,
     "titulo": "Sokoban",
     "sillas": 1
   },
   "cripta": {
-    "pagina": "mesa.html",
-    "propia": false,
+    "pagina": "cripta.html",
+    "propia": true,
     "titulo": "Cripta",
     "sillas": 1
   },
   "flota": {
-    "pagina": "mesa.html",
-    "propia": false,
+    "pagina": "flota.html",
+    "propia": true,
     "titulo": "Flota",
     "sillas": 2
   },
   "defensa": {
-    "pagina": "mesa.html",
-    "propia": false,
+    "pagina": "defensa.html",
+    "propia": true,
     "titulo": "Defensa",
     "sillas": 2
   },
   "sigilo": {
-    "pagina": "mesa.html",
-    "propia": false,
+    "pagina": "sigilo.html",
+    "propia": true,
     "titulo": "Sigilo",
     "sillas": 2
   },
   "frentes": {
-    "pagina": "mesa.html",
-    "propia": false,
+    "pagina": "frentes.html",
+    "propia": true,
     "titulo": "Frentes",
     "sillas": 2
   },
   "relevo": {
-    "pagina": "mesa.html",
-    "propia": false,
+    "pagina": "relevo.html",
+    "propia": true,
     "titulo": "Relevo",
     "sillas": 2
   },
   "cabina": {
-    "pagina": "mesa.html",
-    "propia": false,
+    "pagina": "cabina.html",
+    "propia": true,
     "titulo": "Cabina",
     "sillas": 2
   },
   "rebano": {
-    "pagina": "mesa.html",
-    "propia": false,
+    "pagina": "rebano.html",
+    "propia": true,
     "titulo": "Rebano",
     "sillas": 1
   },
   "pradera": {
-    "pagina": "mesa.html",
-    "propia": false,
+    "pagina": "pradera.html",
+    "propia": true,
     "titulo": "Pradera",
     "sillas": 1
   },
   "nave": {
-    "pagina": "mesa.html",
-    "propia": false,
+    "pagina": "nave.html",
+    "propia": true,
     "titulo": "Nave",
     "sillas": 4
   },
