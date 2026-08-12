@@ -77,3 +77,7 @@ __pycache__/
 *.pyc
 *.bak
 *.bak2
+
+# Las 31 capturas del laboratorio: se regeneran en cada pasada y son para mirar,
+# no para versionar. Un PNG por juego cada vez engordaria el repo sin decir nada.
+capturas_laboratorio/
