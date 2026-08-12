@@ -178,5 +178,11 @@
     "propia": false,
     "titulo": "Nave",
     "sillas": 4
+  },
+  "remigio": {
+    "pagina": "remigio.html",
+    "propia": true,
+    "titulo": "Remigio",
+    "sillas": 2
   }
 }

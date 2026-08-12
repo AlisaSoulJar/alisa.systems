@@ -70,6 +70,14 @@ for (const juego of JUEGOS) {
         // señalaba como fuga, y no lo eran — un falso positivo en una prueba de
         // seguridad es tan dañino como un fallo: enseña a ignorarla.
         ...arr(st.ultima_ronda).flatMap(v => (Array.isArray(v) ? v : [v])),
+        // El montón del descarte entero, por el mismo motivo que la línea de
+        // arriba: cada una de esas cartas la puso alguien BOCA ARRIBA sobre la
+        // mesa. `st.descarte` (la de encima) ya estaba; faltaba el montón, que es
+        // lo que publica el remigio. Comprobado antes de tocar esto, y no
+        // suponiendo: de las 38 cartas secretas de una partida —mano del rival
+        // más mazo— el estado no nombra ninguna. Las tres que saltaban estaban
+        // las tres en el descarte.
+        ...arr(st.descartes),
         // Y las jugadas legales son, por construcción, las de quien tiene el
         // turno. Abajo se comprueba que el turno sea el del asiento descrito;
         // aquí basta con no contarlas como fuga.

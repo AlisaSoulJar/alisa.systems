@@ -245,7 +245,7 @@ if (!fallos) console.log(`  ✓ barajas   los documentos dicen ${NBARAJAS}, y ha
  * Así que el número es un SUELO: diez juegos se dibujan hoy con la mesa
  * compartida y no pueden ser menos. Si baja, alguien ha desconectado uno.
  */
-const SUELO_MESA_CARTAS = 10;
+const SUELO_MESA_CARTAS = 11;
 const conMesa = [];
 const ambiguos = [];
 for (const juego of JUEGOS) {
@@ -286,7 +286,7 @@ if (conMesa.length < SUELO_MESA_CARTAS) {
  * funcionan y nadie los ha comparado con la mesa compartida todavía. Ese es el
  * hueco, y está aquí escrito en vez de en la cabeza de alguien.
  */
-const SUELO_PAGINAS_MESA = 8;
+const SUELO_PAGINAS_MESA = 9;
 const montanMesa = [];
 for (const juego of conMesa) {
     let html;

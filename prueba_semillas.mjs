@@ -34,7 +34,7 @@ const RAIZ = join(AQUI, 'public/js/alisa-engine/src');
  * ⚠️ TECHO DE SISTEMAS SIN SEMBRAR. Hoy son 24 de 54 (empezaron siendo 28).
  * Cada uno que acepte `rng` baja este número. **Nunca sube.**
  */
-const TECHO_SIN_SEMBRAR = 24;
+const TECHO_SIN_SEMBRAR = 23;
 
 const sistemas = [];
 (function recorrer(dir) {

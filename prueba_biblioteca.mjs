@@ -61,16 +61,38 @@ for (const juego of JUEGOS) {
     }
 }
 
-// Un juego de cartas que dejara de publicar la marca desaparecería de esta lista
-// sin que nadie lo notara. Se cuenta, y el número tiene que cuadrar.
-const ESPERADOS = 10;   // blackjack, poker, brisca, tute, hearts, spades,
-                        // guerra, gofish, unit, entropy
-if (DE_CARTAS.length !== ESPERADOS) {
+/**
+ * Un juego de cartas que dejara de publicar la marca desaparecería de esta lista
+ * sin que nadie lo notara, así que hay que comprobar que están TODOS.
+ *
+ * ⚠️ AQUÍ HABÍA UN `ESPERADOS = 10` ESCRITO A MANO, con los diez nombres en un
+ * comentario al lado. Cumplía su función y traía la de siempre: al añadir el
+ * remigio la prueba se puso roja diciendo «se esperaban 10 y se han mirado 11»,
+ * o sea acusando al juego nuevo de un fallo que no existía. Una prueba que hay
+ * que actualizar a mano acaba actualizándose sin mirar, que es cuando deja de
+ * proteger.
+ *
+ * Y no hacía falta ningún número: la definición de «juego de cartas» YA existe y
+ * se usa en tres sitios —`montarMesa`, `sala.html` y la Sala del Huevo— para
+ * decidir qué motor monta cada mesa. Es **zonas y ninguna rejilla**. Preguntarle
+ * eso al propio juego cubre las dos direcciones a la vez: uno que deje de
+ * publicar la marca sale como ausente, y uno nuevo entra solo.
+ */
+const { obtenerSustrato } = await import('./public/arcade/js/protohub/sustrato.js');
+const CON_CARTAS = [];
+for (const juego of JUEGOS) {
+    const reglas = await cargarReglas(juego, { url: URL_CATALOGO });
+    const q = reglas.nuevaPartida({ semilla: 1, seed: 1 });
+    const sus = reglas.sustrato ? reglas.sustrato(q, 0)
+                                : obtenerSustrato(juego, reglas, q, reglas.estado(q));
+    if (sus?.zonas?.length && !sus?.rejilla) CON_CARTAS.push(juego);
+}
+const mudos = CON_CARTAS.filter(j => !DE_CARTAS.includes(j));
+if (mudos.length) {
     fallos++;
-    console.log(`\n  ✗ se esperaban ${ESPERADOS} juegos de cartas y se han mirado ${DE_CARTAS.length}`
-              + `\n    mirados: ${DE_CARTAS.join(', ')}`
-              + `\n    (si has añadido o quitado uno, actualiza el número; si no, alguno`
-              + `\n     ha dejado de publicar \`biblioteca\` y esta prueba ya no lo cubre)`);
+    console.log(`\n  ✗ reparten cartas y NO publican \`biblioteca\`: ${mudos.join(', ')}`
+              + `\n    esta prueba no los cubre, así que podrían estar jugando con otra baraja`
+              + `\n    en el servidor que en el navegador sin que nadie se enterara`);
 }
 
 console.log(fallos === 0

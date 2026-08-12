@@ -175,6 +175,8 @@ function encuadrar(motor) {
         motor.camera.lookAt(0, 0, 1.3);
     }
     if (motor.controls) { motor.controls.target.set(0, 0, estrecha ? 0.9 : 1.3); motor.controls.update(); }
+    // Se acaba de recalibrar, así que el techo de `acercar()` vuelve a ser éste.
+    motor.techoCamara = 0;
 }
 
 /**
@@ -194,8 +196,20 @@ function encuadrar(motor) {
  * que quepa justo, con un margen.
  *
  * Se itera porque al acercarse cambia la perspectiva y con ella lo que ocupa: cinco
- * pasadas bastan para converger. Y sólo se acerca —nunca se aleja más allá de lo
- * calibrado—, para que un juego con MÁS cartas que entropy siga cabiendo.
+ * pasadas bastan para converger.
+ *
+ * ⚠️ Y NO PUEDE SER UN TRINQUETE, QUE ES COMO LO ESCRIBÍ LA PRIMERA VEZ.
+ *
+ * El tope era «nunca más lejos de donde estás», leyendo la distancia actual en
+ * cada pasada. Eso encoge y no vuelve: en cuanto se acercaba una vez, ese pasaba a
+ * ser el techo. Con un reparto que CRECE —el remigio roba y pasa de 10 cartas a
+ * 11— la mano se salía por abajo de la pantalla y la cámara ya no podía retroceder
+ * a buscarla.
+ *
+ * Es el mismo fallo que `sala.html` tenía esta tarde y por el mismo motivo:
+ * confundir «de dónde vengo» con «hasta dónde puedo ir». El tope de verdad es la
+ * posición CALIBRADA —la que pone `encuadrar()` mirando la forma de la pantalla—,
+ * así que se guarda esa y se compara siempre contra ella.
  */
 function acercar(motor, margen = 1.12) {
     if (motor.invitado || !motor.camera || !motor.scene) return;
@@ -212,6 +226,11 @@ function acercar(motor, margen = 1.12) {
     const lejos = eje.length();
     if (!(lejos > 0.001)) return;
     eje.normalize();
+
+    // El techo es la distancia CALIBRADA, no la de ahora. `encuadrar()` la fija y
+    // la borra cada vez que cambia la pantalla, que es cuando deja de valer.
+    if (!(motor.techoCamara > 0.001)) motor.techoCamara = lejos;
+    const techo = motor.techoCamara;
 
     const esquinas = [];
     for (const x of [caja.min.x, caja.max.x])
@@ -236,7 +255,7 @@ function acercar(motor, margen = 1.12) {
         }
         if (!(peor > 0)) return;
         d *= peor * margen;
-        if (d > lejos) d = lejos;         // nunca más lejos de lo calibrado
+        if (d > techo) d = techo;         // nunca más lejos de lo calibrado
     }
     motor.camera.position.copy(objetivo).addScaledVector(eje, d);
     motor.camera.lookAt(objetivo);
@@ -684,18 +703,51 @@ const engine = new SovereignCardEngine({
                 ];
                 if (!cartas.length) return;
 
-                // Un montón no es una fila corta: es lo que se hace cuando no cabe.
-                const disposicion = cartas.length > CABEN ? 'pile' : sitio.layout;
+                /**
+                 * ⚠️ UNA MANO NO SE APILA AUNQUE NO QUEPA: SE APRIETA.
+                 *
+                 * Aquí ponía `cartas.length > CABEN ? 'pile' : layout` a secas, y
+                 * el razonamiento de arriba —un mazo es un montón porque no cabe,
+                 * no porque se llame mazo— sigue siendo bueno. Pero mezclaba dos
+                 * cosas: un mazo de 79 cartas no se puede enseñar, y una mano de
+                 * 10 SÍ, solapada, que es exactamente lo que hace cualquiera que
+                 * sostenga diez cartas.
+                 *
+                 * Lo destapó el remigio, que reparte 10 y `CABEN` es 9: la mano
+                 * salía apilada y sólo se veía la de encima. Las diez estaban
+                 * dibujadas y medidas, una encima de otra — o sea injugable sin
+                 * un solo error, otra vez.
+                 *
+                 * La diferencia no es el nombre de la zona: es que TIENE DUEÑO.
+                 * Una zona de alguien son cartas que esa persona lee; una de nadie
+                 * es un montón sobre la mesa. Eso está en el sustrato (`de`), así
+                 * que no hay que saberse ningún juego para decidirlo.
+                 *
+                 * Al apretarse, la mano ocupa siempre lo que ocuparían `CABEN`
+                 * cartas y se solapan más. Se leen por el índice de la esquina,
+                 * que para eso está. Por debajo de `SOLAPE_MINIMO` ni eso se ve, y
+                 * entonces sí es un montón.
+                 */
+                const SOLAPE_MINIMO = 0.3;
+                const deAlguien = z.de !== null && z.de !== undefined;
+                const apretado = deAlguien && cartas.length > CABEN
+                    ? ((CABEN - 1) * ESPACIO) / (cartas.length - 1)
+                    : ESPACIO;
+                const disposicion = (cartas.length > CABEN && apretado < SOLAPE_MINIMO)
+                    || (!deAlguien && cartas.length > CABEN)
+                    ? 'pile'
+                    : sitio.layout;
+                const hueco = disposicion === 'pile' ? ESPACIO : apretado;
 
                 // `line` se dibuja desde el borde izquierdo; `fan` y `pile`, desde
                 // el centro. Aplicarle a un abanico el centrado de una fila lo
                 // desplazaba media mano hacia un lado.
                 const x = disposicion === 'line'
-                    ? cx - ((cartas.length - 1) * ESPACIO) / 2
+                    ? cx - ((cartas.length - 1) * hueco) / 2
                     : cx;
 
                 this.drawZone(cartas, `${z.id}_${clave}_${i}`, x, cz,
-                    { layout: disposicion, spacing: ESPACIO });
+                    { layout: disposicion, spacing: hueco });
             });
         }
 

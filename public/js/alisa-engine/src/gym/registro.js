@@ -109,6 +109,14 @@ const PROTOHUB = [
     // Nave es DEDUCCION SOCIAL: roles ocultos, compromiso simultaneo y votacion.
     // El unico entorno donde un agente puede enganar a otro, no solo superarlo.
     { juego: 'nave', titulo: 'Nave', nombre: 'nave' },
+    // Remigio es el primero donde la información se revela AL ELEGIR ENTRE DOS
+    // FUENTES. En el go fish revelas preguntando y en el póker apostando: actúas
+    // y se sabe. Aquí las dos jugadas son legales, hacen lo mismo —te dan una
+    // carta— y sólo se diferencian en lo que cuentan de ti. Coger del descarte
+    // sirve casi siempre y declara qué juntas; del mazo no dice nada y casi nunca
+    // vale. Es el primer entorno donde se puede medir cuánto paga un agente por
+    // no ser leído.
+    { juego: 'remigio', titulo: 'Remigio', crear: 'crearRemigio' },
 ];
 
 /** Entornos escritos a mano, cada uno con su propio módulo. */

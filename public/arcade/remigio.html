@@ -1,0 +1,26 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA Arcade — Remigio</title>
+<!--
+  Robas una carta —del mazo a ciegas, o la de encima del descarte, que el otro
+  también ha visto— y tiras otra. Ganas cuando tus diez forman tríos (tres del
+  mismo número) o escaleras (tres seguidas del mismo palo).
+
+  El HUD dice cómo se reparte tu mano ahora mismo y cuánto pesa lo que sobra:
+  ése es el número que hay que bajar. Cuando llega a cero, aparece `cerrar`.
+
+  ⚠️ Y ES LA PRUEBA DE QUE AÑADIR UN JUEGO CUESTA UN FICHERO.
+
+  Esta página no sabe a qué se juega. No dibuja nada, no declara motor, no
+  enumera cartas: `mesa_cartas.mjs` lee el SUSTRATO —qué montones hay, qué se ve
+  en cada uno y cuántas están tapadas— y lo pinta. El remigio se escribió como
+  reglas y salió dibujado, jugable y descrito para un agente sin tocar la mesa.
+
+      ?semilla=7              fija el reparto
+      ?sala=cocina&yo=oscar   la misma partida que quien abra ese enlace
+-->
+<script type="module">
+  import { montarMesa } from './js/montarMesa.js';
+  montarMesa({ juego: 'remigio', visualizador: 'mesa_cartas.mjs' });
+</script>

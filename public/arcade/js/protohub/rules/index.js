@@ -121,6 +121,13 @@ export const REGLAS = {
     // agente podía jugar mal, nunca engañar. Lo único que una FSM no puede
     // intentar, y por eso lo que más dice de un modelo de lenguaje.
     nave: () => import('./nave.js').then(m => m.nave),
+    // ⚠️ EL PRIMER JUEGO DE CARTAS QUE PUBLICA SUSTRATO NATIVO, y el que estrena
+    // una forma de esconder información que no teníamos: los treinta anteriores
+    // revelan al ACTUAR —preguntar en el go fish, apostar en el póker— y aquí se
+    // revela al ELEGIR ENTRE DOS FUENTES. Robar del descarte te da la carta que
+    // necesitas y le dice al rival qué juntas; robar del mazo no dice nada y casi
+    // nunca sirve. No hay jugada que no pague uno de los dos precios.
+    remigio: (o) => import('./remigio.js').then(m => m.crearRemigio(o)),
 };
 
 export const JUEGOS = Object.keys(REGLAS);
@@ -178,6 +185,10 @@ export const SILLAS = {
     sokoban: 1, cripta: 1, rebano: 1, pradera: 1,
     flota: 2, defensa: 2, sigilo: 2, frentes: 2, relevo: 2, cabina: 2,
     nave: 4,
+    // Dos: con más manos el descarte pasa por tanta gente antes de volver a ti
+    // que la señal de «éste está juntando corazones» se diluye, y esa señal es
+    // justo lo que el juego mide.
+    remigio: 2,
 };
 
 /** Carga las reglas de un juego. `opts.url` para los que leen la biblioteca. */
