@@ -41,7 +41,9 @@ for (const a of avisos) {
         // Los dos han mentido esta semana: una proporción rara descuadra el
         // encuadre, y con la ventana oculta no hay fotogramas y la página parece
         // viva sin dibujar. Por eso viajan con el aviso.
-        console.log(`     pantalla ${p.ancho}x${p.alto}`
+        console.log(`     dónde    ${p.aparato ?? '?'}`
+            + (p.vertical ? ' en vertical' : '')
+            + ` · ${p.ancho}x${p.alto}`
             + (p.dpr && p.dpr !== 1 ? ` @${p.dpr}x` : '')
             + (p.oculta ? '  ⚠ LA VENTANA ESTABA OCULTA: no había fotogramas' : ''));
     }

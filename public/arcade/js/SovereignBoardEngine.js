@@ -183,6 +183,68 @@ class SovereignBoardEngine {
             } catch { /* sin hub: seguimos abajo */ }
         }
 
+        /**
+         * ⚠️ CON `?sala=` LA PARTIDA OCURRE EN EL ÁRBITRO, Y AQUÍ NO ESTABA.
+         *
+         * Esto faltaba, y la forma en que se descubrió merece quedar escrita: Oscar
+         * abrió un ajedrez con `?sala=` en dos navegadores y salieron DOS PARTIDAS
+         * DISTINTAS. Ningún error, ninguna pista — cada pestaña jugaba su propia
+         * partida local tan contenta, porque este motor no leía el parámetro.
+         *
+         * Sólo lo leía `SovereignCardEngine`. O sea que las salas compartidas
+         * funcionaban en los juegos de cartas y en la mesa de texto, y en NINGÚN
+         * tablero: ajedrez, go, reversi, damas, xiangqi, mancala y los doce de la
+         * mesa genérica. Y mientras tanto `entrar.html` ofrecía «con más gente» en
+         * los veinticuatro que admiten compañía y fabricaba el enlace igual. Es lo
+         * peor que puede hacer una interfaz: prometer algo y no cumplirlo callando.
+         *
+         * El cliente NO se escribe aquí. Es el mismo `sala.js` de las otras dos
+         * mesas: escribirlo por tercera vez sería escribir por tercera vez el
+         * rechazo de la mesa llena y el `?quien=` que hace que veas TU partida — dos
+         * cosas que ya costaron caras una vez.
+         */
+        const sala = new URLSearchParams(location.search).get('sala');
+        if (sala && proto && proto.soporta(this.gameId)) {
+            try {
+                const { crearSala, limpiar, nombreParaSala } =
+                    await import('/arcade/js/protohub/sala.js');
+                const params = new URLSearchParams(location.search);
+                const salaLimpia = limpiar(sala, 40);
+                const mesa = crearSala({
+                    sala: salaLimpia,
+                    // Sin `?yo=` se coge nombre de invitado y SE RECUERDA: un solo
+                    // enlace sirve para todos y una recarga te devuelve a tu silla.
+                    yo: nombreParaSala(salaLimpia, params.get('yo')),
+                    juego: this.gameId,
+                    semilla: Number(params.get('semilla')) || 1,
+                });
+                this.yoEnLaSala = mesa.yo;
+                await mesa.entrar();
+                this.sala = mesa;
+                this.backend = {
+                    tipo: 'sala',
+                    state: async () => { await mesa.refrescar(); return mesa.estado(); },
+                    move: async (a) => {
+                        // ⚠️ `params.action` PRIMERO. `sendMove` envuelve la jugada
+                        // en `{action:'move', params:{action:<jugada>}}`, así que
+                        // leer `a.action` da la palabra «move» y el árbitro la
+                        // rechazaría culpando al juego en vez de a este desempaque.
+                        // Y en los tableros la jugada viaja además como `uci` o
+                        // `move` según el visualizador.
+                        const j = typeof a === 'string' ? a
+                            : (a?.params?.action ?? a?.params?.uci ?? a?.params?.move
+                               ?? a?.move ?? a?.uci ?? a);
+                        await mesa.jugar(j);
+                        return { ok: true };
+                    },
+                };
+                console.log(`[Arcade] sala '${sala}' — '${this.gameId}' con árbitro compartido.`);
+                return;
+            } catch (e) {
+                console.warn(`[Arcade] no se pudo entrar en la sala '${sala}':`, e);
+            }
+        }
+
         if (proto && proto.soporta(this.gameId)) {
             this.backend = {
                 tipo: 'local',

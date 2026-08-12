@@ -162,8 +162,69 @@ function encajar() {
     encuadrado = true;
 }
 
+/**
+ * ⚠️ Y SI HAY `?sala=`, LA PARTIDA NO OCURRE AQUÍ: OCURRE EN EL ÁRBITRO.
+ *
+ * Esta mesa hablaba SIEMPRE con el hub local, así que con un enlace compartido
+ * cada pestaña jugaba su propia partida tan contenta y sin un solo error. Es el
+ * mismo fallo que Oscar encontró en el ajedrez —abrió una sala en dos navegadores
+ * y salieron dos partidas— sólo que en los doce juegos que dibuja esta mesa.
+ *
+ * `entrar.html` ofrece «con más gente» a los veinticuatro que admiten compañía y
+ * fabrica el enlace igual. Prometer algo y no cumplirlo callando es lo peor que
+ * puede hacer una interfaz, y estaba pasando en tres sitios de tres.
+ *
+ * El cliente es el mismo `sala.js` de las otras mesas. Va por CUARTA vez, y ésa es
+ * exactamente la razón de que sea un módulo y no código copiado.
+ */
+const params = new URLSearchParams(location.search);
+let mesaCompartida = null;
+if (params.get('sala') && hub.soporta?.(juego)) {
+    try {
+        const { crearSala, limpiar, nombreParaSala } = await import('./protohub/sala.js');
+        const salaLimpia = limpiar(params.get('sala'), 40);
+        mesaCompartida = crearSala({
+            sala: salaLimpia,
+            yo: nombreParaSala(salaLimpia, params.get('yo')),
+            juego,
+            semilla: Number(params.get('semilla')) || 1,
+        });
+        await mesaCompartida.entrar();
+        console.log(`[Arcade] sala '${salaLimpia}' — '${juego}' con árbitro compartido.`);
+    } catch (e) {
+        console.warn(`[Arcade] no se pudo entrar en la sala:`, e);
+        mesaCompartida = null;
+    }
+}
+
 // ── Lo que se repinta ───────────────────────────────────────────────────────
-function refrescar() {
+async function refrescar() {
+    if (mesaCompartida) {
+        // En una sala el estado llega del árbitro por la red, así que aquí no hay
+        // partida viva que preguntar: el sustrato se DERIVA de lo publicado. Es la
+        // misma excepción, por el mismo motivo, que en la mesa de cartas.
+        await mesaCompartida.refrescar().catch(() => {});
+        const st = mesaCompartida.estado();
+        if (st) {
+            const { sustratoDe } = await import('./protohub/sustrato.js');
+            pintor.pintar(sustratoDe(juego, st));
+            const txt = document.getElementById('estado-txt');
+            if (txt) {
+                txt.innerHTML = `<span>Turno</span><span class="val">${st.turn ?? '—'}</span>`
+                    + `<span>·</span><span class="val">${mesaCompartida.yo}</span>`;
+            }
+            pintarJugadas(document.getElementById('mesa-jugadas'), {
+                acciones: mesaCompartida.acciones(),
+                meToca: mesaCompartida.meToca(),
+                turnoDe: st.turn,
+                terminada: !!st.is_game_over,
+                espectador: mesaCompartida.espectador,
+                enviar: (m) => mesaCompartida.jugar(m).then(refrescar),
+            });
+        }
+        return;
+    }
+
     const st = hub.state(juego);
     pintor.pintar(hub.sustrato(juego));
 

@@ -65,7 +65,27 @@ function recoger(comentario) {
         // Lo que ve el navegador. Ver la nota de arriba: los dos han mentido hoy.
         pantalla: { ancho: innerWidth, alto: innerHeight,
                     dpr: Math.round((devicePixelRatio ?? 1) * 100) / 100,
-                    oculta: document.hidden },
+                    oculta: document.hidden,
+                    /**
+                     * ⚠️ QUÉ APARATO, Y SE DEDUCE DE TRES COSAS, NO DE UNA.
+                     *
+                     * La cadena del navegador miente por diseño —un iPad lleva años
+                     * diciendo «Macintosh»— y sólo por el ancho tampoco vale: una
+                     * ventana estrecha en un escritorio no es un móvil, y esa
+                     * diferencia importa porque el encuadre de estas mesas cambia
+                     * con la FORMA de la pantalla y ya nos costó un fallo.
+                     *
+                     * Así que se juntan las tres señales que sí dicen algo distinto:
+                     * si hay dedos (`pointer: coarse`), la orientación, y el ancho.
+                     * Y va también la cadena entera para poder desmentir esto.
+                     */
+                    aparato: (() => {
+                        const dedos = matchMedia?.('(pointer: coarse)')?.matches ?? false;
+                        const menor = Math.min(innerWidth, innerHeight);
+                        if (!dedos) return 'escritorio';
+                        return menor < 520 ? 'móvil' : 'tableta';
+                    })(),
+                    vertical: innerHeight > innerWidth },
         agente: navigator.userAgent.slice(0, 180),
         cuando: new Date().toISOString(),
     };
