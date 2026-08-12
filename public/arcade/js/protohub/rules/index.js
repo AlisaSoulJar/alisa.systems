@@ -128,6 +128,13 @@ export const REGLAS = {
     // necesitas y le dice al rival qué juntas; robar del mazo no dice nada y casi
     // nunca sirve. No hay jugada que no pague uno de los dos precios.
     remigio: (o) => import('./remigio.js').then(m => m.crearRemigio(o)),
+    // ⚠️ EL PRIMERO CON DADO, y el que vino a contestar una pregunta de
+    // arquitectura: ¿hace falta un motor de dados como el de cartas y el de
+    // tableros? No. Un dado no es una cuarta estructura — la tirada RESTRINGE
+    // `legal_moves`, que el contrato ya expresa, y visualmente es un objeto con una
+    // cara, o sea una zona con un item. Es además el primer juego que usa las TRES
+    // estructuras del sustrato a la vez: rejilla, piezas y zonas.
+    parchis: (o) => import('./parchis.js').then(m => m.crearParchis(o)),
 };
 
 export const JUEGOS = Object.keys(REGLAS);
@@ -189,6 +196,8 @@ export const SILLAS = {
     // que la señal de «éste está juntando corazones» se diluye, y esa señal es
     // justo lo que el juego mide.
     remigio: 2,
+    // Cuatro colores, como el de verdad.
+    parchis: 4,
 };
 
 /** Carga las reglas de un juego. `opts.url` para los que leen la biblioteca. */

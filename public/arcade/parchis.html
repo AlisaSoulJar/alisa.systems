@@ -1,0 +1,25 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA Arcade — Parchís</title>
+<!--
+  Tiras el dado y decides QUÉ ficha mueve esa tirada. Con un 5 sacas de casa; si
+  caes donde hay una del contrario, la comes y vuelve a empezar; con un 6 repites.
+
+  ⚠️ ESTA PÁGINA ES LA RESPUESTA A UNA PREGUNTA DE ARQUITECTURA.
+
+  La pregunta era si el sistema admite motores nuevos —uno de dados, como el de
+  cartas y el de tableros—. La respuesta es que no hacía falta: un dado no es una
+  cuarta estructura. La tirada RESTRINGE las jugadas legales, que el contrato ya
+  expresa, y visualmente es un objeto con una cara, o sea una zona con un item.
+
+  El parchís es el primer juego que usa las TRES estructuras del sustrato a la vez
+  —rejilla, piezas y zonas— y no ha necesitado ni un motor ni un renderizador: lo
+  dibuja `mesa_tablero.mjs`, la misma que los otros once.
+
+      ?semilla=7   fija las tiradas
+-->
+<script type="module">
+  import { montarMesa } from './js/montarMesa.js';
+  montarMesa({ juego: 'parchis' });
+</script>

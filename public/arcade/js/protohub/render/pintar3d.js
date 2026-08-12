@@ -93,6 +93,41 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
         return m;
     }
 
+    /**
+     * La cara de un item de zona, dibujada. Se guarda por identidad: en una
+     * partida se piden los mismos seis o siete una y otra vez, y generar un lienzo
+     * por fotograma sería el mismo error que crear `InstancedMesh` a sesenta por
+     * segundo, sólo que más caro.
+     *
+     * Se dibuja en vez de cargarse de un fichero por lo mismo que el tapete: no
+     * hay recursos que versionar ni una petición más, y escala sin pixelarse.
+     */
+    const caras = new Map();
+    function caraDe(id) {
+        if (caras.has(id)) return caras.get(id);
+        const L = 128;
+        const c = document.createElement('canvas');
+        c.width = c.height = L;
+        const g = c.getContext('2d');
+        g.fillStyle = '#fdfdfd';
+        g.fillRect(0, 0, L, L);
+        g.strokeStyle = '#c9ced6';
+        g.lineWidth = 5;
+        g.strokeRect(3, 3, L - 6, L - 6);
+        // `d6_5` enseña el 5, `S_A` el as: lo que va detrás del palo, que es la
+        // convención de carta que ya usa toda la casa (`baraja.js`).
+        const s = String(id);
+        const txt = (s.includes('_') ? s.split('_').slice(1).join('_') : s).slice(0, 4);
+        g.fillStyle = '#1b232e';
+        g.textAlign = 'center';
+        g.textBaseline = 'middle';
+        g.font = `bold ${txt.length > 2 ? 40 : 76}px Georgia, serif`;
+        g.fillText(txt, L / 2, L / 2);
+        const m = material(0xffffff, { map: new THREE.CanvasTexture(c), roughness: 0.45 });
+        caras.set(id, m);
+        return m;
+    }
+
     const poner = (m, x, y, z, escY = 1, rotY = 0) => {
         POS.set(x, y, z); ESC.set(1, escY, 1);
         Q.setFromAxisAngle({ x: 0, y: 1, z: 0 }, rotY);
@@ -173,20 +208,59 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
             }
         }
 
-        // ── Los montones de cartas ──────────────────────────────────────
+        // ── Los montones ────────────────────────────────────────────────
         (sus.zonas ?? []).forEach((z, iz) => {
             const total = z.items.length + (z.ocultas ?? 0);
             if (!total) return;
             const sitios = colocar(z, iz, total);
-            for (const [sufijo, desde, hasta, mt] of [
-                ['vistas', 0, z.items.length, mat.carta],
-                ['ocultas', z.items.length, total, mat.oculta],
-            ]) {
-                const n = hasta - desde;
-                if (n <= 0) continue;
-                const clave = `z${iz}:${sufijo}`;
-                const m = monton(clave, geo.carta, mt, n);
-                for (let k = desde; k < hasta; k++) {
+
+            /**
+             * ⚠️ ESTO DIBUJABA «HAY ALGO», NO «QUÉ HAY». Y EL QUÉ ES TODO EL DATO.
+             *
+             * El bucle de antes sólo usaba `z.items.length` y el índice: todas las
+             * vistas salían con el mismo material blanco. Nunca se leyó el
+             * CONTENIDO de `z.items`.
+             *
+             * Con los diez juegos de cartas no se notaba, porque ésos no pasan por
+             * aquí: `montarMesa` les da la mesa de casino, que pinta cada carta. Y
+             * ningún juego de tablero publicaba zonas… hasta que hizo falta un
+             * dado. Un `d6_5` y un `d6_2` salían IDÉNTICOS, una lámina en blanco:
+             * la mesa diría «hay un dado» y no cuál, que es lo único que importa.
+             * Verde y mintiendo — el modo de fallo de la casa.
+             *
+             * Lo encontró Fable al revisar la arquitectura, y se comprobó leyendo
+             * estas mismas líneas antes de tocarlas.
+             *
+             * Se agrupa por IDENTIDAD y sale un montón instanciado por cada una,
+             * con su cara dibujada. Para un dado son seis como mucho. Si algún día
+             * pasara por aquí una baraja entera serían cuarenta grupos, que sigue
+             * siendo poco — y esa mesa tiene su propio motor precisamente por eso.
+             */
+            const porId = new Map();
+            z.items.forEach((it, k) => {
+                const id = String(it?.id ?? it ?? '·');
+                if (!porId.has(id)) porId.set(id, []);
+                porId.get(id).push(k);
+            });
+
+            let fam = 0;
+            for (const [id, indices] of porId) {
+                const clave = `z${iz}:v${fam++}`;
+                const m = monton(clave, geo.carta, caraDe(id), indices.length);
+                for (const k of indices) {
+                    const s = sitios[k] ?? { x: 0, z: 0, rot: 0 };
+                    poner(m, s.x, alturaCarta * (k + 1) + 0.1, s.z, 1, s.rot ?? 0);
+                }
+                m.instanceMatrix.needsUpdate = true;
+                usados.add(clave);
+            }
+
+            // Las tapadas siguen siendo todas iguales, que es lo que son.
+            const ocultas = z.ocultas ?? 0;
+            if (ocultas > 0) {
+                const clave = `z${iz}:ocultas`;
+                const m = monton(clave, geo.carta, mat.oculta, ocultas);
+                for (let k = z.items.length; k < total; k++) {
                     const s = sitios[k] ?? { x: 0, z: 0, rot: 0 };
                     poner(m, s.x, alturaCarta * (k + 1) + 0.1, s.z, 1, s.rot ?? 0);
                 }

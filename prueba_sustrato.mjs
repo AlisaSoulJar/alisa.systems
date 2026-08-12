@@ -255,11 +255,34 @@ for (const juego of JUEGOS) {
     const sus = reglas.sustrato ? reglas.sustrato(q, 0)
                                 : obtenerSustrato(juego, reglas, q, reglas.estado(q));
     if (!sus?.zonas?.length) continue;
-    if (sus.rejilla) ambiguos.push(juego); else conMesa.push(juego);
+
+    /**
+     * ⚠️ ZONAS MÁS REJILLA NO ES UN FALLO: ES UN JUEGO CON TABLERO Y COSAS ENCIMA.
+     *
+     * Esto marcaba en rojo a cualquiera que publicara las dos, con el argumento de
+     * que `montarMesa` le daría el motor de tablero y su mesa de casino saldría mal
+     * en silencio. El argumento sólo vale si el juego ES de cartas: para un parchís
+     * —rejilla, fichas y un dado sobre la mesa— el motor de tablero es el CORRECTO,
+     * y la guarda lo suspendía estando perfectamente montado.
+     *
+     * Sobreaproximaba «tiene zonas» como «es de cartas». Lo distinguió Fable al
+     * revisar la arquitectura, y el arreglo es suyo: mirar si los items de la zona
+     * son CARTAS DE LA BIBLIOTECA. Eso no hay que declararlo en ninguna lista nueva
+     * —los juegos de cartas ya publican `biblioteca`, que es el dato que
+     * `prueba_biblioteca.mjs` usa para saber que leen el catálogo— así que un
+     * `d6_5` pasa y una brisca que ganara una rejilla sigue cayendo.
+     *
+     * Y el riesgo original tampoco queda descubierto: si brisca perdiera su mesa de
+     * casino, `SUELO_MESA_CARTAS` baja y la prueba falla igual, aquí abajo.
+     */
+    const deBiblioteca = (reglas.estado(q).biblioteca ?? reglas.biblioteca) !== undefined;
+    if (sus.rejilla) { if (deBiblioteca) ambiguos.push(juego); }
+    else conMesa.push(juego);
 }
 if (ambiguos.length) {
-    mal(`${ambiguos.join(', ')}: reparte cartas Y publica rejilla, así que `
-      + '`montarMesa` elegiría el motor de tablero y la mesa saldría mal en silencio.');
+    mal(`${ambiguos.join(', ')}: reparte CARTAS DE LA BIBLIOTECA y además publica `
+      + 'rejilla, así que `montarMesa` elegiría el motor de tablero y su mesa de '
+      + 'casino saldría mal en silencio.');
 }
 if (conMesa.length < SUELO_MESA_CARTAS) {
     mal(`la mesa compartida sirve a ${conMesa.length} juegos y servía a ${SUELO_MESA_CARTAS}. `

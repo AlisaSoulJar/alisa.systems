@@ -117,6 +117,14 @@ const PROTOHUB = [
     // vale. Es el primer entorno donde se puede medir cuánto paga un agente por
     // no ser leído.
     { juego: 'remigio', titulo: 'Remigio', crear: 'crearRemigio' },
+    // Parchís es el primero con AZAR DENTRO DEL TURNO: no eliges la tirada,
+    // eliges qué haces con ella. Los treinta y uno anteriores reparten al empezar
+    // y a partir de ahí la suerte no vuelve a hablar; aquí habla cada turno, así
+    // que un agente bueno no es el que planea mejor sino el que planea sabiendo
+    // que va a salirle otra cosa. Es también el primero que usa las TRES
+    // estructuras del sustrato —rejilla, piezas y zonas— y la prueba de que un
+    // dado no necesitaba un motor propio.
+    { juego: 'parchis', titulo: 'Parchís', crear: 'crearParchis' },
 ];
 
 /** Entornos escritos a mano, cada uno con su propio módulo. */

@@ -184,5 +184,11 @@
     "propia": true,
     "titulo": "Remigio",
     "sillas": 2
+  },
+  "parchis": {
+    "pagina": "parchis.html",
+    "propia": true,
+    "titulo": "Parchis",
+    "sillas": 4
   }
 }
