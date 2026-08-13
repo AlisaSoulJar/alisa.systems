@@ -37,7 +37,7 @@
  */
 import { sustratoDe } from './protohub/sustrato.js';
 import { crearMarcas, VERDE, MORADO, ACIERTO } from './protohub/marcas.js';
-import { amueblar } from './protohub/habitacion.js';
+import { amueblar, ponerMesaDeVerdad } from './protohub/habitacion.js';
 import { pintarJugadas as pintarBotones } from './protohub/jugadas.js';
 import { volcarMesa, volcando, ponerBoton } from './protohub/render/volcar.js';
 
@@ -150,10 +150,14 @@ function encuadrar(motor) {
     if (motor.invitado) return;
 
     const estrecha = motor.esPantallaEstrecha();
-    const { mesa, canto, tapiz } = motor.piezasMesa ?? {};
-    if (mesa)  mesa.visible  = !estrecha;
-    if (canto) canto.visible = !estrecha;
-    if (tapiz) tapiz.visible = estrecha;
+    const { mesa, canto, tapiz, mueble } = motor.piezasMesa ?? {};
+    if (mesa)   mesa.visible   = !estrecha;
+    if (canto)  canto.visible  = !estrecha;
+    // El mueble es `Table.glb`, el mismo que las salas pocket. Se esconde en
+    // vertical por lo mismo que la mesa: ahí se juega sobre tapiz a pantalla
+    // completa, porque ver la mesa entera obliga a alejar hasta que no se lee.
+    if (mueble) mueble.visible = !estrecha;
+    if (tapiz)  tapiz.visible  = estrecha;
 
     // Girar el teléfono cambia qué se ve: en horizontal cabe la habitación, en
     // vertical no. Se quita y se pone de verdad —no se esconde— para que la
@@ -465,24 +469,82 @@ const engine = new SovereignCardEngine({
 
         // Fieltro. Ovalado, como el de póker: una mesa redonda hace que las
         // manos de arriba y abajo queden demasiado lejos en pantalla.
+        /**
+         * ⚠️ EL ÓVALO SE HACE ESCALANDO LA MESA, NO SU GEOMETRÍA. AQUÍ ESTABA EL
+         * «TAPETE HACE COSAS RARAS».
+         *
+         * Esto era `geo.scale(1, 1, 0.6)`: deformar los vértices del cilindro sin
+         * tocar sus NORMALES. La tapa de un cilindro de 64 lados es un abanico de 64
+         * triángulos que salen del centro, y con las normales torcidas cada uno
+         * recibe la luz de una manera. En la captura sale exactamente eso: cuñas
+         * verdes radiando desde el centro, unas claras y otras oscuras, como un
+         * abanico roto.
+         *
+         * Escalando el OBJETO, three calcula su matriz de normales y la luz vuelve a
+         * repartirse plana. Es el mismo óvalo, dicho donde no rompe nada.
+         *
+         * Lo reportó Oscar dos veces —en brisca y en entropy— y yo lo estuve
+         * buscando en la mesa, que era lo que él mencionaba. Estaba en una línea que
+         * lleva meses ahí, y sólo se ve MIRANDO la captura: ninguna medida lo
+         * detecta, porque el fieltro se pinta y ocupa lo que tiene que ocupar.
+         */
         const geo = new THREE.CylinderGeometry(10, 10, 0.4, 64);
-        geo.scale(1, 1, 0.6);
         const mesa = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
             color: 0x073b18, roughness: 0.9,
         }));
+        mesa.scale.z = 0.6;
         mesa.position.y = -0.2;
         mesa.receiveShadow = true;
         scene.add(mesa);
 
-        // Un canto de madera, que es lo que separa «mesa de casino» de «disco
-        // verde». Cuesta ocho líneas y se nota entero.
+        /**
+         * ⚠️ LA MESA ES LA MISMA QUE LA DE LA SALA DEL HUEVO.
+         *
+         * Aquí había un canto de madera hecho con un torus, con el comentario
+         * «cuesta ocho líneas y se nota entero». Se notaba, sí: Oscar lo reportó dos
+         * veces —en brisca y en entropy— con las mismas palabras, «el tapete se ve
+         * raro, ¿no debería ser una mesa como las de la sala del huevo?». Y remató
+         * lo que importa: «eso lo teníamos solucionado con las salas pocket».
+         *
+         * Lo teníamos. `Table.glb`, el mismo modelo que montan `room_pocket_blanco`
+         * y `room_sala_del_huevo`. El fieltro se queda —una carta blanca necesita el
+         * verde para leerse, y el óvalo está medido— y el modelo va debajo, que es
+         * lo que es una mesa de casino: madera y tapete.
+         *
+         * El canto de torus se conserva como RESPALDO y sólo si el modelo no llega:
+         * un fichero que no carga no puede dejar la mesa flotando en el vacío.
+         */
         const canto = new THREE.Mesh(
             new THREE.TorusGeometry(10.05, 0.42, 12, 80),
             new THREE.MeshStandardMaterial({ color: 0x3a2418, roughness: 0.6, metalness: 0.05 }));
         canto.rotation.x = Math.PI / 2;
         canto.scale.set(1, 0.6, 1);
         canto.position.y = -0.15;
+        canto.visible = false;
         scene.add(canto);
+
+        // El modelo tarda en llegar, así que se registra cuando llega y se le pide
+        // a `encuadrar` que vuelva a decidir qué se ve — es quien manda en eso, y
+        // poner `visible` a mano aquí duraría hasta el primer cambio de tamaño.
+        /**
+         * ⚠️ LA TAPA VA POR DEBAJO DEL FIELTRO, NO A SU ALTURA.
+         *
+         * La puse a -0,15 y el fieltro ocupa de -0,4 a 0: la tapa quedaba DENTRO, y
+         * las dos superficies se peleaban píxel a píxel. En la captura salían unas
+         * cuñas verdes radiando desde el centro, como un abanico roto.
+         *
+         * Y eso es literalmente lo que Oscar reportó dos veces —«el tapete hace
+         * cosas raras»— antes de que yo tocara nada: el fieltro ya se peleaba con
+         * algo. Poner la mesa a su misma altura no lo habría causado; lo habría
+         * duplicado.
+         *
+         * -0,45 la deja justo debajo, tocando y sin solaparse.
+         */
+        ponerMesaDeVerdad(scene, { ancho: 21, largo: 13, y: -0.45 }).then((m) => {
+            if (m) this.piezasMesa.mueble = m;
+            else this.piezasMesa.canto = canto;   // sin modelo, vuelve el canto
+            encuadrar(this);
+        }).catch(() => { this.piezasMesa.canto = canto; encuadrar(this); });
 
         /**
          * ⚠️ Y EN UN MÓVIL, TAPIZ A PANTALLA COMPLETA: NADA DE MESA.
@@ -508,7 +570,10 @@ const engine = new SovereignCardEngine({
         tapiz.receiveShadow = true;
         scene.add(tapiz);
 
-        this.piezasMesa = { mesa, canto, tapiz };
+        // `canto` NO entra aquí de salida: es el respaldo, y sólo se registra si el
+        // modelo de mesa no llega. Si entrara, `encuadrar` lo haría visible en
+        // escritorio y se vería el torus atravesando la mesa buena.
+        this.piezasMesa = { mesa, tapiz };
 
         /**
          * ⚠️ LA MESA, DENTRO DE UN SITIO.

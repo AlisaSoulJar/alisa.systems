@@ -184,6 +184,34 @@ class SovereignCardEngine {
         const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
         dirLight.position.set(5, 15, 5);
         dirLight.castShadow = true;
+
+        /**
+         * ⚠️ AQUÍ ESTABA EL «EL TAPETE HACE COSAS RARAS», Y LO REPORTÓ DOS VECES.
+         *
+         * `castShadow = true` y nada más. Una luz direccional en three trae por
+         * defecto una cámara de sombra de ±5 unidades y un mapa de 512 píxeles. El
+         * fieltro de esta mesa mide **20 de ancho**: se sale del encuadre por los
+         * cuatro lados, y lo que queda dentro se resuelve con cuatro píxeles por
+         * unidad. El resultado es acné de sombra — la superficie se sombrea a sí
+         * misma en cuñas que salen del centro, como un abanico roto.
+         *
+         * Lo busqué primero en la mesa, que es lo que Oscar mencionaba, y luego en
+         * la geometría del fieltro. No era ninguna de las dos: era una luz que
+         * llevaba meses proyectando sobre un mueble que no le cabía.
+         *
+         * ⚠️ Y NO LO DETECTA NINGUNA MEDIDA. El fieltro se pinta, ocupa lo que
+         * tiene que ocupar y el laboratorio le da 92,9% de pintado. Sólo se ve
+         * MIRANDO la captura — que es exactamente para lo que se guardan.
+         */
+        dirLight.shadow.mapSize.set(2048, 2048);
+        const cs = dirLight.shadow.camera;
+        cs.left = -14; cs.right = 14; cs.top = 14; cs.bottom = -14;
+        cs.near = 1; cs.far = 45;
+        cs.updateProjectionMatrix();
+        // `normalBias` y no `bias`: separa la muestra siguiendo la normal de la
+        // superficie, así que corrige el acné sin despegar las sombras de las
+        // cartas, que es lo que pasa al subir el `bias` a secas.
+        dirLight.shadow.normalBias = 0.06;
         this.scene.add(dirLight);
         this.scene.add(new THREE.AmbientLight(0xffffff, 0.4));
 
