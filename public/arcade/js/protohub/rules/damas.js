@@ -49,9 +49,51 @@ function tableroInicial() {
 }
 
 /** Direcciones en las que puede AVANZAR una pieza (sin capturar). */
-function dirsDe(pieza) {
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  LAS NORMAS, COMO VARIABLES
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Las damas no son un juego: son una familia. La anglosajona, la española y la
+ * internacional se diferencian en dos cosas, y las dos se pueden decir con un
+ * booleano:
+ *
+ *     damaVuela      la dama recorre la diagonal entera, o sólo una casilla
+ *     peonComeAtras  el peón puede capturar hacia atrás, o sólo hacia delante
+ *
+ *     anglosajona    false / false     (lo que había, y sigue siendo el defecto)
+ *     española       true  / false
+ *     internacional  true  / true
+ *
+ * Se dejan como DOS VARIABLES y no como una lista de tres nombres a propósito: así
+ * la cuarta combinación existe sin que nadie la escriba, y añadir una norma nueva no
+ * obliga a reescribir la tabla de variantes. Una lista de nombres es otra lista
+ * paralela que se separa, y en esta casa ya sabemos cómo acaba eso.
+ *
+ * ⚠️ Y LA NORMA VIAJA EN EL RECIBO. ESTO NO ES OPCIONAL.
+ *
+ * Aquí una partida se verifica volviéndola a jugar con `{juego, semilla, jugadas}`.
+ * En cuanto las reglas dependen de una variable, esos tres datos DEJAN DE BASTAR:
+ * la misma lista de jugadas es legal con una norma e ilegal con otra. Sin la norma
+ * dentro, el verificador tumbaría a jugadores honrados y dejaría pasar tramposos,
+ * las dos cosas a la vez y en silencio.
+ *
+ * Por eso `nuevaPartida` guarda las normas en la partida y `estado()` las publica.
+ */
+export const NORMAS = { damaVuela: false, peonComeAtras: false };
+
+const normasDe = (o = {}) => ({ ...NORMAS, ...o });
+
+/** Las diagonales por las que puede ir esta pieza. */
+function dirsDe(pieza, n = NORMAS) {
     if (esDama(pieza)) return [[-1,-1],[-1,1],[1,-1],[1,1]];
     return esBlanca(pieza) ? [[-1,-1],[-1,1]] : [[1,-1],[1,1]];
+}
+
+/** Por dónde puede CAPTURAR. Con `peonComeAtras`, el peón también hacia atrás. */
+function dirsCaptura(pieza, n = NORMAS) {
+    if (esDama(pieza) || n.peonComeAtras) return [[-1,-1],[-1,1],[1,-1],[1,1]];
+    return dirsDe(pieza, n);
 }
 
 /**
@@ -61,54 +103,83 @@ function dirsDe(pieza) {
  * Se explora en profundidad porque una captura puede encadenar varias, y en
  * damas **hay que seguir comiendo mientras se pueda**.
  */
-function capturasDesde(t, f, c, pieza, visitadas = []) {
+function capturasDesde(t, f, c, pieza, n = NORMAS, visitadas = []) {
     const rutas = [];
-    // Al capturar, incluso el peón puede hacerlo en las cuatro diagonales en
-    // muchas reglas; aquí se mantiene la restricción del peón (hacia delante),
-    // que es la variante más extendida en el ajedrez de damas anglosajón.
-    for (const [df, dc] of dirsDe(pieza)) {
-        const mf = f + df, mc = c + dc;            // casilla del rival
-        const df2 = f + 2 * df, dc2 = c + 2 * dc;  // casilla de aterrizaje
-        if (!dentro(df2, dc2)) continue;
+    const vuela = n.damaVuela && esDama(pieza);
+
+    for (const [df, dc] of dirsCaptura(pieza, n)) {
+        /**
+         * Con `damaVuela`, la dama se acerca por la diagonal hasta encontrar a
+         * alguien: se avanza por casillas vacías y la primera pieza que aparece es
+         * la candidata. Sin esa norma sólo se mira la casilla de al lado, que es
+         * exactamente lo que hacía antes.
+         */
+        let mf = f + df, mc = c + dc;
+        if (vuela) {
+            while (dentro(mf, mc) && !t[mf][mc]) { mf += df; mc += dc; }
+        }
+        if (!dentro(mf, mc)) continue;
         const victima = t[mf][mc];
         if (!victima || mismoBando(victima, pieza)) continue;
-        if (t[df2][dc2]) continue;                 // el aterrizaje debe estar libre
         if (visitadas.some(([vf, vc]) => vf === mf && vc === mc)) continue;  // no recomer
 
-        // Simular el salto para buscar continuaciones.
-        const guardada = t[mf][mc];
-        t[mf][mc] = null; t[f][c] = null; t[df2][dc2] = pieza;
-        const sigue = capturasDesde(t, df2, dc2, pieza, [...visitadas, [mf, mc]]);
-        t[df2][dc2] = null; t[f][c] = pieza; t[mf][mc] = guardada;
+        /**
+         * Y aterriza en CUALQUIER casilla libre pasada la víctima, no sólo en la de
+         * justo detrás. Ésa es la mitad que hace peligrosa a una dama voladora: la
+         * casilla de aterrizaje se elige, y desde cada una sale una cadena distinta.
+         */
+        for (let sf = mf + df, sc = mc + dc; dentro(sf, sc) && !t[sf][sc]; sf += df, sc += dc) {
+            const guardada = t[mf][mc];
+            t[mf][mc] = null; t[f][c] = null; t[sf][sc] = pieza;
+            const sigue = capturasDesde(t, sf, sc, pieza, n, [...visitadas, [mf, mc]]);
+            t[sf][sc] = null; t[f][c] = pieza; t[mf][mc] = guardada;
 
-        if (sigue.length) {
-            for (const r of sigue) rutas.push([[df2, dc2], ...r]);
-        } else {
-            rutas.push([[df2, dc2]]);
+            if (sigue.length) {
+                for (const r of sigue) rutas.push([[sf, sc], ...r]);
+            } else {
+                rutas.push([[sf, sc]]);
+            }
+            if (!vuela) break;   // sin vuelo sólo existe el aterrizaje inmediato
         }
     }
     return rutas;
 }
 
-function jugadasDe(t, blancas) {
+/**
+ * Las jugadas, diciendo además SI SON CAPTURAS.
+ *
+ * ⚠️ Hacía falta separarlo. `esCaptura` adivinaba mirando la distancia —un salto
+ * mueve dos columnas—, y eso deja de valer en cuanto la dama vuela: ahí un simple
+ * avance puede recorrer cinco casillas. Adivinar la naturaleza de una jugada desde
+ * su nombre funcionaba por casualidad, y la casualidad se acaba al añadir una norma.
+ */
+function jugadasConTipo(t, blancas, n = NORMAS) {
     const capturas = [], simples = [];
     for (let f = 0; f < 8; f++) {
         for (let c = 0; c < 8; c++) {
             const p = t[f][c];
             if (!p || esBlanca(p) !== blancas) continue;
 
-            for (const ruta of capturasDesde(t, f, c, p)) {
+            for (const ruta of capturasDesde(t, f, c, p, n)) {
                 capturas.push(aCasilla(f, c) + ruta.map(([rf, rc]) => aCasilla(rf, rc)).join(''));
             }
-            for (const [df, dc] of dirsDe(p)) {
-                const nf = f + df, nc = c + dc;
-                if (dentro(nf, nc) && !t[nf][nc]) simples.push(aCasilla(f, c) + aCasilla(nf, nc));
+            const vuela = n.damaVuela && esDama(p);
+            for (const [df, dc] of dirsDe(p, n)) {
+                // La dama voladora se desliza hasta que algo la para.
+                for (let nf = f + df, nc = c + dc; dentro(nf, nc) && !t[nf][nc]; nf += df, nc += dc) {
+                    simples.push(aCasilla(f, c) + aCasilla(nf, nc));
+                    if (!vuela) break;
+                }
             }
         }
     }
     // COMER ES OBLIGATORIO: si hay capturas, las simples no existen.
-    return capturas.length ? capturas : simples;
+    return capturas.length
+        ? { movs: capturas, sonCapturas: true }
+        : { movs: simples, sonCapturas: false };
 }
+
+function jugadasDe(t, blancas, n = NORMAS) { return jugadasConTipo(t, blancas, n).movs; }
 
 function haciaFEN(p) {
     const filas = p.tablero.map(fila => {
@@ -162,16 +233,38 @@ const marcadorBlancas = (t, ganador) => {
     return fin + material;
 };
 
+/**
+ * Unas damas con las normas que se le digan.
+ *
+ * ⚠️ LAS NORMAS SE GUARDAN EN LA PARTIDA, NO EN EL MÓDULO.
+ *
+ * Podrían quedarse aquí, en el cierre de la fábrica, y sería más corto. Pero
+ * entonces la partida no sabría con qué normas nació, y el recibo tampoco: para
+ * volver a jugarla habría que acordarse por fuera de con qué se creó. Guardadas
+ * dentro, `estado()` las publica y el recibo se las lleva puestas.
+ */
+export function crearDamas(opts = {}) {
+    const n = normasDe(opts.normas ?? opts);
+    return { ...damas, nuevaPartida: (o = {}) => damas.nuevaPartida({ ...o, normas: n }) };
+}
+
 export const damas = {
     id: 'checkers',
     nombre: 'Damas',
 
-    nuevaPartida() {
-        return { tablero: tableroInicial(), blancasJuegan: true, historial: [] };
+    nuevaPartida(opts = {}) {
+        return {
+            tablero: tableroInicial(),
+            blancasJuegan: true,
+            historial: [],
+            // Con qué normas nació esta partida. Todo lo demás las lee de aquí.
+            normas: normasDe(opts.normas),
+        };
     },
 
     estado(p) {
-        const movs = jugadasDe(p.tablero, p.blancasJuegan);
+        const n = normasDe(p.normas);
+        const { movs, sonCapturas } = jugadasConTipo(p.tablero, p.blancasJuegan, n);
         const { w, b } = cuenta(p.tablero);
         const fin = movs.length === 0 || w === 0 || b === 0;
         // Pierde quien no puede mover: gana el que TIENE el turno siguiente.
@@ -191,16 +284,23 @@ export const damas = {
             //
             // OJO: la primera versión miraba `movs[0].length > 4`, y una captura
             // simple ("c3e5") mide exactamente lo mismo que un avance ("a3b4"),
-            // así que el aviso salía en falso justo cuando más falta hacía.
-            // Una captura se reconoce porque SALTA: dos columnas de distancia.
-            captura_obligada: esCaptura(movs[0]),
+            // así que el aviso salía en falso justo cuando más falta hacía. La
+            // segunda lo adivinaba por la distancia —un salto mueve dos columnas—
+            // y eso se rompe con la dama voladora, donde un avance simple recorre
+            // media diagonal. Ahora lo dice quien lo sabe: el generador.
+            captura_obligada: sonCapturas,
+            // Las normas con las que se juega ESTA partida. Van en el estado para
+            // que viajen en el recibo: sin ellas, la misma lista de jugadas es
+            // legal con unas e ilegal con otras, y el verificador se vuelve un
+            // sorteo.
+            normas: n,
             score: marcadorBlancas(p.tablero, fin ? ganador : null),
             puntos: marcadorBlancas(p.tablero, fin ? ganador : null),
         };
     },
 
     mover(p, jugada) {
-        if (!jugadasDe(p.tablero, p.blancasJuegan).includes(jugada)) return false;
+        if (!jugadasDe(p.tablero, p.blancasJuegan, normasDe(p.normas)).includes(jugada)) return false;
 
         const pasos = jugada.match(/[a-h][1-8]/g);
         const t = p.tablero;
@@ -253,7 +353,7 @@ export const damas = {
      * no por lo larga que sea la cadena.
      */
     sugerencia(p) {
-        const movs = jugadasDe(p.tablero, p.blancasJuegan);
+        const movs = jugadasDe(p.tablero, p.blancasJuegan, normasDe(p.normas));
         if (!movs.length) return null;
         let mejor = movs[0], mejorPuntos = -Infinity;
         for (const m of movs) {
@@ -279,7 +379,7 @@ export const damas = {
             // verdad, y de paso es la lección del propio juego: en damas la
             // codicia se paga.
             if (damas.mover(p, m)) {
-                const réplicas = jugadasDe(p.tablero, p.blancasJuegan);
+                const réplicas = jugadasDe(p.tablero, p.blancasJuegan, normasDe(p.normas));
                 if (réplicas.length && esCaptura(réplicas[0])) {
                     const saltos = réplicas[0].match(/[a-h][1-8]/g).length - 1;
                     puntos -= 10 * saltos;

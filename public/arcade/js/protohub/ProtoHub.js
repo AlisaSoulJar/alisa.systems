@@ -82,6 +82,21 @@ export class ProtoHub {
             juego: juegoId,
             semilla: g.semilla,
             jugadas: [...g.jugadas],
+            /**
+             * ⚠️ LAS NORMAS, SI EL JUEGO TIENE NORMAS VARIABLES.
+             *
+             * Damas es el primero: `damaVuela` y `peonComeAtras`. Con una variable
+             * de por medio, `{juego, semilla, jugadas}` deja de identificar una
+             * partida — la misma lista es legal con unas normas e ilegal con otras.
+             * Medido: sin esto, tres de cada cuatro partidas cruzadas se validaban
+             * con normas ajenas, y el verificador daba por buena una partida que
+             * nunca ocurrió así.
+             *
+             * Va aquí y no en el llamador: el recibo tiene que bastarse solo, que es
+             * toda su gracia. Los juegos que no publican `normas` no llevan el campo
+             * y nada cambia para ellos.
+             */
+            ...(estado.normas ? { normas: estado.normas } : {}),
             puntos: estado.puntos ?? estado.score ?? null,
             terminada: !!estado.is_game_over,
             reproducible: g.semilla !== null && g.semilla !== undefined,

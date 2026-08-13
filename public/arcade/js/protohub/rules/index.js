@@ -33,7 +33,9 @@ export const REGLAS = {
     ajedrez:  () => import('./ajedrez.js').then(m => m.ajedrez),
     go:       () => import('./go.js').then(m => m.go),
     reversi:  () => import('./reversi.js').then(m => m.reversi),
-    damas:    () => import('./damas.js').then(m => m.damas),
+    // ⚠️ Damas recibe OPCIONES: es el primer juego con normas variables
+    // (`damaVuela`, `peonComeAtras`). Sin opciones da exactamente lo de siempre.
+    damas:    (o) => import('./damas.js').then(m => m.crearDamas(o ?? {})),
     xiangqi:  () => import('./xiangqi.js').then(m => m.xiangqi),
     mancala:  () => import('./mancala.js').then(m => m.mancala),
     snake:    () => import('./snake.js').then(m => m.snake),

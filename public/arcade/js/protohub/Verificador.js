@@ -60,6 +60,37 @@ export function verificar(reglas, partida, opts = {}) {
         return no(`demasiadas jugadas (${jugadas.length} > ${tope})`);
     }
 
+    /**
+     * ⚠️ SI LA PARTIDA DECLARA NORMAS, TIENEN QUE SER LAS DE ESTAS REGLAS.
+     *
+     * Damas es el primer juego con normas variables (`damaVuela`,
+     * `peonComeAtras`), y en cuanto existe una variable el recibo
+     * `{juego, semilla, jugadas}` DEJA DE BASTAR: la misma lista de jugadas puede
+     * ser legal con unas normas e ilegal con otras.
+     *
+     * No es teórico. Medido el 13-08-2026 jugando las cuatro combinaciones y
+     * cruzándolas todas contra todas: TRES partidas se validaban con normas que no
+     * eran las suyas. O sea que el verificador daba por buena una partida que nunca
+     * ocurrió así — y en el sentido peligroso, porque las jugadas de la variante
+     * corta son un subconjunto de la larga.
+     *
+     * Se comprueba aquí y no en cada llamador: es el único sitio por el que pasan
+     * todos, y dejarlo a que cada uno se acuerde de cargar las reglas correctas es
+     * exactamente cómo se pierden estas cosas.
+     */
+    if (partida.normas) {
+        let suyas = null;
+        try { suyas = reglas.estado(reglas.nuevaPartida({ semilla: 0, seed: 0 }))?.normas ?? null; }
+        catch { /* si no las publica, no hay nada que comparar */ }
+        if (suyas) {
+            const a = JSON.stringify(Object.entries(partida.normas).sort());
+            const b = JSON.stringify(Object.entries(suyas).sort());
+            if (a !== b) {
+                return no(`la partida se jugó con otras normas (${a}), y estas reglas son ${b}`);
+            }
+        }
+    }
+
     let p;
     try {
         // ⚠️ La semilla se pasa con LOS DOS NOMBRES, y no es por gusto: en el
