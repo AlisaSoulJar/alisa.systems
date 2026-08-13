@@ -438,10 +438,37 @@ for (const juego of juegos) {
             f.llega = await jugarComoUnHumano(page, a.lista);
             if (!f.llega) f.mal.push(`${a.legales} jugadas legales y ninguna forma de mandarlas`);
             else {
-                const img2 = leerPNG(await page.screenshot({ type: 'png' }));
+                /**
+                 * ⚠️ SE ESPERA A QUE LA PANTALLA PUEDA HABER CAMBIADO. AQUÍ ESTABA
+                 * EL TEMBLOR DEL LABORATORIO.
+                 *
+                 * Esto tomaba la segunda foto INMEDIATAMENTE después de jugar. Pero
+                 * lo que se ve no cambia al mandar la jugada: cambia cuando el
+                 * sondeo trae el estado nuevo —cada segundo— y cuando la animación
+                 * termina —medio segundo más—. Así que la foto salía a veces antes y
+                 * a veces después, según cómo fuera de cargada la máquina.
+                 *
+                 * De ahí el sintoma: 34/35 con un juego DISTINTO cada tanda —
+                 * parchís, tute, pradera— y 35/35 al repetir, siempre con el mismo
+                 * porcentaje de cambio de siempre. Tres veces lo di por
+                 * inestabilidad y seguí adelante; me apoyé en este verde unas quince
+                 * veces en un día.
+                 *
+                 * Ahora se mira hasta que cambia o hasta que se acaba el plazo. Si
+                 * cambia, el número es el de verdad y llega antes; si no cambia en
+                 * cuatro segundos, es que no cambia — y eso ya es un hallazgo, no un
+                 * accidente de reloj.
+                 */
+                const PLAZO = 4000, PASO = 400;
+                let img2 = leerPNG(await page.screenshot({ type: 'png' }));
                 f.cambio = +diferencia(img1, img2).toFixed(1);
+                for (let t = 0; t < PLAZO && f.cambio < SUELO_CAMBIO; t += PASO) {
+                    await page.waitForTimeout(PASO);
+                    img2 = leerPNG(await page.screenshot({ type: 'png' }));
+                    f.cambio = +diferencia(img1, img2).toFixed(1);
+                }
                 if (f.cambio < SUELO_CAMBIO) {
-                    f.mal.push(`se juega y la imagen no cambia (${f.cambio}%)`);
+                    f.mal.push(`se juega y la imagen no cambia en ${PLAZO / 1000}s (${f.cambio}%)`);
                 }
             }
         }
