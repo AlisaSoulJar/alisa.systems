@@ -28,6 +28,46 @@
 .jugadas button { pointer-events: auto; }
 
 /**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  EL PANEL SE COMÍA LOS CLICS DEL TABLERO, Y EN ESCRITORIO TAMBIÉN
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ⚠️ ESTO ES LO QUE HACÍA QUE «LAS DAMAS NO SE PUEDAN JUGAR».
+ *
+ * Estuve un buen rato convencida de que su manejador estaba roto. No lo estaba.
+ * Trazándolo por dentro salió que del par de clics necesarios para mover una pieza
+ * SOLO LLEGABA EL PRIMERO. Medido con `elementFromPoint` en una ventana de 900x800:
+ *
+ *     bajo el 1er clic (a3): LIENZO      -> la pieza se selecciona, aparece su marca
+ *     bajo el 2o  clic (b4): PANEL       -> no llega al tablero, no pasa nada
+ *
+ * El panel mide 374x552 y flota sobre el lienzo. Su fondo es traslúcido, así que
+ * VES el tablero por debajo, pulsas donde lo ves, y no ocurre nada. Ni un error.
+ * En móvil ya lo arreglamos plegándolo; en escritorio nadie lo había mirado porque
+ * ahí «hay sitio de sobra» — y el sitio sobra para VER, no para PULSAR.
+ *
+ * Se arregla dejando pasar el clic por donde el panel no tiene nada que hacer con
+ * él. El patrón ya estaba inventado aquí al lado: `.overlay` lleva
+ * `pointer-events: none` y cada cosa que sí se pulsa lo reactiva. El panel se
+ * apuntaba entero como pulsable, y la mayor parte de él es texto que no responde a
+ * nada: turno, marcador, cuántas cartas quedan.
+ *
+ * Así que el panel deja pasar, y vuelven a coger el clic sólo las cosas que hacen
+ * algo: la cabecera (que pliega), los botones, y los campos donde se escribe.
+ */
+.hud-panel { pointer-events: none; }
+
+.hud-panel .hud-header,
+.hud-panel button,
+.hud-panel input,
+.hud-panel select,
+.hud-panel textarea,
+.hud-panel a,
+.hud-panel .mesa-jugada,
+.hud-panel #mesa-jugadas,
+.hud-panel .mesa-pista { pointer-events: auto; }
+
+/**
  * ⚠️ EL BOTÓN DE VOLCAR LA MESA NO SE PARECE A UNA JUGADA, Y ES A PROPÓSITO.
  *
  *     (╯°□°)╯︵ ┻━┻
