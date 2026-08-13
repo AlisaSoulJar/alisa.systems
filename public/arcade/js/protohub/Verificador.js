@@ -104,8 +104,27 @@ export function verificar(reglas, partida, opts = {}) {
         // empezada— la comprobación pasaba y firmaba como buena una partida que
         // ni siquiera era la misma. Un verificador que da falsos verdes es peor
         // que no tener verificador, porque encima da confianza.
+        /**
+         * ⚠️ NO SE ESPARCE `partida.config`. ERA UN AGUJERO ABIERTO.
+         *
+         * Esto hacía `...(partida.config ?? {})`: cualquier cosa que viniera en el
+         * recibo entraba tal cual en `nuevaPartida`. El ProtoHub no emite ese campo
+         * nunca, así que no rompía nada — pero este verificador lo honraba, y
+         * `/api/verificar` es público. Quien mandara un `config` que ablandara el
+         * juego —menos fantasmas, un tope más corto, un tablero más pequeño— se
+         * llevaba un «válida» re-simulado en un juego que no es el de la tabla.
+         *
+         * Lo encontró Fable revisando, y es la misma familia que el fallo de las
+         * normas: un grado de libertad que cambia las reglas y que nadie audita.
+         * La diferencia es que las normas SÍ hacen falta y por eso viajan
+         * declaradas y comprobadas; `config` no hacía falta para nada.
+         *
+         * Si algún día un juego necesita otro parámetro, se hace como las normas:
+         * se declara en las reglas, viaja en el recibo, y se comprueba que las
+         * reglas que lo juzgan son las que dice. Nunca esparciendo lo que llegue.
+         */
         p = reglas.nuevaPartida({ seed: partida.semilla, semilla: partida.semilla,
-                                  ...(partida.config ?? {}) });
+                                  ...(partida.normas ? { normas: partida.normas } : {}) });
     } catch (e) {
         return no(`no se pudo montar la partida: ${e.message}`);
     }
