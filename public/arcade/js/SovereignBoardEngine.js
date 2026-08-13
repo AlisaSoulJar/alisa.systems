@@ -469,6 +469,18 @@ class SovereignBoardEngine {
                             <button id="btnRestart" title="Reset board" style="flex:1; color:#FF4081;">⟳ RESTART</button>
                         </div>
                     </div>
+                    <!--
+                      LA TIRA DE JUGADAS VA FUERA DEL PLEGADO: hermana de
+                      hud-content y no hija suya. Plegar el panel le pone
+                      max-height 0 con overflow hidden, y en pantalla estrecha
+                      arranca plegado: con los botones dentro se vería el tablero
+                      entero y no habría forma de jugar. Lo encontró un betatester
+                      en un móvil de 276 px, y el mismo fallo estaba en las dos
+                      mesas genéricas. Ésta es la tercera vez.
+                      (Sin acentos graves aquí dentro: esto vive en una plantilla
+                      de texto y uno solo la parte en dos. Acaba de pasar.)
+                    -->
+                    <div id="mesa-jugadas" class="mesa-jugadas"></div>
                 </div>
             </div>
         </div>
@@ -534,6 +546,64 @@ class SovereignBoardEngine {
      * 27 pulgadas se llevaría la vista de teléfono según cuándo mirases. Sin
      * medida fiable se responde que no, que es lo que había antes.
      */
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  LAS JUGADAS, COMO BOTONES. LOS ONCE JUEGOS PROPIOS NO LOS TENÍAN.
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Haciendo de betatester: abrí las capturas del laboratorio una por una, que es
+     * lo que no hace nadie. Las mesas genéricas ofrecen sus jugadas como botones
+     * pulsables; los once con visualizador propio las enseñaban como UNA LÍNEA DE
+     * TEXTO GRIS, cortada a los cincuenta caracteres:
+     *
+     *     go       «a19, b19, c19, d19, e19, f19, g19, h19, i19, j...»   de 361
+     *     mancala  «0, 1, 2, 3, 4, 5»
+     *
+     * Y para jugar, una caja de texto que pone «Move (e.g. e2e4)» — en un juego
+     * cuyas jugadas son `a19`, y en otro cuyas jugadas son un dígito. Se podía
+     * jugar: escribiendo a mano y adivinando el formato.
+     *
+     * Con esto los once heredan la misma tira que las mesas genéricas, con la misma
+     * clase `.mesa-jugada` — porque son la MISMA cosa: la lista literal de
+     * `legal_moves`, la que ve un agente por la puerta de texto.
+     *
+     * ⚠️ SE CORTA A CINCUENTA, Y SE DICE CUÁNTAS FALTAN.
+     *
+     * Go empieza con 361 jugadas legales. Trescientos sesenta y un botones no son
+     * una ayuda, son un muro — y ahí además no hacen falta: go se juega tocando la
+     * intersección. La caja de texto sigue para el resto, y ahora al menos se ve el
+     * formato en los botones de al lado.
+     */
+    pintarJugadasPulsables() {
+        const caja = document.getElementById('mesa-jugadas');
+        if (!caja) return;
+        const movs = this.currentLegalMoves ?? [];
+        const TOPE = 50;
+
+        // Se compara con lo que ya hay para no rehacer el DOM en cada sondeo: el
+        // estado se consulta cada segundo, y recrear los botones bajo el dedo hace
+        // que un toque se pierda entre el `pointerdown` y el `pointerup`.
+        const firma = movs.slice(0, TOPE).join('');
+        if (caja.dataset.firma === firma) return;
+        caja.dataset.firma = firma;
+        caja.textContent = '';
+
+        for (const m of movs.slice(0, TOPE)) {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'mesa-jugada';
+            b.textContent = String(m);
+            b.addEventListener('click', () => this.sendMove(String(m)));
+            caja.appendChild(b);
+        }
+        if (movs.length > TOPE) {
+            const mas = document.createElement('span');
+            mas.className = 'mesa-jugadas-mas';
+            mas.textContent = `y ${movs.length - TOPE} más — escríbela o toca el tablero`;
+            caja.appendChild(mas);
+        }
+    }
+
     esPantallaEstrecha() {
         const w = window.innerWidth || document.documentElement?.clientWidth || 0;
         return w > 0 && w < 820;
@@ -620,6 +690,8 @@ class SovereignBoardEngine {
             checkEl.style.color = data.is_check ? "#e74c3c" : "#666";
             if (this.isGameOver) checkEl.style.color = "#FF4081";
         }
+
+        this.pintarJugadasPulsables();
 
         const movesEl = document.getElementById('ui-moves');
         if (movesEl) {
