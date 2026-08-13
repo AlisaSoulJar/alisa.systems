@@ -51,7 +51,7 @@ import { JUEGOS, TITULOS, cargarReglas } from './protohub/rules/index.js';
  * `prueba_version.mjs` comprueba que corresponde a lo que hay en disco y, si no,
  * dice el valor que toca. No hay que acordarse: hay que hacer caso a la prueba.
  */
-const VERSION = '6be65679';
+const VERSION = '613556dc';
 
 /** Lo que toda página de tablero necesitaba y repetía. En orden. */
 const ANDAMIO = [
@@ -111,10 +111,24 @@ const cargar = (src) => new Promise((listo, falla) => {
     document.head.appendChild(s);
 });
 
+/**
+ * ⚠️ LAS HOJAS DE ESTILO TAMBIÉN SE SELLAN. AQUÍ HABÍA UN AGUJERO.
+ *
+ * Todo el sistema de `?v=` existe para que un navegador no empareje una copia
+ * guardada con código nuevo. Los `.js` iban sellados desde el principio y el CSS
+ * no, o sea que la mitad del cuadro podía llegar vieja.
+ *
+ * No es teórico: hoy el arreglo de que el panel dejara pasar los clics del tablero
+ * vive ENTERO en `jugables.css`. Sin sello, quien ya hubiera abierto una mesa se
+ * quedaba con la hoja de antes y el arreglo no le llegaba nunca — y desde fuera
+ * todo verde, porque el despliegue sí subió el fichero.
+ */
 const hoja = (href) => {
     const l = document.createElement('link');
     l.rel = 'stylesheet';
-    l.href = href;
+    // El vendor queda fuera, con el mismo criterio que los scripts: no cambia con
+    // el proyecto y sellarlo sólo obligaría a redescargar las fuentes sin motivo.
+    l.href = href.startsWith('/vendor/') ? href : `${href}?v=${VERSION}`;
     document.head.appendChild(l);
 };
 

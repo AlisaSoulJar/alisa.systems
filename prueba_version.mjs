@@ -37,11 +37,35 @@ async function ficherosSellados() {
     return [...new Set([...sueltos, ...vis])].sort();
 }
 
+/**
+ * ⚠️ Y LAS HOJAS DE ESTILO, QUE FALTABAN.
+ *
+ * El resumen sólo miraba los `.js`, así que cambiar el CSS no subía la versión y el
+ * sello seguía siendo el mismo: los navegadores servían la hoja guardada. Salió el
+ * 13-08-2026, cuando el arreglo de que el panel dejara pasar los clics resultó vivir
+ * entero en `jugables.css` — desplegado, correcto, y sin llegar a quien ya había
+ * abierto una mesa.
+ *
+ * Una protección con un agujero del tamaño de una hoja de estilo protege de menos
+ * de lo que dice, y eso es peor que no tenerla, porque uno se fía.
+ */
+const CSS = new URL('./public/arcade/css/', import.meta.url);
+
+async function hojasSelladas() {
+    const hay = await readdir(CSS, { withFileTypes: true });
+    return hay.filter(e => e.isFile() && e.name.endsWith('.css')).map(e => e.name).sort();
+}
+
 const nombres = await ficherosSellados();
+const hojas = await hojasSelladas();
 const resumen = createHash('sha256');
 const faltan = [];
 for (const n of nombres) {
     try { resumen.update(n).update(await readFile(new URL(n, JS))); }
+    catch { faltan.push(n); }
+}
+for (const n of hojas) {
+    try { resumen.update(n).update(await readFile(new URL(n, CSS))); }
     catch { faltan.push(n); }
 }
 const esperado = resumen.digest('hex').slice(0, 8);
