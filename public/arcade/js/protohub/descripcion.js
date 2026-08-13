@@ -99,6 +99,57 @@ function normasEnPalabras(st) {
  * Las capas se pintan en orden: la última manda. Así el jugador tapa a la
  * comida, y la comida al suelo, sin condicionales.
  */
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  LO QUE ES CONFIGURACIÓN DE DIBUJO NO SE LE CUENTA A QUIEN NO VE
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * El barrido de abajo saca al texto cualquier campo del estado que no esté en la
+ * lista de maquinaria. Eso es lo correcto —un juego nuevo publica algo y sale solo,
+ * sin que nadie tenga que acordarse— pero arrastra lo que no debe. Entropy le manda
+ * hoy a un agente SIN OJOS:
+ *
+ *     palos: {"A":{"color":"#E6A817","simbolo":"◆"}, "V":{...}, "C":{...}}
+ *     valores: {"1":1,"2":2,"3":3,…,"12":12}
+ *     simbolos: {"JK":"🃏"}
+ *
+ * Colores hexadecimales, formas de glifo, y un mapa que dice que el 1 vale 1. Nada
+ * de eso ayuda a decidir una jugada, y todo se paga en tokens en CADA vuelta.
+ *
+ * ⚠️ SE FILTRA POR LA FORMA DEL DATO, NO POR UNA LISTA DE NOMBRES.
+ *
+ * Lo fácil sería `if (k === 'palos' || k === 'simbolos' || …)`. Y sería otra lista
+ * paralela: el día que un juego llame `pinturas` a lo mismo, vuelve a colarse, y el
+ * que la mantenga no se enterará. La configuración de dibujo se reconoce por cómo
+ * es —lleva colores o glifos dentro— y eso no cambia de nombre.
+ *
+ * Ojo con lo que NO se filtra, que es la mitad del criterio: la leyenda del mapa
+ * («# muro, o destino») sí se cuenta, porque sin ella el mapa es ilegible; el color
+ * de una carta de UNIT también, porque ahí el color ES la regla. Se quita lo que
+ * describe el PÍXEL, no lo que describe el juego.
+ */
+function esDeDibujo(v) {
+    if (typeof v !== 'object' || v === null) return false;
+    const s = JSON.stringify(v);
+
+    // Un color hexadecimal sólo existe para pintar.
+    if (/"#[0-9a-fA-F]{3,8}"/.test(s)) return true;
+
+    // Una tabla de glifos: claves cortas apuntando a un símbolo suelto.
+    const vals = Object.values(v);
+    if (vals.length && vals.every(x => typeof x === 'string' && [...x].length <= 2)) return true;
+
+    /**
+     * Un mapa identidad —`{"1":1,"2":2,…}`— no informa de nada: quien lee ya sabe
+     * que el 1 vale 1. Sale de una tabla de puntuación donde casi todas las cartas
+     * valen su número, y ocupa ciento veinte caracteres para decirlo.
+     */
+    const pares = Object.entries(v);
+    if (pares.length > 3 && pares.every(([k, x]) => String(k) === String(x))) return true;
+
+    return false;
+}
+
 function dibujarRejilla({ ancho, alto, capas, vacio = ' ' }) {
     if (!(ancho > 0 && alto > 0) || ancho > 60 || alto > 60) return null;
     const g = Array.from({ length: alto }, () => Array(ancho).fill(vacio));
@@ -329,6 +380,7 @@ function contarLaMesa(st, juego) {
     const extra = [];
     for (const [k, v] of Object.entries(st)) {
         if (MAQUINARIA.has(k) || v === null || v === undefined) continue;
+        if (esDeDibujo(v)) continue;
         if (typeof v === 'object') {
             const s = JSON.stringify(v);
             // Se recorta: un laberinto entero no cabe en un prompt y tampoco
