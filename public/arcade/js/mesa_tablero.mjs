@@ -102,6 +102,10 @@ const pintor = crearPintor3d(grupo, THREE);
 // hay forma de comprobar desde fuera qué está dibujado ni dónde, y las pruebas
 // acaban adivinando globales. Adivinar globales ya me costó una medición falsa hoy.
 window.ALISA_PINTOR = pintor;
+// Y la cámara, que es lo que hace falta para saber DÓNDE cae en pantalla una
+// casilla. Sin ella una prueba sólo puede tocar a ciegas — y tocar a ciegas ya me
+// ha dado hoy tres veredictos falsos seguidos.
+window.ALISA_CAMARA = camara;
 
 // ── El HUD ──────────────────────────────────────────────────────────────────
 const caja = document.getElementById('hud-container');
@@ -259,7 +263,47 @@ function enviarSiEsLegal(m) {
 
 
 /**
- * ⚠️ TOCAR UNA CASILLA NO SE HACE, Y NO ES PEREZA. LO ESCRIBÍ Y LO QUITÉ.
+ * ⚠️ TOCAR UNA CASILLA: SÓLO SI LA CASILLA DICE CÓMO SE LLAMA.
+ *
+ * La rejilla puede publicar `nombres`, un array paralelo a `celdas` con el nombre
+ * de la jugada de cada casilla (y `null` donde no se puede jugar). Flota es el
+ * primero que lo hace, y salió de un aviso de Oscar: «que el panel no tenga la
+ * misma forma que el tablero es un follón».
+ *
+ * Con eso el toque es exacto y no hay nada que adivinar. Sin eso —los otros
+ * catorce— no pasa nada al tocar, que es justo lo correcto: ver más abajo por qué
+ * adivinar el nombre de una casilla salía caro.
+ */
+function celdaDesde(ev, rej) {
+    const caja = render.domElement.getBoundingClientRect();
+    const raton = new THREE.Vector2(
+        ((ev.clientX - caja.left) / caja.width) * 2 - 1,
+        -((ev.clientY - caja.top) / caja.height) * 2 + 1,
+    );
+    const rayo = new THREE.Raycaster();
+    rayo.setFromCamera(raton, camara);
+    const punto = new THREE.Vector3();
+    if (!rayo.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), punto)) return null;
+    // El punto está en el mundo y la rejilla vive dentro del grupo, que esta mesa
+    // escala para que quepa. Sin este paso la casilla sale bien sólo con escala 1.
+    grupo.worldToLocal(punto);
+    const c = Math.round(punto.x + (rej.ancho - 1) / 2);
+    const f = Math.round(punto.z + (rej.alto - 1) / 2);
+    if (c < 0 || f < 0 || c >= rej.ancho || f >= rej.alto) return null;
+    return { c, f };
+}
+
+function alTocar(ev) {
+    const rej = hub.sustrato(juego)?.rejilla;
+    if (!rej?.nombres) return;
+    const p = celdaDesde(ev, rej);
+    if (!p) return;
+    const n = rej.nombres[p.f * rej.ancho + p.c];
+    if (n) enviarSiEsLegal(String(n));
+}
+
+/**
+ * ⚠️ Y NO SE ADIVINA. LO ESCRIBÍ ASÍ Y LO QUITÉ.
  *
  * De estos quince juegos sólo `flota` tiene jugadas que son casillas (`a1`, `b1`).
  * La idea era: tocas la casilla, se mira cómo se llamaría, y si ese nombre está en
@@ -293,6 +337,7 @@ window.ALISA_GESTOS.deslizarParaMoverse({
     camara,
     legales: () => legalesAhora,
     enviar: enviarSiEsLegal,
+    tocar: alTocar,
 });
 
 // ── Lo que se repinta ───────────────────────────────────────────────────────

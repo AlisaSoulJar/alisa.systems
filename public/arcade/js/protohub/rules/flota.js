@@ -97,7 +97,31 @@ export const flota = {
         for (let y = 0; y < LADO; y++) celdas[y * ancho + LADO] = 1;   // la separación
 
         return {
-            rejilla: { ancho, alto: LADO, celdas, niebla },
+            /**
+             * ⚠️ CADA CASILLA DICE CÓMO SE LLAMA. ESO ES LO QUE FALTABA.
+             *
+             * Oscar, desde el buzón: «que el panel no tenga la misma forma que el
+             * tablero es un follón; deberíamos crear dos matrices que se
+             * correspondan». Tiene razón, y el arreglo no es dibujar letras: es que
+             * la casilla SEPA su nombre, y entonces se puede tocar directamente y
+             * nadie tiene que traducir nada.
+             *
+             * Antes lo intenté al revés —deducir el nombre desde la mesa genérica,
+             * probando `a1` y `a8`— y lo quité, porque las dos formas de numerar
+             * salían legales a la vez: tocar la esquina habría mandado una jugada
+             * legal que puede no ser la señalada. Adivinar aquí no vale. El juego
+             * lo sabe; sólo había que dejarle decirlo.
+             *
+             * `null` donde no se puede disparar: la separación y tu propio mar.
+             * Así el que dibuja no tiene que saber que 17 son dos tableros de 8.
+             */
+            rejilla: {
+                ancho, alto: LADO, celdas, niebla,
+                nombres: Array.from({ length: ancho * LADO }, (_, i) => {
+                    const x = i % ancho, y = Math.floor(i / ancho);
+                    return x < LADO ? nombre(y * LADO + x) : null;
+                }),
+            },
             piezas, zonas: [],
             leyenda: { impacto: 'tocado por ti', barco: 'tu barco',
                        tocado: 'te lo han tocado', agua: 'te fallaron' },

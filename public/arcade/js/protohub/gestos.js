@@ -43,7 +43,7 @@ const MINIMO_GESTO = 24;
  * @param {(m: string) => void} cfg.enviar  qué hacer con la jugada elegida
  * @returns {() => void} para desengancharlo, si alguna vez hace falta
  */
-function deslizarParaMoverse({ lienzo, camara, legales, enviar }) {
+function deslizarParaMoverse({ lienzo, camara, legales, enviar, tocar }) {
     if (!lienzo || !camara) return () => {};
 
     /**
@@ -79,7 +79,13 @@ function deslizarParaMoverse({ lienzo, camara, legales, enviar }) {
         const inicio = desde;
         desde = null;
 
-        if (Math.hypot(ev.clientX - inicio.x, ev.clientY - inicio.y) < MINIMO_GESTO) return;
+        // Un toque corto no es un gesto. Se le pasa a quien sepa qué hacer con él
+        // —tocar una casilla, si la rejilla dice cómo se llama— y si no, se deja
+        // pasar para que siga sirviendo de arrastre a la cámara.
+        if (Math.hypot(ev.clientX - inicio.x, ev.clientY - inicio.y) < MINIMO_GESTO) {
+            tocar?.(ev);
+            return;
+        }
 
         /**
          * ⚠️ LA PANTALLA NO ESTÁ ALINEADA CON LA MESA: LA CÁMARA GIRA.
