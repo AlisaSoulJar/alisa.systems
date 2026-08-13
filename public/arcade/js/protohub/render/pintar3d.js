@@ -55,8 +55,24 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
     const material = (color, extra = {}) =>
         new THREE.MeshStandardMaterial({ color, roughness: 0.55, ...extra });
     const mat = {
-        sueloA: material(0xf2f4f7, { roughness: 0.9 }),
-        sueloB: material(0xd8dfe6, { roughness: 0.9 }),
+        /**
+         * ⚠️ EL DAMERO SE VE. ANTES ESTABA Y NO SE NOTABA.
+         *
+         * Este pintor lleva desde siempre alternando dos suelos —`(f + c) % 2`, más
+         * abajo— pero eran `0xf2f4f7` y `0xd8dfe6`: dos blancos separados por un 7%
+         * de luminosidad. Con la luz cenital de esta mesa el damero desaparecía y el
+         * tablero salía como una sábana blanca con rayas.
+         *
+         * Se vio en la captura de las damas recién portadas a esta mesa: sesenta y
+         * cuatro casillas blancas y las fichas flotando encima. Un tablero de damas
+         * SIN damero, que es lo primero que se mira para orientarse.
+         *
+         * No sobraba ninguna de las dos: estaban demasiado juntas. El oscuro baja a
+         * un gris azulado que contrasta con las fichas de los dos bandos —azul
+         * marino y rojo— sin competir con ninguna.
+         */
+        sueloA: material(0xeceff4, { roughness: 0.9 }),
+        sueloB: material(0x4a5a70, { roughness: 0.9 }),
         muro: material(0x39485c, { roughness: 0.85 }),
         carta: material(0xfdfdfd, { roughness: 0.45 }),
         oculta: material(0x8a5a9a, { roughness: 0.6 }),

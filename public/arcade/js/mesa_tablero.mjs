@@ -176,13 +176,52 @@ function encajar() {
     grupo.scale.setScalar(LADO / mayor);
 
     if (encuadrado) return;
-    const c = cajaReal(grupo).getCenter(new THREE.Vector3());
+    const caja = cajaReal(grupo);
+    const c = caja.getCenter(new THREE.Vector3());
     controles.target.copy(c);
-    // Se mira desde arriba y de frente. Los tableros son planos: desde el borde
-    // no se ve un tablero, se ve su canto.
-    const d = LADO * 1.15;
-    camara.position.set(c.x, c.y + d * Math.sin(INCLINACION), c.z + d * Math.cos(INCLINACION));
-    camara.lookAt(c);
+
+    /**
+     * ⚠️ LA CÁMARA SE APARTA HASTA QUE EL TABLERO CABE. NO A UNA DISTANCIA FIJA.
+     *
+     * Esto era `d = LADO * 1.15` y ya está: un número que salió de mirar UN tablero
+     * en UNA ventana. El resultado, medido abriendo las capturas, es que el tablero
+     * se sale por abajo en fagocito, mancala, damas y reversi — cuatro juegos, y los
+     * dos últimos porque acabo de traerlos a esta mesa.
+     *
+     * No se arregla con un número mejor: una ventana apaisada y otra estrecha no
+     * admiten la misma distancia, y un sokoban de 5x3 no encuadra como un go de
+     * 19x19 aunque los dos se normalicen. Así que no se calcula: se COMPRUEBA.
+     *
+     * Se proyectan las ocho esquinas de la caja a la pantalla y, si alguna se sale,
+     * se aparta la cámara y se vuelve a mirar. Doce intentos y un margen del 8%
+     * bastan para cualquiera de los quince. Es la misma idea que llevo usando todo
+     * el día en las pruebas —mirar el resultado en vez de fiarme de la cuenta—,
+     * sólo que aquí dentro.
+     */
+    const esquinas = [];
+    for (const x of [caja.min.x, caja.max.x])
+        for (const y of [caja.min.y, caja.max.y])
+            for (const z of [caja.min.z, caja.max.z]) esquinas.push(new THREE.Vector3(x, y, z));
+
+    const cabe = () => {
+        camara.updateMatrixWorld();
+        camara.updateProjectionMatrix();
+        return esquinas.every((e) => {
+            const v = e.clone().project(camara);
+            return Math.abs(v.x) < 0.92 && Math.abs(v.y) < 0.92;
+        });
+    };
+
+    let d = LADO * 1.15;
+    for (let i = 0; i < 12; i++) {
+        camara.position.set(c.x, c.y + d * Math.sin(INCLINACION), c.z + d * Math.cos(INCLINACION));
+        camara.lookAt(c);
+        if (cabe()) break;
+        d *= 1.12;
+    }
+    // Y el tope de alejarse sube con la distancia que ha hecho falta: si no, los
+    // controles devolverían la cámara adentro en cuanto alguien la tocara.
+    if (controles) controles.maxDistance = Math.max(controles.maxDistance, d * 1.6);
     controles.update();
     encuadrado = true;
 }
