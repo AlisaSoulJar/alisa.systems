@@ -39,6 +39,7 @@ import { sustratoDe } from './protohub/sustrato.js';
 import { crearMarcas, VERDE, MORADO, ACIERTO } from './protohub/marcas.js';
 import { amueblar } from './protohub/habitacion.js';
 import { pintarJugadas as pintarBotones } from './protohub/jugadas.js';
+import { volcarMesa, volcando, ponerBoton } from './protohub/render/volcar.js';
 
 /**
  * Dónde se sienta cada zona. La mesa mira desde el asiento 0, abajo.
@@ -551,6 +552,10 @@ const engine = new SovereignCardEngine({
 
     onStateSync(data) {
         if (!data) return;
+        // Con la mesa por el aire no se repinta: repintar coloca cada carta en su
+        // destino, así que a mitad del vuelo se recompondría de golpe en el aire.
+        // La cuenta la lleva `volcar.js`, no una bandera de aquí.
+        if (volcando()) { estadoActual = data; return; }
         this.gcCards();
 
         const juego = this.gameId;
@@ -947,4 +952,15 @@ window.ALISA_MESA = engine;
 engine.mountAgentHUD('hud-container',
     (window.ALISA_TITULO ?? 'Mesa de cartas'),
     `<div id="hud-content">Repartiendo…</div>`);
+
+/**
+ * La rabieta. Va en la CABECERA, no entre las jugadas: ahí dentro parecería una
+ * acción del juego y no lo es — no entra en `legal_moves` ni cambia el estado.
+ * Al terminar se pide un repintado, y ese repintado es el que lo recoloca todo.
+ */
+ponerBoton(document.querySelector('.hud-header'), async () => {
+    await volcarMesa(Object.values(engine.cardMeshes ?? {}));
+    if (estadoActual) engine.onStateSync(estadoActual);
+});
+
 engine.start();

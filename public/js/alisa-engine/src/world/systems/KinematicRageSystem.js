@@ -1,12 +1,33 @@
-// KinematicRageEngine.js - Deterministic Rigid Body "Table Flip" Physics
+// KinematicRageSystem.js — física de cuerpo rígido para volcar la mesa
 
+/**
+ * ⚠️ PONÍA «DETERMINISTIC» EN LA PRIMERA LÍNEA Y NO LO ES.
+ *
+ * `applyImpulse` estaba lleno de `Math.random()`: dos volcados con los mismos datos
+ * dan dos estropicios distintos. Es justo la etiqueta-que-no-corresponde que nos
+ * mordió el 13-08-2026 con el temblor de las cartas, y en un proyecto cuya tesis es
+ * «una partida se verifica volviéndola a jugar» esa palabra no se puede dejar
+ * puesta a la ligera.
+ *
+ * Aquí el azar es lo que se quiere —una rabieta calcada no parece una rabieta— así
+ * que no se quita: se hace INYECTABLE. Con `azar` puesto, dos volcados con la misma
+ * semilla salen iguales y se puede grabar uno; sin él, cada uno es distinto.
+ *
+ * Y que quede dicho: esto NO toca el `rnd` de la partida. Volcar la mesa es un gesto
+ * de la mesa, no una jugada — no entra en `legal_moves`, no viaja en el recibo y no
+ * cambia el estado. Al siguiente repintado está todo otra vez en su sitio.
+ */
 export class KinematicRageSystem {
     /**
-     * @param {Object} config 
-     * @param {number} config.gravity 
+     * @param {Object} config
+     * @param {number} config.gravity
+     * @param {() => number} [config.azar] Fuente de azar en [0,1). Por defecto
+     *        `Math.random`. Pásale un generador con semilla si quieres repetir el
+     *        mismo estropicio.
      */
     constructor(config = {}) {
         this.gravity = config.gravity || -60.0;
+        this.azar = config.azar || Math.random;
     }
 
     /**
@@ -27,13 +48,13 @@ export class KinematicRageSystem {
             const isBoard = entity.isBoard; // Custom flag if it's the massive board
             
             // Boards get smaller impulse, pieces get scattered
-            const scatterX = isBoard ? (Math.random() - 0.5) * (hF / 3) : (Math.random() - 0.5) * hF;
-            const blastY = isBoard ? 12.0 : (Math.random() * vF + 20);
-            const scatterZ = isBoard ? (Math.random() * (hF/2) + 5) : (Math.random() * (hF*1.5) + 10);
+            const scatterX = isBoard ? (this.azar() - 0.5) * (hF / 3) : (this.azar() - 0.5) * hF;
+            const blastY = isBoard ? 12.0 : (this.azar() * vF + 20);
+            const scatterZ = isBoard ? (this.azar() * (hF/2) + 5) : (this.azar() * (hF*1.5) + 10);
             
-            const rX = isBoard ? Math.random() * 0.2 : (Math.random() - 0.5);
-            const rY = isBoard ? Math.random() * 0.2 : (Math.random() - 0.5);
-            const rZ = isBoard ? 0 : (Math.random() - 0.5);
+            const rX = isBoard ? this.azar() * 0.2 : (this.azar() - 0.5);
+            const rY = isBoard ? this.azar() * 0.2 : (this.azar() - 0.5);
+            const rZ = isBoard ? 0 : (this.azar() - 0.5);
 
             return {
                 id: entity.id,
@@ -42,7 +63,7 @@ export class KinematicRageSystem {
                 rageState: {
                     velocity: { x: scatterX, y: blastY, z: scatterZ },
                     rotVelocity: { x: rX, y: rY, z: rZ },
-                    bounce: isBoard ? 0.3 : 0.4 + Math.random() * 0.2, // Pieces are bouncier
+                    bounce: isBoard ? 0.3 : 0.4 + this.azar() * 0.2, // Pieces are bouncier
                     floorY: floorY
                 }
             };

@@ -28,6 +28,34 @@
 .jugadas button { pointer-events: auto; }
 
 /**
+ * ⚠️ EL BOTÓN DE VOLCAR LA MESA NO SE PARECE A UNA JUGADA, Y ES A PROPÓSITO.
+ *
+ *     (╯°□°)╯︵ ┻━┻
+ *
+ * Vive en la cabecera del panel, junto al título, y NO entre los botones de jugar.
+ * Esos son la lista literal que recibe un agente por la puerta de texto; si esto
+ * cayera ahí dentro parecería una acción del juego, y no lo es: no entra en
+ * `legal_moves`, no cambia el estado y no viaja en el recibo. Es sólo el gesto.
+ *
+ * Por eso va sin fondo y en gris: se ve, se puede pulsar, y no compite con lo que
+ * de verdad decide la partida.
+ */
+.mesa-volcar {
+    margin-left: auto;
+    padding: 2px 6px;
+    border: 0;
+    background: none;
+    color: #6f6a85;
+    font: 11px/1 ui-monospace, Consolas, monospace;
+    cursor: pointer;
+    pointer-events: auto;
+    opacity: 0.55;
+    transition: opacity 0.15s, color 0.15s;
+}
+.mesa-volcar:hover,
+.mesa-volcar:focus-visible { opacity: 1; color: #cbbcff; }
+
+/**
  * La pista: una línea que dice qué toca, cuando el juego la publica. Vive fuera
  * del plegado, junto a los botones, porque quien no sabe jugar tampoco sabe que
  * hay que desplegar el panel — y era exactamente el caso del betatester.

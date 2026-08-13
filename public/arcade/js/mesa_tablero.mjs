@@ -35,6 +35,7 @@
  */
 import { crearPintor3d } from './protohub/render/pintar3d.js';
 import { pintarJugadas } from './protohub/jugadas.js';
+import { volcarMesa, volcando, ponerBoton } from './protohub/render/volcar.js';
 
 const hub = window.ALISA_PROTOHUB;
 const juego = window.ALISA_JUEGO;
@@ -97,6 +98,10 @@ if (anfitrion) {
 }
 
 const pintor = crearPintor3d(grupo, THREE);
+// Igual que la mesa de cartas publica su motor en `window.ALISA_MESA`: sin esto no
+// hay forma de comprobar desde fuera qué está dibujado ni dónde, y las pruebas
+// acaban adivinando globales. Adivinar globales ya me costó una medición falsa hoy.
+window.ALISA_PINTOR = pintor;
 
 // ── El HUD ──────────────────────────────────────────────────────────────────
 const caja = document.getElementById('hud-container');
@@ -112,6 +117,17 @@ if (caja && !caja.querySelector('#mesa-jugadas')) {
       // de 276 px, y el mismo fallo estaba en la mesa de cartas.
       + `<div id="mesa-jugadas" class="mesa-jugadas"></div></div></div>`;
 }
+
+/**
+ * La rabieta, en la cabecera y no entre las jugadas: ahí dentro parecería una acción
+ * del juego y no lo es. Aquí se vuelca el TABLERO ENTERO como un solo cuerpo —es lo
+ * que quiere decir «volcar la mesa», y además `pintor.raiz` es un `Group` sin
+ * geometría, así que no hay piezas sueltas que medir.
+ */
+ponerBoton(document.querySelector('.hud-header'), async () => {
+    await volcarMesa([pintor.raiz], { comoTablero: true, suelo: -8 });
+    await refrescar();
+});
 
 /**
  * ⚠️ SI NO HAY NADA QUE MEDIR, NO SE ESCALA.
@@ -204,6 +220,10 @@ if (params.get('sala') && hub.soporta?.(juego)) {
 
 // ── Lo que se repinta ───────────────────────────────────────────────────────
 async function refrescar() {
+    // Con la mesa por el aire no se repinta: pintar coloca cada pieza en su celda,
+    // así que a mitad del vuelo se recompondría de golpe. La bandera vive en
+    // `volcar.js` y no aquí, para que no haya dos que digan cosas distintas.
+    if (volcando()) return;
     if (mesaCompartida) {
         // En una sala el estado llega del árbitro por la red, así que aquí no hay
         // partida viva que preguntar: el sustrato se DERIVA de lo publicado. Es la
