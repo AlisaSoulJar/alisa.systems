@@ -64,7 +64,9 @@
     "serve": "python servir.py",
     "serve:paquete": "python servir.py 8010 dist_publico",
     "//mirar": "La pasada de betatester, MEDIDA. El laboratorio pregunta si se puede jugar y responde bien: los 35 en verde. Pero abriendo sus capturas una por una aparecieron cosas que ninguna de sus seis medidas ve — el suelo de la habitacion partiendo el tapete en cuñas durante meses con 92,9% de pintado, once juegos dando sus jugadas como texto gris cortado, paneles en ingles. Esto coge las que ya he visto MIRANDO y las convierte en numeros, para no abrir treinta y una imagenes cada vez. No sustituye a mirar: encuentra lo que ya se buscar, y lo que no, sigue estando en las capturas.",
-    "mirar": "node mirar.mjs"
+    "mirar": "node mirar.mjs",
+    "//inventario": "Cuenta que piezas del motor USA alguien y cuales llevan ahi sin estrenar, buscando cada nombre del catalogo en todo lo que se sirve al navegador. El 13-08-2026: 179 piezas, 146 usadas, 33 nunca. Ese numero es la distancia entre lo que el motor sabe hacer y lo que el arcade aprovecha, y es justo el tipo de dato que se pudre en silencio: nadie nota que una pieza nueva nace sin cable. La rabieta de volcar la mesa salio de aqui — KinematicRageSystem llevaba desde abril sin estrenar y era la mas facil de sembrar.",
+    "inventario": "node inventario.mjs"
   },
   "repository": {
     "type": "git",
