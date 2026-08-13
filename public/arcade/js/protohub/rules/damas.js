@@ -270,6 +270,54 @@ export const damas = {
         };
     },
 
+    /**
+     * ⚠️ SU PROPIO SUSTRATO, PORQUE EL DERIVADO NO PUEDE SABER DE QUIÉN ES CADA
+     * FICHA.
+     *
+     * `sustratoDe` reconstruye el tablero desde el FEN y decide el dueño por
+     * MAYÚSCULAS, que es la convención del ajedrez. Aquí la mayúscula significa otra
+     * cosa: `w` es peón blanco y `W` es DAMA blanca; el bando lo dice la letra.
+     *
+     * Resultado, visto en la captura al portar esta página a la mesa genérica: las
+     * veinticuatro fichas del mismo color. No es un problema de belleza — sin saber
+     * de quién es cada una no se puede jugar, y eso es información, no adorno.
+     *
+     * No se arregla afinando la adivinanza del derivador: se arregla diciéndolo. Y
+     * de paso este juego deja de depender del adaptador, que es el número que
+     * `prueba_sustrato.mjs` vigila para que sólo baje.
+     */
+    sustrato(p) {
+        const t = p.tablero;
+        const piezas = [];
+        for (let f = 0; f < 8; f++) {
+            for (let c = 0; c < 8; c++) {
+                const x = t[f][c];
+                if (!x) continue;
+                piezas.push({
+                    x: c, y: f,
+                    // La ficha dice qué es; el bando, quién la mueve.
+                    t: esDama(x) ? 'dama' : 'peon',
+                    de: esBlanca(x) ? 0 : 1,
+                });
+            }
+        }
+        return {
+            rejilla: { ancho: 8, alto: 8, celdas: new Array(64).fill(0) },
+            piezas,
+            zonas: [],
+            // Las casillas que toca cada jugada, con la MISMA cuenta con la que se
+            // colocan las fichas aquí arriba: la fila 3 es `y = 8 - 3`.
+            acciones: Object.fromEntries(
+                jugadasDe(t, p.blancasJuegan, normasDe(p.normas)).map((m) => {
+                    const pasos = m.match(/[a-h][1-8]/g) ?? [];
+                    return [m, pasos.map((s) => (8 - Number(s[1])) * 8 + (s.charCodeAt(0) - 97))];
+                }),
+            ),
+            leyenda: { peon: 'peón', dama: 'dama (corona)' },
+            simbolos: { peon: 'o', dama: 'D' },
+        };
+    },
+
     estado(p) {
         const n = normasDe(p.normas);
         const { movs, sonCapturas } = jugadasConTipo(p.tablero, p.blancasJuegan, n);

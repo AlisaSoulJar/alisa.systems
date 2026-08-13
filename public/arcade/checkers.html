@@ -29,7 +29,28 @@
 -->
 <script type="module">
 import { montarMesa } from './js/montarMesa.js';
-montarMesa({ juego: 'damas', idJuego: 'checkers', visualizador: 'checkers_visualizer.js' });
+/**
+ * ⚠️ SIN VISUALIZADOR PROPIO: ÉSTE ES EL PRIMERO QUE VUELVE A LA MESA GENÉRICA.
+ *
+ * `checkers_visualizer.js` sigue en el repositorio pero ya no lo monta nadie. La
+ * mesa genérica dibuja las damas desde el sustrato y ofrece el clic origen-destino
+ * desde `acciones`, sin saber que existen las damas.
+ *
+ * POR QUÉ ÉSTE Y NO OTRO. Fable, revisando: los once visualizadores propios no son
+ * once accidentes, son una SEGUNDA COLUMNA VERTEBRAL —`SovereignBoardEngine` y
+ * `SovereignCardEngine`, 2.800 líneas duplicando lo que ProtoHub y las mesas ya
+ * hacen— y mientras exista, cada arreglo hay que hacerlo dos veces. El 13-08-2026
+ * hice tres así sin darme cuenta: el panel en inglés, las jugadas sin botones, y los
+ * clics que el panel interceptaba.
+ *
+ * Damas es el que más paga la migración y el que mejor la pone a prueba: tiene
+ * betatesters activos, es el único con normas variables (`damaVuela`,
+ * `peonComeAtras`) y es donde apareció el fallo de los clics.
+ *
+ * Lo que se pierde son los discos bonitos. Eso son DATOS —una geometría por
+ * leyenda— y se recuperan sin devolver la columna duplicada.
+ */
+montarMesa({ juego: 'damas', idJuego: 'checkers' });
 </script>
 </body>
 </html>
