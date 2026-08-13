@@ -46,6 +46,21 @@ class SovereignCardEngine {
         this.whitePlayer = 'engine';
         this.blackPlayer = 'engine';
         this.currentLegalMoves = [];
+
+        /**
+         * La biblioteca de barajas, que dice cómo se llama y de qué color es cada
+         * palo. Se pide una vez y sin esperar: el reparto empieza antes de que
+         * llegue, y para eso `parseCardId` tiene su tabla de respaldo. Cuando llega,
+         * las cartas que se repinten —o sea, todas, al segundo siguiente— ya salen
+         * con lo que diga el fichero.
+         */
+        this.biblioteca = null;
+        if (typeof fetch === 'function') {
+            fetch('/arcade/data/card_library.json')
+                .then(r => (r.ok ? r.json() : null))
+                .then(j => { this.biblioteca = j; })
+                .catch(() => { /* se juega con el respaldo, que es el mismo dato */ });
+        }
         this.isGameOver = false;
 
         // Three.js Core
@@ -648,24 +663,62 @@ class SovereignCardEngine {
 
     // --- PROCEDURAL TEXTURES --- (High-Fidelity Sovereign Renderer)
     
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  LOS PALOS SALEN DE LA BIBLIOTECA, NO DE AQUÍ
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Oscar, por el buzón: «los palos de las barajas no son correctos, ¿no?». Y
+     * luego lo que lo resolvía: «creo que teníamos librerías de barajas».
+     *
+     * Las teníamos. `data/card_library.json` declara siete barajas, y cada palo
+     * viene con su identificador, su SÍMBOLO y su COLOR:
+     *
+     *     spanish_40 → O 🪙 Oros · P 🏆 Copas · E ⚔️ Espadas · B 🪵 Bastos
+     *
+     * Y aquí estaba escrito a mano y a medias: los cuatro palos franceses con su
+     * glifo (♠♥♦♣) y los cuatro españoles con su NOMBRE EN LETRAS. Una carta de
+     * brisca decía «Oros» en texto donde una de póker dibuja un ♦. No es que
+     * estuvieran mal: es que la mitad de la baraja no tenía dibujo.
+     *
+     * Ahora manda la biblioteca. La tabla de abajo se queda como respaldo para
+     * cuando todavía no ha cargado —el primer fotograma reparte antes de que llegue
+     * el JSON— y es el MISMO dato, no otro: si algún día divergen, gana el fichero.
+     */
     parseCardId(cardId) {
         let rank = '', suitId = '', suit = '', color = '#222222';
-        
+
+        const RESPALDO = {
+            S: ['♠', '#222222'], H: ['♥', '#C62828'],
+            D: ['♦', '#C62828'], C: ['♣', '#222222'],
+            O: ['🪙', '#E6A817'], P: ['🏆', '#C62828'],
+            E: ['⚔️', '#1565C0'], B: ['🪵', '#5D4037'],
+        };
+
         // Handle formats: "S_2", "H_K", "O_1", "P_R", etc.
         const m = cardId.match(/^([SHDCOEPB])(?:_)?(.+)$/);
         if (m) {
             suitId = m[1];
             rank = m[2];
-            // French suits
-            if (suitId === 'S') suit = '♠';
-            if (suitId === 'H') { suit = '♥'; color = '#C62828'; }
-            if (suitId === 'D') { suit = '♦'; color = '#C62828'; }
-            if (suitId === 'C') suit = '♣';
-            // Spanish suits
-            if (suitId === 'O') { suit = 'Oros'; color = '#E6A817'; }
-            if (suitId === 'P') { suit = 'Copas'; color = '#C62828'; }
-            if (suitId === 'E') { suit = 'Espadas'; color = '#1565C0'; }
-            if (suitId === 'B') { suit = 'Bastos'; color = '#5D4037'; }
+
+            /**
+             * Se busca el palo por su ID en TODAS las barajas, sin preguntar cuál
+             * está en juego. Los identificadores no se solapan —`O·P·E·B` son de la
+             * española y `S·H·D·C` de la francesa— así que el id ya dice de quién
+             * es. Preguntar «¿qué baraja usa este juego?» obligaría a pasar el dato
+             * desde las reglas hasta aquí, y sería otra cadena que se rompe en
+             * silencio el día que alguien añada un juego.
+             */
+            const suyo = this.biblioteca?.decks
+                && Object.values(this.biblioteca.decks)
+                    .flatMap(d => d.suits ?? [])
+                    .find(p => p.id === suitId);
+            if (suyo) {
+                suit = suyo.symbol ?? suitId;
+                color = suyo.color ?? color;
+            } else if (RESPALDO[suitId]) {
+                [suit, color] = RESPALDO[suitId];
+            }
         } else {
             rank = cardId;
         }
