@@ -488,7 +488,10 @@ class SovereignCardEngine {
                     await import('/arcade/js/protohub/sala.js');
                 const params = new URLSearchParams(location.search);
                 const salaLimpia = limpiar(sala, 40);
-                const mesa = crearSala({
+                // Publicada por lo mismo que el pintor y la camara de la otra mesa:
+                // sin esto no hay forma de comprobar desde fuera si dos pestañas
+                // estan en la misma partida.
+                const mesa = window.ALISA_SALA = crearSala({
                     sala: salaLimpia,
                     // Sin `?yo=` se coge un nombre de invitado y SE RECUERDA: así
                     // un solo enlace sirve para todos y una recarga te devuelve a

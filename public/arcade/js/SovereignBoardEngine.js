@@ -258,7 +258,7 @@ class SovereignBoardEngine {
                     await import('/arcade/js/protohub/sala.js');
                 const params = new URLSearchParams(location.search);
                 const salaLimpia = limpiar(sala, 40);
-                const mesa = crearSala({
+                const mesa = window.ALISA_SALA = crearSala({
                     sala: salaLimpia,
                     // Sin `?yo=` se coge nombre de invitado y SE RECUERDA: un solo
                     // enlace sirve para todos y una recarga te devuelve a tu silla.
