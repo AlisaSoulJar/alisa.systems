@@ -30,21 +30,25 @@ reducido a un icono** — no quitarlo.
 un toque de dedo sobre una carta dispara `cardInspect`. O sea que tocar la mesa
 funciona y el panel es el segundo camino, no el único. Ése era el desconocido.
 
-**LO QUE FALTA, CON EL NÚMERO:** plegado, el panel sigue ocupando **374x221 sobre
-780 de alto — el 35%** y tapa media mesa. Intenté encogerlo con CSS
-(`public/arcade/css/jugables.css`, bloque `@media (max-width: 820px)`) y **NO
-FUNCIONÓ**: el panel midió igual antes y después. El CSS que hay ahí es inofensivo
-pero no cumple su objetivo; no está terminado y no hay que creérselo.
+**HECHO el 13-08.** El panel plegado en móvil pasa de **374x221 (35% de la pantalla)
+a 374x129 (16%)**: una píldora con el título —que sigue siendo el asa para
+desplegarlo— y las jugadas sueltas, con la mesa entera a la vista.
 
-Dónde mirar: tras mover `#mesa-jugadas` fuera de `#hud-content`, el panel debería
-medir cabecera (~70) + contenido plegado (0) + botones (51) ≈ 130, y mide 221. Hay
-~90 px de algo sin identificar. Medirlo recorriendo los hijos del panel con sus
-alturas antes de tocar más CSS — igual que se hizo para encontrar el fallo del
-betatester, que también parecía una cosa y era otra.
+Y la causa NO era CSS, que es lo que yo creía. Midiendo los hijos del panel uno a
+uno salieron **CUATRO `div#mesa-jugadas`**, el mismo id repetido: uno con botones y
+tres vacíos que sumaban exactamente los ~90 px que faltaban. Los creaba mi propio
+arreglo del día anterior — metía la caja en el `innerHTML` y luego la MOVÍA fuera,
+así que el `innerHTML` siguiente creaba otra y la anterior ya no se borraba. Crecía
+sin parar, sin dar un error, y disfrazado de problema de maquetación. El CSS de
+ayer estaba bien; lo que no dejaba verlo era el DOM de más.
 
-Y el toque sólo cubre parte de las jugadas: hay que comprobar cuáles de
-`legal_moves` se alcanzan tocando y cuáles no, juego por juego. Las que no, tienen
-que seguir estando en alguna parte.
+Comprobado además que **no vuelve a crecer**: una caja al empezar y una seis
+segundos después.
+
+**Lo que sigue faltando aquí:** el toque cubre sólo parte de las jugadas. Hay que
+comprobar cuáles de `legal_moves` se alcanzan tocando y cuáles no, juego por juego.
+Las que no, tienen que seguir estando en alguna parte — que para eso se quedó el
+panel.
 
 ### 2. El segundo aviso del betatester, sin resolver
 

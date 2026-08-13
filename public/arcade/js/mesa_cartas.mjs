@@ -806,7 +806,7 @@ const engine = new SovereignCardEngine({
                 `${z.id}${z.de === null || z.de === undefined ? '' : ' · ' + z.de}`,
                 `${z.items.length} vistas${z.ocultas ? ` + ${z.ocultas} tapadas` : ''}`)).join('')
           + (data.is_game_over ? fila('Estado', data.desenlace ?? 'Terminada', '#ff8080') : '')
-          + `<div id="mesa-jugadas" class="mesa-jugadas"></div>`;
+          ;
 
         /**
          * ⚠️ PLEGAR EL PANEL NO PUEDE ESCONDER LA FORMA DE JUGAR.
@@ -822,11 +822,25 @@ const engine = new SovereignCardEngine({
          * error, y en escritorio no pasa nunca porque allí el panel arranca abierto.
          *
          * Plegar tiene que esconder los DATOS —turno, puntos, cuántas cartas hay en
-         * cada montón— y nunca las jugadas. Así que la caja de botones se saca a
-         * hermana de `#hud-content`, fuera de lo que se recorta.
+         * cada montón— y nunca las jugadas. Así que la caja vive FUERA de
+         * `#hud-content`, hermana suya, fuera de lo que se recorta.
+         *
+         * ⚠️ Y SE CREA UNA VEZ, NO EN CADA REPINTADO. Mi primer arreglo la metía en
+         * el `innerHTML` y luego la MOVÍA fuera. Como esto corre cada vez que llega
+         * un estado, el `innerHTML` siguiente creaba otra —la anterior ya no estaba
+         * dentro, así que no se borraba— y se iban acumulando: medido en un móvil,
+         * CUATRO `div#mesa-jugadas` con el mismo id, uno con botones y tres vacíos
+         * que sumaban 70 px de panel. Crecía sin parar y sin dar un error, y encima
+         * disfrazado de «problema de CSS»: ayer intenté encogerlo con un `@media` y
+         * no se movía, porque lo que sobraba no era relleno sino DOM de más.
          */
-        const jugadas = hud.querySelector('#mesa-jugadas');
-        if (jugadas && hud.parentElement) hud.parentElement.appendChild(jugadas);
+        const panel = hud.parentElement;
+        if (panel && !panel.querySelector(':scope > #mesa-jugadas')) {
+            const caja = document.createElement('div');
+            caja.id = 'mesa-jugadas';
+            caja.className = 'mesa-jugadas';
+            panel.appendChild(caja);
+        }
 
         pintarJugadas(this, data);
 

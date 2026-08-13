@@ -74,6 +74,9 @@
         backdrop-filter: blur(6px);
     }
     .hud-panel.collapsed .hud-header h1 { font-size: 13px; }
+    /* Plegado, `#hud-content` mide cero pero su borde seguía pintando una raya
+       suelta cruzando la mesa. Un cero de alto con borde sigue siendo un borde. */
+    .hud-panel.collapsed #hud-content { border: 0; }
     /* Y las jugadas, que son lo único que no se pliega, legibles con el dedo. */
     .hud-panel.collapsed #mesa-jugadas .mesa-jugada,
     .hud-panel.collapsed .mesa-jugada {
