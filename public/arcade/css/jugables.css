@@ -28,6 +28,23 @@
 .jugadas button { pointer-events: auto; }
 
 /**
+ * La pista: una línea que dice qué toca, cuando el juego la publica. Vive fuera
+ * del plegado, junto a los botones, porque quien no sabe jugar tampoco sabe que
+ * hay que desplegar el panel — y era exactamente el caso del betatester.
+ */
+.mesa-pista {
+    margin: 10px 0 2px;
+    padding: 8px 11px;
+    border-radius: 10px;
+    border: 1px solid rgba(161, 128, 255, 0.28);
+    background: rgba(14, 12, 22, 0.86);
+    color: #cbbcff;
+    font: 12px/1.45 Inter, system-ui, sans-serif;
+    max-width: 340px;
+    pointer-events: auto;
+}
+
+/**
  * ═══════════════════════════════════════════════════════════════════════════
  *  EN UN MÓVIL, EL PANEL SE APARTA
  * ═══════════════════════════════════════════════════════════════════════════
@@ -77,6 +94,39 @@
     /* Plegado, `#hud-content` mide cero pero su borde seguía pintando una raya
        suelta cruzando la mesa. Un cero de alto con borde sigue siendo un borde. */
     .hud-panel.collapsed #hud-content { border: 0; }
+
+    /**
+     * ⚠️ LAS JUGADAS, EN UNA TIRA QUE SE DESLIZA. NINGUNA SE QUITA.
+     *
+     * En entropy, tras robar hay CATORCE jugadas legales, y en rejilla ocupaban el
+     * 68% de una pantalla de 467 px: tapaban la caja que hay que mirar para
+     * decidir. Absurdo — la decisión es «¿en qué hueco la meto?» y los huecos
+     * estaban debajo de los botones.
+     *
+     * La tentación es quitar los botones en móvil, ya que `cambiar:3` se puede
+     * hacer tocando la casilla 3 (comprobado: el táctil llega a las cartas). Pero
+     * eso rompería lo que sostiene el banco de pruebas: los botones son la lista
+     * LITERAL que recibe un agente, y si una persona tuviera menos acciones que él
+     * dejarían de estar jugando al mismo juego.
+     *
+     * Así que se quedan todas y se apartan: una fila que se desliza a lo ancho.
+     * Tocar las cartas sigue siendo el camino corto; la tira es la garantía de que
+     * ninguna jugada es inalcanzable, incluidas las que no son una carta
+     * (`robar_mazo`, `pasar`, `tirar`).
+     */
+    .hud-panel.collapsed #mesa-jugadas {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        gap: 6px;
+        max-height: none;
+        padding-bottom: 4px;
+        /* Que no se corte en seco: se ve que hay más a la derecha. */
+        mask-image: linear-gradient(to right, #000 88%, transparent);
+        -webkit-mask-image: linear-gradient(to right, #000 88%, transparent);
+    }
+    .hud-panel.collapsed #mesa-jugadas .mesa-jugada { flex: 0 0 auto; }
     /* Y las jugadas, que son lo único que no se pliega, legibles con el dedo. */
     .hud-panel.collapsed #mesa-jugadas .mesa-jugada,
     .hud-panel.collapsed .mesa-jugada {

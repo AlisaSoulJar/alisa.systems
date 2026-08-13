@@ -372,6 +372,58 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
                 // Qué hueco tiene un comodín recién destapado esperando destino.
                 // Es público: el comodín ya está boca arriba, lo ha visto la mesa.
                 comodin_destapado: p.comodinDestapado ?? null,
+                /**
+                 * ⚠️ UNA LÍNEA QUE DIGA QUÉ TOCA. LA PIDIÓ UN BETATESTER SIN SABERLO.
+                 *
+                 * Escribió: «La carta que robó si no la quiero no me deja
+                 * descartarla». Y tenía razón a medias — sí se puede tirar, pero
+                 * DESTAPANDO una de las tuyas, que es el precio y es lo que hace
+                 * interesante la jugada. Lo que pasa es que el botón se llama
+                 * `descartar_y_voltear:1` y eso no lo entiende nadie.
+                 *
+                 * No se arregla rotulando los botones con otro texto: el botón dice
+                 * la jugada EXACTA que manda un agente por la puerta de texto, y esa
+                 * igualdad es la que hace comparables las dos filas de la tabla del
+                 * banco. Si la persona ve «tirar» y el agente manda
+                 * `descartar_y_voltear:1`, dejan de estar jugando a lo mismo.
+                 *
+                 * Se arregla EXPLICANDO la fase, y aquí, que es donde se conocen las
+                 * reglas: una mesa genérica que sirve a treinta y cinco juegos no
+                 * puede saber qué significa destapar.
+                 *
+                 * ⚠️ Y SE DERIVA DE `legales`, NO SE ESCRIBE APARTE. Un texto de
+                 * ayuda que se redacta a mano es otra lista que se separa de la
+                 * realidad en silencio — el día que cambie una regla, la pista
+                 * seguiría contando la de antes. Así no puede: si la jugada no está
+                 * ofrecida, la pista no la menciona.
+                 */
+                pista: (() => {
+                    if (p.comodinDestapado !== null && p.comodinDestapado !== undefined) {
+                        return 'Has destapado un comodín: elige a qué hueco se lo llevas.';
+                    }
+                    if (yo !== pid) return null;      // no es tu turno: nada que explicar
+                    const hay = (v) => legales.some(m => String(m).split(':')[0] === v);
+                    if (p.robada === null || p.robada === undefined) {
+                        return 'Roba: del mazo a ciegas, o la de encima del descarte, '
+                             + 'que el rival también ha visto.';
+                    }
+                    const opciones = [];
+                    if (hay('cambiar')) opciones.push('cámbiala por una de tu caja');
+                    if (hay('descartar_y_voltear')) {
+                        opciones.push('o tírala, pero destapando una de las tuyas');
+                    }
+                    if (hay('descartar')) opciones.push('o tírala sin más');
+                    /**
+                     * Se nombra como se VE, no como se llama por dentro. Esta mesa
+                     * dibuja `cara: 'valor'`, así que `V_4` está en la pantalla como
+                     * un 4: decirle «el V_4» a quien mira un 4 es pedirle que
+                     * traduzca. Sale de `VALORES`/`SIMBOLOS`, las mismas tablas que
+                     * usa el dibujo, para que no puedan discrepar.
+                     */
+                    const r = String(p.robada).split('_').slice(1).join('_');
+                    const nombre = SIMBOLOS[r] ?? VALORES[r] ?? r;
+                    return `Has robado el ${nombre}: ${opciones.join(', ')}.`;
+                })(),
                 descarte: p.descarte[p.descarte.length - 1] ?? null,
                 descarte_restante: p.descarte.length,
                 mazo_restante: p.mazo.length,

@@ -842,6 +842,32 @@ const engine = new SovereignCardEngine({
             panel.appendChild(caja);
         }
 
+        /**
+         * ⚠️ LA PISTA VA FUERA DEL PLEGADO, JUNTO A LOS BOTONES.
+         *
+         * Si un juego publica `pista` —una línea que explica qué toca— se enseña.
+         * Nace de la queja de un betatester: los botones dicen la jugada exacta que
+         * manda un agente (`descartar_y_voltear:1`), y esa igualdad es la que hace
+         * comparables persona y máquina, así que no se pueden rotular de otra forma.
+         * Lo que sí se puede es explicar la fase al lado.
+         *
+         * Y va fuera de `#hud-content` por lo mismo que los botones: en móvil el
+         * panel arranca plegado, que es exactamente donde estaba quien se quejó. Una
+         * ayuda que sólo se ve desplegando no ayuda a quien no sabe que hay que
+         * desplegar.
+         */
+        if (panel) {
+            let pista = panel.querySelector(':scope > .mesa-pista');
+            if (data.pista) {
+                if (!pista) {
+                    pista = document.createElement('div');
+                    pista.className = 'mesa-pista';
+                    panel.insertBefore(pista, panel.querySelector(':scope > #mesa-jugadas'));
+                }
+                pista.textContent = data.pista;
+            } else if (pista) pista.remove();
+        }
+
         pintarJugadas(this, data);
 
         // Lo que necesita la capa de clics: el estado de verdad y mis casillas.
