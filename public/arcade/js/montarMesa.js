@@ -51,7 +51,7 @@ import { JUEGOS, TITULOS, cargarReglas } from './protohub/rules/index.js';
  * `prueba_version.mjs` comprueba que corresponde a lo que hay en disco y, si no,
  * dice el valor que toca. No hay que acordarse: hay que hacer caso a la prueba.
  */
-const VERSION = '613556dc';
+const VERSION = '8f6c3ff2';
 
 /** Lo que toda página de tablero necesitaba y repetía. En orden. */
 const ANDAMIO = [
@@ -59,6 +59,10 @@ const ANDAMIO = [
     '/vendor/three-r128/OrbitControls.js',
     '/vendor/tween/tween.umd.js',
     'js/Entrada.js',
+    // El gesto de deslizar. Va en el andamio porque quien más lo necesita es
+    // `SovereignBoardEngine.js`, que es un script clásico y no puede importarlo:
+    // tiene que estar cargado ANTES que él.
+    'js/protohub/gestos.js',
 ];
 
 /**

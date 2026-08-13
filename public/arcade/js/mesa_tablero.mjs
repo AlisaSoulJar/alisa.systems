@@ -257,51 +257,6 @@ function enviarSiEsLegal(m) {
     return true;
 }
 
-/**
- * Dónde cayó el dedo, en coordenadas del tablero SIN redondear.
- *
- * ⚠️ Se separa de `celdaDesde` porque el gesto NO puede medirse en casillas.
- * Sokoban tiene una rejilla de 5x3: la mesa la escala para que llene la pantalla,
- * así que una casilla mide media pantalla y un deslizamiento normal empieza y acaba
- * DENTRO de la misma. Restando casillas salía cero y el gesto no hacía nada — el
- * único juego que fallaba de los siete, y por eso.
- */
-function puntoDesde(ev) {
-    const caja = render.domElement.getBoundingClientRect();
-    const raton = new THREE.Vector2(
-        ((ev.clientX - caja.left) / caja.width) * 2 - 1,
-        -((ev.clientY - caja.top) / caja.height) * 2 + 1,
-    );
-    const rayo = new THREE.Raycaster();
-    rayo.setFromCamera(raton, camara);
-    const punto = new THREE.Vector3();
-    if (!rayo.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), punto)) return null;
-    return grupo.worldToLocal(punto);
-}
-
-/** Dónde cayó el dedo, en casillas de la rejilla. `null` si fue fuera. */
-function celdaDesde(ev) {
-    const rej = hub.sustrato(juego)?.rejilla;
-    if (!rej) return null;
-    const lienzo = render.domElement;
-    const caja = lienzo.getBoundingClientRect();
-    const raton = new THREE.Vector2(
-        ((ev.clientX - caja.left) / caja.width) * 2 - 1,
-        -((ev.clientY - caja.top) / caja.height) * 2 + 1,
-    );
-    const rayo = new THREE.Raycaster();
-    rayo.setFromCamera(raton, camara);
-    const punto = new THREE.Vector3();
-    if (!rayo.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), punto)) return null;
-    // El punto está en el mundo y la rejilla vive dentro del grupo, que esta mesa
-    // escala para que quepa. Sin este paso, la casilla sale bien sólo con escala 1.
-    grupo.worldToLocal(punto);
-    const cols = rej.ancho, filas = rej.alto;
-    const c = Math.round(punto.x + (cols - 1) / 2);
-    const f = Math.round(punto.z + (filas - 1) / 2);
-    if (c < 0 || f < 0 || c >= cols || f >= filas) return null;
-    return { c, f, cols, filas };
-}
 
 /**
  * ⚠️ TOCAR UNA CASILLA NO SE HACE, Y NO ES PEREZA. LO ESCRIBÍ Y LO QUITÉ.
@@ -329,55 +284,16 @@ function celdaDesde(ev) {
  */
 
 /**
- * El deslizamiento: la dirección del gesto, si esa dirección es legal. Se aceptan
- * los dos vocabularios que hay —`arriba` a secas y `di:arriba` de la cabina— porque
- * los dos salen de `legal_moves` y ninguno se inventa.
+ * El deslizamiento vive en `protohub/gestos.js`, no aquí: hacía falta igual en los
+ * visualizadores propios de snake, fagocito y peatón, y cuatro copias de la misma
+ * cuenta es como se consigue que tres se arreglen y una no.
  */
-const DIRECCIONES = { arriba: [0, -1], abajo: [0, 1], izquierda: [-1, 0], derecha: [1, 0] };
-// 24 px: por debajo de eso es un toque tembloroso, no un gesto. Y hay que
-// distinguirlo del arrastre que gira la cámara, que ya existía.
-const MINIMO_GESTO = 24;
-
-let inicioGesto = null;
-
-function alEmpezar(ev) { inicioGesto = { x: ev.clientX, y: ev.clientY, t: Date.now() }; }
-
-function alSoltar(ev) {
-    if (!inicioGesto) return;
-    // El punto de partida se copia ANTES de soltar la variable. Escribí
-    // `inicioGesto = null` y tres líneas más abajo `inicioGesto.x`, que es un
-    // error tonto y además silencioso para quien juega: el gesto no hacía nada.
-    const desde = inicioGesto;
-    inicioGesto = null;
-
-    // Un toque corto no es un gesto y aquí no significa nada (ver arriba por qué
-    // no se juega la casilla tocada). Se deja pasar para que siga sirviendo de
-    // arrastre a la cámara, que es lo que hacía antes.
-    const largo = Math.hypot(ev.clientX - desde.x, ev.clientY - desde.y);
-    if (largo < MINIMO_GESTO) return;
-
-    // ⚠️ LA PANTALLA NO ESTÁ ALINEADA CON EL TABLERO: LA CÁMARA GIRA.
-    //
-    // «Arriba» tiene que ser arriba EN EL TABLERO, no en el cristal. Si se tomara
-    // el gesto en píxeles, en cuanto alguien girase la vista un poco, deslizar
-    // hacia arriba movería en diagonal. Así que se convierten dos puntos de la
-    // pantalla a casillas y se resta: el gesto se mide donde se juega.
-    const a = puntoDesde({ clientX: desde.x, clientY: desde.y });
-    const b = puntoDesde(ev);
-    if (!a || !b) return;
-    const gx = b.x - a.x, gy = b.z - a.z;
-    if (gx === 0 && gy === 0) return;
-    const [ex, ey] = Math.abs(gx) >= Math.abs(gy) ? [Math.sign(gx), 0] : [0, Math.sign(gy)];
-
-    for (const [nombre, [vx, vy]] of Object.entries(DIRECCIONES)) {
-        if (vx !== ex || vy !== ey) continue;
-        if (enviarSiEsLegal(nombre)) return;
-        if (enviarSiEsLegal(`di:${nombre}`)) return;
-    }
-}
-
-render.domElement.addEventListener('pointerdown', alEmpezar);
-render.domElement.addEventListener('pointerup', alSoltar);
+window.ALISA_GESTOS.deslizarParaMoverse({
+    lienzo: render.domElement,
+    camara,
+    legales: () => legalesAhora,
+    enviar: enviarSiEsLegal,
+});
 
 // ── Lo que se repinta ───────────────────────────────────────────────────────
 async function refrescar() {

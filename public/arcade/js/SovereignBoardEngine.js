@@ -42,6 +42,42 @@ class SovereignBoardEngine {
          * el resultado. Hoy me ha dado tres medidas falsas seguidas por eso.
          */
         if (typeof window !== 'undefined') window.ALISA_MOTOR = this;
+
+        /**
+         * ⚠️ DESLIZAR PARA MOVERSE, PARA TODO EL QUE CUELGUE DE ESTE MOTOR.
+         *
+         * Snake, fagocito y peatón se juegan con cuatro palabras —`arriba`,
+         * `abajo`, `izquierda`, `derecha`— y NO TENÍAN NINGÚN MANEJADOR DE ENTRADA:
+         * sólo el panel, también en escritorio. Sus visualizadores son tres ficheros
+         * distintos, así que el gesto va aquí y no en cada uno: tres copias de la
+         * misma cuenta es como se consigue que dos se arreglen y una no.
+         *
+         * No molesta a nadie más. El gesto sólo manda si la dirección está en
+         * `currentLegalMoves`, y ajedrez, damas, go o xiangqi no tienen esas
+         * palabras en su lista: ahí el deslizamiento sigue siendo girar la cámara,
+         * exactamente como antes.
+         *
+         * Se engancha tarde a propósito: el lienzo no existe hasta que el motor
+         * arranca. Y sin `ALISA_GESTOS` no pasa nada — la página se queda como
+         * estaba en vez de reventar por un fichero que no llegó.
+         */
+        if (typeof window !== 'undefined' && window.ALISA_GESTOS) {
+            const enganchar = () => {
+                if (!this.renderer?.domElement || !this.camera) return false;
+                window.ALISA_GESTOS.deslizarParaMoverse({
+                    lienzo: this.renderer.domElement,
+                    camara: this.camera,
+                    legales: () => this.currentLegalMoves ?? [],
+                    enviar: (m) => this.sendMove(m),
+                });
+                return true;
+            };
+            // Se intenta un puñado de veces mientras el motor termina de montarse.
+            let intentos = 0;
+            const reloj = setInterval(() => {
+                if (enganchar() || ++intentos > 40) clearInterval(reloj);
+            }, 100);
+        }
         
         // Blitz Clock State
         this.blitzMode = false;
