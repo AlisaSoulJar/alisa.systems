@@ -96,6 +96,36 @@
 .mesa-volcar:focus-visible { opacity: 1; color: #cbbcff; }
 
 /**
+ * Las normas variables del juego. Como el botón de volcar: en la cabecera, discretas
+ * y claramente NO una jugada. Cambiar una recarga con otra partida — las reglas se
+ * construyen al montar la mesa, y cambiarlas a medias dejaría un recibo imposible de
+ * volver a jugar.
+ */
+.mesa-normas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+    width: 100%;
+    margin-top: 6px;
+    pointer-events: auto;
+}
+.mesa-norma {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #8a83a6;
+    font: 11px/1.2 Inter, system-ui, sans-serif;
+    cursor: pointer;
+    user-select: none;
+}
+.mesa-norma:hover { color: #cbbcff; }
+.mesa-norma input { accent-color: #a180ff; margin: 0; cursor: pointer; }
+/* Plegado en un móvil, el panel es sólo un asa: las normas estorban ahí. */
+@media (max-width: 820px) {
+    .hud-panel.collapsed .mesa-normas { display: none; }
+}
+
+/**
  * La pista: una línea que dice qué toca, cuando el juego la publica. Vive fuera
  * del plegado, junto a los botones, porque quien no sabe jugar tampoco sabe que
  * hay que desplegar el panel — y era exactamente el caso del betatester.

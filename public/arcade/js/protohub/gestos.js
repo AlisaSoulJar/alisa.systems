@@ -126,4 +126,52 @@ function deslizarParaMoverse({ lienzo, camara, legales, enviar }) {
  * motores a módulos es otra tarea, y mezclarla con ésta haría imposible saber cuál
  * de los dos cambios rompió qué — que es lo que ya dice `montarMesa.js`.
  */
-window.ALISA_GESTOS = { deslizarParaMoverse };
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  LAS NORMAS DEL JUEGO, VISIBLES Y CAMBIABLES EN LA MESA
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Un juego puede tener normas variables —damas es el primero: `damaVuela`,
+ * `peonComeAtras`— y hasta ahora sólo se podían poner escribiendo `?normas=` en la
+ * dirección. Eso sirve para una prueba y no para una persona.
+ *
+ * ⚠️ CAMBIAR UNA NORMA RECARGA LA PÁGINA, Y ES LO CORRECTO.
+ *
+ * Las reglas se construyen al montar la mesa, así que cambiarlas a media partida
+ * dejaría jugadas ya hechas bajo unas normas y las siguientes bajo otras: un recibo
+ * que no se puede volver a jugar de ninguna manera. Recargar empieza una partida
+ * limpia, que es lo honesto y además lo que espera cualquiera al cambiar las reglas.
+ *
+ * Va en la cabecera, junto al título y al botón de volcar: es una propiedad de la
+ * MESA, no una jugada. Entre los botones de jugar sería otra acción que un agente no
+ * tiene, y eso rompería la comparación.
+ */
+function ponerNormas(donde, declaradas, activas) {
+    if (!donde || !declaradas || donde.querySelector(':scope > .mesa-normas')) return;
+    const caja = document.createElement('div');
+    caja.className = 'mesa-normas';
+
+    for (const nombre of Object.keys(declaradas)) {
+        const et = document.createElement('label');
+        et.className = 'mesa-norma';
+        const marca = document.createElement('input');
+        marca.type = 'checkbox';
+        marca.checked = !!activas[nombre];
+        marca.addEventListener('change', () => {
+            const puestas = Object.keys(declaradas)
+                .filter(k => (k === nombre ? marca.checked : !!activas[k]));
+            const u = new URL(location.href);
+            if (puestas.length) u.searchParams.set('normas', puestas.join(','));
+            else u.searchParams.delete('normas');
+            // La semilla se suelta: cambiar las reglas empieza otra partida, y
+            // conservar la semilla haría creer que es la misma.
+            u.searchParams.delete('semilla');
+            location.href = u.href;
+        });
+        et.append(marca, document.createTextNode(nombre));
+        caja.appendChild(et);
+    }
+    donde.appendChild(caja);
+}
+
+window.ALISA_GESTOS = { deslizarParaMoverse, ponerNormas };

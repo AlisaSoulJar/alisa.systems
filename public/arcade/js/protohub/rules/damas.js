@@ -252,6 +252,14 @@ export const damas = {
     id: 'checkers',
     nombre: 'Damas',
 
+    /**
+     * Las normas que este juego deja variar, con su valor por defecto. Va EN LAS
+     * REGLAS y no sólo como export suelto del módulo: así quien tiene las reglas
+     * puede preguntar qué se puede cambiar, sin tener que adivinar en qué fichero
+     * viven. Adivinar la ruta ya me rompió cuatro juegos con un 404.
+     */
+    NORMAS,
+
     nuevaPartida(opts = {}) {
         return {
             tablero: tableroInicial(),

@@ -37,11 +37,34 @@ export const nombreLegible = (juego) => juego.charAt(0).toUpperCase() + juego.sl
  */
 export function describirEstado(juego, st) {
     const puedes = (st.legal_moves ?? []).slice(0, 12).join(', ');
-    return `${nombreLegible(juego)}. Puntos: ${puntuacionDe(st)}.`
+    return `${nombreLegible(juego)}.${normasEnPalabras(st)} Puntos: ${puntuacionDe(st)}.`
          + ` Turno: ${st.turn ?? 'único'}.`
          + contarLaMesa(st, juego)
          + (st.is_game_over ? ' La partida ha terminado.'
                             : ` Puedes: ${puedes || '(nada)'}.`);
+}
+
+/**
+ * ⚠️ CON QUÉ NORMAS SE JUEGA, DICHO EN VOZ ALTA.
+ *
+ * Damas es el primer juego con normas variables: la dama puede volar o no, el peón
+ * puede comer hacia atrás o no. Una persona lo ve en el tablero a la primera jugada;
+ * un agente que juega por esta puerta NO VE NADA, y sin esta línea supondría las
+ * normas de siempre y jugaría mal por un motivo que no es suyo.
+ *
+ * Y eso rompería lo único que sostiene la tabla del banco: que la persona y la
+ * máquina estén jugando al mismo juego con la misma información. La lista de
+ * `legal_moves` no basta para deducirlo — al empezar la partida son idénticas en
+ * las cuatro variantes; la diferencia aparece cuando ya has coronado.
+ *
+ * Se dicen sólo las que están ACTIVAS. Enumerar las apagadas alargaría el prompt de
+ * los treinta y cuatro juegos que no tienen ninguna para no decir nada.
+ */
+function normasEnPalabras(st) {
+    const n = st.normas;
+    if (!n) return '';
+    const activas = Object.entries(n).filter(([, v]) => v === true).map(([k]) => k);
+    return activas.length ? ` Normas especiales: ${activas.join(', ')}.` : '';
 }
 
 /**

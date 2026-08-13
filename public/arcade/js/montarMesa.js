@@ -51,7 +51,7 @@ import { JUEGOS, TITULOS, cargarReglas } from './protohub/rules/index.js';
  * `prueba_version.mjs` comprueba que corresponde a lo que hay en disco y, si no,
  * dice el valor que toca. No hay que acordarse: hay que hacer caso a la prueba.
  */
-const VERSION = '8f6c3ff2';
+const VERSION = 'dabad39d';
 
 /** Lo que toda página de tablero necesitaba y repetía. En orden. */
 const ANDAMIO = [
@@ -174,7 +174,65 @@ export async function montarMesa(cfg) {
     }
 
     // Primero las reglas: el visualizador las espera en `window`.
-    const reglas = await cargarReglas(juego, {});
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  LAS NORMAS, EN LA DIRECCIÓN
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     *     /arcade/checkers?normas=damaVuela
+     *     /arcade/checkers?normas=damaVuela,peonComeAtras
+     *
+     * Un juego puede exportar `NORMAS`: un objeto con sus normas variables y el
+     * valor de cada una por defecto. Damas es el primero —`damaVuela`,
+     * `peonComeAtras`— y con esas dos salen la anglosajona, la española, la
+     * internacional y una cuarta que nadie ha tenido que escribir.
+     *
+     * ⚠️ SE NOMBRAN LAS NORMAS, NO LAS VARIANTES.
+     *
+     * `?normas=española` sería más bonito de leer y sería otra lista paralela: el
+     * día que alguien añada una tercera norma habría que repasar los nombres de
+     * variante uno a uno, y el que se olvide se queda contando lo de antes. Las
+     * normas son el dato; las variantes son un resumen que cada cual hace.
+     *
+     * ⚠️ Y SÓLO SE ACEPTAN LAS QUE EL JUEGO DECLARA.
+     *
+     * Una norma inventada en la dirección se ignora y se avisa. Si se pasara tal
+     * cual, la partida se jugaría con las de siempre mientras el recibo diría otra
+     * cosa — y eso es exactamente la clase de mentira silenciosa que aquí sale
+     * cara.
+     */
+    const pedidas = String(new URLSearchParams(location.search).get('normas') ?? '')
+        .split(',').map(s => s.trim()).filter(Boolean);
+
+    /**
+     * ⚠️ LAS NORMAS LAS DECLARAN LAS PROPIAS REGLAS, NO UNA RUTA ADIVINADA.
+     *
+     * Primero lo escribí como `import('./protohub/rules/' + juego + '.js')` para
+     * leer su `NORMAS`. Parecía inofensivo porque el fallo estaba capturado — y
+     * rompió cuatro juegos de golpe: brisca, tute, hearts y spades no viven en esa
+     * ruta, así que el navegador pedía un fichero que no existe y **anotaba un 404
+     * en la consola** aunque yo me tragara el error. El laboratorio los suspendió
+     * a los cuatro, con razón.
+     *
+     * Se carga una vez sin opciones y se le pregunta a lo que devuelve. Si declara
+     * normas y la dirección pide alguna, se vuelve a cargar con ellas: el módulo ya
+     * está en memoria, así que no cuesta nada.
+     */
+    let reglas = await cargarReglas(juego, {});
+    const declaradas = reglas?.NORMAS ?? null;
+
+    if (declaradas) {
+        const normas = { ...declaradas };
+        for (const n of pedidas) {
+            if (n in declaradas) normas[n] = true;
+            else console.warn(`[Arcade] '${juego}' no tiene la norma '${n}'. Tiene: ${Object.keys(declaradas).join(', ')}`);
+        }
+        window.ALISA_NORMAS = normas;
+        window.ALISA_NORMAS_POSIBLES = declaradas;
+        if (pedidas.length) reglas = await cargarReglas(juego, { normas });
+    } else if (pedidas.length) {
+        console.warn(`[Arcade] '${juego}' no declara normas variables; se ignora ?normas=`);
+    }
     const hub = new ProtoHub().registrar(idJuego, reglas);
     window.ALISA_PROTOHUB = hub;
 

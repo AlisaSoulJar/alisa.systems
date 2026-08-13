@@ -507,6 +507,16 @@ class SovereignBoardEngine {
         const guardado = localStorage.getItem(CLAVE);
         aplicar(guardado === null ? this.esPantallaEstrecha() : guardado === '1');
 
+        // Las normas variables del juego, si las tiene. Van en la cabecera porque
+        // son una propiedad de la MESA y no una jugada: entre los botones de jugar
+        // serían una acción que un agente no tiene, y eso rompe la comparación.
+        if (window.ALISA_GESTOS?.ponerNormas && window.ALISA_NORMAS_POSIBLES) {
+            window.ALISA_GESTOS.ponerNormas(
+                document.querySelector('.hud-header'),
+                window.ALISA_NORMAS_POSIBLES,
+                window.ALISA_NORMAS ?? {});
+        }
+
         document.getElementById('dockBtnToggle').addEventListener('click', () => {
             const plegado = !hud.classList.contains('collapsed');
             aplicar(plegado);
