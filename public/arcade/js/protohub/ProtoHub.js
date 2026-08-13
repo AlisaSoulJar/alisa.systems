@@ -212,13 +212,40 @@ export class ProtoHub {
     reset(juegoId, opts = {}) {
         const reglas = this.reglas.get(juegoId);
         if (!reglas) return null;
-        const p = reglas.nuevaPartida(opts);
+
+        /**
+         * ⚠️ SI NADIE TRAE SEMILLA, SE PONE UNA. NO SE DEJA EN `null`.
+         *
+         * Antes se anotaba `null` y la partida quedaba marcada «no reproducible»,
+         * con el razonamiento de que mentir envenenaría el banco de pruebas. El
+         * razonamiento es bueno y la conclusión estaba mal: no hay que elegir entre
+         * mentir y perder la partida — se puede SEMBRARLA, que es honesto y además
+         * la salva.
+         *
+         * Lo destapó un aviso de Oscar el 13-08-2026 desde `/arcade/checkers` sin
+         * `?semilla=` en la dirección:
+         *
+         *     partida  semilla null · 30 jugadas · no se repite
+         *
+         * Treinta jugadas de una queja concreta, tiradas. Y así es como abre una
+         * página CUALQUIER betatester: nadie escribe `?semilla=` a mano. O sea que
+         * el recibo —que es la idea entera del buzón— sólo funcionaba para los
+         * juegos que resulta que echan su semilla al estado, y en los demás
+         * recogíamos la frase y perdíamos la partida.
+         *
+         * Se siembra ANTES de crear la partida y con eso se llama, así que lo
+         * grabado es lo que de verdad se jugó, venga el juego de donde venga.
+         */
+        const semilla = opts.semilla ?? opts.seed
+            ?? Math.floor(Math.random() * 0xffffffff);
+        // Las reglas no se ponen de acuerdo en cómo se llama, así que las dos
+        // formas — el mismo cuidado que hay en el verificador y en el gym.
+        const p = reglas.nuevaPartida({ ...opts, semilla, seed: semilla });
         this.partidas.set(juegoId, p);
-        // La semilla la declara la partida (blackjack la lleva dentro) o quien
-        // llama. Si ninguna la trae, se anota `null` y la partida quedará
-        // marcada como no reproducible — mentir aquí envenenaría el benchmark.
         this.grabaciones.set(juegoId, {
-            semilla: p?.semilla ?? opts.semilla ?? null,
+            // Si la partida declara la suya, manda ella: hay juegos que la
+            // transforman por dentro y el recibo tiene que llevar la que vale.
+            semilla: p?.semilla ?? semilla,
             jugadas: [],
         });
         return p;

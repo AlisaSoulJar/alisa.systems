@@ -219,7 +219,26 @@ export const SILLAS = {
 };
 
 /** Carga las reglas de un juego. `opts.url` para los que leen la biblioteca. */
+/**
+ * ⚠️ DOS JUEGOS TIENEN DOS NOMBRES, Y ESO ROMPÍA LOS AVISOS.
+ *
+ * `chess.html` monta `{ juego: 'ajedrez', idJuego: 'chess' }` y `checkers.html`
+ * `{ juego: 'damas', idJuego: 'checkers' }`: el visualizador busca la partida con
+ * el nombre inglés y las reglas viven con el español. Viene de antiguo y no se
+ * cambia por gusto, porque el nombre inglés está en direcciones que ya circulan.
+ *
+ * Lo que no se veía es que el RECIBO se lleva el nombre del visualizador. Así que
+ * un aviso de damas llegaba diciendo `juego: 'checkers'`, esto devolvía `null`, y
+ * `npm run avisos` lo despachaba con «no se repite — juego desconocido». Salió el
+ * 13-08-2026 con una queja de Oscar sobre cómo mueve la dama: treinta jugadas
+ * grabadas y ninguna forma de volver a verlas.
+ *
+ * Se resuelve aquí, en el único sitio por el que pasan todos —avisos, verificador,
+ * tabla— en vez de en cada uno.
+ */
+const OTROS_NOMBRES = { checkers: 'damas', chess: 'ajedrez' };
+
 export async function cargarReglas(juego, opts) {
-    const f = REGLAS[juego];
+    const f = REGLAS[juego] ?? REGLAS[OTROS_NOMBRES[juego]];
     return f ? f(opts) : null;
 }
