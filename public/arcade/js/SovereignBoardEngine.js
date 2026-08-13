@@ -427,14 +427,58 @@ class SovereignBoardEngine {
         `;
         
         container.innerHTML = html;
-        
-        // Bind the dock toggle
+
+        const hud = document.getElementById('main-hud');
+        const btn = document.getElementById('dockBtn');
+
+        /**
+         * ⚠️ EN UN MÓVIL EMPIEZA PLEGADO, COMO EN LA MESA DE CARTAS.
+         *
+         * Esto lo tenía sólo `SovereignCardEngine`, y el resultado medido el
+         * 13-08-2026 en una pantalla de 390x844, contando qué elemento hay bajo
+         * cada punto con `elementFromPoint`:
+         *
+         *     ajedrez   panel 62% de la pantalla · lienzo alcanzable 37%
+         *     damas     50%                        49%
+         *     go        50%                        49%
+         *     entropy   25%                        74%   <- el que sí se plegaba
+         *
+         * Por eso ninguno de los juegos de tablero respondía al dedo: no es que
+         * les faltara el manejador —el de ajedrez está perfectamente escrito, traza
+         * un rayo a la casilla— es que el panel estaba ENCIMA del tablero y el dedo
+         * aterrizaba en él. Los únicos toques que llegaban a algo eran los que
+         * caían en los botones, y de hecho lo que salía era `undo` y `reset`.
+         *
+         * Un fallo que en escritorio no existe, porque ahí sobra sitio para los dos.
+         */
+        const CLAVE = 'alisa:hud-plegado';
+        const aplicar = (plegado) => {
+            hud.classList.toggle('collapsed', plegado);
+            if (btn) btn.innerText = plegado ? '▶' : '▼';
+        };
+        const guardado = localStorage.getItem(CLAVE);
+        aplicar(guardado === null ? this.esPantallaEstrecha() : guardado === '1');
+
         document.getElementById('dockBtnToggle').addEventListener('click', () => {
-            const hud = document.getElementById('main-hud');
-            const btn = document.getElementById('dockBtn');
-            hud.classList.toggle('collapsed');
-            btn.innerText = hud.classList.contains('collapsed') ? '▶' : '▼';
+            const plegado = !hud.classList.contains('collapsed');
+            aplicar(plegado);
+            // Se recuerda: un panel que se despliega solo en cada repintado sería
+            // peor que no plegarlo.
+            localStorage.setItem(CLAVE, plegado ? '1' : '0');
         });
+    }
+
+    /**
+     * Un móvil en vertical, o una ventana muy estrecha.
+     *
+     * ⚠️ CERO NO ES ESTRECHO: ES «NO LO SÉ». `innerWidth` vale 0 en una pestaña
+     * que aún no se ha compuesto, y cero es menor que 820, así que un monitor de
+     * 27 pulgadas se llevaría la vista de teléfono según cuándo mirases. Sin
+     * medida fiable se responde que no, que es lo que había antes.
+     */
+    esPantallaEstrecha() {
+        const w = window.innerWidth || document.documentElement?.clientWidth || 0;
+        return w > 0 && w < 820;
     }
 
     bindUI() {
