@@ -394,24 +394,24 @@ class SovereignBoardEngine {
                     ${customUpperHtml}
                     
                     <div class="status-row" style="margin-top: 10px;">
-                        <span>CONNECTION</span>
+                        <span>CONEXIÓN</span>
                         <span id="ui-conn" class="val" style="color: #4CAF50">SYNCED</span>
                     </div>
                     <div class="status-row">
-                        <span>ENGINE TURN</span>
+                        <span>TURNO</span>
                         <span id="ui-turn" class="val turn-white">WHITE</span>
                     </div>
                     <div class="status-row">
-                        <span>CHECK STATUS</span>
+                        <span>ESTADO</span>
                         <span id="ui-check" class="val" style="color:#666">CLEAR</span>
                     </div>
-                    <div class="legal-moves" id="ui-moves">Awaiting telemetry...</div>
+                    <div class="legal-moves" id="ui-moves">Esperando estado…</div>
                     
                     <!-- Blitz Mode -->
                     <div class="status-row" style="margin-top:8px; align-items:center;">
                         <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:11px;">
                             <input type="checkbox" id="blitzToggle" style="accent-color:#FF4081;" />
-                            ⚡ BLITZ (5min)
+                            ⚡ RELÁMPAGO (5 min)
                         </label>
                     </div>
                     <div id="blitz-clocks" style="display:none; margin:6px 0;">
@@ -460,13 +460,13 @@ class SovereignBoardEngine {
                         </div>
 
                         <div class="input-row">
-                            <input type="text" id="humanInput" placeholder="Move (e.g. e2e4)..." />
-                            <button id="btnSendHuman">SEND</button>
+                            <input type="text" id="humanInput" placeholder="escribe una jugada…" />
+                            <button id="btnSendHuman">ENVIAR</button>
                         </div>
-                        <button id="autoToggleBtn" class="auto-btn">[ ▶ START MATCH ]</button>
+                        <button id="autoToggleBtn" class="auto-btn">[ ▶ EMPEZAR ]</button>
                         <div class="input-row" style="margin-top:4px;">
-                            <button id="btnUndo" title="Undo last move" style="flex:1;">↩ UNDO</button>
-                            <button id="btnRestart" title="Reset board" style="flex:1; color:#FF4081;">⟳ RESTART</button>
+                            <button id="btnUndo" title="deshacer la última jugada" style="flex:1;">↩ DESHACER</button>
+                            <button id="btnRestart" title="empezar de cero" style="flex:1; color:#FF4081;">⟳ REINICIAR</button>
                         </div>
                     </div>
                     <!--
@@ -575,8 +575,26 @@ class SovereignBoardEngine {
      * formato en los botones de al lado.
      */
     pintarJugadasPulsables() {
-        const caja = document.getElementById('mesa-jugadas');
-        if (!caja) return;
+        /**
+         * ⚠️ SI NO HAY DÓNDE PONERLAS, SE PONE EL SITIO.
+         *
+         * Snake, fagocito y blackjack montan su propio panel —«Score», «Pellets
+         * Left»— y no pasan por `mountAgentHUD`, así que no tenían `#mesa-jugadas`
+         * y se quedaban con CERO jugadas pulsables. Medido en la pasada de los 35.
+         *
+         * Antes esto devolvía y ya está, que es lo cómodo y deja tres juegos fuera.
+         * Se crea la caja al final del panel: cualquier visualizador que tenga un
+         * `.hud-panel` hereda sus jugadas, tenga el HUD que tenga.
+         */
+        let caja = document.getElementById('mesa-jugadas');
+        if (!caja) {
+            const panel = document.querySelector('.hud-panel');
+            if (!panel) return;
+            caja = document.createElement('div');
+            caja.id = 'mesa-jugadas';
+            caja.className = 'mesa-jugadas';
+            panel.appendChild(caja);
+        }
         const movs = this.currentLegalMoves ?? [];
         const TOPE = 50;
 
@@ -769,11 +787,11 @@ class SovereignBoardEngine {
         const btn = document.getElementById('autoToggleBtn');
         if (btn) {
             if (this.autoMode) {
-                btn.innerText = "[ ⏹ STOP MATCH ]";
+                btn.innerText = "[ ⏹ PARAR ]";
                 btn.classList.add("active");
                 this.pollHub(); // Instantly trigger
             } else {
-                btn.innerText = "[ ▶ START MATCH ]";
+                btn.innerText = "[ ▶ EMPEZAR ]";
                 btn.classList.remove("active");
             }
         }

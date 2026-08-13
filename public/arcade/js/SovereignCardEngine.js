@@ -1906,6 +1906,54 @@ class SovereignCardEngine {
              const mStr = (stateObj.legal_moves ?? stateObj.legal_actions ?? []).join(", ");
              movesEl.innerText = mStr.length > 0 ? (mStr.length > 50 ? mStr.substring(0, 46) + "..." : mStr) : "None";
         }
+
+        this.pintarJugadasPulsables(stateObj.legal_moves ?? stateObj.legal_actions ?? []);
+    }
+
+    /**
+     * Las jugadas como botones, igual que en el motor de tablero.
+     *
+     * ⚠️ BLACKJACK NO OFRECÍA NINGUNA. Sus jugadas son `hit`, `stand`, `double` —
+     * tres palabras, imposibles de deducir mirando— y su panel no las daba: había
+     * que escribirlas. Salió en la pasada de las 35, midiendo cuántos botones
+     * `.mesa-jugada` hay en cada juego. Blackjack: cero.
+     *
+     * `mesa_cartas.mjs` ya pinta las suyas para los diez juegos que sirve; esto
+     * cubre a los que usan este motor con visualizador propio y montan su propio
+     * panel. La caja se crea si no existe, por lo mismo.
+     */
+    pintarJugadasPulsables(movs) {
+        let caja = document.getElementById('mesa-jugadas');
+        if (!caja) {
+            const panel = document.querySelector('.hud-panel');
+            if (!panel) return;
+            caja = document.createElement('div');
+            caja.id = 'mesa-jugadas';
+            caja.className = 'mesa-jugadas';
+            panel.appendChild(caja);
+        }
+        const lista = (movs ?? []).map(String);
+        const TOPE = 50;
+        // Se compara antes de rehacer: el estado se consulta cada segundo y recrear
+        // los botones bajo el dedo pierde el toque entre `pointerdown` y `pointerup`.
+        const firma = lista.slice(0, TOPE).join('');
+        if (caja.dataset.firma === firma) return;
+        caja.dataset.firma = firma;
+        caja.textContent = '';
+        for (const m of lista.slice(0, TOPE)) {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'mesa-jugada';
+            b.textContent = m;
+            b.addEventListener('click', () => this.sendMove(m));
+            caja.appendChild(b);
+        }
+        if (lista.length > TOPE) {
+            const mas = document.createElement('span');
+            mas.className = 'mesa-jugadas-mas';
+            mas.textContent = `y ${lista.length - TOPE} más — escríbela o toca la mesa`;
+            caja.appendChild(mas);
+        }
     }
 
     /**
