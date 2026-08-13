@@ -88,6 +88,42 @@ export const reversi = {
     id: 'reversi',
     nombre: 'Reversi',
 
+    /**
+     * ⚠️ SU PROPIO SUSTRATO, POR LO MISMO QUE LAS DAMAS.
+     *
+     * `sustratoDe` reconstruye el tablero desde el FEN y decide el dueño por
+     * MAYÚSCULAS —la convención del ajedrez—. El FEN del reversi es `3BW3/3WB3`:
+     * las dos letras van en mayúscula porque aquí la letra ES el color. Medido antes
+     * de portar la página, que es la lección que me dejaron las damas: las cuatro
+     * fichas salían del mismo dueño, y sin distinguir bandos no se puede jugar.
+     *
+     * Se dice en vez de adivinarse. Y este juego deja de depender del adaptador.
+     */
+    sustrato(p) {
+        const piezas = [];
+        for (let f = 0; f < 8; f++) {
+            for (let c = 0; c < 8; c++) {
+                const x = p.tablero[f][c];
+                if (!x) continue;
+                piezas.push({ x: c, y: f, t: 'ficha', de: x === 'B' ? 0 : 1 });
+            }
+        }
+        return {
+            rejilla: { ancho: 8, alto: 8, celdas: new Array(64).fill(0) },
+            piezas,
+            zonas: [],
+            // Una jugada es UNA casilla: se juega al primer toque. La cuenta es la
+            // misma con la que se colocan las fichas aquí arriba.
+            acciones: Object.fromEntries(
+                jugadasDe(p.tablero, p.turno).map((m) => [
+                    m, [(8 - Number(m[1])) * 8 + (m.charCodeAt(0) - 97)],
+                ]),
+            ),
+            leyenda: { ficha: 'ficha' },
+            simbolos: { ficha: 'o' },
+        };
+    },
+
     nuevaPartida() {
         return { tablero: tableroInicial(), turno: 'B', historial: [], pasesSeguidos: 0 };
     },

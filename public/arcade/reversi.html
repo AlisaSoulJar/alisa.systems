@@ -27,7 +27,9 @@
 -->
 <script type="module">
 import { montarMesa } from './js/montarMesa.js';
-montarMesa({ juego: 'reversi', visualizador: 'reversi_visualizer.js' });
+// Sin visualizador propio: el segundo que vuelve a la mesa generica, detras de
+      // las damas. Aqui una jugada es UNA casilla, asi que se juega al primer toque.
+      montarMesa({ juego: 'reversi' });
 </script>
 </body>
 </html>
