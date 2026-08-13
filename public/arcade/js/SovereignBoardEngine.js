@@ -30,6 +30,18 @@ class SovereignBoardEngine {
         this.currentLegalMoves = [];
         this.isGameOver = false;
         this.gamesPlayed = 0;
+
+        /**
+         * ⚠️ EL MOTOR, ACCESIBLE. COMO YA LO ESTABAN LOS OTROS DOS.
+         *
+         * La mesa de cartas publica `window.ALISA_MESA` y la de tableros
+         * `window.ALISA_PINTOR`. Los once juegos con visualizador propio no
+         * publicaban nada, y eso no es un detalle de comodidad: sin esto no hay
+         * forma de comprobar desde fuera qué está dibujado ni dónde, así que las
+         * pruebas acaban tocando la pantalla a ciegas con una rejilla y creyéndose
+         * el resultado. Hoy me ha dado tres medidas falsas seguidas por eso.
+         */
+        if (typeof window !== 'undefined') window.ALISA_MOTOR = this;
         
         // Blitz Clock State
         this.blitzMode = false;

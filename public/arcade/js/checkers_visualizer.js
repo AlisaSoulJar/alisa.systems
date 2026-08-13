@@ -33,7 +33,7 @@ const engine = new SovereignBoardEngine({
         scene.add(boardGroup);
         createBoard();
 
-        renderer.domElement.addEventListener('pointerdown', onPointerDown);
+        // El manejador NO se cuelga aquí: ver justo después de `engine.start()`.
     },
     onStateSync: function (data) {
         const fenBoard = (data.fen || "").split(" ")[0];
@@ -247,3 +247,18 @@ engine.mountAgentHUD('hud-container', 'Sovereign Checkers', `
     <div id="ui-forced" style="font-size:10px; color:#FF4081; min-height:12px; text-align:center;"></div>
 `);
 engine.start();
+
+/**
+ * ⚠️ EL MANEJADOR SE CUELGA AQUÍ, DESPUÉS DE `start()`, Y NO EN `onInit3D`.
+ *
+ * Estaba dentro de `onInit3D`, colgado del `renderer.domElement` de ESE momento.
+ * Medido el 13-08-2026: tocando la casilla exacta —la misma cuenta con la que se
+ * construye el tablero, y a altura cero, que es donde el manejador corta el rayo—
+ * el ajedrez manda `e2e4` con ratón y con dedo, y las damas no mandaban NADA. El
+ * código de las dos es el mismo salvo esto: el ajedrez lo cuelga aquí abajo.
+ *
+ * O sea que las damas no se podían jugar tocándolas, tampoco en escritorio, y no
+ * daba ni un error: los eventos llegaban al lienzo visible y el que escuchaba era
+ * otro.
+ */
+engine.renderer.domElement.addEventListener('pointerdown', onPointerDown);
