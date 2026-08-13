@@ -112,8 +112,39 @@ async function correr(part, e, Clase, reglas) {
          * con quién se mida no es una línea base.
          */
         part.politica?.sembrar?.(semillaDe(e.juego, s));
+
+        /**
+         * ⚠️ LAS SILLAS PODRÍAN ROTAR, PERO NO ROTAN TODAVÍA. Y NO ES UN OLVIDO.
+         *
+         * El problema es real: todos se sientan SIEMPRE en el primer turno, y en
+         * canadiense esa silla gana el 31% contra el 25% limpio de parchís con los
+         * cuatro asientos jugando igual. Seis puntos que la clasificación se apunta
+         * como habilidad de quien la ocupe.
+         *
+         * El mecanismo para rotar ya está hecho y funciona (`ProtoHubEnv.asiento`,
+         * y `--rotar` aquí). Lo que falta es más abajo: LA PUNTUACIÓN NO SIGUE AL
+         * ASIENTO. Medido el 13-08-2026 jugando y mirando qué publica cada juego:
+         *
+         *     brisca      marcador=[46,25,0,49]   <- existe, por asiento
+         *                 puntos=46               <- pero se informa del 0, siempre
+         *     canadiense  puntos=10               <- un solo número, sin desglose
+         *     parchis     puntos=9                        idem
+         *     entropy     puntos=-21                      idem
+         *
+         * Así que rotar hoy movería al agente de silla para DECIDIR y le seguiría
+         * puntuando la del primer turno: todos los números de la tabla cambiarían y
+         * seguiría midiendo lo mismo que antes. Eso es peor que no rotar, porque
+         * parecería arreglado.
+         *
+         * Lo que lo desbloquea es que los juegos publiquen la puntuación POR
+         * ASIENTO —`marcador`, como ya hace brisca— y que `_puntosDe` lea la del
+         * asiento del agente. Hasta entonces esto queda apagado a propósito, y
+         * `--rotar` está para poder medir el sesgo, no para publicar con él.
+         */
+        const asiento = args.rotar ? (s - 1) % 4 : 0;
+
         const r = await jugarEpisodio(Clase, part.proveedor ?? (async () => ({ texto: '1' })), {
-            semilla: s, tope: TOPE, politica: part.politica,
+            semilla: s, tope: TOPE, politica: part.politica, asiento,
         });
         if (r.error) throw new Error(r.error);
         serie.push(r.puntos);

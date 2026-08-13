@@ -78,6 +78,26 @@ export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
         static juego = juego;
         static reglas = reglas;
 
+        /**
+         * ⚠️ EN QUÉ SILLA SE SIENTA EL AGENTE. CERO ES LA DE SIEMPRE.
+         *
+         * No es un número de asiento porque NINGUNO de los 35 juegos publica su
+         * lista de asientos: `turn` es sólo un nombre suelto —`player`, `azul`,
+         * `ladron`, `guia`, `a`— y no hay forma uniforme de enumerarlos. Medido el
+         * 13-08-2026 preguntando a las 35 reglas.
+         *
+         * Así que se cuenta en TURNOS QUE JUEGA LA CASA ANTES DE QUE TE SIENTES,
+         * que es lo mismo dicho de otra forma y funciona en todos sin que ninguno
+         * tenga que cambiar: con 1, te sientas donde el segundo en jugar; con 3,
+         * el cuarto. En un juego de un solo jugador no hay casa y no pasa nada.
+         *
+         * Por qué hace falta: la tabla sentaba SIEMPRE al participante en el primer
+         * turno, y en canadiense esa silla gana el 31% frente al 25% limpio de
+         * parchís, con los cuatro asientos jugando igual. Seis puntos de ventaja
+         * que la clasificación se estaba apuntando como habilidad.
+         */
+        asiento = 0;
+
         reset(seed = 0) {
             // Las reglas no se ponen de acuerdo en cómo llamar a la semilla, así
             // que se mandan las dos formas. Es el mismo cuidado que hubo que
@@ -89,9 +109,30 @@ export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
             this.done = false;
             this.jugadas = [];
             this.ilegales = 0;
-            const e = this._estado();
-            // De quién es el turno al empezar: eso es "yo". Lo demás es la casa.
+            let e = this._estado();
+
+            /**
+             * La casa juega sus turnos ANTES de que el agente elija silla. Sin esto
+             * el agente sería siempre el primero en mover.
+             *
+             * ⚠️ Y estas jugadas entran en el recibo como cualquier otra, igual que
+             * las de la casa en `step`. Si faltaran, al re-simular la partida
+             * saldría otro tablero y el verificador tumbaría a un jugador honrado
+             * —que es exactamente el fallo que ya nos costó una tarde con el `rnd`.
+             */
+            let previos = 0;
+            while (reglas.sugerencia && this.asiento > previos
+                   && e.turn !== undefined && !e.is_game_over) {
+                const j = reglas.sugerencia(this.p);
+                if (!j || !reglas.mover(this.p, j)) break;
+                this.jugadas.push(j);
+                previos++;
+                e = this._estado();
+            }
+
+            // De quién es el turno AHORA: eso es "yo". Lo demás es la casa.
             this.turnoAgente = e.turn ?? null;
+            this.turnosPrevios = previos;
             this._puntos = this._puntosDe(e);
             return this.getObservation();
         }

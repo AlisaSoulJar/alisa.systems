@@ -106,8 +106,11 @@ export function interpretar(texto, opciones) {
  * @param {Function} proveedor  async (prompt) => {texto, entrada, salida, ms}
  * @param {Object} opts  semilla, tope (llamadas al modelo), alVer (traza)
  */
-export async function jugarEpisodio(Clase, proveedor, { semilla = 1, tope = 60, alVer, politica } = {}) {
+export async function jugarEpisodio(Clase, proveedor, { semilla = 1, tope = 60, alVer, politica, asiento = 0 } = {}) {
     const env = new Clase();
+    // En qué silla se sienta: cuántos turnos juega la casa antes que él. Se pone
+    // ANTES de `reset`, que es quien los gasta. Ver `ProtoHubEnv.asiento`.
+    if (asiento) env.asiento = asiento;
     env.reset(semilla);
 
     /**
