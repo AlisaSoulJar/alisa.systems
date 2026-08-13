@@ -293,12 +293,56 @@ function celdaDesde(ev, rej) {
     return { c, f };
 }
 
+/**
+ * ⚠️ SE TOCA LA CASILLA, Y VALE PARA CUALQUIER JUEGO QUE PROYECTE SUS ACCIONES.
+ *
+ * El sustrato dice ahora, por cada jugada legal, qué casillas toca:
+ *
+ *     "a3b4" → [40, 33]    de una a otra: hacen falta dos toques
+ *     "e6"   → [20]        una sola: se juega al primer toque
+ *
+ * Con eso esta mesa ofrece el ajedrez, las damas, el reversi, el xiangqi y el go
+ * sin saber nada de ninguno — y sin adivinar, que es lo que tuve que quitar esta
+ * mañana. Antes había un camino especial leyendo `rejilla.nombres`, que flota
+ * publicaba a medida; se conserva como respaldo porque su sustrato es propio y no
+ * pasa por el derivador.
+ */
+let seleccion = null;
+
 function alTocar(ev) {
-    const rej = hub.sustrato(juego)?.rejilla;
-    if (!rej?.nombres) return;
+    const sus = hub.sustrato(juego);
+    const rej = sus?.rejilla;
+    if (!rej) return;
     const p = celdaDesde(ev, rej);
     if (!p) return;
-    const n = rej.nombres[p.f * rej.ancho + p.c];
+    const celda = p.f * rej.ancho + p.c;
+
+    const acciones = sus.acciones;
+    if (acciones) {
+        // Un toque basta cuando la jugada es una sola casilla.
+        for (const [m, celdas] of Object.entries(acciones)) {
+            if (celdas.length === 1 && celdas[0] === celda && enviarSiEsLegal(m)) {
+                seleccion = null;
+                return;
+            }
+        }
+        // Segundo toque: la jugada que sale de lo marcado y acaba aquí.
+        if (seleccion !== null) {
+            for (const [m, celdas] of Object.entries(acciones)) {
+                if (celdas[0] === seleccion && celdas[celdas.length - 1] === celda) {
+                    seleccion = null;
+                    if (enviarSiEsLegal(m)) return;
+                }
+            }
+        }
+        // Primer toque: se marca si de aquí sale alguna jugada. Si no, se suelta —
+        // así tocar en vacío deselecciona en vez de dejar la mesa a medias.
+        seleccion = Object.values(acciones).some(c => c[0] === celda) ? celda : null;
+        return;
+    }
+
+    // Respaldo: rejillas que publican el nombre de cada casilla (flota).
+    const n = rej.nombres?.[celda];
     if (n) enviarSiEsLegal(String(n));
 }
 

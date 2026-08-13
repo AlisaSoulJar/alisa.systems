@@ -54,6 +54,63 @@ export const VACIO = 0;
  * porque la gramática es la misma: filas separadas por `/`, dígitos que son
  * huecos seguidos, letras que son piezas. Mayúscula = primer jugador.
  */
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  LAS ACCIONES TAMBIÉN SE PROYECTAN: QUÉ CASILLAS TOCA CADA JUGADA
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ⚠️ ÉSTE ERA EL AGUJERO DE RAÍZ, Y ME LO SEÑALÓ FABLE REVISANDO.
+ *
+ * El sustrato normalizó el ESTADO —`rejilla`, `piezas`, `zonas`— y las ACCIONES se
+ * quedaron fuera: cada juego tiene su microgramática (`e2e4`, `a3b4`, `a1`, `e6`) y
+ * quien dibuja no puede saber a qué casilla apunta ninguna. De ahí salen tres cosas
+ * que llevo todo el día parcheando a mano:
+ *
+ *   · la mesa genérica no puede ofrecer entrada espacial, así que quince juegos se
+ *     juegan sólo por el panel;
+ *   · flota necesitó que su regla publicara `nombres` a medida;
+ *   · y los once visualizadores propios tienen excusa para existir, porque cada uno
+ *     se escribe su propio clic→jugada. Son 2.800 líneas de columna duplicada.
+ *
+ * ⚠️ Y AQUÍ SE PUEDE DERIVAR SIN ADIVINAR NADA, QUE ES LA GRACIA.
+ *
+ * Esta mañana escribí esto mismo en la mesa —probando `a1` y `a8` a ver cuál era
+ * legal— y lo quité, porque en flota las dos numeraciones eran legales a la vez:
+ * tocar la esquina habría jugado una casilla que no era la señalada.
+ *
+ * Aquí no hay ambigüedad: es `deFen` quien COLOCA el tablero, poniendo la primera
+ * fila del FEN en `y = 0`. Así que la fila 3 está en `y = alto - 3` por
+ * construcción, no por convención. El que reparte las casillas es el mismo que dice
+ * cómo se llaman.
+ *
+ * Devuelve, por cada jugada legal, la lista de casillas que toca:
+ *
+ *     "a3b4" → [45, 36]     de una casilla a otra (damas, ajedrez, xiangqi)
+ *     "e6"   → [20]         una sola (reversi, go, flota)
+ *     "pasar" → no aparece  las que no son espaciales se quedan fuera
+ */
+function accionesDe(rejilla, legales) {
+    if (!rejilla?.ancho || !rejilla?.alto || !legales?.length) return null;
+    const { ancho, alto } = rejilla;
+    const mapa = {};
+
+    for (const m of legales) {
+        const s = String(m);
+        // Cada tramo `letra + número` es una casilla. `a3b4` da dos; `e6`, una.
+        const trozos = s.match(/[a-z]\d+/gi);
+        if (!trozos) continue;
+        const celdas = [];
+        for (const t of trozos) {
+            const x = t[0].toLowerCase().charCodeAt(0) - 97;
+            const y = alto - Number(t.slice(1));
+            if (x < 0 || x >= ancho || y < 0 || y >= alto) { celdas.length = 0; break; }
+            celdas.push(y * ancho + x);
+        }
+        if (celdas.length) mapa[s] = celdas;
+    }
+    return Object.keys(mapa).length ? mapa : null;
+}
+
 function deFen(fen) {
     const filas = String(fen).split(' ')[0].split('/');
     const piezas = [];
@@ -233,6 +290,7 @@ export function sustratoDe(juego, st = {}) {
 
     return {
         rejilla, piezas, zonas,
+        acciones: accionesDe(rejilla, st.legal_moves ?? st.legal_actions ?? []),
         leyenda: LEYENDAS[juego] ?? {},
         // Marca de que esto viene del adaptador y no del juego. Es lo que
         // `prueba_sustrato.mjs` cuenta para que el número baje con el tiempo.
