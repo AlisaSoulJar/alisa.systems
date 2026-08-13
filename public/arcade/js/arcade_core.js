@@ -21,9 +21,27 @@ const JUGABLES_EN_LOCAL = [
     'snake', 'fagocito', 'peaton',
 ];
 
+/**
+ * ⚠️ DESDE ALISA.SYSTEMS NO SE LLAMA AL HUB DE NADIE.
+ *
+ * Esto ponía `http://127.0.0.1:8741` por defecto SIEMPRE, así que cualquiera que
+ * abriera el índice desde el dominio hacía una petición a una IP privada de su
+ * propia máquina y se llevaba un error en consola. Medido el 13-08-2026 mirando la
+ * red de las 35 páginas: era la ÚNICA llamada a un hub local que quedaba en todo el
+ * arcade — los 35 juegos se juegan enteros con lo que sirve la propia página.
+ *
+ * El sondeo sigue existiendo porque tiene sentido EN CASA: si el hub de la colonia
+ * está levantado, el índice enseña el estado en vivo de las máquinas. Lo que no
+ * tiene sentido es buscarlo desde fuera. Así que sólo se busca solo cuando la
+ * página se sirve desde la propia máquina; desde cualquier otro sitio hay que
+ * pedirlo a mano con `window.ALISA_HUB_URL`.
+ */
+const EN_CASA = typeof location !== 'undefined'
+    && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+
 const HUB = (typeof window !== 'undefined' && window.ALISA_HUB_URL !== undefined)
     ? window.ALISA_HUB_URL
-    : 'http://127.0.0.1:8741';
+    : (EN_CASA ? 'http://127.0.0.1:8741' : null);
 
 let refresco = null;
 
