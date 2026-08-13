@@ -51,7 +51,7 @@ import { JUEGOS, TITULOS, cargarReglas } from './protohub/rules/index.js';
  * `prueba_version.mjs` comprueba que corresponde a lo que hay en disco y, si no,
  * dice el valor que toca. No hay que acordarse: hay que hacer caso a la prueba.
  */
-const VERSION = '96f43600';
+const VERSION = 'e6eab56b';
 
 /** Lo que toda página de tablero necesitaba y repetía. En orden. */
 const ANDAMIO = [

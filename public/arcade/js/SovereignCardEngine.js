@@ -1463,7 +1463,25 @@ class SovereignCardEngine {
     }
 
     // --- 3D CARD RENDERING UTILS ---
+    /**
+     * ¿Está ya esta carta donde la queremos poner? Con margen, porque una animación
+     * anterior deja decimales largos y nunca cae en el número exacto.
+     *
+     * Medio milímetro de mesa y medio grado: por debajo de eso nadie ve nada, y
+     * animarlo es gastar por gastar.
+     */
+    _yaEstaEn(mesh, x, y, z, rx, ry, rz) {
+        const P = 0.0005, R = 0.008;
+        return Math.abs(mesh.position.x - x) < P
+            && Math.abs(mesh.position.y - y) < P
+            && Math.abs(mesh.position.z - z) < P
+            && Math.abs(mesh.rotation.x - rx) < R
+            && Math.abs(mesh.rotation.y - ry) < R
+            && Math.abs(mesh.rotation.z - rz) < R;
+    }
+
     drawZone(cardList, zoneName, startX, startZ, options = {}) {
+        const yaEstaEn = this._yaEstaEn.bind(this);
         if (!cardList) return;
         
         const layout = options.layout || (options === true ? 'line' : 'line');
@@ -1531,7 +1549,36 @@ class SovereignCardEngine {
             // corte. Un dato que se puede guardar no se deduce.
             mesh.userData.zona = zoneName;
             mesh.userData.indice = idx;
-            
+
+            /**
+             * ⚠️ EL TEMBLOR SE SORTEA UNA VEZ POR CARTA, NO EN CADA DIBUJO.
+             *
+             * Los montones llevan un desvío mínimo al azar para que no parezcan
+             * apilados con escuadra. Estaba con `Math.random()` aquí dentro — y esto
+             * corre en CADA sondeo de estado, o sea una vez por segundo. Así que el
+             * destino de cada carta cambiaba un poco cada segundo y las cartas no se
+             * asentaban NUNCA: perseguían un sitio nuevo constantemente.
+             *
+             * Medido con nadie jugando, sólo mirando la mesa quieta:
+             *
+             *     entropy   196 animaciones nuevas por segundo
+             *     remigio   104
+             *     brisca     80
+             *
+             * Eso es la batería de un móvil ardiendo para que nada cambie. Y no daba
+             * error, claro: hacía justo lo que decía el código.
+             *
+             * Sorteado una vez y guardado en la carta, el temblor sigue siendo
+             * aleatorio —que es su gracia— y además ya no se mueve.
+             */
+            if (!mesh.userData.temblor) {
+                mesh.userData.temblor = {
+                    a: Math.random() - 0.5, b: Math.random() - 0.5,
+                    c: Math.random() - 0.5, d: Math.random(),
+                };
+            }
+            const tmb = mesh.userData.temblor;
+
             let targetX = startX;
             let targetY = (this.tableY !== undefined ? this.tableY : 0.1);
             let targetZ = startZ;
@@ -1546,12 +1593,12 @@ class SovereignCardEngine {
             if (layout === 'line') {
                 targetX = startX + idx * spacing;
                 const jForce = typeof options.jitter === "number" ? options.jitter : 1;
-                if(options.jitter !== false) targetRotZ += (Math.random() - 0.5) * 0.03 * jForce; targetX += (Math.random() - 0.5) * 0.005 * jForce;
+                if(options.jitter !== false) targetRotZ += tmb.a * 0.03 * jForce; targetX += tmb.b * 0.005 * jForce;
             } 
             else if (layout === 'pile') {
                 targetY = (this.tableY !== undefined ? this.tableY : 0.1) + (idx * 0.002); // Tighter stack mapping physically
                 const jForce = typeof options.jitter === "number" ? options.jitter : 1;
-                if(options.jitter !== false) targetRotZ += (Math.random() - 0.5) * 0.08 * jForce; targetX += (Math.random() - 0.5) * 0.01 * jForce; targetZ += (Math.random() - 0.5) * 0.01 * jForce; 
+                if(options.jitter !== false) targetRotZ += tmb.a * 0.08 * jForce; targetX += tmb.b * 0.01 * jForce; targetZ += tmb.c * 0.01 * jForce; 
             }
             else if (layout === 'fan') {
                 const centerIdx = (n - 1) / 2;
@@ -1570,7 +1617,7 @@ class SovereignCardEngine {
                 targetX = startX + idx * tx;
                 targetZ = startZ + idx * tz;
                 const jForce = typeof options.jitter === "number" ? options.jitter : 1;
-                if(options.jitter !== false) targetRotZ += (Math.random() - 0.5) * 0.01 * jForce; targetX += (Math.random() - 0.5) * 0.005 * jForce;
+                if(options.jitter !== false) targetRotZ += tmb.a * 0.01 * jForce; targetX += tmb.b * 0.005 * jForce;
             }
             else if (layout === 'grid') {
                 const cols = options.columns || 3;
@@ -1579,7 +1626,7 @@ class SovereignCardEngine {
                 const c = idx % cols;
                 targetX = startX + c * spacing;
                 targetZ = startZ + r * sz;
-                targetY = (this.tableY !== undefined ? this.tableY : 0.1) + Math.random()*0.001; // Z-fighting prevention
+                targetY = (this.tableY !== undefined ? this.tableY : 0.1) + tmb.d * 0.001; // Z-fighting prevention
             }
             else if (layout === 'circle') {
                 const r = options.radius || 0.4;
@@ -1681,6 +1728,21 @@ class SovereignCardEngine {
                         
                     // Flip Spin
                     new TWEEN.Tween(mesh.rotation).to({ x: targetRotX, y: targetRotY, z: targetRotZ }, 500).delay(animDelay).easing(TWEEN.Easing.Cubic.InOut).start();
+                }
+                else if (yaEstaEn(mesh, targetX, targetY, targetZ, targetRotX, targetRotY, targetRotZ)) {
+                    /**
+                     * ⚠️ UNA CARTA QUE YA ESTÁ EN SU SITIO NO SE ANIMA HACIA SU SITIO.
+                     *
+                     * Esto creaba dos animaciones por carta en CADA sondeo de estado
+                     * —una vez por segundo— aunque no se hubiera movido nada. Con el
+                     * temblor ya estable (ver arriba), la inmensa mayoría de las
+                     * cartas de una mesa quieta están exactamente donde tienen que
+                     * estar, y animarlas es trabajo puro para que no pase nada.
+                     *
+                     * La comparación es contra una tolerancia y no contra la
+                     * igualdad: una animación anterior deja valores con decimales
+                     * largos y nunca aterriza en el número redondo.
+                     */
                 }
                 else {
                     // Normal glide adjustment
