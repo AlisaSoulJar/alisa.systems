@@ -35,8 +35,14 @@ const { JUEGOS, cargarReglas } = await impo('public/arcade/js/protohub/rules/ind
 /**
  * Cuántos lo declaran hoy. Sube y se actualiza este número; si baja, algo se ha
  * perdido por el camino y la prueba lo dice.
+ *
+ * ⚠️ 13-08-2026: LLEGÓ A 35 Y ESO LE CAMBIA EL SENTIDO.
+ * Mientras iba por la mitad, esto era una cuenta atrás: «faltan tantos». Ahora
+ * que están todos ya no mide progreso, mide OTRA COSA — que un juego nuevo no
+ * pueda nacer mudo. El primero que se añada sin objetivo baja el número y esto
+ * se pone rojo, que es exactamente para lo que se escribió.
  */
-const SUELO = 17;
+const SUELO = 35;
 
 const con = [], sin = [];
 for (const juego of JUEGOS) {

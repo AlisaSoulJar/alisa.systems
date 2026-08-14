@@ -43,7 +43,7 @@ import { RUTA_BIBLIOTECA, palo, rango, cargarBaraja, cartasDe } from './baraja.j
  */
 export function crearBazas(cfg) {
     const {
-        nombre, baraja: nombreBaraja, jugadores = 4, mano = 3,
+        nombre, baraja: nombreBaraja, jugadores = 4, mano = 3, OBJETIVO = null,
         FUERZA = [], PUNTOS = {}, SEGUIR_PALO = false, ROBAR_TRAS_BAZA = false,
         PUNTOS_POR_BAZA = null, MENOR_GANA = false, triunfoFijo = null,
         puntosCarta = null,
@@ -85,6 +85,12 @@ export function crearBazas(cfg) {
 
     return {
         nombre,
+
+        // Cuatro juegos salen de esta misma fábrica y NO comparten objetivo: en
+        // tres se acumula y en hearts se esquiva. Por eso lo dice cada config y
+        // no esta función — una frase genérica aquí sería mentira en uno de los
+        // cuatro, que es peor que no decir nada.
+        OBJETIVO,
 
         nuevaPartida(opts = {}) {
             const semilla = (opts.semilla ?? opts.seed ?? Date.now()) >>> 0;
@@ -304,14 +310,27 @@ const FRANCESA = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
  */
 export const crearBrisca = (o) => crearBazas({
     nombre: 'brisca', baraja: 'spanish_40', jugadores: 4, mano: 3,
+    OBJETIVO: 'Objetivo: sumar más puntos que nadie llevándote bazas con cartas que valgan. '
+            + 'Manda el triunfo, y aquí NO hay que servir al palo: puedes tirar lo que quieras. '
+            + 'Se roba una carta después de cada baza.',
     ...ESPANOLA, SEGUIR_PALO: false, ROBAR_TRAS_BAZA: true })._cargar(o?.url);
 
 export const crearTute = (o) => crearBazas({
     nombre: 'tute', baraja: 'spanish_40', jugadores: 4, mano: 10,
+    OBJETIVO: 'Objetivo: sumar más puntos que nadie llevándote bazas con cartas que valgan. '
+            + 'Manda el triunfo y HAY QUE SERVIR AL PALO: si tienes del palo que salió, estás obligado a tirarlo. '
+            + 'Se reparten diez cartas de una vez y no se roba.',
     ...ESPANOLA, SEGUIR_PALO: true, ROBAR_TRAS_BAZA: false })._cargar(o?.url);
 
 export const crearHearts = (o) => crearBazas({
     nombre: 'hearts', baraja: 'french_52', jugadores: 4, mano: 13,
+    // ⚠️ El único de los cuatro donde ganar bazas es MALO. Y hay que avisar de la
+    // negación: el juego resta corazones, pero los `Puntos` que se ven ya vienen
+    // cambiados de signo para que el banco compare siempre «más es mejor». Sin
+    // decirlo, un agente que lea «Puntos: -13» no sabe si va ganando o perdiendo.
+    OBJETIVO: 'Objetivo: al revés que en los demás — aquí las bazas son un castigo. '
+            + 'Evita llevarte corazones (1 cada uno) y sobre todo la dama de picas (13). '
+            + 'No hay triunfo y hay que servir al palo. Los Puntos que ves ya vienen negados: cuanto MÁS ALTOS, mejor vas.',
     FUERZA: FRANCESA, SEGUIR_PALO: true, ROBAR_TRAS_BAZA: false, MENOR_GANA: true,
     sinTriunfo: true,          // en hearts no hay triunfo, y es la regla
     // Aquí no puntúa el RANGO sino el PALO, y una carta concreta.
@@ -321,5 +340,7 @@ export const crearHearts = (o) => crearBazas({
 
 export const crearSpades = (o) => crearBazas({
     nombre: 'spades', baraja: 'french_52', jugadores: 4, mano: 13,
+    OBJETIVO: 'Objetivo: llevarte el mayor número de BAZAS. Aquí no puntúan las cartas sino las bazas, '
+            + 'una por cada una. Las picas son siempre triunfo y hay que servir al palo.',
     FUERZA: FRANCESA, SEGUIR_PALO: true, ROBAR_TRAS_BAZA: false,
     PUNTOS_POR_BAZA: 1, triunfoFijo: 'S' })._cargar(o?.url);

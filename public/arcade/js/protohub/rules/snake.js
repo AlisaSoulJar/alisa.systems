@@ -60,6 +60,7 @@ function nuevaComida(p) {
 }
 
 export const snake = {
+    OBJETIVO: 'Objetivo: crecer comiendo sin chocar contigo mismo ni con la pared. Cada comida alarga la cola, así que cuanto mejor lo haces, menos sitio te queda.',
     id: 'snake',
     nombre: 'Snake',
 

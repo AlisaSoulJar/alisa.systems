@@ -56,6 +56,7 @@ const centroRedil = { x: (REDIL.x0 + REDIL.x1) / 2, y: (REDIL.y0 + REDIL.y1) / 2
 const rejilla = (o) => ({ x: Math.round(o.position.x), y: Math.round(o.position.z) });
 
 export const rebano = {
+    OBJETIVO: 'Objetivo: meter las doce ovejas en el redil. No se les puede ordenar nada: sólo colocarte, porque huyen de ti. El miedo es la herramienta.',
     nuevaPartida(opts = {}) {
         const semilla = (opts.semilla ?? opts.seed ?? (Math.random() * 2 ** 32)) >>> 0;
         const azar = mulberry32(semilla);

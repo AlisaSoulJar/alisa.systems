@@ -59,6 +59,7 @@ const cerca = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 const esMuroDe = (p) => (x, y) => p.muros.has(y * ANCHO + x);
 
 export const nave = {
+    OBJETIVO: 'Objetivo: según tu papel. Los tripulantes reparan la nave o echan al impostor por votación; el impostor los elimina de uno en uno sin que lo pillen. Se vota a la vez y el más votado sale por la esclusa, sea culpable o no.',
     nuevaPartida(opts = {}) {
         const semilla = (opts.semilla ?? opts.seed ?? (Math.random() * 2 ** 32)) >>> 0;
         const azar = mulberry32(semilla);

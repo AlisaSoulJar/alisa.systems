@@ -61,6 +61,7 @@ const TOPE = 160;
 const DECIRES = ['di:arriba', 'di:abajo', 'di:izquierda', 'di:derecha', 'di:alto', 'di:peligro'];
 
 export const cabina = {
+    OBJETIVO: 'Objetivo: llevar al piloto hasta la salida sin caer en un pozo. La guía lo ve todo y no puede moverse; el piloto se mueve y sólo ve la casilla que pisa. Hablar es la única jugada que tiene la guía.',
     nuevaPartida(opts = {}) {
         const semilla = (opts.semilla ?? opts.seed ?? (Math.random() * 2 ** 32)) >>> 0;
         const azar = mulberry32(semilla);

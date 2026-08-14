@@ -125,6 +125,14 @@ export async function crearBlackjack({ url = RUTA_BIBLIOTECA } = {}) {
 
     const reglas = {
         ficha: F,
+
+        // ⚠️ Aquí el objetivo NO es una frase fija, porque el número no lo pone
+        // este fichero: sale de la ficha del catálogo (`F.objetivo`), y una
+        // variante que juegue a otro número dejaría la frase mintiendo. Es el
+        // mismo criterio que las normas de las damas — lo dice el dato.
+        OBJETIVO: `Objetivo: acercarte a ${F.objetivo} más que la casa SIN PASARTE. `
+                + `Si te pasas de ${F.objetivo} pierdes en el acto, aunque la casa se pase después. `
+                + `La casa no decide: sigue su norma fija, así que el único que elige eres tú.`,
         // ⚠️ «MIS NORMAS ESTABAN EN EL CATÁLOGO», no «llegó algún JSON».
         // Antes era `!!lib`, y con un `{}` por respuesta decía `true` mientras
         // jugaba enterito con el respaldo. Una marca que existe para avisar de

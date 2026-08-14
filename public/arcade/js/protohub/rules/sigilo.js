@@ -58,6 +58,7 @@ const TOPE = 200;
 const esMuroDe = (p) => (x, y) => p.muros.has(y * ANCHO + x);
 
 export const sigilo = {
+    OBJETIVO: 'Objetivo: según tu papel. El ladrón roba y sale sin que lo vean; el guardia lo caza antes. Ninguno de los dos ve el edificio entero ni al otro salvo cuando lo tiene delante.',
     nuevaPartida(opts = {}) {
         const semilla = (opts.semilla ?? opts.seed ?? (Math.random() * 2 ** 32)) >>> 0;
         const azar = mulberry32(semilla);

@@ -67,6 +67,7 @@ const desdeNombre = (s) => {
 const otro = (b) => BANDOS[1 - BANDOS.indexOf(b)];
 
 export const defensa = {
+    OBJETIVO: 'Objetivo: aguantar tu carril y tumbar el del rival. El oro cae solo y cada moneda gastada en atacar es una moneda que no defiende.',
     nuevaPartida(opts = {}) {
         const semilla = (opts.semilla ?? opts.seed ?? (Math.random() * 2 ** 32)) >>> 0;
         const azar = mulberry32(semilla);

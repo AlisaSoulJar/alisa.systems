@@ -428,6 +428,12 @@ function contarLaMesa(st, juego) {
         'maze', 'pellets', 'ghosts', 'fagocito', 'frog', 'hazards', 'width', 'height',
         'snake', 'food', 'direction', 'restantes', 'avanceMaximo', 'longitud',
         'is_checkmate', 'is_stalemate', 'ahogado',
+        // ⚠️ `objetivo` ya va de titular, LO PRIMERO de todo. Sin esto salía dos
+        // veces —una bien redactada y otra en crudo cuarenta palabras después—
+        // y en pradera o sigilo eso son sesenta palabras repetidas en el prompt
+        // de cada turno. Lo vi al leer la puerta de texto, no midiendo: las dos
+        // copias son válidas cada una por su lado.
+        'objetivo',
     ]);
     const extra = [];
     for (const [k, v] of Object.entries(st)) {

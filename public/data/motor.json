@@ -196,13 +196,13 @@
    "ruta": "gym/ProtoHubEnv.js",
    "nombre": "ProtoHubEnv",
    "familia": "gym",
-   "kb": 13.5
+   "kb": 15.6
   },
   {
    "ruta": "gym/registro.js",
    "nombre": "registro",
    "familia": "gym",
-   "kb": 14.2
+   "kb": 15.9
   },
   {
    "ruta": "gym/envs/AsteroidsEnv.js",
@@ -910,7 +910,7 @@
    "ruta": "world/systems/KinematicRageSystem.js",
    "nombre": "KinematicRageSystem",
    "familia": "systems",
-   "kb": 4.0
+   "kb": 5.2
   },
   {
    "ruta": "world/systems/LinearNavAgentSystem.js",

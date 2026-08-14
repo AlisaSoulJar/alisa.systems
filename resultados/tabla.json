@@ -1,42 +1,45 @@
 {
-  "fecha": "2026-08-09T17:00:44.803Z",
-  "semillas": 8,
-  "tope": 200,
+  "fecha": "2026-08-13T09:39:26.817Z",
+  "semillas": 4,
+  "tope": 120,
   "juegos": [
-    "entropy"
+    "canadiense"
   ],
-  "descartados": {},
+  "descartados": {
+    "brisca": "el hueco (6.7) no supera al ruido de la medida (±9.9)",
+    "parchis": "la casa no supera al suelo: la escala se invertiría"
+  },
   "resumen": [
     {
       "participante": "primera (suelo)",
       "tipo": "base",
       "mediana": 0,
       "media": 0,
-      "incertidumbre": 0.09068026967027888,
+      "incertidumbre": 0.15936595587540073,
       "tokens": 0,
       "segundos": 0,
       "forzadas": 0,
       "llamadas": 0,
-      "verificadas": 120,
-      "esperadas": 120,
+      "verificadas": 24,
+      "esperadas": 24,
       "porJuego": {
-        "entropy": 0
+        "canadiense": 0
       }
     },
     {
       "participante": "azar",
       "tipo": "base",
-      "mediana": -0.26436781609195403,
-      "media": -0.26436781609195403,
-      "incertidumbre": 0.08924953843140646,
+      "mediana": 0.6857419980601358,
+      "media": 0.6857419980601358,
+      "incertidumbre": 0.2707771373444595,
       "tokens": 0,
       "segundos": 0,
       "forzadas": 0,
       "llamadas": 0,
-      "verificadas": 120,
-      "esperadas": 120,
+      "verificadas": 24,
+      "esperadas": 24,
       "porJuego": {
-        "entropy": -0.26436781609195403
+        "canadiense": 0.6857419980601358
       }
     },
     {
@@ -44,15 +47,15 @@
       "tipo": "base",
       "mediana": 1,
       "media": 1,
-      "incertidumbre": 0.07375079383527153,
+      "incertidumbre": 0.4213909065273122,
       "tokens": 0,
       "segundos": 0,
       "forzadas": 0,
       "llamadas": 0,
-      "verificadas": 120,
-      "esperadas": 120,
+      "verificadas": 24,
+      "esperadas": 24,
       "porJuego": {
-        "entropy": 1
+        "canadiense": 1
       }
     }
   ]

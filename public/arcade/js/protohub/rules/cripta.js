@@ -59,6 +59,7 @@ const TOPE = 400;
 const esMuroDe = (p) => (x, y) => p.muros.has(y * ANCHO + x);
 
 export const cripta = {
+    OBJETIVO: 'Objetivo: salir de la mazmorra vivo y con el mayor botín. El mapa no se ve, se descubre andando, y pisar la salida termina la partida con lo que lleves encima: decidir CUÁNDO salir es la jugada.',
     /**
      * ⚠️ LA MAZMORRA LA GENERA UNA PIEZA DEL MOTOR, NO ESTE FICHERO.
      *

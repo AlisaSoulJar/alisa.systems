@@ -1,6 +1,6 @@
 # Matriz de géneros
 
-> Generado por `matriz_generos.mjs` **jugando** los 30 juegos.
+> Generado por `matriz_generos.mjs` **jugando** los 35 juegos.
 > No hay ninguna etiqueta escrita a mano: `●` medido presente, `·` medido ausente,
 > `?` no observable. Se clasifica por estructura de decisión y no por género de
 > tienda, porque «puzle» o «cartas» no dicen qué hay que saber hacer para jugar bien.
@@ -46,29 +46,34 @@
 | rebano | ● | · | · | ● | ● | · | · | · | sí |
 | pradera | ● | · | · | ● | ● | · | · | · | sí |
 | nave | ● | ● | ● | · | ● | ● | ? | · | sí |
+| remigio | · | ● | ● | · | ● | · | · | · | sí |
+| parchis | ● | · | ● | · | ● | ? | ? | ? | sí |
+| generala | · | ● | ● | · | ● | · | · | · | sí |
+| oca | ● | · | ● | · | ● | · | · | · | sí |
+| canadiense | ● | ● | ● | ● | ● | · | · | · | sí |
 
 ## Cobertura
 
-- `espacial`: **20/30**
-- `oculto`: **15/30**
-- `rival`: **22/30**
-- `autonomo`: **7/30**
-- `irreversible`: **30/30**
-- `simultaneo`: **2/30**
-- `cooperativo`: **2/30**
-- `comunicacion`: **1/30**
+- `espacial`: **23/35**
+- `oculto`: **18/35**
+- `rival`: **27/35**
+- `autonomo`: **8/35**
+- `irreversible`: **35/35**
+- `simultaneo`: **2/35**
+- `cooperativo`: **2/35**
+- `comunicacion`: **1/35**
 
 ## Perfiles demostrados
 
-- `oculto+rival+irreversible` — blackjack, poker, brisca, tute, hearts, spades, gofish, unit, entropy
-- `espacial+rival+irreversible` — ajedrez, go, reversi, damas, xiangqi, mancala
+- `oculto+rival+irreversible` — blackjack, poker, brisca, tute, hearts, spades, gofish, unit, entropy, remigio, generala
+- `espacial+rival+irreversible` — ajedrez, go, reversi, damas, xiangqi, mancala, parchis, oca
 - `espacial+autonomo+irreversible` — fagocito, peaton, rebano, pradera
 - `espacial+irreversible` — snake, sokoban
+- `espacial+oculto+rival+autonomo+irreversible` — sigilo, canadiense
 - `oculto+irreversible` — guerra
 - `espacial+oculto+autonomo+irreversible` — cripta
 - `espacial+oculto+rival+irreversible` — flota
 - `espacial+rival+autonomo+irreversible` — defensa
-- `espacial+oculto+rival+autonomo+irreversible` — sigilo
 - `espacial+rival+irreversible+simultaneo` — frentes
 - `espacial+oculto+rival+irreversible+cooperativo` — relevo
 - `espacial+rival+irreversible+cooperativo+comunicacion` — cabina

@@ -197,6 +197,10 @@ export async function crearPoker({ url = RUTA_BIBLIOTECA } = {}) {
         biblioteca: !!ficha,
         ficha: { rondas, fichas: FICHAS_INICIALES, manos: MANOS_POR_SESION },
 
+        OBJETIVO: `Objetivo: acabar las ${MANOS_POR_SESION} manos con más fichas de las ${FICHAS_INICIALES} `
+                + `con las que empiezas. Texas hold'em: dos cartas tuyas y cinco comunes, y la mejor mano de cinco gana. `
+                + `Se puede ganar sin la mejor mano si el rival se retira, así que retirarse a tiempo también suma.`,
+
         nuevaPartida(opts = {}) {
             const semilla = opts.semilla ?? opts.seed ?? (Math.random() * 2 ** 32) >>> 0;
             const p = {
