@@ -283,6 +283,58 @@
 #mesa-jugadas { position: relative; z-index: 20; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   EL PANEL NO PUEDE SER MÁS ALTO QUE LA PANTALLA
+   ═══════════════════════════════════════════════════════════════════════════
+   Visto en el ajedrez, y sólo se ve DESPUÉS de arreglar lo otro: en cuanto sus
+   veinte botones de jugada empezaron a existir de verdad, el panel creció y los
+   últimos —`f2f3`, `g2g3`, `h2h3`— se salían por abajo de una pantalla de 720 y
+   además caían encima de los mandos de la esquina.
+
+   O sea que arreglar una cosa destapó la siguiente. Es lo normal: mientras los
+   botones estaban recortados y muertos, nadie podía notar que sobraban de alto.
+
+   ⚠️ EL SCROLL VA EN LA TIRA, NO EN EL PANEL.
+
+   `.hud-panel` tiene `pointer-events: none` a propósito —para que los clics pasen
+   al tablero— y un contenedor que no recibe puntero NO SE PUEDE DESPLAZAR. Ponerle
+   `overflow-y: auto` daría una barra de scroll que no responde a nada, que es peor
+   que no tenerla. La tira sí tiene puntero, así que se desplaza ella.
+
+   ⚠️ DOS INTENTOS QUE NO VALIERON, Y POR QUÉ.
+
+   Primero `max-height` a secas en el panel: sin `overflow`, un tope recorta la CAJA
+   y no lo que hay dentro — el panel acababa en 652 y diez botones seguían
+   pintándose más allá de 720. Y ponerle `overflow: hidden` los dejaría otra vez
+   inalcanzables, que es justo el fallo que acabo de arreglar.
+
+   Luego columna flexible para que la tira absorbiera lo que sobra: el panel pasó a
+   acabar en 772, o sea que el tope ni se aplicaba. Pelearme con la cascada a ciegas
+   ya me ha costado dos rondas.
+
+   ⚠️ ASÍ QUE LA TIRA SE ANCLA A LA PANTALLA Y NO AL PANEL.
+
+   Los botones de jugada son la interfaz completa —está escrito en `jugadas.js`— así
+   que su sitio no puede depender de lo alto que le salga el HUD a cada juego. El
+   ajedrez lleva minimapa, dos desplegables de asiento, casillas de modelo, caja de
+   texto y tres botones más: con eso encima, la tira empieza tan abajo que se sale.
+
+   Anclada, están siempre en el mismo sitio, siempre dentro, y por encima de los
+   mandos de la esquina. Y se desplaza sola si hay muchas — un go son 362.
+   ═══════════════════════════════════════════════════════════════════════════ */
+#mesa-jugadas {
+    position: fixed;
+    left: 16px;
+    bottom: 74px;                     /* justo encima de los mandos */
+    z-index: 20;
+    max-width: min(320px, calc(100vw - 32px));
+    max-height: 38vh;
+    overflow-y: auto;
+    /* Que se vea que hay más abajo. */
+    mask-image: linear-gradient(to bottom, #000 92%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, #000 92%, transparent);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    EL LIENZO ES PARA JUGAR, NO PARA DESPLAZAR LA PÁGINA
    ═══════════════════════════════════════════════════════════════════════════
    ⚠️ ESTO NO ARREGLÓ LO QUE YO CREÍA. SE QUEDA POR OTRO MOTIVO, Y LO DIGO.
