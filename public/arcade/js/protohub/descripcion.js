@@ -35,8 +35,29 @@ export const nombreLegible = (juego) => juego.charAt(0).toUpperCase() + juego.sl
  * @param {string} juego
  * @param {object} st   lo que devuelve `reglas.estado(p)`
  */
+/**
+ * ⚠️ SI SE CORTA LA LISTA DE JUGADAS, SE DICE. ANTES NO SE DECÍA.
+ *
+ * Esto era `.slice(0, 12)` a secas. Lo encontré JUGANDO por esta puerta, que es lo
+ * único que lo destapa: en una mano de entropy las reglas me ofrecían seis
+ * `descartar_y_voltear` y la descripción me enseñó cuatro. Dos jugadas legales que
+ * yo, como agente, no podía ni saber que existían.
+ *
+ * Eso no es un recorte cosmético: rompe lo único que sostiene la tabla del banco.
+ * La persona ve sus jugadas en botones —todas— y el agente veía doce. No estaban
+ * jugando al mismo juego, y el que salía perdiendo era siempre el mismo.
+ *
+ * En go son 361 y no caben en un prompt, así que el corte se queda — pero deja de
+ * ser mudo. Se dice cuántas hay en total, para que quien lee sepa que hay más y
+ * pueda pedirlas. Un límite dicho es una regla; un límite callado es una trampa.
+ */
+const TOPE_JUGADAS = 24;
+
 export function describirEstado(juego, st) {
-    const puedes = (st.legal_moves ?? []).slice(0, 12).join(', ');
+    const todas = st.legal_moves ?? [];
+    const puedes = todas.length > TOPE_JUGADAS
+        ? `${todas.slice(0, TOPE_JUGADAS).join(', ')} … y ${todas.length - TOPE_JUGADAS} más (${todas.length} en total)`
+        : todas.join(', ');
     return `${nombreLegible(juego)}.${normasEnPalabras(st)} Puntos: ${puntuacionDe(st)}.`
          + ` Turno: ${st.turn ?? 'único'}.`
          + contarLaMesa(st, juego)
@@ -316,7 +337,26 @@ function contarLaMesa(st, juego) {
         return String(st.simbolos?.[r] ?? st.valores[r] ?? r);
     };
 
-    if (Array.isArray(st.caja)) t.push(`Tu caja: ${st.caja.map(cara).join(' ')}`);
+    /**
+     * ⚠️ LAS CASILLAS VAN NUMERADAS, PORQUE LAS JUGADAS LO ESTÁN.
+     *
+     * Decía `Tu caja: 9 ? ? ? 2 ? ? ?` y ofrecía `cambiar:0 … cambiar:7`. Para
+     * cambiar el 9 —que es la peor carta que tengo— hay que deducir que ocupa el
+     * hueco 0, contando de izquierda a derecha y suponiendo que se empieza en cero.
+     * Nada de eso está dicho.
+     *
+     * Lo encontré jugando por esta puerta. Una persona ve la caja y pulsa la carta;
+     * un agente cuenta huecos y reza. Y es exactamente el mismo error que ya cometí
+     * en flota, donde dos numeraciones eran legales a la vez — sólo que allí se veía
+     * y aquí no.
+     *
+     * Numerarlas cuesta seis caracteres por hueco y quita toda la adivinanza:
+     *
+     *     Tu caja: 0:9 1:? 2:? 3:? 4:2 5:? 6:? 7:?
+     */
+    if (Array.isArray(st.caja)) {
+        t.push(`Tu caja: ${st.caja.map((c, i) => `${i}:${cara(c)}`).join(' ')}`);
+    }
 
     // Lo de todos.
     if (st.triunfo) t.push(`Triunfo: ${st.triunfo}`);
