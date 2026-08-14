@@ -262,6 +262,98 @@ function acercar(motor, margen = 1.12) {
         d *= peor * margen;
         if (d > techo) d = techo;         // nunca más lejos de lo calibrado
     }
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  ⚠️ Y TU MANO TIENE QUE PODER LEERSE. NO TODAS LAS CARTAS VALEN IGUAL.
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Lo de arriba encuadra TODO: las cuatro manos, el mazo y el descarte. En un
+     * tute son cuarenta cartas, así que la caja es enorme, la cámara se va lejos y
+     * TU mano acaba midiendo cincuenta píxeles por carta. En un juego donde servir
+     * al palo es OBLIGATORIO y no puedes leer de qué palo son las tuyas.
+     *
+     * Vino de un aviso: «¿tenemos baraja española porque estamos usando este tipo
+     * de cartas?». Fui a comprobar el catálogo —sí, `spanish_40`, oros copas
+     * espadas bastos— y saqué la cara de una carta a tamaño real: el 2 de oros,
+     * perfecto, con sus monedas. O sea que el dibujo estaba bien y lo que fallaba
+     * era el TAMAÑO en pantalla. La pregunta era buena y la respuesta no era la
+     * que yo iba a dar.
+     *
+     * ⚠️ NO TODAS LAS CARTAS VALEN IGUAL, Y ESO ES LO QUE ARREGLA ESTO.
+     *
+     * Las manos de los rivales están BOCA ABAJO: de ellas sólo hace falta saber
+     * cuántas hay, y eso se lee igual con el borde cortado. La tuya hay que
+     * leerla carta por carta. Encuadrarlas con el mismo peso es tratar como igual
+     * de importante lo que se cuenta y lo que se lee.
+     *
+     * Así que si tu mano baja de la mitad del ancho de pantalla, la cámara se
+     * acerca hasta que llegue — aunque las de los demás se salgan por los lados.
+     */
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  ⚠️ TU MANO TIENE QUE PODER LEERSE. NO TODAS LAS CARTAS VALEN IGUAL.
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Lo de arriba encuadra TODO: las cuatro manos, el mazo y el descarte. En un
+     * tute son cuarenta cartas, así que la caja es enorme, la cámara se va lejos y
+     * cada carta TUYA acaba midiendo 46 px de ancho. En un juego donde servir al
+     * palo es OBLIGATORIO y no se distingue de qué palo son las tuyas.
+     *
+     * Vino de un aviso: «¿tenemos baraja española porque estamos usando este tipo
+     * de cartas?». Fui a comprobarlo —sí, `spanish_40`, oros copas espadas
+     * bastos— y saqué la cara de una carta a tamaño real: el 2 de oros, perfecto,
+     * con sus monedas. El dibujo estaba bien. Lo que fallaba era el TAMAÑO.
+     *
+     * ⚠️ Y NO ES EL ABANICO, QUE FUE MI SEGUNDA CORAZONADA.
+     *
+     * Con `paso: 6` para diez cartas quedan 0,67 de separación y la carta mide
+     * 0,62: casi no se solapan. Estaba mirando una captura y viendo «solapadas»
+     * donde lo que había era «pequeñas». Se distingue midiendo, no mirando.
+     *
+     * ⚠️ Y LA PRIMERA VEZ PUSE EL MÍNIMO EN 0,42 CUANDO YA ESTABA EN 0,41.
+     *
+     * O sea que el bloque corregía un 2% y yo esperando ver algo. El número no
+     * salía de ninguna medida: lo escribí a ojo. 0,72 sí sale de una: para que una
+     * carta llegue a ~90 px con diez en la mano, la mano tiene que ocupar el 72%
+     * del semiancho.
+     *
+     * Las manos de los rivales están BOCA ABAJO —de ellas sólo hace falta saber
+     * cuántas hay, y eso se cuenta igual con el borde cortado—. Encuadrarlas con
+     * el mismo peso que la tuya es tratar igual lo que se cuenta y lo que se lee.
+     */
+    const miCaja = new THREE.Box3();
+    let mia = false;
+    motor.scene.traverse((o) => {
+        // `mano_0_0`, no `mano_0`: la zona lleva dueño Y un índice detrás. Con la
+        // igualdad exacta este bloque entero era código muerto.
+        if (o.isMesh && String(o.userData?.zona ?? '').startsWith('mano_0_')) {
+            miCaja.expandByObject(o); mia = true;
+        }
+    });
+    if (mia && !miCaja.isEmpty()) {
+        motor.camera.position.copy(objetivo).addScaledVector(eje, d);
+        motor.camera.lookAt(objetivo);
+        motor.camera.updateMatrixWorld(true);
+        const inv = motor.camera.matrixWorldInverse;
+
+        let ancho = 0;
+        for (const x of [miCaja.min.x, miCaja.max.x])
+            for (const y of [miCaja.min.y, miCaja.max.y])
+                for (const z of [miCaja.min.z, miCaja.max.z]) {
+                    const v = new THREE.Vector3(x, y, z).applyMatrix4(inv);
+                    const prof = -v.z;
+                    if (prof > 0.01) ancho = Math.max(ancho, Math.abs(v.x) / (prof * tanH));
+                }
+
+        const MINIMO = 0.72;
+        if (ancho > 0.001 && ancho < MINIMO) {
+            d *= ancho / MINIMO;
+            // Un suelo por si el reparto es de UNA carta: sin esto la cámara se
+            // metería dentro de la mesa persiguiendo un naipe suelto.
+            d = Math.max(d, techo * 0.4);
+        }
+    }
+
     motor.camera.position.copy(objetivo).addScaledVector(eje, d);
     motor.camera.lookAt(objetivo);
     if (motor.controls) motor.controls.update();

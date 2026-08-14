@@ -62,6 +62,45 @@ const bitBajo = (m) => 31 - Math.clz32(m & -m);
  *                                 que la señal que lo hace interesante se diluye
  * @param {number} opts.mano       10, el reparto habitual
  */
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ «¿REMIGIO NO IRÍA CON LA BARAJA ESPAÑOLA Y DOS BARAJAS?»
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Aviso de betatester, 14-08-2026. Lo dejo contestado aquí, que es donde vive la
+ * decisión, en vez de en un hilo que se pierde.
+ *
+ * ⚠️ LO DE LA BARAJA ESPAÑOLA YA ESTÁ RESUELTO, Y NO AQUÍ.
+ *
+ * `card_library.json` distingue las dos familias por su nombre:
+ *
+ *     chinchon     spanish_48        ← el rummy de baraja española
+ *     gin_rummy    french_52
+ *     rummy_basic  french_52
+ *
+ * O sea que el rummy con española tiene su propio juego y sus propias reglas
+ * —chinchón se corta a 7 puntos, cuenta cartas muertas, y el as vale distinto—.
+ * Cambiarle la baraja a éste no daría chinchón: daría un remigio raro con cuarenta
+ * y ocho cartas y las reglas de otro juego. Si hace falta chinchón, es un juego
+ * nuevo apoyado en esta misma maquinaria, no una variante de éste.
+ *
+ * ⚠️ LO DE DOS BARAJAS SÍ ES UNA VARIANTE, Y CUESTA MÁS DE LO QUE PARECE.
+ *
+ * No es duplicar la lista. Todo este proyecto direcciona las cartas por su
+ * identidad —`jugar:S_A` es una jugada legal y viaja al recibo—, y con dos barajas
+ * hay DOS `S_A`. En cuanto existen dos, «juega el as de picas» deja de señalar una
+ * carta, y eso rompe tres cosas a la vez: las jugadas legales dejan de ser únicas,
+ * el verificador no puede re-simular un recibo, y el pintor no sabe cuál mover.
+ *
+ * Haría falta un sufijo de copia (`S_A#2`) y que lo entiendan `palo()`, `rango()`,
+ * el `parseCardId` del render y el descriptor de texto. Y el chequeo de tríos, que
+ * hoy se ahorra comparar palos porque con UNA baraja el mismo rango ya implica
+ * palos distintos — está anotado abajo, en `combinaciones`.
+ *
+ * Es hacedero y es media tarde de trabajo con riesgo repartido por cuatro sitios.
+ * No lo hago de madrugada sobre una pregunta: queda dicho el coste para que se
+ * decida con el número delante.
+ */
 export async function crearRemigio({ url = RUTA_BIBLIOTECA, jugadores = 2, mano = 10 } = {}) {
     const baraja = await cargarBaraja('french_52', url);
 

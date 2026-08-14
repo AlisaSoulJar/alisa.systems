@@ -92,7 +92,23 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
         carta: material(0xfdfdfd, { roughness: 0.45 }),
         oculta: material(0x8a5a9a, { roughness: 0.6 }),
         destino: material(0xc0392b, { roughness: 0.7 }),
-        niebla: material(0xaeb8c4, { roughness: 1.0 }),
+        /**
+         * ⚠️ LA NIEBLA ERA LO MÁS BRILLANTE DE LA PANTALLA, Y ESO ESTÁ AL REVÉS.
+         *
+         * En cripta lo sin explorar es casi todo el tablero, y con `0xaeb8c4` salía
+         * un campo blanco enorme que se comía la vista mientras lo YA EXPLORADO
+         * —que es lo único que has ganado jugando— quedaba de manchita en una
+         * esquina. La partida se lee del revés: lo que no sabes grita y lo que sabes
+         * se pierde.
+         *
+         * No es un problema de color bonito: en un juego que va de explorar, el
+         * mapa conocido tiene que ser la figura y lo desconocido el fondo. Se baja a
+         * un gris azulado oscuro que se hunde en el negro de la escena.
+         *
+         * Lo vi abriendo la captura. Ninguna medida lo dice: `mirar` lo da limpio y
+         * el laboratorio lo da pintado — y las dos tienen razón, está todo dibujado.
+         */
+        niebla: material(0x333c49, { roughness: 1.0 }),
         // El faro de «cuál soy yo». Ámbar y emisivo: tiene que ganarle a
         // cualquier paleta de juego, porque su único trabajo es que lo encuentres.
         faro: material(0xffc23c, { emissive: 0x8a5c00, roughness: 0.35 }),
