@@ -237,7 +237,27 @@ for (const juego of juegos) {
             await modo.tocar(p, Math.round(caja.x + caja.width / 2),
                                 Math.round(caja.y + caja.height / 2));
             await p.waitForTimeout(700);
-            if (await estadoEntero() !== antes) panelBien++;
+            if (await estadoEntero() !== antes) { panelBien++; continue; }
+
+            /**
+             * ⚠️ SEGUNDO INTENTO, PORQUE HAY MUNDOS CON RELOJ PROPIO.
+             *
+             * Peatón, pradera, nave y compañía avanzan decidas o no, así que entre
+             * leer los botones y pulsar uno la jugada puede haber dejado de ser
+             * legal. El botón está bien y la pulsación no hace nada — y sale un
+             * «hay una jugada que no se puede pulsar» que es mentira.
+             *
+             * Se veía en que peatón daba 5/5, luego 3/5, luego 4/5 sin tocar nada.
+             * Un número que baila entre pasadas no es un hallazgo, es un aviso de
+             * que la medida coge el mundo en marcha.
+             */
+            const otra = p.locator('.mesa-jugada').first();
+            const c2 = await otra.boundingBox().catch(() => null);
+            if (!c2) continue;
+            const antes2 = await estadoEntero();
+            await modo.tocar(p, Math.round(c2.x + c2.width / 2), Math.round(c2.y + c2.height / 2));
+            await p.waitForTimeout(700);
+            if (await estadoEntero() !== antes2) panelBien++;
         }
 
         /**
@@ -278,6 +298,25 @@ for (const juego of juegos) {
                 await modo.tocar(p, x, y);
             }
         }
+        /**
+         * ⚠️ LO DE DESLIZAR LO INTENTÉ Y LO QUITÉ. AQUÍ ESTÁ POR QUÉ.
+         *
+         * Quince de los treinta y cinco se juegan con direcciones —`arriba`,
+         * `abajo`— y un toque no produce eso ni queriendo, así que salen todos con
+         * cero en la columna de la mesa. Escribí una sonda de gestos para cubrirlos.
+         *
+         * No es medible con lo que hay. Un tap es lo único que sabe hacer
+         * `page.touchscreen`; para un gesto hay que despachar `PointerEvent` a mano
+         * sobre el lienzo. Y entonces la pasada del dedo son eventos que me invento
+         * yo, mientras la del ratón es un arrastre de verdad: dos experimentos
+         * distintos, exactamente el error que ya me costó una tarde hoy. El
+         * resultado lo cantaba —fagocito «2 con el dedo, 0 con el ratón»— y esa
+         * diferencia era mía, no del juego.
+         *
+         * Así que se queda sin medir Y SE DICE, que es mejor que un número inventado.
+         * Los gestos los cubre `gestos.js` con su propio umbral de 24 px; el día que
+         * haya una forma honesta de dispararlos desde fuera, aquí encaja.
+         */
         await p.waitForTimeout(300);
         const tocadas = [...new Set(await p.evaluate(() => window.__tocadas ?? []))];
 

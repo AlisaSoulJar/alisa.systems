@@ -88,6 +88,20 @@ export const reversi = {
     /** A que se juega, para quien no ve el tablero. Lo publica ProtoHub.state. */
     OBJETIVO: 'Objetivo: terminar con MAS fichas tuyas que del rival; cada jugada voltea las que encierras.',
 
+    /**
+     * ⚠️ AQUÍ EL COLOR TAMPOCO ES ADORNO.
+     *
+     * Las fichas del reversi son negras por un lado y blancas por el otro, y VOLTEAR
+     * es la jugada entera: lo que hace una partida es cambiar de color las que
+     * encierras. Con azul y rojo genéricos se sigue jugando igual, pero se pierde lo
+     * único que el tablero cuenta de un vistazo — y el estado ya las llama `B` y `W`.
+     *
+     * Se dice el nombre, no el hexadecimal: qué tono de blanco hace falta con la luz
+     * de esta mesa es problema del pintor. `paleta.js` usa un hueso claro porque el
+     * blanco puro pierde el borde de la ficha.
+     */
+    COLORES: { 0: 'negro', 1: 'blanco' },
+
     id: 'reversi',
     nombre: 'Reversi',
 

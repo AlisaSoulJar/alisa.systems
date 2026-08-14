@@ -154,15 +154,36 @@ export class ProtoHub {
          * Se pasa a mano y no se cambia la llamada a `this.state()`, que añade
          * `fuente` y `conexion` y ensuciaría el sustrato con datos de conexión.
          */
-        if (typeof reglas.sustrato === 'function') {
-            return { ...reglas.sustrato(partida, asiento), derivado: false };
-        }
-        const st = reglas.estado(partida, asiento);
-        return sustratoDe(juegoId, {
-            ...st,
+        /**
+         * ⚠️ Y LO DECLARADO SE AÑADE POR LOS DOS CAMINOS, NO SÓLO POR UNO.
+         *
+         * Un juego con `sustrato()` propio se saltaba la inyección de abajo. Medido
+         * en reversi: declaró `COLORES: {0:'negro', 1:'blanco'}` y el sustrato salía
+         * con `colores: null` — el dato bien puesto en las reglas y sin llegar al
+         * pintor. Xiangqi, que deriva, sí funcionaba.
+         *
+         * Es la tercera vez hoy con la misma forma: un dato nuevo que viaja bien por
+         * el camino que probé y no por el otro. Pasó con `patron` (`state()` sí,
+         * `sustrato()` no) y con el objetivo (mesa local sí, sala compartida no).
+         * Por eso se pone una sola vez, aquí arriba, y se aplica a los dos retornos.
+         *
+         * El sustrato propio manda si ya lo trae: quien se molesta en escribirlo sabe
+         * más que esto.
+         */
+        const declarado = {
             ...(reglas.PATRON ? { patron: reglas.PATRON } : {}),
             ...(reglas.COLORES ? { colores: reglas.COLORES } : {}),
-        });
+        };
+
+        if (typeof reglas.sustrato === 'function') {
+            const propio = reglas.sustrato(partida, asiento);
+            if (propio?.rejilla && declarado.patron && !propio.rejilla.patron) {
+                propio.rejilla.patron = declarado.patron;
+            }
+            return { colores: declarado.colores, ...propio, derivado: false };
+        }
+        const st = reglas.estado(partida, asiento);
+        return sustratoDe(juegoId, { ...st, ...declarado });
     }
 
     /** Equivalente a GET /arcade/{juego}/state */

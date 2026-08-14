@@ -74,9 +74,39 @@ const engine = new SovereignCardEngine({
                 <span>Phase</span>
                 <span class="val" style="color:#00ffaa; font-weight:bold;">${data.phase || 'Pre-Flop'}</span>
             </div>
-            <div id="mesa-jugadas" class="mesa-jugadas"></div>
         `;
         document.getElementById('hud-content').innerHTML = html;
+
+        /**
+         * ⚠️ LA TIRA DE JUGADAS VA FUERA DE `#hud-content`, Y ANTES ESTABA DENTRO.
+         *
+         * Escrita en este HTML acababa donde acaba todo lo de aquí: dentro del
+         * bloque que se pliega. Y plegado —que en un móvil es como arranca— eso va
+         * a `max-height: 0; overflow: hidden`: los botones conservan su rectángulo,
+         * así que desde fuera parece que están, pero quedan recortados y fuera del
+         * reparto de golpes. Es el mismo fallo que dejaba el ajedrez sin poder
+         * jugarse en un móvil.
+         *
+         * Y encima había DOS con el mismo `id`: ésta y la que pone la plantilla del
+         * motor. `getElementById` devuelve la primera, así que una se rellenaba y la
+         * otra se quedaba con botones que no respondían a nadie. Medido: de cinco
+         * pulsaciones, las dos primeras no hacían nada y las dos siguientes sí. Para
+         * quien juega, una mesa que te ignora la mitad de las veces.
+         *
+         * Se busca la que ya exista —la del motor, hermana de `#hud-content`— y sólo
+         * se crea si no hay ninguna. Reescribir `innerHTML` en cada sincronización se
+         * llevaba la de dentro y la volvía a crear; ésta, al estar fuera, sobrevive.
+         */
+        let tira = document.getElementById('mesa-jugadas');
+        if (!tira) {
+            const panel = document.querySelector('.hud-panel');
+            if (panel) {
+                tira = document.createElement('div');
+                tira.id = 'mesa-jugadas';
+                tira.className = 'mesa-jugadas';
+                panel.appendChild(tira);
+            }
+        }
 
         /**
          * ⚠️ ESTA MESA ENSEÑABA UNA PARTIDA QUE NO SE PODÍA JUGAR.
@@ -96,7 +126,7 @@ const engine = new SovereignCardEngine({
          * dinámico porque este visualizador es un script clásico, no un módulo.
          */
         import('./protohub/jugadas.js').then(({ pintarJugadas }) => {
-            pintarJugadas(document.getElementById('mesa-jugadas'), {
+            pintarJugadas(tira, {
                 acciones: data.legal_moves ?? data.legal_actions ?? [],
                 terminada: !!data.is_game_over,
                 enviar: (m) => engine.sendMove(m),

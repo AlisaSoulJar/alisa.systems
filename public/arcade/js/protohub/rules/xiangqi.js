@@ -220,6 +220,13 @@ export const xiangqi = {
     // saliera con un damero que no le corresponde.
     PATRON: 'intersecciones',
 
+    /**
+     * Rojo contra negro, que es como se juega y como se llaman los bandos. El 0 es
+     * el rojo porque en el FEN va en mayúsculas y `deFen` asigna el dueño 0 a las
+     * mayúsculas — no lo pongo de memoria: es la misma cuenta que reparte las piezas.
+     */
+    COLORES: { 0: 'rojo', 1: 'negro' },
+
     id: 'xiangqi',
     nombre: 'Xiangqi',
 

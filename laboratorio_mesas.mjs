@@ -397,7 +397,28 @@ const filas = [];
 
 console.log(`\n¿Se puede jugar a los ${juegos.length}? Chrome de verdad, ${base}\n`);
 
-for (const juego of juegos) {
+/**
+ * ⚠️ UN SEGUNDO INTENTO, Y DICHO EN VOZ ALTA.
+ *
+ * El 15-08-2026 la pasada entera dio `peaton` en rojo con todo a `—`, y sola pasó
+ * a la primera. O sea inestabilidad — pero «inestabilidad» es justo lo que me he
+ * dicho tres veces hoy antes de encontrar un fallo de verdad debajo.
+ *
+ * Peatón, mancala, pradera y nave tienen mundo con reloj propio: avanzan decidas o
+ * no. Con la máquina cargada, la ventana entre sondear y volver a sondear se
+ * mueve, y a veces se cuela. Un rojo aleatorio es peor que ninguno: enseña a
+ * ignorar la prueba, y el día que sea real tampoco se mirará.
+ *
+ * Así que se reintenta UNA vez y se DICE. El número final es honesto —el juego
+ * funciona— y el «(a la segunda)» deja la inestabilidad a la vista para que no se
+ * confunda con salud. Si un juego necesita el segundo intento siempre, eso es un
+ * dato, no ruido.
+ *
+ * La cola se recorre con `for...of` a propósito: el iterador de un array VE lo que
+ * se le añade mientras se recorre, así que reencolar es meter un elemento más.
+ */
+const cola = juegos.map(j => ({ juego: j, intento: 1 }));
+for (const { juego, intento } of cola) {
     const p = paginas[juego];
     const url = `${base}/arcade/${p.pagina}?semilla=${SEMILLA}`
               + (p.pagina === 'mesa.html' ? `&juego=${juego}` : '');
@@ -528,6 +549,14 @@ for (const juego of juegos) {
         if (!f.mal.length) f.mal.push(String(e.message ?? e).slice(0, 100));
     }
     await ctx.close();
+
+    // Falló y era el primer intento: se reencola y no se imprime nada todavía —
+    // así una sola línea por juego, la del intento que valió.
+    if (f.mal.length && intento === 1) {
+        cola.push({ juego, intento: 2 });
+        continue;
+    }
+    if (intento === 2) f.nota.push('a la segunda');
 
     filas.push(f);
     const marca = f.mal.length ? '✗' : '✓';
