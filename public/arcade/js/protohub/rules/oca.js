@@ -288,6 +288,10 @@ export function crearOca({ jugadores = 2, fichas = 2 } = {}) {
     };
 
     return {
+
+        /** A que se juega, para quien no ve la mesa. Lo publica ProtoHub.state. */
+
+        OBJETIVO: 'Objetivo: llegar el primero a la casilla final; algunas casillas te adelantan y otras te frenan.',
         nombre: 'oca',
 
         nuevaPartida(opts = {}) {

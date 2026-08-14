@@ -36,7 +36,7 @@ const { JUEGOS, cargarReglas } = await impo('public/arcade/js/protohub/rules/ind
  * Cuántos lo declaran hoy. Sube y se actualiza este número; si baja, algo se ha
  * perdido por el camino y la prueba lo dice.
  */
-const SUELO = 9;
+const SUELO = 17;
 
 const con = [], sin = [];
 for (const juego of JUEGOS) {

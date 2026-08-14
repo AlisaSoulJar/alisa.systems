@@ -138,6 +138,10 @@ export async function crearUnit({ url = RUTA_BIBLIOTECA, jugadores = 4, mano = 7
     }
 
     return {
+
+        /** A que se juega, para quien no ve la mesa. Lo publica ProtoHub.state. */
+
+        OBJETIVO: 'Objetivo: quedarte sin cartas el primero, encadenando color o numero.',
         nombre: 'unit',
 
         nuevaPartida(opts = {}) {

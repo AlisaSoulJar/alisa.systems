@@ -204,6 +204,10 @@ export function crearGenerala({ jugadores = 2 } = {}) {
     }
 
     return {
+
+        /** A que se juega, para quien no ve la mesa. Lo publica ProtoHub.state. */
+
+        OBJETIVO: 'Objetivo: sumar la mayor puntuacion posible combinando tiradas de dados.',
         nombre: 'generala',
 
         nuevaPartida(opts = {}) {

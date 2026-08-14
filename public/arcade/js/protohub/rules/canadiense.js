@@ -421,6 +421,10 @@ export async function crearCanadiense({ url = RUTA_BIBLIOTECA, jugadores = 4,
         .reduce((s, f) => s + (f.pos === CASA ? 0 : f.pos === META ? FINAL : f.pos), 0);
 
     return {
+
+        /** A que se juega, para quien no ve la mesa. Lo publica ProtoHub.state. */
+
+        OBJETIVO: 'Objetivo: llevar tus fichas a casa antes que nadie; aqui las cartas mandan sobre el dado.',
         nombre: 'canadiense',
 
         nuevaPartida(opts = {}) {

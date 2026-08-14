@@ -224,6 +224,10 @@ export async function crearRemigio({ url = RUTA_BIBLIOTECA, jugadores = 2, mano 
     const cima = (p) => p.descarte[p.descarte.length - 1] ?? null;
 
     return {
+
+        /** A que se juega, para quien no ve la mesa. Lo publica ProtoHub.state. */
+
+        OBJETIVO: 'Objetivo: cerrar la mano ligando todas tus cartas en grupos y escaleras.',
         nombre: 'remigio',
 
         nuevaPartida(opts = {}) {

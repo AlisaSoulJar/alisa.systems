@@ -35,6 +35,10 @@ export async function crearGuerra({ url = RUTA_BIBLIOTECA, jugadores = 2 } = {})
     const TOTAL = baraja.suits.length * baraja.ranks.length;
 
     return {
+
+        /** A que se juega, para quien no ve la mesa. Lo publica ProtoHub.state. */
+
+        OBJETIVO: 'Objetivo: quedarte con todas las cartas; en cada choque gana la mas alta.',
         nombre: 'guerra',
 
         nuevaPartida(opts = {}) {
