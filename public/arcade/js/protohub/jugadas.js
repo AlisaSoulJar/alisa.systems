@@ -75,15 +75,33 @@ function comoTablero(legales, rejilla) {
     // dibujando 361 huecos vacíos para tres botones.
     if (legales.length < ancho) return null;
 
-    const sitios = [];
+    /**
+     * ⚠️ UNA JUGADA QUE NO ES CASILLA NO PUEDE TUMBAR EL MAPA ENTERO.
+     *
+     * La primera versión devolvía `null` en cuanto encontraba algo que no fuera
+     * `letra+número`. Con el go eso significa que 361 casillas perdían su mapa por
+     * culpa de UNA jugada: `pasar`. Y pasar es una jugada legítima y frecuente —en
+     * un go se pasa al final de cada partida—, no un caso raro.
+     *
+     * Las que no son casillas van debajo, en su propia fila. Siguen estando, que
+     * es la regla de oro de estos botones: aquí está TODA jugada legal, sin
+     * excepciones, o la persona y el agente dejan de jugar al mismo juego.
+     */
+    const sitios = [], sueltas = [];
     for (const m of legales) {
         const t = /^([a-z])(\d+)$/i.exec(String(m));
-        if (!t) return null;
+        if (!t) { sueltas.push(m); continue; }
         const x = t[1].toLowerCase().charCodeAt(0) - 97;
         const n = Number(t[2]);
-        if (x < 0 || x >= ancho || n < 1 || n > alto) return null;
+        if (x < 0 || x >= ancho || n < 1 || n > alto) { sueltas.push(m); continue; }
         sitios.push({ m, col: x + 1, fila: alto - n + 1 });
     }
+    // Si lo que hay son casi todo verbos, esto no es un tablero: es una lista.
+    if (sitios.length < ancho || sueltas.length > sitios.length) return null;
+
+    // Las sueltas ocupan la fila de después del tablero, de izquierda a derecha.
+    sueltas.forEach((m, i) => sitios.push({ m, col: (i % ancho) + 1,
+                                            fila: alto + 1 + Math.floor(i / ancho) }));
     return { ancho, alto, sitios };
 }
 
@@ -120,12 +138,31 @@ export function pintarJugadas(caja, { acciones = [], meToca = true, turnoDe = nu
      * cómodo y un go de 19 quepa igual. Los topes están para las dos puntas: un
      * tablero de 3 no hace botones gigantes y uno de 19 no se sale del panel.
      */
+    /**
+     * ⚠️ EL ANCHO TOTAL ES EL LÍMITE, NO EL DE LA CASILLA.
+     *
+     * Con el tope por casilla, un go de 19 daba 19x15 más los huecos y se salía
+     * del panel: trescientas sesenta y una etiquetas amontonadas y desbordando por
+     * la derecha. El límite de verdad es lo que mide el panel, así que se reparte
+     * ESE ancho entre las columnas, descontando los huecos.
+     */
+    let px = 0;
     if (mapa) {
-        const px = Math.max(14, Math.min(34, Math.floor(290 / mapa.ancho)));
+        const HUECO = 2, TOTAL = 270;
+        px = Math.max(11, Math.floor((TOTAL - (mapa.ancho - 1) * HUECO) / mapa.ancho));
+        caja.style.gap = `${HUECO}px`;
         caja.style.gridTemplateColumns = `repeat(${mapa.ancho}, ${px}px)`;
     } else {
+        caja.style.gap = '';
         caja.style.gridTemplateColumns = '';
     }
+    /**
+     * Y por debajo de dieciocho píxeles la etiqueta no cabe y sólo hace ruido: en
+     * un mapa lo que dice dónde está una casilla es SU SITIO, no lo que pone
+     * encima. El nombre sigue en el `title` y en la etiqueta accesible, así que no
+     * se pierde nada — y el tablero se sigue pudiendo tocar directamente.
+     */
+    caja.classList.toggle('mesa-jugadas-mudas', !!mapa && px < 18);
     const sitioDe = mapa ? new Map(mapa.sitios.map(s => [s.m, s])) : null;
 
     for (const m of legales) {
@@ -138,6 +175,9 @@ export function pintarJugadas(caja, { acciones = [], meToca = true, turnoDe = nu
         // recibo y lo que hay que poder leer si algo no cuadra.
         b.textContent = String(m).replace(/^jugar:|^pedir:/, '');
         b.title = m;
+        // Cuando la casilla es tan pequeña que se le quita el texto, el nombre
+        // tiene que seguir estando para quien navega sin ver el mapa.
+        b.setAttribute('aria-label', String(m));
         b.onclick = async () => {
             /**
              * Se apagan TODOS, no sólo el pulsado. En una sala compartida el

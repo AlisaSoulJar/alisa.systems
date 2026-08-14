@@ -215,6 +215,11 @@ export const xiangqi = {
     /** A que se juega, para quien no ve el tablero. Lo publica ProtoHub.state. */
     OBJETIVO: 'Objetivo: dar jaque mate al general rival.',
 
+    // Igual que el go: las piezas van en los CRUCES, no dentro de las casillas.
+    // Es la diferencia más visible con el ajedrez y la que hacía que este tablero
+    // saliera con un damero que no le corresponde.
+    PATRON: 'intersecciones',
+
     id: 'xiangqi',
     nombre: 'Xiangqi',
 

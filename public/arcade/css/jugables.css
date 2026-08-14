@@ -278,7 +278,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
 }
+
+/* Un go son 19 columnas y la casilla se queda en doce píxeles: ahí la etiqueta no
+   cabe, se sale y lo unico que hace es tapar el mapa. El sitio ya dice cuál es, y
+   el nombre sigue en el `title` y en el `aria-label`. */
+#mesa-jugadas.mesa-jugadas-mudas .mesa-jugada { font-size: 0; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
    A QUÉ SE JUEGA — el recuadro que pidió un betatester desde mancala.

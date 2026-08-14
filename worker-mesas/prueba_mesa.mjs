@@ -160,6 +160,31 @@ if (b.library === undefined) {
     comprobar(b.library === true, `la baraja sale del catálogo (library: ${b.library})`, b._json);
 }
 
+/**
+ * ⚠️ QUE LA SALA CUENTE LO MISMO QUE LA CASA. ESTO FALTABA Y COSTÓ CARO.
+ *
+ * El objetivo del juego lo declara `reglas.OBJETIVO` y lo mete en el estado
+ * `ProtoHub.state()`. El árbitro NO pasa por ahí —llama a `reglas.estado(p)`
+ * directamente— así que en una sala compartida la puerta de texto no decía a qué
+ * se juega, y en local sí.
+ *
+ * Es exactamente donde más duele: la sala es el sitio donde un betatester juega
+ * contra un modelo, o sea para lo que existe todo esto. Y el agente de la sala
+ * tenía MENOS información que el de casa por un detalle de fontanería, con lo cual
+ * las dos filas de la tabla no medían lo mismo y nada lo decía.
+ *
+ * Se comprueba contra el texto de verdad, el que recibe quien juega por HTTP, y no
+ * contra la existencia del campo: un `objetivo` presente que no llegue al texto
+ * deja al agente igual de a ciegas.
+ */
+if (b.text) {
+    const dice = /objetivo/i.test(b.text);
+    comprobar(dice, dice
+        ? 'la sala dice a qué se juega, igual que en local'
+        : 'la sala NO dice el objetivo — el agente de la sala sabe menos que el de casa',
+        b.text.slice(0, 160));
+}
+
 // ── 2. El árbitro rechaza a quien no está en su sitio ────────────────────
 // En una mesa de dos, a quien no le toca. En una de uno, a un desconocido — que
 // es el mismo principio: nadie mueve por otro.

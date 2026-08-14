@@ -94,6 +94,16 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
         // El faro de «cuál soy yo». Ámbar y emisivo: tiene que ganarle a
         // cualquier paleta de juego, porque su único trabajo es que lo encuentres.
         faro: material(0xffc23c, { emissive: 0x8a5c00, roughness: 0.35 }),
+        // El tablero de líneas: madera clara y línea oscura, que es como se ve un
+        // goban de verdad y —lo que importa aquí— contrasta con las piedras
+        // blancas y negras sin parecerse a ninguna de las dos.
+        // ⚠️ La madera es MÁS OSCURA de lo que parece que debería. `0xd8b273` es el
+        // color de un goban en una foto, y aquí salía amarillo fosforito: esta mesa
+        // lleva luz cenital fuerte y un tono claro se va de rango. Es el mismo error
+        // que el damero de dos blancos —elegir el color mirando la muestra en vez
+        // del render— sólo que al revés.
+        madera: material(0x7d6039, { roughness: 0.95 }),
+        linea: material(0x2e2010, { roughness: 0.95 }),
         de: Object.fromEntries(Object.entries(COLOR_DE)
             .map(([k, c]) => [k, material(c, { metalness: 0.1 })])),
     };
@@ -160,6 +170,56 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
         return m;
     }
 
+    /**
+     * El tablero de LÍNEAS, para los juegos que se juegan en las intersecciones.
+     *
+     * ⚠️ SE GUARDA POR TAMAÑO Y NO SE REHACE.
+     *
+     * Un goban de 19x19 son treinta y ocho barras más la madera. Construirlo en
+     * cada repintado sería el mismo error que crear `InstancedMesh` a sesenta por
+     * segundo — el que ya está documentado dos veces en este fichero— sólo que
+     * más difícil de ver, porque el resultado se vería BIEN. Se cachea por
+     * `${cols}x${filas}` porque eso es todo lo que lo determina.
+     */
+    const gobanes = new Map();
+    function ponerGoban(cols, filas, dx, dz) {
+        const clave = `goban:${cols}x${filas}`;
+        let g = gobanes.get(clave);
+        if (!g) {
+            g = new THREE.Group();
+
+            // La madera llega media casilla más allá del último cruce por los dos
+            // lados: si acabara justo en la línea, las piedras del borde caerían
+            // medio fuera del tablero.
+            const madera = new THREE.Mesh(
+                new THREE.BoxGeometry(cols, 0.08, filas), mat.madera);
+            madera.position.set(0, -0.04, 0);
+            g.add(madera);
+
+            const barra = (largo, ancho, x, z) => {
+                const b = new THREE.Mesh(
+                    new THREE.BoxGeometry(largo, 0.012, ancho), mat.linea);
+                b.position.set(x, 0.006, z);
+                g.add(b);
+            };
+            const L = 0.045;
+            for (let f = 0; f < filas; f++) barra(cols - 1, L, 0, f + dz);
+            for (let c = 0; c < cols; c++) {
+                const b = new THREE.Mesh(
+                    new THREE.BoxGeometry(L, 0.012, filas - 1), mat.linea);
+                b.position.set(c + dx, 0.006, 0);
+                g.add(b);
+            }
+
+            raiz.add(g);
+            gobanes.set(clave, g);
+        }
+        g.visible = true;
+        // Los de otro tamaño se apagan: un juego puede cambiar de tablero entre
+        // partidas y dos gobanes superpuestos no dan error, dan un borrón.
+        for (const [k, otro] of gobanes) if (k !== clave) otro.visible = false;
+    }
+
     const poner = (m, x, y, z, escY = 1, rotY = 0, escXZ = 1) => {
         POS.set(x, y, z); ESC.set(escXZ, escY, escXZ);
         Q.setFromAxisAngle({ x: 0, y: 1, z: 0 }, rotY);
@@ -213,6 +273,47 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
              * un valor sin mirar. La regla está escrita en `pintar2d.js` y aquí no
              * se cumplía: **0 vacío · 1 muro · 2 destino · >2 cuenta**.
              */
+            /**
+             * ═══════════════════════════════════════════════════════════════
+             *  ⚠️ HAY TABLEROS QUE NO SON CASILLAS, Y ESTA MESA NO LO SABÍA
+             * ═══════════════════════════════════════════════════════════════
+             *
+             * El 13-08-2026 porté el go aquí y lo devolví al verlo: salió un
+             * damero de 19x19 y parecía un tablero de damas gigante. El xiangqi
+             * igual con menos escándalo. Los dos se juegan sobre LÍNEAS, con las
+             * piezas en las INTERSECCIONES, y sin damero ninguno. Dejé apuntado
+             * aquí mismo lo que hacía falta; esto es eso.
+             *
+             * `patron: 'intersecciones'` lo declara la rejilla, o sea el juego.
+             * Damas, ajedrez y reversi siguen con su damero porque siguen sin
+             * declarar nada — que es la propiedad que importa: lo nuevo no toca
+             * a quien no lo pide.
+             *
+             * ⚠️ Y LAS PIEZAS NO SE MUEVEN NI UN MILÍMETRO.
+             *
+             * Da un poco de vértigo, porque «va en la intersección» suena a que
+             * hay que desplazarlas media casilla. No: con casillas, la pieza va
+             * en el CENTRO de la celda (c, f); con intersecciones, va en el CRUCE
+             * (c, f). Es el mismo punto — lo que cambia es lo que se dibuja
+             * debajo, que pasa de un damero a un cruce de dos líneas. La celda
+             * era el andamio, no la posición.
+             */
+            const cruces = sus.rejilla.patron === 'intersecciones';
+            if (cruces) ponerGoban(cols, filas, dx, dz);
+            else for (const g of gobanes.values()) g.visible = false;
+
+            /**
+             * ⚠️ CON CRUCES SE QUITA EL DAMERO, NO EL TERRENO.
+             *
+             * La primera versión se saltaba este bucle entero cuando el tablero era
+             * de intersecciones. Funciona —el go y el xiangqi no tienen muros ni
+             * niebla ni destinos— y es una mina puesta a mano: el primer juego de
+             * cruces que tenga un muro lo vería desaparecer, sin error y sin que
+             * ninguna prueba dijera nada. Ya he tenido hoy bastante de eso.
+             *
+             * Lo que sobra con un goban es el SUELO alterno, así que es lo único
+             * que se deja de meter.
+             */
             const claras = [], oscuras = [], muros = [], destinos = [], nieblas = [];
             for (let f = 0; f < filas; f++) {
                 for (let c = 0; c < cols; c++) {
@@ -221,7 +322,7 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
                     const v = celdas?.[i] ?? 0;
                     if (v === 1) muros.push(punto);
                     else {
-                        ((f + c) % 2 ? oscuras : claras).push(punto);
+                        if (!cruces) ((f + c) % 2 ? oscuras : claras).push(punto);
                         if (v === 2) destinos.push(punto);   // encima del suelo
                     }
                 }

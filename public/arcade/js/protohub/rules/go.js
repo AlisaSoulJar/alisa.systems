@@ -163,6 +163,16 @@ export const go = {
     /** A que se juega, para quien no ve el tablero. Lo publica ProtoHub.state. */
     OBJETIVO: 'Objetivo: rodear mas territorio que el rival; una piedra sin libertades se captura.',
 
+    /**
+     * ⚠️ NO SE JUEGA EN LAS CASILLAS: SE JUEGA EN LOS CRUCES.
+     *
+     * Esto lo tiene que DECIR el juego porque no se puede deducir. Un go y un
+     * reversi publican exactamente la misma matriz de números, y sin esta línea
+     * el pintor dibujaba el go como un damero de 19x19 — parecía un tablero de
+     * damas gigante, y por eso lo devolví el 13-08-2026 en vez de publicarlo.
+     */
+    PATRON: 'intersecciones',
+
     id: 'go',
     nombre: 'Go',
 

@@ -65,7 +65,26 @@ const FORMAS = [
 ];
 
 const b = await chromium.launch({ channel: 'chrome', headless: true });
-console.log('\nLa pasada de betatester, medida\n');
+
+/**
+ * ⚠️ ESTO TARDA, Y HAY QUE PODER DISTINGUIR «LENTO» DE «COLGADO».
+ *
+ * Son dos formas de ventana por juego, o sea setenta cargas de página con Chrome
+ * de verdad: entre diez y veinticinco minutos según lo que más esté corriendo a la
+ * vez. El 14-08-2026 lo di por colgado y lo maté cuando iba por la mitad — y luego
+ * me inventé una causa (un puerto ocupado) que además era falsa, porque esto sirve
+ * por el 8157 con `servir.py` y el proceso que sospeché estaba en el 8099.
+ *
+ * Lo que me dejó a ciegas fue filtrar esta salida por `Select-String` al lanzarlo:
+ * imprime juego a juego a propósito, y colando la salida por un filtro que sólo
+ * busca el total no se ve avanzar nada hasta el final. Un instrumento largo que no
+ * dice por dónde va es un instrumento que se mata por error.
+ *
+ * Se anuncia el trabajo ANTES de empezarlo, que es lo que faltaba.
+ */
+console.log(`\nLa pasada de betatester, medida`);
+console.log(`  ${juegos.length} juegos x ${FORMAS.length} ventanas = `
+          + `${juegos.length * FORMAS.length} cargas. Esto tarda un rato; va imprimiendo.\n`);
 const malos = [];
 
 for (const juego of juegos) {

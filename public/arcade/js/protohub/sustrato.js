@@ -203,6 +203,19 @@ export function sustratoDe(juego, st = {}) {
         ];
     }
 
+    /**
+     * ⚠️ SI EL JUEGO DICE CÓMO ES SU TABLERO, LA REJILLA LO LLEVA.
+     *
+     * Un go y un reversi publican exactamente la misma matriz de números, así que
+     * esto NO se puede derivar: hay que preguntarlo. El juego lo declara con
+     * `PATRON` y el hub lo mete en el estado, igual que el objetivo.
+     *
+     * Va aquí, en un sitio, y no dentro de cada rama de arriba: si mañana un juego
+     * de intersecciones llega por FEN en vez de por matriz —el xiangqi podría—, ya
+     * funciona sin tocar nada.
+     */
+    if (rejilla && st.patron) rejilla.patron = st.patron;
+
     // ── Montones ────────────────────────────────────────────────────────
     // ⚠️ Lo oculto se marca, no se omite. Un consumidor tiene que poder pintar
     // «tres cartas boca abajo» — si aquí desaparecieran, el render mentiría

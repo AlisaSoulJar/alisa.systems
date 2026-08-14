@@ -143,10 +143,22 @@ export class ProtoHub {
         if (!reglas) return null;
         if (!this.partidas.has(juegoId)) this.reset(juegoId);
         const partida = this.partidas.get(juegoId);
+        /**
+         * ⚠️ AQUÍ SE LEE `reglas.estado()` EN CRUDO, NO `this.state()`.
+         *
+         * Y por eso el `patron` que mezcla `state()` NO llegaba: porté el go, dejé
+         * la línea puesta, y el tablero seguía saliendo con damero. El dato estaba
+         * bien declarado en las reglas, bien copiado en `state()`, y este camino
+         * —que es el que usa el pintor— sencillamente no pasa por ahí.
+         *
+         * Se pasa a mano y no se cambia la llamada a `this.state()`, que añade
+         * `fuente` y `conexion` y ensuciaría el sustrato con datos de conexión.
+         */
         if (typeof reglas.sustrato === 'function') {
             return { ...reglas.sustrato(partida, asiento), derivado: false };
         }
-        return sustratoDe(juegoId, reglas.estado(partida, asiento));
+        const st = reglas.estado(partida, asiento);
+        return sustratoDe(juegoId, reglas.PATRON ? { ...st, patron: reglas.PATRON } : st);
     }
 
     /** Equivalente a GET /arcade/{juego}/state */
@@ -180,8 +192,23 @@ export class ProtoHub {
          * copiar es un dato que se queda viejo.
          */
         const objetivo = reglas.OBJETIVO ? { objetivo: reglas.OBJETIVO } : {};
+
+        /**
+         * ⚠️ Y LA FORMA DEL TABLERO, POR EL MISMO CAMINO Y POR LA MISMA RAZÓN.
+         *
+         * `PATRON` dice si el juego se juega en las CASILLAS o en las
+         * INTERSECCIONES. Lo declara el juego una vez y viaja solo, igual que el
+         * objetivo: un dato constante que hay que acordarse de copiar en cada
+         * vuelta es un dato que se queda viejo.
+         *
+         * Lo necesita el pintor, que hasta ahora sólo sabía dibujar dameros —el
+         * go le salía como un tablero de damas de 19x19— y no puede adivinarlo:
+         * un go y un reversi publican la misma matriz de números.
+         */
+        const patron = reglas.PATRON ? { patron: reglas.PATRON } : {};
+
         // La marca deja claro en el HUD que juegas en local, sin engañar a nadie.
-        return { ...estado, ...objetivo, fuente: 'protohub', conexion: 'LOCAL' };
+        return { ...estado, ...objetivo, ...patron, fuente: 'protohub', conexion: 'LOCAL' };
     }
 
     /** Equivalente a POST /arcade/{juego}/move */

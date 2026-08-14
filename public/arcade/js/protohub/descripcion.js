@@ -434,6 +434,10 @@ function contarLaMesa(st, juego) {
         // de cada turno. Lo vi al leer la puerta de texto, no midiendo: las dos
         // copias son válidas cada una por su lado.
         'objetivo',
+        // `patron` es configuración de DIBUJO —si el tablero es de casillas o de
+        // cruces— y a un agente sin ojos no le dice nada de la partida. Sale por
+        // la misma puerta que el objetivo porque viaja igual, pero aquí no pinta.
+        'patron',
     ]);
     const extra = [];
     for (const [k, v] of Object.entries(st)) {

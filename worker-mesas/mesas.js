@@ -476,7 +476,34 @@ export class MesaCompartida {
         // desactivada entera y la fuga seguía ahí, con el arreglo ya escrito.
         // Un juego que no lo acepte se limita a ignorar el argumento de más.
         const i = mesa.asientos.findIndex(a => a.quien === quien);
-        const mío = i > 0 ? reglas.estado(p, i) : st;
+        const crudo = i > 0 ? reglas.estado(p, i) : st;
+
+        /**
+         * ⚠️ EL OBJETIVO Y EL PATRÓN NO LLEGABAN A LAS SALAS. NINGUNO.
+         *
+         * Los dos los declara el juego una vez —`OBJETIVO`, `PATRON`— y los mete
+         * en el estado `ProtoHub.state()`. Este árbitro no pasa por ahí: llama a
+         * `reglas.estado(p)` directamente, así que aquí no aparecían.
+         *
+         * Consecuencia, y es de las que importan: en una sala compartida la puerta
+         * de texto NO decía a qué se juega. O sea que justo donde un betatester
+         * juega contra un modelo —el sitio para el que existe todo esto— el agente
+         * jugaba a ciegas mientras en local se lo contaban. Las dos filas de la
+         * tabla no medían lo mismo, y por el peor motivo: una tenía menos
+         * información que la otra por un detalle de fontanería.
+         *
+         * Y el patrón, lo mismo con el dibujo: el go compartido habría vuelto a
+         * salir con damero mientras en local sale con su goban.
+         *
+         * Va aquí porque `retrato` es el punto por el que pasan TODOS los caminos
+         * —sentarse, mirar, jugar—, que es la misma razón por la que se anota aquí
+         * el asiento. Un sitio o se olvida uno.
+         */
+        const mío = {
+            ...crudo,
+            ...(reglas.OBJETIVO ? { objetivo: reglas.OBJETIVO } : {}),
+            ...(reglas.PATRON ? { patron: reglas.PATRON } : {}),
+        };
         return {
             game: mesa.juego, title: TITULOS[mesa.juego] ?? mesa.juego,
             seed: mesa.semilla,
