@@ -13,5 +13,8 @@
 -->
 <script type="module">
   import { montarMesa } from './js/montarMesa.js';
-  montarMesa({ juego: 'fagocito', visualizador: 'fagocito_visualizer.js' });
+  // Sin visualizador propio: el tercero que vuelve a la mesa generica. Su
+      // camara comprueba si el laberinto cabe y se aparta hasta que entra, que era
+      // justo la queja de Oscar — «no se ve el tablero completo en fagocito».
+      montarMesa({ juego: 'fagocito' });
 </script>
