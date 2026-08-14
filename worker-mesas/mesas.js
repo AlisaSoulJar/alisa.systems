@@ -254,7 +254,28 @@ export class MesaCompartida {
     async sentarse(d, quien) {
         let mesa = await this.cargar();
         if (!mesa) {
-            const juego = JUEGOS.includes(d?.juego) ? d.juego : null;
+            /**
+             * ⚠️ EL ALIAS, OTRA VEZ. TERCERA APARICIÓN DEL MISMO FALLO.
+             *
+             * Esto comprobaba `JUEGOS.includes(d.juego)` y devolvía `null` si no
+             * estaba. Pero `checkers.html` monta `{ juego: 'damas', idJuego:
+             * 'checkers' }` y `chess.html` lo mismo con el ajedrez: la página abre
+             * la sala con el nombre del VISUALIZADOR, que no está en esa lista.
+             *
+             * Consecuencia, medida con dos navegadores el 13-08-2026: el ajedrez y
+             * las damas **no se podían jugar acompañado, en absoluto**. La mesa se
+             * abría vacía —sin turno y sin jugadas legales— y las dos personas se
+             * quedaban mirando un tablero que no era de nadie.
+             *
+             * Es exactamente el mismo fallo que apareció hoy en `cargarReglas` y en
+             * `/api/verificar`: alguien comprueba la lista por su cuenta en vez de
+             * pedírselo a quien conoce los alias. Van tres sitios. `cargarReglas`
+             * los resuelve; lo único que hay que hacer es preguntarle a ella y
+             * juzgar por lo que devuelve.
+             */
+            const pedido = String(d?.juego ?? '');
+            const reglasPedidas = pedido ? await cargarReglas(pedido, {}).catch(() => null) : null;
+            const juego = reglasPedidas ? pedido : null;
             if (!juego) return responder(400, { error: 'falta `juego` para abrir la mesa', juegos: JUEGOS });
             const semilla = Number.isFinite(Number(d?.semilla))
                 ? Number(d.semilla) >>> 0 : Math.floor(Math.random() * 1e6);

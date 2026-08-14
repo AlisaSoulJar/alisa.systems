@@ -66,7 +66,9 @@
     "//mirar": "La pasada de betatester, MEDIDA. El laboratorio pregunta si se puede jugar y responde bien: los 35 en verde. Pero abriendo sus capturas una por una aparecieron cosas que ninguna de sus seis medidas ve — el suelo de la habitacion partiendo el tapete en cuñas durante meses con 92,9% de pintado, once juegos dando sus jugadas como texto gris cortado, paneles en ingles. Esto coge las que ya he visto MIRANDO y las convierte en numeros, para no abrir treinta y una imagenes cada vez. No sustituye a mirar: encuentra lo que ya se buscar, y lo que no, sigue estando en las capturas.",
     "mirar": "node mirar.mjs",
     "//inventario": "Cuenta que piezas del motor USA alguien y cuales llevan ahi sin estrenar, buscando cada nombre del catalogo en todo lo que se sirve al navegador. El 13-08-2026: 179 piezas, 146 usadas, 33 nunca. Ese numero es la distancia entre lo que el motor sabe hacer y lo que el arcade aprovecha, y es justo el tipo de dato que se pudre en silencio: nadie nota que una pieza nueva nace sin cable. La rabieta de volcar la mesa salio de aqui — KinematicRageSystem llevaba desde abril sin estrenar y era la mas facil de sembrar.",
-    "inventario": "node inventario.mjs"
+    "inventario": "node inventario.mjs",
+    "//salas": "¿Funcionan las mesas compartidas, juego por juego? Abre DOS navegadores en la misma sala, hace jugar a quien tenga el turno, y comprueba que a la otra le crece el recibo del arbitro. Importa mas de lo que parece: una partida entre dos personas —o contra la casa— destapa cosas que una en solitario no puede. El 13-08-2026 encontro que el ajedrez y las damas NO SE PODIAN JUGAR ACOMPAÑADO: el arbitro comprobaba la lista de juegos antes de resolver el alias, asi que una sala abierta como chess o checkers salia vacia.",
+    "salas": "node salas.mjs"
   },
   "repository": {
     "type": "git",
