@@ -162,8 +162,26 @@ export class ProtoHub {
         }
         if (!this.partidas.has(juegoId)) this.reset(juegoId);
         const estado = reglas.estado(this.partidas.get(juegoId));
+        /**
+         * ⚠️ EL OBJETIVO DEL JUEGO VIAJA CON EL ESTADO, SI EL JUEGO LO DECLARA.
+         *
+         * Lo encontré jugando yo misma por la puerta de texto: nada me decía si
+         * convenía puntuar alto o bajo. Lo DEDUJE viendo moverse el número después
+         * de una jugada que ya creía buena — pero un agente que juega una sola
+         * jugada, o uno más débil, no puede. En un banco de pruebas, no decir el
+         * objetivo mide la capacidad de adivinarlo, que no es lo que queremos medir.
+         *
+         * Una persona abre la página, ve un tablero de damas y sabe a qué juega. Un
+         * agente recibe una lista de jugadas legales y un número sin dirección.
+         *
+         * Va aquí, en el hub, y no dentro del `estado()` de cada juego: así el juego
+         * sólo declara una frase —`OBJETIVO` en sus reglas— y no tiene que acordarse
+         * de meterla en el estado cada vez. Un dato constante que hay que recordar
+         * copiar es un dato que se queda viejo.
+         */
+        const objetivo = reglas.OBJETIVO ? { objetivo: reglas.OBJETIVO } : {};
         // La marca deja claro en el HUD que juegas en local, sin engañar a nadie.
-        return { ...estado, fuente: 'protohub', conexion: 'LOCAL' };
+        return { ...estado, ...objetivo, fuente: 'protohub', conexion: 'LOCAL' };
     }
 
     /** Equivalente a POST /arcade/{juego}/move */

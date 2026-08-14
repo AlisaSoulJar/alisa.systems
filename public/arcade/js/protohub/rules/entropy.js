@@ -193,6 +193,21 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
     }
 
     return {
+        /**
+         * ⚠️ A QUÉ SE JUEGA, PARA QUIEN NO VE LA MESA.
+         *
+         * Este juego es el que me lo enseñó. Jugué una mano leyendo sólo lo que
+         * recibe un agente y no había forma de saber si «Puntos: -11» era bueno o
+         * malo. Lo deduje viendo moverse el número después de una jugada que ya
+         * creía buena — pero eso es tener suerte, no jugar.
+         *
+         * Una persona abre la página y ve una caja de cartas boca abajo: entiende
+         * el juego en un vistazo. Un agente recibe una lista y un número sin
+         * dirección. En un banco de pruebas, no decir el objetivo mide la capacidad
+         * de adivinarlo, que no es lo que queremos medir.
+         */
+        OBJETIVO: 'Objetivo: acabar con la caja mas BAJA posible; cada carta suma su valor y el comodin vale 0.',
+
         nombre: 'entropy',
 
         nuevaPartida(opts = {}) {

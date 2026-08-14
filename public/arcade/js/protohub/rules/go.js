@@ -160,6 +160,9 @@ function puntuar(b) {
 }
 
 export const go = {
+    /** A que se juega, para quien no ve el tablero. Lo publica ProtoHub.state. */
+    OBJETIVO: 'Objetivo: rodear mas territorio que el rival; una piedra sin libertades se captura.',
+
     id: 'go',
     nombre: 'Go',
 

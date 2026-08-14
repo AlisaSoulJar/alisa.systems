@@ -346,7 +346,19 @@ const { cargarReglas } = await import('./public/arcade/js/protohub/rules/index.j
  * mundo que avanza solo, y entre dos cargas pasan segundos reales. Lo que tiene
  * que coincidir es el REPARTO, no el cronómetro.
  */
-const FUERA = new Set(['fuente', 'conexion', 'biblioteca',
+/**
+ * `objetivo` se añade también aquí, y la prueba tenía razón en quejarse.
+ *
+ * Lo pone el HUB —`ProtoHub.state` lo copia de `reglas.OBJETIVO`— y no el `estado()`
+ * del juego, así que la página publica un campo que las reglas en Node no producen y
+ * esta comprobación cantó «el estado que publica no es el de sus reglas» en los nueve
+ * juegos que acababa de tocar. Nueve a la vez, y todos los que había tocado: el aviso
+ * era exacto.
+ *
+ * Va aquí y no se quita del hub: el objetivo es constante y meterlo en el `estado()`
+ * de cada juego obligaría a treinta y cinco a acordarse de copiarlo en cada vuelta.
+ */
+const FUERA = new Set(['fuente', 'conexion', 'biblioteca', 'objetivo',
                        't', 'tick', 'turnos', 'pasos', 'tiempo']);
 const limpia = (st) => JSON.stringify(
     Object.fromEntries(Object.entries(st ?? {}).filter(([k]) => !FUERA.has(k))));

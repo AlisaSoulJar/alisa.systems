@@ -58,7 +58,19 @@ export function describirEstado(juego, st) {
     const puedes = todas.length > TOPE_JUGADAS
         ? `${todas.slice(0, TOPE_JUGADAS).join(', ')} … y ${todas.length - TOPE_JUGADAS} más (${todas.length} en total)`
         : todas.join(', ');
-    return `${nombreLegible(juego)}.${normasEnPalabras(st)} Puntos: ${puntuacionDe(st)}.`
+    /**
+     * ⚠️ EL OBJETIVO VA LO PRIMERO, ANTES QUE LOS PUNTOS.
+     *
+     * Porque los puntos no significan nada sin él. «Puntos: -11» puede ser bueno o
+     * malo, y no había forma de saberlo: yo lo deduje jugando dos manos y mirando
+     * hacia dónde se movía el número.
+     *
+     * Se dice una vez por vuelta y ocupa una línea. Es el mejor cambio por carácter
+     * de toda esta descripción — sin él, todo lo demás es un cuadro de mandos sin
+     * etiquetas.
+     */
+    const meta = st.objetivo ? ` ${st.objetivo}` : '';
+    return `${nombreLegible(juego)}.${meta}${normasEnPalabras(st)} Puntos: ${puntuacionDe(st)}.`
          + ` Turno: ${st.turn ?? 'único'}.`
          + contarLaMesa(st, juego)
          + (st.is_game_over ? ' La partida ha terminado.'

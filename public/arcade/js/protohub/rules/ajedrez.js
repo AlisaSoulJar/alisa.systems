@@ -386,6 +386,9 @@ function marcadorBlancas(p, resultado) {
 // ─── el módulo que consume el ProtoHub ──────────────────────────
 
 export const ajedrez = {
+    /** A que se juega, para quien no ve el tablero. Lo publica ProtoHub.state. */
+    OBJETIVO: 'Objetivo: dar jaque mate al rey rival.',
+
     id: 'chess',
     nombre: 'Ajedrez',
 

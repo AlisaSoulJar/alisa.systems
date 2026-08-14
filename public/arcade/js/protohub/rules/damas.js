@@ -249,6 +249,9 @@ export function crearDamas(opts = {}) {
 }
 
 export const damas = {
+    /** A que se juega, para quien no ve el tablero. Lo publica ProtoHub.state. */
+    OBJETIVO: 'Objetivo: dejar al rival sin fichas o sin jugadas. Comer es obligatorio.',
+
     id: 'checkers',
     nombre: 'Damas',
 

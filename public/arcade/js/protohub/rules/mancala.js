@@ -39,6 +39,9 @@ function tableroInicial() {
 const sumaLado = (b, j) => HUECOS[j].reduce((s, i) => s + b[i], 0);
 
 export const mancala = {
+    /** A que se juega, para quien no ve el tablero. Lo publica ProtoHub.state. */
+    OBJETIVO: 'Objetivo: acabar con mas semillas en tu granero que el rival.',
+
     id: 'mancala',
     nombre: 'Mancala',
 

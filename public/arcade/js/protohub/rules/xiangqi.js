@@ -212,6 +212,9 @@ function marcadorRojo(g, resultado) {
 }
 
 export const xiangqi = {
+    /** A que se juega, para quien no ve el tablero. Lo publica ProtoHub.state. */
+    OBJETIVO: 'Objetivo: dar jaque mate al general rival.',
+
     id: 'xiangqi',
     nombre: 'Xiangqi',
 

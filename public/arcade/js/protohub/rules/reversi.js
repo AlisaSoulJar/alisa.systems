@@ -85,6 +85,9 @@ function haciaFEN(p) {
 }
 
 export const reversi = {
+    /** A que se juega, para quien no ve el tablero. Lo publica ProtoHub.state. */
+    OBJETIVO: 'Objetivo: terminar con MAS fichas tuyas que del rival; cada jugada voltea las que encierras.',
+
     id: 'reversi',
     nombre: 'Reversi',
 
