@@ -430,7 +430,8 @@ async function refrescar() {
         const st = mesaCompartida.estado();
         if (st) {
             const { sustratoDe } = await import('./protohub/sustrato.js');
-            pintor.pintar(sustratoDe(juego, st));
+            const sus = sustratoDe(juego, st);
+            pintor.pintar(sus);
             const txt = document.getElementById('estado-txt');
             if (txt) {
                 txt.innerHTML = `<span>Turno</span><span class="val">${st.turn ?? '—'}</span>`
@@ -442,6 +443,7 @@ async function refrescar() {
                 turnoDe: st.turn,
                 terminada: !!st.is_game_over,
                 espectador: mesaCompartida.espectador,
+                rejilla: sus?.rejilla ?? null,
                 enviar: (m) => mesaCompartida.jugar(m).then(refrescar),
             });
         }
@@ -449,7 +451,8 @@ async function refrescar() {
     }
 
     const st = hub.state(juego);
-    pintor.pintar(hub.sustrato(juego));
+    const susLocal = hub.sustrato(juego);
+    pintor.pintar(susLocal);
 
     const marcador = st.puntos ?? st.score ?? st.marcador;
     const txt = document.getElementById('estado-txt');
@@ -462,6 +465,7 @@ async function refrescar() {
     pintarJugadas(document.getElementById('mesa-jugadas'), {
         acciones: legalesAhora,
         terminada: !!st.is_game_over,
+        rejilla: susLocal?.rejilla ?? null,
         enviar: (m) => { hub.move(juego, { move: m }); refrescar(); },
     });
 }

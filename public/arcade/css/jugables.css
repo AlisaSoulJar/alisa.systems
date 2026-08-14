@@ -249,6 +249,38 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   EL PANEL CON LA FORMA DEL TABLERO — lo pidió un betatester desde flota.
+   ═══════════════════════════════════════════════════════════════════════════
+   «que el panel no tenga la misma forma que el tablero es un follon :D
+    deberiamso crear dos matrices abcd 123 que se correspondan»
+
+   Las columnas las pone `jugadas.js` en el estilo del elemento, porque el número
+   lo dice la rejilla del sustrato y cambia con el juego: 8 en flota, 5 en un
+   sokoban. Aquí sólo va lo que no depende del tablero.
+
+   Las casillas salen cuadradas (`aspect-ratio: 1`) y con la letra pequeña: son
+   sesenta y cuatro y lo que importa de cada una es DÓNDE está, no lo que pone.
+   ═══════════════════════════════════════════════════════════════════════════ */
+#mesa-jugadas.mesa-jugadas-mapa {
+    display: grid;
+    gap: 2px;
+    /* El ancho de columna lo pone `jugadas.js` en píxeles, calculado del ancho del
+       tablero. No se puede dejar en `1fr` porque el panel se encoge a su contenido
+       y `1fr` acaba pidiéndose a sí mismo lo mínimo: mapa correcto y aplastado. */
+    width: max-content;
+}
+#mesa-jugadas.mesa-jugadas-mapa .mesa-jugada {
+    aspect-ratio: 1;
+    min-width: 0;
+    padding: 0;
+    font-size: 9px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    A QUÉ SE JUEGA — el recuadro que pidió un betatester desde mancala.
    ═══════════════════════════════════════════════════════════════════════════
    «va solo no? o se juega asi? ni idea tengo de como se juega en realidad XD»
