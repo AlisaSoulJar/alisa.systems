@@ -151,6 +151,30 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
         m.setMatrixAt(m.count++, M);
     };
 
+    /**
+     * ⚠️ LO QUE LE FALTA A ESTA MESA PARA ADMITIR EL GO Y EL XIANGQI.
+     *
+     * El 13-08-2026 porté los dos aquí y los DEVOLVÍ al verlos. El go salió como un
+     * damero de 19×19 —parecía un tablero de damas gigante— y el xiangqi igual con
+     * menos escándalo. Los dos se juegan sobre LÍNEAS, con las piezas en las
+     * INTERSECCIONES, y sin damero ninguno.
+     *
+     * No es un problema de colores: es que esta mesa sólo sabe dibujar una rejilla
+     * de CELDAS, y hay una familia entera de tableros que no son celdas. Mientras
+     * eso no exista, sus visualizadores propios se quedan — el trinquete es un
+     * medio, no un fin, y publicar un go que parece otro juego es peor que tener un
+     * fichero de más.
+     *
+     * Lo que hace falta, y sigue el mismo patrón que todo lo de hoy —lo dice el
+     * dato, no lo adivina quien pinta—: que la rejilla pueda declarar su forma.
+     *
+     *     rejilla: { ancho, alto, celdas, patron: 'intersecciones' }
+     *
+     * Con eso el pintor dibujaría líneas en vez de casillas y colocaría las piezas
+     * en los cruces, que es media docena de líneas aquí y ninguna en los juegos.
+     * Damas, ajedrez y reversi seguirían con su damero porque seguirían sin
+     * declarar nada.
+     */
     function pintar(sus) {
         if (!sus) return;
         const usados = new Set();
