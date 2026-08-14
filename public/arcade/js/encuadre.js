@@ -39,11 +39,12 @@
      * Eso escaló un ajedrez ocho veces de más. Copiado tal cual de la mesa, que es
      * donde se aprendió.
      */
-    function cajaReal(raiz) {
+    function cajaReal(raiz, saltar = null) {
         const c = new THREE.Box3(), m = new THREE.Matrix4(), b = new THREE.Box3();
         raiz.updateMatrixWorld(true);
         raiz.traverse((o) => {
             if (!o.isMesh || !o.geometry) return;
+            if (saltar && saltar.has(o.name)) return;
             if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
             if (o.isInstancedMesh && o.instanceMatrix) {
                 for (let i = 0; i < o.count; i++) {
@@ -79,10 +80,14 @@
             camara, objeto, controles = null,
             inclinacion = 0.95, margen = 0.92,
             intentos = 12, paso = 1.12, distancia = null,
+            // Montones que no cuentan para encajar. Lo usa la niebla: en cripta,
+            // apartarse hasta que quepa lo que NO sabes deja la partida en una
+            // esquina de tres centímetros.
+            saltar = null,
         } = cfg || {};
         if (!camara || !objeto) return null;
 
-        const caja = cajaReal(objeto);
+        const caja = cajaReal(objeto, saltar);
         const t = caja.getSize(new THREE.Vector3());
         const mayor = Math.max(t.x, t.y, t.z);
         if (!(mayor > 0.001)) return null;

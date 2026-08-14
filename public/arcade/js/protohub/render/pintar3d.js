@@ -142,6 +142,9 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
             // Se pide algo de holgura para no rehacerlo en cuanto entre una
             // pieza más: un tablero gana y pierde fichas todo el rato.
             m = new THREE.InstancedMesh(geometria, materialUsado, Math.max(16, Math.ceil(cuantas * 1.4)));
+            // El nombre es la clave, para que desde fuera se pueda hablar de un
+            // montón concreto — el encuadre necesita poder dejar fuera la niebla.
+            m.name = clave;
             m.frustumCulled = false;
             raiz.add(m);
             montones.set(clave, m);

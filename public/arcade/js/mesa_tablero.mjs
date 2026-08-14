@@ -166,13 +166,54 @@ function cajaReal(raiz) {
     return c;
 }
 
+/**
+ * ⚠️ EN LOS JUEGOS CON NIEBLA SE ENCUADRA LO QUE SABES, NO EL TABLERO ENTERO.
+ *
+ * En cripta lo sin explorar es casi todo, así que encajar el tablero completo deja
+ * la partida en una esquina de tres centímetros mientras el 90% de la pantalla es
+ * lo que NO has visto. Relevo y sigilo, igual. Es la misma queja que las cartas de
+ * esta noche con otra ropa: la cámara reparte sitio por igual entre lo que hay que
+ * leer y lo que sólo hay que saber que existe.
+ *
+ * La niebla se dibuja en su propio montón instanciado, así que basta con dejarlo
+ * fuera de la medida. Y como el encuadre CRECE conforme exploras, la vista se abre
+ * sola: al principio ves tu esquina y al final el mapa entero.
+ *
+ * ⚠️ CON UN SUELO, PORQUE AL EMPEZAR SÓLO SE CONOCE UNA CASILLA.
+ *
+ * Sin él, la primera partida se abriría con una casilla ocupando la pantalla. Se
+ * limita a que lo conocido no pueda salir más de tres veces más grande de lo que
+ * saldría el tablero completo.
+ *
+ * ⚠️ Y SÓLO SE APLICA SI HAY NIEBLA. Los treinta y pico juegos sin ella pasan por
+ * la misma rama de siempre, con la misma medida de siempre. Un cambio en el
+ * encuadre puede romper quince mesas a la vez, así que no se toca a quien no lo pide.
+ */
+const SIN_NIEBLA = new Set(['niebla']);
+
 let encuadrado = false;
 function encajar() {
     if (anfitrion || !grupo.children.length) return;   // de invitada manda la sala
     grupo.scale.setScalar(1);
-    const t = cajaReal(grupo).getSize(new THREE.Vector3());
-    const mayor = Math.max(t.x, t.z);
-    if (!(mayor > 0.001)) return;
+
+    const todo = cajaReal(grupo).getSize(new THREE.Vector3());
+    const mayorTodo = Math.max(todo.x, todo.z);
+    if (!(mayorTodo > 0.001)) return;
+
+    let mayor = mayorTodo;
+    // ⚠️ `traverse` y no `children`: el pintor cuelga su raíz DENTRO de `grupo`, así
+    // que la niebla es nieta y no hija. Con `children.some(...)` la condición era
+    // falsa siempre y todo este bloque no hacía nada — la tercera vez esta noche que
+    // doy por sabida una estructura en vez de preguntarla.
+    let conNiebla = false;
+    grupo.traverse(o => { if (o.name === 'niebla' && o.visible && o.count > 0) conNiebla = true; });
+    if (conNiebla) {
+        const s = cajaReal(grupo, SIN_NIEBLA).getSize(new THREE.Vector3());
+        const sabido = Math.max(s.x, s.z);
+        // El suelo: nunca más de 3x el tablero entero, o una casilla llenaría la mesa.
+        if (sabido > 0.001) mayor = Math.max(sabido, mayorTodo / 3);
+    }
+
     grupo.scale.setScalar(LADO / mayor);
 
     if (encuadrado) return;
@@ -212,6 +253,10 @@ function encajar() {
     ALISA_ENCUADRE.encajarCamara({
         camara, objeto: grupo, controles,
         inclinacion: INCLINACION, distancia: LADO * 1.15,
+        // La niebla tampoco cuenta aquí: si la cámara se aparta hasta que quepa lo
+        // desconocido, escalar sólo lo conocido no sirve de nada — se ganaría por
+        // un lado y se perdería por el otro.
+        saltar: conNiebla ? SIN_NIEBLA : null,
     });
     encuadrado = true;
 }
