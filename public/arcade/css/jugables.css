@@ -249,6 +249,177 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   EN EL AJEDREZ NO SE PODÍA PULSAR NI UNA JUGADA: EL LIENZO TAPABA EL PANEL
+   ═══════════════════════════════════════════════════════════════════════════
+   Medido: `document.elementFromPoint()` en el centro de los botones `a2a3`,
+   `a2a4`, `b2b3` devolvía CANVAS, no el botón. O sea que el toque iba al 3D y el
+   botón no se enteraba nunca — cero llamadas a `hub.move`, cero avisos en
+   consola, y los botones ahí pintados tan normales.
+
+   En un móvil, sin teclado, eso deja el ajedrez SIN FORMA DE JUGAR: es el único
+   de los treinta y cinco cuyo tablero tampoco responde al tacto.
+
+   ⚠️ Y ESTAS TRES REGLAS NO SON LO QUE LO ARREGLÓ. LO DIGO PORQUE ME PASÓ.
+
+   Di por hecho que era un problema de apilado: el overlay lleva `z-index: 10`
+   puesto a mano y SIN `position`, y un `z-index` sin posicionar no hace nada.
+   Encaja con el síntoma, así que posicioné las capas. `elementFromPoint` siguió
+   devolviendo CANVAS. Luego subí `#mesa-jugadas` por si el motor la colgaba del
+   `body`. Igual. Dos parches, cero cambio en la medida.
+
+   La causa real estaba en otro sitio y se arregla en `SovereignBoardEngine.js`:
+   la tira de jugadas acababa DENTRO de `#hud-content`, que plegado va a
+   `max-height: 0; overflow: hidden`. El botón conservaba su rectángulo —por eso
+   `getBoundingClientRect` lo daba donde tocaba— pero estaba recortado y fuera del
+   reparto de golpes. No es que algo estuviera encima: es que el botón no estaba.
+
+   Las reglas se quedan porque ordenar lienzo y panel es correcto de todas formas
+   y `card_hud.css` ya lo hacía en las páginas de cartas. Pero no arreglaron esto,
+   y dejarlo escrito como si sí es cómo el próximo que lo lea pierde la tarde que
+   he perdido yo.
+   ═══════════════════════════════════════════════════════════════════════════ */
+#canvas-container { position: absolute; top: 0; left: 0; z-index: 1; }
+.overlay { position: absolute; top: 0; left: 0; z-index: 10; }
+#mesa-jugadas { position: relative; z-index: 20; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   EL LIENZO ES PARA JUGAR, NO PARA DESPLAZAR LA PÁGINA
+   ═══════════════════════════════════════════════════════════════════════════
+   ⚠️ ESTO NO ARREGLÓ LO QUE YO CREÍA. SE QUEDA POR OTRO MOTIVO, Y LO DIGO.
+
+   `tacto.mjs` daba que el ratón llegaba a más jugadas que el dedo (flota 31 contra
+   27, go 113 contra 82) y di por hecho que era el navegador quedándose el gesto:
+   sin `touch-action`, un toque es candidato a desplazar, y para cuando el
+   navegador decide que no lo era ya ha mandado `pointercancel`. Es una causa real
+   y encajaba con el síntoma.
+
+   No era. Puse la regla y los números salieron IDÉNTICOS, hasta la unidad. Y al
+   mirar QUÉ jugadas difieren, tampoco era pérdida: el dedo llega a `a2` y `a4`,
+   que el ratón no; el ratón a `e2`, `f4`, `h2`, que el dedo no. Son casillas de
+   borde. La rejilla de sondeo cae justo entre celdas y cada mano redondea a un
+   lado. O sea que las dos entradas funcionan igual de bien y lo que fallaba era la
+   regla con la que yo decidía si coincidían.
+
+   Se queda porque en un móvil DE VERDAD sí hace falta: sin ella, arrastrar para
+   girar la cámara dispara el «tirar para recargar» y el zoom de dos dedos de la
+   página. Eso no lo mide un Chrome sin cabeza — pero es la razón por la que la
+   regla existe, y no la que me trajo hasta aquí.
+
+   No hay nada que desplazar en el lienzo: ocupa la pantalla y la cámara la maneja
+   OrbitControls. `none` le dice al navegador que no se meta.
+
+   ⚠️ El panel SÍ tiene que poder desplazarse: sesenta y cuatro botones en un móvil
+   no caben, y quitarle el gesto lo dejaría sin scroll. Por eso esto es sólo para
+   el lienzo, y se dice `auto` en el panel para que ninguna regla de más lo pise.
+   ═══════════════════════════════════════════════════════════════════════════ */
+#canvas-container,
+#canvas-container canvas {
+    touch-action: none;
+}
+.hud-panel,
+#mesa-jugadas {
+    touch-action: auto;
+}
+
+/**
+ * ⚠️ Y LOS BOTONES, `manipulation`: SIN DOBLE-TOQUE PARA HACER ZOOM.
+ *
+ * Éste sí salió de una medida. `tacto.mjs`, mismos puntos y misma página, sólo
+ * cambiando la mano:
+ *
+ *     brisca  dedo 1/3    ratón 3/3
+ *     tute    dedo 1/10   ratón 6/10
+ *     hearts  dedo 1/13   ratón 6/13
+ *
+ * Con el dedo, casi siempre exactamente uno. Y NO es que el botón se quede
+ * apagado: pulsándolos por su posición real, dedo y ratón dan cuatro de cuatro
+ * los dos. Lo que pasa es que un segundo toque rápido y cerca del anterior el
+ * navegador lo interpreta como DOBLE TOQUE PARA HACER ZOOM y se lo queda.
+ *
+ * En un móvil de verdad eso muerde cada vez que alguien tira dos cartas seguidas
+ * deprisa: la segunda no pasa y parece que la mesa se ha colgado.
+ *
+ * `manipulation` deja el desplazamiento y quita el doble-toque, que es justo lo
+ * que hace falta. Va en los botones y no en el panel entero para no quitarle el
+ * scroll a una lista de sesenta y cuatro casillas.
+ */
+.mesa-jugada,
+#alisa-mandos .mando,
+.hud-panel button {
+    touch-action: manipulation;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LOS MANDOS — pantalla completa y esconder el panel
+   ═══════════════════════════════════════════════════════════════════════════
+   Van FUERA del panel porque uno de los dos lo hace desaparecer: un botón que se
+   esconde a sí mismo deja sin salida a quien no tiene teclado.
+
+   ⚠️ ABAJO A LA IZQUIERDA, Y NO ARRIBA A LA DERECHA COMO PENSÉ PRIMERO.
+
+   Arriba a la derecha parecía la esquina libre: el panel está arriba a la
+   izquierda y «¿algo va raro?» abajo a la derecha. En escritorio es verdad. En
+   móvil NO: ahí el panel ocupa todo el ancho, así que «arriba a la derecha» es
+   dentro del panel — y los mandos tapaban su botón de plegar. Se veía en la
+   captura; midiendo posiciones no habría salido, porque las dos cosas estaban
+   exactamente donde cada una pedía estar.
+
+   Abajo a la izquierda está libre en las dos, y en un móvil además cae donde
+   llega el pulgar.
+
+   44 px de lado: es el mínimo que se acierta con un dedo sin apuntar, el mismo
+   número que ya usan los botones de jugada cuando el panel está plegado.
+   ═══════════════════════════════════════════════════════════════════════════ */
+#alisa-mandos {
+    position: fixed;
+    bottom: 14px;
+    left: 14px;
+    z-index: 40;                 /* por encima del panel (10) y del lienzo */
+    display: flex;
+    gap: 8px;
+    pointer-events: none;        /* la barra no, los botones sí */
+}
+#alisa-mandos .mando {
+    pointer-events: auto;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    line-height: 1;
+    color: #cfc6e8;
+    background: rgba(20, 17, 32, 0.82);
+    border: 1px solid rgba(160, 140, 220, 0.28);
+    border-radius: 10px;
+    backdrop-filter: blur(6px);
+    cursor: pointer;
+    /* Sin el resalte azul del toque en móvil, que en un botón que se pulsa mucho
+       parpadea y parece que la página está rota. */
+    -webkit-tap-highlight-color: transparent;
+    /* Y sin selección de texto: mantener pulsado un icono seleccionaba el glifo. */
+    user-select: none;
+    -webkit-user-select: none;
+    transition: background 0.12s, border-color 0.12s;
+}
+#alisa-mandos .mando:hover,
+#alisa-mandos .mando:focus-visible {
+    background: rgba(38, 32, 58, 0.92);
+    border-color: rgba(190, 170, 255, 0.55);
+    outline: none;
+}
+#alisa-mandos .mando:active { transform: translateY(1px); }
+
+/* Escondido del todo, no plegado. El `▾` de siempre encoge el panel dejando las
+   jugadas a la vista —para jugar con poco sitio—; esto es la otra necesidad:
+   quitarlo de en medio para ver la mesa. Conviven porque no son lo mismo. */
+.hud-panel.oculto { display: none !important; }
+
+/* En pantalla completa el navegador ya quita su barra; los mandos se pegan un poco
+   más al borde para no comerse el sitio que se acaba de ganar. */
+:fullscreen #alisa-mandos { bottom: 10px; left: 10px; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
    EL PANEL CON LA FORMA DEL TABLERO — lo pidió un betatester desde flota.
    ═══════════════════════════════════════════════════════════════════════════
    «que el panel no tenga la misma forma que el tablero es un follon :D

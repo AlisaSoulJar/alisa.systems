@@ -158,7 +158,11 @@ export class ProtoHub {
             return { ...reglas.sustrato(partida, asiento), derivado: false };
         }
         const st = reglas.estado(partida, asiento);
-        return sustratoDe(juegoId, reglas.PATRON ? { ...st, patron: reglas.PATRON } : st);
+        return sustratoDe(juegoId, {
+            ...st,
+            ...(reglas.PATRON ? { patron: reglas.PATRON } : {}),
+            ...(reglas.COLORES ? { colores: reglas.COLORES } : {}),
+        });
     }
 
     /** Equivalente a GET /arcade/{juego}/state */
@@ -207,8 +211,13 @@ export class ProtoHub {
          */
         const patron = reglas.PATRON ? { patron: reglas.PATRON } : {};
 
+        // Y de qué color son las piezas, cuando el juego lo dice. En el go los
+        // colores no son aspecto: son el nombre de los bandos.
+        const colores = reglas.COLORES ? { colores: reglas.COLORES } : {};
+
         // La marca deja claro en el HUD que juegas en local, sin engañar a nadie.
-        return { ...estado, ...objetivo, ...patron, fuente: 'protohub', conexion: 'LOCAL' };
+        return { ...estado, ...objetivo, ...patron, ...colores,
+                 fuente: 'protohub', conexion: 'LOCAL' };
     }
 
     /** Equivalente a POST /arcade/{juego}/move */

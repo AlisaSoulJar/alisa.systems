@@ -20,6 +20,8 @@
  * misma matriz con altura —`pintar3d.js`— y llega después, no en vez de.
  */
 
+import { colorDe, enCSS } from './paleta.js';
+
 /** Paleta. Sobria a propósito: esto es un instrumento, no una portada. */
 const COLOR = {
     fondo: '#f4f6f8', linea: '#c9d3dd', muro: '#39485c',
@@ -128,12 +130,26 @@ function pintarRejilla(ctx, sus, W, H) {
     for (const p of (sus.piezas ?? [])) {
         const cx = x0 + p.x * lado + lado / 2;
         const cy = y0 + p.y * lado + lado / 2;
-        pintarPieza(ctx, p, cx, cy, lado, sus.leyenda);
+        pintarPieza(ctx, p, cx, cy, lado, sus.leyenda, sus.colores);
     }
 }
 
-function pintarPieza(ctx, p, cx, cy, lado, leyenda) {
-    const color = p.de === 0 ? COLOR.jugador0 : p.de === 1 ? COLOR.jugador1 : COLOR.neutro;
+function pintarPieza(ctx, p, cx, cy, lado, leyenda, colores) {
+    /**
+     * ⚠️ EL COLOR QUE DECLARA EL JUEGO MANDA TAMBIÉN AQUÍ.
+     *
+     * Esto tenía su propia tabla por dueño y `pintar3d.js` la suya. En cuanto el go
+     * declaró `{0:'negro', 1:'blanco'}`, la mesa le hacía caso y este minimapa no:
+     * piedras negras en el tablero y azules en el panel, a la vez y en la misma
+     * pantalla. El mismo estado contado por dos proyecciones, y una mintiendo — que
+     * es exactamente lo que el sustrato existe para impedir.
+     *
+     * Los dos leen ahora de `paleta.js`. Sin declaración, cada uno sigue con lo
+     * suyo de siempre.
+     */
+    const declarado = colorDe(p.de, colores);
+    const color = declarado !== null ? enCSS(declarado)
+                : p.de === 0 ? COLOR.jugador0 : p.de === 1 ? COLOR.jugador1 : COLOR.neutro;
     const forma = FORMAS[p.t] ?? 'disco';
     ctx.fillStyle = color;
 

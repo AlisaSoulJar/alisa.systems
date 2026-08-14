@@ -31,6 +31,8 @@
  * cosas, que es exactamente lo que un espectador puede hacer.
  */
 
+import { colorDe } from './paleta.js';
+
 /** Alturas por tipo. Lo que no esté aquí sale como ficha baja. */
 const ALTO = {
     muro: 1.0, cabeza: 0.6, cuerpo: 0.45, bolita: 0.12, comida: 0.3,
@@ -220,6 +222,20 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
         for (const [k, otro] of gobanes) if (k !== clave) otro.visible = false;
     }
 
+    /**
+     * El material de un dueño. Si el juego declaró color, ése; si no, el genérico
+     * de siempre. La paleta y el aviso de nombre inventado viven en `paleta.js`,
+     * que es el mismo sitio del que lee el pintor 2D — si cada uno tuviera el suyo,
+     * el go saldría con piedras negras en la mesa y azules en el minimapa.
+     */
+    const matsColor = new Map();
+    function materialDe(de, colores) {
+        const hex = colorDe(de, colores);
+        if (hex === null) return mat.de[de] ?? mat.de.null;
+        if (!matsColor.has(hex)) matsColor.set(hex, material(hex, { metalness: 0.1 }));
+        return matsColor.get(hex);
+    }
+
     const poner = (m, x, y, z, escY = 1, rotY = 0, escXZ = 1) => {
         POS.set(x, y, z); ESC.set(escXZ, escY, escXZ);
         Q.setFromAxisAngle({ x: 0, y: 1, z: 0 }, rotY);
@@ -355,7 +371,7 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
                 grupos.get(clave).items.push(p);
             }
             for (const [clave, g] of grupos) {
-                const m = monton(clave, geo[g.forma], mat.de[g.de] ?? mat.de.null, g.items.length);
+                const m = monton(clave, geo[g.forma], materialDe(g.de, sus.colores), g.items.length);
                 for (const p of g.items) {
                     poner(m, p.x + dx, g.alto / 2 + 0.08, p.y + dz,
                           g.forma === 'cubo' ? g.alto : 1);

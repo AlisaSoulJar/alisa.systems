@@ -488,6 +488,32 @@ class SovereignBoardEngine {
         
         container.innerHTML = html;
 
+        /**
+         * ⚠️ Y SE RECOLOCA A MANO, PORQUE LA PLANTILLA NO BASTA.
+         *
+         * La tira de jugadas se escribe arriba como HERMANA de `#hud-content`, con
+         * su comentario y todo. Medido en el ajedrez el 14-08-2026, el navegador la
+         * enseñaba DENTRO — y plegado (que en móvil es como arranca) `#hud-content`
+         * va a `max-height: 0; overflow: hidden`, así que los botones quedan
+         * recortados: siguen teniendo rectángulo, `getBoundingClientRect` los da
+         * donde tocan, y `elementsFromPoint` en su propio centro devuelve el lienzo.
+         * O sea que en un móvil NO SE PODÍA PULSAR NINGUNA JUGADA DEL AJEDREZ, y es
+         * el único cuyo tablero tampoco responde al tacto: sin forma de jugar.
+         *
+         * La causa es que `customUpperHtml` lo escribe cada visualizador y basta un
+         * `<div>` sin cerrar para que el analizador se trague lo que viene detrás.
+         * Auditar esas cadenas a ojo arregla la de hoy y no la de mañana.
+         *
+         * Perseguí esto con dos parches de `z-index` que no cambiaron la medida ni
+         * un punto —el problema nunca fue el apilado, era el recorte— antes de
+         * mirar dónde estaba el botón de verdad.
+         */
+        const panelJugadas = document.getElementById('main-hud');
+        const tira = document.getElementById('mesa-jugadas');
+        if (panelJugadas && tira && tira.parentElement !== panelJugadas) {
+            panelJugadas.appendChild(tira);
+        }
+
         const hud = document.getElementById('main-hud');
         const btn = document.getElementById('dockBtn');
 

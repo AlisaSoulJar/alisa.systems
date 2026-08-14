@@ -173,6 +173,19 @@ export const go = {
      */
     PATRON: 'intersecciones',
 
+    /**
+     * ⚠️ AQUÍ EL COLOR NO ES ASPECTO: ES LA REGLA.
+     *
+     * En casi todos los juegos de esta mesa da igual que un bando salga azul y el
+     * otro rojo — son «el de arriba» y «el de abajo». En el go no: «juegas negras»
+     * es cómo se nombra tu bando, el estado dice `black` y `white`, y las piedras
+     * salían azul y roja. No era feo, era otra cosa.
+     *
+     * Se dice el NOMBRE del color, no un hexadecimal: qué tono necesita ese negro
+     * con la luz de la mesa es problema del pintor, no de las reglas del go.
+     */
+    COLORES: { 0: 'negro', 1: 'blanco' },
+
     id: 'go',
     nombre: 'Go',
 

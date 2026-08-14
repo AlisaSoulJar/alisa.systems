@@ -503,6 +503,7 @@ export class MesaCompartida {
             ...crudo,
             ...(reglas.OBJETIVO ? { objetivo: reglas.OBJETIVO } : {}),
             ...(reglas.PATRON ? { patron: reglas.PATRON } : {}),
+            ...(reglas.COLORES ? { colores: reglas.COLORES } : {}),
         };
         return {
             game: mesa.juego, title: TITULOS[mesa.juego] ?? mesa.juego,

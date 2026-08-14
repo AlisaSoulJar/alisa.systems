@@ -51,7 +51,7 @@ import { JUEGOS, TITULOS, cargarReglas } from './protohub/rules/index.js';
  * `prueba_version.mjs` comprueba que corresponde a lo que hay en disco y, si no,
  * dice el valor que toca. No hay que acordarse: hay que hacer caso a la prueba.
  */
-const VERSION = 'b1de7ad2';
+const VERSION = 'e53a700d';
 
 /** Lo que toda página de tablero necesitaba y repetía. En orden. */
 const ANDAMIO = [
@@ -69,6 +69,10 @@ const ANDAMIO = [
     // El encuadre. Lo aprendió la mesa genérica y lo necesitan los visualizadores
     // propios, que son clásicos: por eso vive aquí y no dentro de la mesa.
     'js/encuadre.js',
+    // Pantalla completa y esconder el panel. Van fuera del panel a propósito: uno
+    // de los dos lo hace desaparecer, y un botón que se esconde a sí mismo deja
+    // sin salida a quien no tiene teclado.
+    'js/mandos.js',
 ];
 
 /**
@@ -317,6 +321,12 @@ export async function montarMesa(cfg) {
      * declarado sigue mandando, para los que tienen uno a medida y bonito.
      */
     await cargar(`js/${visualizador ?? (deCartas ? 'mesa_cartas.mjs' : 'mesa_tablero.mjs')}`);
+
+    // Pantalla completa y esconder el panel, en las treinta y cinco. Va DESPUÉS del
+    // visualizador porque uno de los botones necesita el panel, y espera a que
+    // aparezca: la mesa genérica es un módulo y lo construye más tarde que los
+    // visualizadores clásicos.
+    window.ALISA_MANDOS?.montarCuandoHaya();
 
     /**
      * ⚠️ EL BOTÓN DE «ALGO VA RARO», EN LAS TREINTA Y CINCO DE UNA LÍNEA.

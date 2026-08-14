@@ -305,6 +305,9 @@ export function sustratoDe(juego, st = {}) {
         rejilla, piezas, zonas,
         acciones: accionesDe(rejilla, st.legal_moves ?? st.legal_actions ?? []),
         leyenda: LEYENDAS[juego] ?? {},
+        // De qué color es cada dueño, si el juego lo dijo. Va con las piezas y no
+        // con la rejilla porque habla de las piezas — el `patron` sí es del suelo.
+        ...(st.colores ? { colores: st.colores } : {}),
         // Marca de que esto viene del adaptador y no del juego. Es lo que
         // `prueba_sustrato.mjs` cuenta para que el número baje con el tiempo.
         derivado: true,

@@ -437,7 +437,7 @@ function contarLaMesa(st, juego) {
         // `patron` es configuración de DIBUJO —si el tablero es de casillas o de
         // cruces— y a un agente sin ojos no le dice nada de la partida. Sale por
         // la misma puerta que el objetivo porque viaja igual, pero aquí no pinta.
-        'patron',
+        'patron', 'colores',
     ]);
     const extra = [];
     for (const [k, v] of Object.entries(st)) {

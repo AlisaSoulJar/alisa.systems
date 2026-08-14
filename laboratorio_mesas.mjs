@@ -361,7 +361,7 @@ const { cargarReglas } = await import('./public/arcade/js/protohub/rules/index.j
 // `patron` se une por lo mismo que `objetivo`: lo pone el hub copiándolo de
 // `reglas.PATRON`, no el `estado()` del juego, así que la página publica algo que
 // las reglas en Node no producen. Es la comprobación haciendo su trabajo.
-const FUERA = new Set(['fuente', 'conexion', 'biblioteca', 'objetivo', 'patron',
+const FUERA = new Set(['fuente', 'conexion', 'biblioteca', 'objetivo', 'patron', 'colores',
                        't', 'tick', 'turnos', 'pasos', 'tiempo']);
 const limpia = (st) => JSON.stringify(
     Object.fromEntries(Object.entries(st ?? {}).filter(([k]) => !FUERA.has(k))));

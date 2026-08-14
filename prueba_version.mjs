@@ -14,6 +14,24 @@
  * Así que no se recuerda: se calcula. Esto resume lo que `montarMesa` puede
  * cargar y compara. Si no cuadra, dice el número exacto que hay que escribir.
  *
+ * ⚠️ Y LO QUE FALTA AQUÍ NO ES UN AGUJERO. LO COMPROBÉ ANTES DE «ARREGLARLO».
+ *
+ * El resumen no cubre `js/protohub/` —ni el pintor, ni el sustrato, ni las
+ * reglas—, y además esos ficheros se importan como módulos con rutas normales,
+ * así que ni siquiera podrían llevar `?v=`. Visto así parece el mismo fallo que
+ * el del CSS con otra ropa, y me puse a arreglarlo.
+ *
+ * Antes lo medí, y no lo es. El sitio sirve TODO con:
+ *
+ *     cache-control: public, must-revalidate, max-age=0
+ *
+ * o sea que el navegador revalida cada fichero en cada carga y no puede quedarse
+ * con uno viejo. El `?v=` es cinturón además de tirantes: cubre el caso de que
+ * mañana alguien ponga caché larga, y por eso se queda.
+ *
+ * Ampliarlo a `protohub/` habría sido una refactorización entera para arreglar
+ * algo que no estaba roto. Media hora de medir, ahorrada.
+ *
  * ⚠️ Ojo con lo que NO entra en el resumen: el vendor (va sellado en su ruta,
  * `three-r128`) y `montarMesa.js` mismo, que no puede contener su propio hash.
  * `montarMesa.js` no lo necesita: lo carga la página con `import`, y las páginas
