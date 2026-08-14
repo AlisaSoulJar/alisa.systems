@@ -1864,6 +1864,7 @@ class SovereignCardEngine {
                     <button class="collapse-btn" id="hudPlegar"
                             aria-label="plegar el panel" aria-expanded="true">▾</button>
                 </div>
+                ${(window.ALISA_OBJETIVO_HTML?.() ?? '')}
                 <div id="hud-content">
                     ${customUpperHtml}
                     <div class="status-row" style="margin-top: 10px;">

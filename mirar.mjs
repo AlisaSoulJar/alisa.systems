@@ -42,12 +42,35 @@ const EN_INGLES = ['CONNECTION', 'ENGINE TURN', 'CHECK STATUS', 'STOP MATCH', 'S
 const pedidos = process.argv.slice(2).filter(a => !a.startsWith('-'));
 const juegos = (pedidos.length ? pedidos : Object.keys(paginas)).filter(j => paginas[j]);
 
+/**
+ * ⚠️ DOS FORMAS DE VENTANA, Y LA SEGUNDA ES LA QUE ME PILLÓ.
+ *
+ * Esto miraba a 1280x720 y sólo a 1280x720. El 13-08-2026 llegó un aviso:
+ *
+ *     «no se ve el tablero completo en fagocito»   — escritorio, 1366x633
+ *
+ * Y esta misma prueba daba fagocito LIMPIO, con razón: a 720 de alto cabe entero.
+ * El fallo no estaba en el juego ni en la comprobación —que ya miraba si el
+ * dibujo toca los bordes, y lo miraba bien—, estaba en que sólo se preguntaba de
+ * UNA forma. Una cámara escrita a mano acierta en la ventana en la que se
+ * escribió; medir en esa misma ventana no descubre nada.
+ *
+ * `bajo` es 1366x633 porque es literalmente la ventana del aviso: no un tamaño
+ * inventado que parezca difícil, sino el que ya rompió una vez. Los tamaños que
+ * fallaron de verdad valen más que los que uno imagina.
+ */
+const FORMAS = [
+    { nombre: 'ancho', width: 1280, height: 720 },
+    { nombre: 'bajo',  width: 1366, height: 633 },
+];
+
 const b = await chromium.launch({ channel: 'chrome', headless: true });
 console.log('\nLa pasada de betatester, medida\n');
 const malos = [];
 
 for (const juego of juegos) {
-    const p = await b.newPage({ viewport: { width: 1280, height: 720 } });
+  for (const forma of FORMAS) {
+    const p = await b.newPage({ viewport: { width: forma.width, height: forma.height } });
     const info = paginas[juego];
     try {
         await p.goto(`http://127.0.0.1:${P}/arcade/${info.pagina}?semilla=7&juego=${juego}`,
@@ -55,8 +78,7 @@ for (const juego of juegos) {
         await p.waitForTimeout(5000);
     } catch { }
 
-    const r = await p.evaluate(({ EN_INGLES }) => {
-        const W = 1280, H = 720;
+    const r = await p.evaluate(({ EN_INGLES, W, H }) => {
 
         /**
          * ¿Se sale el tablero de la pantalla? Se mira si hay contenido dibujado
@@ -104,7 +126,7 @@ for (const juego of juegos) {
             bordes, botones, ingles,
             panel: Math.round(100 * panel / (total || 1)),
         };
-    }, { EN_INGLES });
+    }, { EN_INGLES, W: forma.width, H: forma.height });
 
     // Se desborda si toca DOS bordes o más con muchos puntos: uno solo puede ser
     // una sala que llega hasta el filo, que es correcto.
@@ -115,14 +137,18 @@ for (const juego of juegos) {
     if (!r.botones) quejas.push('sin jugadas pulsables');
     if (r.ingles.length) quejas.push(`en inglés (${r.ingles.slice(0, 3).join(', ')})`);
 
-    if (quejas.length) malos.push(juego);
-    console.log(`  ${quejas.length ? '✗' : '✓'} ${juego.padEnd(11)}`
+    // Un juego se cuenta UNA vez aunque falle en las dos formas: lo que se mide es
+    // cuántos juegos están bien, no cuántas pasadas salieron mal.
+    if (quejas.length && !malos.includes(juego)) malos.push(juego);
+    console.log(`  ${quejas.length ? '✗' : '✓'} ${juego.padEnd(11)} ${forma.nombre.padEnd(5)}`
         + ` panel ${String(r.panel).padStart(2)}% · ${String(r.botones).padStart(3)} botones`
         + (quejas.length ? `   ⚠ ${quejas.join(' · ')}` : ''));
     await p.close();
+  }
 }
 
-console.log(`\n  ${juegos.length - malos.length}/${juegos.length} limpios`);
+console.log(`\n  ${juegos.length - malos.length}/${juegos.length} limpios`
+          + ` (mirados en ${FORMAS.map(f => `${f.width}x${f.height}`).join(' y ')})`);
 if (malos.length) console.log(`  mira estas capturas: ${malos.join(', ')}`);
 await b.close();
 s.kill();

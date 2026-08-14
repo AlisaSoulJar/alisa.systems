@@ -176,9 +176,7 @@ function encajar() {
     grupo.scale.setScalar(LADO / mayor);
 
     if (encuadrado) return;
-    const caja = cajaReal(grupo);
-    const c = caja.getCenter(new THREE.Vector3());
-    controles.target.copy(c);
+    // El centro y el `target` de los controles los pone ya `encajarCamara`.
 
     /**
      * ⚠️ LA CÁMARA SE APARTA HASTA QUE EL TABLERO CABE. NO A UNA DISTANCIA FIJA.
@@ -198,31 +196,23 @@ function encajar() {
      * el día en las pruebas —mirar el resultado en vez de fiarme de la cuenta—,
      * sólo que aquí dentro.
      */
-    const esquinas = [];
-    for (const x of [caja.min.x, caja.max.x])
-        for (const y of [caja.min.y, caja.max.y])
-            for (const z of [caja.min.z, caja.max.z]) esquinas.push(new THREE.Vector3(x, y, z));
-
-    const cabe = () => {
-        camara.updateMatrixWorld();
-        camara.updateProjectionMatrix();
-        return esquinas.every((e) => {
-            const v = e.clone().project(camara);
-            return Math.abs(v.x) < 0.92 && Math.abs(v.y) < 0.92;
-        });
-    };
-
-    let d = LADO * 1.15;
-    for (let i = 0; i < 12; i++) {
-        camara.position.set(c.x, c.y + d * Math.sin(INCLINACION), c.z + d * Math.cos(INCLINACION));
-        camara.lookAt(c);
-        if (cabe()) break;
-        d *= 1.12;
-    }
-    // Y el tope de alejarse sube con la distancia que ha hecho falta: si no, los
-    // controles devolverían la cámara adentro en cuanto alguien la tocara.
-    if (controles) controles.maxDistance = Math.max(controles.maxDistance, d * 1.6);
-    controles.update();
+    /**
+     * ⚠️ ESTO VIVÍA AQUÍ Y AHORA VIVE EN `js/encuadre.js`.
+     *
+     * No es limpieza: es que un betatester avisó de que en fagocito «no se ve el
+     * tablero completo», y fagocito no pasa por esta mesa. Los visualizadores
+     * propios siguen con su `camera.position.set(0, 20, 15)` escrito a mano en una
+     * ventana concreta, que acierta en esa ventana y en ninguna otra —la suya era
+     * de 1366x633—. Lo que esta mesa aprendió no le servía a nadie más porque
+     * estaba encerrado aquí dentro.
+     *
+     * `encuadre.js` es un script clásico y global, como `gestos.js`, justo para
+     * que lo puedan usar los que no pueden importar.
+     */
+    ALISA_ENCUADRE.encajarCamara({
+        camara, objeto: grupo, controles,
+        inclinacion: INCLINACION, distancia: LADO * 1.15,
+    });
     encuadrado = true;
 }
 

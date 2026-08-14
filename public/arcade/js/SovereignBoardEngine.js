@@ -389,10 +389,10 @@ class SovereignBoardEngine {
                     <h1>♛ ${title}</h1>
                     <button class="collapse-btn" id="dockBtn">▼</button>
                 </div>
-                
+                ${(window.ALISA_OBJETIVO_HTML?.() ?? '')}
                 <div id="hud-content">
                     ${customUpperHtml}
-                    
+
                     <div class="status-row" style="margin-top: 10px;">
                         <span>CONEXIÓN</span>
                         <span id="ui-conn" class="val" style="color: #4CAF50">SYNCED</span>
@@ -782,16 +782,34 @@ class SovereignBoardEngine {
         history.replaceState(null, '', u);
     }
 
+    /**
+     * ⚠️ EL BOTÓN DECÍA «PARAR» Y NADIE SABÍA PARAR QUÉ.
+     *
+     * Aviso de betatester desde mancala: «va solo no? o se juega asi? ni idea
+     * tengo de como se juega en realidad XD». Y sí va solo, y está bien que vaya:
+     * el asiento negro lo lleva un FSM, y sin reloj el FSM no mueve nunca. El
+     * automático se para solo en cuanto le toca a una persona (`processAutoAgent`
+     * comprueba `esPersona` antes de nada), así que no juega por nadie.
+     *
+     * Pero eso lo sé yo. Quien abre la página ve fichas moviéndose y un botón que
+     * pone PARAR, y la conclusión razonable es «esto se juega solo, yo aquí no
+     * pinto nada». El mecanismo era correcto y el rótulo mentía por omisión.
+     *
+     * Ahora dice a QUIÉN mueve. Cuesta cuatro palabras.
+     */
     toggleAutoMode() {
         this.autoMode = !this.autoMode;
         const btn = document.getElementById('autoToggleBtn');
         if (btn) {
             if (this.autoMode) {
-                btn.innerText = "[ ⏹ PARAR ]";
+                btn.innerText = "[ ⏹ PARAR A LA CASA ]";
+                btn.title = "La casa mueve sola sus fichas. Tus turnos los juegas tú: "
+                          + "cuando te toque, se espera.";
                 btn.classList.add("active");
                 this.pollHub(); // Instantly trigger
             } else {
-                btn.innerText = "[ ▶ EMPEZAR ]";
+                btn.innerText = "[ ▶ QUE JUEGUE LA CASA ]";
+                btn.title = "Parado: la casa no moverá aunque le toque.";
                 btn.classList.remove("active");
             }
         }

@@ -38,6 +38,14 @@ const ALTO = {
 };
 const COLOR_DE = { 0: 0x2a3550, 1: 0xc0392b, 2: 0x2e8b57, 3: 0xd68910, null: 0x7f8c8d };
 
+/**
+ * Desde qué silla se está mirando. El sustrato lo dice cuando importa —una mesa
+ * de invitada, una sala compartida— y cuando no lo dice es que sólo hay una.
+ *
+ * Con `?? 0` y no con `|| 0`: el asiento 0 es un asiento, no una ausencia.
+ */
+const yoSoy = (sus) => sus?.yo ?? sus?.asiento ?? 0;
+
 export function crearPintor3d(escena, THREE, opciones = {}) {
     const { croupier = null, alturaCarta = 0.02 } = opciones;
 
@@ -50,6 +58,11 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
         cubo: new THREE.BoxGeometry(0.7, 1, 0.7),
         disco: new THREE.CylinderGeometry(0.36, 0.36, 0.18, 16),
         punto: new THREE.SphereGeometry(0.13, 8, 6),
+        // El faro de «cuál soy yo». Se le da la vuelta a la GEOMETRÍA y no a la
+        // instancia porque `poner()` sólo sabe girar sobre Y: una escala negativa
+        // apuntaría el cono hacia abajo, sí, y de paso le daría la vuelta a las
+        // normales y lo dejaría negro justo cuando su trabajo es que se vea.
+        faro: new THREE.ConeGeometry(0.2, 0.45, 10).rotateX(Math.PI),
         carta: new THREE.BoxGeometry(0.62, 0.012, 0.9),
     };
     const material = (color, extra = {}) =>
@@ -78,6 +91,9 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
         oculta: material(0x8a5a9a, { roughness: 0.6 }),
         destino: material(0xc0392b, { roughness: 0.7 }),
         niebla: material(0xaeb8c4, { roughness: 1.0 }),
+        // El faro de «cuál soy yo». Ámbar y emisivo: tiene que ganarle a
+        // cualquier paleta de juego, porque su único trabajo es que lo encuentres.
+        faro: material(0xffc23c, { emissive: 0x8a5c00, roughness: 0.35 }),
         de: Object.fromEntries(Object.entries(COLOR_DE)
             .map(([k, c]) => [k, material(c, { metalness: 0.1 })])),
     };
@@ -144,8 +160,8 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
         return m;
     }
 
-    const poner = (m, x, y, z, escY = 1, rotY = 0) => {
-        POS.set(x, y, z); ESC.set(1, escY, 1);
+    const poner = (m, x, y, z, escY = 1, rotY = 0, escXZ = 1) => {
+        POS.set(x, y, z); ESC.set(escXZ, escY, escXZ);
         Q.setFromAxisAngle({ x: 0, y: 1, z: 0 }, rotY);
         M.compose(POS, Q, ESC);
         m.setMatrixAt(m.count++, M);
@@ -245,6 +261,75 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
                 }
                 m.instanceMatrix.needsUpdate = true;
                 usados.add(clave);
+            }
+
+            /**
+             * ═══════════════════════════════════════════════════════════════
+             *  ⚠️ ¿CUÁL SOY YO?
+             * ═══════════════════════════════════════════════════════════════
+             *
+             * En fagocito no se veía al jugador. No «se veía mal»: se abría la
+             * partida y no estabas. Y no estaba oculto — estaba CAMUFLADO, que
+             * es peor porque no se nota que falta algo: `ALTO.jugador` es 0,8, o
+             * sea forma de cubo, y el dueño 0 pinta 0x2a3550, que es justo el
+             * azul oscuro de los muros del laberinto. Un cubo azul entre cubos
+             * azules, en un tablero de 28x28 con quinientas cincuenta y siete
+             * bolitas.
+             *
+             * Ninguna medida lo dice, y las tengo todas: `mirar` lo da limpio,
+             * el laboratorio lo da pintado al 36% con dos jugadas legales y
+             * «llega sí», el sustrato publica `{x:1, y:1, t:'jugador', de:0}`
+             * perfectamente. Todo verdad. Y no te ves. Van cinco veces hoy que
+             * lo que encuentra el fallo es abrir la imagen.
+             *
+             * ⚠️ LA REGLA SALE DEL DATO, NO DE UNA LISTA DE JUEGOS.
+             *
+             * Poner «fagocito, snake, peaton, cripta, sigilo…» sería otra lista
+             * paralela que se separa el día que alguien añada un juego — el
+             * fallo que este proyecto lleva arreglado seis veces. Lo que hace
+             * falta preguntar es: ¿mi asiento tiene UNA sola pieza? Si sí, ésa
+             * soy yo y hay que poder encontrarla. Si tengo dieciséis es un
+             * ajedrez y un faro sobrando encima de cada peón.
+             *
+             * El faro va por encima de la altura de muro a propósito: así no
+             * depende del ángulo de cámara ni de dónde estés en el laberinto.
+             */
+            const mias = (sus.piezas ?? []).filter(p => p.de === yoSoy(sus));
+            if (mias.length === 1) {
+                const p = mias[0];
+
+                /**
+                 * ⚠️ EL FARO SE MIDE EN PANTALLA, NO EN CASILLAS.
+                 *
+                 * A tamaño fijo salía y se veía… en sokoban, que es 5x3. En el
+                 * laberinto de 28x28 quedaba una mota amarilla de tres píxeles:
+                 * técnicamente presente, prácticamente igual de invisible que
+                 * antes. Y lo habría dado por bueno, porque el contador decía
+                 * `faro=1` y era verdad.
+                 *
+                 * La mesa normaliza cualquier tablero al mismo ancho de pantalla,
+                 * así que una casilla de un 28x28 sale casi seis veces más pequeña
+                 * que una de un 5x3. Compensarlo con el ancho de la rejilla deja
+                 * el faro del mismo tamaño APARENTE en los dos, que es la única
+                 * medida que le importa a quien mira.
+                 */
+                const lado = Math.max(sus.rejilla?.ancho ?? 8, sus.rejilla?.alto ?? 8);
+                const k = Math.max(1, lado / 7);
+
+                /**
+                 * Y la PUNTA justo encima de los muros, no el cono entero por
+                 * ahí arriba: con la altura a ojo se quedaba flotando en el
+                 * cielo, señalando a nada y comiéndose sitio del encuadre —la
+                 * mesa mete el faro en la caja que tiene que caber, así que un
+                 * faro alto encoge el tablero—. El cono mide 0,45 y se escala
+                 * por `k`, o sea media altura `0,225·k`; sumándosela al 1,2 la
+                 * punta cae siempre a la misma distancia del suelo, mida lo que
+                 * mida el tablero.
+                 */
+                const f = monton('faro', geo.faro, mat.faro, 1);
+                poner(f, p.x + dx, 1.2 + 0.225 * k, p.y + dz, k, 0, k);
+                f.instanceMatrix.needsUpdate = true;
+                usados.add('faro');
             }
         }
 

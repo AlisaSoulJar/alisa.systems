@@ -51,7 +51,7 @@ import { JUEGOS, TITULOS, cargarReglas } from './protohub/rules/index.js';
  * `prueba_version.mjs` comprueba que corresponde a lo que hay en disco y, si no,
  * dice el valor que toca. No hay que acordarse: hay que hacer caso a la prueba.
  */
-const VERSION = '2cad978d';
+const VERSION = '32328da6';
 
 /** Lo que toda página de tablero necesitaba y repetía. En orden. */
 const ANDAMIO = [
@@ -63,6 +63,12 @@ const ANDAMIO = [
     // `SovereignBoardEngine.js`, que es un script clásico y no puede importarlo:
     // tiene que estar cargado ANTES que él.
     'js/protohub/gestos.js',
+    // Igual: el recuadro de «a qué se juega» lo pintan los dos motores, que son
+    // scripts clásicos, así que tiene que estar antes que ellos.
+    'js/objetivo_visible.js',
+    // El encuadre. Lo aprendió la mesa genérica y lo necesitan los visualizadores
+    // propios, que son clásicos: por eso vive aquí y no dentro de la mesa.
+    'js/encuadre.js',
 ];
 
 /**
@@ -250,6 +256,18 @@ export async function montarMesa(cfg) {
      */
     window.ALISA_JUEGO = idJuego;
     window.ALISA_TITULO = nombre;  // el nombre pelado: el HUD ya pone lo demás
+
+    /**
+     * ⚠️ Y A QUÉ SE JUEGA, PARA LA PERSONA. Lo pidió un betatester en mancala
+     * («ni idea tengo de cómo se juega») el mismo día que terminé de escribir los
+     * treinta y cinco objetivos: se lo estaba contando al agente y no a él.
+     *
+     * Va aquí y no en el HUD porque quien tiene las reglas cargadas es esto. Y va
+     * ANTES de que se monte el visualizador, por la misma razón que `ALISA_JUEGO`:
+     * el HUD se pinta una vez, al montarse, y lo que no esté puesto para entonces
+     * no aparece.
+     */
+    window.ALISA_OBJETIVO = reglas?.OBJETIVO ?? null;
 
     /**
      * ⚠️ `?semilla=` NO SE APLICABA, Y LAS PÁGINAS PROMETÍAN QUE SÍ.
