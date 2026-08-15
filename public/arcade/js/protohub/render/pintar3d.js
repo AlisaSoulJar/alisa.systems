@@ -429,12 +429,48 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
              * Lo que sobra con un goban es el SUELO alterno, así que es lo único
              * que se deja de meter.
              */
+            /**
+             * ⚠️ EL 1 NO SIEMPRE ES UN MURO, Y LA LEYENDA LLEVABA DICIÉNDOLO DESDE
+             *    EL PRINCIPIO.
+             * ═══════════════════════════════════════════════════════════════════
+             *
+             * Aquí ponía `if (v === 1) muros.push(punto)` a secas: una convención
+             * numérica fija, ignorando el campo `leyenda` que la rejilla publica para
+             * decir qué es cada valor. Y tres juegos declaran que su 1 **no** es un
+             * muro sino el hueco de fuera del tablero:
+             *
+             *     parchís      256 celdas «fuera»
+             *     canadiense   256 celdas «fuera»
+             *     oca           18 celdas «fuera del recorrido»
+             *
+             * O sea que el parchís salía enterrado bajo **256 bloques marrones** que
+             * no son parte del juego: el recorrido de colores apenas se veía y las
+             * casas del centro quedaban en un pozo. No estaba roto —el laboratorio lo
+             * aprobaba, `legibilidad` también— estaba ILEGIBLE, que es peor de
+             * detectar y peor de sufrir.
+             *
+             * Y es el mismo fallo de siempre: el dato bien declarado, el consumidor
+             * inventándose una convención. Los otros doce juegos con celdas de valor
+             * 1 no declaran leyenda, así que ahí sigue siendo un muro y no cambia
+             * nada — comprobado uno a uno antes de tocarlo.
+             */
+            const nombreDe = (v) => sus.rejilla.leyenda?.[v] ?? sus.leyenda?.[v] ?? null;
+            const esHueco = (v) => {
+                const n = nombreDe(v);
+                // Sin leyenda manda la convención de siempre: 1 = muro.
+                return n !== null && /^(fuera|vac[íi]o|nada|hueco)\b/i.test(String(n));
+            };
+
             const claras = [], oscuras = [], muros = [], destinos = [], nieblas = [];
             for (let f = 0; f < filas; f++) {
                 for (let c = 0; c < cols; c++) {
                     const i = f * cols + c, punto = [c + dx, f + dz];
                     if (niebla?.[i]) { nieblas.push(punto); continue; }
                     const v = celdas?.[i] ?? 0;
+                    // «Fuera» no se dibuja: ni bloque ni suelo. Es lo que significa —
+                    // ahí no hay tablero, y pintar algo sería inventarse una pieza de
+                    // atrezo que compite con el juego por la atención.
+                    if (esHueco(v)) continue;
                     if (v === 1) muros.push(punto);
                     else {
                         if (!cruces) ((f + c) % 2 ? oscuras : claras).push(punto);

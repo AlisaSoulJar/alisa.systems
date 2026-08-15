@@ -60,6 +60,28 @@ const anfitrion = window.ALISA_ANFITRION ?? null;
 const LADO = 10;
 const INCLINACION = 42 * Math.PI / 180;   // mirar el tablero, no asomarse a él
 
+/**
+ * ⚠️ CON MUROS HAY QUE MIRAR DESDE MÁS ARRIBA, Y NO ES CUESTIÓN DE GUSTO.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Es geometría: un muro de altura `h` tapa la celda que tiene detrás —a una unidad—
+ * salvo que la cámara mire desde un ángulo mayor que `atan(h / 1)`. Los muros miden
+ * 1.0 (`ALTO.muro` en el pintor), así que el mínimo son **45°**… y la inclinación de
+ * arriba es 42°.
+ *
+ * Tres grados por debajo del límite, y el resultado se ve en la captura de sokoban:
+ * el cono amarillo del jugador medio escondido detrás de la primera fila de bloques.
+ * No es «se ve regular»: es que la fila de delante esconde la de detrás, siempre, en
+ * los doce juegos con muros —fagocito (226 muros), nave (139), cabina (68), pradera
+ * (64), rebaño (60), cripta, sigilo, relevo, defensa, flota, frentes, sokoban—.
+ *
+ * 55° deja margen sobre los 45 sin llegar a la vista cenital, que aplanaría el
+ * tablero y quitaría la profundidad a los que no tienen muros. Por eso se elige
+ * según lo que HAY en la mesa y no se sube para todos: damas, oca o el parchís se
+ * ven mejor a 42°, y ahí ninguna pieza tapa a otra porque son planas.
+ */
+const INCLINACION_CON_MUROS = 55 * Math.PI / 180;
+
 let escena, camara, grupo, render, controles;
 
 if (anfitrion) {
@@ -213,7 +235,14 @@ function encajar() {
     // falsa siempre y todo este bloque no hacía nada — la tercera vez esta noche que
     // doy por sabida una estructura en vez de preguntarla.
     let conNiebla = false;
-    grupo.traverse(o => { if (o.name === 'niebla' && o.visible && o.count > 0) conNiebla = true; });
+    // Y de paso se pregunta si hay MUROS, con el mismo recorrido y por el mismo
+    // motivo: el pintor los publica con `name = 'muro'`, así que no hay que
+    // adivinarlo mirando el sustrato ni fiarse de una lista de juegos.
+    let conMuros = false;
+    grupo.traverse(o => {
+        if (o.name === 'niebla' && o.visible && o.count > 0) conNiebla = true;
+        if (o.name === 'muro' && o.visible && o.count > 0) conMuros = true;
+    });
     if (conNiebla) {
         const s = cajaReal(grupo, SIN_NIEBLA).getSize(new THREE.Vector3());
         const sabido = Math.max(s.x, s.z);
@@ -259,7 +288,10 @@ function encajar() {
      */
     ALISA_ENCUADRE.encajarCamara({
         camara, objeto: grupo, controles,
-        inclinacion: INCLINACION, distancia: LADO * 1.15,
+        // Con muros se mira desde 55° en vez de 42°: por debajo de 45 la fila de
+        // delante esconde la de detrás, y eso es aritmética, no gusto.
+        inclinacion: conMuros ? INCLINACION_CON_MUROS : INCLINACION,
+        distancia: LADO * 1.15,
         // La niebla tampoco cuenta aquí: si la cámara se aparta hasta que quepa lo
         // desconocido, escalar sólo lo conocido no sirve de nada — se ganaría por
         // un lado y se perdería por el otro.
