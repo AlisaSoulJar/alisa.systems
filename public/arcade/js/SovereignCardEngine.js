@@ -563,13 +563,13 @@ class SovereignCardEngine {
             this.processAutoAgent(data);
             const conn = document.getElementById('ui-conn');
             if (conn) {
-                conn.innerText = this.backend.tipo === 'local' ? 'LOCAL' : 'CONNECTED';
+                conn.innerText = this.backend.tipo === 'local' ? 'LOCAL' : 'EN LÍNEA';
                 conn.style.color = this.backend.tipo === 'local' ? '#7CFC98' : '#00E5FF';
             }
         } catch (err) {
             const conn = document.getElementById('ui-conn');
             if (conn) { 
-                conn.innerText = "DISCONNECTED"; 
+                conn.innerText = "SIN CONEXIÓN"; 
                 conn.style.color = "#FF4081"; 
             }
         }
@@ -661,11 +661,11 @@ class SovereignCardEngine {
         const btn = document.getElementById('autoToggleBtn');
         if (btn) {
             if (this.autoMode) {
-                btn.innerText = "[ ⏹ STOP MATCH ]";
+                btn.innerText = "[ ⏹ PARAR LA PARTIDA ]";
                 btn.classList.add("active");
                 this.pollHub();
             } else {
-                btn.innerText = "[ ▶ START MATCH ]";
+                btn.innerText = "[ ▶ QUE JUEGUE LA CASA ]";
                 btn.classList.remove("active");
             }
         }
@@ -1948,11 +1948,11 @@ class SovereignCardEngine {
                     ${customUpperHtml}
                     <div class="status-row" style="margin-top: 10px;">
                         <span>CONNECTION</span>
-                        <span id="ui-conn" class="val" style="color: #4CAF50">SYNCED</span>
+                        <span id="ui-conn" class="val" style="color: #4CAF50">EN LÍNEA</span>
                     </div>
                     <div class="legal-moves" id="ui-moves">Awaiting telemetry...</div>
                     <div class="agent-control">
-                        <button id="autoToggleBtn" class="auto-btn">[ ▶ START MATCH ]</button>
+                        <button id="autoToggleBtn" class="auto-btn">[ ▶ QUE JUEGUE LA CASA ]</button>
                     </div>
                 </div>
             </div>

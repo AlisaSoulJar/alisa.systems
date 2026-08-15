@@ -479,13 +479,13 @@ class SovereignBoardEngine {
             this.processAutoAgent(data);
             const conn = document.getElementById('ui-conn');
             if (conn) {
-                conn.innerText = this.backend.tipo === 'local' ? 'LOCAL' : 'CONNECTED';
+                conn.innerText = this.backend.tipo === 'local' ? 'LOCAL' : 'EN LÍNEA';
                 conn.style.color = this.backend.tipo === 'local' ? '#7CFC98' : '#00E5FF';
             }
         } catch (err) {
             const conn = document.getElementById('ui-conn');
             if (conn) {
-                conn.innerText = "DISCONNECTED";
+                conn.innerText = "SIN CONEXIÓN";
                 conn.style.color = "#FF4081";
             }
         }
@@ -538,7 +538,7 @@ class SovereignBoardEngine {
 
                     <div class="status-row" style="margin-top: 10px;">
                         <span>CONEXIÓN</span>
-                        <span id="ui-conn" class="val" style="color: #4CAF50">SYNCED</span>
+                        <span id="ui-conn" class="val" style="color: #4CAF50">EN LÍNEA</span>
                     </div>
                     <div class="status-row">
                         <span>TURNO</span>
@@ -546,7 +546,7 @@ class SovereignBoardEngine {
                     </div>
                     <div class="status-row">
                         <span>ESTADO</span>
-                        <span id="ui-check" class="val" style="color:#666">CLEAR</span>
+                        <span id="ui-check" class="val" style="color:#666">SIN JAQUE</span>
                     </div>
                     <div class="legal-moves" id="ui-moves">Esperando estado…</div>
                     
@@ -942,7 +942,7 @@ class SovereignBoardEngine {
     updateHUD(data) {
         const uConn = document.getElementById('ui-conn');
         if(uConn) {
-            uConn.innerText = 'SYNCED';
+            uConn.innerText = 'EN LÍNEA';
             uConn.style.color = '#4CAF50';
         }
 
@@ -993,7 +993,16 @@ class SovereignBoardEngine {
 
         const checkEl = document.getElementById('ui-check');
         if (checkEl) {
-            checkEl.innerText = this.isGameOver ? "GAME OVER" : (data.is_check ? "CHECK!" : "CLEAR");
+            /**
+             * ⚠️ ESTO SE VE EN LOS CUATRO JUEGOS DEL MOTOR, Y ESTABA EN INGLÉS.
+             *
+             * «CHECK» es jaque y «CLEAR» es que no lo hay: las dos únicas palabras
+             * que avisan de que tu rey está en peligro. En un tablero donde todo lo
+             * demás está en español, dejar el aviso sin traducir es lo peor de las
+             * dos opciones — se lee como decoración y no como lo que es.
+             */
+            checkEl.innerText = this.isGameOver ? "PARTIDA TERMINADA"
+                                                : (data.is_check ? "¡JAQUE!" : "SIN JAQUE");
             checkEl.style.color = data.is_check ? "#e74c3c" : "#666";
             if (this.isGameOver) checkEl.style.color = "#FF4081";
         }

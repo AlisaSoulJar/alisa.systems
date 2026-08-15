@@ -205,12 +205,13 @@ de esta lista los aprobaban los tres.
    tablero con `izquierdaLibre`: falta aplicarlo aquí, midiendo antes si su cámara lo
    admite, porque la composición de una mesa de cartas mira desde el jugador y no
    desde arriba.
-10. **En cripta, la niebla se come la pantalla y lo conocido queda descentrado.** El
-   encuadre ya ENCOGE mirando sólo lo sabido —`mayor = max(sabido, todo/3)`, escrito
-   para esto— pero **centra la caja de TODO**, niebla incluida. Resultado: el trozo
-   iluminado queda arriba a la izquierda ocupando una fracción de la imagen, con
-   tres cuartos de bloques grises alrededor. Encoger por una cosa y centrar por otra
-   es el fallo, y está a una línea: pasarle a `encajarCamara` el centro de lo sabido.
+10. ~~En cripta lo conocido queda descentrado~~ — **falso, medido**. El centro de lo
+   sabido cae en (640, 360) de una pantalla de 1280×720: el centro exacto. Y tras 25
+   jugadas explorando se mueve 32 px. El encuadre ya salta la niebla —`saltar:
+   SIN_NIEBLA`— y centra bien. Lo que ocupa pantalla es la niebla **a propósito**:
+   `mayor = max(sabido, todo/3)` limita el zoom para que una sola casilla conocida no
+   llene la mesa. Si algún día molesta, es ese tercio lo que hay que discutir, no el
+   centrado.
 
 ⚠️ **De los cinco puntos que escribí mirando las capturas, DOS eran diagnósticos
 falsos** — «se salen de la pantalla» (estaban tapados) y «las piezas son cilindros»

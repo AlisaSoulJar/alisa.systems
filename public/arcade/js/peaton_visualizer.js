@@ -200,9 +200,20 @@ function _montarHUD() {
         </div>`;
 }
 
+/**
+ * ⚠️ EL HUD HABLABA EN INGLÉS: «ALIVE», «SYNCED», «ROADKILL».
+ *
+ * Y son las tres únicas palabras que dicen qué te está pasando: si sigues vivo, si
+ * la partida está conectada y si te ha atropellado un coche. Lo demás del arcade
+ * está en español desde hace días — dejar en inglés justo lo que informa es lo peor
+ * de las dos opciones.
+ *
+ * `MISSION COMPLETE` y `ROADKILL` tenían gracia y se conservan traducidas: el tono
+ * es parte del juego, sólo que ahora se entiende.
+ */
 function updateHUD(data) {
     _montarHUD();
-    _hueco('ui-conn', 'SYNCED', '#4CAF50');
+    _hueco('ui-conn', 'EN LÍNEA', '#4CAF50');
     if (data.status !== 'ok') return;
 
     const state = data.state;
@@ -219,12 +230,12 @@ function updateHUD(data) {
 
     if (state.game_over) {
         isGameOver = true;
-        _hueco('ui-agent', state.winner ? 'MISSION COMPLETE' : 'ROADKILL',
+        _hueco('ui-agent', state.winner ? 'AL OTRO LADO' : 'ATROPELLADO',
                            state.winner ? '#00ffc8' : '#ff0044');
         clearInterval(tickerInterval);
     } else {
         isGameOver = false;
-        _hueco('ui-agent', 'ALIVE', '#fff');
+        _hueco('ui-agent', 'VIVO', '#fff');
     }
 }
 
@@ -323,7 +334,7 @@ function toggleAutoMode() {
     const btn = document.getElementById('autoToggleBtn');
     if (autoMode) {
         btn.classList.add('active');
-        btn.innerText = "[ ENGAGE AUTO-WORKER - RUNNING ]";
+        btn.innerText = "[ ⏹ PARAR A LA CASA ]";
         clearInterval(tickerInterval);
         executeWebWorkerLoop();
     } else {

@@ -312,6 +312,52 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
                 g.add(b);
             }
 
+            /**
+             * ⚠️ LOS HOSHI. NO SON ADORNO: SON CÓMO SE LEE UN GOBAN.
+             * ═══════════════════════════════════════════════════════════════
+             *
+             * Un tablero de go de verdad lleva nueve puntos marcados —las
+             * «estrellas»— y no están por decoración: son el sistema de
+             * coordenadas con el que se habla del juego. «El 4-4 de arriba a la
+             * derecha» sólo significa algo si esos puntos se ven. Sin ellos, un
+             * 19×19 es una cuadrícula uniforme donde no puedes decir dónde estás
+             * sin contar líneas desde el borde, una por una.
+             *
+             * Las posiciones son las reglamentarias y dependen del tamaño:
+             *
+             *     19×19   líneas 4, 10, 16   (nueve puntos)
+             *     13×13   líneas 4,  7, 10
+             *      9×9    líneas 3,  5,  7
+             *
+             * Se dibujan aquí, con el goban, porque son parte del tablero y no de
+             * la partida: se cachean igual y no cuestan un solo repintado.
+             *
+             * Y sólo en tableros cuadrados de los tamaños con hoshi definido. El
+             * xiangqi también se juega en intersecciones y NO lleva estrellas — le
+             * pintaría nueve puntos que en ese juego no significan nada, que es
+             * peor que no pintar ninguno.
+             *
+             * ⚠️ EL TAMAÑO ESTÁ MEDIDO CONTRA EL TABLERO DE VERDAD, NO ELEGIDO.
+             *
+             * Diámetro 0,15 sobre una casilla de 1 — el 15 %. En un goban real el
+             * punto son unos 4 mm sobre casillas de 22, o sea el 18 %. Y lo que
+             * decide si se lee es la comparación con la línea, no el número
+             * absoluto: aquí sale **3,5 veces el grosor de la línea** (6 px contra
+             * 1,7 en la fila de delante, 4 px en la de atrás), y en un goban de
+             * madera es unas 4 veces. Está donde tiene que estar; agrandarlo para
+             * que «se vea mejor» sería dejar de parecerse a un goban.
+             */
+            const HOSHI = { 19: [3, 9, 15], 13: [3, 6, 9], 9: [2, 4, 6] };
+            const marcas = cols === filas ? HOSHI[cols] : null;
+            if (marcas) {
+                const geoP = new THREE.CylinderGeometry(0.075, 0.075, 0.016, 16);
+                for (const a of marcas) for (const b of marcas) {
+                    const p = new THREE.Mesh(geoP, mat.linea);
+                    p.position.set(a + dx, 0.008, b + dz);
+                    g.add(p);
+                }
+            }
+
             raiz.add(g);
             gobanes.set(clave, g);
         }

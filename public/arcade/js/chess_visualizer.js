@@ -403,14 +403,14 @@ async function pollHub() {
     } catch (err) {
         const conn = document.getElementById('ui-conn');
         if (conn) {
-            conn.innerText = "DISCONNECTED";
+            conn.innerText = "SIN CONEXIÓN";
             conn.style.color = "#FF4081";
         }
     }
 }
 
 function updateHUD(data) {
-    document.getElementById('ui-conn').innerText = "SYNCED";
+    document.getElementById('ui-conn').innerText = "EN LÍNEA";
     document.getElementById('ui-conn').style.color = "#4CAF50";
 
     currentLegalMoves = data.legal_moves || [];
@@ -423,13 +423,13 @@ function updateHUD(data) {
 
     const checkEl = document.getElementById('ui-check');
     if (data.is_game_over) {
-        checkEl.innerText = "GAME OVER";
+        checkEl.innerText = "PARTIDA TERMINADA";
         checkEl.style.color = "#FFD700";
     } else if (data.is_check) {
-        checkEl.innerText = "IN CHECK!";
+        checkEl.innerText = "¡JAQUE!";
         checkEl.style.color = "#FF4081";
     } else {
-        checkEl.innerText = "CLEAR";
+        checkEl.innerText = "SIN JAQUE";
         checkEl.style.color = "#666";
     }
 

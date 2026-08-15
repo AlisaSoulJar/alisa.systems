@@ -65,7 +65,7 @@ const engine = new SovereignCardEngine({
             </div>
             <div class="status-row" style="margin-top:10px;">
                 <span>Estado</span>
-                <span class="val" style="color:#FFD700; font-weight:bold;">${data.status || 'Playing'}</span>
+                <span class="val" style="color:#FFD700; font-weight:bold;">${data.status || 'jugando'}</span>
             </div>
             ${data.manos ? `
             <div class="status-row" style="opacity:.75; font-size:11px;">
