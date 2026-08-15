@@ -119,6 +119,35 @@ export function pintarJugadas(caja, { acciones = [], meToca = true, turnoDe = nu
     if (!terminada) { caja.dataset.firma = ''; caja.classList.remove('mesa-final'); }
 
     /**
+     * ⚠️ MIRAR GANA SOBRE TERMINAR, Y ESE ORDEN ES DELIBERADO.
+     *
+     * Si la partida que estás VIENDO repetirse llega a su final, aquí no ha terminado
+     * la tuya: ha terminado la de otro. La pantalla de fin ofrecería «jugar otra» y
+     * «aportar al corpus», que están rechazados mientras se mira — tres botones
+     * muertos al final de una repetición que funcionó perfectamente.
+     *
+     * Lo que hace falta ahí es la salida a jugarla tú, y eso lo pone `avisoMirando`.
+     */
+    if (espectador) {
+        if (caja.dataset.firma === '@mirando') return;
+        caja.dataset.firma = '@mirando';
+        caja.classList.remove('mesa-final');
+        if (typeof espectador === 'string') {
+            import('./mando_repetir.js')
+                // La semilla sale del recibo de la partida que se está mirando: es
+                // la que llevará el enlace de «jugarla tú», y decirla es la mitad de
+                // la oferta — no es otra partida parecida, es ESA.
+                .then(({ avisoMirando }) => { caja.innerHTML = avisoMirando({ semilla: recibo?.semilla }); })
+                // Si el módulo no carga, al menos la frase: quedarse en blanco sería
+                // peor que perder el enlace.
+                .catch(() => aviso(espectador));
+        } else {
+            aviso('la mesa estaba llena — miras');
+        }
+        return;
+    }
+
+    /**
      * ⚠️ AQUÍ PONÍA `return aviso('partida terminada')` Y AHÍ SE ACABABA LA PÁGINA.
      *
      * Sin botón para jugar otra, en las treinta y cinco mesas: había que recargar. Y
@@ -157,14 +186,6 @@ export function pintarJugadas(caja, { acciones = [], meToca = true, turnoDe = nu
         })).catch(() => aviso('partida terminada'));
         return;
     }
-    /**
-     * `espectador` admite una frase en vez de `true`. No es un capricho: mirar tiene
-     * más de un motivo —la mesa estaba llena, o estás viendo una partida repetirse—
-     * y la diferencia importa para quien lo lee. Un mensaje fijo obligaría a decir
-     * «la mesa estaba llena» en el repetidor, que es sencillamente falso.
-     */
-    if (espectador) return aviso(typeof espectador === 'string'
-        ? espectador : 'la mesa estaba llena — miras');
     if (!meToca)    return aviso(`le toca a ${turnoDe ?? 'otro asiento'}…`);
 
     const legales = acciones.filter(m => m !== 'nueva' && m !== 'reset');

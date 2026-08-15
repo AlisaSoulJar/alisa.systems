@@ -29,6 +29,32 @@
  */
 const ICONO = { inicio: '⏮', atras: '◀', delante: '▶', fin: '⏭' };
 
+/**
+ * Lo que se pone donde iban las jugadas mientras se está mirando.
+ *
+ * ⚠️ Y LLEVA LA SALIDA, QUE ES LO QUE FALTABA.
+ *
+ * La primera versión decía «estás viendo una partida volver a jugarse» y ya. Está
+ * bien mientras la repetición avanza, y es un callejón sin salida en cuanto termina:
+ * acabas de ver una partida entera y lo único que puedes hacer es escribir la
+ * dirección a mano para jugar tú.
+ *
+ * Es el mismo fallo que acabo de arreglar en el final de partida, cometido otra vez
+ * tres pantallas más allá — la pregunta «¿y ahora qué?» hay que hacérsela a cada
+ * pantalla que se queda quieta, no sólo a las que parecen un final.
+ *
+ * El enlace es esta misma dirección sin `repetir=`: mismo juego, misma semilla, el
+ * mismo reparto exacto que acabas de ver. O sea, jugar TÚ la partida que acabas de
+ * mirar, que es lo que apetece justo ahí.
+ */
+export function avisoMirando({ semilla } = {}) {
+    const u = new URL(location.href);
+    u.searchParams.delete('repetir');
+    return `<span class="dato">estás viendo una partida volver a jugarse</span>`
+         + `<a class="mesa-jugada repetir-jugar" href="${u.pathname}${u.search}">`
+         + `jugarla tú${semilla ? ` (misma semilla ${semilla})` : ''} →</a>`;
+}
+
 export function ponerMandoRepetir(donde, repetidor, { juego, semilla } = {}) {
     if (!donde) return null;
 

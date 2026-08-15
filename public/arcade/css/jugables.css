@@ -806,7 +806,22 @@
 }
 .repetir-aviso[hidden] { display: none; }
 
+/* La salida al acabar de mirar: jugar TÚ la partida que acabas de ver, con la misma
+   semilla. Sin esto, ver una repetición entera terminaba en una pantalla quieta y la
+   única forma de jugarla era quitar `&repetir=` de la dirección a mano. */
+.repetir-jugar {
+    display: inline-block;
+    margin-left: 8px;
+    text-decoration: none;
+    color: #cdebda;
+    background: rgba(87, 199, 133, 0.16);
+    border-color: rgba(87, 199, 133, 0.45);
+}
+.repetir-jugar:hover { background: rgba(87, 199, 133, 0.3); }
+
 @media (max-width: 640px) {
     .repetir { padding: 7px 9px; }
     .repetir-titulo { font-size: 9px; }
+    /* En móvil el enlace se va a su línea: ahí al lado del texto queda partido. */
+    .repetir-jugar { display: block; margin: 8px 0 0; text-align: center; }
 }

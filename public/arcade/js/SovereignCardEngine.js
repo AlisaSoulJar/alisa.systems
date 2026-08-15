@@ -616,6 +616,7 @@ class SovereignCardEngine {
         }
 
         this.repitiendo = true;
+        this._semillaRepetida = recibo.semilla;
         const { ponerMandoRepetir } = await import('./protohub/mando_repetir.js');
         this.repetidor = window.ALISA_REPETIDOR = crearRepetidor({
             hub, juego: this.gameId,
@@ -2072,6 +2073,22 @@ class SovereignCardEngine {
             panel.appendChild(caja);
         }
         /**
+         * ⚠️ REPITIENDO VA PRIMERO: aquí no ha terminado TU partida, ha terminado la
+         * que estabas mirando, y la pantalla de fin ofrecería tres botones que
+         * `sendMove` rechaza. Lo que hace falta es la salida a jugarla tú.
+         */
+        if (this.repitiendo) {
+            if (caja.dataset.firma !== '@repitiendo') {
+                caja.dataset.firma = '@repitiendo';
+                caja.classList.remove('mesa-final');
+                import('./protohub/mando_repetir.js').then(({ avisoMirando }) => {
+                    caja.innerHTML = avisoMirando({ semilla: this._semillaRepetida });
+                }).catch(() => {});
+            }
+            return;
+        }
+
+        /**
          * ⚠️ AL TERMINAR, LA PANTALLA DE FIN — Y NO ES UN ADORNO.
          *
          * Aquí salía el botón «nueva» pelado, sin resultado, sin forma de compartir
@@ -2082,24 +2099,14 @@ class SovereignCardEngine {
          * Va antes de la firma de los botones porque sustituye la caja entera.
          */
         const est = this._ultimoEstado;
-        if (est?.is_game_over && !this.repitiendo && this.backend?.tipo === 'local') {
+        if (est?.is_game_over && this.backend?.tipo === 'local') {
             import('./protohub/final.js').then(({ finalSiTerminada }) => finalSiTerminada(caja, {
                 estado: est, juego: this.gameId, enviar: (m) => this.sendMove(m),
             })).catch(() => {});
             return;
         }
 
-        // Repitiendo, botones que no hacen nada. Se dice qué pasa en vez de dejarlos
-        // puestos: `sendMove` ya los rechaza, y un botón que no responde se lee como
-        // una página rota, no como «estás mirando».
-        const lista = this.repitiendo ? [] : (movs ?? []).map(String);
-        if (this.repitiendo) {
-            if (caja.dataset.firma !== '@repitiendo') {
-                caja.dataset.firma = '@repitiendo';
-                caja.innerHTML = '<span class="dato">estás viendo una partida volver a jugarse</span>';
-            }
-            return;
-        }
+        const lista = (movs ?? []).map(String);
         const TOPE = 50;
         // Se compara antes de rehacer: el estado se consulta cada segundo y recrear
         // los botones bajo el dedo pierde el toque entre `pointerdown` y `pointerup`.

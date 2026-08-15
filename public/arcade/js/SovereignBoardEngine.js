@@ -110,6 +110,7 @@ class SovereignBoardEngine {
             // panel —`checkers.html`— y allí la mesa se quedaba quieta esperando
             // un botón que no existe: parecía rota estando bien.
             this._arrancarSiHayAgentes();
+            this._montarRepetidor();
         });
         
         // Sovereign Gym Auto-Boot
@@ -371,6 +372,9 @@ class SovereignBoardEngine {
     }
 
     async sendMove(moveStr) {
+        // Viendo repetirse una partida no se juega: lo que hay en la mesa es de otro
+        // momento y meterle una jugada encima rompe justo lo que se está enseñando.
+        if (this.repitiendo) return false;
         if (!this.currentLegalMoves.includes(moveStr)) {
             console.warn(`Illegal move rejected by UI pre-flight: ${moveStr}`);
             return false;
@@ -619,6 +623,73 @@ class SovereignBoardEngine {
      * intersección. La caja de texto sigue para el resto, y ahora al menos se ve el
      * formato en los botones de al lado.
      */
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  EL REPETIDOR — ver una partida volverse a jugar
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     *     /arcade/snake.html?semilla=99&repetir=arriba,arriba,derecha,…
+     *
+     * ⚠️ ESTE MOTOR SE ME QUEDÓ FUERA, Y CASI NO ME ENTERO.
+     *
+     * Lo monté en la mesa genérica y en el motor de cartas y di el trabajo por
+     * terminado, sin haber contado nunca cuántos caminos había. Contándolos:
+     *
+     *     mesa genérica   20 juegos
+     *     motor de cartas 11
+     *     ESTE MOTOR       4   ← chess, mancala, peatón, snake
+     *
+     * Cuatro juegos con el enlace generándose y abriendo una partida cualquiera.
+     * Y el ajedrez está entre ellos, que es de los que más se abren.
+     *
+     * Lo curioso es cómo salió: fui a mirar el aviso de fagocito dando por hecho que
+     * fagocito era de este motor —tiene visualizador propio— y resultó que no, que
+     * va por la mesa genérica y funcionaba ya. La sospecha era falsa y aun así
+     * destapó el hueco de verdad, porque obligó a contar en vez de suponer.
+     *
+     * Es la misma pieza sin una línea propia: el repetidor sólo habla con el hub, y
+     * aquí el hub es el mismo. Sólo en local — en una sala manda el árbitro y la
+     * partida no es tuya para rebobinarla.
+     */
+    async _montarRepetidor() {
+        if (this.backend?.tipo !== 'local') return;
+        const hub = window.ALISA_PROTOHUB;
+        if (!hub?.soporta?.(this.gameId)) return;
+
+        const { reciboDeLaURL, crearRepetidor } = await import('./protohub/repetidor.js');
+        const recibo = reciboDeLaURL();
+        if (!recibo?.jugadas?.length) return;
+        if (recibo.semilla === null) {
+            // Sin semilla el mundo sería otro y las jugadas caerían sobre un tablero
+            // distinto: se dice, no se finge.
+            console.warn('[Arcade] hay `repetir=` sin `semilla=`: no se puede repetir.');
+            return;
+        }
+
+        this.repitiendo = true;
+        this._semillaRepetida = recibo.semilla;
+        // El automático jugaría por su cuenta entre las jugadas del recibo y lo que
+        // se vería no sería la partida que se está enseñando.
+        this.autoMode = false;
+        const { ponerMandoRepetir } = await import('./protohub/mando_repetir.js');
+        this.repetidor = window.ALISA_REPETIDOR = crearRepetidor({
+            hub, juego: this.gameId,
+            jugadas: recibo.jugadas,
+            semilla: recibo.semilla,
+            alCambiar: () => this.pollHub(),
+        });
+
+        const panel = document.querySelector('.hud-panel');
+        if (panel) {
+            const hueco = document.createElement('div');
+            const antes = panel.querySelector(':scope > #mesa-jugadas');
+            if (antes) panel.insertBefore(hueco, antes); else panel.appendChild(hueco);
+            ponerMandoRepetir(hueco, this.repetidor,
+                { juego: this.gameId, semilla: recibo.semilla });
+        }
+        this.repetidor.alInicio();
+    }
+
     pintarJugadasPulsables() {
         /**
          * ⚠️ SI NO HAY DÓNDE PONERLAS, SE PONE EL SITIO.
@@ -640,6 +711,29 @@ class SovereignBoardEngine {
             caja.className = 'mesa-jugadas';
             panel.appendChild(caja);
         }
+        /**
+         * ⚠️ REPITIENDO GANA SOBRE EL FINAL, Y ESTE ORDEN ME COSTÓ VERLO.
+         *
+         * Lo tenía debajo, y repitiendo el aviso de fagocito hasta el final salió la
+         * pantalla de fin de partida entera: «jugar otra», «copiar el enlace»,
+         * «aportar al corpus» — los tres muertos, porque `sendMove` rechaza jugar
+         * mientras se mira. Una repetición que había funcionado perfectamente,
+         * acabando en tres botones que no hacen nada.
+         *
+         * Aquí no ha terminado TU partida: ha terminado la que estabas mirando. Son
+         * dos cosas distintas, y sólo una de ellas tiene botones que sirvan.
+         */
+        if (this.repitiendo) {
+            if (caja.dataset.firma !== '@repitiendo') {
+                caja.dataset.firma = '@repitiendo';
+                caja.classList.remove('mesa-final');
+                import('./protohub/mando_repetir.js').then(({ avisoMirando }) => {
+                    caja.innerHTML = avisoMirando({ semilla: this._semillaRepetida });
+                }).catch(() => {});
+            }
+            return;
+        }
+
         /**
          * ⚠️ AL TERMINAR, LA PANTALLA DE FIN.
          *
@@ -928,6 +1022,10 @@ class SovereignBoardEngine {
     }
 
     async processAutoAgent(data) {
+        // Repitiendo, la casa no juega: metería jugadas suyas entre las del recibo.
+        // Aquí importa más que en el motor de cartas — este arranca el automático
+        // solo en cuanto una silla no es de una persona.
+        if (this.repitiendo) return;
         if (!this.autoMode || this.isGameOver) return;
 
         // If the engine explicitly evaluated legal moves and returned an empty set, halt.
