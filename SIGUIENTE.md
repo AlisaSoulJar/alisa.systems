@@ -333,9 +333,35 @@ de esta lista los aprobaban los tres.
    fija su cámara a mano en `onInit3D` (`camera.position.set(0, 15, 12)`) y el
    reencuadre no la toca.
 
-   ⚠️ NO se arregla moviendo la cámara a ojo: esta misma noche lo intenté en las mesas
-   de cartas y salió peor dos veces (punto 9). Aquí el mecanismo ya existe y está
-   probado; el trabajo es enchufarlo, no inventarlo.
+   **AVANZADO EL 16-08, Y AHORA SE SABE POR QUÉ NO BASTA CON APARTAR.**
+
+   El mecanismo sí se ejecutaba; lo que estaba mal era la cuenta. `apartarDelPanel()`
+   proyecta con `Vector3.project(camara)`, que **no actualiza las matrices por su
+   cuenta**, y corre justo después de `onInit3D()`, donde snake acaba de mover la
+   cámara (`camera.position.set(0, 15, 12)`). O sea que proyectaba contra la cámara en
+   su sitio anterior:
+
+       sin actualizar    snake  izq -3706 · invade 4058   (¡en una pantalla de 1280!)
+       actualizando      snake  izq   -30 · invade  382
+       ajedrez           igual antes que después: izq 244 · invade 108
+
+   El ajedrez se libraba por casualidad: su `onInit3D` no toca la cámara. Por eso el
+   fallo llevaba ahí desde el principio sin notarse en el juego con el que se probó.
+   **Arreglado** — y de paso mejora la cuenta para todos los juegos con cámara propia.
+
+   ⚠️ **Pero apartar 382 px sacó el lado derecho del tablero de la pantalla**, o sea
+   que cambié «tapado» por «fuera de cuadro», que encima es peor de detectar: una pieza
+   fuera del lienzo ya no está tapada por nada y los instrumentos que buscan solapes la
+   dan por buena. Es la segunda vez en dos días que me como esa piedra (la primera en
+   las mesas de cartas). Añadido el tope: **se aparta lo que haga falta o lo que quepa,
+   lo que sea menor**.
+
+   Con el tope, el hueco de snake resulta ser **cero** —su tablero ya ocupa toda la
+   pantalla— así que no se mueve y la comida sigue tapada. **Eso es el diagnóstico
+   final: en snake el desplazamiento no es la herramienta.** Hay que ALEJAR la cámara
+   para que quepan tablero y panel, no correrla. `encajarCamara` acepta `distancia`, así
+   que el camino está; lo que falta es decidir cuánto y comprobar que no deja las
+   casillas ilegibles.
 
    Y de camino, **una pregunta que nadie hace a los 35**: ¿qué otra cosa importante cae
    debajo del panel? Se contesta proyectando las piezas y cruzándolas con el rectángulo

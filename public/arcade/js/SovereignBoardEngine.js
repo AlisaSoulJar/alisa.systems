@@ -265,6 +265,31 @@ class SovereignBoardEngine {
         const t = caja.getSize(new THREE.Vector3());
         if (!(Math.max(t.x, t.y, t.z) > 0.001)) return;
 
+        /**
+         * ⚠️ ACTUALIZAR LAS MATRICES ANTES DE PROYECTAR. SIN ESTO, LA CUENTA ES BASURA.
+         * ═══════════════════════════════════════════════════════════════════════
+         *
+         * `Vector3.project(camara)` usa `matrixWorldInverse` y `projectionMatrix` tal
+         * como estén: no actualiza nada por su cuenta. Y esto corre justo después de
+         * `onInit3D()`, donde el visualizador acaba de MOVER la cámara —snake hace
+         * `camera.position.set(0, 15, 12)`—, así que se proyectaba contra la matriz de
+         * la cámara en su sitio anterior.
+         *
+         * El síntoma no era sutil, era imposible: en snake salía `izq = -3706` y pedía
+         * apartar 4058 px en una pantalla de 1280. Un número así no es un error de
+         * cuentas, es proyectar contra una cámara que no está donde se cree.
+         *
+         *     sin esto    snake  izq -3706 · invade 4058   (y a la 2ª: izq 3671)
+         *     con esto    snake  izq   -30 · invade  382
+         *     ajedrez     igual antes que después: izq 244 · invade 108
+         *
+         * El ajedrez se libraba por casualidad: su `onInit3D` no toca la cámara, así
+         * que la matriz de partida ya valía. Por eso este fallo llevaba aquí desde el
+         * principio sin que se notara en el juego con el que se probó.
+         */
+        this.camera.updateProjectionMatrix();
+        this.camera.updateMatrixWorld(true);
+
         const aPantalla = (v) => {
             const p = v.clone().project(this.camera);
             return (p.x + 1) / 2 * anchoPantalla;
@@ -275,8 +300,36 @@ class SovereignBoardEngine {
                 for (const z of [caja.min.z, caja.max.z])
                     izq = Math.min(izq, aPantalla(new THREE.Vector3(x, y, z)));
 
+        /**
+         * ⚠️ Y NO SE APARTA MÁS DE LO QUE CABE: CORRER METE POR LA DERECHA LO QUE
+         *    SACA POR LA IZQUIERDA.
+         * ═══════════════════════════════════════════════════════════════════════
+         *
+         * Al arreglar las matrices, snake pasó a pedir 382 px de desplazamiento —un
+         * número ya razonable— y con ellos la comida salió de debajo del panel… y el
+         * lado derecho del tablero se fue de la pantalla. Cambiar «tapado» por «fuera
+         * de cuadro» no es arreglarlo, y encima es peor de detectar: una pieza fuera
+         * del lienzo ya no está tapada por nada, así que los instrumentos que buscan
+         * solapes la dan por buena.
+         *
+         * Es la segunda vez en dos días que me como esta piedra —la primera con las
+         * mesas de cartas, ver `mesa_cartas.mjs`—, así que aquí queda el tope: se
+         * desplaza lo que haga falta o lo que quepa, lo que sea menor.
+         *
+         * Si el hueco es cero, no se mueve nada y la pieza SIGUE tapada. Eso no es un
+         * arreglo a medias disimulado: es que ahí el desplazamiento no es la
+         * herramienta —hay que alejar la cámara para que quepan tablero y panel— y
+         * conviene que se vea en la medición en vez de taparlo moviendo la vista.
+         */
+        let der = -Infinity;
+        for (const x of [caja.min.x, caja.max.x])
+            for (const y of [caja.min.y, caja.max.y])
+                for (const z of [caja.min.z, caja.max.z])
+                    der = Math.max(der, aPantalla(new THREE.Vector3(x, y, z)));
+        const hueco = Math.max(0, anchoPantalla - der);
+
         // Lo que hay que ganar, en píxeles, más un dedo de margen.
-        const invade = (r.right + 12) - izq;
+        const invade = Math.min((r.right + 12) - izq, hueco);
         if (invade <= 0) return;
 
         window.ALISA_ENCUADRE.encajarCamara({
