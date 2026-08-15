@@ -85,3 +85,8 @@ capturas_laboratorio/
 # Ficheros de sondeo de una sesion: se escriben, se miden y se tiran.
 _dbg.mjs
 _t.mjs
+
+# Las capturas del asiento de vision: son de una tirada concreta y se
+# regeneran con 
+ode vision.mjs --guardar. No hay por que versionarlas.
+vision_*.png
