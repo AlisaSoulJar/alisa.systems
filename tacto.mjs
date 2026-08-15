@@ -256,7 +256,7 @@ for (const juego of juegos) {
 
         const MUESTRA = 5;
         const botones = await p.locator('.mesa-jugada').all();
-        let panelBien = 0, panelProbados = 0;
+        let panelBien = 0, panelProbados = 0, panelReintentos = 0, panelTapados = 0;
         /**
          * ⚠️ SE CUENTA LA JUGADA QUE LLEGÓ AL HUB, NO SI CAMBIÓ EL ESTADO.
          * ═══════════════════════════════════════════════════════════════════
@@ -292,13 +292,64 @@ for (const juego of juegos) {
             if (!caja) continue;
 
             panelProbados++;
-            const antes = await cuantasTocadas();
-            await modo.tocar(p, Math.round(caja.x + caja.width / 2),
-                                Math.round(caja.y + caja.height / 2));
-            await p.waitForTimeout(400);
-            // Si la pulsación llegó, hay una jugada más apuntada. No hace falta
-            // reintentar: ya no dependemos de que el mundo se haya movido.
-            if (await cuantasTocadas() > antes) panelBien++;
+            /**
+             * ⚠️ UN SEGUNDO INTENTO, Y SE CUENTA CUÁNTOS LO NECESITAN.
+             * ═══════════════════════════════════════════════════════════════════
+             *
+             * En pasada de 35 este instrumento señalaba a un juego distinto cada vez
+             * —peatón un día, blackjack otro, póker hoy— y ese mismo juego medido en
+             * solitario daba pleno tres veces seguidas. Póker: 2/2, 2/2, 2/2, y en la
+             * pasada completa suspendía.
+             *
+             * La causa no es el juego: es que con 35 navegadores por delante los
+             * huecos entre leer el rectángulo y tocarlo se alargan, y en los juegos
+             * que avanzan solos el botón ya no está donde se midió. Un toque al aire
+             * no dice nada sobre si el botón manda su jugada, que es lo único que
+             * este instrumento promete.
+             *
+             * Se reintenta UNA vez, releyendo el botón —no reusando el rectángulo
+             * viejo, que es justo lo que había caducado—.
+             *
+             * ⚠️ Y ANTES DE CADA TOQUE SE PREGUNTA QUIÉN LO VA A RECIBIR.
+             * ═══════════════════════════════════════════════════════════════════
+             *
+             * Esto no estaba, y sin ello el reintento MENTÍA. Comprobado con el
+             * fallo de peatón puesto otra vez a mano: sin reintento daba 0/5, con
+             * reintento **4/5**. No es que el segundo toque acertara el botón: es que
+             * el toque caía en el LIENZO —que estaba por delante— y el lienzo de
+             * peatón también manda jugadas. La cuenta subía sin que ningún botón
+             * hubiera hecho nada.
+             *
+             * O sea que «llegó una jugada» no es «el botón mandó su jugada», que es
+             * lo único que este instrumento promete. Así que se pregunta por
+             * `elementFromPoint` quién hay en esas coordenadas: si no es el botón, no
+             * se toca siquiera, y se apunta como TAPADO, que además es un diagnóstico
+             * mucho más útil que un número bajo — dice dónde mirar.
+             */
+            const recibeElBoton = async () => p.evaluate(({ x, y }) => {
+                const e = document.elementFromPoint(x, y);
+                return !!e && !!e.closest?.('.mesa-jugada');
+            }, { x: Math.round(caja.x + caja.width / 2), y: Math.round(caja.y + caja.height / 2) });
+
+            let llego = false, tapado = false;
+            for (let intento = 0; intento < 2 && !llego; intento++) {
+                if (intento) {
+                    panelReintentos++;
+                    const otra = p.locator('.mesa-jugada').nth(k % await p.locator('.mesa-jugada').count());
+                    const c2 = await otra.boundingBox().catch(() => null);
+                    if (!c2) break;
+                    caja.x = c2.x; caja.y = c2.y; caja.width = c2.width; caja.height = c2.height;
+                }
+                if (!await recibeElBoton()) { tapado = true; continue; }
+                tapado = false;
+                const antes = await cuantasTocadas();
+                await modo.tocar(p, Math.round(caja.x + caja.width / 2),
+                                    Math.round(caja.y + caja.height / 2));
+                await p.waitForTimeout(400);
+                llego = await cuantasTocadas() > antes;
+            }
+            if (tapado) panelTapados++;
+            if (llego) panelBien++;
         }
 
         /**
@@ -365,7 +416,7 @@ for (const juego of juegos) {
         const alcanzables = tocadas.filter(m => legalesSet.has(m));
         const pct = legales.length ? Math.round(100 * alcanzables.length / legales.length) : null;
         filas.push({ juego, modo: modo.nombre, medible: true, legales: legales.length,
-                     botones: panelProbados, panelBien,
+                     botones: panelProbados, panelBien, panelReintentos, panelTapados,
                      alcanzables: alcanzables.length, pct, tocadas: tocadas.length });
     } catch (e) {
         console.log(`  ! ${juego.padEnd(11)} ${modo.nombre.padEnd(5)} ${String(e.message).split('\n')[0].slice(0, 55)}`);
@@ -430,6 +481,31 @@ const conMesa = medidos.filter(([d, r]) => d.alcanzables > 0 || r.alcanzables > 
 console.log(`\n  ${medidos.length} juegos medidos con jugadas legales`);
 console.log(`  PANEL (la garantía): ${medidos.length - rotos.length}/${medidos.length}`
           + ` dejan pulsar TODAS sus jugadas con dedo y con ratón`);
+
+/**
+ * Los reintentos se dicen SIEMPRE, aunque salga todo en verde. Un instrumento que se
+ * da dos oportunidades y se calla cuántas necesitó esconde justo el dato que mide
+ * cuánto se está peleando con el reloj de los juegos — y ese número creciendo es el
+ * aviso temprano de que la pasada completa se está quedando sin aire.
+ */
+const suma = (c) => medidos.reduce((s, [d, r]) => s + (d[c] ?? 0) + (r[c] ?? 0), 0);
+const quien = (c) => medidos.filter(([d, r]) => (d[c] ?? 0) + (r[c] ?? 0) > 0).map(([d]) => d.juego);
+
+/**
+ * Los TAPADOS van primero y con nombre propio, porque no son un número bajo: son un
+ * diagnóstico que dice dónde mirar. Un botón tapado se VE perfectamente y no responde
+ * —así estuvo peatón— y sin esta línea eso sale como «4/5» y parece un juego regular
+ * en vez de un `z-index` mal puesto.
+ */
+if (suma('panelTapados')) {
+    console.log(`  ⚠ ${suma('panelTapados')} jugada(s) TAPADAS por otro elemento`
+              + ` (${quien('panelTapados').join(', ')}): el botón se ve pero el toque`
+              + ` se lo lleva lo que tiene delante — mira el z-index, no el juego.`);
+}
+if (suma('panelReintentos')) {
+    console.log(`  (${suma('panelReintentos')} pulsación(es) necesitaron un segundo intento:`
+              + ` ${quien('panelReintentos').join(', ')})`);
+}
 if (rotos.length) console.log(`  ✗ no del todo: ${rotos.map(([d]) => d.juego).join(', ')}`);
 console.log(`  MESA (comodidad, sondeo a ciegas): ${conMesa.length}/${medidos.length}`
           + ` responden a tocar el tablero`);
