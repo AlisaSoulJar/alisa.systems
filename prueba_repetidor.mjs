@@ -82,15 +82,26 @@ console.log('\nEL REPETIDOR — que una partida se pueda ver volverse a jugar\n'
     const paginas = new Set((await readdir('./public/arcade'))
         .filter(f => f.endsWith('.html')).map(f => f.slice(0, -5)));
 
-    // Y la tabla de alias se comprueba contra lo que las páginas DECLARAN, que es
-    // la medida que evita recordar mal: se lee el `juego:` de cada `montarMesa`.
+
+    /**
+     * ⚠️ LA TABLA SE MIDE CONTRA `data/paginas.json`, QUE SE GENERA.
+     *
+     * `enlace_repetidor.js` lleva una tabla de dos alias (damas→checkers,
+     * ajedrez→chess) y eso es una lista escrita a mano — exactamente lo que
+     * `entrar.html` avisa que no se vuelva a hacer: «este proyecto ya ha tenido
+     * cinco listas escritas a mano separándose de la realidad sin avisar».
+     *
+     * No se puede quitar del todo: la función tiene que funcionar sin red, síncrona,
+     * en Node y en el navegador. Lo que sí se puede es que NO SE SEPARE EN SILENCIO,
+     * y eso se consigue midiéndola en cada `npm test` contra el mapa que `gen_paginas`
+     * produce leyendo las propias páginas. Si alguien añade un juego con nombre
+     * distinto al de su fichero, o renombra uno, salta aquí.
+     */
+    const mapa = JSON.parse(await readFile('./public/data/paginas.json', 'utf8'));
     const alias = {};
-    for (const f of await readdir('./public/arcade')) {
-        if (!f.endsWith('.html')) continue;
-        const txt = await readFile(`./public/arcade/${f}`, 'utf8');
-        if (!txt.includes('montarMesa({')) continue;
-        const m = txt.match(/juego:\s*'([^']+)'/);
-        if (m && m[1] !== f.slice(0, -5)) alias[m[1]] = f.slice(0, -5);
+    for (const [juego, info] of Object.entries(mapa)) {
+        const pagina = String(info.pagina ?? '').replace(/\.html$/, '');
+        if (pagina && pagina !== juego) alias[juego] = pagina;
     }
 
     const sobran = Object.keys(PAGINA).filter(k => alias[k] !== PAGINA[k]);

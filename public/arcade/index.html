@@ -20,6 +20,11 @@
         -->
         <p style="margin:14px 0 0">
             <a href="entrar.html" class="entrar-cta">🎴 Jugar con alguien →</a>
+            <!-- Las partidas ya jugadas, y cada una se puede VER volverse a jugar.
+                 Va aquí al lado y no en un pie: es la respuesta a «esto está
+                 amañado», que es la queja más repetida de los sitios de cartas y la
+                 única que no se contesta con palabras. -->
+            <a href="replays.html" class="entrar-cta entrar-ver">▶ Ver partidas jugadas</a>
         </p>
         <style>
             .entrar-cta {
@@ -28,6 +33,16 @@
                 background: linear-gradient(135deg, #7b3fe4, #a180ff);
             }
             .entrar-cta:hover { filter: brightness(1.12); }
+            /* El verde del repetidor, el mismo que en la mesa: mirar y jugar son dos
+               modos distintos y conviene poder distinguirlos sin leer. */
+            .entrar-ver {
+                margin-left: 8px;
+                background: none;
+                border: 1px solid rgba(87, 199, 133, 0.55);
+                color: #cdebda;
+                font-weight: 600;
+            }
+            .entrar-ver:hover { background: rgba(87, 199, 133, 0.16); filter: none; }
         </style>
     </header>
     <main class="arcade-grid">

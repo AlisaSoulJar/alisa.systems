@@ -1,95 +1,196 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALISA Arcade — Global Replay VMS</title>
-    <link rel="stylesheet" href="css/arcade.css">
-    <style>
-        body { margin: 0; padding: 0; background: #05050A; color: #fff; font-family: 'Inter', sans-serif; display: flex; height: 100vh; overflow: hidden; }
-        
-        .sidebar {
-            width: 300px; background: rgba(15, 15, 25, 0.9); border-right: 1px solid rgba(255,255,255,0.1);
-            display: flex; flex-direction: column; z-index: 10;
-        }
-        
-        .sidebar-header {
-            padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .sidebar-header h2 { margin: 0; font-size: 18px; color: #a1c1d1; }
-        
-        .file-list {
-            flex: 1; overflow-y: auto; padding: 10px;
-        }
-        
-        .file-entry {
-            padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;
-            cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px;
-            transition: 0.2s; border-left: 3px solid transparent;
-        }
-        
-        .file-entry:hover { background: rgba(255,255,255,0.1); }
-        .file-entry.active { background: rgba(0,255,200,0.1); border-left-color: #00ffc8; }
-        
-        .main-stage {
-            flex: 1; position: relative; background: #000;
-        }
-        
-        iframe {
-            width: 100%; height: 100%; border: none;
-        }
-        
-        .timeline-controls {
-            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
-            width: 80%; background: rgba(15, 15, 25, 0.8); backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2); border-radius: 12px;
-            padding: 15px 25px; display: flex; align-items: center; gap: 20px; z-index: 20;
-        }
-        
-        .play-btn {
-            background: #00ffc8; color: #000; border: none; width: 40px; height: 40px; border-radius: 50%;
-            cursor: pointer; font-weight: bold; font-family: monospace; display: flex; align-items: center; justify-content: center;
-        }
-        
-        input[type="range"] {
-            flex: 1; cursor: pointer;
-        }
-        
-        .tick-display {
-            font-family: 'JetBrains Mono', monospace; font-size: 14px; min-width: 100px; text-align: right;
-        }
-        
-        .no-data {
-            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-            color: rgba(255,255,255,0.2); font-size: 24px; font-weight: bold; font-family: monospace;
-            background: radial-gradient(circle, rgba(0,255,200,0.1) 0%, transparent 60%);
-        }
-    </style>
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA Arcade — Partidas</title>
+<link rel="stylesheet" href="css/arcade.css">
 <link rel="stylesheet" href="/vendor/fonts/fuentes.css">
-</head>
-<body>
+<!--
+  replays.html — el corpus, y cada fila se puede MIRAR
+  ═══════════════════════════════════════════════════════════════════════════════
 
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h2>ML Dojo Replays</h2>
-            <div style="font-size: 10px; color: #666; margin-top: 5px;" id="file-counter">Loading...</div>
-        </div>
-        <div class="file-list" id="fileList"></div>
-    </div>
-    
-    <div class="main-stage">
-        <div class="no-data" id="noData">SELECT A DATASET</div>
-        <iframe id="gameFrame" style="display: none;"></iframe>
-        
-        <div class="timeline-controls" id="controls" style="display: none;">
-            <button class="play-btn" id="playPauseBtn" onclick="togglePlay()">⏸</button>
-            <input type="range" id="timeline" min="0" max="0" value="0" oninput="scrubTimeline()">
-            <div class="tick-display">FRAME <span id="frameCounter">0</span></div>
-        </div>
-    </div>
+  ⚠️ QUÉ HABÍA AQUÍ ANTES, Y POR QUÉ NO SE CONSERVA.
 
-    <!-- UI Brain -->
-    <script src="js/replays_visualizer.js"></script>
-</body>
-</html>
+  Una pantalla llamada «Global Replay VMS» que pedía `/arcade/datasets` —un
+  endpoint que devuelve 404— y reproducía FOTOGRAMAS de un log de entrenamiento
+  dentro de un iframe, con un contador que ponía «FRAME». O sea: una página muerta
+  que además contaba la historia contraria a la de este proyecto.
+
+  La copia entera está en `_archivo/replays_vms/`, porque aquí no se borra nada.
+
+  ⚠️ Y LA DIFERENCIA NO ES DE ESTILO: ES LA TESIS.
+
+  Un vídeo se puede montar. Aquí no hay fotogramas guardados: cada fila del corpus
+  es `{juego, semilla, jugadas}` y abrirla VUELVE A JUGAR la partida con las mismas
+  reglas que corren en la mesa. Si una fila fuera falsa, se rompería al mirarla — y
+  por eso puede estar abierto a cualquiera sin moderación ni cuentas.
+
+  Y ninguna fila entra sin que el servidor la haya vuelto a jugar él mismo. La
+  puntuación que se ve es la RECALCULADA, nunca la que declaró quien la aportó.
+
+  ⚠️ NO TRAE NINGUNA LISTA DE JUEGOS.
+
+  Los nombres salen de las propias filas y las páginas de `enlace_repetidor.js`,
+  que `npm test` mide contra `data/paginas.json`. Este proyecto ya ha tenido cinco
+  listas escritas a mano separándose de la realidad sin avisar.
+-->
+<style>
+    .corpus { max-width: 860px; margin: 0 auto; padding: 28px 18px 60px; }
+    .corpus h1 { font-size: 26px; margin: 0 0 4px; }
+    .corpus .sub { color: rgba(255,255,255,0.45); font-size: 13px; margin-bottom: 22px;
+                   line-height: 1.5; max-width: 62ch; }
+    .corpus .sub b { color: rgba(255,255,255,0.72); font-weight: 600; }
+
+    .resumen { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+    .dato-caja { padding: 10px 14px; border-radius: 9px;
+                 background: rgba(255,255,255,0.05);
+                 border: 1px solid rgba(255,255,255,0.09); }
+    .dato-caja .n { font-size: 20px; font-family: 'JetBrains Mono', monospace; }
+    .dato-caja .q { font-size: 11px; color: rgba(255,255,255,0.45);
+                    text-transform: uppercase; letter-spacing: 0.06em; }
+
+    .filtros { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+    .filtro { font: inherit; font-size: 12px; padding: 6px 11px; border-radius: 7px;
+              cursor: pointer; color: #d8d4e8;
+              background: rgba(255,255,255,0.05);
+              border: 1px solid rgba(255,255,255,0.12); }
+    .filtro:hover { background: rgba(255,255,255,0.1); }
+    .filtro.puesto { background: rgba(140,120,220,0.25); border-color: rgba(170,150,255,0.5); }
+
+    .partida { display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+               padding: 12px 14px; margin-bottom: 8px; border-radius: 9px;
+               background: rgba(255,255,255,0.04);
+               border: 1px solid rgba(255,255,255,0.07); }
+    .partida .juego { font-weight: 600; min-width: 8ch; }
+    .partida .meta { font-family: 'JetBrains Mono', monospace; font-size: 11px;
+                     color: rgba(255,255,255,0.42); }
+    .partida .quien { font-size: 11px; padding: 2px 8px; border-radius: 20px;
+                      background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.6); }
+    .partida .ver { margin-left: auto; font: inherit; font-size: 12px;
+                    padding: 7px 13px; border-radius: 7px; text-decoration: none;
+                    color: #cdebda; background: rgba(87,199,133,0.16);
+                    border: 1px solid rgba(87,199,133,0.45); white-space: nowrap; }
+    .partida .ver:hover { background: rgba(87,199,133,0.3); }
+    .partida .sinver { margin-left: auto; font-size: 11px; color: rgba(255,255,255,0.3); }
+
+    .vacio { padding: 26px 18px; border-radius: 10px; line-height: 1.6;
+             background: rgba(255,255,255,0.04);
+             border: 1px dashed rgba(255,255,255,0.14); color: rgba(255,255,255,0.6); }
+    .vacio b { color: #e8e8f0; }
+    .pie { margin-top: 26px; font-size: 12px; color: rgba(255,255,255,0.4); line-height: 1.7; }
+    .pie a { color: #9fb8ff; }
+    @media (max-width: 560px) {
+        .partida .ver, .partida .sinver { margin-left: 0; width: 100%; text-align: center; }
+    }
+</style>
+
+<div class="corpus">
+    <h1>Partidas</h1>
+    <p class="sub">
+        Cada una la ha vuelto a jugar el servidor antes de guardarla, con el mismo
+        fichero de reglas que corre en la mesa. La puntuación es la <b>recalculada</b>,
+        nunca la que declaró quien la aportó — así que aquí no hace falta fiarse de
+        nadie, y por eso puede aportar cualquiera.
+        <br>Y no son vídeos: al abrir una, <b>se vuelve a jugar delante de ti</b>.
+    </p>
+
+    <div class="resumen" id="resumen"></div>
+    <div class="filtros" id="filtros"></div>
+    <div id="lista"><p class="sub">leyendo el corpus…</p></div>
+
+    <p class="pie">
+        <a href="/api/dataset?formato=jsonl">descargar el corpus entero</a> — una
+        partida por línea, sin paginar y sin clave.
+        <br>Para aportar: juega, y al terminar la partida sale el botón.
+        O <code>POST /api/dataset</code> con <code>{juego, semilla, jugadas}</code>.
+        <br><a href="/arcade/">volver al arcade</a>
+    </p>
+</div>
+
+<script type="module">
+import { enlaceRepetidor } from './js/protohub/enlace_repetidor.js';
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+let todas = [], filtro = null;
+
+/**
+ * Se declara ANTES de `pintar()` y no debajo, donde quedaba mejor de leer: `const`
+ * está en zona muerta hasta su línea, así que allí abajo esto era un
+ * `ReferenceError` en cuanto llegaba una sola fila. Y no se veía sin datos, porque
+ * sin datos `pintar()` no se llama — la página se quedaba en «leyendo el corpus…»
+ * para siempre. Lo cazó una prueba con un corpus de mentira, no la mirada.
+ */
+const caja = (n, q) => `<div class="dato-caja"><div class="n">${n}</div><div class="q">${esc(q)}</div></div>`;
+
+/**
+ * ⚠️ SE LEE EL JSONL, NO EL RESUMEN.
+ *
+ * `GET /api/dataset` a secas da los totales por juego, que es bonito y no sirve
+ * para esto: hacen falta las JUGADAS de cada partida para poder construir el
+ * enlace que la vuelve a jugar. El corpus entero se descarga sin paginar porque
+ * un corpus que no te puedes bajar no es un corpus, es una demo.
+ */
+try {
+    const txt = await fetch('/api/dataset?formato=jsonl').then(r => {
+        if (!r.ok) throw new Error(r.status);
+        return r.text();
+    });
+    todas = txt.split('\n').filter(Boolean).map(l => { try { return JSON.parse(l); } catch { return null; } })
+               .filter(Boolean).reverse();   // la más reciente arriba
+} catch (e) {
+    $('lista').innerHTML = `<div class="vacio"><b>El corpus no contesta.</b><br>`
+        + `Puede que estés mirando esta página desde una copia local: `
+        + `<code>/api/dataset</code> vive en el servidor. (${esc(e.message)})</div>`;
+    todas = null;
+}
+
+if (todas) pintar();
+
+function pintar() {
+    const jugadas = todas.reduce((n, p) => n + (p.jugadas?.length ?? 0), 0);
+    const juegos = new Set(todas.map(p => p.juego));
+    $('resumen').innerHTML =
+        caja(todas.length, todas.length === 1 ? 'partida' : 'partidas')
+      + caja(juegos.size, juegos.size === 1 ? 'juego' : 'juegos')
+      + caja(jugadas, 'jugadas guardadas');
+
+    // Los filtros salen de lo que HAY, no de una lista de juegos: si mañana entra
+    // uno nuevo aparece solo, y si un juego se queda sin partidas desaparece.
+    $('filtros').innerHTML = [...juegos].sort().map(j =>
+        `<button class="filtro${filtro === j ? ' puesto' : ''}" data-j="${esc(j)}">${esc(j)}</button>`).join('')
+        + (filtro ? `<button class="filtro" data-j="">todos</button>` : '');
+
+    const visibles = filtro ? todas.filter(p => p.juego === filtro) : todas;
+    $('lista').innerHTML = visibles.length ? visibles.map(fila).join('') : `
+        <div class="vacio"><b>Todavía no hay partidas aquí.</b><br>
+        Juega una y, al terminar, pulsa «aportar al corpus». El servidor la vuelve
+        a jugar antes de guardarla: si no cuadra, la rechaza — y eso es el servicio
+        funcionando, no un error.</div>`;
+}
+
+function fila(p) {
+    const enlace = enlaceRepetidor(p);
+    const cuando = String(p.fecha ?? '').replace('T', ' ').slice(0, 16);
+    return `<div class="partida">
+        <span class="juego">${esc(p.juego)}</span>
+        <span class="meta">semilla ${esc(p.semilla)} · ${p.jugadas?.length ?? 0} jugadas`
+        + (Number.isFinite(p.puntos) ? ` · ${p.puntos} puntos` : '')
+        + (cuando ? ` · ${esc(cuando)}` : '') + `</span>`
+        + (p.tipo ? `<span class="quien">${esc(p.tipo)}${p.quien ? ' · ' + esc(p.quien) : ''}</span>` : '')
+        // Sin jugadas no hay nada que ver volverse a jugar, y se dice. Un enlace
+        // que abre una partida distinta sería peor que no darlo.
+        + (enlace && p.jugadas?.length
+            ? `<a class="ver" href="${esc(enlace)}">verla volver a jugarse →</a>`
+            : `<span class="sinver">sin jugadas que repetir</span>`)
+      + `</div>`;
+}
+
+$('filtros').addEventListener('click', (ev) => {
+    const b = ev.target.closest('.filtro');
+    if (!b) return;
+    filtro = b.dataset.j || null;
+    pintar();
+});
+</script>

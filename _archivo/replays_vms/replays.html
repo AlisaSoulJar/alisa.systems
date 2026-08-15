@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA Arcade — Global Replay VMS</title>
+    <link rel="stylesheet" href="css/arcade.css">
+    <style>
+        body { margin: 0; padding: 0; background: #05050A; color: #fff; font-family: 'Inter', sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        
+        .sidebar {
+            width: 300px; background: rgba(15, 15, 25, 0.9); border-right: 1px solid rgba(255,255,255,0.1);
+            display: flex; flex-direction: column; z-index: 10;
+        }
+        
+        .sidebar-header {
+            padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-header h2 { margin: 0; font-size: 18px; color: #a1c1d1; }
+        
+        .file-list {
+            flex: 1; overflow-y: auto; padding: 10px;
+        }
+        
+        .file-entry {
+            padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.05); border-radius: 6px;
+            cursor: pointer; font-family: 'JetBrains Mono', monospace; font-size: 11px;
+            transition: 0.2s; border-left: 3px solid transparent;
+        }
+        
+        .file-entry:hover { background: rgba(255,255,255,0.1); }
+        .file-entry.active { background: rgba(0,255,200,0.1); border-left-color: #00ffc8; }
+        
+        .main-stage {
+            flex: 1; position: relative; background: #000;
+        }
+        
+        iframe {
+            width: 100%; height: 100%; border: none;
+        }
+        
+        .timeline-controls {
+            position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+            width: 80%; background: rgba(15, 15, 25, 0.8); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2); border-radius: 12px;
+            padding: 15px 25px; display: flex; align-items: center; gap: 20px; z-index: 20;
+        }
+        
+        .play-btn {
+            background: #00ffc8; color: #000; border: none; width: 40px; height: 40px; border-radius: 50%;
+            cursor: pointer; font-weight: bold; font-family: monospace; display: flex; align-items: center; justify-content: center;
+        }
+        
+        input[type="range"] {
+            flex: 1; cursor: pointer;
+        }
+        
+        .tick-display {
+            font-family: 'JetBrains Mono', monospace; font-size: 14px; min-width: 100px; text-align: right;
+        }
+        
+        .no-data {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            color: rgba(255,255,255,0.2); font-size: 24px; font-weight: bold; font-family: monospace;
+            background: radial-gradient(circle, rgba(0,255,200,0.1) 0%, transparent 60%);
+        }
+    </style>
+<link rel="stylesheet" href="/vendor/fonts/fuentes.css">
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>ML Dojo Replays</h2>
+            <div style="font-size: 10px; color: #666; margin-top: 5px;" id="file-counter">Loading...</div>
+        </div>
+        <div class="file-list" id="fileList"></div>
+    </div>
+    
+    <div class="main-stage">
+        <div class="no-data" id="noData">SELECT A DATASET</div>
+        <iframe id="gameFrame" style="display: none;"></iframe>
+        
+        <div class="timeline-controls" id="controls" style="display: none;">
+            <button class="play-btn" id="playPauseBtn" onclick="togglePlay()">⏸</button>
+            <input type="range" id="timeline" min="0" max="0" value="0" oninput="scrubTimeline()">
+            <div class="tick-display">FRAME <span id="frameCounter">0</span></div>
+        </div>
+    </div>
+
+    <!-- UI Brain -->
+    <script src="js/replays_visualizer.js"></script>
+</body>
+</html>
