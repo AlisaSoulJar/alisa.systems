@@ -219,7 +219,34 @@ falsos** — «se salen de la pantalla» (estaban tapados) y «las piezas son ci
 un arreglo hecho sobre un diagnóstico de vista habría sido apartar la cámara y
 modelar piezas nuevas: mucho trabajo, y ninguna de las dos cosas era el problema.
 
-### ⚠️ PEATÓN: 2 DE 5 JUGADAS NO LLEGAN AL PULSARLAS. AHORA SÍ ES UN FALLO
+### ✅ PEATÓN: RESUELTO, Y NO ERA NADA DE LO QUE PONÍA AQUÍ
+
+**Era un `z-index` que faltaba.** Los otros treinta y dos juegos cuelgan su panel de
+`.overlay`, que lleva `z-index: 10` y gana al lienzo. Peatón lo cuelga de
+`#hud-container`, que se quedaba en `auto`: el `#canvas-container` —`absolute`,
+`z-index: 1`— le pasaba por delante y se comía los toques. Los botones se **veían**
+perfectamente, en su sitio y con su rótulo, y no respondía ninguno.
+
+Medido en móvil (390x844), que es donde mide `tacto` y donde yo no estaba mirando:
+**0 de 5 sin tocar nada, 5 de 5 con la línea puesta**, con Playwright diciendo que
+otro elemento intercepta. Y contados los 35 uno a uno: peatón era el único.
+
+Una línea en `jugables.css`. Ahora peatón da **5/5 con dedo y 5/5 con ratón**, y
+pradera, nave, damas y brisca siguen en pleno.
+
+**Lo que costó llegar, que es la parte que vale:**
+
+- En **escritorio las cinco llegaban siempre**. Toda la teoría anterior —el panel se
+  reconstruye cada segundo, el dedo baja en un nodo y se suelta en otro— se midió en
+  la pantalla equivocada. El repintado existe y es real: **también lo hace pradera,
+  que iba bien.** O sea que nunca fue la causa.
+- La firma para no repintar, que empeoraba pradera de 4/4 a 1/4, estaba arreglando
+  algo que no estaba roto. Queda anotada en `jugadas.js` como lo que era.
+- Y una vez más el orden que funciona: `elementsFromPoint` dio la pila entera bajo el
+  dedo —`canvas < canvas-container < button`— y eso, que es un dato y no una teoría,
+  se contestó probando tres CSS candidatos EN VIVO antes de escribir nada en disco.
+
+### ⚠️ (histórico) PEATÓN: 2 DE 5 JUGADAS NO LLEGAN AL PULSARLAS
 
 Antes bailaba (3/5, 5/5, 4/5) y no se sabía si era el juego o la vara. Arreglada la
 vara —`tacto` ahora cuenta la jugada que LLEGA al hub, no si el estado cambió—, el

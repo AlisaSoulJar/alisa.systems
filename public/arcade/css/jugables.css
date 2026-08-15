@@ -279,7 +279,26 @@
    he perdido yo.
    ═══════════════════════════════════════════════════════════════════════════ */
 #canvas-container { position: absolute; top: 0; left: 0; z-index: 1; }
-.overlay { position: absolute; top: 0; left: 0; z-index: 10; }
+.overlay,
+/**
+ * ⚠️ `#hud-container` VA AQUÍ PORQUE PEATÓN NO SE LLAMA `.overlay`, Y ESO LE COSTABA
+ *    LAS CINCO JUGADAS.
+ * ═════════════════════════════════════════════════════════════════════════════════
+ *
+ * Treinta y dos de los treinta y cinco cuelgan su panel de `.overlay` y por eso les
+ * vale la línea de arriba. Peatón lo cuelga de `#hud-container`, que se quedaba en
+ * `z-index: auto`: el lienzo, que es `absolute` con `z-index: 1`, le pasaba por
+ * delante y se comía los toques. Los botones se VEÍAN perfectamente —están en la
+ * captura, en su sitio y con su rótulo— y no respondía ninguno.
+ *
+ * Medido en móvil (390x844), con Playwright negándose a pulsar porque otro elemento
+ * intercepta: **0 de 5 sin tocar nada, 5 de 5 con esta línea.** Y contados los 35
+ * uno a uno: peatón era el único: los otros 32 con jugadas salen limpios.
+ *
+ * Esto es lo que `tacto` llevaba días llamando «2/5 intermitente de peatón». No era
+ * intermitente ni era del reloj del juego: era un `z-index` que faltaba.
+ */
+#hud-container { position: absolute; top: 0; left: 0; z-index: 10; }
 #mesa-jugadas { position: relative; z-index: 20; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
