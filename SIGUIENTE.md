@@ -86,35 +86,34 @@ probado. Candidatos con nombre: `CroupierSystem`, `TurretCombatSystem`,
 `RoboticArmSystem`, `KatamariSystem`, `TrafficSystem`, `OrbitalKinematicsSystem`,
 `NeuralDrivingSystem`. Es el eje «arcades» que Oscar quiere después de los de mesa.
 
-### 5. El corpus está vacío, y ahora sí se nota
+### 5. El corpus: ya recoge, y ahora hace falta que la gente juegue
 
-`/api/dataset` tiene **dos partidas**. No es que nadie juegue: es que **ninguna de
-las 35 mesas ofrecía aportar** — sólo lo hacían `mesa.html` y `jugar.html`, dos
-páginas viejas. El 15-08 se puso el botón en la pantalla de fin de partida, así que
-a partir de ahora depende de que la gente lo pulse.
+Estaba en **dos partidas**, y no porque nadie jugara: **ninguna de las 35 mesas
+ofrecía aportar** — sólo lo hacían `mesa.html` y `jugar.html`, dos páginas viejas.
 
-**Y le falta una columna: `normas`.** La tabla guarda `{juego, semilla, jugadas}` más
-la huella de las reglas, y eso no basta para damas —el único juego con normas
-variables (`damaVuela`, `peonComeAtras`)—: con una variable de por medio, la misma
-lista de jugadas es legal con unas normas e ilegal con otras. El recibo ya las lleva
-y el enlace del repetidor también; el corpus no.
+Resuelto el 15-08, con dos decisiones de Oscar:
 
-Mientras tanto, `POST /api/dataset` **rechaza** esas partidas con el motivo verdadero
-en vez de guardarlas mintiendo. Es un `ALTER TABLE ADD COLUMN` de nada, pero es tocar
-el esquema de la base en producción y ésa es decisión de Oscar, no mía.
+- **Aportar viene marcado**, con la casilla a la vista y una cuenta atrás de 4 s para
+  desmarcarla («si no quieres, desmárcalo»). Marcado por defecto está bien; marcado y
+  escondido, no — por eso la casilla sale ANTES del envío y `qué se manda` enseña el
+  JSON literal, igual que el buzón de avisos.
+- **La columna `normas`** existe (`ALTER TABLE partidas ADD COLUMN normas TEXT`,
+  ejecutado en producción). Las dos filas anteriores quedaron en NULL, que es lo que
+  eran. Con eso, damas —el único juego con normas variables— ya entra en el corpus.
 
-Dos cosas más que faltan y no se han hecho a propósito:
+Verificado de punta a punta contra el dominio: aportada una partida de damas con
+`damaVuela` y `peonComeAtras`, guardada, listada en `/arcade/replays.html`, y su
+enlace la vuelve a jugar **con esas normas** sin romperse en la jugada 9.
 
-- **Nadie sabe que existe el botón.** Sale al terminar una partida, y hay juegos
-  donde terminar cuesta. Habría que medir cuántas partidas se terminan de verdad
-  antes de decidir si hace falta otra puerta.
-- **Aportar lo decide quien juega, y así se queda.** Mandar las partidas solas
-  llenaría el corpus mañana y sería publicar lo de otro sin preguntar. Si algún día
-  se quiere automático, es una decisión de Oscar y hay que decirlo en la página.
+**Lo que falta ahora es sólo que se juegue.** Con tres filas no hay escaparate que
+enseñar, y la página está lista para cuando lo haya. Dos cosas medidas que conviene
+saber:
 
-También quedó a medias lo obvio: `/arcade/replays.html` lista el corpus y **cada
-fila abre la partida volviéndose a jugar**, pero con dos filas no hay escaparate que
-enseñar. La página está bien; lo que falta son partidas.
+- El aporte sale **al terminar** una partida, y hay juegos donde terminar cuesta —
+  las damas no acaban en 900 jugadas con la política tonta. Habría que medir cuántas
+  partidas se terminan de verdad antes de decidir si hace falta otra puerta.
+- La casilla es de 16 px por algo: una de 12 se falla con el dedo, y una casilla que
+  se falla no es una elección.
 
 ### 6. Pendientes menores, ya medidos
 
@@ -180,7 +179,19 @@ blackjack, guerra, damas, fagocito). Meterlo en el laboratorio significaría abr
 35 dos veces y doblar sus diez minutos; no parece que compense hoy, pero conviene
 saber que ese hueco existe.
 
-**Y toda prueba nueva se rompe a propósito antes de creérsela.** No es ceremonia:
+**Y toda prueba nueva se rompe a propósito antes de creérsela, con el sabotaje
+ESCRITO en su cabecera.** No es ceremonia: las tres comprobaciones nuevas del 15-08
+se quedaron verdes con el cable cortado, y las tres por la misma razón —buscar un
+nombre dentro de un fichero no dice nada sobre si se ejecuta—:
+
+    includes('crearRepetidor')   aprobaba  crearRepetidorZZZ      (subcadena)
+    includes('activeElement')    aprobaba  una función huérfana   (seguía escrito)
+    includes('estaEscribiendo()') aprobaba  su propia definición  (`function …()`)
+
+La regla que queda: **una comprobación por texto no vale hasta que la has visto
+suspender con el cable cortado de verdad.** Y el corolario práctico: el sabotaje
+concreto va escrito en el comentario de la prueba, para que el siguiente pueda
+repetirlo en diez segundos en vez de fiarse de que alguien lo hizo una vez. No es ceremonia:
 `prueba_repetidor` cazó que el enlace no llevaba las `normas` sólo porque la
 saboteé para ver si sabía suspender, y su comprobación de cableado se quedó verde
 con el cable cortado hasta que se afinó la marca. Una prueba que nunca ha fallado
