@@ -138,32 +138,46 @@ async function correr(part, e, Clase, reglas) {
          *        brisca  marcador=[40,31,18,31]  → s0:40  s1:31  s2:18  s3:31
          *        hearts  marcador=[17, 1, 0, 8]  → s0:-17 s1:-1  s2:0   s3:-8
          *
-         * ⚠️ PERO QUEDA UN SEGUNDO BLOQUEO, Y ES POR QUÉ ESTO SIGUE APAGADO.
+         * ✅ **Y EL SEGUNDO BLOQUEO TAMBIÉN CAYÓ (16-08): LAS SILLAS SE ENUMERAN.**
          *
-         * `asiento` hace DOS cosas a la vez: deja pasar N turnos a la casa **y**
-         * elige el punto de vista. En un juego de cuatro son la misma cosa; en uno
-         * de dos, no: en entropy, `asiento = 2` devuelve la silla 0 —correctamente,
-         * `bazas.js` cae a 0 cuando la silla no existe— pero la partida ya no es la
-         * misma, porque la casa jugó dos turnos antes de empezar.
+         * El que quedaba era que `asiento` hacía DOS cosas a la vez —dejar pasar N
+         * turnos a la casa **y** elegir el punto de vista—. En un juego de cuatro son
+         * la misma; en uno de dos, no: pedir la silla 2 en entropy no te sienta en
+         * ninguna silla nueva, te hace empezar dos turnos más tarde en la misma. La
+         * medida mezclaba «qué silla ocupo» con «cuándo entro»:
          *
-         * Se ve en la medida del sesgo (40 semillas, política tonta en las cuatro):
+         *     entropy   -44.9  -14.9  -15.8  -16.2      ← ¡y sólo tiene dos jugadores!
          *
-         *     entropy   -44.9  -14.9  -15.8  -16.2      (2 jugadores)
-         *     remigio   -54.0  128.8  131.0  130.5
-         *     oca       599.0 1262.5 1166.8 1166.8
+         * Faltaba saber cuántas sillas tiene cada juego, y resultó que ya se sabía sin
+         * inventar nada: `marcador` lleva un elemento POR SILLA. `ProtoHubEnv` cuenta
+         * ahora con eso —más `manos_rivales`+1 y `avance`, porque `marcador` no siempre
+         * está desde el primer turno— y envuelve la silla pedida sobre las que hay.
          *
-         * Silla 0 muy distinta y las otras tres parecidas, en todos. Eso NO es «la
-         * silla 3 es buena»: es «empezar el primero es distinto de no empezar», y
-         * con esta sonda las dos causas no se separan. Publicar una clasificación
-         * rotada sobre esto sería cambiar un sesgo conocido por uno que no sabemos
-         * leer, que es peor.
+         * La comprobación que no se puede falsear: en un juego de dos, las sillas 0 y 2
+         * tienen que dar EXACTAMENTE lo mismo. Con 30 semillas y política tonta:
          *
-         * Lo que lo desbloquea: que `asiento` sea sólo el punto de vista y el número
-         * de turnos previos se derive de él PARA LOS JUEGOS QUE TIENEN ESA SILLA
-         * —o sea, preguntar cuántos asientos tiene el juego antes de sentarse—.
-         * Mientras tanto `--rotar` está para medir el sesgo, no para publicar con él.
+         *     remigio  2 sillas   -54.5   131.8   -54.5   131.8   ✓
+         *     oca      2 sillas   554.3  1306.5   554.3  1306.5   ✓
+         *     gofish   3 sillas     2.1     3.8     4.1     2.1   ✓
+         *
+         * Y con eso el sesgo por fin se lee limpio, que es lo que hacía falta para
+         * corregirlo: brisca 19.5 / 21.4 / 25.2 / 27.6 —la silla 3 saca un 42 % más que
+         * la 0—, parchís 262 contra 465, canadiense 138 contra 236.
+         *
+         * ⚠️ ASÍ QUE AHORA SE ROTA POR DEFECTO, Y `--sin-rotar` LO APAGA.
+         *
+         * Rotar no quita el sesgo del juego —canadiense seguirá premiando a quien
+         * empieza— sino que lo reparte: todos los participantes pasan por todas las
+         * sillas, así que la ventaja deja de contarse como habilidad de uno.
+         *
+         * ⚠️ Y LOS NÚMEROS DE LA TABLA CAMBIAN. Es lo que se quería, pero significa
+         * que una clasificación rotada NO es comparable con las de antes. La de
+         * `resultados/` es de cuando no se rotaba: al regenerarla, se regenera entera.
+         *
+         * Ya no hace falta el `% 4` de antes: el entorno envuelve la silla sobre las
+         * que el juego tiene de verdad, que era justamente lo que no sabía hacer.
          */
-        const asiento = args.rotar ? (s - 1) % 4 : 0;
+        const asiento = args['sin-rotar'] ? 0 : (s - 1);
 
         const r = await jugarEpisodio(Clase, part.proveedor ?? (async () => ({ texto: '1' })), {
             semilla: s, tope: TOPE, politica: part.politica, asiento,

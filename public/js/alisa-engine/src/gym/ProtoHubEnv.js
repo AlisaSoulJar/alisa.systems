@@ -79,6 +79,49 @@ export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
         static reglas = reglas;
 
         /**
+         * ═══════════════════════════════════════════════════════════════════════
+         *  ⚠️ CUÁNTAS SILLAS TIENE ESTE JUEGO, PREGUNTÁNDOSELO AL ESTADO
+         * ═══════════════════════════════════════════════════════════════════════
+         *
+         * Aquí ponía que ninguno de los 35 publica su lista de asientos, y era verdad
+         * hasta que los juegos empezaron a publicar `marcador`: un elemento por silla,
+         * o sea que su longitud las enumera. No hubo que inventar un campo — apareció
+         * solo al arreglar otra cosa.
+         *
+         * Se miran tres indicios en vez de uno porque `marcador` no siempre está desde
+         * el principio. Medido en los diez juegos de más de una silla, en el estado
+         * RECIÉN repartido:
+         *
+         *     brisca · tute · hearts · spades · gofish   marcador y manos_rivales+1
+         *     parchís · oca                              marcador y avance
+         *     canadiense                                 los tres
+         *     remigio                                    marcador y manos_rivales+1
+         *     entropy                                    NINGUNO
+         *
+         * `manos_rivales` son «los demás», por eso el +1.
+         *
+         * ⚠️ ENTROPY SE QUEDA EN UNA SILLA A PROPÓSITO, Y CONVIENE SABER POR QUÉ.
+         *
+         * Publica `marcador: p.fin ? … : null`, o sea sólo al acabar, así que al
+         * empezar no hay nada que contar. Arreglarlo es de una línea en sus reglas
+         * —publicarlo siempre— pero ese campo entra en la HUELLA DE APERTURA
+         * (`huella.js`), y cambiar la huella de un juego es cambiar lo que identifica
+         * sus partidas. No es una línea que se toque de pasada.
+         *
+         * Mientras tanto entropy cuenta una silla, o sea que se comporta exactamente
+         * como hasta hoy: siempre la 0. No se gana nada, pero no se pierde nada, que
+         * es lo que toca cuando la alternativa es tocar una huella a ciegas.
+         */
+        static contarSillas(e) {
+            const candidatos = [
+                Array.isArray(e?.marcador) ? e.marcador.length : 0,
+                Array.isArray(e?.manos_rivales) ? e.manos_rivales.length + 1 : 0,
+                Array.isArray(e?.avance) ? e.avance.length : 0,
+            ];
+            return Math.max(1, ...candidatos);
+        }
+
+        /**
          * ⚠️ EN QUÉ SILLA SE SIENTA EL AGENTE. CERO ES LA DE SIEMPRE.
          *
          * No es un número de asiento porque NINGUNO de los 35 juegos publica su
@@ -95,8 +138,31 @@ export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
          * turno, y en canadiense esa silla gana el 31% frente al 25% limpio de
          * parchís, con los cuatro asientos jugando igual. Seis puntos de ventaja
          * que la clasificación se estaba apuntando como habilidad.
+         *
+         * ⚠️ ACTUALIZACIÓN 16-08: YA HAY FORMA DE ENUMERAR LAS SILLAS, Y ARREGLA
+         *    EL PROBLEMA QUE DEJABA ESTO A MEDIAS.
+         *
+         * Lo de arriba —contar en turnos que juega la casa— tenía un agujero: en un
+         * juego de DOS, pedir la silla 2 no te sienta en ninguna silla nueva, te hace
+         * empezar dos turnos más tarde en la misma. Y entonces la medida del sesgo
+         * mezcla «qué silla ocupo» con «cuándo entro», que son cosas distintas.
+         *
+         * Se veía en la medida (40 semillas, política tonta en las cuatro sillas):
+         *
+         *     entropy   -44.9  -14.9  -15.8  -16.2      ← ¡y sólo tiene dos jugadores!
+         *
+         * Lo que faltaba era saber cuántas sillas tiene cada juego, y ahora se sabe:
+         * `marcador` es un elemento POR ASIENTO, así que su longitud las enumera. No
+         * hizo falta inventar un campo: apareció al publicar los marcadores por silla.
+         *
+         * Así que la silla pedida se envuelve sobre las que hay de verdad. Pedir la 2
+         * en un juego de dos es pedir la 0, y ahí no se deja pasar ningún turno.
          */
         asiento = 0;
+
+        /** Las sillas que resultaron existir, y la que de verdad se ocupó. */
+        asientos = 1;
+        asientoReal = 0;
 
         reset(seed = 0) {
             // Las reglas no se ponen de acuerdo en cómo llamar a la semilla, así
@@ -109,6 +175,19 @@ export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
             this.done = false;
             this.jugadas = [];
             this.ilegales = 0;
+
+            /**
+             * Cuántas sillas hay, preguntándoselo a la partida recién repartida. Se
+             * mira desde la 0 a propósito: es la única que existe seguro, y es la que
+             * publica el `marcador` completo del que sale la cuenta.
+             */
+            this.asientoReal = 0;
+            const inicial = this._estado();
+            // `this.constructor`, no el nombre de la clase: ésta es anónima y extiende
+            // `GymEnv`, así que nombrar a la base buscaría el estático donde no está.
+            this.asientos = this.constructor.contarSillas(inicial);
+            this.asientoReal = ((this.asiento % this.asientos) + this.asientos) % this.asientos;
+
             let e = this._estado();
 
             /**
@@ -121,7 +200,7 @@ export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
              * —que es exactamente el fallo que ya nos costó una tarde con el `rnd`.
              */
             let previos = 0;
-            while (reglas.sugerencia && this.asiento > previos
+            while (reglas.sugerencia && this.asientoReal > previos
                    && e.turn !== undefined && !e.is_game_over) {
                 const j = reglas.sugerencia(this.p);
                 if (!j || !reglas.mover(this.p, j)) break;
@@ -163,7 +242,7 @@ export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
          * publicado. Los diecinueve que declaran `estado(p)` ignoran el argumento de
          * más, que es lo que hace JavaScript con ellos.
          */
-        _estado() { return reglas.estado(this.p, this.asiento) ?? {}; }
+        _estado() { return reglas.estado(this.p, this.asientoReal) ?? {}; }
 
         /**
          * PARA MIRAR NO HACE FALTA HABER EMPEZADO.
