@@ -345,13 +345,30 @@ function acercar(motor, margen = 1.12) {
                     if (prof > 0.01) ancho = Math.max(ancho, Math.abs(v.x) / (prof * tanH));
                 }
 
-        const MINIMO = 0.72;
+        const MINIMO = 0.80;
         if (ancho > 0.001 && ancho < MINIMO) {
             d *= ancho / MINIMO;
             // Un suelo por si el reparto es de UNA carta: sin esto la cámara se
             // metería dentro de la mesa persiguiendo un naipe suelto.
             d = Math.max(d, techo * 0.4);
         }
+
+        /**
+         * ⚠️ Y UN MÁXIMO, QUE ES LO QUE ME FALTABA.
+         *
+         * Esto sólo sabía ACERCARSE cuando la mano salía pequeña. Con trece cartas
+         * en un móvil pasa lo contrario: el abanico es más ancho que la pantalla y
+         * las de los extremos se salen. Medido con `legibilidad.mjs` en vertical —
+         * hearts y remigio, dos cartas fuera cada uno.
+         *
+         * Y no lo vi anoche porque arreglé el tamaño mirando SÓLO escritorio. La
+         * comprobación mide las dos formas, que es justo para lo que se escribió.
+         *
+         * `0.95` deja un pelo de aire contra el borde: a 1.0 la carta toca el filo y
+         * se le come el canto.
+         */
+        const TOPE = 0.95;
+        if (ancho > TOPE) d *= ancho / TOPE;
     }
 
     motor.camera.position.copy(objetivo).addScaledVector(eje, d);

@@ -10,10 +10,157 @@
   },
   "servers": [
     {
-      "url": "https://alisa-mesas.prime-6d5.workers.dev"
+      "url": "https://alisa-mesas.prime-6d5.workers.dev",
+      "description": "Shared tables: several seats around one match, with a referee."
+    },
+    {
+      "url": "https://alisa.systems",
+      "description": "The site itself: the stateless gym, the verifier, the corpus and presence. No room, no seat, no waiting for anyone."
     }
   ],
   "paths": {
+    "/api/gym": {
+      "get": {
+        "operationId": "gymHelp",
+        "summary": "What this is and how to play it",
+        "description": "Returns its own instructions. Kept because an agent that lands here should not have to read our source to take the first step.",
+        "responses": { "200": { "description": "Self-description." } }
+      },
+      "post": {
+        "operationId": "gymStep",
+        "summary": "Send the whole match; it is replayed from the seed",
+        "description": "The stateless door, and the one an agent wants when there is nobody else to wait for. You send `{juego, semilla, jugadas}` — the entire match, not a delta — and the server replays it from scratch and answers with the position after it.\n\n**The score is never sent, only recomputed.** There is no session and nothing to trust: the same three fields always produce the same answer, so a run is reproducible by anyone and cheating consists of nothing.\n\n`acciones` is the list of legal moves right now. Append one to `jugadas` and post again.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["juego", "semilla", "jugadas"],
+                "properties": {
+                  "juego": { "type": "string", "description": "Game id, e.g. `gofish`." },
+                  "semilla": { "type": "integer", "description": "The deal. Same seed, same match." },
+                  "jugadas": {
+                    "type": "array", "items": { "type": "string" },
+                    "description": "Every move so far, in order. Empty array to start."
+                  }
+                }
+              },
+              "example": { "juego": "gofish", "semilla": 7, "jugadas": [] }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The position after replaying those moves.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "juego": "gofish", "titulo": "Go Fish", "semilla": 7, "jugadas": 0,
+                  "rechazada": null, "terminada": false, "puntos": 0,
+                  "acciones": ["pedir:2:1", "pedir:6:1"], "estado": {}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/verificar": {
+      "post": {
+        "operationId": "verify",
+        "summary": "Replay a receipt and say whether it holds",
+        "description": "Give it `{juego, semilla, jugadas}` and it plays the match again to see if every move was legal and what the score really was. There is no judge model: the check is arithmetic, and anyone can run it against a receipt they did not produce.\n\n`declarados` is what the sender claimed; `puntos` is what the replay found. When they differ, the replay wins.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["juego", "semilla", "jugadas"],
+                "properties": {
+                  "juego": { "type": "string" },
+                  "semilla": { "type": "integer" },
+                  "jugadas": { "type": "array", "items": { "type": "string" } },
+                  "normas": {
+                    "type": "object",
+                    "description": "Rule variants the match was played under. A receipt replayed under different rules is rejected, not silently accepted."
+                  },
+                  "declarados": { "type": "integer", "description": "Score the sender claims." }
+                }
+              },
+              "example": { "juego": "gofish", "semilla": 7, "jugadas": [] }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Verdict.",
+            "content": {
+              "application/json": {
+                "example": { "valida": true, "puntos": 0, "motivo": null, "jugadas": 0, "declarados": null, "ms": 0 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dataset": {
+      "get": {
+        "operationId": "datasetInfo",
+        "summary": "The corpus of verified matches",
+        "description": "Every row was replayed by this server before being stored, and the score kept is the recomputed one — never the declared one.",
+        "responses": { "200": { "description": "Corpus and how to contribute." } }
+      },
+      "post": {
+        "operationId": "datasetContribute",
+        "summary": "Contribute a match",
+        "description": "Send `{juego, semilla, jugadas, tipo}`. It is replayed before being accepted; if the replay disagrees, it is not stored. `tipo` says who played — person, agent or policy — so the table can compare like with like.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["juego", "semilla", "jugadas"],
+                "properties": {
+                  "juego": { "type": "string" },
+                  "semilla": { "type": "integer" },
+                  "jugadas": { "type": "array", "items": { "type": "string" } },
+                  "tipo": { "type": "string", "description": "person, agent or policy." }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Accepted, with the recomputed score." } }
+      }
+    },
+    "/api/presencia": {
+      "get": {
+        "operationId": "presence",
+        "summary": "Who is at the arcade right now",
+        "description": "People, agents and policies currently playing, split by kind.",
+        "responses": { "200": { "description": "Counts and the list." } }
+      },
+      "post": {
+        "operationId": "presenceAnnounce",
+        "summary": "Announce yourself",
+        "description": "Send `{nombre, tipo}` to appear in the list. `tipo` defaults to person.",
+        "responses": { "200": { "description": "Registered." } }
+      }
+    },
+    "/mesa/{sala}/reporte": {
+      "post": {
+        "operationId": "report",
+        "summary": "Report something odd, with the receipt attached",
+        "description": "The «¿algo va raro?» button of the arcade. It sends the comment together with `{juego, semilla, jugadas}`, so a complaint from a stranger becomes a match anybody can replay. That is the difference between an anecdote and a bug report.",
+        "parameters": [
+          { "name": "sala", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Filed." } }
+      }
+    },
     "/mesa/{sala}": {
       "get": {
         "operationId": "getTable",

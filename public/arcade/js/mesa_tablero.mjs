@@ -35,6 +35,7 @@
  */
 import { crearPintor3d } from './protohub/render/pintar3d.js';
 import { pintarJugadas } from './protohub/jugadas.js';
+import { crearMarcas, VERDE, MORADO } from './protohub/marcas.js';
 import { volcarMesa, volcando, ponerBoton } from './protohub/render/volcar.js';
 
 const hub = window.ALISA_PROTOHUB;
@@ -409,6 +410,71 @@ function celdaDesde(ev, rej) {
  */
 let seleccion = null;
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ LA JUGADA SE VE ANTES DE HACERLA. ANTES NO SE VEÍA NADA.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * `seleccion` se guardaba desde hace días y no se dibujaba NUNCA. O sea que en
+ * damas, reversi o el ajedrez de esta mesa tocabas una pieza y la pantalla no
+ * cambiaba: ni sabías que la habías cogido, ni a dónde podía ir. La jugada existía
+ * en la cabeza del código y en ningún sitio más.
+ *
+ * Salió de mirar cómo lo hacen fuera. La guía de interfaz de Board Game Arena
+ * —que la publican y la usan como puerta para pasar un juego a release— lo pone de
+ * norma primera: «resalta las opciones válidas para que la acción esperada sea
+ * obvia», y muestra las consecuencias antes de comprometerse. En ajedrez.com los
+ * puntos de jugada legal vienen ENCENDIDOS por defecto en las cuentas nuevas.
+ *
+ * ⚠️ Y EL DATO LLEVABA DOS DÍAS PUESTO.
+ *
+ * `sus.acciones` dice, para cada jugada legal, qué casillas toca — se construyó
+ * para poder jugar tocando el tablero. Nadie lo usaba al revés. Esto no añade
+ * información nueva: enseña la que ya había.
+ *
+ * Dos colores y dos significados:
+ *   · morado — de aquí sale algo: la pieza que has cogido, o el origen de la
+ *     jugada que estás señalando en el panel;
+ *   · verde  — aquí puedes ir: los destinos.
+ */
+const marcas = crearMarcas(grupo, { y: 0.10, ancho: 0.92, largo: 0.92 });
+
+/** El centro de una casilla, en coordenadas del grupo (una unidad por casilla). */
+const centroDe = (celda, rej) => ({
+    x: (celda % rej.ancho) - (rej.ancho - 1) / 2,
+    z: Math.floor(celda / rej.ancho) - (rej.alto - 1) / 2,
+});
+
+/** Marca una jugada concreta: su origen y su destino. */
+function marcarJugada(m) {
+    const sus = hub.sustrato(juego);
+    const rej = sus?.rejilla, celdas = sus?.acciones?.[m];
+    marcas.limpiar();
+    if (!rej || !celdas?.length) return;
+    celdas.forEach((celda, i) => {
+        const { x, z } = centroDe(celda, rej);
+        // Con una sola casilla la jugada ES el destino (poner una ficha, disparar);
+        // con dos, la primera es de dónde sale.
+        const soloUna = celdas.length === 1;
+        marcas.poner(x, z, { color: (i === 0 && !soloUna) ? MORADO : VERDE, opacidad: 0.5 });
+    });
+}
+
+/** Marca lo cogido y TODO lo que se puede hacer desde ahí. */
+function marcarSeleccion() {
+    const sus = hub.sustrato(juego);
+    const rej = sus?.rejilla, acciones = sus?.acciones;
+    marcas.limpiar();
+    if (seleccion === null || !rej || !acciones) return;
+    const o = centroDe(seleccion, rej);
+    marcas.poner(o.x, o.z, { color: MORADO, opacidad: 0.55 });
+    for (const celdas of Object.values(acciones)) {
+        if (celdas.length < 2 || celdas[0] !== seleccion) continue;
+        const d = centroDe(celdas[celdas.length - 1], rej);
+        marcas.poner(d.x, d.z, { color: VERDE, opacidad: 0.45 });
+    }
+}
+
 function alTocar(ev) {
     const sus = hub.sustrato(juego);
     const rej = sus?.rejilla;
@@ -423,6 +489,7 @@ function alTocar(ev) {
         for (const [m, celdas] of Object.entries(acciones)) {
             if (celdas.length === 1 && celdas[0] === celda && enviarSiEsLegal(m)) {
                 seleccion = null;
+                marcas.limpiar();
                 return;
             }
         }
@@ -431,6 +498,7 @@ function alTocar(ev) {
             for (const [m, celdas] of Object.entries(acciones)) {
                 if (celdas[0] === seleccion && celdas[celdas.length - 1] === celda) {
                     seleccion = null;
+                    marcas.limpiar();
                     if (enviarSiEsLegal(m)) return;
                 }
             }
@@ -438,6 +506,7 @@ function alTocar(ev) {
         // Primer toque: se marca si de aquí sale alguna jugada. Si no, se suelta —
         // así tocar en vacío deselecciona en vez de dejar la mesa a medias.
         seleccion = Object.values(acciones).some(c => c[0] === celda) ? celda : null;
+        marcarSeleccion();
         return;
     }
 
@@ -534,6 +603,8 @@ async function refrescar() {
         acciones: legalesAhora,
         terminada: !!st.is_game_over,
         rejilla: susLocal?.rejilla ?? null,
+        // Señalar un botón enseña dónde cae; soltarlo devuelve lo que tenías cogido.
+        alSeñalar: (m) => (m === null ? marcarSeleccion() : marcarJugada(m)),
         enviar: (m) => { hub.move(juego, { move: m }); refrescar(); },
     });
 }

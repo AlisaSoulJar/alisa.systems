@@ -107,7 +107,7 @@ function comoTablero(legales, rejilla) {
 
 export function pintarJugadas(caja, { acciones = [], meToca = true, turnoDe = null,
                                       terminada = false, espectador = false,
-                                      rejilla = null, enviar } = {}) {
+                                      rejilla = null, enviar, alSeñalar = null } = {}) {
     if (!caja) return;
 
     const aviso = (t) => { caja.innerHTML = `<span class="dato">${t}</span>`; };
@@ -178,6 +178,28 @@ export function pintarJugadas(caja, { acciones = [], meToca = true, turnoDe = nu
         // Cuando la casilla es tan pequeña que se le quita el texto, el nombre
         // tiene que seguir estando para quien navega sin ver el mapa.
         b.setAttribute('aria-label', String(m));
+        /**
+         * ⚠️ SEÑALAR UN BOTÓN ENSEÑA DÓNDE CAE ESA JUGADA EN EL TABLERO.
+         *
+         * El panel dice `c3d4` y hasta ahora había que saberse las coordenadas para
+         * situarlo. Es la norma primera de la guía de Board Game Arena —enseñar la
+         * consecuencia ANTES de comprometerse— y aquí sale gratis: `sus.acciones` ya
+         * sabe qué casillas toca cada jugada.
+         *
+         * Con `pointerenter` y no con `mouseover` para que valga igual con el dedo:
+         * en móvil se dispara al apoyar, antes del `click`, así que se ve un instante
+         * a dónde va antes de que se ejecute.
+         *
+         * Y `focus` además del puntero: quien navega con el tabulador tiene el mismo
+         * derecho a ver dónde cae la jugada que quien pasa el ratón por encima.
+         */
+        if (alSeñalar) {
+            b.addEventListener('pointerenter', () => alSeñalar(m));
+            b.addEventListener('focus', () => alSeñalar(m));
+            b.addEventListener('pointerleave', () => alSeñalar(null));
+            b.addEventListener('blur', () => alSeñalar(null));
+        }
+
         b.onclick = async () => {
             /**
              * Se apagan TODOS, no sólo el pulsado. En una sala compartida el

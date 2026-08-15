@@ -137,6 +137,73 @@ for (const juego of juegos) {
              * siempre se acaba ignorando. Dos cosas del mismo color a media pantalla
              * de distancia no se confunden; pegadas, sí.
              */
+            /**
+             * ═══════════════════════════════════════════════════════════════
+             *  LAS MESAS DE CARTAS: TU MANO TIENE QUE PODER LEERSE
+             * ═══════════════════════════════════════════════════════════════
+             *
+             * Aquí no hay piezas en una rejilla: hay CARTAS en zonas. Y la pregunta
+             * cambia de forma pero no de fondo — de una carta hay que leer el rango
+             * Y EL PALO, que en el tute decide si puedes tirarla.
+             *
+             * Esto existe porque ese fallo ya pasó: las cartas de tu mano medían 46
+             * px de ancho y el palo, que va en una esquina, no se distinguía. Lo
+             * encontré porque un betatester preguntó si teníamos baraja española.
+             * Sin esta medida, el día que alguien toque la cámara vuelve a pasar y
+             * nadie se entera hasta el siguiente aviso.
+             *
+             * ⚠️ SÓLO SE MIDE `mano_0_`, QUE ES LA TUYA.
+             *
+             * Las de los rivales están boca abajo: de ellas sólo hace falta saber
+             * cuántas hay, y eso se cuenta igual con el borde cortado. Exigirles el
+             * mismo tamaño obligaría a alejar la cámara y dejaría la tuya pequeña,
+             * que es exactamente el fallo que se vino a arreglar.
+             */
+            const mesaCartas = window.ALISA_MESA;
+            if (!cam && mesaCartas?.scene && mesaCartas?.camera) {
+                mesaCartas.scene.updateMatrixWorld(true);
+                const panelC = document.querySelector('.hud-panel')?.getBoundingClientRect();
+                const v2 = new THREE.Vector3();
+                const mias = [];
+                mesaCartas.scene.traverse((o) => {
+                    if (!o.isMesh || !o.visible) return;
+                    if (!String(o.userData?.zona ?? '').startsWith('mano_0_')) return;
+                    v2.setFromMatrixPosition(o.matrixWorld).project(mesaCartas.camera);
+                    mias.push({ x: (v2.x + 1) / 2 * W, y: (1 - v2.y) / 2 * H });
+                });
+                /**
+                 * ⚠️ SIN MANO NO SE ABANDONA: SE SIGUE POR EL OTRO CAMINO.
+                 *
+                 * Entropy reparte en CAJA, no en mano, y hay juegos de cartas sin
+                 * mano ninguna. La primera versión devolvía «sin cartas en mano» y
+                 * ahí se acababa la medida — la cobertura BAJÓ de 54 a 50 al añadir
+                 * esta rama, o sea que una mejora quitó red en vez de ponerla.
+                 *
+                 * Se sale del `if` y cae en la comprobación de escena, que sí sabe
+                 * mirar cualquier montón de mallas. Menos preciso, pero mide.
+                 */
+                if (mias.length >= 1) {
+
+                let fueraC = 0, tapadasC = 0;
+                for (const c of mias) {
+                    if (c.x < 0 || c.y < 0 || c.x > W || c.y > H) { fueraC++; continue; }
+                    if (panelC && c.x >= panelC.left && c.x <= panelC.right
+                               && c.y >= panelC.top && c.y <= panelC.bottom) tapadasC++;
+                }
+                // El ancho de una carta en pantalla: la separación entre vecinas del
+                // abanico. Con una sola carta no hay separación que medir y se dice.
+                let ancho = null;
+                if (mias.length > 1) {
+                    const xs = mias.map(c => c.x).sort((a, b2) => a - b2);
+                    const huecos = [];
+                    for (let i = 1; i < xs.length; i++) if (xs[i] - xs[i - 1] > 0.5) huecos.push(xs[i] - xs[i - 1]);
+                    if (huecos.length) huecos.sort((a, b2) => a - b2), ancho = huecos[Math.floor(huecos.length / 2)];
+                }
+                return { medible: true, cartas: true, mano: mias.length,
+                         fuera: fueraC, tapadas: tapadasC, anchoCarta: ancho };
+                }
+            }
+
             if (!cam || !raiz) {
                 const motor = window.ALISA_MOTOR;
                 if (!motor?.scene || !motor?.camera) return { medible: false, razon: 'sin motor' };
@@ -308,6 +375,8 @@ for (const juego of juegos) {
 
         if (!posiciones.medible) {
             r = posiciones;
+        } else if (posiciones.cartas) {
+            r = posiciones;
         } else if (posiciones.propio) {
             // Escena dibujada a mano: lo único que se puede afirmar es si hay cosas
             // pegadas del mismo color. Ni tamaño de casilla ni piezas fuera, porque
@@ -341,9 +410,53 @@ for (const juego of juegos) {
         console.log(`  · ${juego.padEnd(11)} ${forma.nombre.padEnd(5)} sin medir — ${r.razon}`);
         continue;
     }
-    const quejas = [];
+    /**
+     * ⚠️ DOS LISTAS: LO QUE HAY QUE ARREGLAR Y LO QUE HAY QUE SABER.
+     *
+     * Un tablero de 28 columnas en un móvil da casillas de 10 px, y una mano de
+     * trece cartas no cabe legible en 390 px. Las dos cosas son verdad y ninguna
+     * tiene arreglo moviendo la cámara: piden otra interfaz, que es otra tarea.
+     *
+     * Ponerlas en rojo con lo demás haría que la pasada saliera roja siempre, y una
+     * comprobación que siempre está roja se lee igual que una que siempre está
+     * verde: no se lee. Se separan y se dicen aparte.
+     */
+    const quejas = [], avisos = [];
     if (r.fuera) quejas.push(`${r.fuera} fuera de pantalla`);
     if (r.tapadas) quejas.push(`${r.tapadas} bajo el panel`);
+    /**
+     * ⚠️ UNA CARTA PIDE MÁS QUE UNA CASILLA, Y POR UNA RAZÓN CONCRETA.
+     *
+     * De una casilla basta ver que hay algo y de qué color. De una carta hay que
+     * leer el RANGO y EL PALO, y el palo va en una esquina. Cuando las del tute
+     * medían 46 px de ancho el rango se leía y el palo no — y en el tute servir al
+     * palo es obligatorio, o sea que faltaba justo el dato que decide la jugada.
+     *
+     * 60 px es lo que había después de arreglarlo (quedaron en 78) menos un margen.
+     */
+    if (r.cartas && r.anchoCarta !== null && r.anchoCarta < 60) {
+        /**
+         * ⚠️ Y CUÁNDO NO CABE, SE DICE, COMO CON FAGOCITO.
+         *
+         * Trece cartas a 60 px son 780, y una pantalla de móvil tiene 390. No hay
+         * cámara que arregle eso: en vertical una mano larga NO se puede leer carta
+         * a carta, y la interfaz de verdad ahí son los botones del panel — que
+         * `tacto.mjs` verifica que se pueden pulsar TODOS, con dedo y con ratón.
+         *
+         * Decirlo importa: sin esta frase, quien lo lea mañana se pondrá a mover la
+         * cámara buscando un arreglo que no existe. Con ella sabe que lo que falta,
+         * si acaso, es otra interfaz — no otro encuadre.
+         */
+        const inevitable = r.mano * 60 > forma.width * 0.9;
+        if (inevitable) {
+            // Informativo, no fallo: no hay nada que arreglar y un rojo permanente
+            // se acaba ignorando, que es la lección de toda esta tanda.
+            avisos.push(`carta de ${Math.round(r.anchoCarta)} px — ${r.mano} cartas no caben`
+                + ` legibles en ${forma.width} px, aquí se juega por el panel`);
+        } else {
+            quejas.push(`carta de ${Math.round(r.anchoCarta)} px de ancho (mínimo 60: hay que leer el palo)`);
+        }
+    }
     /**
      * ⚠️ «PEQUEÑA» NO ES SIEMPRE LO MISMO, Y HAY QUE DECIR CUÁL.
      *
@@ -359,21 +472,28 @@ for (const juego of juegos) {
      */
     if (r.pequenas) {
         const inevitable = r.cols && (forma.width * 0.85) / r.cols < MINIMO_PX;
-        quejas.push(`casilla de ${r.paso} px (mínimo ${MINIMO_PX})`
-            + (r.cols ? ` — tablero de ${r.cols} columnas` : '')
-            + (inevitable ? ', no cabe más grande en esta pantalla' : ''));
+        const linea = `casilla de ${r.paso} px (mínimo ${MINIMO_PX})`
+            + (r.cols ? ` — tablero de ${r.cols} columnas` : '');
+        if (inevitable) avisos.push(`${linea}, no cabe más grande en esta pantalla`);
+        else quejas.push(linea);
     }
     if (r.camufladas?.length) quejas.push(`camuflaje: ${r.camufladas.join(', ')}`);
-    const cuerpo = r.propio
+    const cuerpo = r.cartas
+        ? `${String(r.mano).padStart(3)} en tu mano · carta ${String(r.anchoCarta === null ? '—' : Math.round(r.anchoCarta)).padStart(3)} px`
+        : r.propio
         ? `${String(r.mallas).padStart(3)} mallas · escena propia`
         : `${String(r.piezas).padStart(3)} piezas · casilla ${String(r.paso).padStart(3)} px`;
-    console.log(`  ${quejas.length ? '✗' : '✓'} ${juego.padEnd(11)} ${forma.nombre.padEnd(5)} ${cuerpo}`
-        + (quejas.length ? `\n      ↳ ${quejas.join('\n      ↳ ')}` : ''));
+    filas[filas.length - 1].quejas = quejas;
+    console.log(`  ${quejas.length ? '✗' : avisos.length ? '·' : '✓'} ${juego.padEnd(11)} ${forma.nombre.padEnd(5)} ${cuerpo}`
+        + (quejas.length ? `\n      ↳ ${quejas.join('\n      ↳ ')}` : '')
+        + (avisos.length ? `\n      · ${avisos.join('\n      · ')}` : ''));
   }
 }
 
 const med = filas.filter(f => f.medible);
-const malas = med.filter(f => f.fuera || f.tapadas || f.pequenas || f.camufladas?.length);
+// Lo que cuenta como fallo es lo que se ANOTÓ como queja: ahí ya está resuelta la
+// diferencia entre «hay que arreglarlo» y «hay que saberlo».
+const malas = med.filter(f => f.quejas?.length);
 console.log(`\n  ${med.length} medidas · ${filas.length - med.length} sin medir (visualizador propio o sin piezas)`);
 console.log(`  ${med.length - malas.length}/${med.length} con todo visible y legible`);
 if (malas.length) {
