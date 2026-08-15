@@ -178,6 +178,13 @@ class SovereignBoardEngine {
         this.onInit3D(this.scene, this.camera, this.renderer);
 
         this.apartarDelPanel();
+        /**
+         * Y otra vez cada vez que el panel cambie de tamaño. Sin esto, `apartarDelPanel`
+         * mide una foto: en local el ajedrez arrancó plegado y se veía perfecto, y en
+         * el dominio arranca DESPLEGADO y volvía a comerse las columnas «a» y «b».
+         * Cubre además esconder el panel, que hasta ahora ganaba sitio sin usarlo.
+         */
+        window.ALISA_ENCUADRE?.reencuadrarConElPanel(() => this.apartarDelPanel());
         this.animate();
     }
 
@@ -215,20 +222,78 @@ class SovereignBoardEngine {
         if (!this.camera || !window.ALISA_ENCUADRE) return;
         const panel = document.querySelector('.hud-panel');
         if (!panel) return;
+
+        /**
+         * ⚠️ SE PARTE SIEMPRE DE LA POSICIÓN ORIGINAL, O EL DESPLAZAMIENTO SE SUMA.
+         *
+         * Esto se llama ahora cada vez que el panel cambia de tamaño. Sin guardar la
+         * cámara que puso el visualizador, cada llamada desplazaría desde donde quedó
+         * la anterior: plegar y desplegar tres veces mandaría la vista a tomar
+         * viento, y el fallo sólo aparecería tocando el panel varias veces — o sea,
+         * jugando de verdad y no probando.
+         */
+        if (!this._camaraOriginal) this._camaraOriginal = this.camera.position.clone();
+        else this.camera.position.copy(this._camaraOriginal);
+        if (this.controls) this.controls.target.set(0, 0, 0);
+
         const r = panel.getBoundingClientRect();
         // Sólo si es una COLUMNA: en móvil el panel ocupa todo el ancho y apartarse
         // a la derecha sacaría el tablero de la pantalla.
         const anchoPantalla = window.innerWidth || 1;
-        const fraccion = r.width / anchoPantalla;
-        if (!(fraccion > 0.05 && fraccion < 0.5)) return;
+        if (!(r.width / anchoPantalla > 0.05 && r.width / anchoPantalla < 0.5)) return;
+
+        /**
+         * ⚠️ SE DESPLAZA LO QUE EL PANEL TAPA DE VERDAD, NO UNA FRACCIÓN DEL ANCHO.
+         *
+         * La primera versión usaba `ancho del panel / ancho de pantalla / 2`. Un
+         * número plausible y que no resuelve nada: el ancho del panel no cambia al
+         * plegarlo, así que desplazaba lo mismo tapara lo que tapara — y con el panel
+         * desplegado el ajedrez seguía perdiendo las columnas «a» y «b».
+         *
+         * Ahora se proyecta la caja de lo dibujado, se mira **cuánto de ella queda a
+         * la izquierda del borde del panel**, y se desplaza exactamente eso.
+         *
+         * ⚠️ Y LA CAJA SE PIDE A `cajaReal`, NO A `Box3.setFromObject`.
+         *
+         * Ésa es la diferencia que me dio una medida falsa esta tarde —«20 % tapado
+         * antes, 31 % después» con la imagen mejor—: `setFromObject` mete en la caja
+         * las LUCES y todo lo que tenga posición, así que mide algo que no es el
+         * tablero. `cajaReal` sólo cuenta mallas con geometría, que es lo que se ve.
+         */
+        const THREE = window.THREE;
+        const caja = window.ALISA_ENCUADRE.cajaReal(this.scene);
+        const t = caja.getSize(new THREE.Vector3());
+        if (!(Math.max(t.x, t.y, t.z) > 0.001)) return;
+
+        const aPantalla = (v) => {
+            const p = v.clone().project(this.camera);
+            return (p.x + 1) / 2 * anchoPantalla;
+        };
+        let izq = Infinity;
+        for (const x of [caja.min.x, caja.max.x])
+            for (const y of [caja.min.y, caja.max.y])
+                for (const z of [caja.min.z, caja.max.z])
+                    izq = Math.min(izq, aPantalla(new THREE.Vector3(x, y, z)));
+
+        // Lo que hay que ganar, en píxeles, más un dedo de margen.
+        const invade = (r.right + 12) - izq;
+        if (invade <= 0) return;
 
         window.ALISA_ENCUADRE.encajarCamara({
             camara: this.camera, objeto: this.scene, controles: this.controls ?? null,
-            // La mitad de lo que ocupa el panel: centra el tablero en el sitio que
-            // QUEDA, igual que hace la versión vertical.
-            izquierdaLibre: fraccion / 2,
-            // La distancia y la inclinación las eligió el visualizador; se conservan
-            // pasando la que ya tiene la cámara y su ángulo actual.
+            /**
+             * ⚠️ SE DIVIDE POR LA MEDIA ANCHURA, NO POR LA ENTERA.
+             *
+             * `izquierdaLibre` acaba multiplicando por `d * tanV * aspect`, que es la
+             * MEDIA anchura visible a esa distancia. Dividiendo los píxeles que
+             * faltan por el ancho entero se desplaza exactamente la mitad de lo que
+             * hace falta — medido: pedía 183 px y movía 91.
+             *
+             * Es el tipo de error que no da ningún síntoma más que «el arreglo se
+             * queda corto», que es justo lo que parecía la primera vez.
+             */
+            izquierdaLibre: invade / (anchoPantalla / 2),
+            // La distancia y la inclinación las eligió el visualizador; se conservan.
             distancia: this.camera.position.length(),
             inclinacion: Math.asin(Math.max(-1, Math.min(1,
                 this.camera.position.y / (this.camera.position.length() || 1)))),

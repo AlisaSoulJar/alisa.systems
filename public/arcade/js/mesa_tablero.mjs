@@ -919,6 +919,14 @@ if (!anfitrion) {
         // Al cambiar la forma de la pantalla el encuadre anterior ya no vale.
         encuadrado = false;
     });
+
+    /**
+     * Y cuando el panel cambia de tamaño, lo mismo: plegarlo, esconderlo o que
+     * arranque desplegado cambian el sitio que queda para la mesa. Esconder el panel
+     * existía desde hacía días y no servía de nada — el tablero seguía encogido como
+     * si el panel estuviera ahí. Se ganaba sitio y no se notaba.
+     */
+    window.ALISA_ENCUADRE?.reencuadrarConElPanel(() => { encuadrado = false; });
 }
 
 // Para poder mirarla desde fuera, igual que la mesa de cartas.

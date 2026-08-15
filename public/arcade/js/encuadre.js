@@ -214,8 +214,20 @@
          */
         if (izquierdaLibre > 0.001) {
             const tanV = Math.tan((camara.fov * Math.PI) / 360);
+            /**
+             * ⚠️ LA CÁMARA VA A LA IZQUIERDA PARA QUE LA IMAGEN SE VAYA A LA DERECHA.
+             *
+             * El signo estaba al revés y el síntoma era peor que no hacer nada: pedía
+             * destapar 183 px y el tablero acababa con 426 tapados. Cuanto más
+             * «arreglaba», peor — que es la firma de un signo invertido.
+             *
+             * Es lo mismo que dice el bloque de arriba en vertical («subiendo la
+             * cámara, la imagen baja») y aun así lo escribí mal aquí: leer que la
+             * cámara y la imagen van al revés no es lo mismo que acordarse al
+             * traducirlo al otro eje.
+             */
             const derecha = new THREE.Vector3(1, 0, 0).applyQuaternion(camara.quaternion);
-            const salto = derecha.multiplyScalar(izquierdaLibre * d * tanV * (camara.aspect || 1));
+            const salto = derecha.multiplyScalar(-izquierdaLibre * d * tanV * (camara.aspect || 1));
             const mira = (controles?.target ?? c).clone().add(salto);
             camara.position.add(salto);
             camara.lookAt(mira);
@@ -252,5 +264,42 @@
         return hazlo;
     }
 
-    window.ALISA_ENCUADRE = { cajaReal, encajarCamara, encajarSiempre };
+    /**
+     * ⚠️ Y CUANDO EL PANEL CAMBIA DE TAMAÑO, TAMBIÉN. ESTO ES LO QUE FALTABA.
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * El panel no mide siempre lo mismo: se pliega con su `▾`, se esconde entero con
+     * el botón de los mandos, y arranca desplegado o plegado según el juego y el
+     * ancho de la pantalla. Encuadrar UNA VEZ al arrancar es medir una foto de un
+     * sitio que cambia.
+     *
+     * Lo destapó comprobar el despliegue: en local el ajedrez arrancó con el panel
+     * plegado y se veía perfecto; en el dominio arranca DESPLEGADO —con sus
+     * selectores, su minimapa y sus botones— y volvía a comerse las columnas «a» y
+     * «b». Había comprobado la condición fácil sin darme cuenta.
+     *
+     * Y hace falta para lo contrario, que es lo que pidió Oscar: **esconder el panel
+     * para jugar con la mesa entera**. Ese botón existe desde hace días y dejaba el
+     * hueco sin usar — el tablero seguía encogido y desplazado como si el panel
+     * siguiera ahí. Ganabas sitio y no se notaba.
+     *
+     * Un `ResizeObserver` sobre `.hud-panel` cubre los tres casos —plegar, esconder,
+     * y que arranque de una forma u otra— sin tener que enterarse de cuál fue.
+     */
+    function reencuadrarConElPanel(hazlo, { ms = 120 } = {}) {
+        const panel = document.querySelector('.hud-panel');
+        if (!panel || typeof ResizeObserver === 'undefined') return null;
+        let t = null, primera = true;
+        const obs = new ResizeObserver(() => {
+            // El observador dispara una vez nada más engancharse, con el tamaño
+            // actual. Esa no cuenta: sería reencuadrar por no haber pasado nada.
+            if (primera) { primera = false; return; }
+            clearTimeout(t);
+            t = setTimeout(hazlo, ms);
+        });
+        obs.observe(panel);
+        return obs;
+    }
+
+    window.ALISA_ENCUADRE = { cajaReal, encajarCamara, encajarSiempre, reencuadrarConElPanel };
 })();
