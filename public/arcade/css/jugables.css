@@ -524,6 +524,45 @@
 }
 .final-nota[hidden] { display: none; }
 
+/* La casilla de aportar: MARCADA, y a la vista antes de que pase nada.
+   Marcado por defecto está bien; marcado y escondido, no — la diferencia entera es
+   que se vea qué va a pasar y se pueda decir que no sin buscarlo. */
+.final-aportar {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 10px;
+    cursor: pointer;
+    color: #cfc6a8;
+    font-size: 11px;
+    line-height: 1.45;
+}
+.final-aportar input {
+    /* 16 px: lo mínimo que se acierta con el dedo sin ampliar. Una casilla de 12
+       en móvil se falla, y una casilla que se falla no es una elección. */
+    width: 16px;
+    height: 16px;
+    margin: 1px 0 0;
+    flex: 0 0 auto;
+    accent-color: #d4af37;
+    cursor: pointer;
+}
+.final-cuenta { color: #d4af37; font-weight: 600; }
+
+/* Lo que se manda, literal y plegado. Igual que en el buzón de avisos: nadie manda
+   a ciegas algo que no puede ver, aunque sean tres campos sin nada personal. */
+.final-detalle { margin-top: 7px; font-size: 11px; }
+.final-detalle summary { cursor: pointer; color: #8a8a9e; }
+.final-detalle pre {
+    max-height: 130px;
+    overflow: auto;
+    margin: 6px 0 0;
+    font-size: 10px;
+    color: #9aa3b2;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
 /* El acuse de «copiado», en el propio botón. Un globo de un segundo y medio en vez
    de un diálogo: detrás hay una escena 3D corriendo y `alert()`/`prompt()` congelan
    la página entera mientras estén abiertos. */

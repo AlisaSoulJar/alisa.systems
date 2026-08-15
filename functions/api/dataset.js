@@ -27,6 +27,16 @@
  * sería guardar algo que ya sabemos deducir. Una partida entera son unos
  * cientos de bytes.
  *
+ * ⚠️ MÁS `normas`, EN LOS JUEGOS QUE LAS TIENEN VARIABLES.
+ *
+ * Damas es el primero (`damaVuela`, `peonComeAtras`) y rompe la frase de arriba: con
+ * una variable de por medio, `{juego, semilla, jugadas}` YA NO identifica una
+ * partida, porque la misma lista es legal con unas normas e ilegal con otras. Sin
+ * guardarlas, esas partidas se rechazaban —y peor: las cortas, donde la norma no
+ * llega a influir, entraban diciendo haberse jugado con reglas que no eran las
+ * suyas—. La columna se añadió el 15-08-2026; las filas anteriores llevan NULL, que
+ * significa «por defecto» y es exactamente lo que eran.
+ *
  * ⚠️ SE GUARDA LA HUELLA DE LAS REGLAS. Si mañana cambiamos una regla, las
  * filas viejas siguen siendo ciertas — pero de otro juego. Sin esa columna
  * acabaríamos promediando dos juegos distintos creyendo que es uno.
@@ -48,6 +58,34 @@ const CABECERAS = {
 const responder = (codigo, cuerpo, cabeceras = CABECERAS) =>
     new Response(typeof cuerpo === 'string' ? cuerpo : JSON.stringify(cuerpo, null, 2),
                  { status: codigo, headers: cabeceras });
+
+/**
+ * Las normas variables con las que se jugó, saneadas contra lo que el juego DECLARA.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ⚠️ POR QUÉ NO SE GUARDA LO QUE MANDE EL CLIENTE, TAL CUAL.
+ *
+ * Es el mismo principio que con la puntuación: aquí no se cree nada de lo que llega.
+ * Si el cuerpo trae `normas: {loQueSea: true}`, eso no es una norma de damas y no
+ * puede acabar en la tabla — ni como dato ni influyendo en la verificación.
+ *
+ * Se parte de lo que el juego declara en `NORMAS` (con sus valores por defecto) y
+ * sólo se sobrescriben las claves que existen ahí. Lo inventado se cae solo.
+ *
+ * Devuelve `null` si el juego no tiene normas variables, y entonces la columna queda
+ * NULL — que es lo que significa: «este juego no las tiene». Las dos filas que ya
+ * había en el corpus se quedan igual y siguen siendo ciertas.
+ */
+function normasSaneadas(reglas, pedidas) {
+    if (!reglas?.NORMAS) return null;
+    const limpias = { ...reglas.NORMAS };
+    if (pedidas && typeof pedidas === 'object') {
+        for (const k of Object.keys(reglas.NORMAS)) {
+            if (k in pedidas) limpias[k] = !!pedidas[k];
+        }
+    }
+    return limpias;
+}
 
 const cache = new Map();
 /**
@@ -73,21 +111,55 @@ const cache = new Map();
  * Y no abre ninguna puerta: `REGLAS` es un mapa literal, un nombre inventado da
  * `undefined` y de aquí sale `null` igual que antes. No hay ruta que construir.
  */
-async function reglasDe(juego, urlPeticion) {
+async function reglasDe(juego, urlPeticion, normas = null) {
     if (!juego || typeof juego !== 'string') return null;
-    if (cache.has(juego)) return cache.get(juego);
-    const reglas = await cargarReglas(juego, { url: new URL(BIBLIOTECA, urlPeticion).href });
+    /**
+     * ⚠️ LA CACHÉ VA POR JUEGO **Y NORMAS**, NO POR JUEGO.
+     *
+     * Estaba indexada sólo por juego, y con la llegada de las normas variables eso
+     * pasa de inofensivo a veneno: la primera partida de damas que entrara dejaría
+     * sus reglas cacheadas, y la siguiente —jugada con `damaVuela`— se verificaría
+     * con las de la anterior. Sin error, sin aviso, y guardando una fila que dice
+     * haberse jugado con unas reglas con las que no se comprobó.
+     *
+     * Es el mismo fallo que ya costó caro dos veces hoy en el cliente, aquí con el
+     * agravante de que esto ESCRIBE en el corpus.
+     */
+    const clave = normas ? `${juego}|${JSON.stringify(normas)}` : juego;
+    if (cache.has(clave)) return cache.get(clave);
+    const reglas = await cargarReglas(juego, {
+        url: new URL(BIBLIOTECA, urlPeticion).href,
+        ...(normas ? { normas } : {}),
+    });
     if (!reglas) return null;
-    cache.set(juego, reglas);
+    cache.set(clave, reglas);
     return reglas;
 }
 
 const limpio = (v, tope) =>
     String(v ?? '').replace(/[<>&"'\x00-\x1f\x7f]/g, '').trim().slice(0, tope);
 
-/** La identidad de una partida: el juego, el mundo y lo que se hizo en él. */
-async function firmaDe(juego, semilla, jugadas) {
-    const texto = `${juego}|${semilla}|${jugadas.join(',')}`;
+/**
+ * La identidad de una partida: el juego, el mundo y lo que se hizo en él.
+ *
+ * ⚠️ Y LAS NORMAS, CUANDO LAS HAY: SON PARTIDAS DISTINTAS.
+ *
+ * La firma es UNIQUE, o sea que decide qué cuenta como «esta partida ya estaba». Con
+ * normas variables, la misma lista de jugadas jugada con `damaVuela` y sin él son dos
+ * partidas diferentes —una puede ser legal y la otra no—, y sin esto la segunda en
+ * llegar se rechazaría como duplicada. Se perdería en silencio la mitad del dato que
+ * acabamos de añadir la columna para guardar.
+ *
+ * ⚠️ Y SÓLO SE AÑADEN SI LAS HAY, PARA NO MOVER LAS FIRMAS QUE YA EXISTEN.
+ *
+ * Las dos filas del corpus se firmaron con el formato viejo. Si esto cambiara el
+ * texto para todos, las mismas partidas volverían a entrar como nuevas y tendríamos
+ * duplicados que sólo se distinguen por cuándo se guardaron. Los 34 juegos sin normas
+ * siguen firmando exactamente igual que ayer.
+ */
+async function firmaDe(juego, semilla, jugadas, normas = null) {
+    const texto = `${juego}|${semilla}|${jugadas.join(',')}`
+        + (normas ? `|${JSON.stringify(normas)}` : '');
     const bytes = new TextEncoder().encode(texto);
     const hash = await crypto.subtle.digest('SHA-256', bytes);
     return [...new Uint8Array(hash)].slice(0, 12)
@@ -116,42 +188,33 @@ export async function onRequestPost({ request, env }) {
     if (!Number.isFinite(semilla)) {
         return responder(400, { guardada: false, motivo: 'falta la semilla' });
     }
-    const reglas = await reglasDe(d?.juego, request.url);
-    if (!reglas) return responder(400, { guardada: false, motivo: `no sé jugar a '${d?.juego}'`, juegos: JUEGOS });
-
     /**
-     * ⚠️ LAS NORMAS VARIABLES TODAVÍA NO CABEN EN ESTA TABLA, Y SE DICE.
+     * ═══════════════════════════════════════════════════════════════════════
+     *  LAS NORMAS VARIABLES: SE GUARDAN Y SE VERIFICA CON ELLAS
+     * ═══════════════════════════════════════════════════════════════════════
      *
-     * Damas es el primer juego con normas variables (`damaVuela`, `peonComeAtras`) y
+     * Damas es el primer juego con normas variables (`damaVuela`, `peonComeAtras`), y
      * en cuanto existe una variable, `{juego, semilla, jugadas}` deja de identificar
-     * una partida: la misma lista es legal con unas normas e ilegal con otras. El
-     * recibo ya las lleva por eso, y el enlace del repetidor también.
+     * una partida: la misma lista es legal con unas normas e ilegal con otras.
      *
-     * Aquí no: la tabla no tiene columna para ellas, así que se re-simularía con las
-     * de por defecto. En la mayoría de casos eso se rechaza solo —una jugada que la
-     * norma permitía sale ilegal— y el motivo diría «jugada ilegal: e3c5a3», que
-     * CULPA AL QUE APORTA de un fallo nuestro. Y en las partidas cortas donde la
-     * norma no llega a influir, entraría una fila que dice haberse jugado con unas
-     * reglas que no son las suyas: eso ya no se rechaza solo y envenena el corpus en
-     * silencio, que es exactamente lo que este fichero existe para impedir.
+     * ⚠️ EL ORDEN IMPORTA: PRIMERO LAS NORMAS, LUEGO LAS REGLAS.
      *
-     * Así que se rechaza a la cara, con el motivo verdadero. Es una limitación
-     * conocida y acotada —hoy, un solo juego— y prefiero perder esa partida antes que
-     * guardarla mintiendo. Cuando la tabla tenga su columna, esto se cae solo.
+     * Hay que cargar las reglas CON las normas de esa partida, o se verificaría con
+     * otras. Por eso se piden dos veces: una para saber qué normas declara el juego
+     * —y poder sanear lo que llegó— y otra ya con ellas puestas. La segunda no cuesta
+     * nada: el módulo está en memoria.
+     *
+     * Antes esto rechazaba las partidas con normas cambiadas, porque la tabla no
+     * tenía dónde ponerlas. Ya la tiene (`ALTER TABLE partidas ADD COLUMN normas`,
+     * 15-08-2026), y las dos filas anteriores se quedan con NULL — que es exactamente
+     * lo que eran: normas por defecto.
      */
-    if (reglas.NORMAS && d?.normas) {
-        const distintas = Object.entries(reglas.NORMAS)
-            .filter(([k, pordefecto]) => k in d.normas && d.normas[k] !== pordefecto)
-            .map(([k]) => k);
-        if (distintas.length) {
-            return responder(200, {
-                guardada: false,
-                motivo: `esta partida se jugó con normas variables (${distintas.join(', ')}) `
-                      + `y el corpus todavía no las guarda. No es culpa de la partida: `
-                      + `guardarla sin ellas diría que se jugó con otras reglas.`,
-            });
-        }
-    }
+    const declara = await reglasDe(d?.juego, request.url);
+    if (!declara) return responder(400, { guardada: false, motivo: `no sé jugar a '${d?.juego}'`, juegos: JUEGOS });
+
+    const normas = normasSaneadas(declara, d?.normas);
+    const reglas = normas ? await reglasDe(d.juego, request.url, normas) : declara;
+    if (!reglas) return responder(400, { guardada: false, motivo: `no sé jugar a '${d?.juego}'` });
 
     // ── LA ÚNICA PUERTA: se vuelve a jugar ──────────────────────────────
     let v;
@@ -162,7 +225,7 @@ export async function onRequestPost({ request, env }) {
         return responder(200, { guardada: false, motivo: v.motivo, puntos: v.puntos });
     }
 
-    const firma = await firmaDe(d.juego, semilla, jugadas);
+    const firma = await firmaDe(d.juego, semilla, jugadas, normas);
     const fila = {
         firma, juego: d.juego, semilla: semilla >>> 0,
         jugadas: JSON.stringify(jugadas), n_jugadas: jugadas.length,
@@ -172,15 +235,19 @@ export async function onRequestPost({ request, env }) {
         quien: limpio(d?.quien, 24) || null,
         terminada: v.terminada ? 1 : 0,
         fecha: Date.now(),
+        // NULL cuando el juego no tiene normas variables — que es lo que significa,
+        // y lo que ya dicen las filas anteriores a que existiera esta columna.
+        normas: normas ? JSON.stringify(normas) : null,
     };
 
     try {
         await env.DATASET.prepare(
             `INSERT INTO partidas
-               (firma, juego, semilla, jugadas, n_jugadas, puntos, reglas, tipo, quien, terminada, fecha)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?)`)
+               (firma, juego, semilla, jugadas, n_jugadas, puntos, reglas, tipo, quien, terminada, fecha, normas)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`)
             .bind(fila.firma, fila.juego, fila.semilla, fila.jugadas, fila.n_jugadas,
-                  fila.puntos, fila.reglas, fila.tipo, fila.quien, fila.terminada, fila.fecha)
+                  fila.puntos, fila.reglas, fila.tipo, fila.quien, fila.terminada, fila.fecha,
+                  fila.normas)
             .run();
     } catch (e) {
         // Misma partida dos veces: no es un fallo, es que ya está.
@@ -200,10 +267,28 @@ export async function onRequestGet({ request, env }) {
     // permiso: un corpus que no puedes bajarte no es un corpus, es una demo.
     if (url.searchParams.get('formato') === 'jsonl') {
         const { results } = await env.DATASET.prepare(
-            `SELECT juego, semilla, jugadas, puntos, reglas, tipo, quien, terminada, fecha
+            `SELECT juego, semilla, jugadas, puntos, reglas, tipo, quien, terminada, fecha, normas
                FROM partidas ORDER BY id LIMIT 20000`).all();
-        const cuerpo = results.map(r =>
-            JSON.stringify({ ...r, jugadas: JSON.parse(r.jugadas), terminada: !!r.terminada })).join('\n');
+        /**
+         * ⚠️ LAS NORMAS SALEN COMO OBJETO, Y SI FALTAN NO VA EL CAMPO.
+         *
+         * Guardarlas y no devolverlas sería tenerlas para nada: quien se descargue el
+         * corpus tiene que poder re-simular cada fila, y sin las normas no puede — es
+         * el mismo agujero que tenía el enlace del repetidor esta mañana.
+         *
+         * Y el campo se omite cuando es NULL en vez de mandar `normas: null`, para que
+         * una fila de brisca siga teniendo exactamente la forma de siempre. Los
+         * consumidores que ya existen no se enteran de nada.
+         */
+        const cuerpo = results.map(r => {
+            const { normas, ...resto } = r;
+            return JSON.stringify({
+                ...resto,
+                jugadas: JSON.parse(r.jugadas),
+                terminada: !!r.terminada,
+                ...(normas ? { normas: JSON.parse(normas) } : {}),
+            });
+        }).join('\n');
         return responder(200, cuerpo, {
             ...CABECERAS,
             'content-type': 'application/x-ndjson; charset=utf-8',
@@ -221,7 +306,7 @@ export async function onRequestGet({ request, env }) {
     return responder(200, {
         que_es: 'Partidas verificadas: cada fila la ha vuelto a jugar este servidor '
               + 'antes de guardarla. La puntuación es la recalculada, nunca la declarada.',
-        como_aportar: 'POST /api/dataset { juego, semilla, jugadas, tipo?, quien? }',
+        como_aportar: 'POST /api/dataset { juego, semilla, jugadas, tipo?, quien?, normas? }',
         descarga: '/api/dataset?formato=jsonl',
         partidas: total?.n ?? 0,
         por_juego: porJuego.results,

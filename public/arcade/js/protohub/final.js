@@ -56,6 +56,17 @@ import { enlaceRepetidor } from './enlace_repetidor.js';
  */
 export function pintarFinal(caja, { estado = {}, recibo = null, enSala = false, otraPartida } = {}) {
     if (!caja) return;
+    /**
+     * ⚠️ EL RELOJ DEL APORTE SE CORTA ANTES DE REHACER LA CAJA.
+     *
+     * `innerHTML = ''` borra los nodos y NO los temporizadores: un `setInterval` de
+     * un pintado anterior seguiría vivo, apuntando a una casilla que ya no está en la
+     * página, y llegaría a mandar la partida por su cuenta. La firma `@final` hace
+     * que esto no se repinte en cada sondeo, así que hoy no pasa — pero «hoy no pasa
+     * porque otro sitio lo evita» es exactamente la clase de dependencia que se rompe
+     * el día que alguien toca el otro sitio.
+     */
+    clearInterval(caja._relojAporte);
     caja.innerHTML = '';
     caja.classList.add('mesa-final');
 
@@ -121,34 +132,104 @@ export function pintarFinal(caja, { estado = {}, recibo = null, enSala = false, 
             b.blur();
         });
 
-        /**
-         * ⚠️ EL CORPUS NO SE FÍA DE ESTE BOTÓN, Y ESO ES LO BUENO.
-         *
-         * No se manda la puntuación para que la crean: el servidor vuelve a jugar la
-         * partida y RECALCULA. Una partida inflada, una jugada ilegal o una semilla
-         * que no cuadra se rechazan solas. Por eso este botón puede estar abierto a
-         * cualquiera sin moderación, sin cuentas y sin confianza — que es justo lo
-         * contrario de lo que le pasa a un corpus que hay que vigilar.
-         */
-        if (recibo.jugadas?.length) {
-            boton('aportar al corpus', 'el servidor la vuelve a jugar antes de guardarla', async (b) => {
-                b.disabled = true;
-                decir('el servidor la está volviendo a jugar…');
-                try {
-                    const r = await fetch('/api/dataset', {
-                        method: 'POST',
-                        headers: { 'content-type': 'application/json' },
-                        body: JSON.stringify({ ...recibo, puntos: puntuacionDe(estado), tipo: 'persona' }),
-                    }).then(x => x.json());
-                    if (r.guardada) decir(`guardada · ${r.puntos} puntos recalculados por el servidor`);
-                    // Un rechazo NO es un error del servicio: es el servicio
-                    // funcionando. Se dice el motivo tal cual lo da él.
-                    else { decir(`no se guardó: ${r.motivo ?? 'sin motivo'}`); b.disabled = false; }
-                } catch (e) {
-                    decir(`el corpus no contesta (${String(e.message).slice(0, 40)})`);
-                    b.disabled = false;
-                }
-            });
+        // La nota va la ÚLTIMA: es la respuesta a lo de abajo, y puesta encima se lee
+        // como si contestara a los botones. Se pasa el nodo para poder colocar la
+        // casilla delante de ella.
+        if (recibo.jugadas?.length) aportar(caja, { recibo, estado, decir, nota });
+    }
+}
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  APORTAR AL CORPUS — MARCADO, Y SE PUEDE DESMARCAR
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Era un botón que había que pulsar, y el corpus llevaba DOS partidas. La decisión
+ * de ponerlo marcado por defecto es de Oscar (15-08-2026): «yo guardaría dataset por
+ * defecto, pondría algo en plan si no quieres desmárcalo».
+ *
+ * ⚠️ Y POR ESO LA CASILLA TIENE QUE VERSE ANTES, NO DESPUÉS.
+ *
+ * Marcado por defecto está bien; marcado y escondido, no. La diferencia entera entre
+ * las dos cosas es que se vea qué va a pasar y se pueda decir que no ANTES de que
+ * pase, sin buscarlo. Por eso hay una espera corta y visible: la casilla sale
+ * desmarcable, el envío ocurre después, y quien la desmarque a tiempo no manda nada.
+ *
+ * ⚠️ QUÉ VIAJA, Y POR QUÉ SE PUEDE ENSEÑAR ENTERO.
+ *
+ * `{juego, semilla, jugadas}` y nada más. No hay nombre, ni cuenta, ni de dónde
+ * vienes: una partida de damas no dice nada de quien la jugó. Y `qué se manda` lo
+ * enseña literal, igual que hace el buzón de avisos — nadie manda a ciegas algo que
+ * no puede ver.
+ *
+ * ⚠️ Y EL CORPUS NO SE FÍA DE ESTO, QUE ES LO BUENO.
+ *
+ * La puntuación no se manda para que la crean: el servidor vuelve a jugar la partida
+ * y RECALCULA. Una partida inflada, una jugada ilegal o una semilla que no cuadra se
+ * rechazan solas. Por eso esto puede estar abierto a cualquiera sin moderación, sin
+ * cuentas y sin confianza.
+ */
+const ESPERA_MS = 4000;
+
+function aportar(caja, { recibo, estado, decir, nota }) {
+    const cuerpo = { ...recibo, puntos: puntuacionDe(estado), tipo: 'persona' };
+
+    const linea = document.createElement('label');
+    linea.className = 'final-aportar';
+    linea.innerHTML = `<input type="checkbox" checked>`
+        + `<span class="final-aportar-txt">guardar esta partida en el corpus público`
+        + ` <b class="final-cuenta"></b></span>`;
+    const casilla = linea.querySelector('input');
+    const cuenta = linea.querySelector('.final-cuenta');
+
+    const detalle = document.createElement('details');
+    detalle.className = 'final-detalle';
+    detalle.innerHTML = `<summary>qué se manda</summary><pre></pre>`;
+    detalle.querySelector('pre').textContent = JSON.stringify(cuerpo, null, 1);
+
+    // Delante de la nota: lo que se cuenta ahí («guardada», «no se manda nada») es la
+    // RESPUESTA a esta casilla, y encima se lee como si contestara a los botones.
+    if (nota && nota.parentNode === caja) caja.insertBefore(linea, nota);
+    else caja.appendChild(linea);
+    caja.insertBefore(detalle, linea.nextSibling);
+
+    let restan = Math.round(ESPERA_MS / 1000);
+    const pintar = () => { cuenta.textContent = restan > 0 ? `— se manda en ${restan}s` : ''; };
+    pintar();
+
+    const reloj = caja._relojAporte = setInterval(() => {
+        restan--;
+        pintar();
+        if (restan > 0) return;
+        clearInterval(reloj);
+        // Se relee la casilla en el último momento: lo que vale es lo que hay
+        // cuando toca mandar, no lo que había cuando arrancó la cuenta.
+        if (!casilla.checked) { cuenta.textContent = ''; return; }
+        enviar();
+    }, 1000);
+
+    // Desmarcarla para la cuenta en seco. Volver a marcarla la manda ya: quien la
+    // marca a mano después de haberla quitado ya ha dicho que sí dos veces.
+    casilla.addEventListener('change', () => {
+        if (casilla.checked) { clearInterval(reloj); enviar(); }
+        else { clearInterval(reloj); cuenta.textContent = ''; decir('no se manda nada.'); }
+    });
+
+    async function enviar() {
+        casilla.disabled = true;
+        cuenta.textContent = '';
+        decir('el servidor la está volviendo a jugar…');
+        try {
+            const r = await fetch('/api/dataset', {
+                method: 'POST',
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify(cuerpo),
+            }).then(x => x.json());
+            if (r.guardada) decir(`guardada · ${r.puntos} puntos recalculados por el servidor`);
+            // Un rechazo NO es un error del servicio: es el servicio funcionando.
+            else decir(`no se guardó: ${r.motivo ?? 'sin motivo'}`);
+        } catch (e) {
+            decir(`el corpus no contesta (${String(e.message).slice(0, 40)})`);
         }
     }
 }
