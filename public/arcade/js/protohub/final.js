@@ -171,13 +171,35 @@ export function pintarFinal(caja, { estado = {}, recibo = null, enSala = false, 
  */
 const ESPERA_MS = 4000;
 
+/**
+ * ⚠️ EN LOCAL NO SE APORTA, Y NO ES SÓLO POR EL ERROR DE CONSOLA.
+ *
+ * `/api/dataset` vive en el servidor: sirviendo el sitio con `servir.py` un POST
+ * contesta **501 Unsupported method**, y eso lo apunta el navegador aunque el fetch
+ * esté capturado. Lo suspendió el laboratorio en sokoban —que termina en una jugada,
+ * así que llegaba a la pantalla de fin y mandaba— y tenía razón: una página que deja
+ * un error rojo en consola está rota aunque se vea bien.
+ *
+ * Pero el motivo de fondo es mejor que el síntoma: **las partidas de desarrollo no
+ * deben entrar en el corpus público**. Cada pasada del laboratorio son 35 partidas de
+ * un script; con la casilla marcada por defecto, ese ruido se colaría en el mismo
+ * banco que decimos que cualquiera puede descargarse y creer. El corpus vale
+ * justamente por lo que NO tiene dentro.
+ *
+ * Así que en local la casilla sale desmarcada y explicada. No se esconde: se dice por
+ * qué, que es la diferencia entre una decisión y un misterio.
+ */
+const enLocal = () => /^(127\.0\.0\.1|localhost|\[::1\])$/.test(location.hostname);
+
 function aportar(caja, { recibo, estado, decir, nota }) {
     const cuerpo = { ...recibo, puntos: puntuacionDe(estado), tipo: 'persona' };
 
+    const local = enLocal();
     const linea = document.createElement('label');
     linea.className = 'final-aportar';
-    linea.innerHTML = `<input type="checkbox" checked>`
+    linea.innerHTML = `<input type="checkbox"${local ? '' : ' checked'}>`
         + `<span class="final-aportar-txt">guardar esta partida en el corpus público`
+        + (local ? ` <i>— en local no hay corpus: esto sólo funciona en el sitio publicado</i>` : '')
         + ` <b class="final-cuenta"></b></span>`;
     const casilla = linea.querySelector('input');
     const cuenta = linea.querySelector('.final-cuenta');
@@ -193,6 +215,22 @@ function aportar(caja, { recibo, estado, decir, nota }) {
     else caja.appendChild(linea);
     caja.insertBefore(detalle, linea.nextSibling);
 
+    /**
+     * El listener va ANTES del corte de «en local», o marcarla a mano no haría nada
+     * y el rótulo estaría prometiendo algo que no pasa. Es el mismo tipo de botón
+     * muerto que llevo arreglando todo el día, y casi lo escribo yo.
+     */
+    casilla.addEventListener('change', () => {
+        clearInterval(caja._relojAporte);
+        if (casilla.checked) enviar();
+        else { cuenta.textContent = ''; decir('no se manda nada.'); }
+    });
+
+    // En local no arranca la cuenta atrás: no hay corpus al que mandar, y las
+    // partidas de un instrumento no deberían entrar en el banco público de todas
+    // formas. Marcarla a mano sigue funcionando, por el listener de arriba.
+    if (local) return;
+
     let restan = Math.round(ESPERA_MS / 1000);
     const pintar = () => { cuenta.textContent = restan > 0 ? `— se manda en ${restan}s` : ''; };
     pintar();
@@ -207,13 +245,6 @@ function aportar(caja, { recibo, estado, decir, nota }) {
         if (!casilla.checked) { cuenta.textContent = ''; return; }
         enviar();
     }, 1000);
-
-    // Desmarcarla para la cuenta en seco. Volver a marcarla la manda ya: quien la
-    // marca a mano después de haberla quitado ya ha dicho que sí dos veces.
-    casilla.addEventListener('change', () => {
-        if (casilla.checked) { clearInterval(reloj); enviar(); }
-        else { clearInterval(reloj); cuenta.textContent = ''; decir('no se manda nada.'); }
-    });
 
     async function enviar() {
         casilla.disabled = true;

@@ -59,20 +59,20 @@ const engine = new SovereignCardEngine({
         // Update HUD
         const html = `
             <div class="status-row">
-                <span>Pot Size</span>
+                <span>Bote</span>
                 <span class="val turn-white" style="color:#FFD700; font-size:16px;">$${data.pot || 0}</span>
             </div>
             <div class="status-row">
-                <span>Player Stack</span>
+                <span>Tus fichas</span>
                 <span class="val">${data.player_stack || 0}</span>
             </div>
             <div class="status-row">
-                <span>Opponent Stack</span>
+                <span>Fichas del rival</span>
                 <span class="val">${data.opponent_stack || 0}</span>
             </div>
             <div class="status-row" style="margin-top:10px;">
-                <span>Phase</span>
-                <span class="val" style="color:#00ffaa; font-weight:bold;">${data.phase || 'Pre-Flop'}</span>
+                <span>Fase</span>
+                <span class="val" style="color:#00ffaa; font-weight:bold;">${data.phase || 'antes del flop'}</span>
             </div>
         `;
         document.getElementById('hud-content').innerHTML = html;
@@ -135,5 +135,5 @@ const engine = new SovereignCardEngine({
     }
 });
 
-engine.mountAgentHUD('hud-container', 'Texas Holdem Pro', `<div id="hud-content">Waiting for sync...</div>`);
+engine.mountAgentHUD('hud-container', 'Póker · Texas hold\'em', `<div id="hud-content">Conectando con la partida…</div>`);
 engine.start();

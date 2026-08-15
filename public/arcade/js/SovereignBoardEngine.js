@@ -177,7 +177,62 @@ class SovereignBoardEngine {
         // Run specific game init
         this.onInit3D(this.scene, this.camera, this.renderer);
 
+        this.apartarDelPanel();
         this.animate();
+    }
+
+    /**
+     * ⚠️ EL PANEL SE COMÍA UN QUINTO DEL TABLERO, Y NADIE LO MEDÍA.
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Cada visualizador coloca su cámara en `onInit3D` y la centra en la pantalla
+     * entera. Pero en escritorio el HUD es una columna a la izquierda, así que el
+     * tablero queda centrado DEBAJO de ella. En las capturas del ajedrez faltaba la
+     * columna «a» entera y al mancala se le comía un granero.
+     *
+     * ⚠️ Y AQUÍ NO HAY NÚMERO QUE VALGA, AUNQUE LO INTENTÉ DOS VECES.
+     *
+     * Escribí una medida —proyectar la caja de la escena contra el rectángulo del
+     * panel— que dio «20 % tapado» antes del arreglo y **31 % después**, con la
+     * imagen claramente mejor. La medida estaba mal: `Box3.setFromObject(scene)`
+     * incluye las LUCES y todo lo auxiliar, así que mide una caja mucho mayor que el
+     * tablero y su porcentaje no significa nada.
+     *
+     * Cuando el instrumento y la vista discrepan, el sospechoso es el instrumento —
+     * es la regla de la casa y hoy me ha salvado tres veces. Así que esto se apoya en
+     * la comparación visual, que es clara y está en las capturas, y NO se apunta un
+     * porcentaje que suena a rigor y es ruido.
+     *
+     * Se desplaza la vista a la derecha lo que ocupa el panel, con `encuadre.js`, que
+     * es global justo para esto: lo que aprendió la mesa genérica estaba encerrado
+     * ahí dentro y no le servía a los cuatro juegos de este motor.
+     *
+     * No toca el ángulo ni la distancia que eligió cada visualizador: sólo mueve. Su
+     * composición es suya, y una mesa que se reencuadra sola por su cuenta rompería
+     * quince vistas pensadas a mano para arreglar cuatro.
+     */
+    apartarDelPanel() {
+        if (!this.camera || !window.ALISA_ENCUADRE) return;
+        const panel = document.querySelector('.hud-panel');
+        if (!panel) return;
+        const r = panel.getBoundingClientRect();
+        // Sólo si es una COLUMNA: en móvil el panel ocupa todo el ancho y apartarse
+        // a la derecha sacaría el tablero de la pantalla.
+        const anchoPantalla = window.innerWidth || 1;
+        const fraccion = r.width / anchoPantalla;
+        if (!(fraccion > 0.05 && fraccion < 0.5)) return;
+
+        window.ALISA_ENCUADRE.encajarCamara({
+            camara: this.camera, objeto: this.scene, controles: this.controls ?? null,
+            // La mitad de lo que ocupa el panel: centra el tablero en el sitio que
+            // QUEDA, igual que hace la versión vertical.
+            izquierdaLibre: fraccion / 2,
+            // La distancia y la inclinación las eligió el visualizador; se conservan
+            // pasando la que ya tiene la cámara y su ángulo actual.
+            distancia: this.camera.position.length(),
+            inclinacion: Math.asin(Math.max(-1, Math.min(1,
+                this.camera.position.y / (this.camera.position.length() || 1)))),
+        });
     }
 
     onWindowResize() {

@@ -88,6 +88,10 @@
             // unidades de pantalla (0,25 = un cuarto). Por defecto 0: quien no lo
             // pase encuadra exactamente como siempre.
             arribaLibre = 0,
+            // Lo mismo por el lado: en escritorio el panel es una columna a la
+            // izquierda y se come un trozo del tablero. Por defecto 0, así que quien
+            // no lo pase encuadra exactamente como siempre.
+            izquierdaLibre = 0,
         } = cfg || {};
         if (!camara || !objeto) return null;
 
@@ -184,6 +188,35 @@
             const arriba = new THREE.Vector3(0, 1, 0).applyQuaternion(camara.quaternion);
             const salto = arriba.multiplyScalar(arribaLibre * d * tanV);
             const mira = c.clone().add(salto);
+            camara.position.add(salto);
+            camara.lookAt(mira);
+            if (controles) controles.target.copy(mira);
+        }
+
+        /**
+         * ⚠️ Y LO MISMO POR EL LADO, QUE EN ESCRITORIO ES DONDE ESTÁ EL PANEL.
+         * ═══════════════════════════════════════════════════════════════════
+         *
+         * `arribaLibre` nació de un caso de MÓVIL, donde el panel ocupa el ancho
+         * entero y tapa por arriba. En escritorio el panel es una columna a la
+         * izquierda, y ahí el que se come el tablero es el lado.
+         *
+         * El ajedrez perdía la columna «a» entera bajo el panel y al mancala se le
+         * comía un granero. Y algo que sí cambió el arreglo: NO se salían de la
+         * pantalla —que es lo que yo había dicho mirando las capturas— sino que
+         * estaban TAPADOS. Son dos cosas distintas con arreglos opuestos: apartar la
+         * cámara habría encogido el tablero sin destaparlo ni un píxel.
+         *
+         * Misma cuenta que arriba pero en horizontal, con `tanV * aspect` porque el
+         * `fov` de three.js es vertical. Y el desplazamiento va también al `target`
+         * de los controles, o `update()` lo deshace — eso ya costó una medida falsa
+         * de dos píxeles cuando se escribió la versión vertical.
+         */
+        if (izquierdaLibre > 0.001) {
+            const tanV = Math.tan((camara.fov * Math.PI) / 360);
+            const derecha = new THREE.Vector3(1, 0, 0).applyQuaternion(camara.quaternion);
+            const salto = derecha.multiplyScalar(izquierdaLibre * d * tanV * (camara.aspect || 1));
+            const mira = (controles?.target ?? c).clone().add(salto);
             camara.position.add(salto);
             camara.lookAt(mira);
             if (controles) controles.target.copy(mira);

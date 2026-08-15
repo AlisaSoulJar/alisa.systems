@@ -114,7 +114,7 @@ const engine = new SovereignBoardEngine({
         // Update HUD
         const html = `
             <div class="status-row">
-                <span>Score</span>
+                <span>Puntos</span>
                 <span class="val turn-white">${data.score || 0}</span>
             </div>
             <div class="status-row">
@@ -126,7 +126,7 @@ const engine = new SovereignBoardEngine({
     }
 });
 
-engine.mountAgentHUD('hud-container', 'Fagocito RL Arena', `<div id="hud-content">Waiting for sync...</div>`);
+engine.mountAgentHUD('hud-container', 'Fagocito', `<div id="hud-content">Conectando con la partida…</div>`);
 engine.start();
 
 // ═══════════════════════════════════════════════════════════════════

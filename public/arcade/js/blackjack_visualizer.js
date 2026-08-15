@@ -56,15 +56,15 @@ const engine = new SovereignCardEngine({
         // Update HUD
         const html = `
             <div class="status-row">
-                <span>Player Score</span>
+                <span>Tu mano</span>
                 <span class="val turn-white" style="color:#00ffaa; font-size:16px;">${data.player_score || 0}</span>
             </div>
             <div class="status-row" style="color:#FF4081;">
-                <span>Dealer Showing</span>
+                <span>La banca enseña</span>
                 <span class="val" style="color:#FF4081; font-size:16px;">${data.dealer_score || '?'}</span>
             </div>
             <div class="status-row" style="margin-top:10px;">
-                <span>Status</span>
+                <span>Estado</span>
                 <span class="val" style="color:#FFD700; font-weight:bold;">${data.status || 'Playing'}</span>
             </div>
             ${data.manos ? `
@@ -102,5 +102,5 @@ const engine = new SovereignCardEngine({
     }
 });
 
-engine.mountAgentHUD('hud-container', 'Blackjack 21', `<div id="hud-content">Waiting for sync...</div>`);
+engine.mountAgentHUD('hud-container', 'Blackjack', `<div id="hud-content">Conectando con la partida…</div>`);
 engine.start();

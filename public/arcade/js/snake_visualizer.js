@@ -71,11 +71,11 @@ const engine = new SovereignBoardEngine({
         // Update HUD
         const html = `
             <div class="status-row">
-                <span>Score</span>
+                <span>Puntos</span>
                 <span class="val turn-white">${data.score || 0}</span>
             </div>
             <div class="status-row">
-                <span>Length</span>
+                <span>Largo</span>
                 <span class="val">${data.snake.length}</span>
             </div>
         `;
@@ -83,7 +83,7 @@ const engine = new SovereignBoardEngine({
     }
 });
 
-engine.mountAgentHUD('hud-container', 'Snake RL Arena', `<div id="hud-content">Waiting for sync...</div>`);
+engine.mountAgentHUD('hud-container', 'Snake', `<div id="hud-content">Conectando con la partida…</div>`);
 engine.start();
 
 // ═══════════════════════════════════════════════════════════════════

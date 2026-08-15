@@ -133,6 +133,47 @@ saber:
 
 ---
 
+## La pasada visual — 15-08-2026, abriendo las 41 capturas una por una
+
+Oscar pidió ver que todo esté **gráficamente excelente** antes de publicitarlo. Es
+una pregunta que los instrumentos NO contestan: `laboratorio`, `legibilidad` y
+`mirar` dicen que no está **roto**, no que esté **bien**. Los dos fallos más gordos
+de esta lista los aprobaban los tres.
+
+**Arreglado y verificado:**
+
+- **El parchís salía enterrado bajo 256 bloques** que no son del juego. El pintor
+  tenía `if (v === 1) muros.push(...)` —una convención numérica fija— e ignoraba la
+  `leyenda` que la rejilla publica. Tres juegos declaran que su 1 es «fuera»:
+  parchís (256), canadiense (256), oca (18). Los otros doce con celdas de valor 1 no
+  declaran leyenda y ahí sigue siendo muro.
+- **La cámara miraba 3° por debajo de lo necesario.** Un muro de altura 1 tapa la
+  celda de detrás salvo que se mire desde más de `atan(1/1) = 45°`, y la inclinación
+  era 42. Afectaba a los DOCE juegos con muros. Ahora 55° cuando hay muros, 42
+  cuando no, preguntándole al grupo si hay algo llamado `muro`.
+- **El HUD en inglés** de los cuatro visualizadores propios que están en los 35
+  (snake, fagocito, póker, blackjack). Quedan cuatro ficheros con inglés — usura,
+  bestiario, grimorio, backgammon — que **no** son de los 35.
+- **Aportar al corpus desde local** dejaba un `501` en consola (`servir.py` no acepta
+  POST) y suspendía sokoban en el laboratorio. En local la casilla sale desmarcada y
+  explicada: las partidas de un instrumento no deben entrar en el banco público.
+
+**Visto y NO arreglado, por orden de lo que más se nota:**
+
+1. **El ajedrez y el mancala salen cortados por el panel.** Sus visualizadores
+   colocan la cámara a mano y no apartan la vista del panel; la mesa genérica sí lo
+   hace con `encuadre.js`, que es global justo para compartirse. Le falta un
+   `izquierdaLibre` equivalente al `arribaLibre` que ya tiene.
+2. **El panel del go son 361 botones diminutos** — una masa ilegible. El go se juega
+   tocando la intersección, así que ahí los botones sobran casi todos.
+3. **Las piezas del ajedrez son cilindros y cajas.** No hay caballo ni alfil
+   reconocibles. Es lo que más separa «correcto» de «excelente» en el juego que más
+   gente va a abrir.
+4. **El tapete del póker tiene un borde negro raro** arriba y las cartas flotan sin
+   mesa clara.
+5. **La cámara del go está tumbadísima**: el goban se pierde en el horizonte y las
+   intersecciones de arriba quedan diminutas.
+
 ## Cómo se comprueban las cosas aquí
 
 ### ⚠️ Cómo se despliega esto, que no estaba escrito en ningún sitio
