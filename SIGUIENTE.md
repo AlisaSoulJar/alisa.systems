@@ -160,19 +160,28 @@ de esta lista los aprobaban los tres.
 
 **Visto y NO arreglado, por orden de lo que más se nota:**
 
-1. **El ajedrez y el mancala salen cortados por el panel.** Sus visualizadores
-   colocan la cámara a mano y no apartan la vista del panel; la mesa genérica sí lo
-   hace con `encuadre.js`, que es global justo para compartirse. Le falta un
-   `izquierdaLibre` equivalente al `arribaLibre` que ya tiene.
-2. **El panel del go son 361 botones diminutos** — una masa ilegible. El go se juega
+1. ~~El ajedrez y el mancala cortados por el panel~~ — **hecho**: `encuadre.js` tiene
+   ahora `izquierdaLibre` y el motor de tablero lo aplica a sus cuatro juegos.
+2. ~~Las piezas del ajedrez~~ — **el diagnóstico era falso y el arreglo era otro.**
+   Las 32 piezas siempre fueron Staunton torneadas y blancas; las volvía rosas un
+   foco violeta a 2.5 contra un ambiente de 0.4. Era la LUZ. Arreglado, y medido en
+   los diecisiete visualizadores: el ajedrez era el único así.
+3. **El panel del go son 361 botones diminutos** — una masa ilegible. El go se juega
    tocando la intersección, así que ahí los botones sobran casi todos.
-3. **Las piezas del ajedrez son cilindros y cajas.** No hay caballo ni alfil
-   reconocibles. Es lo que más separa «correcto» de «excelente» en el juego que más
-   gente va a abrir.
 4. **El tapete del póker tiene un borde negro raro** arriba y las cartas flotan sin
    mesa clara.
 5. **La cámara del go está tumbadísima**: el goban se pierde en el horizonte y las
    intersecciones de arriba quedan diminutas.
+6. **Los cuatro caballos del ajedrez** son siluetas extruidas y desde la cámara por
+   defecto se leen como una caja. Girarlos en vivo no cambió nada, así que hace falta
+   mirar su geometría antes de tocar.
+7. **El HUD del peatón** dice «ALIVE» y «SYNCED».
+
+⚠️ **De los cinco puntos que escribí mirando las capturas, DOS eran diagnósticos
+falsos** — «se salen de la pantalla» (estaban tapados) y «las piezas son cilindros»
+(eran las luces). Mirar encuentra los problemas; sólo medir dice cuál es la causa. Y
+un arreglo hecho sobre un diagnóstico de vista habría sido apartar la cámara y
+modelar piezas nuevas: mucho trabajo, y ninguna de las dos cosas era el problema.
 
 ## Cómo se comprueban las cosas aquí
 

@@ -32,22 +32,50 @@ const engine = new SovereignBoardEngine({
         engine.controls.minDistance = 5;
         engine.controls.maxDistance = 20;
 
-        // Lights
-        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+        /**
+         * ═══════════════════════════════════════════════════════════════════
+         *  LA LUZ CLAVE ES NEUTRA. EL COLOR VA EN LOS ACENTOS.
+         * ═══════════════════════════════════════════════════════════════════
+         *
+         * ⚠️ AQUÍ LA LUZ PRINCIPAL ERA VIOLETA A 2.5, Y SE COMÍA EL JUEGO.
+         *
+         * Mirando la captura dije «las piezas son cilindros y cajas genéricas». Era
+         * FALSO, y preguntándoselo al navegador salió lo contrario: las 32 piezas son
+         * Staunton de verdad —28 torneadas con `LatheGeometry` y 4 caballos
+         * extruidos— y sus materiales son correctos:
+         *
+         *     piezas blancas   #f0f0f0        casillas claras   #d8d2c8
+         *     piezas negras    #080808        casillas oscuras  #2a2a35
+         *
+         * O sea que el tablero nunca fue morado ni las piezas rosas. Lo eran las
+         * LUCES: un foco violeta (#8A2BE2) a intensidad 2.5 contra un ambiente neutro
+         * de 0.4. Con las piezas blancas a rugosidad 0.15 y algo de metal, reflejaban
+         * el violeta y salían rosa fucsia — encima de casillas teñidas del mismo
+         * violeta. En un ajedrez eso no es estilo: es no distinguir los bandos.
+         *
+         * Es dirección de arte básica y se cumplía al revés: **el color de acento no
+         * puede ser la luz clave**. Ahora la clave es cálida y neutra, el ambiente
+         * sube, y el cian y el rosa se quedan como acentos —que es donde el neón hace
+         * su trabajo sin discutirle la silueta a las piezas—. El fondo, el panel y la
+         * niebla no se tocan: la identidad del sitio sigue donde estaba.
+         *
+         * Probado en vivo antes de escribirlo, comparando las dos capturas.
+         */
+        scene.add(new THREE.AmbientLight(0xffffff, 1.1));
 
-        const keyLight = new THREE.SpotLight(0x8A2BE2, 2.5);
+        const keyLight = new THREE.SpotLight(0xfff4e0, 2.2);
         keyLight.position.set(-6, 12, 6);
         keyLight.angle = Math.PI / 4;
         keyLight.penumbra = 0.6;
         keyLight.castShadow = true;
         scene.add(keyLight);
 
-        const fillLight = new THREE.SpotLight(0x4fc3f7, 1.2);
+        const fillLight = new THREE.SpotLight(0x4fc3f7, 0.5);
         fillLight.position.set(6, 10, -6);
         fillLight.penumbra = 0.8;
         scene.add(fillLight);
 
-        const rimLight = new THREE.PointLight(0xff4081, 0.4);
+        const rimLight = new THREE.PointLight(0xff4081, 0.25);
         rimLight.position.set(0, 3, -8);
         scene.add(rimLight);
 
