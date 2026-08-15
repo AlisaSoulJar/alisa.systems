@@ -160,8 +160,18 @@ de esta lista los aprobaban los tres.
 
 **Visto y NO arreglado, por orden de lo que más se nota:**
 
-1. ~~El ajedrez y el mancala cortados por el panel~~ — **hecho**: `encuadre.js` tiene
-   ahora `izquierdaLibre` y el motor de tablero lo aplica a sus cuatro juegos.
+1. **El ajedrez y el mancala cortados por el panel — A MEDIAS, y hay que saber por
+   qué.** `encuadre.js` tiene ya `izquierdaLibre` y el motor lo aplica a sus cuatro
+   juegos, pero **mide el panel UNA VEZ, al arrancar**. En local salió plegado y se
+   vio perfecto; en producción el ajedrez arranca con el panel DESPLEGADO —sus
+   selectores, el minimapa, los botones— y vuelve a comerse las columnas «a» y «b».
+   Y si alguien pliega o despliega después, la cámara no se entera.
+
+   Lo que falta son dos cosas, y ninguna es el desplazamiento en sí: **recolocar
+   cuando el panel cambia de tamaño** (un `ResizeObserver` sobre `.hud-panel`) y
+   calcular el desplazamiento por dónde cae el BORDE del tablero, no por una fracción
+   del ancho de pantalla. Comprobarlo con el panel desplegado, que es como llega
+   alguien nuevo.
 2. ~~Las piezas del ajedrez~~ — **el diagnóstico era falso y el arreglo era otro.**
    Las 32 piezas siempre fueron Staunton torneadas y blancas; las volvía rosas un
    foco violeta a 2.5 contra un ambiente de 0.4. Era la LUZ. Arreglado, y medido en
@@ -183,6 +193,24 @@ de esta lista los aprobaban los tres.
    defecto se leen como una caja. Girarlos en vivo no cambió nada, así que hace falta
    mirar su geometría antes de tocar.
 7. **El HUD del peatón** dice «ALIVE» y «SYNCED».
+8. **La generala, antes de tirar, son cinco losas moradas vacías.** Se dibujan como
+   cartas TAPADAS, y en un juego de dados eso no significa nada — un dado sin tirar
+   no es un dado boca abajo. En cuanto se tira sale perfecto (comprobado: 1, 1, 4, 5,
+   6 bien legibles en losas blancas), así que es sólo la primera pantalla. Que es,
+   justamente, la que ve quien abre el juego.
+9. **En las mesas de cartas, el panel tapa el descarte y las manos rivales salen
+   desperdigadas.** Visto en unit: las cartas del rival caen por la mesa en ángulos
+   sueltos —parecen tiradas, no una mano— y el montón de descarte queda medio debajo
+   del panel. Lo del panel es el mismo problema que ya se arregló en el motor de
+   tablero con `izquierdaLibre`: falta aplicarlo aquí, midiendo antes si su cámara lo
+   admite, porque la composición de una mesa de cartas mira desde el jugador y no
+   desde arriba.
+10. **En cripta, la niebla se come la pantalla y lo conocido queda descentrado.** El
+   encuadre ya ENCOGE mirando sólo lo sabido —`mayor = max(sabido, todo/3)`, escrito
+   para esto— pero **centra la caja de TODO**, niebla incluida. Resultado: el trozo
+   iluminado queda arriba a la izquierda ocupando una fracción de la imagen, con
+   tres cuartos de bloques grises alrededor. Encoger por una cosa y centrar por otra
+   es el fallo, y está a una línea: pasarle a `encajarCamara` el centro de lo sabido.
 
 ⚠️ **De los cinco puntos que escribí mirando las capturas, DOS eran diagnósticos
 falsos** — «se salen de la pantalla» (estaban tapados) y «las piezas son cilindros»
