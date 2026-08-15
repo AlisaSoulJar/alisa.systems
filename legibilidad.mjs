@@ -37,7 +37,7 @@
 import { spawn } from 'node:child_process';
 import { chromium } from 'playwright-core';
 import { readFile } from 'node:fs/promises';
-import { leerPNG, colorEn, distanciaColor, distanciaSinTono } from './png.mjs';
+import { leerPNG, colorEn, distanciaColor, distanciaSinTono, distanciaDeValor } from './png.mjs';
 
 const P = 8149;
 const RAIZ = new URL('.', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
@@ -79,6 +79,10 @@ const FORMAS = [
  */
 const MINIMO_PX = 14;
 const MINIMO_CONTRASTE = 32;
+// Calibrado igual que el de arriba y con los mismos casos, pero en gris: el corte
+// cae entre 18 (fagocito invisible) y 29 (ajedrez, que se ve). El porqué está
+// entero donde se usa.
+const MINIMO_VALOR = 24;
 
 const pedidos = process.argv.slice(2).filter(a => !a.startsWith('-'));
 const juegos = (pedidos.length ? pedidos : Object.keys(paginas)).filter(j => paginas[j]);
@@ -396,12 +400,35 @@ for (const juego of juegos) {
             // camuflado contra él y se dice contra CUÁL, que es lo que hace falta
             // para arreglarlo.
             const camufladas = [];
+            /**
+             * ⚠️ Y AQUÍ, NO ENTRE BANDOS, ES DONDE VA LA COMPROBACIÓN EN GRIS.
+             *
+             * La escribí primero comparando bando contra bando, junto a la del
+             * daltonismo. Y al comprobar que podía fallar —subiendo su umbral a 200,
+             * que debería suspender a todo el mundo— **no saltó ni una vez**: aquel
+             * bucle descarta antes los pares de distinta FORMA, y desde que cada
+             * bando tiene su número de lados casi no queda ninguno que comparar. Una
+             * comprobación que no puede fallar es una frase.
+             *
+             * Pero es que además el sitio era el equivocado, y el propio fallo lo
+             * enseñó: dos bandos se distinguen por forma o por color, y eso ya lo
+             * miran las otras dos. Lo que se lee por VALOR es la pieza contra el
+             * suelo — una silueta aparece porque hay salto de luminosidad, no de
+             * tono. Así que va aquí, en el camuflaje, midiendo lo mismo que ya se
+             * mide pero en gris.
+             */
+            const soloValor = [];
             for (const m of (posiciones.montonesPieza ?? [])) {
+                let yaDicha = false;
                 for (const f of (posiciones.fondos ?? [])) {
                     const d = distanciaColor(m.col, f.col);
-                    if (d !== null && d < MINIMO_CONTRASTE) {
+                    if (!yaDicha && d !== null && d < MINIMO_CONTRASTE) {
                         camufladas.push(`${m.nombre} sobre ${f.nombre} (${d})`);
-                        break;
+                        yaDicha = true;
+                    }
+                    const v = distanciaDeValor(m.col, f.col);
+                    if (v !== null && v < MINIMO_VALOR) {
+                        soloValor.push(`${m.nombre} sobre ${f.nombre} (${Math.round(v)} en gris)`);
                     }
                 }
             }
@@ -435,7 +462,7 @@ for (const juego of juegos) {
 
             r = { ...posiciones, paso: Math.round(posiciones.paso),
                   pequenas: posiciones.paso < MINIMO_PX,
-                  camufladas, soloTono };
+                  camufladas, soloTono, soloValor };
         }
     } catch (e) {
         r = { medible: false, razon: String(e.message).split('\n')[0].slice(0, 40) };
@@ -517,6 +544,21 @@ for (const juego of juegos) {
     if (r.camufladas?.length) quejas.push(`camuflaje: ${r.camufladas.join(', ')}`);
     if (r.soloTono?.length) {
         quejas.push(`los bandos SÓLO se distinguen por el tono — ${r.soloTono.join('; ')}`);
+    }
+    /**
+     * ⚠️ EN GRIS VA COMO AVISO Y NO COMO SUSPENSO, LA PRIMERA VEZ.
+     *
+     * Es una comprobación NUEVA y más dura que las dos que ya había, y un umbral
+     * recién calibrado puede señalar cosas que se ven perfectamente. Encenderla en
+     * rojo el mismo día que se escribe es la receta para que la pasada salga roja,
+     * se mire por encima y deje de servir — que es exactamente lo que este fichero
+     * documenta dos veces sobre las cartas y el fagocito.
+     *
+     * Sube a queja cuando lo que saque esté MIRADO, caso por caso, igual que se hizo
+     * con los otros dos umbrales.
+     */
+    if (r.soloValor?.length) {
+        avisos.push(`en gris no se separan — ${r.soloValor.join('; ')}`);
     }
     const cuerpo = r.cartas
         ? `${String(r.mano).padStart(3)} en tu mano · carta ${String(r.anchoCarta === null ? '—' : Math.round(r.anchoCarta)).padStart(3)} px`

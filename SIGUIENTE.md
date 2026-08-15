@@ -219,6 +219,29 @@ falsos** — «se salen de la pantalla» (estaban tapados) y «las piezas son ci
 un arreglo hecho sobre un diagnóstico de vista habría sido apartar la cámara y
 modelar piezas nuevas: mucho trabajo, y ninguna de las dos cosas era el problema.
 
+### ⚠️ DOS INTERMITENTES EN LAS PASADAS LARGAS, Y APUNTAN AL MISMO SITIO
+
+15-08, en pasadas completas y sin tocar nada en medio:
+
+- `mirar` dio **34/35 señalando blackjack**, y la pasada siguiente 35/35.
+- `tacto` dio **34/35 señalando peatón** — y peatón es LA GARANTÍA del proyecto, así
+  que asusta. Probándolo solo, dos veces seguidas: **5/5 y 5/5**.
+
+No se dan por arreglados: un intermitente es un fallo que todavía no sabes
+reproducir, no un fallo que no existe.
+
+**La hipótesis, y explica los dos: el juego se mueve mientras se le mide.** Peatón
+avanza solo —medido: ~1 jugada por segundo, sin tocar nada— y blackjack termina en
+pocas jugadas. Los dos instrumentos prueban botón por botón; si entre uno y otro el
+mundo avanza, la lista de jugadas legales que tenían en la mano ya no es la que hay,
+y la prueba pulsa algo que dejó de existir. En una pasada de 35 juegos el navegador
+va más cargado y los huecos entre pulsaciones se alargan — por eso sale ahí y no al
+probarlos sueltos.
+
+Si se confirma, el arreglo no es del juego: es que los instrumentos marquen **qué
+juegos avanzan solos** (el laboratorio ya sabe detectarlos: pregunta si el estado
+cambia sin tocar nada) y midan esos con el reloj parado o con reintento.
+
 ## Cómo se comprueban las cosas aquí
 
 ### ⚠️ Cómo se despliega esto, que no estaba escrito en ningún sitio

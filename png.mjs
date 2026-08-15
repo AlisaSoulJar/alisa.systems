@@ -137,3 +137,30 @@ export const distanciaSinTono = (a, b) => Math.min(
     distanciaColor(comoLoVeUnDaltonico(a, 'deuteranopia'), comoLoVeUnDaltonico(b, 'deuteranopia')),
     distanciaColor(comoLoVeUnDaltonico(a, 'protanopia'), comoLoVeUnDaltonico(b, 'protanopia')),
 );
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  EL VALOR: LA LUMINOSIDAD SOLA, SIN COLOR NINGUNO
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Es la comprobación que usa la dirección de arte de verdad, y la más dura de las
+ * tres que hay aquí: renderizar todo en escala de grises y ver si las siluetas se
+ * siguen distinguiendo. Si dos cosas tienen el mismo VALOR, se separan sólo por el
+ * tono — y eso se cae con una luz distinta, con una pantalla mal calibrada, con el
+ * brillo bajo al sol, o simplemente al mirar de reojo.
+ *
+ * No sustituye a `distanciaSinTono`, que pregunta otra cosa: aquélla es «¿se
+ * distinguen si no ves el rojo o el verde?» y ésta es «¿se distinguen si no ves
+ * NINGÚN color?». Un rojo y un verde del mismo valor pasan la primera —un daltónico
+ * los ve como dos grises... iguales— y suspenden ésta.
+ *
+ * Se usan los coeficientes de luminancia de Rec. 709, que es cómo el ojo pesa los
+ * canales de verdad: el verde vale siete veces más que el azul. Promediar los tres
+ * a partes iguales daría un número más redondo y una respuesta falsa.
+ */
+export const valorDe = ([r, g, b]) => 0.2126 * r + 0.7152 * g + 0.0722 * b;
+
+/** Cuánto se separan dos colores SÓLO en luminosidad, de 0 a 255. */
+export const distanciaDeValor = (a, b) => (a && b)
+    ? Math.abs(valorDe(a) - valorDe(b))
+    : 0;
