@@ -166,10 +166,17 @@ de esta lista los aprobaban los tres.
    Las 32 piezas siempre fueron Staunton torneadas y blancas; las volvía rosas un
    foco violeta a 2.5 contra un ambiente de 0.4. Era la LUZ. Arreglado, y medido en
    los diecisiete visualizadores: el ajedrez era el único así.
-3. **El panel del go son 361 botones diminutos** — una masa ilegible. El go se juega
-   tocando la intersección, así que ahí los botones sobran casi todos.
+3. **El panel del go son 361 botones diminutos.** Feo, sí — pero *no lo toques sin
+   leer esto*: es un mini-goban pulsable con la forma del tablero, y `tacto.mjs`
+   garantiza que **los 35 juegos dejan pulsar TODAS sus jugadas con el dedo**. Poner
+   un tope de 50, como hace el otro motor, rompería esa garantía justo en el juego
+   con más jugadas. Si se cambia, tiene que ser por algo que las siga ofreciendo
+   todas — no por recortarlas.
 4. **El tapete del póker tiene un borde negro raro** arriba y las cartas flotan sin
-   mesa clara.
+   mesa clara. Ojo: **no es el fieltro ni sus sombras** —eso ya se arregló, y está
+   contado en `SovereignCardEngine`—; es que la cámara está tan baja que se ve el
+   canto de la mesa y el vacío negro de detrás. Se arregla subiendo la cámara del
+   póker, no tocando el mueble.
 5. **La cámara del go está tumbadísima**: el goban se pierde en el horizonte y las
    intersecciones de arriba quedan diminutas.
 6. **Los cuatro caballos del ajedrez** son siluetas extruidas y desde la cámara por
