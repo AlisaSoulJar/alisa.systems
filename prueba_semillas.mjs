@@ -31,7 +31,7 @@ const AQUI = fileURLToPath(new URL('.', import.meta.url));
 const RAIZ = join(AQUI, 'public/js/alisa-engine/src');
 
 /**
- * ⚠️ TECHO DE SISTEMAS SIN SEMBRAR. Hoy son 9 de 54 (empezaron siendo 28).
+ * ⚠️ TECHO DE SISTEMAS SIN SEMBRAR. Hoy son 7 de 54 (empezaron siendo 28).
  * Cada uno que acepte `rng` baja este número. **Nunca sube.**
  *
  * 2026-08-15: bajó de 23 a 16 sembrando CroupierSystem, TurretCombatSystem,
@@ -43,7 +43,12 @@ const RAIZ = join(AQUI, 'public/js/alisa-engine/src');
  * (mismo patrón), más KinematicRageSystem —que YA tenía la semilla inyectable
  * pero con otro nombre, `config.azar`, que esta prueba no sabía buscar; se
  * renombró a `this.rng` (se dejó `config.azar` como alias por compatibilidad
- * con `arcade/js/protohub/render/volcar.js`, fuera de esta carpeta).
+ * con `arcade/js/protohub/render/volcar.js`, fuera de esta carpeta). Después
+ * bajó de 9 a 7 sembrando TrafficSurvivalSystem (13 llamadas; de paso se le
+ * pasó `rng` a su `IDMSystem` interno, que antes se construía sin semilla) y
+ * FileSystemDioramaSystem (37 llamadas) — éste último es un objeto singleton
+ * sin constructor, así que la fuente de azar se cachea en `init(config)`, que
+ * es lo más parecido a un constructor que tiene: mismo patrón, otro sitio.
  *
  * ⚠️ QUEDAN 5 FUERA DE ALCANCE: ArachneIngestionSystem, GeppettoChoreographySystem
  * y PygmalionTopologySystem viven en `extensions/alisa-colony/avatar-pipeline/`;
@@ -51,20 +56,17 @@ const RAIZ = join(AQUI, 'public/js/alisa-engine/src');
  * `soma/plugins/`. Ninguno está bajo `world/`, así que sembrarlos es trabajo de
  * otra sesión (la mía tiene prohibido tocar fuera de `world/`).
  *
- * ⚠️ Y QUEDAN 4 DENTRO DE ALCANCE PERO NO SEMBRADOS TODAVÍA:
- *   - AsteroidsSystem y CuccoGameSystem (con su base BulletHeavenEngine) NO
- *     aceptan `config.rng` cacheado en el constructor porque sus entornos del
- *     gym (`AsteroidsEnv._withSeed`, `CuccoSwarmEnv` + `DeterministicScope`)
- *     ya los hacen reproducibles sustituyendo el `Math.random` GLOBAL durante
- *     el episodio, y la construcción del sistema ocurre FUERA de ese tramo
- *     sembrado. Cachear `Math.random` en el constructor capturaría la versión
- *     sin sembrar y rompería silenciosamente el entorno — exactamente la clase
- *     de arreglo que parece bueno y no lo es. Se dejan así a propósito.
- *   - TrafficSurvivalSystem (13 llamadas) y FileSystemDioramaSystem (37) no
- *     tienen ese problema pero son bastante más grandes; quedan para la
- *     siguiente sesión en vez de sembrarlos deprisa.
+ * ⚠️ Y QUEDAN 2 DENTRO DE ALCANCE PERO NO SEMBRADOS A PROPÓSITO:
+ *   AsteroidsSystem y CuccoGameSystem (con su base BulletHeavenEngine) NO
+ *   aceptan `config.rng` cacheado en el constructor porque sus entornos del
+ *   gym (`AsteroidsEnv._withSeed`, `CuccoSwarmEnv` + `DeterministicScope`)
+ *   ya los hacen reproducibles sustituyendo el `Math.random` GLOBAL durante
+ *   el episodio, y la construcción del sistema ocurre FUERA de ese tramo
+ *   sembrado. Cachear `Math.random` en el constructor capturaría la versión
+ *   sin sembrar y rompería silenciosamente el entorno — exactamente la clase
+ *   de arreglo que parece bueno y no lo es. Se dejan así a propósito.
  */
-const TECHO_SIN_SEMBRAR = 9;
+const TECHO_SIN_SEMBRAR = 7;
 
 const sistemas = [];
 (function recorrer(dir) {

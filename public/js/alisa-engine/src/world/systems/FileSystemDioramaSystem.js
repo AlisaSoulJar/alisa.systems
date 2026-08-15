@@ -43,6 +43,19 @@ export const FileSystemDioramaSystem = {
     animFrame: null,
 
     /**
+     * ⚠️ POR QUÉ HAY UN `rng` EN UN OBJETO SINGLETON SIN CONSTRUCTOR.
+     *
+     * Este módulo no es una clase, es un objeto único con `init()` haciendo de
+     * constructor — así que ahí es donde se cachea la fuente de azar, siguiendo
+     * el mismo patrón que `BSPSystem`/`WorldBuilderSystem` (config.rng cacheado
+     * una vez, usado en todas partes). Sin esto, 37 llamadas dispersas hacían
+     * que dos dioramas del mismo `target_path` nunca fueran el mismo edificio.
+     * Se deja `Math.random` como valor por defecto: nadie que llame a `init()`
+     * sin pasar `rng` nota ningún cambio.
+     */
+    rng: Math.random,
+
+    /**
      * Procedural texture for real-building windows.
      * Generates a canvas and maps it to a seamless pattern of 
      * sleeping and neon-lit office windows without geometry cost.
@@ -60,8 +73,8 @@ export const FileSystemDioramaSystem = {
         for (let x = 0; x < 512; x += 16) {
             for (let y = 0; y < 512; y += 16) {
                 // 8% chance to be lit up
-                if (Math.random() > 0.92) {
-                    ctx.fillStyle = Math.random() > 0.6 ? '#fff7b0' : '#00ffff'; // Warm tungsten or cyber-cyan
+                if (this.rng() > 0.92) {
+                    ctx.fillStyle = this.rng() > 0.6 ? '#fff7b0' : '#00ffff'; // Warm tungsten or cyber-cyan
                     ctx.fillRect(x + 2, y + 2, 12, 12);
                 }
             }
@@ -75,7 +88,13 @@ export const FileSystemDioramaSystem = {
         return map;
     },
 
-    init: function() {
+    /**
+     * @param {Object} [config]
+     * @param {() => number} [config.rng] Source of randomness, [0,1). Defaults to
+     *        `Math.random`. Pass a seeded generator to get a reproducible diorama.
+     */
+    init: function(config = {}) {
+        this.rng = config.rng || Math.random;
         this.canvas = document.getElementById('viewport');
         
         // 1. WebGL Renderer Structure
@@ -259,7 +278,7 @@ export const FileSystemDioramaSystem = {
             } else if (node) {
                 height = 2 + Math.min(10, Math.log10(node.sizeBytes + 1) * 1.2);
             } else {
-                height = 1.5 + Math.random() * 5;
+                height = 1.5 + this.rng() * 5;
             }
             
             // Building type selection
@@ -267,14 +286,14 @@ export const FileSystemDioramaSystem = {
             let type;
             if (isCore) type = 'core';
             else if (height > 7) type = 'tower';
-            else if (height > 4) type = Math.random() > 0.5 ? 'cube' : 'wedge';
-            else type = Math.random() > 0.5 ? 'slab' : 'spire';
+            else if (height > 4) type = this.rng() > 0.5 ? 'cube' : 'wedge';
+            else type = this.rng() > 0.5 ? 'slab' : 'spire';
             
             // Width/depth variation
-            let w = 1.5 + Math.random() * 1.0;
-            let d = 1.5 + Math.random() * 1.0;
-            if (type === 'slab') { w = 2.0 + Math.random(); d = 1.0 + Math.random() * 0.5; height = Math.min(height, 3); }
-            if (type === 'tower') { w = 1.2 + Math.random() * 0.5; d = 1.2 + Math.random() * 0.5; }
+            let w = 1.5 + this.rng() * 1.0;
+            let d = 1.5 + this.rng() * 1.0;
+            if (type === 'slab') { w = 2.0 + this.rng(); d = 1.0 + this.rng() * 0.5; height = Math.min(height, 3); }
+            if (type === 'tower') { w = 1.2 + this.rng() * 0.5; d = 1.2 + this.rng() * 0.5; }
             if (type === 'core') { w = 2.5; d = 2.5; }
             
             const worldX = gx * cellSize - halfW + cellSize / 2;
@@ -293,11 +312,11 @@ export const FileSystemDioramaSystem = {
             const { worldX, worldZ, height, type, w, d, node, isCore } = p;
             
             // Procedural Facade Texture (unique per building!)
-            const facadeStyle = isCore ? 'neon' : facadeTypes[Math.floor(Math.random() * facadeTypes.length)];
+            const facadeStyle = isCore ? 'neon' : facadeTypes[Math.floor(this.rng() * facadeTypes.length)];
             const facadeTex = this._generateFacadeTexture(facadeStyle, height, isCore);
             
             // Color tinting
-            let hueBase = 0.55 + Math.random() * 0.2;
+            let hueBase = 0.55 + this.rng() * 0.2;
             if (isCore) hueBase = 0.5; // Cyan core
             
             const nightColor = new THREE.Color().setHSL(hueBase, 0.65, 0.12);
@@ -402,17 +421,17 @@ export const FileSystemDioramaSystem = {
             }
             
             // Roof greebles (HVAC boxes)
-            if (!isCore && Math.random() > 0.3) {
-                const nProps = 1 + Math.floor(Math.random() * 3);
+            if (!isCore && this.rng() > 0.3) {
+                const nProps = 1 + Math.floor(this.rng() * 3);
                 for (let i = 0; i < nProps; i++) {
-                    const pw = 0.15 + Math.random() * 0.3;
-                    const ph = 0.1 + Math.random() * 0.2;
-                    const pd = 0.15 + Math.random() * 0.3;
+                    const pw = 0.15 + this.rng() * 0.3;
+                    const ph = 0.1 + this.rng() * 0.2;
+                    const pd = 0.15 + this.rng() * 0.3;
                     const propGeo = new THREE.BoxGeometry(pw, ph, pd);
                     propGeo.translate(
-                        (Math.random() - 0.5) * w * 0.6,
+                        (this.rng() - 0.5) * w * 0.6,
                         height + ph / 2,
-                        (Math.random() - 0.5) * d * 0.6
+                        (this.rng() - 0.5) * d * 0.6
                     );
                     const propMat = new THREE.MeshStandardMaterial({ color: 0x222233, roughness: 0.5, metalness: 0.7 });
                     group.add(new THREE.Mesh(propGeo, propMat));
@@ -439,7 +458,7 @@ export const FileSystemDioramaSystem = {
                 const can = document.createElement('canvas');
                 can.width = 256; can.height = 64;
                 const ctx = can.getContext('2d');
-                ctx.fillStyle = isCore ? '#00ffff' : (Math.random() > 0.5 ? '#00ffff' : '#ff0033');
+                ctx.fillStyle = isCore ? '#00ffff' : (this.rng() > 0.5 ? '#00ffff' : '#ff0033');
                 ctx.font = 'bold 28px monospace';
                 ctx.textAlign = 'center';
                 ctx.fillText(labelText, 128, 40);
@@ -508,13 +527,13 @@ export const FileSystemDioramaSystem = {
                 const y = padY + row * (wh + 6);
                 if (y + wh > 500) continue;
                 
-                const isLit = Math.random() < pal.litChance;
+                const isLit = this.rng() < pal.litChance;
                 if (isLit) {
-                    ctx.fillStyle = pal.lit[Math.floor(Math.random() * pal.lit.length)];
+                    ctx.fillStyle = pal.lit[Math.floor(this.rng() * pal.lit.length)];
                     ctx.shadowColor = ctx.fillStyle;
                     ctx.shadowBlur = 4;
                 } else {
-                    ctx.fillStyle = pal.dim[Math.floor(Math.random() * pal.dim.length)];
+                    ctx.fillStyle = pal.dim[Math.floor(this.rng() * pal.dim.length)];
                     ctx.shadowBlur = 0;
                 }
                 ctx.fillRect(x, y, ww, wh);
@@ -523,18 +542,18 @@ export const FileSystemDioramaSystem = {
         ctx.shadowBlur = 0;
         
         // Horizontal accent bands (1-3)
-        const nBands = 1 + Math.floor(Math.random() * 2);
+        const nBands = 1 + Math.floor(this.rng() * 2);
         for (let b = 0; b < nBands; b++) {
-            const by = 30 + Math.floor(Math.random() * 440);
+            const by = 30 + Math.floor(this.rng() * 440);
             ctx.fillStyle = pal.accent;
-            ctx.globalAlpha = 0.3 + Math.random() * 0.4;
+            ctx.globalAlpha = 0.3 + this.rng() * 0.4;
             ctx.fillRect(0, by, 256, 2);
         }
         ctx.globalAlpha = 1.0;
         
         // Vertical spine accent (30% chance)
-        if (Math.random() < 0.3) {
-            const sx = Math.floor(Math.random() * 200) + 20;
+        if (this.rng() < 0.3) {
+            const sx = Math.floor(this.rng() * 200) + 20;
             ctx.fillStyle = pal.accent;
             ctx.globalAlpha = 0.25;
             ctx.fillRect(sx, 10, 3, 490);
@@ -581,8 +600,8 @@ export const FileSystemDioramaSystem = {
                 gctx.stroke();
                 
                 // Random dot in some cells
-                if (Math.random() < 0.08) {
-                    gctx.fillStyle = `rgba(0, 255, 255, ${0.1 + Math.random() * 0.3})`;
+                if (this.rng() < 0.08) {
+                    gctx.fillStyle = `rgba(0, 255, 255, ${0.1 + this.rng() * 0.3})`;
                     gctx.beginPath();
                     gctx.arc(cx, cy, 2, 0, Math.PI * 2);
                     gctx.fill();
@@ -659,7 +678,7 @@ export const FileSystemDioramaSystem = {
             this.neonGroup.add(rail);
             
             // Traffic dots  
-            const routeSpeed = (Math.random() > 0.5 ? 1 : -1) * (0.01 + Math.random() * 0.03);
+            const routeSpeed = (this.rng() > 0.5 ? 1 : -1) * (0.01 + this.rng() * 0.03);
             validRoutes.push({ 
                 startX: core.worldX, startZ: core.worldZ, 
                 endX: target.worldX, endZ: target.worldZ, 
@@ -677,15 +696,15 @@ export const FileSystemDioramaSystem = {
             const len = Math.sqrt(dx * dx + dz * dz);
             if (len < 0.5 || len > cellSize * 5) continue;
             
-            const isCyan = Math.random() > 0.5;
+            const isCyan = this.rng() > 0.5;
             const geo = new THREE.BoxGeometry(0.15, 0.2, len);
             const rail = new THREE.Mesh(geo, isCyan ? matCyan : matRed);
             rail.position.set((a.worldX + b.worldX) / 2, railY, (a.worldZ + b.worldZ) / 2);
             rail.rotation.y = Math.atan2(dx, dz);
             this.neonGroup.add(rail);
             
-            validRoutes.push({ startX: a.worldX, startZ: a.worldZ, endX: b.worldX, endZ: b.worldZ, 
-                speed: (Math.random() > 0.5 ? 1 : -1) * 0.02, color: isCyan ? 'cyan' : 'red', y: railY + 0.15 });
+            validRoutes.push({ startX: a.worldX, startZ: a.worldZ, endX: b.worldX, endZ: b.worldZ,
+                speed: (this.rng() > 0.5 ? 1 : -1) * 0.02, color: isCyan ? 'cyan' : 'red', y: railY + 0.15 });
         }
         
         // Spawn traffic dots
@@ -693,7 +712,7 @@ export const FileSystemDioramaSystem = {
             const route = validRoutes[i % validRoutes.length];
             const mesh = new THREE.Mesh(dotGeo, route.color === 'cyan' ? matDot : matDotRed);
             mesh.userData.route = route;
-            mesh.userData.progress = Math.random();
+            mesh.userData.progress = this.rng();
             this.trafficDots.push(mesh);
             this.neonGroup.add(mesh);
         }
@@ -734,16 +753,16 @@ export const FileSystemDioramaSystem = {
         
         for (let i = 0; i < 12; i++) {
             const angle = (i / 12) * Math.PI * 2;
-            const radius = 30 + Math.random() * 8;
-            const nGeo = new THREE.PlaneGeometry(8 + Math.random() * 10, 5 + Math.random() * 6);
+            const radius = 30 + this.rng() * 8;
+            const nGeo = new THREE.PlaneGeometry(8 + this.rng() * 10, 5 + this.rng() * 6);
             const nMesh = new THREE.Mesh(nGeo, nebulaMats[i % 4]);
             nMesh.position.set(
                 Math.cos(angle) * radius,
-                groundY + 2 + Math.random() * 6,
+                groundY + 2 + this.rng() * 6,
                 Math.sin(angle) * radius
             );
             nMesh.rotation.y = angle + Math.PI / 2;
-            nMesh.rotation.x = (Math.random() - 0.5) * 0.3;
+            nMesh.rotation.x = (this.rng() - 0.5) * 0.3;
             nMesh.userData.baseAngle = angle;
             nMesh.userData.radius = radius;
             this.scene.add(nMesh);

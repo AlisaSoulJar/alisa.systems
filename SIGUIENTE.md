@@ -299,6 +299,49 @@ de esta lista los aprobaban los tres.
    llene la mesa. Si algún día molesta, es ese tercio lo que hay que discutir, no el
    centrado.
 
+11. ✅ **SNAKE Y PEATÓN YA NO ESTÁN CASI NEGROS (16-08).** Medido con Rec.709 sobre
+   capturas reales: snake 11,6 → 21,5 y peatón 12,1 → 20,6, ya dentro del rango de los
+   demás juegos oscuros que sí se ven (canadiense 20,3) y sin acercarse al blanco de las
+   mesas de cartas (gofish 126,5). Ningún otro juego se movió.
+
+   ⚠️ **`npm run legibilidad` NO mide luminancia media** — mide si cae en pantalla,
+   tamaño de casilla y contraste contra el terreno. El «snake 11 / peatón 15» que
+   llevaba semanas en esta lista venía de otro sitio y estaba sin comprobar. Al medirlo
+   de verdad salió casi igual, pero pudo no haber salido.
+
+   Y la causa no era sólo la luz: la carretera de peatón era `0x050a10`, o sea que se
+   fundía con el fondo negro de la página y sólo se veían cubos rosas flotando en la
+   nada. En snake el suelo era `MeshBasicMaterial` casi negro — y por ser Basic,
+   **ninguna luz lo toca nunca**, así que subir el ambiente a secas no habría hecho nada.
+
+12. ⚠️ **LA COMIDA DE SNAKE CAE DEBAJO DEL PANEL. Diagnóstico cerrado, falta el arreglo.**
+
+   En un juego que va de comer no se ve qué comer. Y no es que no se pinte: **se pinta
+   y cae tapada**. Medido de punta a punta, sin suponer nada:
+
+       el estado la tiene           food: {x:0, y:4}
+       `onStateSync` la recibe      food: {"x":0,"y":4}    (traza temporal)
+       la esfera se crea y entra    enEscena: true · visible: true
+       y acaba en pantalla en       (269, 180)
+       el panel ocupa               x 20–340 · y 20–330
+
+   Plegar no basta: plegado llega a y≈205 y x≈340, y (269,180) sigue dentro.
+
+   Es el mismo problema que el descarte de entropy y remigio, pero aquí el motor es
+   `SovereignBoardEngine`, que **ya tiene `apartarDelPanel()`** y funciona en ajedrez y
+   mancala. Hay que averiguar por qué no le llega a snake — la sospecha es que snake
+   fija su cámara a mano en `onInit3D` (`camera.position.set(0, 15, 12)`) y el
+   reencuadre no la toca.
+
+   ⚠️ NO se arregla moviendo la cámara a ojo: esta misma noche lo intenté en las mesas
+   de cartas y salió peor dos veces (punto 9). Aquí el mecanismo ya existe y está
+   probado; el trabajo es enchufarlo, no inventarlo.
+
+   Y de camino, **una pregunta que nadie hace a los 35**: ¿qué otra cosa importante cae
+   debajo del panel? Se contesta proyectando las piezas y cruzándolas con el rectángulo
+   del HUD, que es exactamente lo que hizo falta aquí y en las cartas. Sería un
+   instrumento nuevo, no una revisión a ojo.
+
 ⚠️ **De los cinco puntos que escribí mirando las capturas, DOS eran diagnósticos
 falsos** — «se salen de la pantalla» (estaban tapados) y «las piezas son cilindros»
 (eran las luces). Mirar encuentra los problemas; sólo medir dice cuál es la causa. Y

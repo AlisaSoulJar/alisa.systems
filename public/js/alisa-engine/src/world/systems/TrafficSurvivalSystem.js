@@ -2,13 +2,20 @@
 import { IDMSystem } from './IDMSystem.js'; // was './IDMEngine.js' — renamed Engine→System in the migration
 
 export class TrafficSurvivalSystem {
+    /**
+     * @param {Object} [config]
+     * @param {() => number} [config.rng] Source of randomness, [0,1). Defaults to
+     *        `Math.random`. Pass a seeded generator to get a reproducible road:
+     *        mismas averías, mismos giros de aceite, mismas huidas de hurón.
+     */
     constructor(config = {}) {
         this.ROAD_WIDTH = config.roadWidth || 32;
         this.ROAD_LENGTH = config.roadLength || 100;
         this.SPAWN_X = this.ROAD_LENGTH / 2 + 5;
         this.LANES = config.lanes || [];
+        this.rng = config.rng || Math.random;
 
-        this.idmEngine = new IDMSystem({ laneTolerance: 2.5, lookAhead: 20, laneGapCheck: 10 });
+        this.idmEngine = new IDMSystem({ laneTolerance: 2.5, lookAhead: 20, laneGapCheck: 10, rng: this.rng });
 
         this.cars = [];
         this.frogs = [];
@@ -86,9 +93,9 @@ export class TrafficSurvivalSystem {
             if (car.wrecked || car.brokenDown) continue;
 
             // Breakdown
-            if (!car.isRaptor && Math.random() < car.breakdownChance) {
+            if (!car.isRaptor && this.rng() < car.breakdownChance) {
                 car.brokenDown = true;
-                car.breakdownTimer = 6 + Math.random() * 8;
+                car.breakdownTimer = 6 + this.rng() * 8;
                 car.speed = 0;
                 car.brakeFactor = 0;
             }
@@ -99,7 +106,7 @@ export class TrafficSurvivalSystem {
                 const dx = Math.abs(car.x - oil.x);
                 const dz = Math.abs(car.z - oil.z);
                 if (dx < oil.radius && dz < oil.radius) {
-                    car.oilSpin = (Math.random() - 0.5) * 3.0; // Spin rads/sec
+                    car.oilSpin = (this.rng() - 0.5) * 3.0; // Spin rads/sec
                     car.brakeFactor = 0.4;
                 }
             }
@@ -192,8 +199,8 @@ export class TrafficSurvivalSystem {
         car.wrecked = true;
         car.wreckTimer = 4.0;
         car.speed = 0;
-        car.rY += (Math.random() - 0.5) * 1.2;
-        car.rZ = (Math.random() - 0.5) * 0.3;
+        car.rY += (this.rng() - 0.5) * 1.2;
+        car.rZ = (this.rng() - 0.5) * 0.3;
         this.wrecks.push(car);
         this.stats.crashes++;
         this.onEvent('crash', { x: car.x, z: car.z });
@@ -286,10 +293,10 @@ export class TrafficSurvivalSystem {
                 case 'patrol':
                     fe.patrolTimer -= dt;
                     if (fe.patrolTimer <= 0) {
-                        fe.targetX = fe.x + (Math.random() - 0.5) * 30;
+                        fe.targetX = fe.x + (this.rng() - 0.5) * 30;
                         fe.targetX = Math.max(-this.ROAD_LENGTH/2, Math.min(this.ROAD_LENGTH/2, fe.targetX));
-                        fe.targetZ = fe.homeZ + (Math.random() - 0.5) * 6;
-                        fe.patrolTimer = 2 + Math.random() * 4;
+                        fe.targetZ = fe.homeZ + (this.rng() - 0.5) * 6;
+                        fe.patrolTimer = 2 + this.rng() * 4;
                     }
                     fe.speed = FERRET_SPEED_PATROL;
                     if (nearestFrog && minFrogDist < FERRET_SIGHT) {
@@ -320,12 +327,12 @@ export class TrafficSurvivalSystem {
 
                     if (fe.stamina <= 0 || (carDanger && nearestCarDist < 5)) {
                         fe.state = 'flee';
-                        fe.fleeTimer = 1.5 + Math.random();
+                        fe.fleeTimer = 1.5 + this.rng();
                     }
                     break;
                 case 'flee':
                     fe.targetZ = fe.homeZ;
-                    fe.targetX = fe.x + (Math.random() - 0.5) * 10;
+                    fe.targetX = fe.x + (this.rng() - 0.5) * 10;
                     fe.speed = FERRET_SPEED_CHASE * 1.2;
                     fe.fleeTimer -= dt;
                     fe.stamina += dt * 20;
@@ -441,7 +448,7 @@ export class TrafficSurvivalSystem {
                         doHop(nextZ, f.x, Math.PI);
                     } else if (dangerCurrent) {
                         if (!dangerL && !dangerR) {
-                            if (Math.random() > 0.5) doHop(f.z, nextX_L, -Math.PI/2);
+                            if (this.rng() > 0.5) doHop(f.z, nextX_L, -Math.PI/2);
                             else doHop(f.z, nextX_R, Math.PI/2);
                         } else if (!dangerL) {
                             doHop(f.z, nextX_L, -Math.PI/2);
@@ -451,7 +458,7 @@ export class TrafficSurvivalSystem {
                             doHop(prevZ, f.x, 0); // Retreat
                         }
                     } else {
-                        f.timer = 0.5 + Math.random() * 0.5; // Wait
+                        f.timer = 0.5 + this.rng() * 0.5; // Wait
                     }
                 }
             } else if (f.state === 'jump') {
@@ -464,7 +471,7 @@ export class TrafficSurvivalSystem {
                     f.x = f.targetX;
                     f.z = f.targetZ;
                     f.state = 'wait';
-                    f.timer = 0.1 + Math.random() * 0.4;
+                    f.timer = 0.1 + this.rng() * 0.4;
                     this.onEvent('frog_land', { id: f.id });
                 } else {
                     f.x += (dx/d) * FROG_SPEED * dt;

@@ -10,8 +10,19 @@ const engine = new SovereignBoardEngine({
         scene.add(grid);
         
         // Floor
+        /**
+         * ⚠️ LUMINANCIA MEDIA 11,6 SOBRE 255 — CASI NEGRO, Y NO ERA EL MODELO.
+         *
+         * Igual que en el ajedrez (ver chess_visualizer.js): el suelo `0x020802` es
+         * MeshBasicMaterial, así que NINGUNA luz lo toca —siempre sale exactamente
+         * ese color, casi negro— y el ambiente estaba a 0.4, calcado al que dejaba
+         * rosas las piezas del ajedrez. La serpiente y la comida ya llevan emisivo y
+         * se veían; lo que faltaba era que el suelo dejara de fundirse con el vacío
+         * de detrás. Se sube el suelo (color y ambiente), no se apaga el neón: la
+         * cuadrícula sigue siendo `0x00FF00` puro, sin tocar.
+         */
         const planeGeo = new THREE.PlaneGeometry(20, 20);
-        const planeMat = new THREE.MeshBasicMaterial({color: 0x020802, side: THREE.DoubleSide, transparent: true, opacity: 0.8});
+        const planeMat = new THREE.MeshBasicMaterial({color: 0x0a2a10, side: THREE.DoubleSide, transparent: true, opacity: 0.8});
         const plane = new THREE.Mesh(planeGeo, planeMat);
         plane.rotation.x = Math.PI / 2;
         plane.position.y = -0.01;
@@ -20,7 +31,7 @@ const engine = new SovereignBoardEngine({
         const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
         dirLight.position.set(5, 10, 5);
         scene.add(dirLight);
-        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+        scene.add(new THREE.AmbientLight(0xffffff, 0.9));
         
         this.snakeSegments = [];
         this.foodMesh = null;

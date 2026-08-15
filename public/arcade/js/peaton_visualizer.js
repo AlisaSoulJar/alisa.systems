@@ -22,9 +22,20 @@ function init3D() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('canvas-container').appendChild(renderer.domElement);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    /**
+     * ⚠️ LUMINANCIA MEDIA 12,1 SOBRE 255 — Y AQUÍ SÍ ERA (TAMBIÉN) EL MODELO.
+     *
+     * Mismo diagnóstico que en el ajedrez (chess_visualizer.js) y en snake: el
+     * ambiente a 0.5 es el mismo nivel que dejaba rosas las piezas allí. Pero
+     * además la carretera (`matRoad`, más abajo) es MeshStandardMaterial con base
+     * `0x050a10` — casi negro de fábrica — así que ni con el ambiente al máximo
+     * dejaba de fundirse con el vacío de detrás: subir sólo la luz no bastaba,
+     * hacía falta subir también el suelo del color. El foco cian se deja como
+     * ACENTO, sin tocar su tono ni su ángulo — es la seña de identidad del sitio.
+     */
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.3);
     scene.add(ambientLight);
-    
+
     // Cyan glow
     const spotLight = new THREE.SpotLight(0x00ffc8, 1);
     spotLight.position.set(0, 20, 5);
@@ -80,8 +91,11 @@ function buildBaseBoard(w, h) {
     if (boardBuilt) return;
     gridW = w; gridH = h;
     
-    const matSafe = new THREE.MeshStandardMaterial({ color: 0x112233, roughness: 0.9, wireframe: true });
-    const matRoad = new THREE.MeshStandardMaterial({ color: 0x050a10, roughness: 1.0 });
+    // Colores subidos junto con el ambiente de arriba: en negro de fábrica ninguna
+    // luz los saca del vacío. Siguen siendo los más oscuros del tablero —la acera
+    // clara y la carretera oscura— sólo que ahora AMBAS se distinguen del fondo.
+    const matSafe = new THREE.MeshStandardMaterial({ color: 0x1c3a5c, roughness: 0.9, wireframe: true });
+    const matRoad = new THREE.MeshStandardMaterial({ color: 0x0d1a2c, roughness: 1.0 });
 
     for (let y = 0; y < h; y++) {
         const isSafe = (y === 0 || y === h - 1);
