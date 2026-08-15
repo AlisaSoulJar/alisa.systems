@@ -160,6 +160,11 @@ export class RueDelPercebeEnv extends GymEnv {
 
     // ─── PUERTA DE LENGUAJE ──────────────────────────────────────
     describe() {
+        // Para mirar no hace falta haber empezado: `describe()` es la puerta por
+        // la que se asoma quien acaba de descargarse el banco, y sin partida esto
+        // reventaba leyendo `this.checks.length`. Se siembra con 0, igual que el
+        // `reset` por defecto, así que se ve la partida inicial de siempre.
+        if (!this.checks) this.reset(0);
         if (this.found) return `¡Encontraste al mapache en ${this.raccoon.floor + 1}ª planta tras ${this.checks.length} comprobaciones!`;
         if (this.done) return `Se acabaron los intentos. El mapache estaba en la ${this.raccoon.floor + 1}ª planta.`;
         const hist = this.checks.length

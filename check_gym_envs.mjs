@@ -94,6 +94,18 @@ for (const id of ids) {
         if (Clase.id !== id) problemas.push(`la clave dice "${id}" y su static id dice "${Clase.id}"`);
 
         const env = new Clase();
+
+        /**
+         * ASOMARSE ANTES DE EMPEZAR. Esto va **antes** del `reset` a propósito: es
+         * el primer gesto de quien se descarga el banco —«¿qué es esto?»— y los 35
+         * `protohub` reventaban aquí con un `Cannot read properties of undefined`,
+         * porque `describe()` leía una partida que aún no existía. Se arregló en
+         * `ProtoHubEnv._asegurarPartida()`; el orden de estas dos líneas es lo que
+         * impide que vuelva.
+         */
+        try { new Clase().describe(); }
+        catch (e) { problemas.push(`describe() sin reset() previo revienta: ${e.message}`); }
+
         const obs = env.reset(1234);
         const declarado = Clase.observationSpace?.shape?.[0];
 

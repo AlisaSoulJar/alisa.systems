@@ -140,6 +140,22 @@ export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
         _estado() { return reglas.estado(this.p) ?? {}; }
 
         /**
+         * PARA MIRAR NO HACE FALTA HABER EMPEZADO.
+         *
+         * `describe()` y `affordances()` son las dos puertas por las que se ASOMA
+         * quien acaba de descargarse el banco: «¿qué es esto y qué puedo hacer?».
+         * Reventaban con un `Cannot read properties of undefined` si no habías
+         * llamado antes a `reset()` — y llamar a `reset()` antes de saber qué es la
+         * cosa es justo el orden que nadie sigue.
+         *
+         * Se siembra con 0, que es el valor por defecto del propio `reset`, así que
+         * lo que se ve es la partida inicial de siempre. Quien luego siembre de
+         * verdad, la pisa. `step()` NO lleva esto a propósito: jugar sin haber
+         * empezado sí es un error de quien llama, y conviene que se note.
+         */
+        _asegurarPartida() { if (!this.p) this.reset(0); }
+
+        /**
          * La puntuación. La normalización **la hace el verificador**, no yo.
          *
          * ⚠️ AQUÍ METÍ LA PATA Y CASI NO SE VE. Escribí mi propia versión de
@@ -259,11 +275,13 @@ export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
         // una mesa de una página tiene que leer LO MISMO que un LLM del banco de
         // pruebas, o los dos números dejan de ser comparables sin que se note.
         describe() {
+            this._asegurarPartida();
             if (reglas.describir) return reglas.describir(this.p);
             return describirEstado(juego, this._estado());
         }
 
         affordances() {
+            this._asegurarPartida();
             const e = this._estado();
             // Aquí no hay traducción que hacer: lo que el juego declara legal es
             // exactamente lo que se puede pedir.
