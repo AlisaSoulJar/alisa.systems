@@ -122,6 +122,8 @@ export class RoboticArm {
      * @param {number}        config.forearmLen   — Forearm length (default 3.0)
      * @param {number}        config.baseHeight   — Height of shoulder pivot (default 1.4)
      * @param {number}        config.glowColor    — PointLight color for needle (default 0x00ffff)
+     * @param {() => number}  [config.rng]        — Source of randomness, [0,1). Defaults to
+     *        `Math.random`. Pass a seeded generator to make the servo-whine pitch reproducible.
      */
     constructor(config = {}) {
         const {
@@ -134,6 +136,11 @@ export class RoboticArm {
             baseHeight = 1.4,
             glowColor = 0x00ffff,
         } = config;
+
+        // Semilla inyectable. Sólo se usa para el tono del zumbido del servo,
+        // pero una sola llamada de azar sin sembrar ya basta para que este
+        // sistema no cuente como sembrado. Ver `prueba_semillas.mjs`.
+        this.rng = config.rng || Math.random;
 
         this.L1 = upperArmLen;
         this.L2 = forearmLen;
@@ -470,7 +477,7 @@ export class RoboticArm {
         const gain = this.audioCtx.createGain();
         osc.type = 'sawtooth';
         
-        const baseFreq = 150 + Math.random() * 50;
+        const baseFreq = 150 + this.rng() * 50;
         const peakFreq = baseFreq + (movementAmount * 200);
         
         osc.frequency.setValueAtTime(baseFreq, this.audioCtx.currentTime);

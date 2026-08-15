@@ -31,10 +31,14 @@ const AQUI = fileURLToPath(new URL('.', import.meta.url));
 const RAIZ = join(AQUI, 'public/js/alisa-engine/src');
 
 /**
- * ⚠️ TECHO DE SISTEMAS SIN SEMBRAR. Hoy son 24 de 54 (empezaron siendo 28).
+ * ⚠️ TECHO DE SISTEMAS SIN SEMBRAR. Hoy son 16 de 54 (empezaron siendo 28).
  * Cada uno que acepte `rng` baja este número. **Nunca sube.**
+ *
+ * 2026-08-15: bajó de 23 a 16 sembrando CroupierSystem, TurretCombatSystem,
+ * RoboticArmSystem, KatamariSystem, TrafficSystem, OrbitalKinematicsSystem y
+ * NeuralDrivingSystem — mismo patrón que BSPSystem: `config.rng || Math.random`.
  */
-const TECHO_SIN_SEMBRAR = 23;
+const TECHO_SIN_SEMBRAR = 16;
 
 const sistemas = [];
 (function recorrer(dir) {
@@ -74,6 +78,16 @@ const sembrados = sistemas.filter(s => s.sembrado);
  *
  * Hoy son **cero**, así que esto se cierra sin poner nada en rojo: es un trinquete
  * nuevo que nace apretado, que es la única forma en que un trinquete sirve.
+ *
+ * ⚠️ AVISO PARA QUIEN SIEMBRE SISTEMAS: ESTO LEE EL FICHERO ENTERO, COMENTARIOS
+ *    INCLUIDOS. Al sembrar `RoboticArmSystem` (15-08) el comentario explicaba el
+ *    cambio citando la llamada literal entre comillas, y esta comprobación la contó
+ *    como una llamada de verdad: sistema sembrado + azar suelto = mixto, y en rojo.
+ *
+ *    Se deja así a propósito. Distinguir código de comentario aquí pide un analizador
+ *    o una heurística, y una heurística que se equivoque al revés —callarse un
+ *    `Math.random(` de verdad porque parecía un comentario— es mucho peor que este
+ *    falso positivo, que se ve al momento y se arregla reformulando la frase.
  */
 const mixtos = sistemas.filter(s => s.azar && s.sembrado);
 

@@ -2,12 +2,21 @@ import * as THREE from 'three';
 
 // KatamariSystem.js - Headless Volumetric Mass Assimilation Engine
 export class KatamariSystem {
+    /**
+     * @param {Object} config Configuration parameters
+     * @param {() => number} [config.rng] Source of randomness, [0,1). Defaults to
+     *        `Math.random`. Pass a seeded generator to scatter the same prey field twice.
+     */
     constructor(config = {}) {
-        this.absorptionFactor = config.absorptionFactor || 0.1; 
-        this.minVolumeDiff = config.minVolumeDiff || 1.1; 
+        this.absorptionFactor = config.absorptionFactor || 0.1;
+        this.minVolumeDiff = config.minVolumeDiff || 1.1;
         this.baseDensity = config.baseDensity || 1.0;
         this.chunkCount = config.chunkCount || 2000;
-        
+        // Semilla inyectable. Sin ella `init()` esparce los dos mil chunks de
+        // presa en posiciones distintas cada vez y la misma partida no se puede
+        // volver a jugar. Ver `prueba_semillas.mjs`.
+        this.rng = config.rng || Math.random;
+
         // Effects state
         this.screenShake = 0.0;
         
@@ -62,15 +71,15 @@ export class KatamariSystem {
         this.preyData = [];
         
         for(let i = 0; i < this.chunkCount; i++) {
-            const rx = (Math.random() - 0.5) * 80;
-            const ry = Math.random() * 40 + 5;
-            const rz = (Math.random() - 0.5) * 80;
-            
+            const rx = (this.rng() - 0.5) * 80;
+            const ry = this.rng() * 40 + 5;
+            const rz = (this.rng() - 0.5) * 80;
+
             this.preyData.push({
                 id: i,
                 position: new THREE.Vector3(rx, ry, rz),
-                velocity: new THREE.Vector3((Math.random()-0.5)*10, (Math.random()-0.5)*10, (Math.random()-0.5)*10),
-                rotation: new THREE.Euler(Math.random(), Math.random(), Math.random()),
+                velocity: new THREE.Vector3((this.rng()-0.5)*10, (this.rng()-0.5)*10, (this.rng()-0.5)*10),
+                rotation: new THREE.Euler(this.rng(), this.rng(), this.rng()),
                 volume: 0.5,
                 radius: this._radiusFromVolume(0.5),
                 active: true,

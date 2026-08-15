@@ -5,11 +5,20 @@
  */
 
 export class OrbitalKinematicsSystem {
+    /**
+     * @param {Object} config Configuration parameters
+     * @param {() => number} [config.rng] Source of randomness, [0,1). Defaults to
+     *        `Math.random`. Pass a seeded generator for reproducible mine/spawn timers.
+     */
     constructor(config = {}) {
         // Universal Arena Bounds
         this.arenaW = config.arenaW || 120;
         this.arenaH = config.arenaH || 60;
         this.globalZ = config.globalZ || 0;
+        // Semilla inyectable. Sin ella los temporizadores de mina y de generación
+        // de enjambre dan una partida distinta con la misma semilla. Ver
+        // `prueba_semillas.mjs`.
+        this.rng = config.rng || Math.random;
     }
 
     /**
@@ -133,7 +142,7 @@ export class OrbitalKinematicsSystem {
                 e.x += Math.sin(statsTime * 0.5 + (e.sinePhase || 0)) * 3 * dt;
                 e.mineTimer -= dt;
                 if (e.mineTimer <= 0 && e.z > globalZ) {
-                    e.mineTimer = 3 + Math.random() * 2;
+                    e.mineTimer = 3 + this.rng() * 2;
                     e.spawnMine = true; // Signal frontend to spawn mine
                 }
             } else if (tp === 'TURRET' || tp === 'CRAWLER') {
@@ -147,7 +156,7 @@ export class OrbitalKinematicsSystem {
                 e.z -= e.sp * dt;
                 e.spawnTimer -= dt;
                 if (e.spawnTimer <= 0 && e.spawnCount < 8 && e.z > globalZ) {
-                    e.spawnTimer = 3 + Math.random() * 2;
+                    e.spawnTimer = 3 + this.rng() * 2;
                     e.spawnCount++;
                     e.spawnPopcorn = true; // Signal frontend
                 }

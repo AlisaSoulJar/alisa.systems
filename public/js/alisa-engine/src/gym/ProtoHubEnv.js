@@ -137,7 +137,33 @@ export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
             return this.getObservation();
         }
 
-        _estado() { return reglas.estado(this.p) ?? {}; }
+        /**
+         * ⚠️ EL ASIENTO SE LE PASA A LAS REGLAS. ANTES NO, Y ERA UN CABLE SUELTO.
+         * ═══════════════════════════════════════════════════════════════════════
+         *
+         * `this.asiento` movía al agente de silla para DECIDIR —la casa juega sus
+         * turnos antes, ahí arriba— pero esto llamaba a `reglas.estado(this.p)` a
+         * secas. O sea que el agente jugaba desde la silla 2 y se le devolvía la mano,
+         * el marcador y los puntos **de la silla 0**.
+         *
+         * Y el otro extremo del cable llevaba tiempo puesto: DIECISÉIS de los treinta
+         * y cinco juegos ya declaran `estado(p, asiento = 0)` y lo usan bien. `bazas.js`
+         * incluso resuelve el caso difícil —`puntos: MENOR_GANA ? -míos : míos`, con
+         * `míos = p.puntos[yo]`—, que es el que impide leer `marcador[asiento]` a pelo:
+         * en hearts menos es mejor, y el marcador crudo tiene el signo al revés.
+         * (Medido: `puntuacionDe` daba −20 donde `marcador[0]` decía 20.)
+         *
+         * Por eso la rotación de sillas estaba apagada en `tabla.mjs`: rotar movía al
+         * agente para decidir y le seguía puntuando la silla del primer turno, lo que
+         * es peor que no rotar porque parece arreglado. No faltaba el mecanismo:
+         * faltaba esta línea entre los dos.
+         *
+         * Con `asiento = 0` —lo de siempre, y lo que hay en todo el corpus ya guardado—
+         * `estado(p, 0)` es idéntico a `estado(p)`, así que esto no cambia ni un número
+         * publicado. Los diecinueve que declaran `estado(p)` ignoran el argumento de
+         * más, que es lo que hace JavaScript con ellos.
+         */
+        _estado() { return reglas.estado(this.p, this.asiento) ?? {}; }
 
         /**
          * PARA MIRAR NO HACE FALTA HABER EMPEZADO.

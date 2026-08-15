@@ -14,18 +14,25 @@ export class TrafficSystem {
      * @param {Array<Array<number>>} navGrid - 2D array (0=road, 1=building, 2=sidewalk)
      * @param {Array<Array<number>>} elevationGrid - 2D array of heights
      * @param {Object} options - Visual and scaling options
+     * @param {() => number} [options.rng] Source of randomness, [0,1). Defaults to
+     *        `Math.random`. Pass a seeded generator to get reproducible traffic.
      */
     constructor(scene, navGrid, elevationGrid, options = {}) {
         this.scene = scene;
         this.navGrid = navGrid;
         this.elevationGrid = elevationGrid;
-        
+
         this.tileSize = options.tileSize || 4;
         this.stepHeight = options.stepHeight || 4;
-        
+
         this.gridW = navGrid[0].length;
         this.gridH = navGrid.length;
-        
+
+        // Semilla inyectable. Sin ella la velocidad inicial de cada agente y su
+        // elección de calle en cada cruce cambian de partida en partida. Ver
+        // `prueba_semillas.mjs`.
+        this.rng = options.rng || Math.random;
+
         this.agents = [];
         this.matBase = new THREE.MeshBasicMaterial({ color: 0x111111, transparent: true, opacity: 0.8 });
         this.lineMatYellow = new THREE.LineBasicMaterial({ color: 0xffff00, transparent: true, opacity: 0.6 });
@@ -56,7 +63,7 @@ class TrafficAgent {
             tx: startX, ty: startY,
             lastX: startX, lastY: startY,
             progress: 0,
-            speed: 0.5 + Math.random() * 1.5,
+            speed: 0.5 + system.rng() * 1.5,
             navGrid: system.navGrid,
             elevationGrid: system.elevationGrid,
             gridW: system.gridW,
@@ -93,7 +100,7 @@ class TrafficAgent {
                 }
             }
             if(options.length > 0) {
-                let choice = options[Math.floor(Math.random() * options.length)];
+                let choice = options[Math.floor(system.rng() * options.length)];
                 bb.lastX = bb.cx; bb.lastY = bb.cy;
                 bb.tx = choice.x; bb.ty = choice.y;
                 bb.progress = 0;

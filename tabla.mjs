@@ -121,25 +121,47 @@ async function correr(part, e, Clase, reglas) {
          * cuatro asientos jugando igual. Seis puntos que la clasificación se apunta
          * como habilidad de quien la ocupe.
          *
-         * El mecanismo para rotar ya está hecho y funciona (`ProtoHubEnv.asiento`,
-         * y `--rotar` aquí). Lo que falta es más abajo: LA PUNTUACIÓN NO SIGUE AL
-         * ASIENTO. Medido el 13-08-2026 jugando y mirando qué publica cada juego:
+         * ✅ **EL PRIMER BLOQUEO YA NO EXISTE (15-08-2026): LA PUNTUACIÓN SÍ SIGUE
+         *    AL ASIENTO.** Aquí ponía que los juegos no la publicaban por silla. Al
+         *    ir a arreglarlo resultó que el trabajo estaba HECHO en las reglas y
+         *    nadie lo había enchufado: DIECISÉIS de los treinta y cinco declaran
+         *    `estado(p, asiento = 0)` y lo usan bien —`bazas.js` hasta resuelve el
+         *    caso difícil, `puntos: MENOR_GANA ? -míos : míos`, que es el que impide
+         *    leer `marcador[asiento]` a pelo porque en hearts el marcador crudo
+         *    tiene el signo al revés—. Lo que faltaba era una línea en
+         *    `ProtoHubEnv._estado()`, que llamaba a `reglas.estado(this.p)` sin
+         *    pasarle el asiento.
          *
-         *     brisca      marcador=[46,25,0,49]   <- existe, por asiento
-         *                 puntos=46               <- pero se informa del 0, siempre
-         *     canadiense  puntos=10               <- un solo número, sin desglose
-         *     parchis     puntos=9                        idem
-         *     entropy     puntos=-21                      idem
+         *    Conectado y comprobado con la MISMA partida vista desde cada silla (no
+         *    con una partida por silla, que diverge y no prueba nada):
          *
-         * Así que rotar hoy movería al agente de silla para DECIDIR y le seguiría
-         * puntuando la del primer turno: todos los números de la tabla cambiarían y
-         * seguiría midiendo lo mismo que antes. Eso es peor que no rotar, porque
-         * parecería arreglado.
+         *        brisca  marcador=[40,31,18,31]  → s0:40  s1:31  s2:18  s3:31
+         *        hearts  marcador=[17, 1, 0, 8]  → s0:-17 s1:-1  s2:0   s3:-8
          *
-         * Lo que lo desbloquea es que los juegos publiquen la puntuación POR
-         * ASIENTO —`marcador`, como ya hace brisca— y que `_puntosDe` lea la del
-         * asiento del agente. Hasta entonces esto queda apagado a propósito, y
-         * `--rotar` está para poder medir el sesgo, no para publicar con él.
+         * ⚠️ PERO QUEDA UN SEGUNDO BLOQUEO, Y ES POR QUÉ ESTO SIGUE APAGADO.
+         *
+         * `asiento` hace DOS cosas a la vez: deja pasar N turnos a la casa **y**
+         * elige el punto de vista. En un juego de cuatro son la misma cosa; en uno
+         * de dos, no: en entropy, `asiento = 2` devuelve la silla 0 —correctamente,
+         * `bazas.js` cae a 0 cuando la silla no existe— pero la partida ya no es la
+         * misma, porque la casa jugó dos turnos antes de empezar.
+         *
+         * Se ve en la medida del sesgo (40 semillas, política tonta en las cuatro):
+         *
+         *     entropy   -44.9  -14.9  -15.8  -16.2      (2 jugadores)
+         *     remigio   -54.0  128.8  131.0  130.5
+         *     oca       599.0 1262.5 1166.8 1166.8
+         *
+         * Silla 0 muy distinta y las otras tres parecidas, en todos. Eso NO es «la
+         * silla 3 es buena»: es «empezar el primero es distinto de no empezar», y
+         * con esta sonda las dos causas no se separan. Publicar una clasificación
+         * rotada sobre esto sería cambiar un sesgo conocido por uno que no sabemos
+         * leer, que es peor.
+         *
+         * Lo que lo desbloquea: que `asiento` sea sólo el punto de vista y el número
+         * de turnos previos se derive de él PARA LOS JUEGOS QUE TIENEN ESA SILLA
+         * —o sea, preguntar cuántos asientos tiene el juego antes de sentarse—.
+         * Mientras tanto `--rotar` está para medir el sesgo, no para publicar con él.
          */
         const asiento = args.rotar ? (s - 1) % 4 : 0;
 

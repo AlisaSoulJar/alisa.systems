@@ -196,7 +196,7 @@
    "ruta": "gym/ProtoHubEnv.js",
    "nombre": "ProtoHubEnv",
    "familia": "gym",
-   "kb": 15.6
+   "kb": 16.5
   },
   {
    "ruta": "gym/registro.js",
@@ -238,7 +238,7 @@
    "ruta": "gym/envs/RueDelPercebeEnv.js",
    "nombre": "RueDelPercebeEnv",
    "familia": "envs",
-   "kb": 12.5
+   "kb": 12.8
   },
   {
    "ruta": "psyche/FSMSystem.js",

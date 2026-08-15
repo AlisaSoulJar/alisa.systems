@@ -5,6 +5,11 @@
 // ============================================================================
 
 export class TurretCombatSystem {
+    /**
+     * @param {Object} config Configuration parameters
+     * @param {() => number} [config.rng] Source of randomness, [0,1). Defaults to
+     *        `Math.random`. Pass a seeded generator to get a reproducible firing pattern.
+     */
     constructor(config = {}) {
         this.turrets = [];
         this.turretBullets = [];
@@ -16,16 +21,21 @@ export class TurretCombatSystem {
         this.bulletSpeed = config.bulletSpeed || 25.0;
 
         this.chopperFireTimer = 0;
-        
+
         // Counter for deterministic assignment of unique IDs
         this._bulletCounter = 0;
+
+        // Semilla inyectable. Sin ella el desfase inicial y la cadencia de las
+        // torretas cambian en cada partida y un combate no se puede volver a
+        // jugar igual. Ver `prueba_semillas.mjs`.
+        this.rng = config.rng || Math.random;
     }
 
     addTurret(id, x, y, z) {
         this.turrets.push({
             id: id,
             pos: { x, y, z },
-            fireTimer: this.fireInterval * Math.random(), // initial stagger
+            fireTimer: this.fireInterval * this.rng(), // initial stagger
             stunTimer: 0,
             hp: 3
         });
@@ -35,7 +45,7 @@ export class TurretCombatSystem {
         this.turrets.forEach(t => {
             t.stunTimer = 0;
             t.hp = 3;
-            t.fireTimer = this.fireInterval * Math.random();
+            t.fireTimer = this.fireInterval * this.rng();
         });
         this.turretBullets = [];
         this.chopperBullets = [];
@@ -72,7 +82,7 @@ export class TurretCombatSystem {
 
             t.fireTimer -= dt;
             if (t.fireTimer <= 0) {
-                t.fireTimer = this.fireInterval + Math.random() * 0.5;
+                t.fireTimer = this.fireInterval + this.rng() * 0.5;
                 const d = this.dir(t.pos, chopperPos);
                 
                 const bId = `tb_${this._bulletCounter++}`;

@@ -6,13 +6,19 @@ export class CroupierSystem {
      * @param {number} config.deckX Origin X where cards spawn
      * @param {number} config.deckY Origin Y where cards spawn
      * @param {number} config.deckZ Origin Z where cards spawn
-     * @param {number} config.spreadSpacing 
+     * @param {number} config.spreadSpacing
+     * @param {() => number} [config.rng] Source of randomness, [0,1). Defaults to
+     *        `Math.random`. Pass a seeded generator to get reproducible 'messy' piles.
      */
     constructor(config = {}) {
         this.deckX = config.deckX || 0;
         this.deckY = config.deckY || 0;
         this.deckZ = config.deckZ || 0;
         this.spreadSpacing = config.spreadSpacing || 0.05;
+        // Semilla inyectable. Sin ella el layout 'messy' desordena las cartas de
+        // forma distinta cada vez, y una mesa no se puede volver a repartir
+        // igual. Ver `prueba_semillas.mjs`.
+        this.rng = config.rng || Math.random;
     }
 
     /**
@@ -70,9 +76,9 @@ export class CroupierSystem {
                     // Slight vertical offset
                     oy = c * 0.001; 
                     if (jitterForce > 0) {
-                        ox = (Math.random() - 0.5) * 0.02 * jitterForce;
-                        oz = (Math.random() - 0.5) * 0.02 * jitterForce;
-                        cRotZ += (Math.random() - 0.5) * 0.2 * jitterForce;
+                        ox = (this.rng() - 0.5) * 0.02 * jitterForce;
+                        oz = (this.rng() - 0.5) * 0.02 * jitterForce;
+                        cRotZ += (this.rng() - 0.5) * 0.2 * jitterForce;
                     }
                 }
                 else if (finalLayout === 'grid') {

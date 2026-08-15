@@ -6,10 +6,19 @@
  * NO THREE.JS REFERENCES OR DOM MANIPULATIONS ALLOWED HERE.
  */
 export class NeuralDrivingSystem {
+    /**
+     * @param {Object} config Configuration parameters
+     * @param {() => number} [config.rng] Source of randomness, [0,1). Defaults to
+     *        `Math.random`. Pass a seeded generator to get reproducible training samples.
+     */
     constructor(config = {}) {
         this.modelReady = false;
         this.mlModel = null;
-        
+        // Semilla inyectable. Sin ella los 500 ejemplos sintéticos de entrenamiento
+        // cambian en cada tirada y el modelo entrenado ya no es reproducible. Ver
+        // `prueba_semillas.mjs`.
+        this.rng = config.rng || Math.random;
+
         // Agent Mathematical States
         this.leadSpeed = config.initialLeadSpeed || 10;
         this.followerSpeed = config.initialFollowerSpeed || 0;
@@ -38,8 +47,8 @@ export class NeuralDrivingSystem {
         const ysList = [];
         
         for (let i = 0; i < 500; i++) {
-            const dist = Math.max(1, Math.random() * 50); 
-            const speed = Math.random() * 20;
+            const dist = Math.max(1, this.rng() * 50);
+            const speed = this.rng() * 20;
 
             // Ground Truth Approximation:
             const targetAccel = speed > dist ? -((speed - dist)/speed)*2 : 1.0; 
