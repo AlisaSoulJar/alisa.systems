@@ -52,6 +52,22 @@ function init3D() {
         ' ': 'esperar',
     };
     window.addEventListener('keydown', (e) => {
+        /**
+         * ⚠️ SI ESTÁS ESCRIBIENDO, ESTO SON LETRAS Y NO JUGADAS.
+         *
+         * El mapa de arriba incluye `w a s d` y el ESPACIO, con `preventDefault()`.
+         * Sin esta línea, escribir en cualquier campo de la página —el buzón de «algo
+         * va raro», sin ir más lejos— movía al peatón de verdad y se comía la letra.
+         * O sea: no se podían escribir espacios.
+         *
+         * Medido en snake, que tiene el mismo manejador: escribiendo «las casas se
+         * ven raras y no se donde estoy» salían «lcevenrrynoeoneetoy» —23 letras
+         * perdidas— y la serpiente daba 17 pasos. Mismo fallo, copiado en dos
+         * sitios; el otro está en `Entrada.js`, con la historia entera.
+         */
+        // La comprobación es LA MISMA que usa `Entrada.js`, no una copia: dos copias
+        // de esta regla es justo cómo el fallo acabó estando en dos sitios.
+        if (window.ALISA_ESCRIBIENDO?.()) return;
         const verbo = TECLAS[e.key];
         if (verbo) { e.preventDefault(); sendMove(verbo); }
     });

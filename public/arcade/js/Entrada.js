@@ -151,6 +151,34 @@ function clicEnTablero(engine, opts) {
 }
 
 /**
+ * ¿Está la persona escribiendo ahora mismo?
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ⚠️ VIVE AQUÍ, SUELTA Y CON NOMBRE, PORQUE ESTABA EN DOS SITIOS Y FALTABA EN LOS DOS.
+ *
+ * La primera versión de esta comprobación la escribí dentro de `teclasDireccion`, y
+ * `peaton_visualizer.js` —que tiene su propio manejador copiado— necesitaba otra
+ * igual. Dos copias de la misma regla es exactamente cómo el fallo llegó a estar en
+ * dos sitios: el manejador se copió, y el olvido con él.
+ *
+ * Sacándola aquí hay UNA, y `prueba_teclado.mjs` puede comprobar que cada manejador
+ * la LLAMA — que es una marca concreta, no «en este fichero aparece la palabra
+ * activeElement en alguna parte». Esa marca laxa ya se quedó verde con el arreglo
+ * saboteado, y ése es el tipo de instrumento que aquí no sirve.
+ *
+ * Global y no `export` porque esto es un script clásico: lo cargan páginas que no
+ * son módulos.
+ */
+function estaEscribiendo() {
+    const e = document.activeElement;
+    if (!e) return false;
+    const t = (e.tagName || '').toUpperCase();
+    // `isContentEditable` cubre los editores que no son `input` ni `textarea`.
+    return t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT' || !!e.isContentEditable;
+}
+window.ALISA_ESCRIBIENDO = estaEscribiendo;
+
+/**
  * Jugar con las flechas (o WASD). Para los juegos de acción.
  *
  * Aunque el juego avance por ticks, cada pulsación es UNA jugada — el mismo
@@ -182,7 +210,44 @@ function teclasDireccion(engine, opts = {}) {
         engine.sendMove(verbo);
     };
 
+    /**
+     * ⚠️ SI ESTÁS ESCRIBIENDO, LAS TECLAS SON LETRAS Y NO JUGADAS.
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Esto escuchaba en `window` sin mirar dónde estaba el foco, y el mapa incluye
+     * `w a s d`, sus mayúsculas y **el espacio**, con `preventDefault()`. Así que al
+     * escribir en cualquier campo de texto de la página pasaban las dos cosas a la
+     * vez: el personaje se movía de verdad, y la letra NO SE ESCRIBÍA.
+     *
+     * Es decir: en los juegos de teclas no se podía escribir una frase. Ni los
+     * espacios entre palabras.
+     *
+     * ⚠️ MEDIDO EN SNAKE, ESCRIBIENDO UNA FRASE DE VERDAD EN EL BUZÓN:
+     *
+     *     quería escribir  «las casas se ven raras y no se donde estoy»
+     *     salió            «lcevenrrynoeoneetoy»
+     *     letras perdidas  23
+     *     y la serpiente   se movió 17 veces
+     *
+     * Con esta línea: 0 letras perdidas y 0 jugadas. Afecta a los juegos que usan
+     * este manejador —snake y peatón— y al botón de «¿algo va raro?», que es el
+     * único sitio de todo el arcade donde alguien escribe una frase.
+     *
+     * ⚠️ Y CÓMO SE ENCONTRÓ, QUE ES LO INTERESANTE: LA SOSPECHA ERA FALSA.
+     *
+     * Salió de repetir el aviso de un betatester en FAGOCITO —«no se ve el tablero
+     * completo y parece que es difícil escribir los mensajes»— cuyo recibo son 25
+     * pasos abajo seguidos y 7 a la derecha. Pensé: no estaba jugando, estaba
+     * intentando escribir, y cada `s` era un paso abajo.
+     *
+     * Fagocito NO usa este manejador —va por la mesa genérica— así que ahí la
+     * hipótesis no se sostiene, y su queja sigue sin explicar. Pero al ir a medirla
+     * apareció el fallo de verdad, en los dos juegos de al lado. Segunda vez hoy que
+     * una corazonada equivocada encuentra algo real por obligar a medir en vez de
+     * razonar.
+     */
     const alPulsar = (ev) => {
+        if (estaEscribiendo()) return;
         const verbo = mapa[ev.key];
         if (!verbo) return;
         ev.preventDefault();
