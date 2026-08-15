@@ -38,8 +38,27 @@
 // donde se declaran los entornos.
 import { CATALOGO } from './public/js/alisa-engine/src/gym/registro.js';
 
-const GYM_ENVS = Object.fromEntries(
-    CATALOGO.filter(e => e.familia === 'propio').map(e => [e.id, e.cargar]));
+/**
+ * ⚠️ ANTES AQUÍ PONÍA `.filter(e => e.familia === 'propio')`, Y ESO DEJABA FUERA
+ *    A 35 DE LOS 41 ENTORNOS DEL BANCO.
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *
+ * El catálogo tiene dos familias: seis `propio` —Asteroids, Cucco, Raccoon…— y los
+ * treinta y cinco `protohub`, que son los juegos del arcade envueltos en `GymEnv`.
+ * Esta comprobación decía vigilar «que los entornos del banco se puedan enumerar,
+ * cargar y jugar» y sólo miraba los seis: justo la parte pequeña, y no la que
+ * cualquiera que se descargue el banco va a importar primero.
+ *
+ * Lo destapó `prueba_de_las_pruebas.mjs` el 15-08-2026 al no conseguir hacerla
+ * suspender: rompió `ProtoHubEnv.reset` de la forma más burda posible —devolver una
+ * lista vacía— y la prueba siguió sacando sus seis ✓ y saliendo con un cero, porque
+ * ninguno de los seis pasa por ese fichero. Un sabotaje que no se nota no es un
+ * sabotaje mal puesto: es un hueco de cobertura enseñando la oreja.
+ *
+ * Los 35 ya cumplían el contrato ENTERO al medirlos, así que esto se abre sin poner
+ * nada en rojo. Con ellos dentro, aquel `reset` roto suspende.
+ */
+const GYM_ENVS = Object.fromEntries(CATALOGO.map(e => [e.id, e.cargar]));
 
 const ids = Object.keys(GYM_ENVS);
 
@@ -104,10 +123,10 @@ for (const id of ids) {
 
     if (problemas.length) {
         fallos++;
-        console.log(`  !! ${id.padEnd(24)} ${linea}`);
+        console.log(`  !! ${id.padEnd(30)} ${linea}`);
         for (const p of problemas) console.log(`       ${p}`);
     } else {
-        console.log(`  ok ${id.padEnd(24)} ${linea}`);
+        console.log(`  ok ${id.padEnd(30)} ${linea}`);
     }
 }
 

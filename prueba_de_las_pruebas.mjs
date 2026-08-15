@@ -121,6 +121,21 @@ const SABOTAJES = [
         vigila: 'que los juegos de cartas lean el catálogo que se les indica',
     },
     {
+        nombre: 'reglas',
+        corre: 'node prueba_reglas.mjs',
+        fichero: 'public/arcade/js/protohub/rules/azar.js',
+        /**
+         * El generador sembrado, convertido en azar de verdad. Es EL fallo contra el
+         * que existe media suite: sin determinismo, `{juego, semilla, jugadas}` deja
+         * de reproducir la partida y con eso se cae el producto entero. Y el propio
+         * fichero avisa de que siete copias de esto eran «una escopeta cargada
+         * apuntando al producto» — esto comprueba que el gatillo se oye.
+         */
+        de: 'let a = semilla >>> 0;',
+        a: 'let a = semilla >>> 0; return Math.random;',
+        vigila: 'que la misma semilla dé siempre la misma partida',
+    },
+    {
         nombre: 'lenguaje',
         corre: 'node prueba_lenguaje.mjs',
         fichero: 'public/arcade/js/protohub/descripcion.js',
@@ -145,6 +160,83 @@ const SABOTAJES = [
         de: '"/api/verificar"',
         a: '"/api/verificar_QUITADA"',
         vigila: 'que las puertas declaradas y las que existen sean las mismas',
+    },
+    {
+        nombre: 'funcion',
+        corre: 'node prueba_funcion.mjs',
+        fichero: 'functions/api/verificar.js',
+        /**
+         * El verificador de servidor, dando por buena cualquier partida. Es la
+         * trampa que sostiene el corpus: si esto se cae, entra basura y nadie se
+         * entera — que es literalmente lo que ese fichero dice impedir.
+         */
+        de: "import { verificar, puntuacionDe } from '../../public/arcade/js/protohub/Verificador.js';",
+        a: "import { verificar as __v, puntuacionDe } from '../../public/arcade/js/protohub/Verificador.js';\n"
+         + "const verificar = () => ({ valida: true, puntos: 999999, terminada: true });",
+        vigila: 'que el verificador de servidor cace las partidas infladas',
+    },
+    {
+        nombre: 'gym_envs',
+        corre: 'node check_gym_envs.mjs',
+        fichero: 'public/js/alisa-engine/src/gym/ProtoHubEnv.js',
+        /**
+         * ⚠️ AQUÍ FALLÉ LA PUNTERÍA DOS VECES, Y ES EL ERROR TÍPICO DE ESTE FICHERO.
+         *
+         * Primero cambié `juego: 'ajedrez'` en el catálogo: la prueba aprobó, porque
+         * enumera el catálogo y construye cada entorno — un nombre distinto se
+         * construye igual. Luego puse `reset(` a secas, que aparece también en un
+         * COMENTARIO del fichero, así que el reemplazo cayó donde no debía.
+         *
+         * El sabotaje tiene que romper lo que la prueba MIRA. Aquí es el contrato que
+         * sí comprueba: `reset(seed)` devolviendo una observación vacía.
+         */
+        de: 'reset(seed = 0) {',
+        a: 'reset(seed = 0) { return []; }\n    __resetViejo(seed = 0) {',
+        vigila: 'que los entornos del banco se puedan enumerar, cargar y jugar',
+    },
+    {
+        nombre: 'semillas',
+        corre: 'node --import ./resolver_three.mjs prueba_semillas.mjs',
+        fichero: 'public/js/alisa-engine/src/world/systems/BoidsSystem.js',
+        /**
+         * Un `Math.random(` dentro de un fichero `*System.js` del motor — que es
+         * literalmente lo que esa prueba busca recorriendo el árbol, y BoidsSystem
+         * es uno de los que hoy da por SEMBRADOS, así que ensuciarlo sube la deuda.
+         *
+         * Dos intentos fallidos antes: `rules/azar.js` (es el generador de las
+         * REGLAS, no un sistema del motor) y `ProceduralKinematics.js` (no acaba en
+         * `System.js`, así que el recorrido ni lo abre). Las dos veces la prueba
+         * aprobó con razón y yo estuve a punto de acusarla.
+         */
+        de: 'export',
+        a: 'const __ruido = () => Math.random();\nexport',
+        vigila: 'que los sistemas del motor usen su semilla y no `Math.random`',
+    },
+    {
+        nombre: 'preflight',
+        corre: 'python preflight.py',
+        /**
+         * ⚠️ SE SABOTEA EL PAQUETE, NO `public/`. LO DICE SU PROPIO CÓDIGO:
+         *
+         *     medido = PAQUETE if hay_paquete else PUBLIC
+         *
+         * O sea que en cuanto existe `dist_publico` —y existe en cuanto alguien
+         * empaqueta— `preflight` mide ESO y no las fuentes. Metí el CDN en
+         * `public/arcade/index.html` y la prueba aprobó tan tranquila: no estaba
+         * muerta, es que yo le estaba rompiendo un fichero que no mira.
+         *
+         * Es el mismo error que cometí con el gym, y explica por qué este fichero
+         * distingue «no sabe fallar» de «el sabotaje no encaja»: hace falta una
+         * tercera categoría, «el sabotaje no apunta donde mira la prueba», y la
+         * única forma de detectarla es entender qué mide cada una antes de
+         * declararle un sabotaje.
+         */
+        corre_solo_si: 'dist_publico',
+        fichero: 'dist_publico/arcade/index.html',
+        de: '<link rel="stylesheet" href="css/arcade.css">',
+        a: '<link rel="stylesheet" href="css/arcade.css">\n'
+         + '<script src="https://cdn.jsdelivr.net/npm/roto@1"></script>',
+        vigila: 'que ninguna página del PAQUETE cargue código desde un CDN',
     },
 ];
 

@@ -59,6 +59,24 @@ const sistemas = [];
 const sinSembrar = sistemas.filter(s => s.azar && !s.sembrado);
 const sembrados = sistemas.filter(s => s.sembrado);
 
+/**
+ * ⚠️ LOS MIXTOS: ACEPTAN SEMILLA **Y ADEMÁS** LLAMAN A `Math.random(`.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * La cuenta de arriba es `azar && !sembrado`, así que un sistema que reciba `rng`
+ * en algún sitio queda absuelto aunque tenga un `Math.random(` suelto en otro. Y
+ * ése es igual de irreproducible que uno sin sembrar — **peor**, porque parece
+ * arreglado: mismo `rng`, distinto mundo, y nadie sospecha del que ya tiene semilla.
+ *
+ * Lo encontró `prueba_de_las_pruebas.mjs` el 15-08-2026: metió un `Math.random()` en
+ * `BoidsSystem` —uno de los que esta prueba lista como sembrados— y esta
+ * comprobación siguió dándolo por bueno y contándolo entre los buenos.
+ *
+ * Hoy son **cero**, así que esto se cierra sin poner nada en rojo: es un trinquete
+ * nuevo que nace apretado, que es la única forma en que un trinquete sirve.
+ */
+const mixtos = sistemas.filter(s => s.azar && s.sembrado);
+
 console.log('\n¿Cuántos sistemas del motor se pueden meter en un banco de pruebas?\n');
 console.log(`  ${sistemas.length} sistemas · ${sembrados.length} aceptan semilla · `
           + `${sinSembrar.length} con azar incontrolado`);
@@ -68,6 +86,13 @@ console.log(`\n${sinSembrar.length}/${sistemas.length} sistemas sin sembrar (tec
 for (const s of sinSembrar) console.log(`  · ${s.nombre}`);
 
 let fallos = 0;
+if (mixtos.length) {
+    fallos++;
+    console.log(`\n  ✗ ${mixtos.length} sistema(s) aceptan semilla Y llaman a \`Math.random(\`:`);
+    for (const s of mixtos) console.log(`      · ${s.nombre}`);
+    console.log('    Un sistema medio sembrado no es reproducible, y encima lo parece:');
+    console.log('    misma semilla, distinto mundo. Quita el `Math.random(` o pásale el `rng`.');
+}
 if (sinSembrar.length > TECHO_SIN_SEMBRAR) {
     fallos++;
     console.log(`\n  ✗ la deuda SUBIÓ: ${sinSembrar.length} > ${TECHO_SIN_SEMBRAR}.`);
