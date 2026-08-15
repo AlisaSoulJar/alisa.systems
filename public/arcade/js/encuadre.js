@@ -136,12 +136,37 @@
         const libre = Math.max(0, Math.min(0.6, arribaLibre));
         const margenY = margen * (1 - libre);
 
+        /**
+         * ⚠️ Y LO MISMO EN HORIZONTAL, QUE ES LO QUE LE FALTABA A ESTO PARA SNAKE.
+         * ═══════════════════════════════════════════════════════════════════════
+         *
+         * `margenY` ya encoge el hueco vertical para que el bucle de abajo ALEJE
+         * la cámara cuando hace falta más aire arriba. `margenX` no existía: el
+         * eje x se comprobaba siempre contra `margen` a secas, así que el bucle
+         * nunca veía motivo para alejarse por `izquierdaLibre` — el tablero ya
+         * cabía en la pantalla ENTERA, que es justo lo que había medido el
+         * visualizador al elegir su distancia. Sin margen reservado, `cabe()` daba
+         * `true` a la primera y el desplazamiento de más abajo corría la imagen
+         * SIN haberle hecho sitio antes: por eso `apartarDelPanel` tenía que topar
+         * el desplazamiento al hueco libre y en snake el hueco es cero, el tablero
+         * llena el ancho.
+         *
+         * Con `margenX` reservando la misma fracción que luego se va a desplazar,
+         * el bucle de abajo aleja la cámara HASTA que el tablero cabe en el ancho
+         * que queda tras reservar `izquierdaLibre` — y sólo entonces entra en
+         * juego el desplazamiento, que ahora sí tiene sitio adonde correr la
+         * imagen. Un juego que no pide `izquierdaLibre` (0 por defecto) tiene
+         * `margenX === margen`: encuadra exactamente como antes.
+         */
+        const libreX = Math.max(0, Math.min(0.6, izquierdaLibre));
+        const margenX = margen * (1 - libreX);
+
         const cabe = () => {
             camara.updateMatrixWorld();
             camara.updateProjectionMatrix();
             return esquinas.every((e) => {
                 const v = e.clone().project(camara);
-                return Math.abs(v.x) < margen && Math.abs(v.y) < margenY;
+                return Math.abs(v.x) < margenX && Math.abs(v.y) < margenY;
             });
         };
 

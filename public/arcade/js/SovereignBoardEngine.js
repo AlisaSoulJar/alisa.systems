@@ -231,9 +231,30 @@ class SovereignBoardEngine {
          * la anterior: plegar y desplegar tres veces mandaría la vista a tomar
          * viento, y el fallo sólo aparecería tocando el panel varias veces — o sea,
          * jugando de verdad y no probando.
+         *
+         * ⚠️ Y SE RESTAURA TAMBIÉN LA ROTACIÓN, NO SÓLO LA POSICIÓN.
+         *
+         * `encajarCamara` gira la cámara con `lookAt()` además de moverla —lo hace
+         * dentro de su propio bucle de alejar, y otra vez si aplica `izquierdaLibre`—
+         * así que la rotación que deja tras de sí es tan suya como la posición. Sólo
+         * restaurar la posición y dejar la rotación como quedó de la vuelta anterior
+         * es partir a medias: parece «volver al principio» y no lo es del todo.
+         *
+         * Comprobado con el cuaternión de verdad en snake, aquí el ángulo que deja
+         * `encajarCamara` resulta casi igual al original —la diferencia es ruido de
+         * coma flotante, no un giro real—, así que en este juego concreto no se nota
+         * en pantalla. Pero eso es una coincidencia de cuánto giró esta vez, no una
+         * garantía: cualquier juego cuyo `onInit3D` mire a un punto distinto del
+         * centro, o cualquier alejamiento mayor, sí giraría de más. Restaurar el
+         * cuaternión entero cuesta una línea y devuelve la garantía en vez de fiarse
+         * de que la próxima vez tampoco se note.
          */
-        if (!this._camaraOriginal) this._camaraOriginal = this.camera.position.clone();
-        else this.camera.position.copy(this._camaraOriginal);
+        if (!this._camaraOriginal) {
+            this._camaraOriginal = { posicion: this.camera.position.clone(), rotacion: this.camera.quaternion.clone() };
+        } else {
+            this.camera.position.copy(this._camaraOriginal.posicion);
+            this.camera.quaternion.copy(this._camaraOriginal.rotacion);
+        }
         if (this.controls) this.controls.target.set(0, 0, 0);
 
         const r = panel.getBoundingClientRect();
@@ -294,63 +315,86 @@ class SovereignBoardEngine {
             const p = v.clone().project(this.camera);
             return (p.x + 1) / 2 * anchoPantalla;
         };
-        let izq = Infinity;
-        for (const x of [caja.min.x, caja.max.x])
-            for (const y of [caja.min.y, caja.max.y])
-                for (const z of [caja.min.z, caja.max.z])
-                    izq = Math.min(izq, aPantalla(new THREE.Vector3(x, y, z)));
-
-        /**
-         * ⚠️ Y NO SE APARTA MÁS DE LO QUE CABE: CORRER METE POR LA DERECHA LO QUE
-         *    SACA POR LA IZQUIERDA.
-         * ═══════════════════════════════════════════════════════════════════════
-         *
-         * Al arreglar las matrices, snake pasó a pedir 382 px de desplazamiento —un
-         * número ya razonable— y con ellos la comida salió de debajo del panel… y el
-         * lado derecho del tablero se fue de la pantalla. Cambiar «tapado» por «fuera
-         * de cuadro» no es arreglarlo, y encima es peor de detectar: una pieza fuera
-         * del lienzo ya no está tapada por nada, así que los instrumentos que buscan
-         * solapes la dan por buena.
-         *
-         * Es la segunda vez en dos días que me como esta piedra —la primera con las
-         * mesas de cartas, ver `mesa_cartas.mjs`—, así que aquí queda el tope: se
-         * desplaza lo que haga falta o lo que quepa, lo que sea menor.
-         *
-         * Si el hueco es cero, no se mueve nada y la pieza SIGUE tapada. Eso no es un
-         * arreglo a medias disimulado: es que ahí el desplazamiento no es la
-         * herramienta —hay que alejar la cámara para que quepan tablero y panel— y
-         * conviene que se vea en la medición en vez de taparlo moviendo la vista.
-         */
-        let der = -Infinity;
-        for (const x of [caja.min.x, caja.max.x])
-            for (const y of [caja.min.y, caja.max.y])
-                for (const z of [caja.min.z, caja.max.z])
-                    der = Math.max(der, aPantalla(new THREE.Vector3(x, y, z)));
-        const hueco = Math.max(0, anchoPantalla - der);
+        // El borde izquierdo del tablero en píxeles de pantalla, contra la cámara
+        // COMO ESTÉ en cada momento — se reutiliza tal cual dentro del bucle de
+        // abajo, cuando la cámara ya se ha alejado.
+        const izquierdaDeLaCaja = () => {
+            let izq = Infinity;
+            for (const x of [caja.min.x, caja.max.x])
+                for (const y of [caja.min.y, caja.max.y])
+                    for (const z of [caja.min.z, caja.max.z])
+                        izq = Math.min(izq, aPantalla(new THREE.Vector3(x, y, z)));
+            return izq;
+        };
 
         // Lo que hay que ganar, en píxeles, más un dedo de margen.
-        const invade = Math.min((r.right + 12) - izq, hueco);
+        let invade = (r.right + 12) - izquierdaDeLaCaja();
         if (invade <= 0) return;
 
-        window.ALISA_ENCUADRE.encajarCamara({
-            camara: this.camera, objeto: this.scene, controles: this.controls ?? null,
-            /**
-             * ⚠️ SE DIVIDE POR LA MEDIA ANCHURA, NO POR LA ENTERA.
-             *
-             * `izquierdaLibre` acaba multiplicando por `d * tanV * aspect`, que es la
-             * MEDIA anchura visible a esa distancia. Dividiendo los píxeles que
-             * faltan por el ancho entero se desplaza exactamente la mitad de lo que
-             * hace falta — medido: pedía 183 px y movía 91.
-             *
-             * Es el tipo de error que no da ningún síntoma más que «el arreglo se
-             * queda corto», que es justo lo que parecía la primera vez.
-             */
-            izquierdaLibre: invade / (anchoPantalla / 2),
-            // La distancia y la inclinación las eligió el visualizador; se conservan.
-            distancia: this.camera.position.length(),
-            inclinacion: Math.asin(Math.max(-1, Math.min(1,
-                this.camera.position.y / (this.camera.position.length() || 1)))),
-        });
+        /**
+         * ⚠️ YA NO SE TOPA AL HUECO: SE ALEJA LA CÁMARA, BUSCANDO CUÁNTO POR BISECCIÓN.
+         * ═══════════════════════════════════════════════════════════════════════
+         *
+         * Aquí hubo un tope: `invade = Math.min(necesario, hueco)`. Al arreglar las
+         * matrices, snake pasó a pedir 382 px de desplazamiento —un número ya
+         * razonable— y con ellos la comida salía de debajo del panel… y el lado
+         * derecho del tablero se iba de la pantalla, porque snake llena el ancho
+         * entero y ahí el hueco a la derecha es CERO. Cambiar «tapado» por «fuera de
+         * cuadro» no es arreglarlo, y encima es peor de detectar: una pieza fuera del
+         * lienzo ya no está tapada por nada, así que los instrumentos que buscan
+         * solapes la dan por buena.
+         *
+         * `encajarCamara` ya sabe ALEJARSE —`margenX`, en `encuadre.js`— así que ese
+         * tope sobra. Pero pasarle sin más `izquierdaLibre = invade / mitad` (la
+         * fracción que haría falta SI el tablero conservara su tamaño de siempre) se
+         * pasa de frenada, y mucho: medido, esos 382 px de sobra pedían una fracción
+         * 0,597 y con ella el tablero acababa con **-464 px** de invasión — negativo,
+         * o sea 464 px de sitio vacío de más — en una sola pasada. La razón es que al
+         * alejar la cámara el borde del tablero TAMBIÉN se acerca al centro por su
+         * cuenta, así que la fracción medida con el tablero a tamaño original pide
+         * mucho más alejamiento del que realmente hace falta: quedó un tablero
+         * diminuto en una esquina con medio lienzo vacío alrededor, la miniatura que
+         * avisa el criterio de aceptación.
+         *
+         * Así que en vez de una pasada, es una BÚSQUEDA: `probar(frac)` llama a
+         * `encajarCamara` con esa fracción y devuelve cuánto queda invadido después.
+         * Con `frac = 0` no se aleja nada (el `invade` de partida, > 0 siempre que se
+         * llegue aquí) y con la primera estimación ya sobra (< 0, medido arriba). Con
+         * el hueco entre las dos acotado, ocho pasos de bisección bastan para caer
+         * dentro de 2 px — visualmente nada — sin encoger el tablero más de lo que
+         * hace falta. Si la primera estimación no llegara a sobrar (juego con una
+         * geometría muy distinta a snake), se dobla hasta que sí, así la bisección
+         * siempre parte de un hueco acotado por los dos lados y no de una suposición.
+         */
+        const distanciaOriginal = this._camaraOriginal.posicion.length();
+        const inclinacionOriginal = Math.asin(Math.max(-1, Math.min(1,
+            this._camaraOriginal.posicion.y / (distanciaOriginal || 1))));
+        const mitad = anchoPantalla / 2;
+
+        const probar = (frac) => {
+            window.ALISA_ENCUADRE.encajarCamara({
+                camara: this.camera, objeto: this.scene, controles: this.controls ?? null,
+                izquierdaLibre: frac,
+                // Siempre desde la distancia e inclinación ORIGINALES — si se partiera
+                // de `this.camera.position.length()` cada intento compondría el
+                // alejamiento del anterior con el de éste, en vez de partir limpio.
+                distancia: distanciaOriginal,
+                inclinacion: inclinacionOriginal,
+            });
+            return (r.right + 12) - izquierdaDeLaCaja();
+        };
+
+        let lo = 0, hi = invade / mitad;
+        let invadeHi = probar(hi);
+        for (let i = 0; i < 6 && invadeHi > 0; i++) { hi *= 1.6; invadeHi = probar(hi); }
+
+        for (let i = 0; i < 8; i++) {
+            const media = (lo + hi) / 2;
+            if (probar(media) > 2) lo = media; else hi = media;
+        }
+        // Deja la cámara en `hi`, que es el último valor comprobado que SÍ cabía —
+        // `lo` es el último que no, y dejarla ahí volvería a tapar la comida.
+        probar(hi);
     }
 
     onWindowResize() {

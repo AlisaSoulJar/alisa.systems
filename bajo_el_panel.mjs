@@ -369,22 +369,33 @@ if (conTapadas.length) {
 /**
  * ⚠️ EL CONTROL POSITIVO. SIN ESTO, UN CERO EN TODOS NO SIGNIFICA NADA.
  *
- * Snake TIENE la comida tapada — es el caso que abrió esta tarea. Si el
- * instrumento no lo caza, lo más probable es que el parche de `render()` no
- * se haya enganchado a tiempo, no que el problema se haya arreglado solo. Se
- * imprime SIEMPRE, en verde o en rojo, y nunca se calla.
+ * ⚠️ 16-08: EL CONTROL ERA SNAKE, Y CADUCÓ — ESO ES CORRECTO, NO UNA ROTURA.
+ *
+ * Snake TENÍA la comida tapada — es el caso que abrió esta tarea. `encuadre.js`
+ * aprendió a ALEJAR la cámara cuando el hueco a la derecha del panel es cero
+ * (el tablero de snake llena la pantalla entera, así que apartar la vista no
+ * tenía dónde correrse) y desde entonces snake mide 0 piezas tapadas de verdad
+ * — comprobado con captura, se ve la comida y el tablero entero. Un control
+ * positivo que deja de fallar cuando se arregla el caso que lo sostenía está
+ * haciendo su trabajo, no rompiéndose: seguir usando snake aquí habría hecho
+ * que este instrumento gritara «FALLIDO» contra su propio arreglo para siempre.
+ *
+ * El relevo es ENTROPY: su montón de descarte sigue cayendo bajo el panel hoy
+ * (medido: `descarte_mesa×1` + la mesa verde bajo la esquina), y en ese juego SÍ
+ * importa — es de donde se roba. El día que alguien lo arregle, este control
+ * volverá a fallar por el mismo motivo bueno, y tocará buscar el siguiente.
  */
-const snake = filas.find(f => f.juego === 'snake');
+const entropy = filas.find(f => f.juego === 'entropy');
 console.log('');
-if (!snake) {
-    console.log('  ⚠ CONTROL POSITIVO no evaluado — "snake" no estaba en la lista pedida.');
-} else if (!snake.medible) {
-    console.log(`  ✗ CONTROL POSITIVO FALLIDO — snake no se pudo medir (${snake.motivo}). El instrumento está roto, no snake.`);
-} else if (snake.tapadas > 0) {
-    const detalle = Object.entries(snake.porNombre).map(([n, c]) => `${n}×${c}`).join(', ');
-    console.log(`  ✓ CONTROL POSITIVO — snake da ${snake.tapadas} pieza(s) tapada(s) (${detalle}), como se esperaba.`);
+if (!entropy) {
+    console.log('  ⚠ CONTROL POSITIVO no evaluado — "entropy" no estaba en la lista pedida.');
+} else if (!entropy.medible) {
+    console.log(`  ✗ CONTROL POSITIVO FALLIDO — entropy no se pudo medir (${entropy.motivo}). El instrumento está roto, no entropy.`);
+} else if (entropy.tapadas > 0) {
+    const detalle = Object.entries(entropy.porNombre).map(([n, c]) => `${n}×${c}`).join(', ');
+    console.log(`  ✓ CONTROL POSITIVO — entropy da ${entropy.tapadas} pieza(s) tapada(s) (${detalle}), como se esperaba.`);
 } else {
-    console.log('  ✗ CONTROL POSITIVO FALLIDO — snake midió 0 piezas tapadas y se sabe que la comida cae bajo el panel. Sospecha del instrumento, no del juego.');
+    console.log('  ✗ CONTROL POSITIVO FALLIDO — entropy midió 0 piezas tapadas y se sabe que el descarte cae bajo el panel. Sospecha del instrumento, no de entropy.');
 }
 
-process.exit(noMedidos.length || (snake && snake.medible && snake.tapadas === 0) ? 1 : 0);
+process.exit(noMedidos.length || (entropy && entropy.medible && entropy.tapadas === 0) ? 1 : 0);
