@@ -519,6 +519,57 @@
 #mesa-jugadas.mesa-jugadas-mudas .mesa-jugada { font-size: 0; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   EL REGISTRO DE LA PARTIDA — y la semilla, a la vista
+   ═══════════════════════════════════════════════════════════════════════════
+   La queja más repetida de los sitios de cartas más usados es que el reparto está
+   amañado. Cuando una máquina reparte y pierdes tres veces seguidas, sin nada que
+   mirar, la sospecha es la conclusión razonable.
+
+   Nosotros tenemos la respuesta buena desde el principio —la partida entera se
+   vuelve a jugar desde `{juego, semilla, jugadas}` y el verificador lo comprueba con
+   aritmética, no con un modelo que opine— sólo que vivía dentro del recibo y no se
+   veía por ningún lado. Esto la enseña.
+
+   Sobrio a propósito: es para leer cuando hace falta, no para competir con la mesa.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.historial {
+    pointer-events: none;              /* es para leer; los clics pasan al tablero */
+    margin-top: 10px;
+    font-size: 11px;
+    line-height: 1.5;
+    color: rgba(226, 226, 240, 0.55);
+}
+.historial-recibo {
+    color: rgba(226, 226, 240, 0.42);
+    border-top: 1px solid rgba(160, 140, 220, 0.16);
+    padding-top: 7px;
+    margin-bottom: 5px;
+}
+.historial-recibo b { color: #cfc6e8; font-weight: 600; }
+.historial-lista {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    /* Con muchas jugadas, la ventana no crece sin fin: el panel ya tiene su tope. */
+    max-height: 22vh;
+    overflow-y: auto;
+    pointer-events: auto;              /* que se pueda desplazar si hay de sobra */
+}
+.historial-lista li {
+    display: flex;
+    gap: 7px;
+    align-items: baseline;
+    white-space: nowrap;
+}
+.historial-n { color: rgba(226, 226, 240, 0.3); min-width: 2ch; text-align: right; }
+.historial-quien { color: rgba(160, 140, 220, 0.75); min-width: 5ch; }
+.historial-jugada { color: rgba(226, 226, 240, 0.8); }
+/* Lo tuyo, marcado: en una partida contra la casa, saber cuáles fueron las tuyas es
+   la mitad de poder entender lo que pasó. */
+.historial-mio .historial-jugada { color: #9be7b4; }
+.historial-mas { color: rgba(226, 226, 240, 0.28); margin-top: 3px; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
    A QUÉ SE JUEGA — el recuadro que pidió un betatester desde mancala.
    ═══════════════════════════════════════════════════════════════════════════
    «va solo no? o se juega asi? ni idea tengo de como se juega en realidad XD»

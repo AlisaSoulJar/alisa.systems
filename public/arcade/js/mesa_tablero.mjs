@@ -36,6 +36,7 @@
 import { crearPintor3d } from './protohub/render/pintar3d.js';
 import { pintarJugadas } from './protohub/jugadas.js';
 import { crearMarcas, VERDE, MORADO } from './protohub/marcas.js';
+import { pintarHistorial } from './protohub/historial.js';
 import { volcarMesa, volcando, ponerBoton } from './protohub/render/volcar.js';
 
 const hub = window.ALISA_PROTOHUB;
@@ -114,7 +115,11 @@ if (caja && !caja.querySelector('#mesa-jugadas')) {
     caja.innerHTML =
         `<div class="overlay"><div class="hud-panel"><div class="hud-header">`
       + `<h1>${window.ALISA_TITULO ?? juego}</h1></div>`
-      + `<div id="hud-content"><div id="estado-txt" class="status-row"></div></div>`
+      + `<div id="hud-content"><div id="estado-txt" class="status-row"></div>`
+      // El registro va DENTRO del plegado, al contrario que los botones: es para
+      // entender lo que ha pasado, no para jugar. Quien pliega el panel quiere ver
+      // la mesa, y lo único que no puede perder son las jugadas.
+      + `<div id="mesa-historial" class="historial"></div></div>`
       // ⚠️ La caja de jugadas va FUERA de `#hud-content`, hermana suya. Plegar el
       // panel deja `#hud-content` con `max-height: 0` y `overflow: hidden`, y en
       // pantalla estrecha el panel arranca plegado: con los botones dentro, la mesa
@@ -606,6 +611,30 @@ async function refrescar() {
         // Señalar un botón enseña dónde cae; soltarlo devuelve lo que tenías cogido.
         alSeñalar: (m) => (m === null ? marcarSeleccion() : marcarJugada(m)),
         enviar: (m) => { hub.move(juego, { move: m }); refrescar(); },
+    });
+
+    // Lo que ha pasado, y que se puede volver a jugar. La semilla a la vista no es
+    // un adorno técnico: es la respuesta a «esto está amañado», que es la queja más
+    // repetida de los sitios de cartas y la única que no se contesta con palabras.
+    const rec = hub.partida(juego) ?? {};
+    pintarHistorial(document.getElementById('mesa-historial'), {
+        juego, semilla: rec.semilla, jugadas: rec.jugadas, autores: rec.autores,
+        /**
+         * ⚠️ `yo` VA VACÍO EN LA MESA LOCAL, Y ES A PROPÓSITO.
+         *
+         * Lo puse primero como `st.turn` y quedaba bonito —las jugadas propias en
+         * verde— hasta que se mira lo que significa: `turn` es DE QUIÉN ES EL TURNO
+         * AHORA, no quién soy yo. Así que el color se daba la vuelta en cada jugada
+         * y el mismo movimiento aparecía tuyo o ajeno según cuándo miraras.
+         *
+         * Y en la mesa local no hay un «yo» que valga: aquí se juegan los dos lados
+         * salvo que la casa lleve uno, y eso lo decide un desplegable del motor que
+         * esta mesa no ve. En una sala compartida sí lo hay —tu asiento— y allí se
+         * pasa de verdad.
+         *
+         * Antes que enseñar una distinción que cambia de sentido cada turno, ninguna.
+         */
+        yo: null,
     });
 }
 refrescar();

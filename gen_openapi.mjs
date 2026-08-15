@@ -16,10 +16,102 @@
  * un modelo alucine una jugada. Un agente no tiene que adivinar el formato —
  * cada respuesta le trae la lista de lo que puede pedir a continuación.
  */
-import { writeFile } from 'node:fs/promises';
+import { writeFile, readdir, readFile } from 'node:fs/promises';
 import { JUEGOS, TITULOS } from './public/arcade/js/protohub/rules/index.js';
 
 const BASE = process.env.ALISA_MESAS ?? 'https://alisa-mesas.prime-6d5.workers.dev';
+const SITIO = 'https://alisa.systems';
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ LAS PUERTAS TAMBIÉN SE DERIVAN. ANTES SE ESCRIBÍAN A MANO Y FALTABAN CINCO.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Arriba está escrito que un contrato copiado a mano se separa del servidor en la
+ * primera semana. Esa doctrina se aplicó a la LISTA DE JUEGOS —que sale de
+ * `rules/index.js`— y no a las RUTAS, que iban escritas aquí una a una.
+ *
+ * Resultado medido el 15-08-2026: el documento declaraba TRES puertas y el sitio
+ * servía OCHO. Faltaban las cuatro `/api/*` —incluida `/api/gym`, que es justo por
+ * donde entraría un agente, y `/api/verificar`, que es toda la historia de que aquí
+ * una partida se vuelve a jugar— y el buzón de avisos del árbitro.
+ *
+ * Y es peor que no tener contrato: quien lo lee cree que ya lo ha visto todo y no
+ * busca más. La razón de publicarlo es que alguien escriba un cliente sin leerse
+ * nuestro código; uno incompleto no ahorra ese trabajo, lo esconde.
+ *
+ * Ahora las `/api/*` se leen de la CARPETA —Cloudflare Pages publica cada
+ * `functions/api/<x>.js` en `/api/<x>`, así que el disco es la verdad— y las del
+ * árbitro de los `accion === '...'` de su código. Una puerta nueva aparece sola.
+ *
+ * Lo que sigue a mano es la DESCRIPCIÓN, que ninguna máquina puede adivinar. Y una
+ * puerta sin descripción sale igualmente, diciendo que le falta: es mejor una línea
+ * fea en el contrato que una puerta invisible.
+ */
+const DESCRITAS = {
+    '/api/gym': {
+        get: ['gymHelp', 'What this is and how to play it',
+              'Returns its own instructions, so an agent that lands here does not have to read our source to take the first step.'],
+        post: ['gymStep', 'Send the whole match; it is replayed from the seed',
+               'The stateless door, and the one an agent wants when there is nobody else to wait for. You send `{juego, semilla, jugadas}` — the entire match, not a delta — and the server replays it from scratch and answers with the position after it.\n\n**The score is never sent, only recomputed.** There is no session and nothing to trust: the same three fields always produce the same answer, so a run is reproducible by anyone and cheating consists of nothing.\n\n`acciones` is the list of legal moves right now. Append one to `jugadas` and post again.'],
+    },
+    '/api/verificar': {
+        post: ['verify', 'Replay a receipt and say whether it holds',
+               'Give it `{juego, semilla, jugadas}` and it plays the match again to see if every move was legal and what the score really was. There is no judge model: the check is arithmetic, and anyone can run it against a receipt they did not produce.\n\n`declarados` is what the sender claimed; `puntos` is what the replay found. When they differ, the replay wins.'],
+    },
+    '/api/dataset': {
+        get: ['datasetInfo', 'The corpus of verified matches',
+              'Every row was replayed by this server before being stored, and the score kept is the recomputed one — never the declared one.'],
+        post: ['datasetContribute', 'Contribute a match',
+               'Send `{juego, semilla, jugadas, tipo}`. It is replayed before being accepted; if the replay disagrees, it is not stored. `tipo` says who played — person, agent or policy — so the table can compare like with like.'],
+    },
+    '/api/presencia': {
+        get: ['presence', 'Who is at the arcade right now',
+              'People, agents and policies currently playing, split by kind.'],
+        post: ['presenceAnnounce', 'Announce yourself',
+               'Send `{nombre, tipo}` to appear in the list. `tipo` defaults to person.'],
+    },
+    '/mesa/{sala}/reporte': {
+        post: ['report', 'Report something odd, with the receipt attached',
+               'The «¿algo va raro?» button of the arcade. It sends the comment together with `{juego, semilla, jugadas}`, so a complaint from a stranger becomes a match anybody can replay. That is the difference between an anecdote and a bug report.'],
+    },
+};
+
+/** Las puertas que existen de verdad, leídas del disco. */
+async function puertasReales() {
+    const rutas = new Set();
+    for (const f of await readdir('./functions/api').catch(() => [])) {
+        if (f.endsWith('.js')) rutas.add(`/api/${f.replace(/\.js$/, '')}`);
+    }
+    const arbitro = await readFile('./worker-mesas/mesas.js', 'utf-8').catch(() => '');
+    for (const m of arbitro.matchAll(/accion === '(\w+)'/g)) {
+        // `reportes` es el plural de `reporte` y comparten manejador: una puerta.
+        if (m[1] !== 'reportes') rutas.add(`/mesa/{sala}/${m[1]}`);
+    }
+    return rutas;
+}
+
+/** El bloque de una puerta: su descripción si la tiene, y si no un aviso honesto. */
+function bloqueDe(ruta) {
+    const d = DESCRITAS[ruta];
+    if (!d) {
+        return {
+            post: {
+                operationId: ruta.replace(/[^a-z]+/gi, '_'),
+                summary: 'Undocumented door',
+                description: 'This endpoint exists but nobody has described it yet. '
+                           + 'It is listed because a door you cannot see is worse than one described badly.',
+                responses: { '200': { description: 'Undocumented.' } },
+            },
+        };
+    }
+    const fuera = {};
+    for (const [metodo, [operationId, summary, description]] of Object.entries(d)) {
+        fuera[metodo] = { operationId, summary, description,
+                          responses: { '200': { description: summary } } };
+    }
+    return fuera;
+}
 
 /**
  * ⚠️ ESTA PUERTA HABLA INGLÉS, Y CON LOS NOMBRES QUE EL ESTADO YA USA.
@@ -171,6 +263,33 @@ const doc = {
     'x-games': Object.fromEntries(JUEGOS.map(j => [j, TITULOS[j] ?? j])),
 };
 
+/**
+ * Y se añaden las que existen y no estaban. Las escritas arriba a mano se dejan
+ * como están: llevan sus esquemas completos, que es más de lo que esto sabe poner.
+ */
+const reales = await puertasReales();
+let añadidas = 0;
+for (const r of [...reales].sort()) {
+    if (doc.paths[r]) continue;
+    doc.paths[r] = bloqueDe(r);
+    añadidas++;
+}
+// Y el segundo servidor, que es donde viven las `/api/*`. Sin él, un cliente
+// generado desde este documento pediría `/api/gym` al worker de mesas.
+if ([...reales].some(r => r.startsWith('/api/'))) {
+    doc.servers.push({
+        url: SITIO,
+        description: 'The site itself: the stateless gym, the verifier, the corpus '
+                   + 'and presence. No room, no seat, no waiting for anyone.',
+    });
+}
+
 const ruta = process.argv[2] ?? 'public/openapi.json';
 await writeFile(ruta, JSON.stringify(doc, null, 2) + '\n', 'utf-8');
-console.log(`  openapi: ${JUEGOS.length} juegos, 3 endpoints → ${ruta}`);
+const sinDescribir = [...reales].filter(r => !DESCRITAS[r] && !r.match(/^\/mesa\/\{sala\}(\/(sentarse|jugar))?$/));
+console.log(`  openapi: ${JUEGOS.length} juegos, ${Object.keys(doc.paths).length} puertas`
+          + ` (${añadidas} derivadas del disco) → ${ruta}`);
+if (sinDescribir.length) {
+    console.log(`  ⚠ sin describir: ${sinDescribir.join(', ')} — salen listadas, pero`);
+    console.log(`    una puerta con descripción de relleno es media puerta.`);
+}

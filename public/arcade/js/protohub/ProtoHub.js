@@ -83,6 +83,13 @@ export class ProtoHub {
             semilla: g.semilla,
             jugadas: [...g.jugadas],
             /**
+             * Quién hizo cada una. Va DESPUÉS de `jugadas` y en su propio campo para
+             * que quede claro que no forma parte de lo que se verifica: el recibo se
+             * re-simula con `{juego, semilla, jugadas}` y nada más. Esto es para
+             * poder CONTAR la partida, no para probarla.
+             */
+            autores: [...(g.autores ?? [])],
+            /**
              * ⚠️ LAS NORMAS, SI EL JUEGO TIENE NORMAS VARIABLES.
              *
              * Damas es el primero: `damaVuela` y `peonComeAtras`. Con una variable
@@ -267,11 +274,12 @@ export class ProtoHub {
             }
             const j = reglas.sugerencia(partida);
             if (!j) return { ok: false, error: 'no hay jugada posible' };
+            const quien = this._deQuienEsElTurno(reglas, partida);
             const ok = reglas.mover(partida, j);
             // La jugada de la casa TAMBIÉN se graba: la partida es la traza
             // completa, no solo lo que hizo el jugador. Si faltara, al
             // re-simularla saldría otro tablero.
-            if (ok && grabacion) grabacion.jugadas.push(j);
+            if (ok && grabacion) { grabacion.jugadas.push(j); grabacion.autores.push(quien); }
             return { ok, jugada: j };
         }
 
@@ -293,9 +301,33 @@ export class ProtoHub {
             this.reset(juegoId);
             return { ok: true, nueva: true };
         }
+        const quien = this._deQuienEsElTurno(reglas, partida);
         const ok = reglas.mover(partida, jugada);
-        if (ok && grabacion) grabacion.jugadas.push(jugada);
+        if (ok && grabacion) { grabacion.jugadas.push(jugada); grabacion.autores.push(quien); }
         return ok ? { ok: true } : { ok: false, error: `jugada ilegal: ${jugada}` };
+    }
+
+    /**
+     * ⚠️ QUIÉN HIZO CADA JUGADA. SE PREGUNTA ANTES DE MOVER, QUE ES LO ÚNICO QUE VALE.
+     *
+     * El recibo `{juego, semilla, jugadas}` es la traza completa y sirve para
+     * re-simular, pero es MUDO: dice qué pasó y no quién lo hizo. Y eso importa por
+     * un motivo concreto y documentado — en los sitios de cartas más usados hay
+     * hilos enteros de gente convencida de que el reparto está amañado. Sin un
+     * registro visible, perder se lee como trampa.
+     *
+     * Nosotros tenemos la respuesta buena —la partida se puede volver a jugar— pero
+     * hasta ahora vivía en el recibo y no se veía por ningún sitio.
+     *
+     * El autor NO se puede deducir después: `turn` ya ha cambiado. Hay que
+     * preguntarlo antes de aplicar la jugada, que es lo que hace esto.
+     *
+     * Va aparte de `jugadas` a propósito: el verificador re-simula desde `{juego,
+     * semilla, jugadas}` y no debe depender de esto. Un dato de presentación que se
+     * cuela en la prueba de validez es un dato que un día invalida un recibo bueno.
+     */
+    _deQuienEsElTurno(reglas, partida) {
+        try { return reglas.estado(partida)?.turn ?? null; } catch { return null; }
     }
 
     /** Empieza de cero. Y empieza también la grabación. */
@@ -337,6 +369,9 @@ export class ProtoHub {
             // transforman por dentro y el recibo tiene que llevar la que vale.
             semilla: p?.semilla ?? semilla,
             jugadas: [],
+            // Quién hizo cada una, en paralelo. No entra en el recibo que se
+            // verifica: es para poder CONTAR la partida, no para probarla.
+            autores: [],
         });
         return p;
     }
