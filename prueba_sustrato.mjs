@@ -38,7 +38,18 @@ globalThis.fetch = async (e, i) => {
  * Si esta prueba falla porque el número creció, es que se añadió un juego sin
  * sustrato propio — y eso es exactamente lo que no queremos que pase callando.
  */
-const TECHO_DERIVADOS = 19;
+/**
+ * ⚠️ ESTABA EN 19 CON LA DEUDA YA EN 17, Y ESO ES UN TRINQUETE FLOJO.
+ *
+ * Dos de holgura no parecen nada y son justo el hueco por el que se cuela lo que
+ * este número existe para impedir: `prueba_de_las_pruebas.mjs` le quitó el sustrato
+ * a las damas a propósito, la deuda subió a 18, y esta comprobación **aprobó**.
+ *
+ * La prueba llevaba diciéndolo en cada pasada —«↓ la deuda bajó. Actualiza
+ * TECHO_DERIVADOS a 17»— y nadie lo hacía, porque salía en verde y un aviso en verde
+ * no lo lee nadie. Un trinquete que no se aprieta cuando avanza no aprieta.
+ */
+const TECHO_DERIVADOS = 17;
 
 let fallos = 0;
 const mal = (m) => { fallos++; console.log(`  ✗ ${m}`); };

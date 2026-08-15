@@ -63,15 +63,48 @@ for (const f of await hojas(path.join(AQUI, 'public'))) {
      */
     let dentro = false, abrio = 0, linea = 1, i = 0;
     const fallos = [];
+    /**
+     * ⚠️ Y SE CUENTAN LAS LLAVES DE FUERA DE LOS COMENTARIOS. AQUÍ ESTABA EL AGUJERO.
+     *
+     * Esta prueba sólo miraba el BALANCE de `/*` y `*` `/`, y con eso se le escapaba
+     * el caso peor: una apertura DE MÁS. Si alguien abre un comentario delante de una
+     * regla, se cierra solo con el siguiente cierre legítimo —el balance sigue
+     * cuadrando— y entre medias desaparecen todas las reglas que hubiera.
+     *
+     * Lo encontró `prueba_de_las_pruebas.mjs` el 15-08: comentó `.repetir-mandos {` a
+     * propósito y esta comprobación aprobó tan contenta. O sea que llevaba desde que
+     * se escribió vigilando la mitad del fallo que dice vigilar — y la mitad que se
+     * dejaba es justo la que se come reglas.
+     *
+     * Las llaves lo delatan sin heurísticas: al tragarse la apertura `{`, su `}` se
+     * queda huérfana fuera del comentario y el recuento se descuadra. Un CSS sano
+     * tiene las llaves balanceadas; uno con una regla medio comida, no.
+     */
+    let llaves = 0, ultimaLlaveSuelta = 0, comillas = null;
     while (i < txt.length) {
         if (txt[i] === '\n') { linea++; i++; continue; }
         const dos = txt.slice(i, i + 2);
         if (!dentro && dos === '/*') { dentro = true; abrio = linea; i += 2; continue; }
         if (!dentro && dos === '*/') { fallos.push(`línea ${linea}: cierre sin apertura`); i += 2; continue; }
         if (dentro && dos === '*/') { dentro = false; i += 2; continue; }
+        if (!dentro) {
+            const c = txt[i];
+            // Las comillas se saltan: `content: "{"` es CSS legítimo y contaría mal.
+            if (comillas) { if (c === comillas && txt[i - 1] !== '\\') comillas = null; }
+            else if (c === '"' || c === "'") comillas = c;
+            else if (c === '{') llaves++;
+            else if (c === '}') { llaves--; if (llaves < 0) { ultimaLlaveSuelta = linea; llaves = 0; } }
+        }
         i++;
     }
     if (dentro) fallos.push(`comentario abierto en la línea ${abrio} y nunca cerrado`);
+    if (ultimaLlaveSuelta) {
+        fallos.push(`línea ${ultimaLlaveSuelta}: un «}» sin su «{` + `» — puede que un comentario`
+            + ` se haya tragado el principio de una regla`);
+    }
+    if (llaves > 0) {
+        fallos.push(`quedan ${llaves} «{» sin cerrar — alguna regla se quedó a medias`);
+    }
 
     const rel = path.relative(AQUI, f).replace(/\\/g, '/');
     if (fallos.length) malas.push({ rel, fallos });

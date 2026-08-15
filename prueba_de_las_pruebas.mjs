@@ -1,0 +1,245 @@
+/**
+ * prueba_de_las_pruebas.mjs — ¿saben fallar nuestras comprobaciones?
+ * ═══════════════════════════════════════════════════════════════════════════
+ *     node prueba_de_las_pruebas.mjs            todas
+ *     node prueba_de_las_pruebas.mjs repetidor  una
+ *
+ * ⚠️ POR QUÉ EXISTE: EN UN SOLO DÍA, CINCO INSTRUMENTOS MINTIERON.
+ *
+ * No uno. Cinco, el 15-08-2026, y ninguno daba error — todos salían en verde:
+ *
+ *   · `prueba_repetidor` aprobaba `crearRepetidorZZZ` porque buscaba
+ *     `crearRepetidor` y una cadena contiene a la otra;
+ *   · `prueba_teclado` aprobó DOS veces seguidas con el cable cortado: primero
+ *     porque el nombre saboteado seguía apareciendo en el fichero, y luego porque
+ *     la DEFINICIÓN de la función se hacía pasar por una llamada;
+ *   · la comprobación de valor de `legibilidad` no saltaba ni con el umbral a 200,
+ *     porque estaba dentro de un bucle que descartaba antes casi todos los pares;
+ *   · `tacto` medía si el estado cambiaba al pulsar, y en los juegos con reloj
+ *     propio el estado lo cambia el reloj: sus 5/5 eran tan casuales como sus 3/5;
+ *   · y una medida mía del «tablero tapado» daba 20 % antes del arreglo y 31 %
+ *     después, con la imagen claramente mejor, porque metía las LUCES en la caja.
+ *
+ * Cinco en un día es un patrón, no mala suerte. Y todos comparten forma: **nadie
+ * había comprobado nunca que pudieran suspender**. Una comprobación que no puede
+ * fallar no es una comprobación: es una frase que sale en verde.
+ *
+ * ⚠️ QUÉ HACE ESTO, Y POR QUÉ NO ES «PROBAR LAS PRUEBAS» POR DEPORTE.
+ *
+ * Para cada comprobación de `npm test` hay un SABOTAJE declarado: un cambio
+ * concreto que rompe justo lo que esa prueba dice vigilar. Se aplica, se corre la
+ * prueba, y **tiene que suspender**. Si sale verde con el cable cortado, la prueba
+ * está muerta y este fichero lo dice.
+ *
+ * Es la disciplina que hoy he aplicado a mano cinco veces, automatizada — porque
+ * hacerlo a mano depende de que me acuerde, y hoy se me olvidó dos veces seguidas
+ * en el mismo fichero.
+ *
+ * ⚠️ CÓMO SE PROTEGEN LOS FICHEROS DE VERDAD.
+ *
+ * El sabotaje toca ficheros del proyecto. Antes se guarda el contenido, se
+ * restaura SIEMPRE —pase lo que pase— y al final se verifica que todo quedó como
+ * estaba comparando el texto. Si algo no se pudo restaurar, se dice a gritos y se
+ * sale con error: es preferible un susto a dejar un sabotaje puesto.
+ *
+ * Y todo esto es recuperable con git, que es la red de debajo.
+ */
+import { readFile, writeFile } from 'node:fs/promises';
+import { spawn } from 'node:child_process';
+
+const verde = (s) => `\x1b[32m${s}\x1b[0m`;
+const rojo  = (s) => `\x1b[31m${s}\x1b[0m`;
+const gris  = (s) => `\x1b[90m${s}\x1b[0m`;
+
+/**
+ * Cada entrada dice: qué prueba, qué fichero romper, y con qué cambio.
+ *
+ * ⚠️ EL SABOTAJE TIENE QUE ROMPER LO QUE ESA PRUEBA VIGILA, NO CUALQUIER COSA.
+ *
+ * Meter un error de sintaxis haría suspender a cualquiera y no demostraría nada:
+ * probaría que node sabe leer. Cada sabotaje de aquí es el fallo REAL contra el que
+ * se escribió la prueba — quitarle las normas al enlace, dejar que las teclas jueguen
+ * mientras escribes, cambiar el sello de versión.
+ */
+const SABOTAJES = [
+    {
+        nombre: 'repetidor',
+        corre: 'node prueba_repetidor.mjs',
+        fichero: 'public/arcade/js/protohub/enlace_repetidor.js',
+        de: '.filter(([, v]) => v === true)',
+        a: '.filter(() => false)',
+        vigila: 'que el enlace lleve las normas variables (damas se repetía con otras reglas)',
+    },
+    {
+        nombre: 'teclado',
+        corre: 'node prueba_teclado.mjs',
+        fichero: 'public/arcade/js/Entrada.js',
+        de: 'if (estaEscribiendo()) return;',
+        a: '',
+        vigila: 'que escribir una frase no juegue la partida',
+    },
+    {
+        nombre: 'final',
+        corre: 'node prueba_final.mjs',
+        fichero: 'public/arcade/js/protohub/ProtoHub.js',
+        de: "if (jugada === 'nueva' || jugada === 'reset') {",
+        a: "if (jugada === '@nunca@') {",
+        vigila: 'que al terminar una partida se pueda empezar otra',
+    },
+    {
+        nombre: 'css',
+        corre: 'node prueba_css.mjs',
+        fichero: 'public/arcade/css/jugables.css',
+        de: '.repetir-mandos {',
+        a: '/* .repetir-mandos {',
+        vigila: 'que un comentario sin cerrar no se coma las reglas de debajo',
+    },
+    {
+        nombre: 'version',
+        corre: 'node prueba_version.mjs',
+        fichero: 'public/arcade/js/montarMesa.js',
+        de: 'const VERSION',
+        a: 'const VERSION_X',
+        vigila: 'que el sello del `?v=` corresponda al código que hay en disco',
+    },
+    {
+        nombre: 'objetivo',
+        corre: 'node prueba_objetivo.mjs',
+        fichero: 'public/arcade/js/protohub/rules/damas.js',
+        // Va dentro del objeto de reglas, no como `export const`: lo comprobé
+        // mirándolo, que es la única forma de que un sabotaje encaje de verdad.
+        de: '    OBJETIVO:',
+        a: '    OBJETIVO_QUITADO:',
+        vigila: 'que cada juego diga a qué se juega',
+    },
+    {
+        nombre: 'biblioteca',
+        corre: 'node prueba_biblioteca.mjs',
+        fichero: 'public/arcade/data/card_library.json',
+        de: '"spanish_40"',
+        a: '"spanish_40_ROTA"',
+        vigila: 'que los juegos de cartas lean el catálogo que se les indica',
+    },
+    {
+        nombre: 'lenguaje',
+        corre: 'node prueba_lenguaje.mjs',
+        fichero: 'public/arcade/js/protohub/descripcion.js',
+        // Se deja mudo al narrador: es exactamente el fallo contra el que nació esa
+        // prueba —«los 19 juegos jugaban a ciegas»—.
+        de: 'export function describirEstado',
+        a: 'export function describirEstado(...__a) { return ""; }\nfunction __viejo',
+        vigila: 'que cada juego sepa contar su estado a un agente sin vista',
+    },
+    {
+        nombre: 'sustrato',
+        corre: 'node prueba_sustrato.mjs',
+        fichero: 'public/arcade/js/protohub/rules/damas.js',
+        de: '    sustrato',
+        a: '    sustrato_QUITADO',
+        vigila: 'que el estado sea una matriz plana y no lo pierda ningún juego',
+    },
+    {
+        nombre: 'openapi',
+        corre: 'node prueba_openapi.mjs',
+        fichero: 'public/openapi.json',
+        de: '"/api/verificar"',
+        a: '"/api/verificar_QUITADA"',
+        vigila: 'que las puertas declaradas y las que existen sean las mismas',
+    },
+];
+
+/**
+ * Corre un comando y devuelve si SUSPENDIÓ. No se mira la salida: se mira el código
+ * de salida, que es el contrato de `npm test` — si una prueba no sale con error, la
+ * cadena entera sigue y el fallo pasa.
+ */
+function suspende(cmd) {
+    return new Promise((res) => {
+        const [bin, ...args] = cmd.split(' ');
+        const p = spawn(bin, args, { shell: true, stdio: 'ignore' });
+        p.on('close', (code) => res(code !== 0));
+        p.on('error', () => res(true));
+    });
+}
+
+const pedidos = process.argv.slice(2);
+const lista = pedidos.length
+    ? SABOTAJES.filter(s => pedidos.includes(s.nombre))
+    : SABOTAJES;
+
+console.log('\n¿SABEN FALLAR NUESTRAS COMPROBACIONES?');
+console.log(gris('  se rompe a propósito lo que cada una vigila, y tiene que suspender\n'));
+
+let malas = 0, sinRestaurar = [];
+
+for (const s of lista) {
+    const original = await readFile(s.fichero, 'utf8').catch(() => null);
+    if (original === null) {
+        console.log(`  ${rojo('✗')} ${s.nombre.padEnd(12)} no existe ${s.fichero}`);
+        malas++;
+        continue;
+    }
+    if (!original.includes(s.de)) {
+        /**
+         * Que el sabotaje ya no encaje NO es un detalle: significa que el código
+         * cambió y este fichero se quedó atrás. Un sabotaje que no se aplica haría
+         * pasar la prueba por buena sin haberla probado, que es exactamente el fallo
+         * que este instrumento existe para cazar — cometido aquí dentro.
+         */
+        console.log(`  ${rojo('✗')} ${s.nombre.padEnd(12)} el sabotaje ya no encaja: falta «${s.de.slice(0, 40)}»`);
+        console.log(gris(`      el código cambió y este fichero no. Hay que actualizar el sabotaje.`));
+        malas++;
+        continue;
+    }
+
+    let restaurado = false;
+    try {
+        await writeFile(s.fichero, original.split(s.de).join(s.a));
+        const suspendio = await suspende(s.corre);
+        await writeFile(s.fichero, original);
+        restaurado = true;
+
+        if (suspendio) {
+            console.log(`  ${verde('✓')} ${s.nombre.padEnd(12)} suspende ${gris('— ' + s.vigila)}`);
+        } else {
+            console.log(`  ${rojo('✗')} ${s.nombre.padEnd(12)} ${rojo('APRUEBA CON EL CABLE CORTADO')}`);
+            console.log(gris(`      dice vigilar: ${s.vigila}`));
+            console.log(gris(`      se rompió: ${s.fichero} · «${s.de.slice(0, 50)}»`));
+            malas++;
+        }
+    } finally {
+        if (!restaurado) {
+            // Segundo intento pase lo que pase: dejar un sabotaje puesto sería
+            // muchísimo peor que cualquier fallo que esto pueda encontrar.
+            await writeFile(s.fichero, original).catch(() => sinRestaurar.push(s.fichero));
+        }
+        const ahora = await readFile(s.fichero, 'utf8').catch(() => null);
+        if (ahora !== original) sinRestaurar.push(s.fichero);
+    }
+}
+
+if (sinRestaurar.length) {
+    console.log(`\n${rojo('⚠️  NO SE PUDO DEVOLVER A SU SITIO:')}`);
+    for (const f of sinRestaurar) console.log(rojo(`      ${f}`));
+    console.log(rojo('   RECUPÉRALOS CON `git checkout -- <fichero>` ANTES DE SEGUIR.'));
+    process.exit(2);
+}
+
+/**
+ * Las que todavía no tienen sabotaje se dicen, no se callan. Un «8 de 8 saben
+ * fallar» que esconde que hay siete sin mirar es la misma clase de media verdad que
+ * este fichero persigue.
+ */
+const CUBIERTAS = new Set(SABOTAJES.map(s => s.nombre));
+const TODAS = ['reglas', 'biblioteca', 'lenguaje', 'sustrato', 'objetivo', 'repetidor',
+               'final', 'teclado', 'css', 'openapi', 'version', 'semillas',
+               'gym_envs', 'funcion', 'preflight'];
+const faltan = TODAS.filter(n => !CUBIERTAS.has(n));
+
+console.log(`\n  ${lista.length} comprobaciones puestas a prueba`
+    + (malas ? rojo(` · ${malas} no saben fallar`) : verde(' · todas suspenden cuando deben')));
+if (!pedidos.length && faltan.length) {
+    console.log(gris(`  todavía sin sabotaje declarado (${faltan.length}): ${faltan.join(', ')}`));
+}
+console.log('');
+process.exit(malas ? 1 : 0);
