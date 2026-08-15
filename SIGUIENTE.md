@@ -150,6 +150,14 @@ El laboratorio es el que caza lo que vive entre las reglas y la pantalla, que es
 donde estaban casi todos los fallos de esta semana. Deja 31 capturas: mirarlas es
 medio minuto y ninguna prueba lo sustituye.
 
+**Lo que NO cubre ningún instrumento:** que el repetidor funcione de verdad en el
+navegador. `prueba_repetidor` comprueba que los cuatro caminos de panel tienen el
+cable y que el enlace basta para re-simular, pero eso es estructura y aritmética. Que
+la mesa repinte jugada a jugada se comprobó **a mano**, un juego por motor (ajedrez,
+blackjack, guerra, damas, fagocito). Meterlo en el laboratorio significaría abrir los
+35 dos veces y doblar sus diez minutos; no parece que compense hoy, pero conviene
+saber que ese hueco existe.
+
 **Y toda prueba nueva se rompe a propósito antes de creérsela.** No es ceremonia:
 `prueba_repetidor` cazó que el enlace no llevaba las `normas` sólo porque la
 saboteé para ver si sabía suspender, y su comprobación de cableado se quedó verde

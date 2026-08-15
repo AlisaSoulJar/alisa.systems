@@ -67,6 +67,24 @@ delante de ti y enseña por qué cae cada trampa.
 verificador cazarlo es una prueba.* Y es honesto en las dos direcciones: si un
 día una trampa colara, ese botón lo enseñaría.
 
+### Y el otro lado del mismo botón: mirarla
+
+Una partida copiada es una dirección, y esa dirección **la vuelve a jugar delante
+de quien la abra**, jugada a jugada, en la misma mesa:
+
+    /arcade/checkers.html?semilla=7&repetir=a3b4,b6a5,b4c5
+
+No es un vídeo — no hay fotogramas guardados en ninguna parte. Se reinicia con la
+semilla y se aplican las mismas jugadas con las mismas reglas, así que **un recibo
+falso se rompe al mirarlo**: el repetidor se para en la jugada exacta y dice cuál.
+
+Vale para los treinta y cinco juegos sin una línea por juego, porque sólo habla con
+el hub — reiniciar y mover, que es lo que hace jugar. El dibujo no se entera.
+
+Y en `/arcade/replays.html` está el corpus entero con esa vista: cada fila la ha
+vuelto a jugar el servidor antes de guardarla, y cualquiera puede abrirla y verla
+otra vez.
+
 **En la sala solo puntúa lo que juegas.** Pasear no da puntos — lo comprobamos
 midiendo: recorrer ocho estaciones, 0 puntos; catorce jugadas de blackjack, 14.
 
