@@ -59,9 +59,39 @@ const juegos = (pedidos.length ? pedidos : Object.keys(paginas)).filter(j => pag
  * inventado que parezca difícil, sino el que ya rompió una vez. Los tamaños que
  * fallaron de verdad valen más que los que uno imagina.
  */
+/**
+ * ⚠️ Y LA TERCERA ES UN MÓVIL, PORQUE SIN ELLA LA COMPROBACIÓN NUEVA NO VE NADA.
+ *
+ * Las dos de arriba son de escritorio, y ahí el panel es una columna lateral que
+ * deja libre el centro: `arribaLibre` vale 0 y no hay nada que esquivar. El fallo
+ * que destapó la comprobación de piezas escondidas —xiangqi con once de treinta y
+ * dos debajo del HUD— sólo ocurre en vertical, donde el panel ocupa el ancho entero
+ * y se come el 45% del alto.
+ *
+ * O sea que había escrito una comprobación que no podía ver el fallo para el que la
+ * escribí. Y no es casualidad que se me escapara: los avisos de betatester llegan de
+ * teléfonos —uno vino de una pantalla de 276 px— y aquí no se miraba ninguno.
+ */
 const FORMAS = [
     { nombre: 'ancho', width: 1280, height: 720 },
     { nombre: 'bajo',  width: 1366, height: 633 },
+    /**
+     * ⚠️ Y CON SU PROPIO LISTÓN DE «CUÁNTO TAPA EL PANEL».
+     *
+     * El 22% se calibró mirando escritorio, donde el panel es una columna estrecha a
+     * un lado. En vertical es una franja que ocupa el ancho entero: mide un 30% en
+     * xiangqi y un 24% en go, y eso NO es un fallo — es el diseño, y el tablero se
+     * coloca debajo a propósito.
+     *
+     * No subo el número para que se ponga verde: lo que hago es reconocer que el
+     * porcentaje era un sustituto de la pregunta buena —«¿se ve lo que hay que
+     * ver?»— y que en vertical ese sustituto ya no vale. Quien contesta la pregunta
+     * buena es la cuenta de piezas escondidas, que no depende de la forma.
+     *
+     * El 48% sigue siendo un tope real: un panel que se coma media pantalla vertical
+     * deja el juego en una rendija, y eso sí hay que saberlo.
+     */
+    { nombre: 'móvil', width: 390,  height: 844, topePanel: 48 },
 ];
 
 const b = await chromium.launch({ channel: 'chrome', headless: true });
@@ -134,6 +164,58 @@ for (const juego of juegos) {
             if (e && e.closest('.hud-panel')) panel++;
         }
 
+        /**
+         * ⚠️ ¿HAY PIEZAS DEBAJO DEL PANEL? NO ES LO MISMO QUE «CUÁNTO TAPA».
+         *
+         * Justo aquí abajo se mide qué porcentaje de pantalla ocupa el panel, y los
+         * treinta y cinco pasaban el listón del 22%. Pero un porcentaje bajo no
+         * impide que lo tapado sea justo lo único que hay que ver: en snake la
+         * comida sale a veces debajo del HUD, y en xiangqi móvil quedaban ONCE de
+         * treinta y dos piezas escondidas — con el panel ocupando un 18%.
+         *
+         * Así que se pregunta lo que importa: proyectar cada pieza con la cámara de
+         * verdad y contar cuántas caen dentro del rectángulo del panel.
+         *
+         * Sólo se puede en las mesas genéricas, que exponen `ALISA_PINTOR` y
+         * `ALISA_CAMARA`. Las de visualizador propio quedan sin medir y se DICE —
+         * contarlas como limpias sería peor que no mirarlas.
+         *
+         * ⚠️ SE PREGUNTA A LA MALLA, NO SE INTERPOLA SOBRE LA CAJA.
+         *
+         * La primera versión sacaba la posición de cada pieza interpolando sobre el
+         * `Box3` de la raíz. Esa caja incluye el FARO, que va metro y medio por
+         * encima del tablero, así que proyectaba todas las piezas por los aires — o
+         * sea dentro del panel. Daba «11 de 32 tapadas» ANTES y DESPUÉS del arreglo,
+         * exactamente igual, porque no medía las piezas: medía mi cuenta.
+         *
+         * Las matrices de instancia dicen dónde está cada pieza de verdad. Y se
+         * filtra por `p:` para no contar el suelo ni el faro.
+         */
+        let escondidas = null;
+        try {
+            const cam = window.ALISA_CAMARA, raiz = window.ALISA_PINTOR?.raiz;
+            const panelR = document.querySelector('.hud-panel')?.getBoundingClientRect();
+            if (cam && raiz && panelR) {
+                raiz.updateMatrixWorld(true);
+                const m = new THREE.Matrix4(), pos = new THREE.Vector3();
+                let vistas = 0;
+                escondidas = 0;
+                raiz.traverse((o) => {
+                    if (!o.isInstancedMesh || !o.count || !/^p:/.test(o.name || '')) return;
+                    for (let i = 0; i < o.count; i++) {
+                        o.getMatrixAt(i, m);
+                        m.premultiply(o.matrixWorld);
+                        pos.setFromMatrixPosition(m).project(cam);
+                        const px = (pos.x + 1) / 2 * W, py = (1 - pos.y) / 2 * H;
+                        vistas++;
+                        if (px >= panelR.left && px <= panelR.right
+                            && py >= panelR.top && py <= panelR.bottom) escondidas++;
+                    }
+                });
+                if (!vistas) escondidas = null;      // sin piezas: no hay nada que decir
+            }
+        } catch { escondidas = null; }
+
         /** ¿Hay jugadas pulsables? */
         const botones = document.querySelectorAll('.mesa-jugada').length;
 
@@ -142,7 +224,7 @@ for (const juego of juegos) {
         const ingles = EN_INGLES.filter(w => texto.includes(w));
 
         return {
-            bordes, botones, ingles,
+            bordes, botones, ingles, escondidas,
             panel: Math.round(100 * panel / (total || 1)),
         };
     }, { EN_INGLES, W: forma.width, H: forma.height });
@@ -152,7 +234,10 @@ for (const juego of juegos) {
     const tocados = Object.values(r.bordes).filter(n => n > 12).length;
     const quejas = [];
     if (tocados >= 2) quejas.push(`se sale por ${Object.entries(r.bordes).filter(([, n]) => n > 12).map(([k]) => k).join('/')}`);
-    if (r.panel > 22) quejas.push(`el panel tapa el ${r.panel}%`);
+    const topePanel = forma.topePanel ?? 22;
+    if (r.panel > topePanel) quejas.push(`el panel tapa el ${r.panel}% (tope ${topePanel})`);
+    // Una sola pieza escondida ya es una queja: no hay «poquito invisible».
+    if (r.escondidas > 0) quejas.push(`${r.escondidas} pieza(s) DEBAJO del panel`);
     if (!r.botones) quejas.push('sin jugadas pulsables');
     if (r.ingles.length) quejas.push(`en inglés (${r.ingles.slice(0, 3).join(', ')})`);
 

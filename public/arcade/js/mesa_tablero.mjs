@@ -257,6 +257,29 @@ function encajar() {
         // desconocido, escalar sólo lo conocido no sirve de nada — se ganaría por
         // un lado y se perdería por el otro.
         saltar: conNiebla ? SIN_NIEBLA : null,
+
+        /**
+         * ⚠️ CUÁNTO SE COME EL PANEL, PREGUNTADO Y NO SUPUESTO.
+         *
+         * Se mide el rectángulo del panel de verdad, ahora, en esta pantalla. Un
+         * número escrito a mano —«en móvil quita 200 px»— se queda viejo el día que
+         * el panel cambie de contenido, y anoche cambió tres veces.
+         *
+         * Sólo cuenta si el panel llega hasta ARRIBA: en escritorio es una columna
+         * lateral que empieza arriba pero deja libre todo el centro y la derecha, y
+         * ahí no hay nada que esquivar. En móvil ocupa el ancho entero y sí.
+         *
+         * El umbral de 0,6 de ancho es lo que distingue «columna» de «franja». Y si
+         * sale 0 —veintinueve de treinta casos medidos— esto no toca nada.
+         */
+        arribaLibre: (() => {
+            const r = document.querySelector('.hud-panel')?.getBoundingClientRect();
+            if (!r || r.height < 1) return 0;
+            const anchoPantalla = window.innerWidth || 1;
+            const altoPantalla = window.innerHeight || 1;
+            if (r.width / anchoPantalla < 0.6) return 0;   // columna lateral: no estorba
+            return Math.max(0, Math.min(0.5, r.bottom / altoPantalla));
+        })(),
     });
     encuadrado = true;
 }

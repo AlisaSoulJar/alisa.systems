@@ -84,6 +84,10 @@
             // apartarse hasta que quepa lo que NO sabes deja la partida en una
             // esquina de tres centímetros.
             saltar = null,
+            // Cuánto de la parte de ARRIBA de la pantalla se come el panel, en
+            // unidades de pantalla (0,25 = un cuarto). Por defecto 0: quien no lo
+            // pase encuadra exactamente como siempre.
+            arribaLibre = 0,
         } = cfg || {};
         if (!camara || !objeto) return null;
 
@@ -100,12 +104,40 @@
             for (const y of [caja.min.y, caja.max.y])
                 for (const z of [caja.min.z, caja.max.z]) esquinas.push(new THREE.Vector3(x, y, z));
 
+        /**
+         * ⚠️ EL SITIO LIBRE NO ES TODA LA PANTALLA: EL PANEL OCUPA UN TROZO.
+         *
+         * Medido el 15-08-2026 en los treinta y cinco, proyectando cada pieza y
+         * mirando si su punto cae dentro del rectángulo del HUD: de treinta medidas
+         * sólo UNA sale mal —xiangqi en móvil, once de treinta y dos piezas debajo
+         * del panel—. Su tablero es 9x10, más alto que ancho, así que al encajarlo
+         * por altura se sube hasta la franja del panel.
+         *
+         * Iba a mover el objetivo de cámara en las quince mesas por una corazonada.
+         * El número dijo que no hacía falta, y esa media hora de medir vale más que
+         * el arreglo: `arribaLibre` es 0 en veintinueve de los treinta casos, o sea
+         * que esto no le toca un píxel a quien no lo necesita.
+         *
+         * `arribaLibre` va en unidades de pantalla (0 = nada tapado, 1 = todo). Se usa
+         * dos veces y las dos hacen falta:
+         *
+         *   · para ENCOGER — el tablero tiene que caber en la altura que queda, no en
+         *     la pantalla entera;
+         *   · para BAJAR — y así centrarse en el hueco libre en vez de en la pantalla.
+         *
+         * Sólo lo primero deja el tablero pequeño y centrado, o sea con un hueco
+         * muerto abajo y pegado al panel. Sólo lo segundo lo baja pero se sale por
+         * abajo. Lo probé en ese orden y las dos veces se veía en la captura.
+         */
+        const libre = Math.max(0, Math.min(0.6, arribaLibre));
+        const margenY = margen * (1 - libre);
+
         const cabe = () => {
             camara.updateMatrixWorld();
             camara.updateProjectionMatrix();
             return esquinas.every((e) => {
                 const v = e.clone().project(camara);
-                return Math.abs(v.x) < margen && Math.abs(v.y) < margen;
+                return Math.abs(v.x) < margen && Math.abs(v.y) < margenY;
             });
         };
 
@@ -117,6 +149,44 @@
             camara.lookAt(c);
             if (cabe()) break;
             d *= paso;
+        }
+
+        /**
+         * ⚠️ Y ADEMÁS SE BAJA, QUE SI NO SÓLO ENCOGE.
+         *
+         * Exigir más aire arriba aparta la cámara hasta que el tablero cabe bajo el
+         * panel, pero el tablero sigue CENTRADO en la pantalla: queda pequeño y con
+         * un hueco muerto abajo. Encoger de más es pagar dos veces por el mismo
+         * problema.
+         *
+         * Subiendo la cámara por su propio eje vertical, la imagen baja. Se baja la
+         * mitad de lo que ocupa el panel, que es lo que hace falta para centrar el
+         * tablero en el sitio que QUEDA en vez de en la pantalla entera.
+         *
+         * `d * tanV` es la media altura visible a esa distancia: mover la cámara esa
+         * cantidad desplaza la imagen una pantalla entera, así que la cuenta sale
+         * directa.
+         */
+        /**
+         * ⚠️ Y EL DESPLAZAMIENTO TIENE QUE IR TAMBIÉN AL `target` DE LOS CONTROLES.
+         *
+         * La primera versión movía la cámara y su punto de mira, y no pasaba NADA:
+         * medido, la pieza más alta se quedaba en 333 px sin el arreglo y en 335 con
+         * él. Dos píxeles.
+         *
+         * `OrbitControls.update()` —que se llama tres líneas más abajo para subir el
+         * tope de alejarse— vuelve a apuntar la cámara a SU `target`, que sigue en el
+         * centro del tablero. Deshacía el desplazamiento entero justo después de
+         * hacerlo. El síntoma era el de siempre: «el arreglo no cambia la medida».
+         */
+        if (arribaLibre > 0.001) {
+            const tanV = Math.tan((camara.fov * Math.PI) / 360);
+            const arriba = new THREE.Vector3(0, 1, 0).applyQuaternion(camara.quaternion);
+            const salto = arriba.multiplyScalar(arribaLibre * d * tanV);
+            const mira = c.clone().add(salto);
+            camara.position.add(salto);
+            camara.lookAt(mira);
+            if (controles) controles.target.copy(mira);
         }
 
         // El tope de alejarse sube con la distancia que ha hecho falta: si no, los
