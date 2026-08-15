@@ -198,8 +198,49 @@ de esta lista los aprobaban los tres.
    no es un dado boca abajo. En cuanto se tira sale perfecto (comprobado: 1, 1, 4, 5,
    6 bien legibles en losas blancas), así que es sólo la primera pantalla. Que es,
    justamente, la que ve quien abre el juego.
-9. **En las mesas de cartas, el panel tapa el descarte y las manos rivales salen
-   desperdigadas.** Visto en unit: las cartas del rival caen por la mesa en ángulos
+9. **EL DESCARTE DEBAJO DEL PANEL: MEDIDO, ACOTADO, Y DOS INTENTOS FALLIDOS.**
+
+   Proyectando cada pieza de la mesa a pantalla, con el panel desplegado a 1280x720:
+
+       entropy   descarte en x=275, el panel llega a 340   → TAPADO
+       remigio   descarte en x=159                          → TAPADO
+       unit      descarte en x=357                          → a 16 px del borde
+       brisca · tute · hearts · spades · gofish · guerra: sin descarte en mesa
+
+   O sea **dos de once**, no «las mesas de cartas». En entropy importa de verdad —de
+   ahí se roba, es la jugada— y encima es el juego del aviso del betatester.
+
+   ⚠️ **«Las manos rivales salen desperdigadas» ERA FALSO.** No están desperdigadas:
+   se salen de la pantalla (`mano_2_0` de x=−420 a 141, `mano_3_0` de 1137 a 1703) y
+   eso es **deliberado y está explicado dos veces en `mesa_cartas.mjs`**: están boca
+   abajo, de ellas sólo hace falta contar, y se sacrifican para que TU mano se lea
+   (medido: el 72 % del semiancho). Otra lectura de captura que no sobrevivió a medir.
+
+   ⚠️ **DOS INTENTOS DE APARTAR LA CÁMARA, LOS DOS PEOR. NO SE REPITAN A CIEGAS.**
+
+   La idea era portar el `apartarDelPanel` del motor de tablero: correr cámara y
+   objetivo juntos, mirando sólo mesa y mano propia —nunca las ajenas, que sacarían
+   un desplazamiento de cientos de píxeles y desharían la decisión de arriba— y sin
+   pasar del hueco libre por la derecha. La aritmética estaba bien (remigio pedía
+   193 px y le sobraban 261). Lo que falla es otra cosa:
+
+       signo −   entropy descarte −50 (fuera por la izquierda) · remigio mano a 1240
+       signo +   entropy 344 (bien)                            · remigio descarte a 37
+
+   El mismo signo mueve dos mesas en sentidos contrarios, así que no es un signo: es
+   que `acercar()` arranca de `controls.target`, esto lo desplaza, y las dos cosas se
+   pisan entre refrescos. Le puse un «deshacer el desplazamiento anterior» y siguió
+   descuadrando, porque `acercar` ya había recolocado la cámara por su cuenta en
+   medio.
+
+   Se revirtió entero. **Quien lo retome que empiece por ahí**: hace falta que el
+   apartado y `acercar()` no se pisen —un solo sitio que decida la posición final, o
+   guardar la posición calibrada como hace `SovereignBoardEngine` con
+   `_camaraOriginal`— antes de tocar un solo signo. Y que el dato importa poco: la
+   cuenta de cartas de cada montón ya sale en el panel en texto.
+
+10. ~~En las mesas de cartas, el panel tapa el descarte y las manos rivales salen
+   desperdigadas.~~ (sustituido por el punto 9) Visto en unit: las cartas del rival caen por la mesa en ángulos
    sueltos —parecen tiradas, no una mano— y el montón de descarte queda medio debajo
    del panel. Lo del panel es el mismo problema que ya se arregló en el motor de
    tablero con `izquierdaLibre`: falta aplicarlo aquí, midiendo antes si su cámara lo
