@@ -311,27 +311,36 @@
    acabar en 772, o sea que el tope ni se aplicaba. Pelearme con la cascada a ciegas
    ya me ha costado dos rondas.
 
-   ⚠️ ASÍ QUE LA TIRA SE ANCLA A LA PANTALLA Y NO AL PANEL.
+   ⚠️ Y EL TERCER INTENTO —ANCLAR LA TIRA A LA PANTALLA— ARREGLÓ ESTO Y ROMPIÓ OTRA.
 
-   Los botones de jugada son la interfaz completa —está escrito en `jugadas.js`— así
-   que su sitio no puede depender de lo alto que le salga el HUD a cada juego. El
-   ajedrez lleva minimapa, dos desplegables de asiento, casillas de modelo, caja de
-   texto y tres botones más: con eso encima, la tira empieza tan abajo que se sale.
+   Con `position: fixed` los veinte botones caben, sí: medido, 10 fuera → 0. Pero la
+   tira sale del flujo y se pinta ENCIMA de lo que haya debajo — o sea encima de los
+   desplegables de asiento, la caja de texto y el botón de enviar del propio panel.
+   Se ve en la captura: «persona vs FSM · casa» y «ENVIAR» asomando por debajo de
+   `f2f3` y `g2g3`. Cambié un desbordamiento por un solapamiento.
 
-   Anclada, están siempre en el mismo sitio, siempre dentro, y por encima de los
-   mandos de la esquina. Y se desplaza sola si hay muchas — un go son 362.
+   ⚠️ LO QUE SÍ VALE: QUE EL PANEL SE DESPLACE, Y SÓLO DONDE PUEDE.
+
+   El panel lleva `pointer-events: none` para que los clics pasen al tablero, y un
+   contenedor sin puntero no se desplaza. Pero esa regla existe por el caso MÓVIL,
+   donde el panel ocupa todo el ancho y se pone encima de la mesa. En escritorio es
+   una columna a la izquierda y el tablero empieza a su derecha: ahí no tapa nada, y
+   devolverle el puntero no le quita un solo clic al juego.
+
+   Así que el desplazamiento va en una consulta de medios, en el único sitio donde
+   hace falta —una pantalla ancha y baja— y donde además es seguro.
    ═══════════════════════════════════════════════════════════════════════════ */
-#mesa-jugadas {
-    position: fixed;
-    left: 16px;
-    bottom: 74px;                     /* justo encima de los mandos */
-    z-index: 20;
-    max-width: min(320px, calc(100vw - 32px));
-    max-height: 38vh;
-    overflow-y: auto;
-    /* Que se vea que hay más abajo. */
-    mask-image: linear-gradient(to bottom, #000 92%, transparent);
-    -webkit-mask-image: linear-gradient(to bottom, #000 92%, transparent);
+@media (min-width: 820px) {
+    .hud-panel {
+        pointer-events: auto;
+        /* Los 96 px de abajo son para los mandos: con `- 32px` el panel llegaba
+           hasta ellos y la última fila de botones quedaba detrás del icono de
+           pantalla completa. Se ve en la captura, no en ninguna cuenta. */
+        max-height: calc(100vh - 96px);
+        overflow-y: auto;
+        /* Que se vea que hay más abajo cuando lo hay. */
+        overscroll-behavior: contain;
+    }
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
