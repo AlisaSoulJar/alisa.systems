@@ -359,6 +359,35 @@
         overflow-y: auto;
         /* Que se vea que hay más abajo cuando lo hay. */
         overscroll-behavior: contain;
+
+        /**
+         * ⚠️ EL ANCHO, PORQUE SIN ÉL EL PANEL SE ENCOGÍA HASTA LA PALABRA MÁS LARGA.
+         * ═══════════════════════════════════════════════════════════════════════
+         *
+         * `.overlay` es `absolute` sin ancho, o sea que se ajusta a su contenido; y
+         * `.hud-panel` es un hijo flex en columna, o sea que se estira a su padre.
+         * Cada uno esperando al otro, el resultado es el MIN-CONTENT: el ancho de la
+         * palabra más larga que haya dentro.
+         *
+         * En el póker eso daba **126 px** y el objetivo salía en una columna de una
+         * palabra por línea —«acabar / las 30 / manos / con / más / fichas…»—, ilegible
+         * y ocupando los 624 px de alto de la pantalla. El ajedrez se libraba de puro
+         * accidente: su minimapa mide 240 px y arrastraba el min-content consigo.
+         *
+         * Medido antes → después, con el panel desplegado a 1280x720:
+         *
+         *     póker      126x624  →  320x392
+         *     unit       140x570  →  320x351
+         *     generala   168x218  →  320x196
+         *     blackjack  254x442  →  320x407
+         *     ajedrez    292x624  →  320x624
+         *
+         * Va dentro de la consulta de medios de escritorio a propósito: en móvil el
+         * panel ya ocupa el ancho de la pantalla por su propia regla, y ahí este 320
+         * sólo podría estorbar. Comprobado a 390x844: los cinco siguen en 374, sin
+         * mover un píxel.
+         */
+        width: 320px;
     }
 }
 
