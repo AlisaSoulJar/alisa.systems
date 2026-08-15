@@ -136,6 +136,28 @@ enseñar. La página está bien; lo que falta son partidas.
 
 ## Cómo se comprueban las cosas aquí
 
+### ⚠️ Cómo se despliega esto, que no estaba escrito en ningún sitio
+
+**`git push` NO despliega.** Lo comprobé a la mala el 15-08: subí ocho commits, esperé
+ocho minutos viendo cómo el dominio seguía sirviendo el sello anterior, y me puse a
+sospechar de la caché de Cloudflare. No era la caché. Era que **el sitio no se publica
+desde el repositorio**:
+
+    wrangler.toml → pages_build_output_dir = "dist_publico"
+    .gitignore    → dist_publico/          ← no está versionado
+
+O sea que Pages publica una carpeta que el repositorio no contiene. Se genera y se
+sube a mano:
+
+    npm run empaquetar                       # regenera dist_publico (~2 min, 63 MB)
+    npx wrangler pages deploy dist_publico --project-name=alisa-systems --branch=main
+    node comprobar_desplegado.mjs https://alisa.systems
+
+`wrangler` ya está autenticado en esta máquina, así que no hace falta ninguna clave.
+Y el «Deployment complete!» **no significa que el dominio ya lo sirva**: hay que
+esperar a ver el `VERSION` nuevo en `/arcade/js/montarMesa.js`, como avisa
+`desplegar.mjs` para el worker de mesas.
+
     npm test              14 comprobaciones: reglas, sustrato, puerta de lenguaje,
                           objetivo, el repetidor, el final de partida, CSS, la API,
                           el sellado, los entornos del gym y el verificador

@@ -95,6 +95,29 @@ for (const pagina of PAGINAS) {
             continue;
         }
         const abs = new URL(cruda, BASE + pagina).pathname;
+
+        /**
+         * ⚠️ `/cdn-cgi/` NO ES NUESTRO. LO INYECTA CLOUDFLARE Y AQUÍ DABA UN 404 FALSO.
+         *
+         * La zona tiene activada la ofuscación de correos: cuando encuentra una
+         * dirección en el HTML —`research.html` lleva una de contacto en el pie— la
+         * sustituye por un enlace a `/cdn-cgi/l/email-protection` y añade su propio
+         * script para descifrarla en el navegador.
+         *
+         * Esa ruta no existe como fichero, así que esta comprobación la seguía, veía
+         * un 404 y suspendía el despliegue. En un navegador de verdad funciona: el
+         * script `/cdn-cgi/scripts/…/email-decode.min.js` la resuelve en cliente
+         * —comprobado, viene servido en la misma página—.
+         *
+         * Se salta y se dice por qué. Un instrumento que suspende por algo que no se
+         * puede ni se debe arreglar enseña a ignorar los suspensos, y entonces el día
+         * que suspenda de verdad nadie mirará. Esa es la diferencia entre «hay que
+         * arreglarlo» y «hay que saberlo».
+         */
+        if (abs.startsWith('/cdn-cgi/')) {
+            console.log('    ' + gris(`· ${abs}  (lo pone Cloudflare, no el repositorio)`));
+            continue;
+        }
         const { estado, tipo, cuerpo: c } = await pedir(abs);
         // EL FALLO QUE BUSCAMOS: pedir un módulo y recibir una página.
         const esperaJs = abs.endsWith('.js') || abs.endsWith('.mjs');

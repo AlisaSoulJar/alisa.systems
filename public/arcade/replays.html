@@ -170,9 +170,28 @@ function pintar() {
         funcionando, no un error.</div>`;
 }
 
+/**
+ * ⚠️ LA FECHA VIENE EN MILISEGUNDOS, Y SE VEÍA ASÍ: `1786025260670`.
+ *
+ * El corpus la guarda con `Date.now()`, o sea un número. Yo la trataba como texto
+ * ISO —`.replace('T',' ')`— y el reemplazo no hacía nada, así que la fila enseñaba
+ * el número tal cual. No rompía nada: sólo era ilegible, que es como se quedan las
+ * cosas cuando el fallo no da error.
+ *
+ * Se acepta lo que llegue: número o cadena. Y si no hay fecha, no se inventa nada.
+ */
+function fechaLegible(v) {
+    if (v === null || v === undefined || v === '') return '';
+    const d = new Date(typeof v === 'number' ? v : (Number(v) || v));
+    if (Number.isNaN(d.getTime())) return '';
+    const dosCifras = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${dosCifras(d.getMonth() + 1)}-${dosCifras(d.getDate())}`
+         + ` ${dosCifras(d.getHours())}:${dosCifras(d.getMinutes())}`;
+}
+
 function fila(p) {
     const enlace = enlaceRepetidor(p);
-    const cuando = String(p.fecha ?? '').replace('T', ' ').slice(0, 16);
+    const cuando = fechaLegible(p.fecha);
     return `<div class="partida">
         <span class="juego">${esc(p.juego)}</span>
         <span class="meta">semilla ${esc(p.semilla)} · ${p.jugadas?.length ?? 0} jugadas`
