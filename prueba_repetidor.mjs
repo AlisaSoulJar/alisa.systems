@@ -222,5 +222,69 @@ console.log('\nEL REPETIDOR — que una partida se pueda ver volverse a jugar\n'
     } else bien('paso a paso y de golpe se paran en la misma jugada');
 }
 
+// ── 4. Todos los caminos de panel montan el repetidor ──────────────────────
+/**
+ * ⚠️ ESTO EXISTE PORQUE ME DEJÉ CUATRO JUEGOS FUERA.
+ *
+ * Monté el repetidor en la mesa genérica y en el motor de cartas y di el trabajo por
+ * terminado, sin haber contado nunca cuántos caminos había. Había tres:
+ *
+ *     mesa genérica    20 juegos
+ *     motor de cartas  11
+ *     motor de tablero  4   ← chess, mancala, peatón, snake
+ *
+ * Los cuatro generaban su enlace y abrían una partida cualquiera, el ajedrez entre
+ * ellos. No fallaba: enseñaba otra cosa, que es peor.
+ *
+ * Esto no comprueba que el repetidor FUNCIONE en cada juego —eso vive en el
+ * navegador y se prueba abriéndolo—; comprueba que ninguna página se quede sin el
+ * cable. Si mañana aparece un cuarto camino, o alguien mueve una página a un motor
+ * distinto, salta aquí en vez de en un enlace que enseña otra partida.
+ */
+{
+    /**
+     * ⚠️ LA MARCA ES `crearRepetidor({`, CON EL PARÉNTESIS, Y NO ES QUISQUILLOSO.
+     *
+     * Estaba como `crearRepetidor` a secas. Al comprobar que esta prueba PUEDE fallar
+     * —renombrando la llamada a `crearRepetidorZZZ` en un motor— siguió en verde: el
+     * nombre saboteado CONTIENE el original, así que `includes` decía que sí.
+     *
+     * El sabotaje era malo y la prueba también: buscar un identificador suelto da por
+     * bueno cualquier cosa que lo contenga, incluida una mención en un comentario
+     * explicando que ya no se usa. Con el paréntesis se busca una LLAMADA.
+     */
+    const MOTORES = [
+        { fichero: 'public/arcade/js/mesa_tablero.mjs',           marca: 'crearRepetidor({' },
+        { fichero: 'public/arcade/js/SovereignCardEngine.js',     marca: 'crearRepetidor({' },
+        { fichero: 'public/arcade/js/SovereignBoardEngine.js',    marca: 'crearRepetidor({' },
+        { fichero: 'public/arcade/js/mesa_cartas.mjs',            marca: null },  // usa el motor de cartas
+    ];
+    const conCable = new Set();
+    for (const m of MOTORES) {
+        const txt = await readFile(`./${m.fichero}`, 'utf8').catch(() => '');
+        if (!txt) { mal(`falta ${m.fichero}`); continue; }
+        if (m.marca === null || txt.includes(m.marca)) conCable.add(m.fichero.split('/').pop());
+        else mal(`${m.fichero} no monta el repetidor`);
+    }
+
+    // Y ahora se mira qué usa CADA página, que es lo que de verdad importa.
+    const sinCable = [];
+    for (const f of await readdir('./public/arcade')) {
+        if (!f.endsWith('.html')) continue;
+        const txt = await readFile(`./public/arcade/${f}`, 'utf8');
+        if (!txt.includes('montarMesa({')) continue;
+        const vis = txt.match(/visualizador:\s*'([^']+)'/);
+        // Sin visualizador propio va la mesa genérica, que ya está comprobada.
+        if (!vis) continue;
+        const cuerpo = await readFile(`./public/arcade/js/${vis[1]}`, 'utf8').catch(() => '');
+        const motor = cuerpo.includes('SovereignBoardEngine') ? 'SovereignBoardEngine.js'
+                    : cuerpo.includes('SovereignCardEngine')  ? 'SovereignCardEngine.js'
+                    : 'mesa_tablero.mjs';
+        if (!conCable.has(motor)) sinCable.push(`${f} (${motor})`);
+    }
+    if (sinCable.length) mal(`páginas cuyo motor no monta el repetidor: ${sinCable.join(', ')}`);
+    else bien(`los ${MOTORES.length} caminos de panel montan el repetidor, y ninguna página se queda fuera`);
+}
+
 console.log(fallos ? `\n✗ ${fallos} fallo(s)\n` : '\n✓ el repetidor cumple lo que promete el enlace\n');
 process.exit(fallos ? 1 : 0);
