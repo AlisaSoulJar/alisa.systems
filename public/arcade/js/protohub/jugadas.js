@@ -112,11 +112,20 @@ export function pintarJugadas(caja, { acciones = [], meToca = true, turnoDe = nu
     if (!caja) return;
 
     const aviso = (t) => { caja.innerHTML = `<span class="dato">${t}</span>`; };
-    // La marca de «ya pinté el final» se suelta en cuanto hay partida viva otra vez,
-    // venga el reinicio de donde venga. Fiarlo sólo al botón de «jugar otra» dejaría
-    // la segunda partida sin pantalla de fin, y eso es un fallo que sólo aparece a la
-    // segunda — de los que se descubren tarde y de casualidad.
-    if (!terminada) { caja.dataset.firma = ''; caja.classList.remove('mesa-final'); }
+    /**
+     * La marca de «ya pinté el final» se suelta en cuanto hay partida viva otra vez,
+     * venga el reinicio de donde venga. Fiarlo sólo al botón de «jugar otra» dejaría
+     * la segunda partida sin pantalla de fin, y eso es un fallo que sólo aparece a la
+     * segunda — de los que se descubren tarde y de casualidad.
+     *
+     * Se limpian sólo las marcas de estado —`@final`, `@mirando`— y no cualquier
+     * cosa que haya en `firma`: los dos motores usan ese mismo atributo para su lista
+     * de botones, y borrarlo a ciegas desactivaría su protección desde aquí.
+     */
+    if (!terminada && (caja.dataset.firma === '@final' || caja.dataset.firma === '@mirando')) {
+        caja.dataset.firma = '';
+        caja.classList.remove('mesa-final');
+    }
 
     /**
      * ⚠️ MIRAR GANA SOBRE TERMINAR, Y ESE ORDEN ES DELIBERADO.
@@ -191,6 +200,30 @@ export function pintarJugadas(caja, { acciones = [], meToca = true, turnoDe = nu
     const legales = acciones.filter(m => m !== 'nueva' && m !== 'reset');
     if (!legales.length) return aviso('—');
 
+    /**
+     * ⚠️ AQUÍ PUSE UNA FIRMA PARA NO REPINTAR, Y EMPEORÓ. QUEDA ESCRITO.
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * El razonamiento era bueno y está medido: el panel se reconstruye entero cada
+     * segundo aunque la lista sea idéntica —comprobado en peatón: mismo texto,
+     * **nodo distinto** un segundo después— y los dos motores llevan justamente esa
+     * marca desde hace tiempo, con su comentario de que «recrear los botones bajo el
+     * dedo hace que un toque se pierda entre el pointerdown y el pointerup».
+     *
+     * Pues bien: con la firma puesta, `tacto` EMPEORA. Medido tres veces seguidas.
+     *
+     *     sin firma    peatón 2/5 · pradera 4/4 · nave 3/3 · damas 5/5
+     *     con firma    peatón 2/5 · pradera 1/4 · nave 3/3 · damas 5/5
+     *
+     * O sea que no arregla lo que quería arreglar y estropea un juego que iba bien.
+     * No sé todavía por qué —la hipótesis es que los manejadores de los botones
+     * viejos se quedan atados a una lista de jugadas que ya cambió, y en pradera
+     * cambia en cada latido— y sin saberlo no se deja puesto.
+     *
+     * Se anota aquí y no en un cuaderno aparte para que el siguiente que tenga esta
+     * misma buena idea sepa que ya se probó, qué números dio y qué falta por
+     * entender antes de volver a intentarlo.
+     */
     caja.innerHTML = '';
 
     // Si son casillas, el panel se pone con la forma del tablero. Si no —verbos,

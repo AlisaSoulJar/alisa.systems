@@ -217,11 +217,70 @@ for (const juego of juegos) {
         await p.reload({ waitUntil: 'load' }).catch(() => {});
         await p.waitForTimeout(4200);
 
+        /**
+         * ⚠️ UN ESPÍA QUE GRABA **Y DEJA PASAR**. NO UN MUÑECO.
+         * ═══════════════════════════════════════════════════════════════════
+         *
+         * La recarga de arriba quita el muñeco a propósito, y con razón: esta fase
+         * quiere que la partida avance de verdad. Pero medir «¿avanzó el estado?» no
+         * vale en los juegos de TICK — en peatón mandas la dirección y el mundo no se
+         * mueve hasta el siguiente latido, así que lo que cambiaba el estado era el
+         * reloj y no el dedo.
+         *
+         * Medido: parando todos los `setInterval` de la página, peatón pasó de bailar
+         * entre 3/5 y 5/5 a dar **0/5 tres veces seguidas**. O sea que sus aprobados
+         * eran tan casuales como sus suspensos, y el «34/35 señalando peatón» de hoy
+         * no era un fallo del juego: era la vara.
+         *
+         * Así que se apunta la jugada Y se deja pasar. Con eso la pregunta que
+         * contesta esta fase pasa a ser la que promete el instrumento —«¿el botón
+         * manda su jugada?»— sin depender del reloj de nadie, y la partida sigue
+         * avanzando como antes.
+         *
+         * ⚠️ Y NO SE PONE UN MUÑECO QUE NO JUEGUE: eso ya se probó y está escrito
+         * cuatro líneas más arriba —«daba 0 de 5 en los cinco juegos, un pleno tan
+         * redondo que ya cantaba»—. Lo volví a hacer hoy y volvió a salir el mismo
+         * pleno. La diferencia entre espiar y suplantar es justo esta línea.
+         */
+        await p.evaluate(() => {
+            const hub = window.ALISA_PROTOHUB;
+            if (!hub) return;
+            window.__tocadas = [];
+            const orig = hub.move.bind(hub);
+            hub.move = (juego, accion) => {
+                const j = accion?.move ?? accion?.params?.uci ?? accion?.params?.action;
+                if (j && j !== 'move') window.__tocadas.push(String(j));
+                return orig(juego, accion);      // ← y se deja jugar
+            };
+        });
+
         const MUESTRA = 5;
         const botones = await p.locator('.mesa-jugada').all();
         let panelBien = 0, panelProbados = 0;
-        const estadoEntero = () => p.evaluate(() =>
-            JSON.stringify(window.ALISA_PROTOHUB.state(window.ALISA_JUEGO)));
+        /**
+         * ⚠️ SE CUENTA LA JUGADA QUE LLEGÓ AL HUB, NO SI CAMBIÓ EL ESTADO.
+         * ═══════════════════════════════════════════════════════════════════
+         *
+         * Esto medía `state()` antes y después de pulsar, y daba por buena la
+         * pulsación si el estado cambiaba. En la mayoría funciona y en los juegos de
+         * TICK es sencillamente otra cosa: en peatón mandas la dirección y el mundo
+         * no se mueve hasta el siguiente latido, así que el estado cambia por el
+         * reloj y no por tu dedo.
+         *
+         * O sea que en esos juegos esta medida nunca midió lo que dice: sus 5/5 eran
+         * tan casuales como sus 3/5 — coincidir o no con un tick. Y el 34/35 que
+         * salió hoy señalando peatón no era un fallo del juego, era la vara.
+         *
+         * Lo comprobé parando todos los `setInterval` de la página: peatón pasó de
+         * bailar entre 3/5 y 5/5 a dar **0/5 tres veces seguidas**. Determinista, y
+         * la prueba de que lo que contaba eran latidos.
+         *
+         * `hub.move` YA está interceptado unas líneas más arriba y apunta cada jugada
+         * intentada en `window.__tocadas`. Eso es exactamente la garantía que este
+         * instrumento promete —«el botón manda su jugada»— y no depende del reloj de
+         * nadie: si la pulsación llegó, hay una entrada más; si no llegó, no la hay.
+         */
+        const cuantasTocadas = () => p.evaluate(() => (window.__tocadas ?? []).length);
 
         for (let k = 0; k < Math.min(MUESTRA, botones.length); k++) {
             const vivos = p.locator('.mesa-jugada');
@@ -233,31 +292,13 @@ for (const juego of juegos) {
             if (!caja) continue;
 
             panelProbados++;
-            const antes = await estadoEntero();
+            const antes = await cuantasTocadas();
             await modo.tocar(p, Math.round(caja.x + caja.width / 2),
                                 Math.round(caja.y + caja.height / 2));
-            await p.waitForTimeout(700);
-            if (await estadoEntero() !== antes) { panelBien++; continue; }
-
-            /**
-             * ⚠️ SEGUNDO INTENTO, PORQUE HAY MUNDOS CON RELOJ PROPIO.
-             *
-             * Peatón, pradera, nave y compañía avanzan decidas o no, así que entre
-             * leer los botones y pulsar uno la jugada puede haber dejado de ser
-             * legal. El botón está bien y la pulsación no hace nada — y sale un
-             * «hay una jugada que no se puede pulsar» que es mentira.
-             *
-             * Se veía en que peatón daba 5/5, luego 3/5, luego 4/5 sin tocar nada.
-             * Un número que baila entre pasadas no es un hallazgo, es un aviso de
-             * que la medida coge el mundo en marcha.
-             */
-            const otra = p.locator('.mesa-jugada').first();
-            const c2 = await otra.boundingBox().catch(() => null);
-            if (!c2) continue;
-            const antes2 = await estadoEntero();
-            await modo.tocar(p, Math.round(c2.x + c2.width / 2), Math.round(c2.y + c2.height / 2));
-            await p.waitForTimeout(700);
-            if (await estadoEntero() !== antes2) panelBien++;
+            await p.waitForTimeout(400);
+            // Si la pulsación llegó, hay una jugada más apuntada. No hace falta
+            // reintentar: ya no dependemos de que el mundo se haya movido.
+            if (await cuantasTocadas() > antes) panelBien++;
         }
 
         /**

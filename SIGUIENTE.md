@@ -219,7 +219,27 @@ falsos** — «se salen de la pantalla» (estaban tapados) y «las piezas son ci
 un arreglo hecho sobre un diagnóstico de vista habría sido apartar la cámara y
 modelar piezas nuevas: mucho trabajo, y ninguna de las dos cosas era el problema.
 
-### ⚠️ DOS INTERMITENTES EN LAS PASADAS LARGAS, Y APUNTAN AL MISMO SITIO
+### ⚠️ PEATÓN: 2 DE 5 JUGADAS NO LLEGAN AL PULSARLAS. AHORA SÍ ES UN FALLO
+
+Antes bailaba (3/5, 5/5, 4/5) y no se sabía si era el juego o la vara. Arreglada la
+vara —`tacto` ahora cuenta la jugada que LLEGA al hub, no si el estado cambió—, el
+número es **2/5 estable en cinco pasadas**, mientras pradera, nave, damas y brisca
+dan pleno igual de estable. O sea que es de peatón y hay que arreglarlo.
+
+Lo medido hasta ahora:
+
+- El panel de peatón **se reconstruye entero cada segundo** aunque las jugadas sean
+  las mismas: comprobado que el botón tiene el mismo texto y es **otro nodo** un
+  segundo después. Esa es la sospecha principal — el dedo baja sobre un nodo y lo
+  suelta sobre otro.
+- **Y no se arregla con una firma que evite repintar.** Lo probé: peatón se queda en
+  2/5 y **pradera empeora de 4/4 a 1/4**. Está escrito en `jugadas.js`, con los
+  números, para que el siguiente que tenga la idea sepa que ya se probó.
+- Falta entender por qué la firma estropea pradera. La hipótesis es que los
+  manejadores de los botones viejos quedan atados a una lista de jugadas que ya
+  cambió, y en pradera cambia en cada latido.
+
+### ⚠️ EL OTRO INTERMITENTE (blackjack en `mirar`), TODAVÍA SIN EXPLICAR
 
 15-08, en pasadas completas y sin tocar nada en medio:
 
