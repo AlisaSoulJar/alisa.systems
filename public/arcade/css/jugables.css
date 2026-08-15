@@ -481,6 +481,111 @@
 :fullscreen #alisa-mandos { bottom: 10px; left: 10px; }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   EL FINAL DE LA PARTIDA — donde antes ponía «partida terminada» y ya está
+   ═══════════════════════════════════════════════════════════════════════════
+
+   Sin botón para jugar otra, en las 35 mesas: había que recargar. Y diecisiete
+   juegos OFRECÍAN `nueva` justo al terminar —para eso lo publican— y el panel la
+   descartaba en su primera línea.
+
+   Se pinta en dorado, el color del panel, y no en el verde del repetidor: esto no
+   es «estás mirando», es tu partida que acabó. Y los botones son los de jugada de
+   siempre para que se pulsen igual — el dedo ya sabe dónde caen.
+   ═══════════════════════════════════════════════════════════════════════════ */
+#mesa-jugadas.mesa-final {
+    display: block;
+    padding: 9px 10px;
+    border-left: 3px solid #d4af37;
+    border-radius: 0 6px 6px 0;
+    background: rgba(212, 175, 55, 0.09);
+}
+.final-linea {
+    color: #e8e3d3;
+    font-size: 12px;
+    margin-bottom: 8px;
+}
+.final-linea b {
+    color: #d4af37;
+    text-transform: uppercase;
+    font-size: 10px;
+    letter-spacing: 0.09em;
+    margin-right: 6px;
+}
+.final-botones { display: flex; flex-wrap: wrap; gap: 6px; }
+.final-btn { flex: 0 0 auto; }
+.final-nota {
+    margin-top: 8px;
+    color: #cfc6a8;
+    font-size: 11px;
+    line-height: 1.4;
+    /* El enlace entero cabe aquí cuando el portapapeles no está disponible, y una
+       dirección larga no debe ensanchar el panel. */
+    overflow-wrap: anywhere;
+}
+.final-nota[hidden] { display: none; }
+
+/* El acuse de «copiado», en el propio botón. Un globo de un segundo y medio en vez
+   de un diálogo: detrás hay una escena 3D corriendo y `alert()`/`prompt()` congelan
+   la página entera mientras estén abiertos. */
+#alisa-mandos .mando.mando-hecho {
+    color: #cdebda;
+    border-color: rgba(87, 199, 133, 0.7);
+    background: rgba(20, 52, 36, 0.92);
+}
+#alisa-mandos .mando-globo {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    white-space: nowrap;
+    padding: 5px 9px;
+    border-radius: 6px;
+    background: rgba(12, 30, 21, 0.95);
+    border: 1px solid rgba(87, 199, 133, 0.5);
+    color: #cdebda;
+    font-size: 11px;
+    pointer-events: none;
+}
+#alisa-mandos .mando { position: relative; }
+
+/* Cuando el portapapeles no está disponible —hace falta contexto seguro— el enlace
+   se enseña ya seleccionado para copiarlo a mano. Encima de los mandos, no dentro:
+   es texto que hay que poder leer entero. */
+#alisa-enlace {
+    position: fixed;
+    bottom: 70px;
+    left: 14px;
+    right: 14px;
+    max-width: 620px;
+    z-index: 41;
+    display: flex;
+    gap: 6px;
+    padding: 8px;
+    border-radius: 10px;
+    background: rgba(20, 17, 32, 0.96);
+    border: 1px solid rgba(160, 140, 220, 0.35);
+    backdrop-filter: blur(6px);
+}
+#alisa-enlace input {
+    flex: 1;
+    min-width: 0;
+    padding: 7px 9px;
+    border-radius: 6px;
+    border: 1px solid rgba(160, 140, 220, 0.25);
+    background: rgba(10, 8, 18, 0.9);
+    color: #e6e0f5;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+}
+#alisa-enlace button {
+    width: 34px;
+    border-radius: 6px;
+    border: 1px solid rgba(160, 140, 220, 0.25);
+    background: rgba(38, 32, 58, 0.9);
+    color: #cfc6e8;
+    cursor: pointer;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    EL PANEL CON LA FORMA DEL TABLERO — lo pidió un betatester desde flota.
    ═══════════════════════════════════════════════════════════════════════════
    «que el panel no tenga la misma forma que el tablero es un follon :D
@@ -615,4 +720,93 @@
 
 @media (max-width: 640px) {
     .hud-objetivo { font-size: 11px; max-width: none; padding: 7px 9px; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   EL REPETIDOR — cuando la mesa está enseñando una partida en vez de dejar jugar
+   ═══════════════════════════════════════════════════════════════════════════
+
+   Se pinta en VERDE y no en el dorado del resto del panel a propósito: mirar y
+   jugar son dos modos distintos y hay que poder distinguirlos de un vistazo, sin
+   leer. Es la misma razón por la que arriba pone «esto no es un vídeo» — quien
+   mira tiene derecho a saber si le están enseñando una grabación (que se puede
+   montar) o la partida volviéndose a ejecutar (que no).
+
+   Va fuera de `#hud-content`, hermano de los botones de jugada, así que sobrevive
+   al plegado: quien pliega el panel para ver bien la mesa es exactamente quien
+   está mirando una partida repetirse.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.repetir {
+    position: relative;
+    z-index: 20;
+    margin: 8px 0 4px;
+    padding: 8px 10px;
+    border-left: 3px solid #57c785;
+    border-radius: 0 6px 6px 0;
+    background: rgba(87, 199, 133, 0.10);
+}
+.repetir-titulo {
+    color: #9fe0bb;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+.repetir-titulo b { color: #e8f6ee; }
+
+.repetir-mandos { display: flex; align-items: center; gap: 5px; }
+
+.repetir-btn {
+    /* 34 px: el mínimo que sobrevivió a `tacto` con un dedo. Los botones de 24
+       que puse primero se fallaban una de cada tres veces en móvil. */
+    min-width: 34px;
+    height: 34px;
+    padding: 0 8px;
+    border: 1px solid rgba(87, 199, 133, 0.45);
+    border-radius: 6px;
+    background: rgba(10, 26, 18, 0.55);
+    color: #cdebda;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+}
+.repetir-btn:hover  { background: rgba(87, 199, 133, 0.22); }
+.repetir-btn:active { background: rgba(87, 199, 133, 0.34); }
+.repetir-btn:focus-visible { outline: 2px solid #9fe0bb; outline-offset: 2px; }
+
+/* El único que lleva palabra: es el que cambia de modo y el que más se pulsa.
+   Cinco triángulos parecidos obligaban a adivinar cuál era cuál. */
+.repetir-play {
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    background: rgba(87, 199, 133, 0.22);
+    border-color: rgba(87, 199, 133, 0.7);
+    color: #e8f6ee;
+}
+.repetir-play:hover { background: rgba(87, 199, 133, 0.34); }
+
+.repetir-cuenta {
+    margin-left: auto;
+    color: #9fe0bb;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Una jugada del recibo que el juego rechaza NO se esconde: un recibo que no se
+   puede volver a jugar es un recibo falso, y eso es justo lo que esto sirve para
+   descubrir. En rojo porque es un hallazgo, no un estado normal. */
+.repetir-aviso {
+    margin-top: 7px;
+    padding: 6px 8px;
+    border-radius: 5px;
+    background: rgba(224, 90, 90, 0.14);
+    color: #f0c0c0;
+    font-size: 11px;
+    line-height: 1.4;
+}
+.repetir-aviso[hidden] { display: none; }
+
+@media (max-width: 640px) {
+    .repetir { padding: 7px 9px; }
+    .repetir-titulo { font-size: 9px; }
 }

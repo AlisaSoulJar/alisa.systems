@@ -514,7 +514,15 @@ function pintarJugadas(motor, data) {
         meToca: !enSala || motor.sala.meToca(),
         turnoDe: enSala ? motor.sala.ultimo?.turn : null,
         terminada: !!data.is_game_over,
-        espectador: enSala && motor.sala.espectador,
+        // Repitiendo se mira, no se juega — y se dice por qué. Dejar los botones
+        // puestos sin que hicieran nada sería la peor de las tres opciones.
+        espectador: motor.repitiendo ? 'estás viendo una partida volver a jugarse'
+                                     : (enSala && motor.sala.espectador),
+        // Para la pantalla de fin de partida. El recibo sale del ProtoHub, que es
+        // quien graba: en una sala no hay partida viva aquí y por eso va `null`.
+        estado: data,
+        recibo: enSala ? null : window.ALISA_PROTOHUB?.partida?.(window.ALISA_JUEGO),
+        enSala,
         enviar: (m) => motor.sendMove(m),
     });
 }

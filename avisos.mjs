@@ -17,6 +17,7 @@ const SITIO = 'https://alisa.systems';
 
 const { cargarReglas } = await import('./public/arcade/js/protohub/rules/index.js');
 const { verificar } = await import('./public/arcade/js/protohub/Verificador.js');
+const { enlaceRepetidor } = await import('./public/arcade/js/protohub/enlace_repetidor.js');
 
 const r = await fetch(BUZON).catch(() => null);
 if (!r?.ok) {
@@ -62,7 +63,32 @@ for (const a of avisos) {
         } catch (e) {
             console.log(`     partida  no se pudo re-jugar: ${String(e.message).slice(0, 60)}`);
         }
-        console.log(`     míralo   ${SITIO}${a.pagina ?? ''}`);
+        /**
+         * ⚠️ EL ENLACE VUELVE A JUGAR SU PARTIDA. ANTES ERA LA PÁGINA EN BLANCO.
+         *
+         * Aquí ponía `${SITIO}${a.pagina}` — o sea, el juego recién repartido. Quien
+         * se pusiera a mirar un aviso abría una partida NUEVA, con otra semilla y
+         * otras cartas, y tenía que reconstruir a mano lo que esa persona tenía
+         * delante. Justo debajo se imprimía «SE PUEDE REPETIR» y no había forma de
+         * repetirla mirando.
+         *
+         * Con el repetidor el enlace es la partida del aviso, jugada otra vez. Y todo
+         * lo que se ha arreglado esta semana salió de MIRAR una partida concreta, no
+         * de leer una descripción: esto es esa herramienta, en una línea.
+         */
+        const enlace = enlaceRepetidor(a.recibo, { sitio: SITIO });
+        if (enlace) {
+            // Con jugadas, el enlace las vuelve a jugar; sin ellas, reparte lo mismo
+            // que esa persona tenía delante — que es el caso de la mitad de los
+            // avisos, los de quien escribe nada más abrir.
+            console.log(`     míralo   ${enlace}`
+                + (a.recibo.jugadas?.length ? '' : '   ← el mismo reparto, sin jugadas todavía'));
+        } else {
+            // Sin semilla no hay partida que repetir. Se dice —y se dice POR QUÉ—
+            // en vez de dar un enlace que enseñaría otra cosa.
+            console.log(`     míralo   ${SITIO}${a.pagina ?? ''}`
+                      + `  (sin semilla: esta partida no se puede reproducir)`);
+        }
     } else {
         console.log('     partida  (sin recibo: llegó antes de empezar, o el juego no lo publica)');
     }

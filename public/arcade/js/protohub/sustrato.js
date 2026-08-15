@@ -89,24 +89,41 @@ export const VACIO = 0;
  *     "e6"   → [20]         una sola (reversi, go, flota)
  *     "pasar" → no aparece  las que no son espaciales se quedan fuera
  */
+/**
+ * Las casillas que toca UNA jugada, por su nombre.
+ *
+ * ⚠️ SE EXPORTA PORQUE HACE FALTA PARA JUGADAS QUE YA NO SON LEGALES.
+ *
+ * `acciones` es un mapa de las legales AHORA, y sirve para ofrecerlas. Pero para
+ * subrayar en el tablero lo que ACABA DE PASAR hace falta lo mismo de una jugada
+ * que ya se hizo — y ésa, por definición, ya no está en la lista.
+ *
+ * Podría escribirse otra vez en la mesa, y sería una segunda copia de la regla que
+ * traduce `a3b4` a casillas. El día que un juego use otra notación, una de las dos
+ * se enteraría y la otra no. Una sola.
+ */
+export function celdasDeJugada(m, rejilla) {
+    if (!rejilla?.ancho || !rejilla?.alto) return null;
+    const { ancho, alto } = rejilla;
+    // Cada tramo `letra + número` es una casilla. `a3b4` da dos; `e6`, una.
+    const trozos = String(m).match(/[a-z]\d+/gi);
+    if (!trozos) return null;
+    const celdas = [];
+    for (const t of trozos) {
+        const x = t[0].toLowerCase().charCodeAt(0) - 97;
+        const y = alto - Number(t.slice(1));
+        if (x < 0 || x >= ancho || y < 0 || y >= alto) return null;
+        celdas.push(y * ancho + x);
+    }
+    return celdas.length ? celdas : null;
+}
+
 function accionesDe(rejilla, legales) {
     if (!rejilla?.ancho || !rejilla?.alto || !legales?.length) return null;
-    const { ancho, alto } = rejilla;
     const mapa = {};
-
     for (const m of legales) {
-        const s = String(m);
-        // Cada tramo `letra + número` es una casilla. `a3b4` da dos; `e6`, una.
-        const trozos = s.match(/[a-z]\d+/gi);
-        if (!trozos) continue;
-        const celdas = [];
-        for (const t of trozos) {
-            const x = t[0].toLowerCase().charCodeAt(0) - 97;
-            const y = alto - Number(t.slice(1));
-            if (x < 0 || x >= ancho || y < 0 || y >= alto) { celdas.length = 0; break; }
-            celdas.push(y * ancho + x);
-        }
-        if (celdas.length) mapa[s] = celdas;
+        const celdas = celdasDeJugada(m, rejilla);
+        if (celdas) mapa[String(m)] = celdas;
     }
     return Object.keys(mapa).length ? mapa : null;
 }

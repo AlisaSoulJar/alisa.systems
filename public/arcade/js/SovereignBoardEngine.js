@@ -640,6 +640,22 @@ class SovereignBoardEngine {
             caja.className = 'mesa-jugadas';
             panel.appendChild(caja);
         }
+        /**
+         * ⚠️ AL TERMINAR, LA PANTALLA DE FIN.
+         *
+         * Antes aquí no quedaba nada al acabar la partida: ni resultado, ni forma de
+         * empezar otra sin recargar. Y es el momento exacto en que alguien decide si
+         * sigue jugando. Va en `protohub/final.js`, compartido con el motor de
+         * cartas y con la mesa genérica — tres caminos, una sola pantalla.
+         */
+        const est = this._ultimoEstado;
+        if (est?.is_game_over && this.backend?.tipo === 'local') {
+            import('./protohub/final.js').then(({ finalSiTerminada }) => finalSiTerminada(caja, {
+                estado: est, juego: this.gameId, enviar: (m) => this.sendMove(m),
+            })).catch(() => {});
+            return;
+        }
+
         const movs = this.currentLegalMoves ?? [];
         const TOPE = 50;
 
@@ -650,6 +666,9 @@ class SovereignBoardEngine {
         if (caja.dataset.firma === firma) return;
         caja.dataset.firma = firma;
         caja.textContent = '';
+        // Hay partida viva otra vez: fuera el aspecto de pantalla de fin. La marca
+        // ya la ha sustituido la firma de las jugadas, pero la clase no se va sola.
+        caja.classList.remove('mesa-final');
 
         for (const m of movs.slice(0, TOPE)) {
             const b = document.createElement('button');
@@ -740,6 +759,17 @@ class SovereignBoardEngine {
         }
         this.isGameOver = gOver;
         this.currentTurn = campo('turn') || 'white';
+
+        /**
+         * El estado entero, aplanado, para quien lo necesite después.
+         *
+         * ⚠️ `is_game_over` SE VUELVE A PONER AQUÍ, Y NO SOBRA: hay juegos que lo
+         * publican dentro de `state` y otros al nivel de arriba —por eso existe
+         * `campo()` justo encima—, así que quien reciba esto no debería tener que
+         * saber cuál de las dos formas le tocó. Ese «que cada consumidor lo busque»
+         * es literalmente el fallo que caza `desajustes.mjs`.
+         */
+        this._ultimoEstado = { ...(data.state ?? {}), ...data, is_game_over: gOver };
 
         const turnEl = document.getElementById('ui-turn');
         if (turnEl) {

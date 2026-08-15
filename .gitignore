@@ -81,3 +81,7 @@ __pycache__/
 # Las 31 capturas del laboratorio: se regeneran en cada pasada y son para mirar,
 # no para versionar. Un PNG por juego cada vez engordaria el repo sin decir nada.
 capturas_laboratorio/
+
+# Ficheros de sondeo de una sesion: se escriben, se miden y se tiran.
+_dbg.mjs
+_t.mjs

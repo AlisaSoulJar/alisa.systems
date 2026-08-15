@@ -107,13 +107,64 @@ function comoTablero(legales, rejilla) {
 
 export function pintarJugadas(caja, { acciones = [], meToca = true, turnoDe = null,
                                       terminada = false, espectador = false,
-                                      rejilla = null, enviar, alSeñalar = null } = {}) {
+                                      rejilla = null, enviar, alSeñalar = null,
+                                      estado = null, recibo = null, enSala = false } = {}) {
     if (!caja) return;
 
     const aviso = (t) => { caja.innerHTML = `<span class="dato">${t}</span>`; };
+    // La marca de «ya pinté el final» se suelta en cuanto hay partida viva otra vez,
+    // venga el reinicio de donde venga. Fiarlo sólo al botón de «jugar otra» dejaría
+    // la segunda partida sin pantalla de fin, y eso es un fallo que sólo aparece a la
+    // segunda — de los que se descubren tarde y de casualidad.
+    if (!terminada) { caja.dataset.firma = ''; caja.classList.remove('mesa-final'); }
 
-    if (terminada)  return aviso('partida terminada');
-    if (espectador) return aviso('la mesa estaba llena — miras');
+    /**
+     * ⚠️ AQUÍ PONÍA `return aviso('partida terminada')` Y AHÍ SE ACABABA LA PÁGINA.
+     *
+     * Sin botón para jugar otra, en las treinta y cinco mesas: había que recargar. Y
+     * lo peor es que DIECISIETE juegos ofrecen `nueva` entre sus jugadas legales
+     * justo al terminar —con un comentario en el ProtoHub diciendo que es «para que
+     * el HUD tenga un botón sin saber nada del ProtoHub»— y esta línea la descartaba
+     * antes de mirarla. El dato puesto, su consumidor tirándolo, y nadie equivocado.
+     *
+     * El final de la partida es el momento en que alguien decide si juega otra o
+     * cierra la pestaña. Lo que va ahí está en `final.js`.
+     */
+    if (terminada) {
+        /**
+         * ⚠️ NO SE REPINTA EN CADA SONDEO, Y ESO NO ES UNA OPTIMIZACIÓN.
+         *
+         * El estado se consulta cada segundo. Sin esta marca, la pantalla de fin se
+         * reconstruiría entera una vez por segundo y un botón desaparecería debajo
+         * del dedo entre el `pointerdown` y el `pointerup` — el toque se pierde y
+         * parece que el botón no responde. Los dos motores ya llevaban esta marca en
+         * sus jugadas por haberlo sufrido; aquí faltaba porque este camino nunca
+         * había pintado nada al terminar.
+         */
+        if (caja.dataset.firma === '@final') return;
+        caja.dataset.firma = '@final';
+        // Se carga a demanda: sólo hace falta al acabar, y así las mesas que nunca
+        // llegan al final no pagan por ello.
+        import('./final.js').then(({ pintarFinal }) => pintarFinal(caja, {
+            // `enSala` se PASA, no se deduce de `meToca`: al terminar la partida no
+            // le toca a nadie, así que deducirlo daría «es una sala» en las mesas
+            // locales y escondería el botón de jugar otra justo donde más se usa.
+            estado: estado ?? {}, recibo, enSala,
+            // `nueva` la entiende el ProtoHub siempre, la publique el juego o no.
+            // Se suelta la marca al pulsar, o la partida nueva heredaría la pantalla
+            // de fin de la anterior y no volverían a salir las jugadas.
+            otraPartida: enviar ? () => { caja.dataset.firma = ''; enviar('nueva'); } : null,
+        })).catch(() => aviso('partida terminada'));
+        return;
+    }
+    /**
+     * `espectador` admite una frase en vez de `true`. No es un capricho: mirar tiene
+     * más de un motivo —la mesa estaba llena, o estás viendo una partida repetirse—
+     * y la diferencia importa para quien lo lee. Un mensaje fijo obligaría a decir
+     * «la mesa estaba llena» en el repetidor, que es sencillamente falso.
+     */
+    if (espectador) return aviso(typeof espectador === 'string'
+        ? espectador : 'la mesa estaba llena — miras');
     if (!meToca)    return aviso(`le toca a ${turnoDe ?? 'otro asiento'}…`);
 
     const legales = acciones.filter(m => m !== 'nueva' && m !== 'reset');

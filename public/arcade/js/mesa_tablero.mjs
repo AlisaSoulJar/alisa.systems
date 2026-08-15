@@ -35,8 +35,9 @@
  */
 import { crearPintor3d } from './protohub/render/pintar3d.js';
 import { pintarJugadas } from './protohub/jugadas.js';
-import { crearMarcas, VERDE, MORADO, RECHAZO } from './protohub/marcas.js';
+import { crearMarcas, VERDE, MORADO, RECHAZO, ACIERTO } from './protohub/marcas.js';
 import { pintarHistorial } from './protohub/historial.js';
+import { celdasDeJugada } from './protohub/sustrato.js';
 import { volcarMesa, volcando, ponerBoton } from './protohub/render/volcar.js';
 
 const hub = window.ALISA_PROTOHUB;
@@ -360,7 +361,18 @@ if (params.get('sala') && hub.soporta?.(juego)) {
  */
 let legalesAhora = [];
 
+/**
+ * Si esta mesa está enseñando una partida repetirse en vez de dejar jugar. Se
+ * declara AQUÍ y no junto al repetidor, abajo, porque `refrescar()` se llama antes
+ * de montarlo y con `let` eso es un ReferenceError, no un `undefined` — la mesa se
+ * quedaba en negro sin más pista que una línea en la consola.
+ */
+let repitiendo = false;
+
 function enviarSiEsLegal(m) {
+    // Viendo repetirse una partida no se juega: lo que hay en la mesa es de otro
+    // momento y meterle una jugada encima rompería justo lo que se está enseñando.
+    if (repitiendo) return false;
     if (!m || !legalesAhora.includes(m)) return false;
     hub.move(juego, { move: m });
     refrescar();
@@ -502,6 +514,63 @@ function marcarSeleccion() {
  * Distinguirlo importa más de lo que parece: un aviso que salta también cuando no
  * has hecho nada mal enseña a ignorarlo, y entonces deja de avisar.
  */
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ QUÉ ACABA DE PASAR. LAS PIEZAS SALTABAN SIN DECIR NADA.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Esta mesa no anima: repinta el sustrato entero en cada vuelta, así que cuando
+ * mueve la casa las fichas aparecen en su sitio nuevo de golpe. Si estabas mirando
+ * el panel —que es lo normal, ahí están las jugadas— el tablero cambia y no sabes
+ * QUÉ ha cambiado. La guía de Board Game Arena pide animación corta y un log de
+ * toda acción mayor, y el log ya está: falta enseñarlo en el tablero.
+ *
+ * ⚠️ Y NO ES UNA ANIMACIÓN, ES UN SUBRAYADO. A PROPÓSITO.
+ *
+ * Interpolar de verdad obligaría a que el pintor recordara de dónde venía cada
+ * pieza entre dos estados, y este pintor está hecho justo al revés: recibe una
+ * matriz plana y la dibuja sin memoria. Ésa es la tesis del motor y no se toca por
+ * un efecto.
+ *
+ * Marcar las casillas de la última jugada cuenta lo mismo —de dónde a dónde— con
+ * la maquinaria que ya hay, y encima funciona igual en jugadas que no son
+ * movimientos: poner una piedra, disparar a una casilla, sembrar un hoyo.
+ */
+let ultimaVista = 0;
+let subrayado = null;
+function subrayarUltima(rec, rej) {
+    const n = rec?.jugadas?.length ?? 0;
+    if (n === ultimaVista) return;          // nada nuevo que contar
+    const primera = ultimaVista === 0 && n > 0 && subrayado === null;
+    ultimaVista = n;
+    if (!n || !rej) return;
+    // Al abrir una partida ya empezada no se subraya: no ha «acabado de pasar»
+    // nada, y un destello al cargar es ruido que enseña a ignorar los destellos.
+    if (primera && n > 1) return;
+
+    /**
+     * ⚠️ LAS CASILLAS SALEN DEL NOMBRE, NO DE `acciones`.
+     *
+     * Lo escribí primero buscando la jugada en `sus.acciones`, y no puede funcionar:
+     * ese mapa son las jugadas LEGALES AHORA, y la que acaba de hacerse ya no lo
+     * es. Habría sido un subrayado que no aparece nunca — de los que se dan por
+     * «no se ve» y se acaban borrando sin entender por qué.
+     *
+     * `celdasDeJugada` traduce `a3b4` a casillas con la misma regla que usa el
+     * sustrato, y vale igual para una jugada pasada.
+     */
+    const celdas = celdasDeJugada(rec.jugadas[n - 1], rej);
+    if (!celdas?.length) return;
+    clearTimeout(subrayado);
+    for (const celda of celdas) {
+        const { x, z } = centroDe(celda, rej);
+        marcas.poner(x, z, { color: ACIERTO, opacidad: 0.4, altura: 0.11 });
+    }
+    // 700 ms: más que el acuse de «ahí no» porque esto no responde a un gesto tuyo
+    // — hay que darle tiempo a alguien que estaba mirando a otro sitio.
+    subrayado = setTimeout(() => marcarSeleccion(), 700);
+}
+
 let rechazo = null;
 function avisarIlegal(celda, rej) {
     if (celda === null || !rej) return;
@@ -628,6 +697,10 @@ async function refrescar() {
                 terminada: !!st.is_game_over,
                 espectador: mesaCompartida.espectador,
                 rejilla: sus?.rejilla ?? null,
+                estado: st,
+                // En una sala el recibo lo lleva el árbitro, no esta pestaña: la
+                // pantalla de fin ofrece lo que se puede ofrecer y calla el resto.
+                enSala: true,
                 enviar: (m) => mesaCompartida.jugar(m).then(refrescar),
             });
         }
@@ -648,7 +721,14 @@ async function refrescar() {
     legalesAhora = st.legal_moves ?? st.legal_actions ?? [];
     pintarJugadas(document.getElementById('mesa-jugadas'), {
         acciones: legalesAhora,
+        // Repitiendo se mira, no se juega — y se dice por qué, en vez de dejar
+        // botones puestos que no harían nada.
+        espectador: repitiendo ? 'estás viendo una partida volver a jugarse' : false,
         terminada: !!st.is_game_over,
+        // Para la pantalla de fin de partida: el resultado sale del estado y los dos
+        // botones que importan —copiar el enlace y aportar— salen del recibo.
+        estado: st,
+        recibo: hub.partida(juego),
         rejilla: susLocal?.rejilla ?? null,
         // Señalar un botón enseña dónde cae; soltarlo devuelve lo que tenías cogido.
         alSeñalar: (m) => (m === null ? marcarSeleccion() : marcarJugada(m)),
@@ -659,6 +739,11 @@ async function refrescar() {
     // un adorno técnico: es la respuesta a «esto está amañado», que es la queja más
     // repetida de los sitios de cartas y la única que no se contesta con palabras.
     const rec = hub.partida(juego) ?? {};
+
+    // Y se subraya en el tablero lo que acaba de pasar, que es lo mismo que cuenta
+    // el registro pero donde está mirando quien juega.
+    subrayarUltima(rec, susLocal?.rejilla);
+
     pintarHistorial(document.getElementById('mesa-historial'), {
         juego, semilla: rec.semilla, jugadas: rec.jugadas, autores: rec.autores,
         /**
@@ -680,6 +765,64 @@ async function refrescar() {
     });
 }
 refrescar();
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ EL REPETIDOR: LA TESIS DEL PROYECTO, PUESTA DONDE SE VE
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ *     /arcade/checkers.html?semilla=7&repetir=a3b4,b6a5,b4c5
+ *
+ * Todo esto se sostiene sobre una frase: «cualquiera puede verificar una partida
+ * volviéndola a jugar». Estaba en el README, en la API y en el verificador — y
+ * vivía entera dentro de un recibo de texto. Se podía COMPROBAR y no se podía VER.
+ *
+ * ⚠️ Y NO TOCA NI EL PINTOR NI LAS REGLAS. NI UNA LÍNEA.
+ *
+ * El repetidor sólo llama a `hub.reset` y `hub.move` — exactamente lo que hace
+ * jugar. La mesa repinta lo que el hub diga, como siempre, porque el render es un
+ * espectador y no un nervio. Consecuencia: sale gratis en los quince juegos de esta
+ * mesa y en los que vengan, sin escribir nada por juego.
+ *
+ * ⚠️ Y POR ESO EL HISTORIAL Y EL SUBRAYADO FUNCIONAN SOLOS.
+ *
+ * Como las jugadas se aplican de verdad, el hub las graba, `hub.partida()` las
+ * devuelve, y el registro y el subrayado de la última jugada aparecen sin una línea
+ * más. No estaba planeado: es lo que pasa cuando repetir es jugar otra vez y no
+ * reproducir un vídeo.
+ */
+if (!mesaCompartida) {
+    const { reciboDeLaURL, crearRepetidor } = await import('./protohub/repetidor.js');
+    const recibo = reciboDeLaURL();
+    if (recibo?.jugadas?.length) {
+        if (recibo.semilla === null) {
+            // Sin semilla el reparto sería otro y las jugadas caerían sobre un
+            // tablero distinto: se dice, no se finge. Un repetidor que enseña algo
+            // que no es la partida es peor que no tener repetidor.
+            console.warn('[Arcade] hay `repetir=` sin `semilla=`: no se puede repetir.');
+        } else {
+            repitiendo = true;
+            const { ponerMandoRepetir } = await import('./protohub/mando_repetir.js');
+            const repetidor = crearRepetidor({
+                hub, juego,
+                jugadas: recibo.jugadas,
+                semilla: recibo.semilla,
+                alCambiar: refrescar,
+            });
+            window.ALISA_REPETIDOR = repetidor;
+            // El mando va FUERA de `#hud-content`, hermano de las jugadas y por el
+            // mismo motivo: plegado, `#hud-content` queda con `max-height: 0`, y
+            // quien pliega el panel para ver bien la mesa es exactamente quien está
+            // mirando una partida repetirse.
+            const panel = document.querySelector('.hud-panel');
+            const antes = panel?.querySelector(':scope > #mesa-jugadas');
+            const hueco = document.createElement('div');
+            if (antes) panel.insertBefore(hueco, antes); else panel?.appendChild(hueco);
+            ponerMandoRepetir(hueco, repetidor, { juego, semilla: recibo.semilla });
+            repetidor.alInicio();
+        }
+    }
+}
 
 /**
  * Hay juegos cuyo mundo avanza SOLO —rebaño, pradera, peatón—, así que no basta

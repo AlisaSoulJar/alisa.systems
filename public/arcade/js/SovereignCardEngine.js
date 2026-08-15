@@ -111,6 +111,7 @@ class SovereignCardEngine {
         this._iniciarBackend().then(() => {
             this.pollHub();
             setInterval(this.pollHub, 1000);
+            this._montarRepetidor();
         });
         
         // Sovereign Gym Auto-Boot
@@ -574,7 +575,74 @@ class SovereignCardEngine {
         }
     }
 
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  ⚠️ EL REPETIDOR: VER UNA PARTIDA VOLVERSE A JUGAR
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     *     /arcade/brisca.html?semilla=7&repetir=jugar:O_1,jugar:C_3,…
+     *
+     * Todo esto se sostiene sobre una frase: «cualquiera puede verificar una
+     * partida volviéndola a jugar». Vivía entera dentro de un recibo de texto: se
+     * podía COMPROBAR y no se podía VER. Y aquí es donde más falta hacía — la queja
+     * más repetida de los sitios de cartas es que el reparto está amañado, y a esa
+     * sospecha no se le contesta con una promesa.
+     *
+     * ⚠️ VA EN EL MOTOR Y NO EN CADA MESA, Y ESO SON DIEZ JUEGOS DE UNA VEZ.
+     *
+     * Este motor lo comparten todos los juegos de cartas, con visualizador propio o
+     * con la mesa genérica. Puesto aquí, ninguno de ellos escribe una línea. Es la
+     * misma decisión que en la mesa de tablero: el repetidor sólo habla con el hub
+     * —`reset` y `move`, exactamente lo que hace jugar—, así que el dibujo no se
+     * entera de nada y no hay nada que portar.
+     *
+     * Sólo en local: en una sala manda el árbitro y la partida no es tuya para
+     * rebobinarla.
+     */
+    async _montarRepetidor() {
+        if (this.backend?.tipo !== 'local') return;
+        const hub = window.ALISA_PROTOHUB;
+        if (!hub?.soporta?.(this.gameId)) return;
+
+        const { reciboDeLaURL, crearRepetidor } = await import('./protohub/repetidor.js');
+        const recibo = reciboDeLaURL();
+        if (!recibo?.jugadas?.length) return;
+        if (recibo.semilla === null) {
+            // Sin semilla el reparto sería otro y las jugadas caerían sobre unas
+            // cartas distintas: se dice, no se finge. Un repetidor que enseña algo
+            // que no es la partida es peor que no tener repetidor.
+            console.warn('[Arcade] hay `repetir=` sin `semilla=`: no se puede repetir.');
+            return;
+        }
+
+        this.repitiendo = true;
+        const { ponerMandoRepetir } = await import('./protohub/mando_repetir.js');
+        this.repetidor = window.ALISA_REPETIDOR = crearRepetidor({
+            hub, juego: this.gameId,
+            jugadas: recibo.jugadas,
+            semilla: recibo.semilla,
+            // Repintar es sondear: el motor ya sabe hacerlo y así el repetidor no
+            // necesita saber nada de cartas ni de escenas.
+            alCambiar: () => this.pollHub(),
+        });
+
+        const panel = document.querySelector('.hud-panel');
+        if (panel) {
+            const hueco = document.createElement('div');
+            // Delante de los botones de jugada, que es donde mira quien iba a
+            // jugar y se encuentra con que está mirando.
+            const antes = panel.querySelector(':scope > #mesa-jugadas');
+            if (antes) panel.insertBefore(hueco, antes); else panel.appendChild(hueco);
+            ponerMandoRepetir(hueco, this.repetidor,
+                { juego: this.gameId, semilla: recibo.semilla });
+        }
+        this.repetidor.alInicio();
+    }
+
     async sendMove(moveStr) {
+        // Viendo repetirse una partida no se juega: lo que hay en la mesa es de otro
+        // momento y meterle una jugada encima rompería justo lo que se enseña.
+        if (this.repitiendo) return false;
         let payload = { action: 'move', params: { action: moveStr } };
         try {
             const res = await this.backend.move(payload);
@@ -622,6 +690,10 @@ class SovereignCardEngine {
     }
 
     async processAutoAgent(data) {
+        // Repitiendo, la casa no juega: metería jugadas suyas entre las del recibo y
+        // lo que se vería no sería la partida que se está enseñando. Con `?autorun=1`
+        // en la dirección esto pasa de verdad, no es una precaución teórica.
+        if (this.repitiendo) return;
         if (!this.autoMode || this.isGameOver) return;
 
         const stateObj = data.state || data;
@@ -1970,6 +2042,10 @@ class SovereignCardEngine {
              movesEl.innerText = mStr.length > 0 ? (mStr.length > 50 ? mStr.substring(0, 46) + "..." : mStr) : "None";
         }
 
+        // El último estado, para quien lo necesite después. `pintarJugadasPulsables`
+        // sólo recibe las jugadas legales, y para saber si la partida terminó —y con
+        // qué resultado— hace falta el estado entero.
+        this._ultimoEstado = stateObj;
         this.pintarJugadasPulsables(stateObj.legal_moves ?? stateObj.legal_actions ?? []);
     }
 
@@ -1995,7 +2071,35 @@ class SovereignCardEngine {
             caja.className = 'mesa-jugadas';
             panel.appendChild(caja);
         }
-        const lista = (movs ?? []).map(String);
+        /**
+         * ⚠️ AL TERMINAR, LA PANTALLA DE FIN — Y NO ES UN ADORNO.
+         *
+         * Aquí salía el botón «nueva» pelado, sin resultado, sin forma de compartir
+         * la partida ni de aportarla. Y es el momento en que alguien decide si juega
+         * otra o cierra la pestaña; en un blackjack, que es una mano detrás de otra,
+         * es EL momento.
+         *
+         * Va antes de la firma de los botones porque sustituye la caja entera.
+         */
+        const est = this._ultimoEstado;
+        if (est?.is_game_over && !this.repitiendo && this.backend?.tipo === 'local') {
+            import('./protohub/final.js').then(({ finalSiTerminada }) => finalSiTerminada(caja, {
+                estado: est, juego: this.gameId, enviar: (m) => this.sendMove(m),
+            })).catch(() => {});
+            return;
+        }
+
+        // Repitiendo, botones que no hacen nada. Se dice qué pasa en vez de dejarlos
+        // puestos: `sendMove` ya los rechaza, y un botón que no responde se lee como
+        // una página rota, no como «estás mirando».
+        const lista = this.repitiendo ? [] : (movs ?? []).map(String);
+        if (this.repitiendo) {
+            if (caja.dataset.firma !== '@repitiendo') {
+                caja.dataset.firma = '@repitiendo';
+                caja.innerHTML = '<span class="dato">estás viendo una partida volver a jugarse</span>';
+            }
+            return;
+        }
         const TOPE = 50;
         // Se compara antes de rehacer: el estado se consulta cada segundo y recrear
         // los botones bajo el dedo pierde el toque entre `pointerdown` y `pointerup`.
@@ -2003,6 +2107,9 @@ class SovereignCardEngine {
         if (caja.dataset.firma === firma) return;
         caja.dataset.firma = firma;
         caja.textContent = '';
+        // Hay partida viva otra vez: fuera el aspecto de pantalla de fin. La marca
+        // ya la ha sustituido la firma de las jugadas, pero la clase no se va sola.
+        caja.classList.remove('mesa-final');
         for (const m of lista.slice(0, TOPE)) {
             const b = document.createElement('button');
             b.type = 'button';

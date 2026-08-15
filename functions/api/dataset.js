@@ -50,10 +50,34 @@ const responder = (codigo, cuerpo, cabeceras = CABECERAS) =>
                  { status: codigo, headers: cabeceras });
 
 const cache = new Map();
+/**
+ * ⚠️ AQUÍ HABÍA DOS COMPROBACIONES QUE NO DECÍAN LO MISMO, Y GANABA LA MALA.
+ *
+ * Estaba `if (!JUEGOS.includes(juego)) return null;` delante de `cargarReglas`.
+ * Parece una guarda inofensiva y dejaba fuera a los dos juegos con más betatesters:
+ *
+ *     checkers.html → { juego: 'damas',   idJuego: 'checkers' }
+ *     chess.html    → { juego: 'ajedrez', idJuego: 'chess' }
+ *
+ * El recibo se lleva el nombre del VISUALIZADOR, así que una partida de damas llega
+ * aquí diciendo `juego: 'checkers'` — que no está en `JUEGOS`, porque `JUEGOS` son
+ * las claves de las reglas. Resultado: «no sé jugar a 'checkers'», y las damas y el
+ * ajedrez no podían entrar en el corpus. Con un mensaje que además culpa al que
+ * aporta.
+ *
+ * `cargarReglas` YA resuelve los dos nombres —lo arregló en su día el mismo fallo
+ * en `npm run avisos`— así que la guarda no protegía de nada y sólo contradecía a la
+ * comprobación buena. Se quita: si las reglas cargan, se puede jugar; si no, no. Una
+ * sola pregunta, hecha donde se sabe la respuesta.
+ *
+ * Y no abre ninguna puerta: `REGLAS` es un mapa literal, un nombre inventado da
+ * `undefined` y de aquí sale `null` igual que antes. No hay ruta que construir.
+ */
 async function reglasDe(juego, urlPeticion) {
+    if (!juego || typeof juego !== 'string') return null;
     if (cache.has(juego)) return cache.get(juego);
-    if (!JUEGOS.includes(juego)) return null;
     const reglas = await cargarReglas(juego, { url: new URL(BIBLIOTECA, urlPeticion).href });
+    if (!reglas) return null;
     cache.set(juego, reglas);
     return reglas;
 }

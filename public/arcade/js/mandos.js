@@ -103,7 +103,90 @@
         bPanel.setAttribute('aria-pressed', 'false');
         barra.appendChild(bPanel);
 
+        /**
+         * ⚠️ COMPARTIR LA PARTIDA — Y ESTE ES EL BOTÓN QUE LE DA SENTIDO AL RESTO.
+         *
+         * La tesis del proyecto es que cualquiera puede verificar una partida
+         * volviéndola a jugar, y el repetidor ya lo hace en las treinta y cinco
+         * mesas. Pero un enlace que hay que FABRICAR A MANO no lo fabrica nadie:
+         * hasta aquí, la única forma de conseguir uno era escribirlo en la barra de
+         * direcciones con las jugadas separadas por comas.
+         *
+         * Con esto, la partida que estás jugando se convierte en una dirección que
+         * se puede pegar en cualquier sitio — y quien la abra ve exactamente esa
+         * partida, jugada otra vez desde la semilla, no una parecida.
+         *
+         * Y es la contestación buena a «esto está amañado», que es la queja más
+         * repetida de los sitios de cartas: en vez de prometer que el reparto es
+         * limpio, se enseña.
+         */
+        const bCopiar = boton('🔗', 'copiar el enlace de esta partida', async () => {
+            const hub = window.ALISA_PROTOHUB;
+            const juego = window.ALISA_JUEGO;
+            const recibo = hub?.partida?.(juego);
+            // Ruta absoluta del sitio, no relativa: esto es un script CLÁSICO y a
+            // qué base resuelve su `import()` no es lo mismo en todos los
+            // navegadores. Adivinar una estructura en vez de fijarla ya ha costado
+            // varias medidas falsas en este proyecto.
+            const { enlaceRepetidor } = await import('/arcade/js/protohub/enlace_repetidor.js');
+            const enlace = recibo && enlaceRepetidor(recibo, { sitio: location.origin });
+            if (!enlace) return decir(bCopiar, 'esta partida todavía no se puede repetir');
+
+            try {
+                await navigator.clipboard.writeText(enlace);
+                decir(bCopiar, recibo.jugadas?.length
+                    ? `copiado — ${recibo.jugadas.length} jugadas`
+                    : 'copiado — el reparto, sin jugadas todavía');
+            } catch {
+                /**
+                 * El portapapeles falla sin ser un fallo: hace falta contexto seguro
+                 * y, en algunos navegadores, un gesto que el navegador se crea. Se
+                 * enseña el enlace ya seleccionado para poder copiarlo a mano.
+                 *
+                 * NO se usa `prompt()`: un diálogo del navegador congela la página
+                 * entera, y aquí hay una escena 3D corriendo detrás.
+                 */
+                enseñarEnlace(enlace);
+            }
+        });
+        barra.appendChild(bCopiar);
+
         document.body.appendChild(barra);
+    }
+
+    /** Un acuse de un segundo y medio en el propio botón. Sin diálogos. */
+    function decir(boton, texto) {
+        const antes = boton.textContent;
+        boton.textContent = '✓';
+        boton.classList.add('mando-hecho');
+        const globo = document.createElement('span');
+        globo.className = 'mando-globo';
+        globo.textContent = texto;
+        boton.appendChild(globo);
+        setTimeout(() => {
+            boton.textContent = antes;
+            boton.classList.remove('mando-hecho');
+        }, 1600);
+    }
+
+    /** Cuando el portapapeles no está: el enlace a la vista y ya seleccionado. */
+    function enseñarEnlace(enlace) {
+        document.getElementById('alisa-enlace')?.remove();
+        const caja = document.createElement('div');
+        caja.id = 'alisa-enlace';
+        const campo = document.createElement('input');
+        campo.type = 'text';
+        campo.readOnly = true;
+        campo.value = enlace;
+        const cerrar = document.createElement('button');
+        cerrar.type = 'button';
+        cerrar.textContent = '✕';
+        cerrar.title = 'cerrar';
+        cerrar.addEventListener('click', () => caja.remove());
+        caja.append(campo, cerrar);
+        document.body.appendChild(caja);
+        campo.focus();
+        campo.select();
     }
 
     /**
