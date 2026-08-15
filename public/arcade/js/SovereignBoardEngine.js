@@ -152,6 +152,25 @@ class SovereignBoardEngine {
 
         container.appendChild(this.renderer.domElement);
 
+        /**
+         * ⚠️ EL MOTOR, ALCANZABLE DESDE FUERA. NO ES PARA JUGAR: ES PARA MIRAR.
+         *
+         * `legibilidad.mjs` pregunta si lo que el sustrato declara se VE: si cae en
+         * pantalla, si la casilla es lo bastante grande, si el material se distingue
+         * del terreno. Para eso le hace falta la cámara y la escena.
+         *
+         * La mesa genérica las publica (`ALISA_CAMARA`, `ALISA_PINTOR`) y por eso se
+         * la puede medir. Los QUINCE visualizadores propios —snake, ajedrez, mancala,
+         * el go…— no publicaban nada, así que quedaban fuera: cuarenta de las setenta
+         * medidas sin cubrir, o sea media arcade sin red debajo.
+         *
+         * Y los quince salen de estos DOS motores. Una línea aquí y otra en el de
+         * cartas los cubre a todos — frente a tocar quince ficheros y que el
+         * dieciséis nazca sin ella, que es el fallo que este proyecto lleva
+         * arreglado seis veces.
+         */
+        window.ALISA_MOTOR = this;
+
         window.addEventListener('resize', this.onWindowResize);
 
         // Run specific game init

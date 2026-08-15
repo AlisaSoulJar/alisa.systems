@@ -84,7 +84,22 @@ function createBlackMaterial() {
 
 function buildBoard() {
     const geo = new THREE.BoxGeometry(SQUARE_SIZE, 0.2, SQUARE_SIZE);
-    const matLight = new THREE.MeshStandardMaterial({ color: 0xe8e5e0, roughness: 0.65, metalness: 0.05 });
+    /**
+     * ⚠️ LA CASILLA CLARA ERA CASI LA PIEZA BLANCA. `0xe8e5e0` CONTRA `0xf0f0f0`.
+     *
+     * Dieciséis puntos sobre 255. Se ven porque las luces de esta escena son fuertes
+     * y las piezas llevan sombra propia, o sea que la SILUETA la está haciendo la
+     * iluminación y no el color. Eso funciona hasta que alguien toca una luz.
+     *
+     * Lo encontró `legibilidad.mjs` comparando materiales, y de paso me corrigió: yo
+     * había mirado la captura y dicho «las negras sobre las oscuras casi no tienen
+     * silueta». Las negras están a 45 de las casillas oscuras, holgadas. Lo que yo
+     * leía como poco contraste era la penumbra de esa mitad del tablero.
+     *
+     * Marfil cálido contra blanco frío: es la diferencia de siempre en un tablero de
+     * verdad, y sube la distancia a 40.
+     */
+    const matLight = new THREE.MeshStandardMaterial({ color: 0xd8d2c8, roughness: 0.65, metalness: 0.05 });
     const matDark  = new THREE.MeshStandardMaterial({ color: 0x2a2a35, roughness: 0.6, metalness: 0.1 });
 
     for (let rank = 0; rank < 8; rank++) {

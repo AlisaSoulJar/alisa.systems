@@ -187,6 +187,12 @@ class SovereignCardEngine {
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
         container.appendChild(this.renderer.domElement);
+
+        // El motor, alcanzable desde fuera para poder MEDIRLO. El porqué está en
+        // `SovereignBoardEngine.js`, que lleva la misma línea: quince visualizadores
+        // propios salen de estos dos motores, así que dos líneas los cubren todos.
+        window.ALISA_MOTOR = this;
+
         window.addEventListener('resize', this.onWindowResize);
 
         // Raycaster Events

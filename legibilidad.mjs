@@ -114,9 +114,100 @@ for (const juego of juegos) {
          * el color se mira en la captura, ya en Node. Y de paso queda dicho que
          * `mirar.mjs` tenía el mismo agujero.
          */
-        const posiciones = await p.evaluate(({ W, H }) => {
+        const posiciones = await p.evaluate(({ W, H, MINIMO_CONTRASTE }) => {
             const cam = window.ALISA_CAMARA, raiz = window.ALISA_PINTOR?.raiz;
-            if (!cam || !raiz) return { medible: false, razon: 'visualizador propio' };
+
+            /**
+             * ═══════════════════════════════════════════════════════════════
+             *  LOS VISUALIZADORES PROPIOS: SIN SUSTRATO, PERO NO SIN MEDIDA
+             * ═══════════════════════════════════════════════════════════════
+             *
+             * Quince juegos dibujan su escena a mano —snake, ajedrez, mancala, el
+             * go…— y ahí no hay `ALISA_PINTOR`: nadie sabe qué malla es «el jugador».
+             * Eran cuarenta de las setenta medidas, o sea media arcade sin red.
+             *
+             * No hace falta saber QUIÉN es cada malla para contestar la pregunta que
+             * importa: **¿hay algo pegado a otra cosa de su mismo color?** Eso es el
+             * camuflaje, sin necesidad de nombres.
+             *
+             * ⚠️ Y SÓLO ENTRE VECINAS EN PANTALLA, QUE ES LA DIFERENCIA.
+             *
+             * Comparar todos los materiales contra todos daría una lista enorme de
+             * parejas que nunca se tocan — ruido, y una comprobación que chilla
+             * siempre se acaba ignorando. Dos cosas del mismo color a media pantalla
+             * de distancia no se confunden; pegadas, sí.
+             */
+            if (!cam || !raiz) {
+                const motor = window.ALISA_MOTOR;
+                if (!motor?.scene || !motor?.camera) return { medible: false, razon: 'sin motor' };
+                motor.scene.updateMatrixWorld(true);
+
+                const v = new THREE.Vector3();
+                const cosas = [];
+                motor.scene.traverse((o) => {
+                    if (!o.isMesh || !o.visible || !o.material?.color) return;
+                    if (cosas.length > 400) return;                 // tope de cortesía
+                    v.setFromMatrixPosition(o.matrixWorld).project(motor.camera);
+                    const x = (v.x + 1) / 2 * W, y = (1 - v.y) / 2 * H;
+                    if (x < -50 || y < -50 || x > W + 50 || y > H + 50) return;
+                    const c = o.material.color;
+                    cosas.push({
+                        x, y, col: [Math.round(c.r * 255), Math.round(c.g * 255), Math.round(c.b * 255)],
+                        geo: o.geometry?.type ?? '?',
+                        nombre: o.name || o.geometry?.type || 'malla',
+                    });
+                });
+                if (cosas.length < 2) return { medible: false, razon: 'escena sin mallas' };
+
+                // «Pegadas» es relativo al tamaño de las cosas: se toma la distancia
+                // típica entre vecinas y se comparan las que estén por debajo.
+                const cerca = Math.max(30, Math.min(W, H) / 12);
+                const parejas = new Map();
+                for (let i = 0; i < cosas.length; i++) {
+                    for (let j = i + 1; j < cosas.length; j++) {
+                        const a = cosas[i], b2 = cosas[j];
+                        if (Math.hypot(a.x - b2.x, a.y - b2.y) > cerca) continue;
+                        /**
+                         * ⚠️ SÓLO ENTRE COSAS DE DISTINTA CLASE.
+                         *
+                         * Mancala salía marcado por `SphereGeometry ~ SphereGeometry`
+                         * a 11 de distancia: dos semillas de tono ligeramente
+                         * distinto, una al lado de otra. Y eso es lo NORMAL — son
+                         * todas semillas, y que se parezcan entre ellas no estorba a
+                         * nadie. Lo que estorba es que una FICHA se parezca a la
+                         * CASILLA, o una pieza al tablero.
+                         *
+                         * El tipo de geometría es un indicio barato de «clase de
+                         * cosa»: un cilindro no es un cubo. No es perfecto, y por eso
+                         * esto informa de parejas concretas en vez de dar una nota.
+                         */
+                        if (a.geo === b2.geo) continue;
+                        const d = Math.max(Math.abs(a.col[0] - b2.col[0]),
+                                           Math.abs(a.col[1] - b2.col[1]),
+                                           Math.abs(a.col[2] - b2.col[2]));
+                        if (d === 0) continue;      // el mismo material: no es choque
+                        if (d >= MINIMO_CONTRASTE) continue;
+                        /**
+                         * ⚠️ CON LOS COLORES, QUE SI NO NO SE PUEDE ARREGLAR.
+                         *
+                         * La primera versión decía «BoxGeometry ~ LatheGeometry
+                         * (16)». Con eso sé que hay un choque y no sé entre QUÉ: en
+                         * el ajedrez hay tres materiales de caja —casilla clara,
+                         * casilla oscura y borde— y tres de pieza. Un aviso que
+                         * obliga a ir a buscar el par a mano es medio aviso.
+                         */
+                        const hex = (c) => '#' + c.map(n => n.toString(16).padStart(2, '0')).join('');
+                        const clave = [`${a.nombre} ${hex(a.col)}`, `${b2.nombre} ${hex(b2.col)}`]
+                            .sort().join(' ~ ');
+                        if (!parejas.has(clave)) parejas.set(clave, d);
+                    }
+                }
+                return {
+                    medible: true, propio: true, mallas: cosas.length,
+                    parejas: [...parejas.entries()].slice(0, 4).map(([k, d]) => `${k} (${d})`),
+                };
+            }
+
             raiz.updateMatrixWorld(true);
 
             const panel = document.querySelector('.hud-panel')?.getBoundingClientRect();
@@ -213,10 +304,15 @@ for (const juego of juegos) {
             const rejilla = window.ALISA_PROTOHUB?.sustrato(window.ALISA_JUEGO)?.rejilla;
             return { medible: true, piezas: piezas.length, paso, fuera, tapadas, visibles,
                      fondos, montonesPieza, cols: rejilla?.ancho ?? null };
-        }, { W: forma.width, H: forma.height });
+        }, { W: forma.width, H: forma.height, MINIMO_CONTRASTE });
 
         if (!posiciones.medible) {
             r = posiciones;
+        } else if (posiciones.propio) {
+            // Escena dibujada a mano: lo único que se puede afirmar es si hay cosas
+            // pegadas del mismo color. Ni tamaño de casilla ni piezas fuera, porque
+            // aquí no hay casillas ni sustrato que diga qué es pieza.
+            r = { ...posiciones, camufladas: posiciones.parejas };
         } else {
             // Cada montón de piezas contra cada terreno: si se parece a alguno, está
             // camuflado contra él y se dice contra CUÁL, que es lo que hace falta
@@ -268,8 +364,10 @@ for (const juego of juegos) {
             + (inevitable ? ', no cabe más grande en esta pantalla' : ''));
     }
     if (r.camufladas?.length) quejas.push(`camuflaje: ${r.camufladas.join(', ')}`);
-    console.log(`  ${quejas.length ? '✗' : '✓'} ${juego.padEnd(11)} ${forma.nombre.padEnd(5)}`
-        + ` ${String(r.piezas).padStart(3)} piezas · casilla ${String(r.paso).padStart(3)} px`
+    const cuerpo = r.propio
+        ? `${String(r.mallas).padStart(3)} mallas · escena propia`
+        : `${String(r.piezas).padStart(3)} piezas · casilla ${String(r.paso).padStart(3)} px`;
+    console.log(`  ${quejas.length ? '✗' : '✓'} ${juego.padEnd(11)} ${forma.nombre.padEnd(5)} ${cuerpo}`
         + (quejas.length ? `\n      ↳ ${quejas.join('\n      ↳ ')}` : ''));
   }
 }
