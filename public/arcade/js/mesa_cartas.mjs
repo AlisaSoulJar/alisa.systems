@@ -77,6 +77,88 @@ import { volcarMesa, volcando, ponerBoton } from './protohub/render/volcar.js';
  * juego. Se arregla preguntando lo único que decide el sitio: si esos asientos
  * están ocupados. Con dos jugadores el centro sigue teniendo toda la anchura.
  */
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  EL REVERSO DE LA BARAJA QUE SE ESTÁ USANDO
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ⚠️ ESTABA ESCRITO A MANO COMO `'classic_red'` EN TRES SITIOS.
+ *
+ * Y el sistema entero para hacerlo bien lleva meses puesto:
+ *
+ *   · `card_library.json` declara SIETE barajas y el reverso de cada una
+ *     (`spanish_40 → spanish_gold`, `french_52 → classic_red`, `tarot_78`…);
+ *   · y ese mismo fichero dice qué baraja usa cada juego —brisca, tute y mus con
+ *     la española, el resto con la francesa—;
+ *   · y `SovereignCardEngine._drawCardBack` sabe dibujar los patrones, con su
+ *     paleta por baraja: el dorado español es `#5C4A1E / #8B6914 / #DAA520`.
+ *
+ * Las tres piezas puestas, y en medio una constante a mano que las anulaba: la
+ * brisca —española de 40, con sus oros y sus bastos— repartía cartas con el
+ * reverso rojo de la baraja francesa. El dato bien declarado y el consumidor
+ * inventándose una convención, que es el mismo fallo que hoy ha aparecido en la
+ * leyenda del pintor y en la caché del corpus.
+ *
+ * ⚠️ Y LA BARAJA SE DEDUCE DE LAS CARTAS, NO DE UNA TABLA DE NOMBRES.
+ *
+ * El catálogo llama a los juegos por su nombre largo —`texas_holdem`, `war`,
+ * `go_fish`— y las páginas por el corto —`poker`, `guerra`, `gofish`—. Medido:
+ * coinciden SIETE de once. Escribir los cuatro alias que faltan sería la enésima
+ * lista a mano de este proyecto, y encima una que se rompe con el próximo juego.
+ *
+ * Los PALOS sí son un hecho de la partida: si las cartas son `O_2` y `B_7`, son oros
+ * y bastos y la baraja es española; si son `H_10` y `S_A`, es francesa. Se buscan en
+ * el catálogo los palos que de verdad hay en la mesa, y esa es la baraja — sin
+ * nombres de por medio, y funcionando igual el día que alguien añada un juego.
+ */
+async function reversoDeLaBaraja(mesa) {
+    mesa.activeDeckBack = 'classic_red';
+    try {
+        const lib = await fetch('/arcade/data/card_library.json').then(r => r.json());
+        const juego = window.ALISA_JUEGO;
+
+        // Primero por nombre, que es exacto cuando coincide (siete de once).
+        let baraja = lib.games?.[juego]?.deck ?? null;
+
+        if (!baraja) {
+            // Y si no, por los palos de las cartas que hay repartidas ahora mismo.
+            const hub = window.ALISA_PROTOHUB;
+            const sus = hub?.soporta?.(juego) ? hub.sustrato(juego) : null;
+            const palos = new Set();
+            for (const z of sus?.zonas ?? []) {
+                for (const c of z.cartas ?? []) {
+                    const p = String(c?.id ?? c).split('_')[0];
+                    if (p && p !== 'back') palos.add(p);
+                }
+            }
+            if (palos.size) {
+                for (const [nombre, d] of Object.entries(lib.decks ?? {})) {
+                    const suyos = new Set((d.suits ?? []).map(s => s.id));
+                    // Todos los palos vistos tienen que ser de esa baraja.
+                    if (suyos.size && [...palos].every(p => suyos.has(p))) { baraja = nombre; break; }
+                }
+            }
+        }
+
+        const reverso = baraja && lib.decks?.[baraja]?.back;
+        if (reverso) mesa.activeDeckBack = reverso;
+    } catch { /* sin biblioteca se juega igual, con el reverso de siempre */ }
+}
+
+/**
+ * El id que hay que darle a una carta boca abajo para que salga con el reverso de
+ * SU baraja.
+ *
+ * ⚠️ EL TIPO DE REVERSO VIAJA EN EL ID, Y ESO NO SE VE VENIENDO.
+ *
+ * Averigüé la baraja, la guardé en `activeDeckBack`… y las cartas siguieron saliendo
+ * rojas. `SovereignCardEngine` no mira esa variable para el dorso: lee el propio id
+ * de la carta —`back_spanish_gold`— y con `'back'` a secas cae en el rojo por
+ * defecto. O sea que el dato estaba bien calculado y no llegaba, que es el tercer
+ * caso hoy de «lo arreglé y la imagen no cambió».
+ */
+const dorso = (mesa) => `back_${mesa.activeDeckBack || 'classic_red'}`;
+
 const sitios = (estrecha, conLaterales = false) => ({
     0:    { x:  0.0, z:  2.9, layout: 'fan',  reparto: 'x', paso: 6 },  // tú, cerca de la cámara
     1:    { x:  0.0, z: -2.9, layout: 'fan',  reparto: 'x', paso: 6 },  // el de enfrente
@@ -580,7 +662,7 @@ const engine = new SovereignCardEngine({
         if (this.invitado) {
             this.piezasMesa = {};
             this.preloadCourtImages('/arcade/assets/cards/courts');
-            this.activeDeckBack = 'classic_red';
+            reversoDeLaBaraja(this);
             return;
         }
 
@@ -718,7 +800,7 @@ const engine = new SovereignCardEngine({
         scene.add(new THREE.HemisphereLight(0xbfd4e6, 0x0a2a14, 0.55));
 
         this.preloadCourtImages('/arcade/assets/cards/courts');
-        this.activeDeckBack = 'classic_red';
+        reversoDeLaBaraja(this);
     },
 
     /**
@@ -909,7 +991,7 @@ const engine = new SovereignCardEngine({
                     const filas = Math.ceil(z.casillas.length / cols);
                     const cartas = z.casillas.map((c) =>
                         c === null || c === undefined
-                            ? { id: 'back', oculta: true }
+                            ? { id: dorso(this), oculta: true }
                             : { id: caraDe(c), oculta: false });
                     this.drawZone(cartas, `${z.id}_${clave}_${i}`,
                         cx - ((cols - 1) * REJILLA_X) / 2,
@@ -923,7 +1005,7 @@ const engine = new SovereignCardEngine({
                     ...z.items.map(c => (c && typeof c === 'object'
                         ? { ...c, id: caraDe(c.id ?? c), oculta: false }
                         : { id: caraDe(c), oculta: false })),
-                    ...Array.from({ length: z.ocultas ?? 0 }, () => ({ id: 'back', oculta: true })),
+                    ...Array.from({ length: z.ocultas ?? 0 }, () => ({ id: dorso(this), oculta: true })),
                 ];
                 if (!cartas.length) return;
 

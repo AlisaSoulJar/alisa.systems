@@ -81,7 +81,8 @@
           "color": "#FF9800"
         }
       ],
-      "total": 54
+      "total": 54,
+      "back": "classic_red"
     },
     "spanish_40": {
       "name": "Baraja Española (40 cartas)",
@@ -162,7 +163,8 @@
         "C",
         "R"
       ],
-      "total": 48
+      "total": 48,
+      "back": "spanish_gold"
     },
     "tarot_78": {
       "name": "Tarot (78 cartas)",
@@ -376,7 +378,8 @@
         "11": 11,
         "12": 12
       },
-      "total": 48
+      "total": 48,
+      "back": "casino_blue"
     }
   },
   "games": {
@@ -1513,7 +1516,6 @@
         }
       ],
       "card_values": {
-        "A": 1,
         "2": 2,
         "3": 3,
         "4": 4,
@@ -1523,6 +1525,7 @@
         "8": 8,
         "9": 9,
         "10": 0,
+        "A": 1,
         "J": 0,
         "Q": 0,
         "K": 0
