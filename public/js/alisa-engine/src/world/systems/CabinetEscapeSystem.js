@@ -6,8 +6,17 @@
 import { mulberry32 } from '../core/DeterministicScope.js';
 
 export class CabinetEscapeSystem {
+    /**
+     * @param {Object} [config]
+     * @param {Object} [config.bspEngine]
+     * @param {() => number} [config.rng] Fuente de azar en [0,1). Por defecto
+     *        `Math.random`. `initEpisode` ya siembra su propio generador por
+     *        episodio con `mulberry32(seed)` — esto es sólo para lo que queda
+     *        fuera de ese episodio, como `doMontyReveal`.
+     */
     constructor(config = {}) {
         this.bspEngine = config.bspEngine || null;
+        this.rng = config.rng || Math.random;
         this.resetState();
     }
 
@@ -209,7 +218,7 @@ export class CabinetEscapeSystem {
         for (let i = 0; i < this.partition.leaves.length; i++) { 
             if (i !== this.targetId && !this.tried[i] && !this.montyRevealed.includes(i)) candidates.push(i); 
         }
-        if (candidates.length > 0) this.montyRevealed.push(candidates[Math.floor(Math.random() * candidates.length)]);
+        if (candidates.length > 0) this.montyRevealed.push(candidates[Math.floor(this.rng() * candidates.length)]);
     }
 
     pickUpBattery() {

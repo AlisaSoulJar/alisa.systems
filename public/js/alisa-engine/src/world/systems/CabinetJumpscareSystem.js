@@ -1,5 +1,12 @@
 export class CabinetJumpscareSystem {
-    constructor() {
+    /**
+     * @param {Object} [config]
+     * @param {() => number} [config.rng] Fuente de azar en [0,1). Por defecto
+     *        `Math.random`. Pásale un generador con semilla para que el parpadeo
+     *        del susto se repita igual con la misma partida. Ver `prueba_semillas.mjs`.
+     */
+    constructor(config = {}) {
+        this.rng = config.rng || Math.random;
         this.resetState();
     }
     
@@ -62,7 +69,7 @@ export class CabinetJumpscareSystem {
         this.timer -= dt;
         
         if (this.phase === 'flicker') {
-            const show = Math.random() > 0.5;
+            const show = this.rng() > 0.5;
             if (this.flashLight) this.flashLight.intensity = show ? 1.5 : 0;
             if (this.volumetricBeam) this.volumetricBeam.material.opacity = show ? 0.4 : 0;
             if (this.phantomGroup) this.phantomGroup.visible = show;

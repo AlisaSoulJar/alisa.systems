@@ -12,15 +12,17 @@ export class IDMSystem {
      * @param {number} config.comfortableDecel (b) - Comfortable deceleration
      * @param {number} config.minDistance (s0) - Minimum distance to the vehicle in front
      * @param {number} config.accelExponent (delta) - Usually 4
+     * @param {() => number} [config.rng] Source of randomness, [0,1). Defaults to
+     *        `Math.random`. Pass a seeded generator to get reproducible lane changes.
      */
     constructor(config = {}) {
-        this.v0 = config.desiredSpeed || 15.0;     
-        this.T = config.safeTimeHeadway || 1.5;    
-        this.a = config.maxAcceleration || 1.0; 
-        this.b = config.comfortableDecel || 1.5; 
-        this.s0 = config.minDistance || 2.0;       
+        this.v0 = config.desiredSpeed || 15.0;
+        this.T = config.safeTimeHeadway || 1.5;
+        this.a = config.maxAcceleration || 1.0;
+        this.b = config.comfortableDecel || 1.5;
+        this.s0 = config.minDistance || 2.0;
         this.delta = config.accelExponent || 4;
-        
+
         // Loop boundary
         this.laneLength = config.laneLength || 200.0;
 
@@ -28,6 +30,8 @@ export class IDMSystem {
         this.laneTolerance = config.laneTolerance || 2.5;   // Z-distance to consider "same lane"
         this.lookAhead     = config.lookAhead     || 20.0;   // Forward scan distance
         this.laneGapCheck  = config.laneGapCheck  || 10.0;   // Min gap for safe lane change
+
+        this.rng = config.rng || Math.random;
     }
 
     /**
@@ -149,7 +153,7 @@ export class IDMSystem {
 
             // ── MOBIL-lite lane change ──
             let laneChange = null;
-            if (Math.random() < ego.laneChangeChance && nearestDist < ego.followDist * 2) {
+            if (this.rng() < ego.laneChangeChance && nearestDist < ego.followDist * 2) {
                 const currentLane = this._findLane(ego.z, lanes);
                 const currentIdx  = lanes.indexOf(currentLane);
                 const candidates  = [];

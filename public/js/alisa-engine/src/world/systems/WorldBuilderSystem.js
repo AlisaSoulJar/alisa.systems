@@ -12,10 +12,18 @@ import { EnvironmentFactory } from '../factories/EnvironmentFactory.js';
  * Three.js scenes and corresponding mathematical arrays for the logic engines.
  */
 export class WorldBuilderSystem {
+    /**
+     * @param {THREE.Scene} scene
+     * @param {Object} [options]
+     * @param {() => number} [options.rng] Source of randomness, [0,1). Defaults to
+     *        `Math.random`. Pass a seeded generator to get a reproducible boid-swarm
+     *        scatter. See `prueba_semillas.mjs`.
+     */
     constructor(scene, options = {}) {
         this.scene = scene;
         this.options = options;
-        
+        this.rng = options.rng || Math.random;
+
         // Logical storage for physics/RL layers
         this.state = {
             buildings: [],
@@ -249,9 +257,9 @@ export class WorldBuilderSystem {
                     const mesh = EnvironmentFactory.createBoidProxy(agent.model || 'cucco');
                     // Scatter slightly around center point
                     mesh.position.set(
-                        startX + (Math.random() - 0.5) * 10,
-                        startY + (Math.random() * 2), // small lift
-                        startZ + (Math.random() - 0.5) * 10
+                        startX + (this.rng() - 0.5) * 10,
+                        startY + (this.rng() * 2), // small lift
+                        startZ + (this.rng() - 0.5) * 10
                     );
                     this.scene.add(mesh);
                     config.meshes.push(mesh);

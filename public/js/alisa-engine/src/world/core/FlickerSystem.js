@@ -16,7 +16,14 @@
  *   flicker.tick(elapsedTime);
  */
 export class FlickerSystem {
-    constructor() {
+    /**
+     * @param {Object} [config]
+     * @param {() => number} [config.rng] Source of randomness, [0,1). Defaults to
+     *        `Math.random`. Pass a seeded generator to get a reproducible desync
+     *        phase and 'random' flicker pattern.
+     */
+    constructor(config = {}) {
+        this.rng = config.rng || Math.random;
         /** @type {Array<{material: THREE.Material, config: FlickerConfig}>} */
         this._entries = [];
         /** @type {Array<{mesh: THREE.Mesh, tex: THREE.Texture, speed: number}>} */
@@ -37,7 +44,7 @@ export class FlickerSystem {
             material,
             type: config.type || 'sin',
             speed: config.speed || 0.3,
-            seed: config.seed || Math.random() * 100,
+            seed: config.seed || this.rng() * 100,
             baseIntensity: config.baseIntensity ?? (material.emissiveIntensity || 1.0),
             baseOpacity: config.baseOpacity ?? (material.opacity || 1.0),
             isVapor: config.type === 'vapor'
@@ -98,7 +105,7 @@ export class FlickerSystem {
                     break;
                 case 'random':
                     // Harsh random flicker (broken neon)
-                    intensity = entry.baseIntensity * (0.2 + Math.random() * 0.8);
+                    intensity = entry.baseIntensity * (0.2 + this.rng() * 0.8);
                     break;
                 case 'pulse':
                     // Sharp square-wave pulse

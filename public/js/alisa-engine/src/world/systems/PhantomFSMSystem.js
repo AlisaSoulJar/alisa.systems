@@ -25,7 +25,15 @@ export const PhantomComponent = (config = {}) => ({
 });
 
 export class PhantomFSMSystem {
-    
+    /**
+     * @param {Object} [config]
+     * @param {() => number} [config.rng] Source of randomness, [0,1). Defaults to
+     *        `Math.random`. Pass a seeded generator to get reproducible relocations.
+     */
+    constructor(config = {}) {
+        this.rng = config.rng || Math.random;
+    }
+
     update(ecs, entities, dt) {
         for (const entityId of entities) {
             const phantom = ecs.getComponent(entityId, 'PhantomComponent');
@@ -67,8 +75,8 @@ export class PhantomFSMSystem {
                     phantom.events.push('relocated');
                     
                     // Simple relocation far from player for now (in real system, pick furthest room)
-                    transform.x = preyPos.x + 30 * (Math.random() > 0.5 ? 1 : -1);
-                    transform.z = preyPos.z + 30 * (Math.random() > 0.5 ? 1 : -1);
+                    transform.x = preyPos.x + 30 * (this.rng() > 0.5 ? 1 : -1);
+                    transform.z = preyPos.z + 30 * (this.rng() > 0.5 ? 1 : -1);
                 }
                 continue;
             }

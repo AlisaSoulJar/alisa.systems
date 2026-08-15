@@ -66,7 +66,52 @@ Dos caminos, y es decisión de producto:
 
 El segundo respeta la propiedad del banco. Yo iría por ahí.
 
-### 3. La tabla tiene que ROTAR ASIENTOS
+### 3. ✅ LA TABLA YA ROTA ASIENTOS (16-08). Los dos bloqueos cayeron en una noche
+
+Y ninguno de los dos necesitó lo que aquí ponía que necesitaba.
+
+**Primero: «la puntuación no sigue al asiento».** Falso desde hacía tiempo. Dieciséis
+de los treinta y cinco juegos ya declaraban `estado(p, asiento = 0)` y lo usaban bien
+—`bazas.js` hasta resolvía el caso difícil, `puntos: MENOR_GANA ? -míos : míos`, que
+es el que impide leer `marcador[asiento]` a pelo porque en hearts el marcador crudo
+tiene el signo al revés—. Lo que faltaba era una línea: `ProtoHubEnv._estado()`
+llamaba a `reglas.estado(this.p)` sin pasarle el asiento. Un cable suelto entre dos
+extremos ya montados.
+
+Luego parchís, canadiense, oca y remigio publicaron también su `marcador` por silla,
+reusando su propia fórmula, así que con `asiento = 0` no cambió ni un número.
+
+**Segundo: `asiento` hacía dos cosas a la vez** —dejar pasar N turnos *y* elegir el
+punto de vista—. En un juego de cuatro son la misma; en uno de dos, no. Faltaba saber
+cuántas sillas tiene cada juego… y resultó que ya se sabía sin inventar nada:
+**`marcador` lleva un elemento por silla.** Apareció solo al arreglar lo anterior.
+
+La comprobación que no se puede falsear: en un juego de dos, las sillas 0 y 2 tienen
+que dar EXACTAMENTE lo mismo.
+
+    remigio  2 sillas   -54.5   131.8   -54.5   131.8   ✓
+    oca      2 sillas   554.3  1306.5   554.3  1306.5   ✓
+    gofish   3 sillas     2.1     3.8     4.1     2.1   ✓
+
+Y el sesgo por fin se lee limpio: brisca 19.5 / 21.4 / 25.2 / 27.6 —la silla 3 saca un
+42 % más que la 0—, parchís 262 contra 465, canadiense 138 contra 236.
+
+**Se rota por defecto; `--sin-rotar` lo apaga.** Rotar no quita el sesgo del juego, lo
+REPARTE. Probado con brisca, tute y hearts: los tres pasan a tener hueco donde antes
+no lo tenía ninguno.
+
+⚠️ **`resultados/tabla.json` NO se ha regenerado, a propósito.** Una clasificación
+rotada no es comparable con las de antes, así que republicarla es decisión de Oscar,
+no un efecto secundario. Y ojo: **correr `tabla.mjs` sobrescribe ese fichero sin
+avisar** — una corrida de prueba de tres juegos me dejó la clasificación publicada en
+siete líneas. Hubo que revertirla a mano.
+
+**Lo que queda aquí:** entropy cuenta una sola silla porque publica su marcador sólo
+al acabar. Arreglarlo es una línea en sus reglas, pero ese campo entra en la HUELLA DE
+APERTURA (`huella.js`), y cambiar la huella de un juego cambia lo que identifica sus
+partidas. No es una línea que se toque de pasada.
+
+### 3.bis (histórico) La tabla tiene que ROTAR ASIENTOS
 
 Medido por el agente que escribió el parchís canadiense, con las cuatro sillas
 jugando IGUAL, 600 partidas:
