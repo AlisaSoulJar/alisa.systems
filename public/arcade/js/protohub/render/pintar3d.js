@@ -67,6 +67,43 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
         faro: new THREE.ConeGeometry(0.2, 0.45, 10).rotateX(Math.PI),
         carta: new THREE.BoxGeometry(0.62, 0.012, 0.9),
     };
+
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  ⚠️ CADA BANDO CON SU FORMA, NO SÓLO CON SU COLOR
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Es requisito de accesibilidad en la guía de interfaz de Board Game Arena, no
+     * un extra: «empareja color con iconos, texturas o formas», y un símbolo o
+     * contorno único por cada color de peón. Con azul contra rojo, una de cada doce
+     * personas —la proporción de daltonismo en hombres— está jugando a adivinar de
+     * quién es cada ficha.
+     *
+     * Y no hace falta añadir nada encima: basta con el NÚMERO DE LADOS. Redondo,
+     * hexagonal, cuadrado, triangular. Se distinguen en escala de grises, a
+     * cualquier zoom y desde cualquier ángulo, siguen siendo fichas planas de la
+     * misma familia, y no cuesta ni una malla más — el pintor ya agrupa por
+     * `(forma, dueño)`, así que cada bando YA tenía su propio montón instanciado.
+     * Lo único que cambia es qué geometría se le da.
+     *
+     * ⚠️ SÓLO EN LOS DISCOS, Y A PROPÓSITO.
+     *
+     * Los cubos son muros y las bolitas comida: terreno y cosas de nadie, que no
+     * tienen bando que distinguir. Darles forma por dueño sería contar algo que no
+     * existe.
+     */
+    const LADOS_POR_DUEÑO = { 0: 16, 1: 6, 2: 4, 3: 3 };
+    const discos = new Map();
+    const discoDe = (de) => {
+        const lados = LADOS_POR_DUEÑO[de] ?? 16;
+        if (!discos.has(lados)) {
+            // El giro alinea el hexágono y el cuadrado con el tablero: sin él, un
+            // cuadrado sale en rombo y parece otra cosa en vez de otro bando.
+            discos.set(lados, new THREE.CylinderGeometry(0.36, 0.36, 0.18, lados)
+                .rotateY(lados === 4 ? Math.PI / 4 : 0));
+        }
+        return discos.get(lados);
+    };
     const material = (color, extra = {}) =>
         new THREE.MeshStandardMaterial({ color, roughness: 0.55, ...extra });
     const mat = {
@@ -433,7 +470,10 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
                 grupos.get(clave).items.push(p);
             }
             for (const [clave, g] of grupos) {
-                const m = monton(clave, geo[g.forma], materialDe(g.de, sus.colores), g.items.length);
+                // La forma del disco depende del dueño: es lo que hace que los
+                // bandos se distingan sin depender del color.
+                const forma = g.forma === 'disco' ? discoDe(g.de) : geo[g.forma];
+                const m = monton(clave, forma, materialDe(g.de, sus.colores), g.items.length);
                 for (const p of g.items) {
                     poner(m, p.x + dx, g.alto / 2 + 0.08, p.y + dz,
                           g.forma === 'cubo' ? g.alto : 1);

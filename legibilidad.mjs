@@ -37,7 +37,7 @@
 import { spawn } from 'node:child_process';
 import { chromium } from 'playwright-core';
 import { readFile } from 'node:fs/promises';
-import { leerPNG, colorEn, distanciaColor } from './png.mjs';
+import { leerPNG, colorEn, distanciaColor, distanciaSinTono } from './png.mjs';
 
 const P = 8149;
 const RAIZ = new URL('.', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
@@ -365,7 +365,16 @@ for (const juego of juegos) {
                 const col = leerColor(o);
                 if (!col) return;
                 if (TERRENO.includes(o.name)) fondos.push({ nombre: o.name, col });
-                else if (/^p:/.test(o.name || '') && o.count) montonesPieza.push({ nombre: o.name, col });
+                else if (/^p:/.test(o.name || '') && o.count) {
+                    montonesPieza.push({
+                        nombre: o.name, col,
+                        // La FORMA, para poder preguntar si dos bandos se distinguen
+                        // sin depender del tono. El número de vértices basta: un
+                        // hexágono y un círculo no coinciden ni por casualidad.
+                        forma: o.geometry?.attributes?.position?.count ?? 0,
+                        de: (o.name.split(':')[2] ?? '?'),
+                    });
+                }
             });
 
             const rejilla = window.ALISA_PROTOHUB?.sustrato(window.ALISA_JUEGO)?.rejilla;
@@ -396,9 +405,37 @@ for (const juego of juegos) {
                     }
                 }
             }
+            /**
+             * ⚠️ ¿SE DISTINGUEN LOS BANDOS SIN EL TONO?
+             *
+             * La guía de Board Game Arena lo pone como requisito de accesibilidad y
+             * no como extra: color emparejado con forma, símbolo o textura. Una de
+             * cada doce personas con cromosoma Y no separa el rojo del verde, y el
+             * azul del dueño 0 contra el rojo del dueño 1 —a 150 puntos en RGB, o
+             * sea separadísimos— se acercan mucho en esa vista.
+             *
+             * Así que medir en RGB y darlo por bueno es medir con la vista de quien
+             * programa. Aquí se pregunta lo que importa: dos bandos tienen que
+             * distinguirse por FORMA, o por un color que sobreviva al daltonismo.
+             * Con una de las dos basta; con ninguna, hay alguien que no puede jugar.
+             */
+            const soloTono = [];
+            const piezas = posiciones.montonesPieza ?? [];
+            for (let i = 0; i < piezas.length; i++) {
+                for (let j = i + 1; j < piezas.length; j++) {
+                    const a = piezas[i], b2 = piezas[j];
+                    if (a.de === b2.de) continue;              // el mismo bando
+                    if (a.forma !== b2.forma) continue;        // la forma ya los separa
+                    const d = distanciaSinTono(a.col, b2.col);
+                    if (d !== null && d < MINIMO_CONTRASTE) {
+                        soloTono.push(`${a.nombre} y ${b2.nombre}: misma forma y ${d} de distancia sin tono`);
+                    }
+                }
+            }
+
             r = { ...posiciones, paso: Math.round(posiciones.paso),
                   pequenas: posiciones.paso < MINIMO_PX,
-                  camufladas };
+                  camufladas, soloTono };
         }
     } catch (e) {
         r = { medible: false, razon: String(e.message).split('\n')[0].slice(0, 40) };
@@ -478,6 +515,9 @@ for (const juego of juegos) {
         else quejas.push(linea);
     }
     if (r.camufladas?.length) quejas.push(`camuflaje: ${r.camufladas.join(', ')}`);
+    if (r.soloTono?.length) {
+        quejas.push(`los bandos SÓLO se distinguen por el tono — ${r.soloTono.join('; ')}`);
+    }
     const cuerpo = r.cartas
         ? `${String(r.mano).padStart(3)} en tu mano · carta ${String(r.anchoCarta === null ? '—' : Math.round(r.anchoCarta)).padStart(3)} px`
         : r.propio

@@ -87,3 +87,53 @@ export function colorEn(img, xCss, yCss, anchoCss) {
 export const distanciaColor = (a, b) => (a && b)
     ? Math.max(Math.abs(a[0] - b[0]), Math.abs(a[1] - b[1]), Math.abs(a[2] - b[2]))
     : null;
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  EL MISMO COLOR, VISTO POR QUIEN NO DISTINGUE EL ROJO DEL VERDE
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ⚠️ «COLORES DISTINTOS» NO ES LA PREGUNTA. LA PREGUNTA ES «DISTINGUIBLES».
+ *
+ * El azul del dueño 0 (`0x2a3550`) y el rojo del dueño 1 (`0xc0392b`) están a 150
+ * puntos de distancia: separadísimos, y cualquier medida en RGB dice que van bien.
+ * Para un deuteranope —una de cada doce personas con cromosoma Y— los dos se
+ * acercan mucho, porque lo que los separa es justo el eje que esa vista no tiene.
+ *
+ * Así que medir en RGB y darlo por bueno es medir con la vista de quien programa.
+ * Esto convierte los dos colores a como se ven SIN ese eje y compara ahí.
+ *
+ * Es la aproximación de Viénot–Brettel–Mollon, la de siempre para esto: se pasa a
+ * espacio LMS, se reconstruye el canal que falta a partir de los otros dos y se
+ * vuelve. No es un simulador clínico y no hace falta que lo sea — hace falta para
+ * contestar «¿estos dos bandos se distinguen sin el tono?», que es una pregunta de
+ * sí o no.
+ *
+ * La respuesta cuando sale que NO no es cambiar el color: es que la FORMA los
+ * distinga, que es lo que pide la guía de accesibilidad de Board Game Arena y lo
+ * que hace el pintor dando un número de lados por dueño.
+ */
+const aLMS = ([r, g, b]) => [
+    0.31399022 * r + 0.63951294 * g + 0.04649755 * b,
+    0.15537241 * r + 0.75789446 * g + 0.08670142 * b,
+    0.01775239 * r + 0.10944209 * g + 0.87256922 * b,
+];
+const deLMS = ([l, m, s]) => [
+    5.47221206 * l - 4.6419601 * m + 0.16963708 * s,
+    -1.1252419 * l + 2.29317094 * m - 0.1678952 * s,
+    0.02980165 * l - 0.19318073 * m + 1.16364789 * s,
+].map(v => Math.max(0, Math.min(255, Math.round(v))));
+
+export function comoLoVeUnDaltonico(rgb, tipo = 'deuteranopia') {
+    if (!rgb) return null;
+    const [l, m, s] = aLMS(rgb);
+    // Se reconstruye el cono que falta desde los otros dos.
+    if (tipo === 'protanopia') return deLMS([0.0 * l + 1.05118294 * m - 0.05116099 * s, m, s]);
+    return deLMS([l, 0.9513092 * l + 0.0 * m + 0.04866992 * s, s]);   // deuteranopia
+}
+
+/** Lo peor de las dos vistas: si en alguna se confunden, se confunden. */
+export const distanciaSinTono = (a, b) => Math.min(
+    distanciaColor(comoLoVeUnDaltonico(a, 'deuteranopia'), comoLoVeUnDaltonico(b, 'deuteranopia')),
+    distanciaColor(comoLoVeUnDaltonico(a, 'protanopia'), comoLoVeUnDaltonico(b, 'protanopia')),
+);

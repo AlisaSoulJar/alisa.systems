@@ -32,6 +32,13 @@ export const MORADO = 0xA180FF;
 export const ACIERTO = 0x00E05A;
 
 /**
+ * El «ahí no». Un rojo apagado y no un rojo de alarma: es una respuesta, no una
+ * regañina — el jugador no ha hecho nada malo, ha probado. Y dura poco: lo que
+ * hace falta es que la mesa CONTESTE, no que se quede señalando el error.
+ */
+export const RECHAZO = 0xE05A5A;
+
+/**
  * @param {THREE.Object3D} donde  escena o grupo al que colgar las marcas
  * @param {object} [opciones]
  *   y      altura sobre el suelo (por defecto, casi pegada)

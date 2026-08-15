@@ -35,7 +35,7 @@
  */
 import { crearPintor3d } from './protohub/render/pintar3d.js';
 import { pintarJugadas } from './protohub/jugadas.js';
-import { crearMarcas, VERDE, MORADO } from './protohub/marcas.js';
+import { crearMarcas, VERDE, MORADO, RECHAZO } from './protohub/marcas.js';
 import { pintarHistorial } from './protohub/historial.js';
 import { volcarMesa, volcando, ponerBoton } from './protohub/render/volcar.js';
 
@@ -480,6 +480,44 @@ function marcarSeleccion() {
     }
 }
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ «AHÍ NO». LA MESA TIENE QUE CONTESTAR ALGO.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Hasta ahora, tocar una casilla a la que no se puede ir no hacía NADA:
+ * `enviarSiEsLegal` devolvía `false` en silencio y la pantalla se quedaba igual.
+ * Desde fuera eso no se distingue de que la mesa se haya colgado, y lo primero que
+ * hace quien juega es volver a tocar más fuerte.
+ *
+ * La guía de Board Game Arena lo pone en su capítulo de retroalimentación:
+ * «sacudida corta, atenuado o tooltip» inmediato ante un intento inválido.
+ *
+ * ⚠️ Y SÓLO CUANDO DE VERDAD HA SIDO UN INTENTO.
+ *
+ * Tocar en vacío para soltar la pieza es legítimo y no merece un rojo. La
+ * diferencia está en si HABÍA algo cogido: con una pieza en la mano, tocar una
+ * casilla es intentar ir ahí. Sin ella, es mirar.
+ *
+ * Distinguirlo importa más de lo que parece: un aviso que salta también cuando no
+ * has hecho nada mal enseña a ignorarlo, y entonces deja de avisar.
+ */
+let rechazo = null;
+function avisarIlegal(celda, rej) {
+    if (celda === null || !rej) return;
+    clearTimeout(rechazo);
+    const { x, z } = centroDe(celda, rej);
+    // Encima de lo que ya hubiera: la marca del rechazo no borra lo que tenías
+    // cogido, porque después del «ahí no» sigues teniendo la pieza en la mano.
+    const m = marcas.poner(x, z, { color: RECHAZO, opacidad: 0.55, altura: 0.12 });
+    rechazo = setTimeout(() => {
+        // 320 ms: lo justo para verlo sin que se quede señalando el error. Es una
+        // respuesta, no una regañina.
+        m.visible = false;
+        marcarSeleccion();
+    }, 320);
+}
+
 function alTocar(ev) {
     const sus = hub.sustrato(juego);
     const rej = sus?.rejilla;
@@ -510,8 +548,12 @@ function alTocar(ev) {
         }
         // Primer toque: se marca si de aquí sale alguna jugada. Si no, se suelta —
         // así tocar en vacío deselecciona en vez de dejar la mesa a medias.
+        const teniaAlgo = seleccion !== null;
         seleccion = Object.values(acciones).some(c => c[0] === celda) ? celda : null;
         marcarSeleccion();
+        // Si venías con una pieza cogida y esto no era ni destino ni otra pieza,
+        // era un intento. Y un intento merece respuesta.
+        if (teniaAlgo && seleccion === null) avisarIlegal(celda, rej);
         return;
     }
 
