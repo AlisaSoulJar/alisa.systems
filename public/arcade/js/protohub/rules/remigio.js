@@ -347,6 +347,19 @@ export async function crearRemigio({ url = RUTA_BIBLIOTECA, jugadores = 2, mano 
             const rivales = p.manos.reduce(
                 (s, m, i) => s + (i === yo ? 0 : repartoDe(p, m).muerto), 0);
             const puntos = p.cerro === yo ? 100 + rivales : -mío.muerto;
+            // ⚠️ MISMA FÓRMULA, UNA POR ASIENTO. «rivales» es «lo muerto de los
+            // DEMÁS visto desde `c`», así que no es `rivales` reutilizado —para
+            // cada `c` los demás son otro conjunto— sino la misma suma rehecha
+            // por cada silla. Como mucho un `c` cierra por partida, así que como
+            // mucho uno cae en la rama de los 100. Patrón de `bazas.js`.
+            const marcador = Array.from({ length: jugadores }, (_, c) => {
+                if (p.cerro === c) {
+                    const rivalesDeC = p.manos.reduce(
+                        (s, m, i) => s + (i === c ? 0 : repartoDe(p, m).muerto), 0);
+                    return 100 + rivalesDeC;
+                }
+                return -repartoDe(p, p.manos[c]).muerto;
+            });
 
             return {
                 juego: 'remigio',
@@ -376,6 +389,7 @@ export async function crearRemigio({ url = RUTA_BIBLIOTECA, jugadores = 2, mano 
                 mazo_restante: p.mazo.length,
                 fase: p.fase,
                 cerro: p.cerro,
+                marcador,
                 puntos,
                 score: puntos,
                 turn: pid === 0 ? 'player' : `cpu${pid}`,

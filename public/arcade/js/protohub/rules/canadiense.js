@@ -475,6 +475,11 @@ export async function crearCanadiense({ url = RUTA_BIBLIOTECA, jugadores = 4,
             const puntos = p.ganador === yo
                 ? 500 + avance(p, yo)
                 : avance(p, yo) + metidas(p, yo) * 50;
+            // ⚠️ MISMA FÓRMULA, UNA POR ASIENTO. `p.ganador` es un único color o
+            // `null` (tope de turnos), así que como mucho un `c` cae en la rama
+            // de los 500; el resto en avance+metidas. Patrón de `bazas.js`.
+            const marcador = Array.from({ length: jugadores }, (_, c) =>
+                p.ganador === c ? 500 + avance(p, c) : avance(p, c) + metidas(p, c) * 50);
 
             return {
                 juego: 'canadiense',
@@ -497,6 +502,7 @@ export async function crearCanadiense({ url = RUTA_BIBLIOTECA, jugadores = 4,
                 seguros: [...SEGUROS],
                 turnos: p.turnos,
                 tope_turnos: TOPE_TURNOS,
+                marcador,
                 puntos,
                 score: puntos,
                 turn: p.turno === 0 ? 'player' : `cpu${p.turno}`,

@@ -165,6 +165,13 @@ export function crearParchis({ jugadores = 4, fichas = 4 } = {}) {
             const puntos = p.fin && metidas(yo) === fichas
                 ? 500 + avance(yo)
                 : avance(yo) + metidas(yo) * 50;
+            // ⚠️ MISMA FÓRMULA QUE `puntos`, UNA POR ASIENTO. Sólo hay un ganador
+            // por partida —`mover()` para en cuanto alguien mete las cuatro— así
+            // que como mucho un `c` cae en la rama de los 500; el resto cae en la
+            // de avance+metidas aunque `p.fin` sea true. Es el patrón de
+            // `bazas.js`: la métrica del banco por asiento, no sólo la de quien mira.
+            const marcador = Array.from({ length: jugadores }, (_, c) =>
+                p.fin && metidas(c) === fichas ? 500 + avance(c) : avance(c) + metidas(c) * 50);
 
             return {
                 juego: 'parchis',
@@ -178,6 +185,7 @@ export function crearParchis({ jugadores = 4, fichas = 4 } = {}) {
                 avance: Array.from({ length: jugadores }, (_, c) => avance(c)),
                 comidas: p.comidas,
                 seguros: [...SEGUROS],
+                marcador,
                 puntos,
                 score: puntos,
                 turn: p.turno === 0 ? 'player' : `cpu${p.turno}`,

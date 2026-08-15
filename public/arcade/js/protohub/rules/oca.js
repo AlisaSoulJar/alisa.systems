@@ -325,6 +325,11 @@ export function crearOca({ jugadores = 2, fichas = 2 } = {}) {
             const puntos = p.fin && p.ganador === yo
                 ? 800 + avance(p, yo)
                 : avance(p, yo);
+            // ⚠️ MISMA FÓRMULA, UNA POR ASIENTO. Como mucho un color gana —o
+            // ninguno, si se agota `tope_jugadas`—, así que como mucho un `c`
+            // cae en la rama de los 800. Patrón de `bazas.js`.
+            const marcador = Array.from({ length: jugadores }, (_, c) =>
+                p.fin && p.ganador === c ? 800 + avance(p, c) : avance(p, c));
 
             const foto = (f) => ({
                 de: f.color, ficha: f.n, casilla: f.casilla,
@@ -353,6 +358,7 @@ export function crearOca({ jugadores = 2, fichas = 2 } = {}) {
                 // El techo, dicho en voz alta. Ver la cabecera.
                 jugadas_hechas: p.jugadas.length,
                 tope_jugadas: TOPE_JUGADAS,
+                marcador,
                 puntos,
                 score: puntos,
                 turn: p.turno === 0 ? 'player' : `cpu${p.turno}`,

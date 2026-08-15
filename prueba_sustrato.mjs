@@ -422,10 +422,50 @@ const TECHO_SINONIMOS = 1;
 const juntos = new Map();       // par -> juegos donde coinciden SIEMPRE
 const separados = new Set();    // "juego|par" que ha divergido alguna vez
 
+/**
+ * ⚠️ TRES JUEGOS NECESITAN MÁS DE 8 PASOS, Y ES POR LO QUE MIDEN.
+ *
+ * `marcador` y `avance` son datos DISTINTOS en parchís, canadiense y oca —el
+ * primero suma un bono por fichas ya metidas, el segundo no— pero en los
+ * primeros turnos de una carrera nadie ha metido ninguna, así que los 8 pasos
+ * de siempre sólo ven el tramo en el que, por accidente, coinciden. El
+ * detector de abajo confundía «todavía no ha habido ocasión de diferir» con
+ * «es el mismo dato», y con `marcador` recién añadido eso subió el contador de
+ * sinónimos de 1 a 2 sin que hubiera ningún campo de sobra.
+ *
+ * Medido jugando cada uno hasta que diverge (`_sondeo.mjs`, semilla 6, con la
+ * misma política que usa este bucle): oca en el paso 98, canadiense en el 121,
+ * parchís en el 508 — una carrera de cuatro fichas hasta 68+7 tarda en dar su
+ * primer premio. Se sube el tope SÓLO para éstos, con margen sobre lo medido;
+ * los otros 32 se quedan en 8, que es de sobra para lo que sí cambian rápido.
+ *
+ * ⚠️ COMPROBADO DESPUÉS CON OCHO SEMILLAS, PORQUE UNA NO ES UNA MEDIDA.
+ *
+ * Un tope elegido sobre una sola partida es un fallo intermitente esperando otra
+ * semilla, y ésos son los peores. Con las semillas 1, 2, 3, 6, 7, 11, 23 y 42 el
+ * peor caso de cada uno es MUCHO más bajo de lo que salió al calibrar:
+ *
+ *     parchís      divergen en 38–64    (tope 520)
+ *     oca          divergen en 12–42    (tope 110)
+ *     canadiense   divergen en  5–14    (tope 130)
+ *
+ * Así que los topes sobran de largo y no hay fragilidad. Se dejan altos porque no
+ * cuestan: la prueba entera tarda medio segundo. Lo que SÍ confirma esto es lo que
+ * importaba de verdad —que los tres divergen SIEMPRE, o sea que `marcador` y
+ * `avance` no son el mismo dato— y eso es lo que convierte el ajuste en una
+ * corrección del detector y no en aflojarlo para que pase.
+ *
+ * (La sonda que lo midió tenía a su vez un fallo que conviene no repetir: salía del
+ * bucle al ver `done` sin volver a mirar el estado, y el bono de fin de partida es
+ * justo lo que separa los dos campos. Con ese fallo, oca parecía no divergir NUNCA.)
+ */
+const PASOS_SINONIMOS = { parchis: 520, canadiense: 130, oca: 110 };
+
 for (const juego of JUEGOS) {
     const reglas = await cargarReglas(juego, {});
     const p = reglas.nuevaPartida({ semilla: 6, seed: 6 });
-    for (let paso = 0; paso < 8; paso++) {
+    const pasosMedidos = PASOS_SINONIMOS[juego] ?? 8;
+    for (let paso = 0; paso < pasosMedidos; paso++) {
         const st = reglas.estado(p);
         const claves = Object.keys(st).filter(k => {
             const v = st[k];
@@ -459,6 +499,36 @@ const repetidos = [...juntos]
 console.log(`\n${repetidos.length} pares de campos son el mismo dato con dos nombres `
           + `(techo: ${TECHO_SINONIMOS})`);
 for (const [par, js] of repetidos) console.log(`    ${par}  — en ${js.size} juegos`);
+
+/**
+ * ⚠️ LO QUE EL `>= 2` DE ARRIBA NO PUEDE VER, Y POR QUÉ SE DICE IGUALMENTE.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Un par sólo cuenta si coincide en DOS juegos o más, y eso está bien: bajarlo a uno
+ * da diez pares de los que NUEVE son coincidencia —`height`/`width` en un tablero
+ * cuadrado, `vida`/`vida_rival` que empiezan iguales, `ganadas`/`perdidas` a cero,
+ * `semilla`/`tareas_totales` que se cruzan por casualidad—. Medido, no supuesto. Un
+ * detector con nueve falsos positivos de diez se ignora, y entonces deja de detectar.
+ *
+ * Pero el coste de ese umbral no estaba escrito: **un campo duplicado en UN SOLO
+ * juego no lo caza nadie**, y ése es justo el caso típico —alguien añade un campo de
+ * más a su juego—. Lo comprobé metiendo a mano en parchís un `avance_copia` idéntico
+ * a `marcador`: el contador ni se movió.
+ *
+ * Así que los de un solo juego se DICEN, sin contar para el techo. Es la diferencia
+ * entre «hay que arreglarlo» y «hay que saberlo»: una comprobación permanentemente en
+ * rojo enseña a ignorar el rojo, pero callar un dato porque no sabes cuál de los diez
+ * es el bueno tampoco vale. De los diez de hoy hay uno que canta —`turn`/`turno`, el
+ * mismo dato en dos idiomas— y sin esta lista no lo habría visto nadie.
+ */
+const candidatos = [...juntos]
+    .map(([par, js]) => [par, new Set([...js].filter(j => !separados.has(`${j}|${par}`)))])
+    .filter(([, js]) => js.size === 1);
+if (candidatos.length) {
+    console.log(`\n  ${candidatos.length} pares coinciden SIEMPRE pero en un solo juego `
+              + `— la mayoría serán casualidad, pero míralos:`);
+    for (const [par, js] of candidatos) console.log(`      ${par}  (${[...js][0]})`);
+}
 if (repetidos.length > TECHO_SINONIMOS) {
     mal(`SUBIÓ: ${repetidos.length} > ${TECHO_SINONIMOS}. Un juego nuevo publica `
       + 'dos nombres para el mismo dato. Quita el que sobre, no subas el techo.');
