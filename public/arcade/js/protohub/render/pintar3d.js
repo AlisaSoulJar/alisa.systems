@@ -88,10 +88,38 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
          */
         sueloA: material(0xeceff4, { roughness: 0.9 }),
         sueloB: material(0x4a5a70, { roughness: 0.9 }),
-        muro: material(0x39485c, { roughness: 0.85 }),
+        /**
+         * ⚠️ EL MURO ERA CASI EL MISMO AZUL QUE EL DUEÑO 0, Y ESE FUE EL FALLO.
+         *
+         * `0x39485c` contra `0x2a3550` son 19 puntos de distancia sobre 255. Por eso
+         * el jugador de fagocito —un cubo del dueño 0 en un laberinto de muros—
+         * estaba perfectamente dibujado y no se veía. Le puse un faro encima, que
+         * resuelve «cuál soy yo», pero el choque de color seguía ahí para cualquier
+         * otra pieza oscura sobre muro.
+         *
+         * El muro se va a un gris cálido: es TERRENO, y que la estructura no compita
+         * con las fichas en la misma familia de color es lo correcto de todas formas.
+         * Medido contra lo que hay: dueño 0 → 50, suelo claro → 144, suelo oscuro →
+         * 48. Ninguno por debajo del umbral de `legibilidad.mjs`.
+         */
+        muro: material(0x5c5040, { roughness: 0.85 }),
         carta: material(0xfdfdfd, { roughness: 0.45 }),
         oculta: material(0x8a5a9a, { roughness: 0.6 }),
-        destino: material(0xc0392b, { roughness: 0.7 }),
+        /**
+         * ⚠️ EL DESTINO ERA EXACTAMENTE EL MISMO ROJO QUE EL DUEÑO 1. DISTANCIA 0.
+         *
+         * `0xc0392b` en los dos sitios. O sea que en sokoban una ficha del dueño 1
+         * encima de su casilla objetivo desaparecía — justo en el momento en que
+         * más importa verla, que es cuando has resuelto ese hueco.
+         *
+         * Lo encontró `legibilidad.mjs` en su primera pasada de verdad, comparando
+         * materiales. A ojo no lo vi en ninguna captura, y llevo dos días mirándolas.
+         *
+         * Ámbar: el destino es una MARCA, no un bando, y así no compite con ninguno.
+         * Medido: dueño 1 → 107, dueño 3 (que es el otro ámbar) → 49, suelo claro
+         * → 75. Todos por encima del umbral.
+         */
+        destino: material(0xd9a441, { roughness: 0.7 }),
         /**
          * ⚠️ LA NIEBLA ERA LO MÁS BRILLANTE DE LA PANTALLA, Y ESO ESTÁ AL REVÉS.
          *
@@ -108,7 +136,22 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
          * Lo vi abriendo la captura. Ninguna medida lo dice: `mirar` lo da limpio y
          * el laboratorio lo da pintado — y las dos tienen razón, está todo dibujado.
          */
-        niebla: material(0x333c49, { roughness: 1.0 }),
+        /**
+         * ⚠️ Y AL OSCURECERLA ANOCHE LA DEJÉ CHOCANDO CON EL DUEÑO 0.
+         *
+         * `0x333c49` contra `0x2a3550` son NUEVE puntos. O sea que una pieza oscura
+         * sobre casilla con niebla —en cripta o en flota, que es media partida—
+         * quedaba invisible. Arreglé un problema de lectura y creé otro.
+         *
+         * Lo cazó `legibilidad.mjs` en su primera pasada, o sea unas horas después
+         * de que yo lo metiera. Ésa es exactamente la razón de escribir la
+         * comprobación en vez de seguir abriendo capturas de una en una.
+         *
+         * Ahora es un gris muy oscuro y sin azul: se hunde en el fondo negro —que es
+         * lo que quiere la niebla— y deja sitio a cualquier ficha. Medido: dueño 0 →
+         * 37, muro → 56, suelo claro → 200.
+         */
+        niebla: material(0x24262b, { roughness: 1.0 }),
         // El faro de «cuál soy yo». Ámbar y emisivo: tiene que ganarle a
         // cualquier paleta de juego, porque su único trabajo es que lo encuentres.
         faro: material(0xffc23c, { emissive: 0x8a5c00, roughness: 0.35 }),
