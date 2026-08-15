@@ -85,3 +85,19 @@ prueba, y el día que sea real tampoco se mirará.
   cosmético, funciona, y tocar el pintor compartido por eso no compensa.
 - **El corte de fagocito a 1366×633** que reportó un betatester **no lo reproduzco**.
   `mirar` mide ahora también en esa forma exacta y sale limpio. Sigue sin explicación.
+
+- **En snake la comida puede quedar detrás del panel.** Medido con la semilla 7: la
+  comida sale en la casilla (0,4), que proyectada cae en pantalla en (269, 180) —
+  dentro del rectángulo del HUD, que va de (20,20) a (340,310). O sea que el objetivo
+  del juego es invisible hasta que se mueva.
+
+  No es exclusivo de snake: los tableros se centran en la pantalla entera y el panel
+  se pone encima de la esquina superior izquierda. `mirar` ya vigila que el panel no
+  tape más del 22% y los treinta y cinco pasan, pero «poco porcentaje» no impide que
+  lo tapado sea justo lo único que importa.
+
+  El arreglo de verdad es desplazar el objetivo de cámara para que la zona de juego
+  no caiga bajo el panel. Toca el encuadre de quince mesas y snake ni siquiera pasa
+  por ahí —tiene visualizador propio con la cámara escrita a mano—, así que no es un
+  cambio de madrugada. Mientras tanto existe el botón de esconder el panel, que sirve
+  exactamente para esto.
