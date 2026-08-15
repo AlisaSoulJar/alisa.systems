@@ -61,7 +61,12 @@ export function pintarFinal(caja, { estado = {}, recibo = null, enSala = false, 
 
     const linea = document.createElement('div');
     linea.className = 'final-linea';
-    linea.innerHTML = `<b>partida terminada</b> ${resultadoEnPalabras(estado)}`;
+    // El rótulo es nuestro y va como marcado; el resultado sale del estado del juego
+    // y va como TEXTO. Hoy son `white` y `black`, pero un juego puede publicar en
+    // `winner` lo que quiera, y eso no debería poder escribir HTML en el panel.
+    const rotulo = document.createElement('b');
+    rotulo.textContent = 'partida terminada';
+    linea.append(rotulo, ' ' + resultadoEnPalabras(estado));
     caja.appendChild(linea);
 
     const fila = document.createElement('div');
