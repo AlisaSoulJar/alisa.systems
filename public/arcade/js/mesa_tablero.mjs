@@ -82,6 +82,31 @@ const INCLINACION = 42 * Math.PI / 180;   // mirar el tablero, no asomarse a él
  */
 const INCLINACION_CON_MUROS = 55 * Math.PI / 180;
 
+/**
+ * ⚠️ Y LA MISMA INCLINACIÓN SIRVE PARA UN SEGUNDO MOTIVO: EL ESCORZO.
+ *
+ * En un tablero grande, mirar de lado comprime el fondo. Medido en el go (19×19)
+ * proyectando la primera y la última fila y comparando su alto en pantalla:
+ *
+ *     42°  →  delante 43 px · detrás 15 px  ·  el fondo mide el 35 %
+ *     55°  →  delante 45 px · detrás 20 px  ·  45 %
+ *     62°  →  delante 45 px · detrás 23 px  ·  52 %
+ *     70°  →  delante 43 px · detrás 27 px  ·  62 %, pero ya casi cenital
+ *
+ * Con 42° una piedra de la fila de atrás cabe en quince píxeles, y el goban se
+ * pierde en el horizonte — que es exactamente lo que se ve en la captura.
+ *
+ * Se reutiliza la constante de los muros en vez de inventar un tercer número: son
+ * dos motivos distintos para la misma respuesta —mirar más desde arriba—, y un
+ * número nuevo por cada motivo es como se acaba con cinco constantes que nadie sabe
+ * de dónde salieron.
+ *
+ * El umbral son 13 filas porque por debajo el escorzo no llega a molestar: damas y
+ * ajedrez (8) están en el 55 % a 42°, y aplanarlos les quitaría profundidad sin
+ * ganar nada.
+ */
+const FILAS_QUE_ESCORZAN = 13;
+
 let escena, camara, grupo, render, controles;
 
 if (anfitrion) {
@@ -288,9 +313,12 @@ function encajar() {
      */
     ALISA_ENCUADRE.encajarCamara({
         camara, objeto: grupo, controles,
-        // Con muros se mira desde 55° en vez de 42°: por debajo de 45 la fila de
-        // delante esconde la de detrás, y eso es aritmética, no gusto.
-        inclinacion: conMuros ? INCLINACION_CON_MUROS : INCLINACION,
+        // Se mira desde 55° en vez de 42° por dos motivos que piden lo mismo: con
+        // muros, porque por debajo de 45 la fila de delante esconde la de detrás; y
+        // con tableros grandes, porque el escorzo deja el fondo en el 35 % del
+        // tamaño. Las dos son aritmética, no gusto.
+        inclinacion: (conMuros || filasDelTablero >= FILAS_QUE_ESCORZAN)
+            ? INCLINACION_CON_MUROS : INCLINACION,
         distancia: LADO * 1.15,
         // La niebla tampoco cuenta aquí: si la cámara se aparta hasta que quepa lo
         // desconocido, escalar sólo lo conocido no sirve de nada — se ganaría por
@@ -400,6 +428,13 @@ let legalesAhora = [];
  * quedaba en negro sin más pista que una línea en la consola.
  */
 let repitiendo = false;
+
+/**
+ * Cuántas filas tiene el tablero que se está dibujando. Lo apunta `refrescar` al
+ * pintar, porque el encuadre corre en el bucle de animación y allí sólo hay
+ * geometría — preguntarle al sustrato desde ahí sería derivarlo otra vez.
+ */
+let filasDelTablero = 0;
 
 function enviarSiEsLegal(m) {
     // Viendo repetirse una partida no se juega: lo que hay en la mesa es de otro
@@ -742,6 +777,9 @@ async function refrescar() {
     const st = hub.state(juego);
     const susLocal = hub.sustrato(juego);
     pintor.pintar(susLocal);
+    // Para el encuadre: un tablero grande necesita más inclinación o el fondo se
+    // comprime. Se apunta aquí, que es donde se conoce el sustrato.
+    filasDelTablero = susLocal?.rejilla?.alto ?? 0;
 
     const marcador = st.puntos ?? st.score ?? st.marcador;
     const txt = document.getElementById('estado-txt');
