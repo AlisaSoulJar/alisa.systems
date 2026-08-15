@@ -1,4 +1,4 @@
-# Dónde nos quedamos — 12 de agosto de 2026
+# Dónde nos quedamos — 15 de agosto de 2026
 
 Notas de traspaso. **No es una lista de tareas que haya que mantener al día**: es la
 foto de un momento, con lo medido y lo que todavía no se sabe. Si algo de aquí ya no
@@ -86,7 +86,37 @@ probado. Candidatos con nombre: `CroupierSystem`, `TurretCombatSystem`,
 `RoboticArmSystem`, `KatamariSystem`, `TrafficSystem`, `OrbitalKinematicsSystem`,
 `NeuralDrivingSystem`. Es el eje «arcades» que Oscar quiere después de los de mesa.
 
-### 5. Pendientes menores, ya medidos
+### 5. El corpus está vacío, y ahora sí se nota
+
+`/api/dataset` tiene **dos partidas**. No es que nadie juegue: es que **ninguna de
+las 35 mesas ofrecía aportar** — sólo lo hacían `mesa.html` y `jugar.html`, dos
+páginas viejas. El 15-08 se puso el botón en la pantalla de fin de partida, así que
+a partir de ahora depende de que la gente lo pulse.
+
+**Y le falta una columna: `normas`.** La tabla guarda `{juego, semilla, jugadas}` más
+la huella de las reglas, y eso no basta para damas —el único juego con normas
+variables (`damaVuela`, `peonComeAtras`)—: con una variable de por medio, la misma
+lista de jugadas es legal con unas normas e ilegal con otras. El recibo ya las lleva
+y el enlace del repetidor también; el corpus no.
+
+Mientras tanto, `POST /api/dataset` **rechaza** esas partidas con el motivo verdadero
+en vez de guardarlas mintiendo. Es un `ALTER TABLE ADD COLUMN` de nada, pero es tocar
+el esquema de la base en producción y ésa es decisión de Oscar, no mía.
+
+Dos cosas más que faltan y no se han hecho a propósito:
+
+- **Nadie sabe que existe el botón.** Sale al terminar una partida, y hay juegos
+  donde terminar cuesta. Habría que medir cuántas partidas se terminan de verdad
+  antes de decidir si hace falta otra puerta.
+- **Aportar lo decide quien juega, y así se queda.** Mandar las partidas solas
+  llenaría el corpus mañana y sería publicar lo de otro sin preguntar. Si algún día
+  se quiere automático, es una decisión de Oscar y hay que decirlo en la página.
+
+También quedó a medias lo obvio: `/arcade/replays.html` lista el corpus y **cada
+fila abre la partida volviéndose a jugar**, pero con dos filas no hay escaparate que
+enseñar. La página está bien; lo que falta son partidas.
+
+### 6. Pendientes menores, ya medidos
 
 - **La Sala del Huevo tiene 17 mesas y hay 18 juegos sin una** (snake, fagocito,
   peatón y los quince nuevos). Es una lista curada A PROPÓSITO —cuáles tienen mesa
@@ -106,14 +136,25 @@ probado. Candidatos con nombre: `CroupierSystem`, `TurretCombatSystem`,
 
 ## Cómo se comprueban las cosas aquí
 
-    npm test              las reglas, el sustrato, la puerta de lenguaje, el sellado
+    npm test              14 comprobaciones: reglas, sustrato, puerta de lenguaje,
+                          objetivo, el repetidor, el final de partida, CSS, la API,
+                          el sellado, los entornos del gym y el verificador
     npm run laboratorio   abre los 35 en un Chrome de verdad y los MIDE
+    npm run legibilidad   lo que el sustrato dice que existe, ¿SE VE? (54 medidas)
+    npm run mirar         la pasada de betatester en tres pantallas
+    node tacto.mjs        que una jugada legal LLEGUE con el dedo y con el ratón
     npm run avisos        lo que han contado los betatesters, y RE-JUEGA cada uno
     npm run cache         que un despliegue llegue entero al dominio
 
 El laboratorio es el que caza lo que vive entre las reglas y la pantalla, que es
 donde estaban casi todos los fallos de esta semana. Deja 31 capturas: mirarlas es
 medio minuto y ninguna prueba lo sustituye.
+
+**Y toda prueba nueva se rompe a propósito antes de creérsela.** No es ceremonia:
+`prueba_repetidor` cazó que el enlace no llevaba las `normas` sólo porque la
+saboteé para ver si sabía suspender, y su comprobación de cableado se quedó verde
+con el cable cortado hasta que se afinó la marca. Una prueba que nunca ha fallado
+no es una prueba: es una frase.
 
 ---
 
@@ -128,3 +169,17 @@ Ninguno lanzó una excepción. Todos se encontraron MIRANDO o MIDIENDO.
 Corolario que costó tres falsos positivos hoy: **cuando un instrumento nuevo suspende
 a mucha gente, el sospechoso es el instrumento.** 19 de 31, luego 31 de 31, luego
 tres — y las tres veces el que estaba mal era yo, no los juegos.
+
+**15-08, la misma lección por otro lado: contar en vez de suponer.** Monté el
+repetidor en «los dos motores» y di el trabajo por terminado. Había **tres** caminos
+de panel, no dos, y cuatro juegos —el ajedrez entre ellos— generaban su enlace y
+abrían una partida cualquiera. Lo destapó ir a mirar un aviso de fagocito dando por
+hecho que usaba ese motor: la sospecha era **falsa** y aun así encontró el hueco,
+porque obligó a contar. La conclusión no es «desconfía»: es que un número que no has
+contado nunca no lo sabes, aunque hayas trabajado en él toda la tarde.
+
+Y una tercera, del mismo día: **la pregunta «¿y ahora qué?» hay que hacérsela a cada
+pantalla que se queda quieta.** Al terminar una partida no había salida en ninguna de
+las 35 mesas —y 17 juegos ofrecían el botón, que el panel tiraba en su primera
+línea—. Lo arreglé, y tres pantallas más allá cometí el mismo fallo otra vez: al
+acabar de VER una repetición, la página se quedaba igual de muerta.

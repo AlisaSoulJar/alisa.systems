@@ -119,6 +119,40 @@ export async function onRequestPost({ request, env }) {
     const reglas = await reglasDe(d?.juego, request.url);
     if (!reglas) return responder(400, { guardada: false, motivo: `no sé jugar a '${d?.juego}'`, juegos: JUEGOS });
 
+    /**
+     * ⚠️ LAS NORMAS VARIABLES TODAVÍA NO CABEN EN ESTA TABLA, Y SE DICE.
+     *
+     * Damas es el primer juego con normas variables (`damaVuela`, `peonComeAtras`) y
+     * en cuanto existe una variable, `{juego, semilla, jugadas}` deja de identificar
+     * una partida: la misma lista es legal con unas normas e ilegal con otras. El
+     * recibo ya las lleva por eso, y el enlace del repetidor también.
+     *
+     * Aquí no: la tabla no tiene columna para ellas, así que se re-simularía con las
+     * de por defecto. En la mayoría de casos eso se rechaza solo —una jugada que la
+     * norma permitía sale ilegal— y el motivo diría «jugada ilegal: e3c5a3», que
+     * CULPA AL QUE APORTA de un fallo nuestro. Y en las partidas cortas donde la
+     * norma no llega a influir, entraría una fila que dice haberse jugado con unas
+     * reglas que no son las suyas: eso ya no se rechaza solo y envenena el corpus en
+     * silencio, que es exactamente lo que este fichero existe para impedir.
+     *
+     * Así que se rechaza a la cara, con el motivo verdadero. Es una limitación
+     * conocida y acotada —hoy, un solo juego— y prefiero perder esa partida antes que
+     * guardarla mintiendo. Cuando la tabla tenga su columna, esto se cae solo.
+     */
+    if (reglas.NORMAS && d?.normas) {
+        const distintas = Object.entries(reglas.NORMAS)
+            .filter(([k, pordefecto]) => k in d.normas && d.normas[k] !== pordefecto)
+            .map(([k]) => k);
+        if (distintas.length) {
+            return responder(200, {
+                guardada: false,
+                motivo: `esta partida se jugó con normas variables (${distintas.join(', ')}) `
+                      + `y el corpus todavía no las guarda. No es culpa de la partida: `
+                      + `guardarla sin ellas diría que se jugó con otras reglas.`,
+            });
+        }
+    }
+
     // ── LA ÚNICA PUERTA: se vuelve a jugar ──────────────────────────────
     let v;
     try { v = verificar(reglas, { ...d, semilla }); }
