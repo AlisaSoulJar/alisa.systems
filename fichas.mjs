@@ -179,7 +179,10 @@ for (const juego of JUEGOS) {
     const cl = enClasificacion(juego);
     const textos = prosa[juego] ?? {};
 
-    if (!textos.reglas) faltan.prosa.push(juego);
+    // Se considera escrita cuando está el PROCEDIMIENTO: `turno` es lo único que
+    // `legal_moves` no puede contar —la lista dice qué puedes hacer, nunca por qué—
+    // y sin eso la ficha no le sirve a quien no conozca el juego.
+    if (!textos.turno) faltan.prosa.push(juego);
     if (!textos.origen) faltan.origen.push(juego);
     /**
      * Un juego SIN REJILLA no necesita leyenda y contarlo como hueco es inventar
@@ -271,7 +274,30 @@ for (const juego of JUEGOS) {
             };
         })(),
         // ── lo único escrito a mano ────────────────────────────────────────
-        reglas: textos.reglas ?? null,
+        /**
+         * ⚠️ ESTRUCTURADA, NO UN BLOQUE DE TEXTO — Y ESA ES LA DECISIÓN DEL DÍA.
+         *
+         * Los dos mundos que documentan esto ya tienen esqueleto fijo: los manuales de
+         * cartas (jugadores · reparto · juego · puntuación) y las fichas de entornos de
+         * Gymnasium (Description · Action Space · Observation Space · Starting State ·
+         * Rewards · Episode End). Puestos uno al lado del otro son EL MISMO CONTENIDO a
+         * distinta profundidad, y ocho de sus diez apartados ya los derivamos nosotros.
+         *
+         * Así que la prosa no se ajusta por puerta: se escribe estructurada y cada
+         * puerta proyecta lo suyo. Un texto por audiencia serían cinco que se quedan
+         * viejos por separado, y el primero que lo haga no dará ningún error.
+         *
+         * `diferencias` es el campo que faltaba y el que más importa en un banco de
+         * pruebas: en qué se aparta nuestra versión del juego de la calle. Quien compare
+         * agentes tiene que saber a qué están jugando de verdad — nuestro «spades» no
+         * tiene subasta, y en spades la subasta ES el juego.
+         */
+        reglas: textos.turno ?? null,
+        prosa: textos.turno ? {
+            que_es: textos.que_es ?? null, reparto: textos.reparto ?? null,
+            turno: textos.turno, gana: textos.gana ?? null,
+            ojo: textos.ojo ?? [], diferencias: textos.diferencias ?? [],
+        } : null,
         origen: textos.origen ?? null,
     };
 

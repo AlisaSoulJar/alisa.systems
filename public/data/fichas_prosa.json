@@ -1,0 +1,60 @@
+{
+  "_comentario": [
+    "Lo único de la ficha que ninguna máquina puede derivar. Todo lo demás -objetivo,",
+    "vocabulario, asientos, variantes, captura, si se puede jugar tocando la mesa- sale",
+    "del código o de una medida, y se interpola.",
+    "",
+    "⚠️ REGLA DURA: AQUÍ NO SE ESCRIBE NADA QUE SE DERIVE.",
+    "Si este texto dice «cuatro jugadores» y ASIENTOS dice otra cosa, hay dos verdades y",
+    "gana la que alguien lea primero. El número de asientos, el objetivo y las jugadas",
+    "legales NO se repiten aquí: se pintan al lado, sacados del juego.",
+    "",
+    "⚠️ Y SE ESCRIBE LEYENDO `rules/`, NO DE MEMORIA.",
+    "Escribir la brisca que uno recuerda documenta un juego que no es el nuestro, y esa",
+    "diferencia la reportaría un betatester como fallo del juego.",
+    "",
+    "CAMPOS",
+    "  que_es       una frase; vale para el catálogo y para la Description del entorno",
+    "  reparto      cómo se empieza, en humano",
+    "  turno        el procedimiento que `legal_moves` NO explica. Aquí está el valor:",
+    "               la lista de jugadas dice QUÉ puedes hacer, nunca POR QUÉ",
+    "  gana         cómo termina y quién gana",
+    "  ojo          las dos o tres cosas que pillan a todo el mundo la primera vez",
+    "  diferencias  EN QUÉ SE APARTA ESTO DEL JUEGO DE LA CALLE. Es el campo más",
+    "               importante de un banco de pruebas: quien compare agentes tiene que",
+    "               saber a qué están jugando de verdad. Vacío significa «que yo sepa,",
+    "               en nada», no «no lo he mirado»",
+    "  origen       de dónde viene el juego"
+  ],
+
+  "brisca": {
+    "que_es": "El juego de bazas más extendido de España: cartas que valen puntos, un palo que manda sobre todos, y una mano de sólo tres cartas que se rellena sobre la marcha.",
+    "reparto": "Tres cartas a cada uno. La siguiente del mazo se destapa y su palo es el triunfo; se queda debajo del montón, boca arriba y a la vista de todos.",
+    "turno": "Quien sale tira la carta que quiera: aquí NO hay obligación de servir al palo, y eso es lo que separa a la brisca del tute. Se lleva la baza el triunfo más alto; si no ha salido ninguno, la carta más alta del palo con el que se salió. El que gana roba primero, luego los demás en orden, y vuelve a salir él.",
+    "gana": "Cuando se acaban las cartas se cuentan los puntos de las bazas ganadas. Hay 120 repartidos en la baraja. Gana quien más sume.",
+    "ojo": [
+      "El 3 manda sobre el rey. El orden de fuerza es as, tres, rey, caballo, sota, y luego 7, 6, 5, 4, 2 — nada que ver con el orden de los números.",
+      "Las cartas gordas son sólo cinco por palo: as (11), tres (10), rey (4), caballo (3) y sota (2). El resto vale cero, así que un 7 de triunfo no da puntos pero te salva la baza.",
+      "El triunfo destapado es la ÚLTIMA carta del mazo, así que se la lleva quien robe el último. Se sabe con antelación quién va a ser."
+    ],
+    "diferencias": [
+      "A cuatro jugadores, la brisca de la calle se juega EN PAREJAS —dos contra dos, sentados en cruz, y los puntos son del equipo—. Aquí los cuatro juegan cada uno para sí. El motor no tiene concepto de equipo: el marcador es por jugador. Es una variante que existe, pero no es la forma por defecto, y quien compare agentes tiene que saberlo: sin parejas desaparece la parte de cooperar y de leer a tu compañero."
+    ],
+    "origen": "Emparentada con la briscola italiana, de la que toma el nombre y casi todo. Se juega con la baraja española de 40 cartas en toda la península y en buena parte de Hispanoamérica."
+  },
+
+  "spades": {
+    "que_es": "Juego de bazas con las picas siempre de triunfo. En su forma completa, cada jugador APUESTA cuántas bazas va a hacer antes de jugar, y acertar vale más que ganar.",
+    "reparto": "Se reparte la baraja entera entre los cuatro, trece cartas cada uno. No hay mazo ni robo: se juega con lo que te tocó.",
+    "turno": "Hay que servir al palo de salida si tienes. Las picas ganan a cualquier otro palo por alta que sea la carta contraria; entre cartas del mismo palo, manda el rango normal. El que gana la baza sale a la siguiente.",
+    "gana": "Aquí puntúa cada baza ganada, una por una. Gana quien más bazas se lleve.",
+    "ojo": [
+      "Las picas no son sólo un palo más: cortan cualquier otro palo. Guardar una pica baja para el final vale más de lo que parece."
+    ],
+    "diferencias": [
+      "⚠️ ESTO NO ES EL SPADES DE VERDAD, Y LA DIFERENCIA ES EL JUEGO ENTERO. En spades, antes de jugar cada jugador apuesta cuántas bazas hará, y se puntúa por acertar: 10 puntos por baza apostada si el equipo llega, cero si se queda corto, y las bazas de más («bolsas») acaban restando 100 al acumular diez. Aquí NO HAY SUBASTA: simplemente gana quien más bazas hace. Eso convierte una decisión de predecirse a uno mismo —que es justo lo interesante para medir a un agente— en «haz todas las que puedas», que es otro juego. Sin subasta, esto se parece más a un whist con picas de triunfo.",
+      "Tampoco hay parejas: el spades estándar es dos contra dos con las apuestas sumadas por equipo. Aquí los cuatro van por libre."
+    ],
+    "origen": "Estadounidense, de los años treinta, de la familia del whist. Es de los juegos de cartas más jugados en Estados Unidos, y casi siempre en parejas."
+  }
+}

@@ -27,7 +27,9 @@
   .tarjeta .sub { color:#8b95a3; font-size:10.5px; display:block; margin-top:2px; }
   /* Con `.aviso` a secas no se veía: `.tarjeta .sub` tiene más especificidad y ganaba
      el gris. El aviso salía del color del texto normal, o sea que no avisaba de nada. */
-  .tarjeta .sub.aviso { color:#c0392b; }
+  .tarjeta .sub.aviso, .aviso { color:#c0392b; }
+  .cinta { display:inline-block; border:1px solid #e0b4ae; color:#c0392b; border-radius:3px;
+           padding:2px 7px; font-size:10.5px; margin-left:8px; vertical-align:middle; }
 
   /* ── la ficha ── */
   .cabecera { display:grid; grid-template-columns:minmax(0,320px) 1fr; gap:18px; align-items:start; }
@@ -113,7 +115,10 @@ function pintarCatalogo() {
 function pintarFicha(j, f) {
     document.title = `${f.titulo ?? j} — ficha ALISA`;
     $('miga').innerHTML = `<a href="/arcade/ficha.html">fichas</a> / ${esc(f.titulo ?? j)}`;
-    $('titulo').textContent = f.titulo ?? j;
+    // La cinta va en el título y no abajo: si nuestra versión se aparta del juego de la
+    // calle, eso hay que saberlo ANTES de leer las reglas, no después de leerlas.
+    $('titulo').innerHTML = esc(f.titulo ?? j)
+        + (f.prosa?.diferencias?.length ? `<span class="cinta">nuestra versión cambia algo</span>` : '');
     $('lede').innerHTML = f.objetivo ? esc(f.objetivo) : sin('este juego no declara su objetivo');
 
     const m = f.conLaMano;
@@ -152,9 +157,36 @@ function pintarFicha(j, f) {
         </div>
       </div>
 
-      <div class="panel"><h2>las reglas</h2><div class="dentro">
-        ${f.reglas ? esc(f.reglas) : sin('todavía sin escribir — es lo único de esta ficha que ninguna máquina puede derivar')}
+      ${f.prosa ? `
+      <div class="panel"><h2>las reglas</h2><div class="dentro"><dl>
+        ${f.prosa.reparto ? `<dt>el reparto</dt><dd>${esc(f.prosa.reparto)}</dd>` : ''}
+        <dt>el turno</dt><dd>${esc(f.prosa.turno)}</dd>
+        ${f.prosa.gana ? `<dt>quién gana</dt><dd>${esc(f.prosa.gana)}</dd>` : ''}
+        ${f.prosa.ojo?.length ? `<dt>ojo</dt><dd>${f.prosa.ojo.map(o => `· ${esc(o)}`).join('<br>')}</dd>` : ''}
+      </dl></div></div>`
+      : `<div class="panel"><h2>las reglas</h2><div class="dentro">
+        ${sin('todavía sin escribir — es lo único de esta ficha que ninguna máquina puede derivar')}
+      </div></div>`}
+
+      <!--
+        ⚠️ LAS DIFERENCIAS, EN ROJO Y SIN PLEGAR.
+
+        Es el apartado que más importa de un banco de pruebas y el que más tentador
+        sería esconder: en qué se aparta NUESTRA versión del juego de la calle. Quien
+        compare a una persona con un agente tiene que saber a qué están jugando, y
+        nuestro «spades» no tiene subasta — que en spades es el juego entero.
+
+        Vacío significa «que yo sepa, en nada». Ausente significa que no se ha mirado,
+        y se dice con esas palabras: no es lo mismo.
+      -->
+      <div class="panel" ${f.prosa?.diferencias?.length ? 'style="border-color:#e0b4ae"' : ''}>
+        <h2>en qué se aparta del juego de la calle</h2><div class="dentro">
+        ${f.prosa ? (f.prosa.diferencias.length
+            ? f.prosa.diferencias.map(d => `<div class="aviso" style="margin-bottom:7px">${esc(d)}</div>`).join('')
+            : 'Que yo sepa, en nada.')
+          : sin('sin mirar')}
       </div></div>
+
       <div class="panel"><h2>de dónde viene</h2><div class="dentro">
         ${f.origen ? esc(f.origen) : sin('todavía sin escribir')}
       </div></div>`;
