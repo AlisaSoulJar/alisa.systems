@@ -123,7 +123,27 @@ Seis puntos por sentarse en el asiento 0. No es un fallo de los juegos. Pero
 `tabla.mjs` compara agentes sin rotar asientos, así que **estaría midiendo dónde se
 sentaron** y saldría ordenada, creíble y falsa.
 
-### 4. Los 23 sistemas del motor sin sembrar
+### 4. ✅ LOS SISTEMAS SIN SEMBRAR: DE 28 A 2, Y EL TRINQUETE TOCÓ SUELO (16-08)
+
+Quedan dos, y **no hay que sembrarlos**: `AsteroidsSystem` y `CuccoGameSystem`. Sus
+entornos del gym ya los hacen reproducibles sustituyendo el azar **global** durante el
+episodio (`AsteroidsEnv._withSeed`, `CuccoSwarmEnv` + `DeterministicScope`), y el
+sistema se construye FUERA de ese tramo — así que cachear la fuente en el constructor
+capturaría la versión sin sembrar y rompería el determinismo en silencio.
+
+Por eso la regla del trinquete **se invierte** aquí, y está escrito junto al número:
+
+    si SUBE de 2, alguien metió un sistema nuevo con azar incontrolado
+    si BAJA de 2, alguien sembró Asteroids o Cucco y rompió su determinismo
+
+Dos gestos que hubo que repetir y conviene recordar: al sembrar un sistema que
+CONSTRUYE otro dentro (TrafficSurvival → IDM, PygmalionTopology → Spark) hay que
+pasarle también la semilla, o queda sembrado por fuera y tirando del azar global por
+dentro. Y `KinematicRageSystem` llevaba tiempo contándose como deuda **sin serlo**:
+tenía la semilla inyectable con otro nombre (`config.azar`) que esta prueba no
+buscaba.
+
+### 4.bis (histórico) Los 23 sistemas del motor sin sembrar
 
 `prueba_semillas.mjs` los cuenta y el techo sólo puede bajar. Rebaño salió de
 `BoidsSystem`, pradera de `FoodChainSystem`, cripta de `BSPSystem`: el camino está

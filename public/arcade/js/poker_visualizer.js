@@ -2,7 +2,31 @@
 const engine = new SovereignCardEngine({
     gameId: 'poker',
     onInit3D: function(scene, camera, renderer) {
-        camera.position.set(0, 5, 8);
+        /**
+         * ⚠️ (0, 5, 8) MIRABA TAN DESDE ABAJO QUE ENTRABA EN CUADRO EL VACÍO DE
+         * DETRÁS DE LA MESA — MEDIDO, NO A OJO.
+         *
+         * Esta mesa es un disco flotando en la niebla (`FogExp2` de
+         * `SovereignCardEngine`, casi negra): no hay suelo ni sala alrededor,
+         * a diferencia de `mesa_cartas.mjs`, que sí amuebla una habitación. Con
+         * la cámara a sólo 32° sobre el horizonte (`atan(5/8)`), el rayo de
+         * arriba del encuadre —FOV vertical 45°— pasaba por encima del borde
+         * trasero del óvalo antes de tocar el fieltro, y desde ahí no había
+         * nada que pintar. Medido con una columna de píxeles al 75% del ancho:
+         * el negro puro llegaba hasta el 26,1% de la pantalla.
+         *
+         * Subir la cámara hasta cuadrar bien arriba —al estilo de la vista de
+         * `encuadrar()` en vertical, casi cenital— sí lo tapa del todo, pero
+         * de paso acerca tanto la mesa que tus dos cartas, las más próximas a
+         * la cámara, se salen por el borde inferior de la pantalla: comprobado
+         * proyectando sus esquinas con `camera.project()`, no mirando la
+         * captura. (0, 8.5, 4) es el punto medido donde las dos cosas conviven:
+         * el negro baja al 14,3% —ya no es una FRANJA, son las esquinas del
+         * óvalo, como en cualquier mesa redonda vista en perspectiva— y las
+         * cinco cartas comunes y las dos propias quedan enteras dentro del
+         * encuadre, con sitio de sobra.
+         */
+        camera.position.set(0, 8.5, 4);
         camera.lookAt(0, 0, 0);
 
         // Procedural Casino Table
