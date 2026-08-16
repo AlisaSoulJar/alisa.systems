@@ -106,7 +106,17 @@ function medir() {
 addEventListener('resize', () => { medir(); pintarTodo(); });
 
 // ── El estado ────────────────────────────────────────────────────────────
-let juego = 'ajedrez', reglas = null, p = null;
+/**
+ * ⚠️ SE ACEPTA `?juego=`, PORQUE SI NO EL ENLACE DE LA FICHA MIENTE UN POCO.
+ *
+ * La ficha de cada juego ofrece «verlo por las otras puertas» y traía aquí, donde
+ * siempre salía ajedrez: quien venía desde la ficha del go veía un tablero de ajedrez
+ * y tenía que buscarse su juego en el desplegable. El enlace prometía una cosa y
+ * enseñaba otra, que es peor que no ofrecerlo.
+ */
+const pedido = new URLSearchParams(location.search).get('juego');
+let juego = JUEGOS.includes(pedido) ? pedido : 'ajedrez';
+let reglas = null, p = null;
 
 $('juego').innerHTML = JUEGOS.map(j =>
     `<option value="${j}"${j === juego ? ' selected' : ''}>${TITULOS[j] ?? j}</option>`).join('');

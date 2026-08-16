@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALISA Arcade — fichas</title>
+<meta name="alisa-escaparate" content="arcade">
+<meta name="alisa-muestra" content="La ficha de cada juego: una sola, con todo lo que necesitan las cinco puertas. Lo derivable se deriva; lo que no se sabe se dice.">
+<style>
+  :root { color-scheme: light; }
+  body { margin:0; background:#f4f6f8; color:#1a2230; padding:22px 20px 60px;
+         font:12px/1.7 'JetBrains Mono', ui-monospace, monospace; }
+  main { max-width:1180px; margin:0 auto; }
+  a { color:#1a2230; }
+  h1 { font-size:13px; letter-spacing:.4em; text-transform:uppercase; font-weight:400; margin:0 0 4px; }
+  .lede { color:#6b7684; font-size:11.5px; margin:0 0 18px; max-width:78ch; }
+  .migas { font-size:11px; color:#8b95a3; margin:0 0 14px; }
+
+  /* ── el catálogo ── */
+  .rejilla { display:grid; grid-template-columns:repeat(auto-fill, minmax(190px,1fr)); gap:12px; }
+  .tarjeta { border:1px solid #dde3ea; border-radius:4px; background:#fff; overflow:hidden;
+             text-decoration:none; color:inherit; display:block; }
+  .tarjeta:hover { border-color:#8b95a3; }
+  .tarjeta img { display:block; width:100%; height:118px; object-fit:cover; background:#eef2f6; }
+  .tarjeta .cuerpo { padding:8px 10px 10px; }
+  .tarjeta b { font-weight:600; font-size:12px; }
+  .tarjeta .sub { color:#8b95a3; font-size:10.5px; display:block; margin-top:2px; }
+  /* Con `.aviso` a secas no se veía: `.tarjeta .sub` tiene más especificidad y ganaba
+     el gris. El aviso salía del color del texto normal, o sea que no avisaba de nada. */
+  .tarjeta .sub.aviso { color:#c0392b; }
+
+  /* ── la ficha ── */
+  .cabecera { display:grid; grid-template-columns:minmax(0,320px) 1fr; gap:18px; align-items:start; }
+  .cabecera img { width:100%; border:1px solid #dde3ea; border-radius:4px; background:#eef2f6; }
+  .panel { border:1px solid #dde3ea; border-radius:4px; background:#fff; margin:14px 0 0; }
+  .panel h2 { font-size:10px; letter-spacing:.28em; text-transform:uppercase; color:#8b95a3;
+              margin:0; padding:9px 12px; border-bottom:1px solid #eef2f6; font-weight:400; }
+  .panel .dentro { padding:11px 12px; }
+  dl { margin:0; display:grid; grid-template-columns:auto 1fr; gap:3px 14px; }
+  dt { color:#8b95a3; }
+  dd { margin:0; }
+  .sin { color:#b9c4d0; font-style:italic; }
+  code { background:#eef2f6; padding:1px 4px; border-radius:2px; }
+  .puertas { display:flex; gap:6px; flex-wrap:wrap; }
+  .puerta { border:1px solid #dde3ea; border-radius:3px; padding:3px 8px; font-size:10.5px; }
+  .puerta.si { border-color:#27ae60; color:#1e8449; }
+  .puerta.no { border-color:#e0b4ae; color:#c0392b; }
+  .acciones { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+  .acciones a { border:1px solid #b9c4d0; border-radius:3px; padding:6px 11px; background:#fff;
+                text-decoration:none; font-size:11px; }
+  @media (max-width:760px){ .cabecera { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <p class="migas"><a href="/arcade/">arcade</a> / <span id="miga">fichas</span></p>
+  <h1 id="titulo">fichas</h1>
+  <p class="lede" id="lede"></p>
+  <div id="cuerpo"></div>
+</main>
+
+<!--
+  ⚠️ POR QUÉ ESTA PÁGINA EXISTE, Y POR QUÉ ES UNA SOLA PARA LAS CINCO PUERTAS
+
+  `fichas.json` reunía desde hacía días todo lo que se sabe de los 35 juegos —el
+  objetivo, los verbos, los asientos, las puertas montadas, y desde hoy lo medido
+  sobre si se puede jugar con la mano— y NO LO LEÍA NADIE. Cero páginas. Todo ese
+  trabajo era un fichero que ningún humano veía.
+
+  Y es una ficha, no una por audiencia. La tesis del banco es que las cinco puertas
+  juegan al MISMO juego: el panel de jugadas es literalmente `legal_moves`, medido
+  hoy en los 35. Escribir una ficha para personas y otra para agentes sería crear
+  dos verdades, y la primera que se quedara vieja lo haría en silencio.
+
+  ⚠️ Y LO QUE NO SE SABE SE DICE, EN GRIS Y CON SU PALABRA.
+
+  «sin medir» no es «no se puede», y «sin escribir» no es «no tiene reglas». Poner
+  un valor por defecto en su lugar es lo que hizo que la ficha del ajedrez publicara
+  que es un juego de una persona. Aquí un hueco se ve como hueco.
+-->
+<script type="module">
+const $ = (id) => document.getElementById(id);
+const fichas = await fetch('/data/fichas.json').then(r => r.json()).catch(() => ({}));
+const cual = new URLSearchParams(location.search).get('juego');
+
+const esc = (s) => String(s).replace(/[<>&]/g, c => ({ '<':'&lt;', '>':'&gt;', '&':'&amp;' }[c]));
+/** Un hueco se pinta como hueco: en gris y diciendo POR QUÉ está vacío. */
+const sin = (t) => `<span class="sin">${t}</span>`;
+
+if (!cual || !fichas[cual]) pintarCatalogo(); else pintarFicha(cual, fichas[cual]);
+
+function pintarCatalogo() {
+    $('lede').innerHTML = `Los ${Object.keys(fichas).length} juegos del banco. Cada ficha reúne lo que necesitan `
+        + `las cinco puertas —persona, FSM, LLM, visión y OpenAPI— porque las cinco juegan al mismo juego.`;
+    const orden = Object.entries(fichas).sort((a, b) => (a[1].titulo ?? a[0]).localeCompare(b[1].titulo ?? b[0], 'es'));
+    $('cuerpo').innerHTML = `<div class="rejilla">` + orden.map(([j, f]) => {
+        /**
+         * El aviso de la tarjeta sale de lo MEDIDO, no de una lista escrita a mano:
+         * son los juegos donde al medir sólo respondía el panel. Es exactamente lo
+         * que un betatester tiene que mirar primero, y no lo decide nadie.
+         */
+        const r = f.conLaMano?.resumen ?? null;
+        const malo = r && r.includes('panel');
+        return `<a class="tarjeta" href="?juego=${j}">`
+            + (f.captura ? `<img src="${f.captura}" alt="" loading="lazy">` : `<img alt="">`)
+            + `<div class="cuerpo"><b>${esc(f.titulo ?? j)}</b>`
+            + `<span class="sub">${f.asientos ? (f.asientos === 1 ? 'un jugador' : f.asientos + ' jugadores') : sin('asientos sin declarar')}</span>`
+            + `<span class="sub${malo ? ' aviso' : ''}">${r ? esc(r) : sin('sin medir')}</span>`
+            + `</div></a>`;
+    }).join('') + `</div>`;
+}
+
+function pintarFicha(j, f) {
+    document.title = `${f.titulo ?? j} — ficha ALISA`;
+    $('miga').innerHTML = `<a href="/arcade/ficha.html">fichas</a> / ${esc(f.titulo ?? j)}`;
+    $('titulo').textContent = f.titulo ?? j;
+    $('lede').innerHTML = f.objetivo ? esc(f.objetivo) : sin('este juego no declara su objetivo');
+
+    const m = f.conLaMano;
+    const puerta = (n, ok) => `<span class="puerta ${ok ? 'si' : 'no'}">${n}</span>`;
+
+    $('cuerpo').innerHTML = `
+      <div class="cabecera">
+        <div>${f.captura ? `<img src="${f.captura}" alt="Captura de ${esc(f.titulo ?? j)}">` : sin('sin captura')}
+          <div class="acciones">
+            <a href="/arcade/${f.pagina ?? ''}">jugar</a>
+            <a href="/arcade/proyecciones.html?juego=${j}">verlo por las otras puertas</a>
+            <a href="/openapi.json">la API</a>
+          </div>
+        </div>
+        <div>
+          <div class="panel" style="margin-top:0"><h2>cómo se juega con la mano</h2><div class="dentro">
+            ${m?.resumen ? esc(m.resumen) : sin('sin medir')}
+            ${m?.medido ? `<div class="sin">medido el ${m.medido} en una pantalla de 390x844</div>` : ''}
+          </div></div>
+
+          <div class="panel"><h2>las cinco puertas</h2><div class="dentro">
+            <div class="puertas">${Object.entries(f.puertas ?? {}).map(([n, ok]) => puerta(n, ok)).join('')}</div>
+            <div class="sin" style="margin-top:7px">Dice si la puerta está MONTADA, no si está bien.</div>
+          </div></div>
+
+          <div class="panel"><h2>la jugada</h2><div class="dentro"><dl>
+            <dt>asientos</dt><dd>${f.asientos ?? sin('el juego no lo declara')}</dd>
+            <dt>vocabulario</dt><dd>${f.verbos?.length ? f.verbos.map(v => `<code>${esc(v)}</code>`).join(' ')
+                : f.formatoJugada ? esc(f.formatoJugada) + (f.ejemplos ? ' — ' + f.ejemplos.map(e => `<code>${esc(e)}</code>`).join(' ') : '')
+                : sin('sin declarar')}</dd>
+            <dt>variantes</dt><dd>${f.normas?.length ? f.normas.map(n => `<code>${esc(n)}</code>`).join(' ') : sin('ninguna')}</dd>
+            <dt>leyenda</dt><dd>${f.leyenda ? esc(f.leyenda) : sin('el juego no dice qué significa lo que se ve')}</dd>
+            <dt>clasificación</dt><dd>${f.clasificacion?.entra ? 'entra en la tabla'
+                : sin('fuera' + (f.clasificacion?.motivo ? ' — ' + esc(f.clasificacion.motivo) : ''))}</dd>
+          </dl></div></div>
+        </div>
+      </div>
+
+      <div class="panel"><h2>las reglas</h2><div class="dentro">
+        ${f.reglas ? esc(f.reglas) : sin('todavía sin escribir — es lo único de esta ficha que ninguna máquina puede derivar')}
+      </div></div>
+      <div class="panel"><h2>de dónde viene</h2><div class="dentro">
+        ${f.origen ? esc(f.origen) : sin('todavía sin escribir')}
+      </div></div>`;
+}
+</script>
+</body>
+</html>
