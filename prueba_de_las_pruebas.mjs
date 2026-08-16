@@ -103,6 +103,23 @@ const SABOTAJES = [
         vigila: 'que el sello del `?v=` corresponda al código que hay en disco',
     },
     {
+        nombre: 'clasificacion',
+        corre: 'node prueba_clasificacion.mjs',
+        fichero: 'public/clasificacion.html',
+        /**
+         * El fallo REAL contra el que se escribió: que alguien corra `tabla.mjs` sin
+         * `--html` y la página se quede con los números de una medida anterior. Así
+         * que el sabotaje es exactamente eso —cambiar un número publicado— y no un
+         * destrozo del HTML, que haría suspender a cualquier comprobación.
+         *
+         * `0.00` es la mediana del suelo, que vale eso por definición: es el número
+         * más estable de la tabla y no depende de qué salga en la medición del día.
+         */
+        de: '<td class="n"><b>0.00</b>',
+        a: '<td class="n"><b>0.42</b>',
+        vigila: 'que la clasificación publicada sea la que se midió',
+    },
+    {
         nombre: 'objetivo',
         corre: 'node prueba_objetivo.mjs',
         fichero: 'public/arcade/js/protohub/rules/damas.js',
