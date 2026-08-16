@@ -44,7 +44,7 @@
    "ruta": "extensions/alisa-colony/avatar-pipeline/ArachneIngestionSystem.js",
    "nombre": "ArachneIngestionSystem",
    "familia": "avatar-pipeline",
-   "kb": 13.4,
+   "kb": 13.9,
    "clase": "apagada",
    "exporta": [
     "ArachneIngestionSystem"
@@ -73,7 +73,7 @@
    "ruta": "extensions/alisa-colony/avatar-pipeline/GeppettoChoreographySystem.js",
    "nombre": "GeppettoChoreographySystem",
    "familia": "avatar-pipeline",
-   "kb": 16.1,
+   "kb": 16.6,
    "clase": "apagada",
    "exporta": [
     "GeppettoBrain",
@@ -126,7 +126,7 @@
    "ruta": "extensions/alisa-colony/avatar-pipeline/PygmalionTopologySystem.js",
    "nombre": "PygmalionTopologySystem",
    "familia": "avatar-pipeline",
-   "kb": 31.6,
+   "kb": 32.4,
    "clase": "apagada",
    "exporta": [
     "PygmalionBrain",
@@ -252,7 +252,7 @@
    "ruta": "extensions/alisa-colony/plugins/SovereignAvatarSystem.js",
    "nombre": "SovereignAvatarSystem",
    "familia": "plugins",
-   "kb": 28.3,
+   "kb": 28.5,
    "clase": "apagada",
    "exporta": [
     "SovereignAvatarSystem"
@@ -1907,7 +1907,7 @@
    "ruta": "soma/plugins/SparkSystem.js",
    "nombre": "SparkSystem",
    "familia": "plugins",
-   "kb": 5,
+   "kb": 5.3,
    "clase": "apagada",
    "exporta": [
     "SparkSystem"
@@ -2864,7 +2864,7 @@
     "syncKatamariConsumption"
    ],
    "objetos": 54,
-   "mallas": 135,
+   "mallas": 136,
    "luces": 4
   },
   {

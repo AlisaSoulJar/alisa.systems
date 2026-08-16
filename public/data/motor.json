@@ -16,13 +16,13 @@
    "ruta": "extensions/alisa-colony/avatar-pipeline/ArachneIngestionSystem.js",
    "nombre": "ArachneIngestionSystem",
    "familia": "avatar-pipeline",
-   "kb": 13.4
+   "kb": 13.9
   },
   {
    "ruta": "extensions/alisa-colony/avatar-pipeline/GeppettoChoreographySystem.js",
    "nombre": "GeppettoChoreographySystem",
    "familia": "avatar-pipeline",
-   "kb": 16.1
+   "kb": 16.6
   },
   {
    "ruta": "extensions/alisa-colony/avatar-pipeline/MorpheusSimulationSystem.js",
@@ -34,7 +34,7 @@
    "ruta": "extensions/alisa-colony/avatar-pipeline/PygmalionTopologySystem.js",
    "nombre": "PygmalionTopologySystem",
    "familia": "avatar-pipeline",
-   "kb": 31.6
+   "kb": 32.4
   },
   {
    "ruta": "extensions/alisa-colony/plugins/ColonialPassportPlugin.js",
@@ -64,7 +64,7 @@
    "ruta": "extensions/alisa-colony/plugins/SovereignAvatarSystem.js",
    "nombre": "SovereignAvatarSystem",
    "familia": "plugins",
-   "kb": 28.3
+   "kb": 28.5
   },
   {
    "ruta": "extensions/alisa-colony/plugins/SovereignHaloPlugin.js",
@@ -484,7 +484,7 @@
    "ruta": "soma/plugins/SparkSystem.js",
    "nombre": "SparkSystem",
    "familia": "plugins",
-   "kb": 5.0
+   "kb": 5.3
   },
   {
    "ruta": "soma/plugins/SpatialAudioPlugin.js",

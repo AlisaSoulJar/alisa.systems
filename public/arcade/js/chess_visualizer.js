@@ -578,10 +578,26 @@ function spawnPiece(char, rank, file) {
     const z = rank * SQUARE_SIZE - HALF_BOARD + SQUARE_SIZE / 2;
     pivot.position.set(x, 0, z);
 
-    // Knight orientation — face toward opponent
-    if (type === 'Knight') {
-        clone.rotation.y = isWhite ? Math.PI / 2 : -Math.PI / 2;
-    } else if (!isWhite) {
+    /**
+     * ⚠️ EL CABALLO NO ES UNA CAJA: ERA SU GIRO, NO SU MOLDE.
+     *
+     * Medido con capturas (no supuesto): el caballo es un `ExtrudeGeometry` con
+     * el perfil del caballo en el plano XY y solo 0.24 de profundidad en Z. Ese
+     * perfil se lee perfecto — pero el código lo giraba 90° "para mirar al
+     * rival", y girar 90° en Y manda el perfil ancho (eje X local) al eje Z del
+     * mundo y la profundidad fina (eje Z local) al eje X del mundo. La cámara
+     * de juego está en (0,8,10): mira sobre todo a lo largo de Z. Con el giro
+     * de 90°, lo que la cámara veía de frente era el canto de 0.24 — un
+     * bloque liso — mientras el perfil del caballo quedaba de canto,
+     * escorzado. Comprobado moviendo la cámara a lo largo de X (de perfil):
+     * ahí sí aparece la cabeza, el cuello, las crines.
+     *
+     * El arreglo es no rotar el caballo aparte: se queda con la misma regla
+     * que ya usan las otras cinco piezas (identidad para blancas, 180° para
+     * negras), así el plano del perfil —su cara ancha— quede mirando al eje Z,
+     * que es por donde entra la cámara por defecto.
+     */
+    if (!isWhite) {
         clone.rotation.y = Math.PI;
     }
 
