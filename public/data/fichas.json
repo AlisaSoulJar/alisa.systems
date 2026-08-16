@@ -1,0 +1,826 @@
+{
+  "ajedrez": {
+    "titulo": "Ajedrez",
+    "pagina": "chess.html",
+    "objetivo": "Objetivo: dar jaque mate al rey rival.",
+    "asientos": null,
+    "verbos": null,
+    "formatoJugada": "notación propia del juego, 4 caracteres",
+    "ejemplos": [
+      "a2a3",
+      "a2a4",
+      "b2b3",
+      "b2b4",
+      "c2c3",
+      "c2c4"
+    ],
+    "normas": [],
+    "leyenda": {
+      "p": "peón",
+      "n": "caballo",
+      "b": "alfil",
+      "r": "torre",
+      "q": "dama",
+      "k": "rey"
+    },
+    "clasificacion": {
+      "entra": true,
+      "motivo": null
+    },
+    "captura": "capturas_laboratorio/ajedrez.png",
+    "reglas": null,
+    "origen": null
+  },
+  "go": {
+    "titulo": "Go",
+    "pagina": "go.html",
+    "objetivo": "Objetivo: rodear mas territorio que el rival; una piedra sin libertades se captura.",
+    "asientos": null,
+    "verbos": null,
+    "formatoJugada": "notación propia del juego, 3 caracteres",
+    "ejemplos": [
+      "a19",
+      "b19",
+      "c19",
+      "d19",
+      "e19",
+      "f19"
+    ],
+    "normas": [],
+    "leyenda": {
+      "n": "piedra negra",
+      "b": "piedra blanca"
+    },
+    "clasificacion": {
+      "entra": false,
+      "motivo": "el tope de 120 decisiones corta la partida"
+    },
+    "captura": "capturas_laboratorio/go.png",
+    "reglas": null,
+    "origen": null
+  },
+  "reversi": {
+    "titulo": "Reversi",
+    "pagina": "reversi.html",
+    "objetivo": "Objetivo: terminar con MAS fichas tuyas que del rival; cada jugada voltea las que encierras.",
+    "asientos": null,
+    "verbos": null,
+    "formatoJugada": "notación propia del juego, 2 caracteres",
+    "ejemplos": [
+      "e6",
+      "f5",
+      "c4",
+      "d3",
+      "d6",
+      "f6"
+    ],
+    "normas": [],
+    "leyenda": {
+      "w": "ficha clara",
+      "b": "ficha oscura"
+    },
+    "clasificacion": {
+      "entra": true,
+      "motivo": null
+    },
+    "captura": "capturas_laboratorio/reversi.png",
+    "reglas": null,
+    "origen": null
+  },
+  "damas": {
+    "titulo": "Damas",
+    "pagina": "checkers.html",
+    "objetivo": "Objetivo: dejar al rival sin fichas o sin jugadas. Comer es obligatorio.",
+    "asientos": null,
+    "verbos": null,
+    "formatoJugada": "notación propia del juego, 4 caracteres",
+    "ejemplos": [
+      "a3b4",
+      "c3b4",
+      "c3d4",
+      "e3d4",
+      "e3f4",
+      "g3f4"
+    ],
+    "normas": [
+      "damaVuela",
+      "peonComeAtras"
+    ],
+    "leyenda": {
+      "w": "peón claro",
+      "b": "peón oscuro"
+    },
+    "clasificacion": {
+      "entra": false,
+      "motivo": "el tope de 120 decisiones corta la partida"
+    },
+    "captura": "capturas_laboratorio/damas.png",
+    "reglas": null,
+    "origen": null
+  },
+  "xiangqi": {
+    "titulo": "Xiangqi",
+    "pagina": "xiangqi.html",
+    "objetivo": "Objetivo: dar jaque mate al general rival.",
+    "asientos": null,
+    "verbos": null,
+    "formatoJugada": "notación propia del juego, 4 caracteres",
+    "ejemplos": [
+      "a6a5",
+      "c6c5",
+      "e6e5",
+      "g6g5",
+      "i6i5",
+      "b7b6"
+    ],
+    "normas": [],
+    "leyenda": {
+      "p": "soldado",
+      "c": "cañón",
+      "r": "carro",
+      "n": "caballo",
+      "b": "elefante",
+      "a": "consejero",
+      "k": "general"
+    },
+    "clasificacion": {
+      "entra": false,
+      "motivo": "el tope de 120 decisiones corta la partida"
+    },
+    "captura": "capturas_laboratorio/xiangqi.png",
+    "reglas": null,
+    "origen": null
+  },
+  "mancala": {
+    "titulo": "Mancala",
+    "pagina": "mancala.html",
+    "objetivo": "Objetivo: acabar con mas semillas en tu granero que el rival.",
+    "asientos": null,
+    "verbos": null,
+    "formatoJugada": "notación propia del juego, 1 caracteres",
+    "ejemplos": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5"
+    ],
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": true,
+      "motivo": null
+    },
+    "captura": "capturas_laboratorio/mancala.png",
+    "reglas": null,
+    "origen": null
+  },
+  "snake": {
+    "titulo": "Snake",
+    "pagina": "snake.html",
+    "objetivo": "Objetivo: crecer comiendo sin chocar contigo mismo ni con la pared. Cada comida alarga la cola, así que cuanto mejor lo haces, menos sitio te queda.",
+    "asientos": null,
+    "verbos": [
+      "abajo",
+      "arriba",
+      "derecha",
+      "izquierda"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": false,
+      "motivo": "el tope de 120 decisiones corta la partida"
+    },
+    "captura": "capturas_laboratorio/snake.png",
+    "reglas": null,
+    "origen": null
+  },
+  "fagocito": {
+    "titulo": "Fagocito",
+    "pagina": "fagocito.html",
+    "objetivo": "Objetivo: recoger todo el alimento del laberinto sin que te alcance ningún perseguidor. Si te tocan, se acabó.",
+    "asientos": null,
+    "verbos": [
+      "abajo",
+      "arriba",
+      "derecha"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": false,
+      "motivo": "el tope de 120 decisiones corta la partida"
+    },
+    "captura": "capturas_laboratorio/fagocito.png",
+    "reglas": null,
+    "origen": null
+  },
+  "peaton": {
+    "titulo": "Peatón",
+    "pagina": "peaton.html",
+    "objetivo": "Objetivo: llegar hasta arriba del todo cruzando los carriles sin que te atropellen. Esperar a que pase el hueco también es una jugada.",
+    "asientos": null,
+    "verbos": [
+      "abajo",
+      "arriba",
+      "derecha",
+      "esperar",
+      "izquierda"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": true,
+      "motivo": null
+    },
+    "captura": "capturas_laboratorio/peaton.png",
+    "reglas": null,
+    "origen": null
+  },
+  "blackjack": {
+    "titulo": "Blackjack",
+    "pagina": "blackjack.html",
+    "objetivo": "Objetivo: acercarte a 21 más que la casa SIN PASARTE. Si te pasas de 21 pierdes en el acto, aunque la casa se pase después. La casa no decide: sigue su norma fija, así que el único que elige eres tú.",
+    "asientos": null,
+    "verbos": [
+      "deal",
+      "double",
+      "hit",
+      "stand"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": true,
+      "motivo": null
+    },
+    "captura": "capturas_laboratorio/blackjack.png",
+    "reglas": null,
+    "origen": null
+  },
+  "poker": {
+    "titulo": "Póker",
+    "pagina": "poker.html",
+    "objetivo": "Objetivo: acabar las 30 manos con más fichas de las 200 con las que empiezas. Texas hold'em: dos cartas tuyas y cinco comunes, y la mejor mano de cinco gana. Se puede ganar sin la mejor mano si el rival se retira, así que retirarse a tiempo también suma.",
+    "asientos": null,
+    "verbos": [
+      "call",
+      "check",
+      "fold",
+      "raise",
+      "siguiente"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": true,
+      "motivo": null
+    },
+    "captura": "capturas_laboratorio/poker.png",
+    "reglas": null,
+    "origen": null
+  },
+  "brisca": {
+    "titulo": "Brisca",
+    "pagina": "brisca.html",
+    "objetivo": "Objetivo: sumar más puntos que nadie llevándote bazas con cartas que valgan. Manda el triunfo, y aquí NO hay que servir al palo: puedes tirar lo que quieras. Se roba una carta después de cada baza.",
+    "asientos": 4,
+    "verbos": [
+      "jugar"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": true,
+      "motivo": null
+    },
+    "captura": "capturas_laboratorio/brisca.png",
+    "reglas": null,
+    "origen": null
+  },
+  "tute": {
+    "titulo": "Tute",
+    "pagina": "tute.html",
+    "objetivo": "Objetivo: sumar más puntos que nadie llevándote bazas con cartas que valgan. Manda el triunfo y HAY QUE SERVIR AL PALO: si tienes del palo que salió, estás obligado a tirarlo. Se reparten diez cartas de una vez y no se roba.",
+    "asientos": 4,
+    "verbos": [
+      "jugar"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": true,
+      "motivo": null
+    },
+    "captura": "capturas_laboratorio/tute.png",
+    "reglas": null,
+    "origen": null
+  },
+  "hearts": {
+    "titulo": "Hearts",
+    "pagina": "hearts.html",
+    "objetivo": "Objetivo: al revés que en los demás — aquí las bazas son un castigo. Evita llevarte corazones (1 cada uno) y sobre todo la dama de picas (13). No hay triunfo y hay que servir al palo. Los Puntos que ves ya vienen negados: cuanto MÁS ALTOS, mejor vas.",
+    "asientos": 4,
+    "verbos": [
+      "jugar"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": true,
+      "motivo": null
+    },
+    "captura": "capturas_laboratorio/hearts.png",
+    "reglas": null,
+    "origen": null
+  },
+  "spades": {
+    "titulo": "Spades",
+    "pagina": "spades.html",
+    "objetivo": "Objetivo: llevarte el mayor número de BAZAS. Aquí no puntúan las cartas sino las bazas, una por cada una. Las picas son siempre triunfo y hay que servir al palo.",
+    "asientos": 4,
+    "verbos": [
+      "jugar"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": false,
+      "motivo": "no medido en la última pasada"
+    },
+    "captura": "capturas_laboratorio/spades.png",
+    "reglas": null,
+    "origen": null
+  },
+  "guerra": {
+    "titulo": "Guerra (control)",
+    "pagina": "guerra.html",
+    "objetivo": "Objetivo: quedarte con todas las cartas; en cada choque gana la mas alta.",
+    "asientos": null,
+    "verbos": [
+      "voltear"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": false,
+      "motivo": "la casa no supera al suelo: la escala se invertiría"
+    },
+    "captura": "capturas_laboratorio/guerra.png",
+    "reglas": null,
+    "origen": null
+  },
+  "gofish": {
+    "titulo": "Go Fish",
+    "pagina": "gofish.html",
+    "objetivo": "Objetivo: reunir mas cuartetos que el rival, pidiendole valores que tu ya tienes.",
+    "asientos": 3,
+    "verbos": [
+      "pedir"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": true,
+      "motivo": null
+    },
+    "captura": "capturas_laboratorio/gofish.png",
+    "reglas": null,
+    "origen": null
+  },
+  "unit": {
+    "titulo": "Unit",
+    "pagina": "unit.html",
+    "objetivo": "Objetivo: quedarte sin cartas el primero, encadenando color o numero.",
+    "asientos": 4,
+    "verbos": [
+      "jugar",
+      "robar"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": false,
+      "motivo": "el hueco (3.3) no supera al ruido de la medida (±34.0)"
+    },
+    "captura": "capturas_laboratorio/unit.png",
+    "reglas": null,
+    "origen": null
+  },
+  "entropy": {
+    "titulo": "Entropy",
+    "pagina": "entropy.html",
+    "objetivo": "Objetivo: acabar con la caja mas BAJA posible; cada carta suma su valor y el comodin vale 0.",
+    "asientos": null,
+    "verbos": [
+      "cambiar",
+      "descartar_y_voltear",
+      "robar_descarte",
+      "robar_mazo"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": true,
+      "motivo": null
+    },
+    "captura": "capturas_laboratorio/entropy.png",
+    "reglas": null,
+    "origen": null
+  },
+  "sokoban": {
+    "titulo": "Sokoban",
+    "pagina": "sokoban.html",
+    "objetivo": "Objetivo: empujar cada caja hasta un destino. Solo se empuja, nunca se tira.",
+    "asientos": null,
+    "verbos": [
+      "derecha"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": false,
+      "motivo": "el tope de 120 decisiones corta la partida"
+    },
+    "captura": "capturas_laboratorio/sokoban.png",
+    "reglas": null,
+    "origen": null
+  },
+  "cripta": {
+    "titulo": "Cripta",
+    "pagina": "cripta.html",
+    "objetivo": "Objetivo: salir de la mazmorra vivo y con el mayor botín. El mapa no se ve, se descubre andando, y pisar la salida termina la partida con lo que lleves encima: decidir CUÁNDO salir es la jugada.",
+    "asientos": null,
+    "verbos": [
+      "abajo",
+      "arriba",
+      "derecha",
+      "izquierda"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": false,
+      "motivo": "el tope de 120 decisiones corta la partida"
+    },
+    "captura": "capturas_laboratorio/cripta.png",
+    "reglas": null,
+    "origen": null
+  },
+  "flota": {
+    "titulo": "Flota",
+    "pagina": "flota.html",
+    "objetivo": "Objetivo: hundir toda la flota del rival antes de que hunda la tuya, disparando a ciegas.",
+    "asientos": null,
+    "verbos": null,
+    "formatoJugada": "notación propia del juego, 2 caracteres",
+    "ejemplos": [
+      "a1",
+      "b1",
+      "c1",
+      "d1",
+      "e1",
+      "f1"
+    ],
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": true,
+      "motivo": null
+    },
+    "captura": "capturas_laboratorio/flota.png",
+    "reglas": null,
+    "origen": null
+  },
+  "defensa": {
+    "titulo": "Defensa",
+    "pagina": "defensa.html",
+    "objetivo": "Objetivo: aguantar tu carril y tumbar el del rival. El oro cae solo y cada moneda gastada en atacar es una moneda que no defiende.",
+    "asientos": null,
+    "verbos": null,
+    "formatoJugada": "notación propia del juego, 5 caracteres",
+    "ejemplos": [
+      "pasar",
+      "enviar a",
+      "enviar b",
+      "enviar c",
+      "enviar d",
+      "enviar e"
+    ],
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": true,
+      "motivo": null
+    },
+    "captura": "capturas_laboratorio/defensa.png",
+    "reglas": null,
+    "origen": null
+  },
+  "sigilo": {
+    "titulo": "Sigilo",
+    "pagina": "sigilo.html",
+    "objetivo": "Objetivo: según tu papel. El ladrón roba y sale sin que lo vean; el guardia lo caza antes. Ninguno de los dos ve el edificio entero ni al otro salvo cuando lo tiene delante.",
+    "asientos": null,
+    "verbos": [
+      "abajo",
+      "arriba",
+      "derecha",
+      "izquierda"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": false,
+      "motivo": "no medido en la última pasada"
+    },
+    "captura": "capturas_laboratorio/sigilo.png",
+    "reglas": null,
+    "origen": null
+  },
+  "frentes": {
+    "titulo": "Frentes",
+    "pagina": "frentes.html",
+    "objetivo": "Objetivo: dominar más frentes que el rival en ocho rondas. Los dos eligen A LA VEZ y a ciegas: si coincidís chocáis y no avanza ninguno, así que la jugada buena lo es contra lo que el otro VAYA a hacer.",
+    "asientos": null,
+    "verbos": [
+      "a",
+      "b",
+      "c",
+      "d",
+      "e"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": true,
+      "motivo": null
+    },
+    "captura": "capturas_laboratorio/frentes.png",
+    "reglas": null,
+    "origen": null
+  },
+  "relevo": {
+    "titulo": "Relevo",
+    "pagina": "relevo.html",
+    "objetivo": "Objetivo: sacar del almacén a los DOS autómatas. La puerta sólo está abierta mientras alguien pisa una placa, así que hay que sostenérsela al otro por turnos. No hay marcador propio: o salís los dos o no sale ninguno.",
+    "asientos": null,
+    "verbos": [
+      "abajo",
+      "arriba",
+      "derecha",
+      "esperar"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": false,
+      "motivo": "el tope de 120 decisiones corta la partida"
+    },
+    "captura": "capturas_laboratorio/relevo.png",
+    "reglas": null,
+    "origen": null
+  },
+  "cabina": {
+    "titulo": "Cabina",
+    "pagina": "cabina.html",
+    "objetivo": "Objetivo: llevar al piloto hasta la salida sin caer en un pozo. La guía lo ve todo y no puede moverse; el piloto se mueve y sólo ve la casilla que pisa. Hablar es la única jugada que tiene la guía.",
+    "asientos": null,
+    "verbos": [
+      "abajo",
+      "arriba",
+      "derecha",
+      "di",
+      "izquierda"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": true,
+      "motivo": null
+    },
+    "captura": "capturas_laboratorio/cabina.png",
+    "reglas": null,
+    "origen": null
+  },
+  "rebano": {
+    "titulo": "Rebano",
+    "pagina": "rebano.html",
+    "objetivo": "Objetivo: meter las doce ovejas en el redil. No se les puede ordenar nada: sólo colocarte, porque huyen de ti. El miedo es la herramienta.",
+    "asientos": null,
+    "verbos": [
+      "abajo",
+      "arriba",
+      "derecha",
+      "izquierda"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": false,
+      "motivo": "el tope de 120 decisiones corta la partida"
+    },
+    "captura": "capturas_laboratorio/rebano.png",
+    "reglas": null,
+    "origen": null
+  },
+  "pradera": {
+    "titulo": "Pradera",
+    "pagina": "pradera.html",
+    "objetivo": "Objetivo: sobrevivir cazando ratones sin quedarte sin ellos. Se reproducen si los dejas criar, y comerte el último te deja solo en un prado vacío y muerto de hambre cuarenta turnos después.",
+    "asientos": null,
+    "verbos": [
+      "abajo",
+      "arriba",
+      "derecha",
+      "izquierda"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": false,
+      "motivo": "el tope de 120 decisiones corta la partida"
+    },
+    "captura": "capturas_laboratorio/pradera.png",
+    "reglas": null,
+    "origen": null
+  },
+  "nave": {
+    "titulo": "Nave",
+    "pagina": "nave.html",
+    "objetivo": "Objetivo: según tu papel. Los tripulantes reparan la nave o echan al impostor por votación; el impostor los elimina de uno en uno sin que lo pillen. Se vota a la vez y el más votado sale por la esclusa, sea culpable o no.",
+    "asientos": null,
+    "verbos": [
+      "abajo",
+      "arriba",
+      "derecha",
+      "esperar",
+      "izquierda"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": false,
+      "motivo": "no medido en la última pasada"
+    },
+    "captura": "capturas_laboratorio/nave.png",
+    "reglas": null,
+    "origen": null
+  },
+  "remigio": {
+    "titulo": "Remigio",
+    "pagina": "remigio.html",
+    "objetivo": "Objetivo: cerrar la mano ligando todas tus cartas en grupos y escaleras.",
+    "asientos": 2,
+    "verbos": [
+      "descartar",
+      "robar_descarte",
+      "robar_mazo"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": false,
+      "motivo": "el hueco (10.0) no supera al ruido de la medida (±30.4)"
+    },
+    "captura": "capturas_laboratorio/remigio.png",
+    "reglas": null,
+    "origen": null
+  },
+  "parchis": {
+    "titulo": "Parchis",
+    "pagina": "parchis.html",
+    "objetivo": "Objetivo: llevar tus cuatro fichas a casa antes que nadie; un 5 saca ficha y un 6 repite.",
+    "asientos": 4,
+    "verbos": [
+      "pasar",
+      "sacar",
+      "tirar"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": false,
+      "motivo": "la casa no supera al suelo: la escala se invertiría"
+    },
+    "captura": "capturas_laboratorio/parchis.png",
+    "reglas": null,
+    "origen": null
+  },
+  "generala": {
+    "titulo": "Generala",
+    "pagina": "generala.html",
+    "objetivo": "Objetivo: sumar la mayor puntuacion posible combinando tiradas de dados.",
+    "asientos": null,
+    "verbos": [
+      "anotar",
+      "guardar",
+      "tirar"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": true,
+      "motivo": null
+    },
+    "captura": "capturas_laboratorio/generala.png",
+    "reglas": null,
+    "origen": null
+  },
+  "oca": {
+    "titulo": "Oca",
+    "pagina": "oca.html",
+    "objetivo": "Objetivo: llegar el primero a la casilla final; algunas casillas te adelantan y otras te frenan.",
+    "asientos": 2,
+    "verbos": [
+      "mover",
+      "tirar"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": false,
+      "motivo": "la casa no supera al suelo: la escala se invertiría"
+    },
+    "captura": "capturas_laboratorio/oca.png",
+    "reglas": null,
+    "origen": null
+  },
+  "canadiense": {
+    "titulo": "Canadiense",
+    "pagina": "canadiense.html",
+    "objetivo": "Objetivo: llevar tus fichas a casa antes que nadie; aqui las cartas mandan sobre el dado.",
+    "asientos": 4,
+    "verbos": [
+      "cambiar",
+      "descartar",
+      "jugar",
+      "sacar"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": false,
+      "motivo": "el tope de 120 decisiones corta la partida"
+    },
+    "captura": "capturas_laboratorio/canadiense.png",
+    "reglas": null,
+    "origen": null
+  }
+}
