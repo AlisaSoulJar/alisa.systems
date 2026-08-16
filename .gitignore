@@ -90,3 +90,5 @@ _t.mjs
 # regeneran con 
 ode vision.mjs --guardar. No hay por que versionarlas.
 vision_*.png
+
+capturas_verbos/

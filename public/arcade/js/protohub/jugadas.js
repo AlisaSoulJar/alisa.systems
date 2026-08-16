@@ -105,6 +105,74 @@ function comoTablero(legales, rejilla) {
     return { ancho, alto, sitios };
 }
 
+/**
+ * La barra de verbos: una fila abajo, centrada, con botones de tamaño de dedo.
+ *
+ * Vive fuera del panel a propósito —es lo único que la persona necesita PULSAR— y se
+ * borra sola cuando no hay verbos, que es el caso de doce juegos donde todo se juega
+ * tocando la mesa. Un contenedor vacío colgando bajo la pantalla es la clase de resto
+ * que luego nadie sabe de dónde sale.
+ */
+export function barraDeVerbos(legales, enviar, alSeñalar) {
+    /**
+     * ⚠️ QUÉ CUENTA COMO VERBO, Y POR QUÉ SE DECIDE AQUÍ DENTRO.
+     *
+     * Un verbo es una jugada sin `:`, que no es una coordenada (`d2d4`) ni un número
+     * (`12`). Cruzarlo contra las piezas del sustrato sería más exacto, pero obliga a
+     * traer el sustrato hasta aquí para decidir dónde va un botón — mucha máquina
+     * para una lista de seis. Con esta forma salen los 142 medidos y ninguno de más.
+     *
+     * Se recibe la lista ENTERA y se filtra aquí porque los tres caminos de panel
+     * llaman a esta función: filtrar fuera serían tres copias de esta regla.
+     */
+    const sitio = (s) => /^[a-z]\d[a-z]?\d?$/i.test(s) || /^\d+$/.test(s);
+    /**
+     * ⚠️ Y TAMPOCO ES VERBO SI ACABA EN UN SITIO, AUNQUE LLEVE PALABRA DELANTE.
+     *
+     * Con la regla a secas, defensa metía SESENTA Y NUEVE botones en la barra:
+     * `torre_a1`, `torre_b1`… las 63 casillas del tablero con la palabra «torre»
+     * delante. No son verbos, son la misma jugada apuntando a sitios distintos, y ésas
+     * se hacen tocando la casilla. Mirando la cola se queda en siete —`enviar_a` a
+     * `enviar_g`, que son carriles y no casillas— y esos siete sí hay que pulsarlos.
+     *
+     * Es justo el caso que el comentario de arriba daba por improbable. Salió el
+     * primer día que la barra se midió en los 35 en vez de en cuatro.
+     */
+    const verbos = (legales ?? []).map(String).filter(m => !m.includes(':')
+        && !sitio(m) && !sitio(m.split(/[_\s]/).pop()));
+    let barra = document.getElementById('alisa-verbos');
+    if (!verbos.length) { barra?.remove(); return; }
+    if (!barra) {
+        barra = document.createElement('div');
+        barra.id = 'alisa-verbos';
+        document.body.appendChild(barra);
+    }
+    /**
+     * Se repinta sólo si cambió la lista. Repintar en cada latido recrea los nodos
+     * bajo el dedo, y eso ya costó una tarde entera con el panel de peatón: el dedo
+     * baja sobre un botón y lo suelta sobre otro que acaba de nacer.
+     */
+    const firma = verbos.join('|');
+    if (barra.dataset.firma === firma) return;
+    barra.dataset.firma = firma;
+    barra.innerHTML = '';
+    for (const v of verbos) {
+        const b = document.createElement('button');
+        b.className = 'alisa-verbo';
+        b.textContent = v.replace(/_/g, ' ');
+        // La etiqueta se lee («enviar a»), la jugada no («enviar_a»). El botón lleva
+        // las dos porque quien lo comprueba desde fuera necesita la SEGUNDA: mi primera
+        // sonda comparó etiquetas y dio seis juegos en rojo estando bien.
+        b.title = v;
+        b.addEventListener('click', () => enviar?.(v));
+        if (alSeñalar) {
+            b.addEventListener('pointerenter', () => alSeñalar(v));
+            b.addEventListener('pointerleave', () => alSeñalar(null));
+        }
+        barra.appendChild(b);
+    }
+}
+
 export function pintarJugadas(caja, { acciones = [], meToca = true, turnoDe = null,
                                       terminada = false, espectador = false,
                                       rejilla = null, enviar, alSeñalar = null,
@@ -225,6 +293,43 @@ export function pintarJugadas(caja, { acciones = [], meToca = true, turnoDe = nu
      * entender antes de volver a intentarlo.
      */
     caja.innerHTML = '';
+
+    /**
+     * ═══════════════════════════════════════════════════════════════════════════
+     *  LOS VERBOS, ABAJO Y GRANDES. EL PANEL DEJA DE SER EL ÚNICO CAMINO.
+     * ═══════════════════════════════════════════════════════════════════════════
+     *
+     * Idea de Oscar, y ordena lo que estaba mezclado: **el panel debería ser para
+     * MIRAR, no para pulsar**. Cada puerta ya tiene su forma de actuar —la FSM por
+     * HTTP, el LLM devolviendo texto, la persona tocando— y meter las jugadas de
+     * todos en una lista de botones es enseñarle a cada uno la puerta del otro.
+     *
+     * Medido antes de mover nada: de las 693 jugadas legales de los 35 juegos, sólo
+     * **142 son verbos** que no están representados en la mesa. Las otras 551 son
+     * una carta, una casilla o una ficha — y desde hoy se pueden pulsar ahí. El go
+     * es el caso extremo: 362 jugadas, de las cuales 361 son puntos del goban.
+     *
+     * Así que los verbos —`tirar`, `robar`, `hit`, `arriba`— salen a una barra
+     * propia, abajo y con tamaño de dedo, como las acciones de Cucco Swarm. Son de
+     * uno a seis por juego: hoy salen minúsculos perdidos entre veinte botones.
+     *
+     * ⚠️ SE AÑADE, NO SE QUITA. El panel sigue teniendo TODAS las jugadas.
+     *
+     * `tacto.mjs` garantiza que las 35 mesas dejan pulsar todas sus jugadas legales,
+     * y esa garantía mide el panel. Quitar botones aquí y reformular la garantía a la
+     * vez son dos cambios grandes a ciegas; primero existe el camino nuevo, se
+     * comprueba que funciona, y sólo entonces se adelgaza el viejo. Añadir antes de
+     * quitar es lo que permite medir la diferencia.
+     *
+     * ⚠️ EL CRITERIO VIVE DENTRO DE `barraDeVerbos`, Y SE LE PASA LA LISTA ENTERA.
+     *
+     * Hay TRES sitios que pintan el panel —éste, `SovereignBoardEngine` y
+     * `SovereignCardEngine`— y los tres montan ahora la barra. Filtrar en cada uno
+     * son tres copias de la misma regla, que es como acaban divergiendo: el día que
+     * un juego llame `pasar2` a un verbo habría que acordarse de tocar tres sitios,
+     * y el que se olvide no dará error, dará un botón de menos.
+     */
+    barraDeVerbos(legales, enviar, alSeñalar);
 
     // Si son casillas, el panel se pone con la forma del tablero. Si no —verbos,
     // cartas, huecos numerados— sigue en fila, que es lo que toca para ocho cosas.

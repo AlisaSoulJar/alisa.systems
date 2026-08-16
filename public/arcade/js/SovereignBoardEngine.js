@@ -973,6 +973,23 @@ class SovereignBoardEngine {
         // Se compara con lo que ya hay para no rehacer el DOM en cada sondeo: el
         // estado se consulta cada segundo, y recrear los botones bajo el dedo hace
         // que un toque se pierda entre el `pointerdown` y el `pointerup`.
+        /**
+         * ⚠️ LOS VERBOS TAMBIÉN SALEN ABAJO, Y ESTE ES EL TERCER CAMINO DE PANEL.
+         *
+         * La barra de verbos —lo único que una persona necesita PULSAR, porque el
+         * resto de jugadas son piezas que se tocan en la mesa— se monta en
+         * `jugadas.js`. Pero este motor NO pasa por ahí: pinta sus propios botones
+         * en el bucle de abajo. Se vio porque snake tenía sus cuatro botones en el
+         * panel y la barra no aparecía por ningún lado.
+         *
+         * Es el tercer camino de panel de este proyecto, y ya costó una vez: el
+         * repetidor se montó «en los dos motores» y cuatro juegos se quedaron fuera
+         * porque había TRES. Se importa la misma función en vez de escribir otra
+         * igual, que es como nacen las dos verdades.
+         */
+        import('./protohub/jugadas.js').then(({ barraDeVerbos }) =>
+            barraDeVerbos(movs, (v) => this.sendMove(String(v)))).catch(() => {});
+
         const firma = movs.slice(0, TOPE).join('');
         if (caja.dataset.firma === firma) return;
         caja.dataset.firma = firma;

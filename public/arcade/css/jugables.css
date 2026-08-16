@@ -278,6 +278,74 @@
    y dejarlo escrito como si sí es cómo el próximo que lo lea pierde la tarde que
    he perdido yo.
    ═══════════════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════════════
+   LA BARRA DE VERBOS — lo único que una persona necesita PULSAR
+   ═══════════════════════════════════════════════════════════════════════════
+   De las 693 jugadas legales de los 35 juegos, sólo 142 son verbos que no están
+   representados en la mesa: `tirar`, `robar`, `hit`, `arriba`. Las otras 551 son
+   una carta, una casilla o una ficha, y se pulsan ahí.
+
+   Así que estos salen a una barra propia, abajo y con tamaño de dedo, en vez de
+   quedar minúsculos entre veinte botones del panel. Son de uno a seis por juego.
+
+   Va a la derecha de los mandos —que están abajo a la izquierda— y por encima del
+   lienzo, con el mismo z-index que el panel: sin eso el juego se comería los clics,
+   que es exactamente lo que le pasaba a peatón y costó una tarde encontrarlo.
+   ═══════════════════════════════════════════════════════════════════════════ */
+#alisa-verbos {
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    z-index: 30;
+    /**
+     * ⚠️ EL ANCHO SE MIDE EN EL MÓVIL, NO EN EL ESCRITORIO.
+     *
+     * Aquí ponía `calc(100vw - 220px)` para esquivar los botones de esquina. En una
+     * pantalla de 390 eso deja CIENTO SETENTA píxeles, y las cuatro flechas de snake
+     * salían escalonadas en cuatro filas: «arriba abajo», «izquierda», «derecha».
+     * Restar un número fijo de píxeles es restar la mitad de un móvil.
+     *
+     * Se esquivan por ARRIBA en vez de por los lados: la barra se sube por encima de
+     * la fila de esquina y usa el ancho entero. Es la misma pantalla de 390x844 con la
+     * que mide `tacto`, y por la que ya me equivoqué una vez midiendo en escritorio.
+     */
+    left: 12px;
+    right: 12px;
+    bottom: 64px;
+    transform: none;
+    max-width: none;
+    pointer-events: auto;
+}
+.alisa-verbo {
+    /* 44 px es el mínimo que se acierta con un dedo sin apuntar; el mismo número
+       que ya usa el panel plegado, para no tener dos criterios de lo mismo. */
+    min-height: 44px;
+    padding: 11px 22px;
+    border-radius: 12px;
+    border: 1px solid rgba(161, 128, 255, 0.5);
+    background: rgba(14, 12, 22, 0.9);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    color: #e8e6f5;
+    font: 600 15px/1 ui-monospace, SFMono-Regular, monospace;
+    letter-spacing: .02em;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+.alisa-verbo:hover  { background: rgba(40, 32, 66, 0.95); border-color: #a180ff; }
+.alisa-verbo:active { transform: translateY(1px); }
+
+/* En vertical los mandos y la barra se pelean por el mismo borde: la barra sube. */
+@media (max-width: 640px) {
+    #alisa-verbos { bottom: 74px; max-width: calc(100vw - 24px); gap: 8px; }
+    .alisa-verbo  { padding: 10px 16px; font-size: 14px; }
+}
+
 #canvas-container { position: absolute; top: 0; left: 0; z-index: 1; }
 .overlay,
 /**

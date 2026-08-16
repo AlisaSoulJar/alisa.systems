@@ -2107,6 +2107,22 @@ class SovereignCardEngine {
         }
 
         const lista = (movs ?? []).map(String);
+
+        /**
+         * ⚠️ LOS VERBOS SALEN ABAJO, Y ESTE ES EL SEGUNDO DE TRES CAMINOS DE PANEL.
+         *
+         * Una carta se juega tocándola en la mesa. Lo que NO está en la mesa —robar,
+         * plantarse, pasar— no se puede tocar en ninguna parte, y ésos son los únicos
+         * botones que una persona necesita pulsar de verdad.
+         *
+         * La función vive en `jugadas.js` y se importa; no se copia. Este proyecto
+         * tiene TRES sitios que pintan `.mesa-jugada` —aquí, `SovereignBoardEngine` y
+         * el propio `jugadas.js`— y ya costó una vez creer que eran dos: el repetidor
+         * se montó «en los dos motores» y cuatro juegos se quedaron fuera.
+         */
+        import('./protohub/jugadas.js').then(({ barraDeVerbos }) =>
+            barraDeVerbos(lista, (v) => this.sendMove(String(v)))).catch(() => {});
+
         const TOPE = 50;
         // Se compara antes de rehacer: el estado se consulta cada segundo y recrear
         // los botones bajo el dedo pierde el toque entre `pointerdown` y `pointerup`.
