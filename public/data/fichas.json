@@ -543,9 +543,23 @@
       "verbos": 3,
       "resumen": "se juega con los botones de abajo"
     },
-    "reglas": null,
-    "prosa": null,
-    "origen": null,
+    "reglas": "`hit` pide otra carta y `stand` se planta. `double` dobla y te da una sola carta más, y sólo se puede con la mano inicial de dos. Pasarte de 21 pierde en el acto, sin esperar a la casa.",
+    "prosa": {
+      "que_es": "El 21 contra la casa. Pides cartas hasta plantarte, sin pasarte de 21, y luego la casa juega con una regla fija y sin margen.",
+      "reparto": "Zapato de seis barajas francesas. Dos cartas para ti boca arriba y dos para la casa, una de ellas tapada. Las figuras valen 10 y el as vale 1 u 11, lo que más te convenga.",
+      "turno": "`hit` pide otra carta y `stand` se planta. `double` dobla y te da una sola carta más, y sólo se puede con la mano inicial de dos. Pasarte de 21 pierde en el acto, sin esperar a la casa.",
+      "gana": "Cuando te plantas, la casa descubre y pide hasta llegar a 17, donde se planta siempre. Gana la mano más alta sin pasarse.",
+      "ojo": [
+        "La casa no decide nada: se planta en 17 y punto. Todo lo que se puede jugar bien aquí está en TU lado de la mesa.",
+        "El episodio no es una mano, es el ZAPATO entero: se juegan manos hasta que quedan menos de 15 cartas. Es un final acotado, con marcador y reproducible desde una sola semilla, que es lo que necesita el banco.",
+        "`split` no se anuncia entre las jugadas porque no está implementado. Es deliberado: mejor tres acciones de verdad que cuatro con una mentira."
+      ],
+      "diferencias": [
+        "No hay apuestas. En una mesa de verdad decides cuánto pones antes de ver las cartas, y ahí está media estrategia —doblar, contar cartas, subir cuando el zapato es favorable—. Aquí se cuentan manos ganadas.",
+        "No están `split` (partir una pareja en dos manos), el seguro contra el as de la casa, ni la rendición. Con seis barajas y sin apuestas, contar cartas tampoco sirve de nada."
+      ]
+    },
+    "origen": "Descendiente del veintiuno francés del siglo XVIII. Su forma actual, con la regla fija del crupier, viene de los casinos de Nevada.",
     "puertas": {
       "persona": true,
       "llm": true,
@@ -586,9 +600,23 @@
       "verbos": 2,
       "resumen": "se juega con los botones de abajo"
     },
-    "reglas": null,
-    "prosa": null,
-    "origen": null,
+    "reglas": "Cuatro acciones: `fold` te retira y pierdes lo puesto, `check` pasa sin apostar, `call` iguala lo que ha puesto el otro y `raise` sube. Al haber límite fijo, la subida es de un tamaño fijo: no hay que decir cuánto.",
+    "prosa": {
+      "que_es": "Texas Hold'em cara a cara y a límite fijo. Dos cartas tuyas, cinco comunes, y cuatro rondas de apuestas para averiguar quién tiene mejor mano — o para convencer al otro de que la tienes tú.",
+      "reparto": "Dos cartas tapadas a cada uno. Después se descubren tres cartas comunes (el flop), luego una (el turn) y luego otra (el river), con una ronda de apuestas antes de cada revelación y otra al final.",
+      "turno": "Cuatro acciones: `fold` te retira y pierdes lo puesto, `check` pasa sin apostar, `call` iguala lo que ha puesto el otro y `raise` sube. Al haber límite fijo, la subida es de un tamaño fijo: no hay que decir cuánto.",
+      "gana": "Si uno se retira, el otro se lleva el bote. Si se llega al final, gana la mejor mano de cinco cartas entre las siete disponibles.",
+      "ojo": [
+        "El evaluador está completo de verdad: las diez categorías, la escalera con la rueda (A-2-3-4-5, donde el as vale uno) y los desempates por kicker. La versión de la que se portó confesaba por escrito que era un esbozo y no detectaba escaleras.",
+        "Este entorno está CALIBRADO: se midieron cuatro políticas en seis bloques de sesenta sesiones. La tonta pierde 39,7 fichas, la ingenua 8,8, la de la casa 5,4, y una atenta al precio del bote GANA 4,7. O sea que hay techo por encima de la casa, que es lo que hace que medir signifique algo.",
+        "Y antes de creerse eso se comprobó que la mesa no estuviera sesgada: con las dos manos jugando igual, el resultado centra en cero. Sin ese control se habría 'arreglado' un sesgo que no existía."
+      ],
+      "diferencias": [
+        "Es cara a cara, no en mesa de varios. El Hold'em de torneo se juega con más gente y la posición en la mesa cambia el juego entero.",
+        "Es a LÍMITE FIJO, no sin límite. Es una variante clásica, no un juguete, pero se eligió por un motivo del banco: `raise 137` mete un número continuo en el alfabeto de acciones y rompe que la partida se pueda re-simular exactamente. Con límite fijo son cuatro acciones y el espacio queda discreto, que es lo que pide un entorno de gym."
+      ]
+    },
+    "origen": "Texano, de principios del siglo XX, y el rey del póker moderno desde que la televisión enseñó las cartas tapadas.",
     "puertas": {
       "persona": true,
       "llm": true,
@@ -889,9 +917,22 @@
       "verbos": null,
       "resumen": "en el momento de medir, sólo respondía el panel"
     },
-    "reglas": null,
-    "prosa": null,
-    "origen": null,
+    "reglas": "Pides a un rival todas sus cartas de un rango. Si las tiene, te las da y REPITES turno; si no, vas a pescar del mazo y el turno pasa. Cuatro del mismo rango forman un libro, sale de la mano y vale un punto.",
+    "prosa": {
+      "que_es": "Pedir cartas a los demás y acordarse de lo que han pedido ellos. No hay tablero ni posición: lo único que separa a un buen jugador de uno malo es la memoria.",
+      "reparto": "Cartas repartidas de una baraja francesa y el resto en el mazo, para pescar.",
+      "turno": "Pides a un rival todas sus cartas de un rango. Si las tiene, te las da y REPITES turno; si no, vas a pescar del mazo y el turno pasa. Cuatro del mismo rango forman un libro, sale de la mano y vale un punto.",
+      "gana": "Gana quien más libros haya completado cuando ya no queda juego.",
+      "ojo": [
+        "Sólo puedes pedir un rango QUE YA TENGAS en la mano. Es la regla que muchas implementaciones se saltan, y sin ella el juego deja de ser deducción y pasa a ser un barrido de las trece posibilidades.",
+        "El estado publica `preguntas`, el historial público de peticiones y su resultado. Eso ES el tablero de este juego: cada pregunta que haces revela a los demás una carta tuya. Un agente que lo ignore juega a ciegas.",
+        "Hay un fallo de turno que viene documentado del original y aquí llega arreglado: se avanzaba de jugador dos veces, así que ACERTAR te quitaba el turno y fallar te lo devolvía. El juego se ejecutaba entero y daba un número, sólo que el número premiaba lo contrario de lo que decía medir — y una política tonta ganaba el 98% de las partidas."
+      ],
+      "diferencias": [
+        "Se añadió una regla que no está en el juego de mesa: tablas por atasco. Con el mazo agotado, un jugador que pida siempre el mismo rango fallido dejaría la partida en bucle para siempre; en una mesa eso lo resuelve la gente hablando, y un banco de pruebas necesita que el episodio termine."
+      ]
+    },
+    "origen": "Anglosajón y universal en las casas con niños. Es de los pocos juegos clásicos cuya dificultad está entera en recordar lo que se ha dicho en voz alta.",
     "puertas": {
       "persona": true,
       "llm": true,
@@ -929,9 +970,23 @@
       "verbos": 1,
       "resumen": "se juega tocando la mesa"
     },
-    "reglas": null,
-    "prosa": null,
-    "origen": null,
+    "reglas": "Tiras una carta que case en color o en número con la de arriba del descarte. Si no puedes, robas. Las especiales saltan al siguiente (SKIP), invierten el sentido (REV) o le hacen robar dos (D2), y el comodín te obliga a declarar el color que se juega a partir de ahí.",
+    "prosa": {
+      "que_es": "La familia del descarte: sueltas cartas que casen en color o en número con la de arriba del montón, y gana quien se queda sin cartas. Las especiales convierten el ORDEN DE JUEGO en parte del problema.",
+      "reparto": "Una mano a cada jugador, una carta destapada para empezar el descarte y el resto en el mazo.",
+      "turno": "Tiras una carta que case en color o en número con la de arriba del descarte. Si no puedes, robas. Las especiales saltan al siguiente (SKIP), invierten el sentido (REV) o le hacen robar dos (D2), y el comodín te obliga a declarar el color que se juega a partir de ahí.",
+      "gana": "Gana quien vacía su mano primero.",
+      "ojo": [
+        "El comodín es la única jugada de toda la casa en la que declaras tu intención en voz alta: eliges color y todos lo oyen.",
+        "Con REV eliges a quién le toca y con D2 eliges a quién castigas. En una mesa de varios eso es más juego que las cartas que tengas.",
+        "Cuando se acaba el mazo se recicla el descarte, y ese barajado usa un generador derivado de la semilla y del número de recicle. En el original se hacía con un aleatorio sin semilla — aquí eso rompería la tesis entera: dos re-simulaciones de la misma partida barajarían distinto y el verificador rechazaría partidas legítimas."
+      ],
+      "diferencias": [
+        "⚖️ EL NOMBRE. Este juego estaba en el catálogo como «UNO», que es MARCA REGISTRADA de Mattel. Las mecánicas de un juego no se registran, pero el nombre sí, y llevarlo en un repositorio público es buscarse un problema gratis. Se llama UNIT por eso, no porque sea otro juego.",
+        "No está la penalización por no cantar cuando te queda una carta: aquí nadie te pilla."
+      ]
+    },
+    "origen": "La familia del Crazy Eights, de dominio público y con más de un siglo. La versión comercial de 1971 le añadió las cartas especiales, que son las que hacen el juego.",
     "puertas": {
       "persona": true,
       "llm": true,
@@ -971,9 +1026,20 @@
       "verbos": 2,
       "resumen": "se juega tocando la mesa"
     },
-    "reglas": null,
-    "prosa": null,
-    "origen": null,
+    "reglas": "Robas del mazo o del descarte —la del descarte la ha visto todo el mundo— y decides: la cambias por una de tu caja, o la tiras. Cada decisión enseña algo a los demás.",
+    "prosa": {
+      "que_es": "Gana quien MENOS desorden acumula. Tienes una caja de ocho cartas casi todas boca abajo, y cada turno decides qué hacer con la que robas. Al final se suma tu caja y la suma más baja gana.",
+      "reparto": "Ocho cartas por jugador en una rejilla de 2x4, casi todas tapadas. Mazo y montón de descarte en el centro.",
+      "turno": "Robas del mazo o del descarte —la del descarte la ha visto todo el mundo— y decides: la cambias por una de tu caja, o la tiras. Cada decisión enseña algo a los demás.",
+      "gana": "Al cerrarse la caja se suman los valores. Gana la suma MÁS BAJA.",
+      "ojo": [
+        "Si las dos cartas de una COLUMNA coinciden en valor, se anulan las dos y esa columna vale 0. Un rey vale 12 —la peor carta— y deja de ser un lastre si consigues emparejarlo con otro rey. La carta más cara del mazo puede ser la mejor jugada, y eso rompe de raíz la heurística de «quédate lo bajo».",
+        "Es el único de la casa donde ganar es minimizar Y ADEMÁS hay información oculta: ves parte de tu caja, parte de la del rival, y el descarte cuenta la historia de lo que todos han rechazado.",
+        "La carta que tienes en la mano vive dentro del estado, no en una variable del motor. En el original estaba fuera, y el recuento daba 95 de 96: esa carta no sobrevivía a una serialización y el verificador no podía repetir la partida."
+      ],
+      "diferencias": []
+    },
+    "origen": "La mecánica de rejilla-y-cambio con puntuación mínima es de la familia del Golf de cartas, de dominio público desde hace décadas. El nombre Entropy es nuestro: las mecánicas no se registran, los nombres comerciales sí, y esto se publica.",
     "puertas": {
       "persona": true,
       "llm": true,
@@ -1528,9 +1594,22 @@
       "verbos": 2,
       "resumen": "se juega tocando la mesa"
     },
-    "reglas": null,
-    "prosa": null,
-    "origen": null,
+    "reglas": "Robas una carta —del mazo, a ciegas, o la de encima del descarte, que todos han visto— y tiras otra. Las combinaciones válidas son el TRÍO, tres o más del mismo número, y la ESCALERA, tres o más seguidas del mismo palo.",
+    "prosa": {
+      "que_es": "El rummy español: robar, combinar y cerrar. Tienes diez cartas y ganas cuando las diez forman combinaciones enteras.",
+      "reparto": "Diez cartas a cada uno, el resto en el mazo y una carta destapada para empezar el descarte.",
+      "turno": "Robas una carta —del mazo, a ciegas, o la de encima del descarte, que todos han visto— y tiras otra. Las combinaciones válidas son el TRÍO, tres o más del mismo número, y la ESCALERA, tres o más seguidas del mismo palo.",
+      "gana": "Gana quien primero tiene las diez cartas combinadas y cierra.",
+      "ojo": [
+        "Robar del descarte te da exactamente la carta que necesitas, y le dice al rival exactamente qué estás juntando. Robar del mazo no dice nada y casi nunca sirve. Cada turno hay que decidir cuánto vale el secreto, y no hay forma de jugar sin pagar uno de los dos precios.",
+        "Cada carta que tiras es una que el rival puede coger. El 7 que a ti te sobra puede ser el 7 que a él le cierra. Un agente que sólo mire su propia mano juega la mitad del juego.",
+        "El as va por los dos lados: `A 2 3` y `Q K A` valen, pero `K A 2` no. Quien compare resultados con otra implementación tiene que saberlo, porque muchas dejan fuera el `A 2 3`."
+      ],
+      "diferencias": [
+        "Sin comodines, y a propósito. El remigio de mesa suele llevarlos, pero un comodín multiplica las particiones posibles de una mano y convierte «¿esto está cerrado?» en un problema mucho más caro de comprobar en cada turno."
+      ]
+    },
+    "origen": "De la familia del rummy, que llega a España desde el gin rummy estadounidense y se mezcla con juegos de combinación anteriores. Cada casa tiene su versión; ésta es la de diez cartas.",
     "puertas": {
       "persona": true,
       "llm": true,
