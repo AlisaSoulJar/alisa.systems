@@ -1,4 +1,35 @@
 // poker_visualizer.js — ALISA Sovereign Arena
+
+/**
+ * ⚠️ MISMA RECETA QUE `blackjack_visualizer.js`, Y AQUÍ SÍ CUBRE LAS TRES ZONAS.
+ *
+ * A diferencia de blackjack, `sustratoDe()` (en `protohub/sustrato.js`) SÍ
+ * publica las tres piezas de este juego: `player_hand` → zona `mano` (de:0),
+ * `community_cards` → zona `comunes` (de:null), y `opponent_hand` → zona
+ * `mano` (de:1) PERO filtrando las cartas tapadas (`tapada()`, ahí mismo:
+ * `'??'`, `'?'` o vacío no cuentan). Con la semilla 7 el rival reparte
+ * `['??','??']` — las dos ocultas — así que el sustrato da 0 piezas suyas y
+ * este visualizador tampoco debe nombrarlas: son el reverso que pide el
+ * encargo no contar como pieza.
+ *
+ * Repite la fórmula de `drawZone()` en `SovereignCardEngine.js`
+ * (`${zona}_${baseId}_${idx}`, rama no-`grid`) para encontrar la malla ya
+ * creada y ponerle nombre sin tocar el motor.
+ */
+function nombrarCartas(engine, cartas, zona, dueño) {
+    cartas.forEach((carta, idx) => {
+        const baseId = typeof carta === 'string' ? carta
+                     : (carta.id || (carta.rank + carta.suit) || `c_${idx}`);
+        const mesh = engine.cardMeshes[`${zona}_${baseId}_${idx}`];
+        if (mesh) mesh.name = `p:carta:${dueño}`;
+    });
+}
+
+// La misma comprobación que hace `sustrato.js` para no contar un reverso
+// como pieza — repetida aquí, no importada, porque este visualizador es un
+// script clásico sin acceso a los módulos internos de `sustrato.js`.
+const cartaTapada = (c) => !c || c === '??' || c === '?';
+
 const engine = new SovereignCardEngine({
     gameId: 'poker',
     onInit3D: function(scene, camera, renderer) {
@@ -65,19 +96,26 @@ const engine = new SovereignCardEngine({
         // Community (Center of the table, x=0, z=0)
         if (community.length > 0) {
             this.drawZone(community, 'community', -((community.length-1)*0.9)/2, 0, { layout: 'line', hidden: false });
+            nombrarCartas(this, community, 'community', null);
         }
-        
+
         // Player 0 (Bottom center, closer to camera)
         if (playerHand.length > 0) {
             this.drawZone(playerHand, 'player_0', -0.5, 2.5, { layout: 'fan', hidden: false });
+            nombrarCartas(this, playerHand, 'player_0', 0);
         }
-        
+
         // Player 2 (Top center, opponent)
         if (oppHand.length > 0) {
             // Trick: oppHand array contains just string tokens, we map to actual back objects if hidden
             // Since drawZone needs actual cardIds, if they are dummy 'back' strings, the schema might drop them
             // We'll pass them but hidden=true ensures they render as backs
             this.drawZone(oppHand, 'player_2', -0.5, -2.5, { layout: 'fan', hidden: true });
+            // Sólo se nombran las que el sustrato SÍ cuenta: las que no están
+            // tapadas. Con la semilla de la prueba son las dos, `['??','??']`,
+            // así que hoy esto no nombra nada — y es lo correcto: un reverso no
+            // es información, y `sustrato.js` tampoco lo cuenta como pieza.
+            nombrarCartas(this, oppHand.filter(c => !cartaTapada(c)), 'player_2', 1);
         }
         
         // Update HUD

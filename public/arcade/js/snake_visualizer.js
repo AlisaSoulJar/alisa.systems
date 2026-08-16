@@ -59,22 +59,33 @@ const engine = new SovereignBoardEngine({
         if (data.food) {
             this.foodMesh = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), this.foodMat);
             this.foodMesh.position.set(data.food.x - 10 + 0.5, 0.5, data.food.y - 10 + 0.5);
+            // ⚠️ NOMBRE = CONTRATO DE PIEZA. `sustrato.js` publica la comida como
+            // `{t:'comida', de:null}` (ver `sustratoDe`, rama `st.maze || st.snake
+            // || st.frog`): el nombre calca esos dos campos tal cual, con el mismo
+            // prefijo `p:` que ya usa `pintar3d.js` para el resto del arcade. Sin
+            // esto la malla era anónima y `prueba_vistas.mjs` no podía saber si lo
+            // que se dibuja es lo que dice la matriz.
+            this.foodMesh.name = 'p:comida:null';
             this.scene.add(this.foodMesh);
         }
-        
+
         // Draw snake
         data.snake.forEach((segment, i) => {
             const isHead = i === 0;
             const mesh = new THREE.Mesh(this.cubeGeo, isHead ? this.headMat : this.snakeMat);
-            
+
             // Convert grid pos to 3D pos (assuming 20x20 grid mapping to -10..10)
             mesh.position.set(segment.x - 10 + 0.5, 0.5, segment.y - 10 + 0.5);
-            
+
             if (isHead) {
                 // Bounce scale animation on head
                 mesh.scale.setScalar(1.2);
             }
-            
+
+            // Mismo contrato que la comida: `sustratoDe` da cabeza/cuerpo con
+            // `de:0` (un solo jugador), y el nombre es literalmente ese `t`/`de`.
+            mesh.name = `p:${isHead ? 'cabeza' : 'cuerpo'}:0`;
+
             this.scene.add(mesh);
             this.snakeSegments.push(mesh);
         });

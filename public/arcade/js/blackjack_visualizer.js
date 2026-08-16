@@ -1,4 +1,35 @@
 // blackjack_visualizer.js — ALISA Sovereign Arena
+
+/**
+ * ⚠️ SÓLO SE NOMBRA LO QUE `sustrato.js` PUBLICA, Y HOY ES SÓLO `player_hand`.
+ *
+ * `sustratoDe()` (en `protohub/sustrato.js`) mira `st.mano ?? st.player_hand`
+ * para la zona `mano`, y NO tiene ninguna rama para `dealer_hand` — se
+ * comprobó leyendo el fichero entero, no adivinando. Con la semilla 7 la
+ * matriz da 2 piezas (las dos cartas del jugador); la banca reparte otras dos
+ * que la vista SÍ dibuja pero que la matriz no cuenta.
+ *
+ * Nombrar las cartas de la banca como `p:` haría que la vista dibujara más
+ * piezas de las que dice el sustrato: la prueba pasaría de «no comprobable» a
+ * «discrepa», que es peor —es el mismo error que nombrar las 64 casillas del
+ * ajedrez como piezas—. Así que aquí sólo se nombra la mano del jugador. El
+ * hueco es del adaptador (`sustrato.js`, fuera de este encargo), no de este
+ * visualizador.
+ *
+ * Repite la fórmula EXACTA de `drawZone()` en `SovereignCardEngine.js` para
+ * encontrar la malla ya creada (`${zona}_${baseId}_${idx}`, la rama que no es
+ * `grid`): una copia de esa cuenta que no coincidiera sería un nombre que
+ * apunta a ninguna malla.
+ */
+function nombrarCartas(engine, cartas, zona, dueño) {
+    cartas.forEach((carta, idx) => {
+        const baseId = typeof carta === 'string' ? carta
+                     : (carta.id || (carta.rank + carta.suit) || `c_${idx}`);
+        const mesh = engine.cardMeshes[`${zona}_${baseId}_${idx}`];
+        if (mesh) mesh.name = `p:carta:${dueño}`;
+    });
+}
+
 const engine = new SovereignCardEngine({
     gameId: 'blackjack',
     onInit3D: function(scene, camera, renderer) {
@@ -35,6 +66,7 @@ const engine = new SovereignCardEngine({
         // Use abstract CardEngine zoning
         if (playerHand.length > 0) {
             this.drawZone(playerHand, 'player_0', -((playerHand.length-1)*0.6)/2, 2.0, { layout: 'fan', hidden: false });
+            nombrarCartas(this, playerHand, 'player_0', 0);
         }
         
         // Dealer hand at the top

@@ -159,6 +159,46 @@ async function reversoDeLaBaraja(mesa) {
  */
 const dorso = (mesa) => `back_${mesa.activeDeckBack || 'classic_red'}`;
 
+/**
+ * ⚠️ ÉSTE ES EL SITIO DONDE ESTA MESA EMPIEZA A DECIR LA VERDAD.
+ * ═══════════════════════════════════════════════════════════════════════════
+ * `drawZone()` (`SovereignCardEngine.js`) nunca pone `mesh.name` — sólo
+ * `userData.zona`, que un humano no lee y `prueba_vistas.mjs` no busca (busca
+ * el prefijo `p:` o `z<n>:v`, el mismo idioma que habla el pintor genérico).
+ * Por eso las ocho mesas de cartas salían siempre «no se puede comprobar»: no
+ * es que dibujaran mal, es que dibujaban CALLADAS.
+ *
+ * No se puede tocar `drawZone` para que ponga el nombre —esta mesa no es la
+ * dueña de ese fichero, lo comparten póker y los demás visualizadores propios—
+ * así que se nombra AQUÍ, justo después de cada llamada, recalculando el mismo
+ * `trackId` que `drawZone` acaba de usar para crear o reutilizar la malla.
+ * Repetir esa cuenta es frágil en teoría; en la práctica es la MISMA cuenta,
+ * copiada de la línea que la define, así que sólo se desincroniza si alguien
+ * cambia `drawZone` sin mirar aquí — y ese riesgo ya lo corre `posicionDe()`,
+ * unas líneas más abajo, con la misma pareja de campos (`zona`, `indice`).
+ *
+ * ⚠️ Y SÓLO SE NOMBRA PIEZA LO QUE SE VE — LO TAPADO ES OTRA COSA, NO NADA.
+ *
+ * Una carta boca abajo del rival es un objeto real —hay que dibujarla, o la
+ * mesa mentiría diciendo que no tiene nada (ver la cabecera del fichero)— pero
+ * no es información: nombrarla como pieza haría que el sustrato, que sólo
+ * cuenta lo VISIBLE (`z.items`, nunca `z.ocultas`), dijera 8 mientras la
+ * escena dice 118, y la comprobación pasaría de «no se puede mirar» a «esto
+ * está roto», que es peor y además falso. `oculta` — el mismo nombre que ya
+ * usa el material `mat.oculta` del pintor genérico para la misma idea — no
+ * empieza por `p:` ni por `z<n>:v`, así que el contador la ignora a propósito.
+ */
+function nombrarPiezas(motor, cartas, zona, layout, dueño) {
+    cartas.forEach((c, idx) => {
+        // Misma fórmula que dentro de `drawZone`: en rejilla la identidad es
+        // el HUECO (la carta que lo ocupa cambia sin que la malla se destruya);
+        // en abanico/fila/montón es la carta (`baseId`) más su índice.
+        const trackId = layout === 'grid' ? `${zona}_${idx}` : `${zona}_${c.id}_${idx}`;
+        const malla = motor.cardMeshes[trackId];
+        if (malla) malla.name = c.oculta ? 'oculta' : `p:carta:${dueño ?? 'mesa'}`;
+    });
+}
+
 const sitios = (estrecha, conLaterales = false) => ({
     0:    { x:  0.0, z:  2.9, layout: 'fan',  reparto: 'x', paso: 6 },  // tú, cerca de la cámara
     1:    { x:  0.0, z: -2.9, layout: 'fan',  reparto: 'x', paso: 6 },  // el de enfrente
@@ -1345,11 +1385,13 @@ const engine = new SovereignCardEngine({
                         c === null || c === undefined
                             ? { id: dorso(this), oculta: true }
                             : { id: caraDe(c), oculta: false });
-                    this.drawZone(cartas, `${z.id}_${clave}_${i}`,
+                    const zonaGrid = `${z.id}_${clave}_${i}`;
+                    this.drawZone(cartas, zonaGrid,
                         cx - ((cols - 1) * REJILLA_X) / 2,
                         cz - ((filas - 1) * REJILLA_Z) / 2,
                         { layout: 'grid', columns: cols,
                           spacing: REJILLA_X, spacingZ: REJILLA_Z });
+                    nombrarPiezas(this, cartas, zonaGrid, 'grid', z.de);
                     return;
                 }
 
@@ -1404,8 +1446,10 @@ const engine = new SovereignCardEngine({
                     ? cx - ((cartas.length - 1) * hueco) / 2
                     : cx;
 
-                this.drawZone(cartas, `${z.id}_${clave}_${i}`, x, cz,
+                const zonaCartas = `${z.id}_${clave}_${i}`;
+                this.drawZone(cartas, zonaCartas, x, cz,
                     { layout: disposicion, spacing: hueco });
+                nombrarPiezas(this, cartas, zonaCartas, disposicion, z.de);
             });
         }
 

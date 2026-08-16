@@ -46,8 +46,19 @@ const paginas = JSON.parse(await readFile(path.join(AQUI, 'public/data/paginas.j
  * ⚠️ TRINQUETE AL REVÉS: los NO comprobables sólo pueden bajar.
  * Hoy son los que tienen visualizador propio y dibujan sin nombrar. Si sube, es que
  * alguien ha añadido un juego que pinta a su manera sin decir qué pinta.
+ *
+ * Bajado de 13 a 5 el 2026-08-16: las ocho mesas de cartas (brisca, tute,
+ * hearts, spades, gofish, unit, entropy, remigio) comparten `mesa_cartas.mjs`,
+ * y ese fichero ya nombra sus piezas (`p:carta:<dueño>` lo visible, `oculta`
+ * lo que está boca abajo — ver `nombrarPiezas()` ahí).
+ *
+ * Bajado de 5 a 0 el mismo día: los cinco que quedaban —ajedrez, snake,
+ * peaton, blackjack y poker, cada uno con visualizador propio— nombran ya sus
+ * piezas con el mismo contrato `p:<tipo>:<dueño>` que usa `pintar3d.js`. Los
+ * 35 juegos del arcade cuadran hoy contra el sustrato; si este número sube,
+ * es que ha llegado un visualizador nuevo que dibuja sin decir qué dibuja.
  */
-const TECHO_A_CIEGAS = 13;
+const TECHO_A_CIEGAS = 0;
 
 const pedidos = process.argv.slice(2).filter(a => !a.startsWith('-'));
 const juegos = (pedidos.length ? pedidos : JUEGOS).filter(j => paginas[j]);

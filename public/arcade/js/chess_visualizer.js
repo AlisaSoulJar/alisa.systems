@@ -565,9 +565,21 @@ function spawnPiece(char, rank, file) {
 
     // Apply fresh material per-piece (prevents shared mutation)
     const mat = isWhite ? createWhiteMaterial() : createBlackMaterial();
+    /**
+     * ⚠️ EL NOMBRE ES EL MISMO CAMPO QUE YA LEE `deFen()` EN `sustrato.js`.
+     *
+     * `t` es la letra del FEN en minúscula (`p r n b q k`) y `de` es 0/1 según
+     * mayúscula/minúscula — literalmente `ch.toLowerCase()` y
+     * `ch===ch.toUpperCase()?0:1`, la misma cuenta que hace `deFen`. No se
+     * inventa una tabla de nombres nueva: se repite la que ya decide el
+     * sustrato, para que 32 piezas nombradas sean 32 piezas comprobables.
+     */
+    const t = char.toLowerCase();
+    const de = isWhite ? 0 : 1;
     clone.traverse((child) => {
         if (child.isMesh) {
             child.material = mat;
+            child.name = `p:${t}:${de}`;
         }
     });
 

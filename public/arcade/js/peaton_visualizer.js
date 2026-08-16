@@ -109,6 +109,10 @@ function buildBaseBoard(w, h) {
     const frogGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
     const frogMat = new THREE.MeshStandardMaterial({ color: 0x00ffc8, roughness: 0.2, emissive: 0x005544 });
     frogMesh = new THREE.Mesh(frogGeo, frogMat);
+    // Mismo campo que publica `sustratoDe` para `st.frog`: `{t:'jugador', de:0}`.
+    // Se pone una vez, aquí, porque `frogMesh` no se recrea entre sondeos —lo
+    // mueve un `TWEEN`— así que si no se nombra al crearlo no se nombra nunca.
+    frogMesh.name = 'p:jugador:0';
     boardGroup.add(frogMesh);
     
     boardBuilt = true;
@@ -166,9 +170,15 @@ function syncStateToBoard(state) {
             // como número, `coordToPhys` devolvía NaN y los coches se pintaban
             // en ninguna parte: el carril parecía despejado siempre.
             const cx = (typeof coche === 'object') ? coche.x : coche;
+            const dir = (typeof coche === 'object') ? coche.dir : 1;
             const hPos = coordToPhys(cx, y);
             const hz = createHazard();
             hz.position.set(hPos.x, hPos.y, hPos.z);
+            // Mismo criterio que `sustratoDe` (`h.dir > 0 ? 'coche_der' :
+            // 'coche_izq'`, con `de:1` porque el coche es del rival): repetir la
+            // cuenta en vez de inventar otra es lo que hace que la vista y la
+            // matriz puedan cruzarse.
+            hz.name = `p:${dir > 0 ? 'coche_der' : 'coche_izq'}:1`;
             boardGroup.add(hz);
             hazardMeshes.push(hz);
         }
