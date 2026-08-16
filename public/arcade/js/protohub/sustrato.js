@@ -331,7 +331,34 @@ export function sustratoDe(juego, st = {}) {
     };
 }
 
-/** Nombres legibles de las letras, por juego. Sólo donde no se adivinan. */
+/**
+ * Nombres legibles de las letras, por juego. Sólo donde no se adivinan.
+ *
+ * ⚠️ SÓLO CABEN AQUÍ LOS JUEGOS QUE PASAN POR EL ADAPTADOR DE ARRIBA.
+ *
+ * Bastantes de los que faltaban en el recuento de `fichas.mjs` NO están rotos:
+ * publican su PROPIO `sustrato(p)` con su PROPIA `leyenda` ya dentro —flota,
+ * sokoban, cripta, defensa, sigilo, frentes, relevo, cabina, nave, pradera,
+ * rebano, parchis, oca, generala, canadiense— y `obtenerSustrato()` los sirve
+ * sin pasar por aquí, así que una entrada en este mapa no llegaría a leerse
+ * nunca en la mesa real. `fichas.mjs` sólo mira el adaptador (`sustratoDe`
+ * directo, ver su cabecera), así que a esos el contador los sigue contando
+ * como «sin leyenda» aunque el jugador y el agente de visión ya la vean. Es un
+ * punto ciego de la MEDIDA, no del juego, y no se arregla aquí sin tocar
+ * `rules/*.js`, que está fuera de este encargo.
+ *
+ * Añadidos el 2026-08-16, comprobados contra `sustratoDe()` con una partida
+ * recién empezada de cada uno (ver informe): snake, fagocito, peaton — los
+ * tres únicos que quedaban con rejilla real y sin dueño nativo.
+ *
+ * `mancala` se queda fuera a propósito: su rejilla no lleva códigos, lleva
+ * CUENTAS de semillas (0, 4, 9…), y una leyenda por valor numérico tendría que
+ * enumerar cada cantidad posible o no decir nada — justo lo que este fichero
+ * pide no hacer. Los juegos de cartas (blackjack, poker, brisca, tute,
+ * hearts, spades, guerra, gofish, unit, remigio) y `entropy` tampoco tienen
+ * `rejilla` — son montones (`zonas`), y forzar una leyenda de tablero donde no
+ * hay tablero sería inventar una casilla que no existe.
+ */
 const LEYENDAS = {
     ajedrez: { p: 'peón', n: 'caballo', b: 'alfil', r: 'torre', q: 'dama', k: 'rey' },
     xiangqi: { p: 'soldado', c: 'cañón', r: 'carro', n: 'caballo', b: 'elefante',
@@ -339,6 +366,25 @@ const LEYENDAS = {
     damas: { w: 'peón claro', b: 'peón oscuro' },
     reversi: { w: 'ficha clara', b: 'ficha oscura' },
     go: { n: 'piedra negra', b: 'piedra blanca' },
+    // Piezas (campo `t`); la rejilla en sí no lleva muros ni marcas.
+    snake: { cabeza: 'tu cabeza', cuerpo: 'tu cuerpo, no lo choques',
+              comida: 'cómetela para crecer' },
+    // La rejilla SÍ lleva terreno aquí: `1` es el muro que pone `sustratoDe`
+    // al leer `maze` (ver comentario «1 = muro» más arriba en este fichero).
+    // Los tres fantasmas se distinguen por carácter, no por color — ver
+    // `fagocito.js`: cazador va directo a ti, flanco corta por donde vas a
+    // estar, errante se mueve al azar.
+    fagocito: { 1: 'muro, no se puede cruzar', bolita: 'comida por recoger',
+                jugador: 'tu ficha',
+                cazador: 'fantasma que viene directo a por ti',
+                flanco: 'fantasma que corta por donde vas a estar',
+                errante: 'fantasma que se mueve al azar' },
+    // Sin muros: la rejilla queda entera en 0 y lo que importa son las piezas.
+    // `coche_der`/`coche_izq` son el sentido en que avanza cada coche, no de
+    // dónde viene — ver `peaton.js`: fila 0 es la salida, la última es la meta.
+    peaton: { jugador: 'tu ficha, cruza de abajo arriba',
+              coche_der: 'coche que avanza hacia la derecha',
+              coche_izq: 'coche que avanza hacia la izquierda' },
 };
 
 /**

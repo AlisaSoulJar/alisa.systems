@@ -71,6 +71,8 @@ const atropellado = (p) => {
 
 export const peaton = {
     OBJETIVO: 'Objetivo: llegar hasta arriba del todo cruzando los carriles sin que te atropellen. Esperar a que pase el hueco también es una jugada.',
+    // CUÁNTAS SILLAS TIENE LA MESA: una. Los coches son el entorno, no rival.
+    ASIENTOS: 1,
     id: 'peaton',
     nombre: 'Peatón',
 

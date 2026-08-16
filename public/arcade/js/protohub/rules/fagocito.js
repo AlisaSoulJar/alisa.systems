@@ -83,6 +83,9 @@ const libre = (p, x, y) => x >= 0 && x < N && y >= 0 && y < N && !p.muro[y][x];
 
 export const fagocito = {
     OBJETIVO: 'Objetivo: recoger todo el alimento del laberinto sin que te alcance ningún perseguidor. Si te tocan, se acabó.',
+    // CUÁNTAS SILLAS TIENE LA MESA: una. Los fantasmas son el entorno, no
+    // sillas — nadie más se sienta a decidir por ellos.
+    ASIENTOS: 1,
     id: 'fagocito',
     nombre: 'Fagocito',
 

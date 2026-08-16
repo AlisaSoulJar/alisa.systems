@@ -62,6 +62,9 @@ const DECIRES = ['di:arriba', 'di:abajo', 'di:izquierda', 'di:derecha', 'di:alto
 
 export const cabina = {
     OBJETIVO: 'Objetivo: llevar al piloto hasta la salida sin caer en un pozo. La guía lo ve todo y no puede moverse; el piloto se mueve y sólo ve la casilla que pisa. Hablar es la única jugada que tiene la guía.',
+    // CUÁNTAS SILLAS TIENE LA MESA. Sale de `SILLAS` (guía y piloto), no de
+    // un 2 a mano. Cooperativo y asimétrico, pero dos sillas.
+    ASIENTOS: SILLAS.length,
     nuevaPartida(opts = {}) {
         const semilla = (opts.semilla ?? opts.seed ?? (Math.random() * 2 ** 32)) >>> 0;
         const azar = mulberry32(semilla);

@@ -40,6 +40,8 @@ const dist = (a, b) => Math.hypot(a.position.x - b.x, a.position.z - b.y);
 
 export const pradera = {
     OBJETIVO: 'Objetivo: sobrevivir cazando ratones sin quedarte sin ellos. Se reproducen si los dejas criar, y comerte el último te deja solo en un prado vacío y muerto de hambre cuarenta turnos después.',
+    // CUÁNTAS SILLAS TIENE LA MESA: una. Los ratones son el mundo, no un rival.
+    ASIENTOS: 1,
     nuevaPartida(opts = {}) {
         const semilla = (opts.semilla ?? opts.seed ?? (Math.random() * 2 ** 32)) >>> 0;
         const azar = mulberry32(semilla);

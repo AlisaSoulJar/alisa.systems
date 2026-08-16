@@ -105,6 +105,9 @@ export const sokoban = {
     /** A que se juega, para quien no ve el tablero. Lo publica ProtoHub.state. */
     OBJETIVO: 'Objetivo: empujar cada caja hasta un destino. Solo se empuja, nunca se tira.',
 
+    // CUÁNTAS SILLAS TIENE LA MESA: una. Planificación en solitario, sin rival.
+    ASIENTOS: 1,
+
     nuevaPartida(opts = {}) {
         const semilla = (opts.semilla ?? opts.seed ?? (Math.random() * 2 ** 32)) >>> 0;
         // La semilla elige nivel. Con pocas semillas se recorren todos, que es

@@ -104,6 +104,11 @@ export async function crearGoFish({ url = RUTA_BIBLIOTECA, jugadores = 3, mano =
         /** A que se juega, para quien no ve la mesa. Lo publica ProtoHub.state. */
 
         OBJETIVO: 'Objetivo: reunir mas cuartetos que el rival, pidiendole valores que tu ya tienes.',
+        // CUÁNTAS SILLAS TIENE LA MESA. Sale de `jugadores` (la propia
+        // fábrica, por defecto 3): repetirlo a mano sería la enésima copia
+        // que se separa el día que cambie el reparto. Se cruza contra
+        // `manos_rivales` en `estado()`.
+        ASIENTOS: jugadores,
         nombre: 'gofish',
 
         nuevaPartida(opts = {}) {

@@ -38,6 +38,8 @@ const otro = (b) => BANDOS[1 - BANDOS.indexOf(b)];
 
 export const frentes = {
     OBJETIVO: 'Objetivo: dominar más frentes que el rival en ocho rondas. Los dos eligen A LA VEZ y a ciegas: si coincidís chocáis y no avanza ninguno, así que la jugada buena lo es contra lo que el otro VAYA a hacer.',
+    // CUÁNTAS SILLAS TIENE LA MESA. Sale de `BANDOS`, no de un 2 a mano.
+    ASIENTOS: BANDOS.length,
     nuevaPartida(opts = {}) {
         const semilla = (opts.semilla ?? opts.seed ?? (Math.random() * 2 ** 32)) >>> 0;
         const azar = mulberry32(semilla);

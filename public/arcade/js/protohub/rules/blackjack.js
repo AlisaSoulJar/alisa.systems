@@ -133,6 +133,10 @@ export async function crearBlackjack({ url = RUTA_BIBLIOTECA } = {}) {
         OBJETIVO: `Objetivo: acercarte a ${F.objetivo} más que la casa SIN PASARTE. `
                 + `Si te pasas de ${F.objetivo} pierdes en el acto, aunque la casa se pase después. `
                 + `La casa no decide: sigue su norma fija, así que el único que elige eres tú.`,
+        // CUÁNTAS SILLAS TIENE LA MESA: una. La casa no es una silla, es el
+        // reglamento — sigue `casaSePlantaEn` sin elegir nada, así que sentar
+        // a un segundo jugador no cambiaría nada de lo que aquí se mide.
+        ASIENTOS: 1,
         // ⚠️ «MIS NORMAS ESTABAN EN EL CATÁLOGO», no «llegó algún JSON».
         // Antes era `!!lib`, y con un `{}` por respuesta decía `true` mientras
         // jugaba enterito con el respaldo. Una marca que existe para avisar de

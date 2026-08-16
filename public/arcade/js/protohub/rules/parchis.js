@@ -130,6 +130,9 @@ export function crearParchis({ jugadores = 4, fichas = 4 } = {}) {
         /** A que se juega, para quien no ve la mesa. Lo publica ProtoHub.state. */
 
         OBJETIVO: 'Objetivo: llevar tus cuatro fichas a casa antes que nadie; un 5 saca ficha y un 6 repite.',
+        // CUÁNTAS SILLAS TIENE LA MESA. Sale de `jugadores` (por defecto 4,
+        // los cuatro colores). Se cruza contra `marcador` en `estado()`.
+        ASIENTOS: jugadores,
         nombre: 'parchis',
 
         nuevaPartida(opts = {}) {

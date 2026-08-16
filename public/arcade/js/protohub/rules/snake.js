@@ -61,6 +61,9 @@ function nuevaComida(p) {
 
 export const snake = {
     OBJETIVO: 'Objetivo: crecer comiendo sin chocar contigo mismo ni con la pared. Cada comida alarga la cola, así que cuanto mejor lo haces, menos sitio te queda.',
+    // CUÁNTAS SILLAS TIENE LA MESA: una. Es un solitario contra el entorno,
+    // no hay rival que se siente.
+    ASIENTOS: 1,
     id: 'snake',
     nombre: 'Snake',
 

@@ -49,6 +49,10 @@ export const flota = {
     /** A que se juega, para quien no ve el tablero. Lo publica ProtoHub.state. */
     OBJETIVO: 'Objetivo: hundir toda la flota del rival antes de que hunda la tuya, disparando a ciegas.',
 
+    // CUÁNTAS SILLAS TIENE LA MESA. Sale de `BANDOS`, no de un 2 escrito a
+    // mano: si algún día hay más mares, esto no se separa.
+    ASIENTOS: BANDOS.length,
+
     nuevaPartida(opts = {}) {
         const semilla = (opts.semilla ?? opts.seed ?? (Math.random() * 2 ** 32)) >>> 0;
         const azar = mulberry32(semilla);

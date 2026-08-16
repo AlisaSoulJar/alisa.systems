@@ -88,6 +88,9 @@ export const reversi = {
     /** A que se juega, para quien no ve el tablero. Lo publica ProtoHub.state. */
     OBJETIVO: 'Objetivo: terminar con MAS fichas tuyas que del rival; cada jugada voltea las que encierras.',
 
+    // CUÁNTAS SILLAS TIENE LA MESA: dos, negras y blancas. Fijo.
+    ASIENTOS: 2,
+
     /**
      * ⚠️ AQUÍ EL COLOR TAMPOCO ES ADORNO.
      *

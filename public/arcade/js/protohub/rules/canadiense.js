@@ -425,6 +425,10 @@ export async function crearCanadiense({ url = RUTA_BIBLIOTECA, jugadores = 4,
         /** A que se juega, para quien no ve la mesa. Lo publica ProtoHub.state. */
 
         OBJETIVO: 'Objetivo: llevar tus fichas a casa antes que nadie; aqui las cartas mandan sobre el dado.',
+        // CUÁNTAS SILLAS TIENE LA MESA. Sale de `jugadores` (por defecto 4,
+        // los cuatro colores, igual que el parchís). Se cruza contra
+        // `marcador` en `estado()`.
+        ASIENTOS: jugadores,
         nombre: 'canadiense',
 
         nuevaPartida(opts = {}) {

@@ -389,6 +389,10 @@ export const ajedrez = {
     /** A que se juega, para quien no ve el tablero. Lo publica ProtoHub.state. */
     OBJETIVO: 'Objetivo: dar jaque mate al rey rival.',
 
+    // CUÁNTAS SILLAS TIENE LA MESA: dos, blancas y negras. Fijo, no hay
+    // variante de este juego con otro número de bandos.
+    ASIENTOS: 2,
+
     id: 'chess',
     nombre: 'Ajedrez',
 

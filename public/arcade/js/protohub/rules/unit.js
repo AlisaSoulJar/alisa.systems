@@ -142,6 +142,9 @@ export async function crearUnit({ url = RUTA_BIBLIOTECA, jugadores = 4, mano = 7
         /** A que se juega, para quien no ve la mesa. Lo publica ProtoHub.state. */
 
         OBJETIVO: 'Objetivo: quedarte sin cartas el primero, encadenando color o numero.',
+        // CUÁNTAS SILLAS TIENE LA MESA. Sale de `jugadores`, no de un 4
+        // escrito a mano. Se cruza contra `manos_rivales` en `estado()`.
+        ASIENTOS: jugadores,
         nombre: 'unit',
 
         nuevaPartida(opts = {}) {

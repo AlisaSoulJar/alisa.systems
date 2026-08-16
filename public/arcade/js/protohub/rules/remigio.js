@@ -267,6 +267,10 @@ export async function crearRemigio({ url = RUTA_BIBLIOTECA, jugadores = 2, mano 
         /** A que se juega, para quien no ve la mesa. Lo publica ProtoHub.state. */
 
         OBJETIVO: 'Objetivo: cerrar la mano ligando todas tus cartas en grupos y escaleras.',
+        // CUÁNTAS SILLAS TIENE LA MESA. Sale de `jugadores` (por defecto 2,
+        // ver la nota de cabecera sobre por qué no más). Se cruza contra
+        // `manos_rivales` en `estado()`.
+        ASIENTOS: jugadores,
         nombre: 'remigio',
 
         nuevaPartida(opts = {}) {

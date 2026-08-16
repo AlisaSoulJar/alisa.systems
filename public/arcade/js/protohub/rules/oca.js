@@ -292,6 +292,9 @@ export function crearOca({ jugadores = 2, fichas = 2 } = {}) {
         /** A que se juega, para quien no ve la mesa. Lo publica ProtoHub.state. */
 
         OBJETIVO: 'Objetivo: llegar el primero a la casilla final; algunas casillas te adelantan y otras te frenan.',
+        // CUÁNTAS SILLAS TIENE LA MESA. Sale de `jugadores` (por defecto 2).
+        // Se cruza contra `marcador` en `estado()`.
+        ASIENTOS: jugadores,
         nombre: 'oca',
 
         nuevaPartida(opts = {}) {

@@ -208,6 +208,13 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
          */
         OBJETIVO: 'Objetivo: acabar con la caja mas BAJA posible; cada carta suma su valor y el comodin vale 0.',
 
+        // CUÁNTAS SILLAS TIENE LA MESA. Sale de `jugadores` (por defecto 2),
+        // no de un número aparte. El estado publica `cajas_rivales` en vez de
+        // `manos_rivales`, así que la ficha no se cruza automáticamente
+        // contra el juego — se declara igual porque es la misma variable que
+        // reparte las cajas en `nuevaPartida`.
+        ASIENTOS: jugadores,
+
         nombre: 'entropy',
 
         nuevaPartida(opts = {}) {

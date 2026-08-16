@@ -59,6 +59,9 @@ const esMuroDe = (p) => (x, y) => p.muros.has(y * ANCHO + x);
 
 export const sigilo = {
     OBJETIVO: 'Objetivo: según tu papel. El ladrón roba y sale sin que lo vean; el guardia lo caza antes. Ninguno de los dos ve el edificio entero ni al otro salvo cuando lo tiene delante.',
+    // CUÁNTAS SILLAS TIENE LA MESA. Sale de `BANDOS` (ladrón y guardia), no
+    // de un 2 a mano. Es asimétrico en el papel, no en el número de sillas.
+    ASIENTOS: BANDOS.length,
     nuevaPartida(opts = {}) {
         const semilla = (opts.semilla ?? opts.seed ?? (Math.random() * 2 ** 32)) >>> 0;
         const azar = mulberry32(semilla);

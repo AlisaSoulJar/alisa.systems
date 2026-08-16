@@ -92,6 +92,21 @@ export function crearBazas(cfg) {
         // cuatro, que es peor que no decir nada.
         OBJETIVO,
 
+        /**
+         * CUÁNTAS SILLAS TIENE LA MESA. Sale de la propia fábrica, no de una lista.
+         *
+         * La ficha de cada juego (`fichas.mjs`) lo necesita para las cinco puertas:
+         * una persona quiere saber contra cuántos juega, y un agente lo necesita para
+         * sentarse en una silla concreta cuando la tabla rota los asientos. Hasta hoy
+         * no lo declaraba nadie, y la ficha lo deducía del marcador — que existe en
+         * diez juegos y en los otros veinticinco no.
+         *
+         * Aquí es `jugadores` a secas: quien configura la familia ya eligió ese
+         * número, y repetirlo a mano en cada config sería la enésima copia que se
+         * separa el día que alguien cambie uno de los dos.
+         */
+        ASIENTOS: jugadores,
+
         nuevaPartida(opts = {}) {
             const semilla = (opts.semilla ?? opts.seed ?? Date.now()) >>> 0;
             const rnd = mulberry32(semilla);

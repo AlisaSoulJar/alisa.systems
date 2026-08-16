@@ -201,6 +201,11 @@ export async function crearPoker({ url = RUTA_BIBLIOTECA } = {}) {
                 + `con las que empiezas. Texas hold'em: dos cartas tuyas y cinco comunes, y la mejor mano de cinco gana. `
                 + `Se puede ganar sin la mejor mano si el rival se retira, así que retirarse a tiempo también suma.`,
 
+        // CUÁNTAS SILLAS TIENE LA MESA: una. Es heads-up contra la casa, y la
+        // casa no es una silla — juega su regla fija (`_decisionCasa`), no
+        // decide como un jugador. Mismo patrón que blackjack.
+        ASIENTOS: 1,
+
         nuevaPartida(opts = {}) {
             const semilla = opts.semilla ?? opts.seed ?? (Math.random() * 2 ** 32) >>> 0;
             const p = {

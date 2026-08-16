@@ -57,6 +57,9 @@ const rejilla = (o) => ({ x: Math.round(o.position.x), y: Math.round(o.position.
 
 export const rebano = {
     OBJETIVO: 'Objetivo: meter las doce ovejas en el redil. No se les puede ordenar nada: sólo colocarte, porque huyen de ti. El miedo es la herramienta.',
+    // CUÁNTAS SILLAS TIENE LA MESA: una. Las ovejas son el sistema que se
+    // conduce, no un rival que decide.
+    ASIENTOS: 1,
     nuevaPartida(opts = {}) {
         const semilla = (opts.semilla ?? opts.seed ?? (Math.random() * 2 ** 32)) >>> 0;
         const azar = mulberry32(semilla);

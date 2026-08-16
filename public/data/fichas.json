@@ -3,7 +3,7 @@
     "titulo": "Ajedrez",
     "pagina": "chess.html",
     "objetivo": "Objetivo: dar jaque mate al rey rival.",
-    "asientos": null,
+    "asientos": 2,
     "verbos": null,
     "formatoJugada": "notación propia del juego, 4 caracteres",
     "ejemplos": [
@@ -29,13 +29,20 @@
     },
     "captura": "capturas_laboratorio/ajedrez.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": true,
+      "openapi": true
+    }
   },
   "go": {
     "titulo": "Go",
     "pagina": "go.html",
     "objetivo": "Objetivo: rodear mas territorio que el rival; una piedra sin libertades se captura.",
-    "asientos": null,
+    "asientos": 2,
     "verbos": null,
     "formatoJugada": "notación propia del juego, 3 caracteres",
     "ejemplos": [
@@ -57,13 +64,20 @@
     },
     "captura": "capturas_laboratorio/go.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": false,
+      "openapi": true
+    }
   },
   "reversi": {
     "titulo": "Reversi",
     "pagina": "reversi.html",
     "objetivo": "Objetivo: terminar con MAS fichas tuyas que del rival; cada jugada voltea las que encierras.",
-    "asientos": null,
+    "asientos": 2,
     "verbos": null,
     "formatoJugada": "notación propia del juego, 2 caracteres",
     "ejemplos": [
@@ -76,8 +90,7 @@
     ],
     "normas": [],
     "leyenda": {
-      "w": "ficha clara",
-      "b": "ficha oscura"
+      "ficha": "ficha"
     },
     "clasificacion": {
       "entra": true,
@@ -85,13 +98,20 @@
     },
     "captura": "capturas_laboratorio/reversi.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": true,
+      "openapi": true
+    }
   },
   "damas": {
     "titulo": "Damas",
     "pagina": "checkers.html",
     "objetivo": "Objetivo: dejar al rival sin fichas o sin jugadas. Comer es obligatorio.",
-    "asientos": null,
+    "asientos": 2,
     "verbos": null,
     "formatoJugada": "notación propia del juego, 4 caracteres",
     "ejemplos": [
@@ -107,8 +127,8 @@
       "peonComeAtras"
     ],
     "leyenda": {
-      "w": "peón claro",
-      "b": "peón oscuro"
+      "peon": "peón",
+      "dama": "dama (corona)"
     },
     "clasificacion": {
       "entra": false,
@@ -116,13 +136,20 @@
     },
     "captura": "capturas_laboratorio/damas.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": false,
+      "openapi": true
+    }
   },
   "xiangqi": {
     "titulo": "Xiangqi",
     "pagina": "xiangqi.html",
     "objetivo": "Objetivo: dar jaque mate al general rival.",
-    "asientos": null,
+    "asientos": 2,
     "verbos": null,
     "formatoJugada": "notación propia del juego, 4 caracteres",
     "ejemplos": [
@@ -149,13 +176,20 @@
     },
     "captura": "capturas_laboratorio/xiangqi.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": false,
+      "openapi": true
+    }
   },
   "mancala": {
     "titulo": "Mancala",
     "pagina": "mancala.html",
     "objetivo": "Objetivo: acabar con mas semillas en tu granero que el rival.",
-    "asientos": null,
+    "asientos": 2,
     "verbos": null,
     "formatoJugada": "notación propia del juego, 1 caracteres",
     "ejemplos": [
@@ -174,13 +208,20 @@
     },
     "captura": "capturas_laboratorio/mancala.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": false,
+      "fsm": true,
+      "openapi": true
+    }
   },
   "snake": {
     "titulo": "Snake",
     "pagina": "snake.html",
     "objetivo": "Objetivo: crecer comiendo sin chocar contigo mismo ni con la pared. Cada comida alarga la cola, así que cuanto mejor lo haces, menos sitio te queda.",
-    "asientos": null,
+    "asientos": 1,
     "verbos": [
       "abajo",
       "arriba",
@@ -190,20 +231,31 @@
     "formatoJugada": null,
     "ejemplos": null,
     "normas": [],
-    "leyenda": null,
+    "leyenda": {
+      "cabeza": "tu cabeza",
+      "cuerpo": "tu cuerpo, no lo choques",
+      "comida": "cómetela para crecer"
+    },
     "clasificacion": {
       "entra": false,
       "motivo": "el tope de 120 decisiones corta la partida"
     },
     "captura": "capturas_laboratorio/snake.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": false,
+      "openapi": true
+    }
   },
   "fagocito": {
     "titulo": "Fagocito",
     "pagina": "fagocito.html",
     "objetivo": "Objetivo: recoger todo el alimento del laberinto sin que te alcance ningún perseguidor. Si te tocan, se acabó.",
-    "asientos": null,
+    "asientos": 1,
     "verbos": [
       "abajo",
       "arriba",
@@ -212,20 +264,34 @@
     "formatoJugada": null,
     "ejemplos": null,
     "normas": [],
-    "leyenda": null,
+    "leyenda": {
+      "1": "muro, no se puede cruzar",
+      "bolita": "comida por recoger",
+      "jugador": "tu ficha",
+      "cazador": "fantasma que viene directo a por ti",
+      "flanco": "fantasma que corta por donde vas a estar",
+      "errante": "fantasma que se mueve al azar"
+    },
     "clasificacion": {
       "entra": false,
       "motivo": "el tope de 120 decisiones corta la partida"
     },
     "captura": "capturas_laboratorio/fagocito.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": false,
+      "openapi": true
+    }
   },
   "peaton": {
     "titulo": "Peatón",
     "pagina": "peaton.html",
     "objetivo": "Objetivo: llegar hasta arriba del todo cruzando los carriles sin que te atropellen. Esperar a que pase el hueco también es una jugada.",
-    "asientos": null,
+    "asientos": 1,
     "verbos": [
       "abajo",
       "arriba",
@@ -236,20 +302,31 @@
     "formatoJugada": null,
     "ejemplos": null,
     "normas": [],
-    "leyenda": null,
+    "leyenda": {
+      "jugador": "tu ficha, cruza de abajo arriba",
+      "coche_der": "coche que avanza hacia la derecha",
+      "coche_izq": "coche que avanza hacia la izquierda"
+    },
     "clasificacion": {
       "entra": true,
       "motivo": null
     },
     "captura": "capturas_laboratorio/peaton.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": true,
+      "openapi": true
+    }
   },
   "blackjack": {
     "titulo": "Blackjack",
     "pagina": "blackjack.html",
     "objetivo": "Objetivo: acercarte a 21 más que la casa SIN PASARTE. Si te pasas de 21 pierdes en el acto, aunque la casa se pase después. La casa no decide: sigue su norma fija, así que el único que elige eres tú.",
-    "asientos": null,
+    "asientos": 1,
     "verbos": [
       "deal",
       "double",
@@ -266,13 +343,20 @@
     },
     "captura": "capturas_laboratorio/blackjack.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": true,
+      "openapi": true
+    }
   },
   "poker": {
     "titulo": "Póker",
     "pagina": "poker.html",
     "objetivo": "Objetivo: acabar las 30 manos con más fichas de las 200 con las que empiezas. Texas hold'em: dos cartas tuyas y cinco comunes, y la mejor mano de cinco gana. Se puede ganar sin la mejor mano si el rival se retira, así que retirarse a tiempo también suma.",
-    "asientos": null,
+    "asientos": 1,
     "verbos": [
       "call",
       "check",
@@ -290,7 +374,14 @@
     },
     "captura": "capturas_laboratorio/poker.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": true,
+      "openapi": true
+    }
   },
   "brisca": {
     "titulo": "Brisca",
@@ -310,7 +401,14 @@
     },
     "captura": "capturas_laboratorio/brisca.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": true,
+      "openapi": true
+    }
   },
   "tute": {
     "titulo": "Tute",
@@ -330,7 +428,14 @@
     },
     "captura": "capturas_laboratorio/tute.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": true,
+      "openapi": true
+    }
   },
   "hearts": {
     "titulo": "Hearts",
@@ -350,7 +455,14 @@
     },
     "captura": "capturas_laboratorio/hearts.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": true,
+      "openapi": true
+    }
   },
   "spades": {
     "titulo": "Spades",
@@ -370,13 +482,20 @@
     },
     "captura": "capturas_laboratorio/spades.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": false,
+      "openapi": true
+    }
   },
   "guerra": {
     "titulo": "Guerra (control)",
     "pagina": "guerra.html",
     "objetivo": "Objetivo: quedarte con todas las cartas; en cada choque gana la mas alta.",
-    "asientos": null,
+    "asientos": 1,
     "verbos": [
       "voltear"
     ],
@@ -390,7 +509,14 @@
     },
     "captura": "capturas_laboratorio/guerra.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": false,
+      "openapi": true
+    }
   },
   "gofish": {
     "titulo": "Go Fish",
@@ -410,7 +536,14 @@
     },
     "captura": "capturas_laboratorio/gofish.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": true,
+      "openapi": true
+    }
   },
   "unit": {
     "titulo": "Unit",
@@ -431,13 +564,20 @@
     },
     "captura": "capturas_laboratorio/unit.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": false,
+      "openapi": true
+    }
   },
   "entropy": {
     "titulo": "Entropy",
     "pagina": "entropy.html",
     "objetivo": "Objetivo: acabar con la caja mas BAJA posible; cada carta suma su valor y el comodin vale 0.",
-    "asientos": null,
+    "asientos": 2,
     "verbos": [
       "cambiar",
       "descartar_y_voltear",
@@ -454,33 +594,51 @@
     },
     "captura": "capturas_laboratorio/entropy.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": true,
+      "openapi": true
+    }
   },
   "sokoban": {
     "titulo": "Sokoban",
     "pagina": "sokoban.html",
     "objetivo": "Objetivo: empujar cada caja hasta un destino. Solo se empuja, nunca se tira.",
-    "asientos": null,
+    "asientos": 1,
     "verbos": [
       "derecha"
     ],
     "formatoJugada": null,
     "ejemplos": null,
     "normas": [],
-    "leyenda": null,
+    "leyenda": {
+      "caja": "caja",
+      "caja_ok": "caja colocada",
+      "jugador": "tú"
+    },
     "clasificacion": {
       "entra": false,
       "motivo": "el tope de 120 decisiones corta la partida"
     },
     "captura": "capturas_laboratorio/sokoban.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": false,
+      "openapi": true
+    }
   },
   "cripta": {
     "titulo": "Cripta",
     "pagina": "cripta.html",
     "objetivo": "Objetivo: salir de la mazmorra vivo y con el mayor botín. El mapa no se ve, se descubre andando, y pisar la salida termina la partida con lo que lleves encima: decidir CUÁNDO salir es la jugada.",
-    "asientos": null,
+    "asientos": 1,
     "verbos": [
       "abajo",
       "arriba",
@@ -490,20 +648,31 @@
     "formatoJugada": null,
     "ejemplos": null,
     "normas": [],
-    "leyenda": null,
+    "leyenda": {
+      "heroe": "tú",
+      "bicho": "bicho",
+      "tesoro": "tesoro"
+    },
     "clasificacion": {
       "entra": false,
       "motivo": "el tope de 120 decisiones corta la partida"
     },
     "captura": "capturas_laboratorio/cripta.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": false,
+      "openapi": true
+    }
   },
   "flota": {
     "titulo": "Flota",
     "pagina": "flota.html",
     "objetivo": "Objetivo: hundir toda la flota del rival antes de que hunda la tuya, disparando a ciegas.",
-    "asientos": null,
+    "asientos": 2,
     "verbos": null,
     "formatoJugada": "notación propia del juego, 2 caracteres",
     "ejemplos": [
@@ -515,20 +684,32 @@
       "f1"
     ],
     "normas": [],
-    "leyenda": null,
+    "leyenda": {
+      "impacto": "tocado por ti",
+      "barco": "tu barco",
+      "tocado": "te lo han tocado",
+      "agua": "te fallaron"
+    },
     "clasificacion": {
       "entra": true,
       "motivo": null
     },
     "captura": "capturas_laboratorio/flota.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": true,
+      "openapi": true
+    }
   },
   "defensa": {
     "titulo": "Defensa",
     "pagina": "defensa.html",
     "objetivo": "Objetivo: aguantar tu carril y tumbar el del rival. El oro cae solo y cada moneda gastada en atacar es una moneda que no defiende.",
-    "asientos": null,
+    "asientos": 2,
     "verbos": null,
     "formatoJugada": "notación propia del juego, 5 caracteres",
     "ejemplos": [
@@ -540,20 +721,30 @@
       "enviar e"
     ],
     "normas": [],
-    "leyenda": null,
+    "leyenda": {
+      "torre": "torre",
+      "bicho": "bicho en marcha"
+    },
     "clasificacion": {
       "entra": true,
       "motivo": null
     },
     "captura": "capturas_laboratorio/defensa.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": true,
+      "openapi": true
+    }
   },
   "sigilo": {
     "titulo": "Sigilo",
     "pagina": "sigilo.html",
     "objetivo": "Objetivo: según tu papel. El ladrón roba y sale sin que lo vean; el guardia lo caza antes. Ninguno de los dos ve el edificio entero ni al otro salvo cuando lo tiene delante.",
-    "asientos": null,
+    "asientos": 2,
     "verbos": [
       "abajo",
       "arriba",
@@ -563,20 +754,32 @@
     "formatoJugada": null,
     "ejemplos": null,
     "normas": [],
-    "leyenda": null,
+    "leyenda": {
+      "ladron": "ladrón",
+      "guardia": "guardia",
+      "dron": "dron de patrulla",
+      "botin": "botín"
+    },
     "clasificacion": {
       "entra": false,
       "motivo": "no medido en la última pasada"
     },
     "captura": "capturas_laboratorio/sigilo.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": false,
+      "openapi": true
+    }
   },
   "frentes": {
     "titulo": "Frentes",
     "pagina": "frentes.html",
     "objetivo": "Objetivo: dominar más frentes que el rival en ocho rondas. Los dos eligen A LA VEZ y a ciegas: si coincidís chocáis y no avanza ninguno, así que la jugada buena lo es contra lo que el otro VAYA a hacer.",
-    "asientos": null,
+    "asientos": 2,
     "verbos": [
       "a",
       "b",
@@ -587,20 +790,30 @@
     "formatoJugada": null,
     "ejemplos": null,
     "normas": [],
-    "leyenda": null,
+    "leyenda": {
+      "mia": "tropa tuya",
+      "suya": "tropa suya"
+    },
     "clasificacion": {
       "entra": true,
       "motivo": null
     },
     "captura": "capturas_laboratorio/frentes.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": true,
+      "openapi": true
+    }
   },
   "relevo": {
     "titulo": "Relevo",
     "pagina": "relevo.html",
     "objetivo": "Objetivo: sacar del almacén a los DOS autómatas. La puerta sólo está abierta mientras alguien pisa una placa, así que hay que sostenérsela al otro por turnos. No hay marcador propio: o salís los dos o no sale ninguno.",
-    "asientos": null,
+    "asientos": 2,
     "verbos": [
       "abajo",
       "arriba",
@@ -610,20 +823,34 @@
     "formatoJugada": null,
     "ejemplos": null,
     "normas": [],
-    "leyenda": null,
+    "leyenda": {
+      "yo": "tú",
+      "companero": "tu compañero",
+      "placa": "placa",
+      "placa_ok": "placa pisada",
+      "puerta": "puerta cerrada",
+      "puerta_abierta": "puerta abierta"
+    },
     "clasificacion": {
       "entra": false,
       "motivo": "el tope de 120 decisiones corta la partida"
     },
     "captura": "capturas_laboratorio/relevo.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": false,
+      "openapi": true
+    }
   },
   "cabina": {
     "titulo": "Cabina",
     "pagina": "cabina.html",
     "objetivo": "Objetivo: llevar al piloto hasta la salida sin caer en un pozo. La guía lo ve todo y no puede moverse; el piloto se mueve y sólo ve la casilla que pisa. Hablar es la única jugada que tiene la guía.",
-    "asientos": null,
+    "asientos": 2,
     "verbos": [
       "abajo",
       "arriba",
@@ -634,20 +861,30 @@
     "formatoJugada": null,
     "ejemplos": null,
     "normas": [],
-    "leyenda": null,
+    "leyenda": {
+      "pozo": "pozo",
+      "piloto": "el piloto"
+    },
     "clasificacion": {
       "entra": true,
       "motivo": null
     },
     "captura": "capturas_laboratorio/cabina.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": true,
+      "openapi": true
+    }
   },
   "rebano": {
     "titulo": "Rebano",
     "pagina": "rebano.html",
     "objetivo": "Objetivo: meter las doce ovejas en el redil. No se les puede ordenar nada: sólo colocarte, porque huyen de ti. El miedo es la herramienta.",
-    "asientos": null,
+    "asientos": 1,
     "verbos": [
       "abajo",
       "arriba",
@@ -657,20 +894,31 @@
     "formatoJugada": null,
     "ejemplos": null,
     "normas": [],
-    "leyenda": null,
+    "leyenda": {
+      "oveja": "oveja suelta",
+      "oveja_ok": "oveja en el redil",
+      "perro": "tú"
+    },
     "clasificacion": {
       "entra": false,
       "motivo": "el tope de 120 decisiones corta la partida"
     },
     "captura": "capturas_laboratorio/rebano.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": false,
+      "openapi": true
+    }
   },
   "pradera": {
     "titulo": "Pradera",
     "pagina": "pradera.html",
     "objetivo": "Objetivo: sobrevivir cazando ratones sin quedarte sin ellos. Se reproducen si los dejas criar, y comerte el último te deja solo en un prado vacío y muerto de hambre cuarenta turnos después.",
-    "asientos": null,
+    "asientos": 1,
     "verbos": [
       "abajo",
       "arriba",
@@ -680,20 +928,32 @@
     "formatoJugada": null,
     "ejemplos": null,
     "normas": [],
-    "leyenda": null,
+    "leyenda": {
+      "zorro": "tú",
+      "raton": "ratón",
+      "raton_huye": "ratón huyendo",
+      "queso": "queso"
+    },
     "clasificacion": {
       "entra": false,
       "motivo": "el tope de 120 decisiones corta la partida"
     },
     "captura": "capturas_laboratorio/pradera.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": false,
+      "openapi": true
+    }
   },
   "nave": {
     "titulo": "Nave",
     "pagina": "nave.html",
     "objetivo": "Objetivo: según tu papel. Los tripulantes reparan la nave o echan al impostor por votación; el impostor los elimina de uno en uno sin que lo pillen. Se vota a la vez y el más votado sale por la esclusa, sea culpable o no.",
-    "asientos": null,
+    "asientos": 4,
     "verbos": [
       "abajo",
       "arriba",
@@ -704,14 +964,28 @@
     "formatoJugada": null,
     "ejemplos": null,
     "normas": [],
-    "leyenda": null,
+    "leyenda": {
+      "yo": "tú",
+      "cadaver": "cadáver",
+      "tripulante_a": "tripulante a",
+      "tripulante_b": "tripulante b",
+      "tripulante_c": "tripulante c",
+      "tripulante_d": "tripulante d"
+    },
     "clasificacion": {
       "entra": false,
       "motivo": "no medido en la última pasada"
     },
     "captura": "capturas_laboratorio/nave.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": false,
+      "openapi": true
+    }
   },
   "remigio": {
     "titulo": "Remigio",
@@ -733,7 +1007,14 @@
     },
     "captura": "capturas_laboratorio/remigio.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": false,
+      "openapi": true
+    }
   },
   "parchis": {
     "titulo": "Parchis",
@@ -748,20 +1029,32 @@
     "formatoJugada": null,
     "ejemplos": null,
     "normas": [],
-    "leyenda": null,
+    "leyenda": {
+      "0": "pista",
+      "1": "fuera",
+      "2": "seguro",
+      "ficha": "ficha"
+    },
     "clasificacion": {
       "entra": false,
       "motivo": "la casa no supera al suelo: la escala se invertiría"
     },
     "captura": "capturas_laboratorio/parchis.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": false,
+      "openapi": true
+    }
   },
   "generala": {
     "titulo": "Generala",
     "pagina": "generala.html",
     "objetivo": "Objetivo: sumar la mayor puntuacion posible combinando tiradas de dados.",
-    "asientos": null,
+    "asientos": 2,
     "verbos": [
       "anotar",
       "guardar",
@@ -770,14 +1063,26 @@
     "formatoJugada": null,
     "ejemplos": null,
     "normas": [],
-    "leyenda": null,
+    "leyenda": {
+      "dados": "dados sueltos",
+      "guardados": "dados apartados",
+      "hoja": "casillas anotadas",
+      "asiento": 0
+    },
     "clasificacion": {
       "entra": true,
       "motivo": null
     },
     "captura": "capturas_laboratorio/generala.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": true,
+      "openapi": true
+    }
   },
   "oca": {
     "titulo": "Oca",
@@ -791,14 +1096,35 @@
     "formatoJugada": null,
     "ejemplos": null,
     "normas": [],
-    "leyenda": null,
+    "leyenda": {
+      "0": "casilla",
+      "1": "fuera del recorrido",
+      "2": "meta (63)",
+      "3": "oca",
+      "4": "puente",
+      "5": "dados",
+      "6": "posada",
+      "7": "pozo",
+      "8": "laberinto",
+      "9": "carcel",
+      "10": "muerte",
+      "f1": "ficha 1",
+      "f2": "ficha 2"
+    },
     "clasificacion": {
       "entra": false,
       "motivo": "la casa no supera al suelo: la escala se invertiría"
     },
     "captura": "capturas_laboratorio/oca.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": false,
+      "openapi": true
+    }
   },
   "canadiense": {
     "titulo": "Canadiense",
@@ -814,13 +1140,25 @@
     "formatoJugada": null,
     "ejemplos": null,
     "normas": [],
-    "leyenda": null,
+    "leyenda": {
+      "0": "pista",
+      "1": "fuera",
+      "2": "seguro",
+      "ficha": "ficha"
+    },
     "clasificacion": {
       "entra": false,
       "motivo": "el tope de 120 decisiones corta la partida"
     },
     "captura": "capturas_laboratorio/canadiense.png",
     "reglas": null,
-    "origen": null
+    "origen": null,
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": false,
+      "openapi": true
+    }
   }
 }

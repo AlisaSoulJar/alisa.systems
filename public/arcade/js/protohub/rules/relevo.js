@@ -46,6 +46,10 @@ const esMuroDe = (p) => (x, y) => p.muros.has(y * ANCHO + x);
 
 export const relevo = {
     OBJETIVO: 'Objetivo: sacar del almacén a los DOS autómatas. La puerta sólo está abierta mientras alguien pisa una placa, así que hay que sostenérsela al otro por turnos. No hay marcador propio: o salís los dos o no sale ninguno.',
+    // CUÁNTAS SILLAS TIENE LA MESA. Sale de `SILLAS`, no de un 2 a mano.
+    // Cooperativo: las dos sillas ganan o pierden juntas, pero siguen siendo
+    // dos sillas.
+    ASIENTOS: SILLAS.length,
     nuevaPartida(opts = {}) {
         const semilla = (opts.semilla ?? opts.seed ?? (Math.random() * 2 ** 32)) >>> 0;
         const azar = mulberry32(semilla);

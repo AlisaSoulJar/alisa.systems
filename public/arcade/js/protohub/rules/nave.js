@@ -60,6 +60,9 @@ const esMuroDe = (p) => (x, y) => p.muros.has(y * ANCHO + x);
 
 export const nave = {
     OBJETIVO: 'Objetivo: según tu papel. Los tripulantes reparan la nave o echan al impostor por votación; el impostor los elimina de uno en uno sin que lo pillen. Se vota a la vez y el más votado sale por la esclusa, sea culpable o no.',
+    // CUÁNTAS SILLAS TIENE LA MESA. Sale de `SILLAS`, no de un 4 a mano:
+    // tres tripulantes y un impostor, cuatro sillas en total.
+    ASIENTOS: SILLAS.length,
     nuevaPartida(opts = {}) {
         const semilla = (opts.semilla ?? opts.seed ?? (Math.random() * 2 ** 32)) >>> 0;
         const azar = mulberry32(semilla);

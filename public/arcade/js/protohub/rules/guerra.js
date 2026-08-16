@@ -39,6 +39,13 @@ export async function crearGuerra({ url = RUTA_BIBLIOTECA, jugadores = 2 } = {})
         /** A que se juega, para quien no ve la mesa. Lo publica ProtoHub.state. */
 
         OBJETIVO: 'Objetivo: quedarte con todas las cartas; en cada choque gana la mas alta.',
+        // CUÁNTAS SILLAS TIENE LA MESA: una. Es el CONTROL DE LABORATORIO —
+        // no hay ni una decisión, así que `jugadores` reparte manos pero no
+        // sillas: nadie elige nada distinto por sentarse en una u otra, y
+        // `estado()` ni siquiera publica una vista por asiento (no acepta
+        // parámetro). No se usa la variable `jugadores` aquí porque no mide
+        // sillas, mide cuántas manos participan en el volteo.
+        ASIENTOS: 1,
         nombre: 'guerra',
 
         nuevaPartida(opts = {}) {

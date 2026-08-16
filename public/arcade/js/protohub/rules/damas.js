@@ -252,6 +252,11 @@ export const damas = {
     /** A que se juega, para quien no ve el tablero. Lo publica ProtoHub.state. */
     OBJETIVO: 'Objetivo: dejar al rival sin fichas o sin jugadas. Comer es obligatorio.',
 
+    // CUÁNTAS SILLAS TIENE LA MESA: dos, blancas y negras. Fijo en las tres
+    // variantes de NORMAS — cambian las reglas de captura, no el número de
+    // bandos, así que `crearDamas` hereda esto tal cual con el spread.
+    ASIENTOS: 2,
+
     id: 'checkers',
     nombre: 'Damas',
 

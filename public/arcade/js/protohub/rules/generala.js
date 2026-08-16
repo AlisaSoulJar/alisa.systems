@@ -208,6 +208,12 @@ export function crearGenerala({ jugadores = 2 } = {}) {
         /** A que se juega, para quien no ve la mesa. Lo publica ProtoHub.state. */
 
         OBJETIVO: 'Objetivo: sumar la mayor puntuacion posible combinando tiradas de dados.',
+        // CUÁNTAS SILLAS TIENE LA MESA. Sale de `jugadores` (por defecto 2),
+        // no de un número aparte. El estado publica `hojas` (una por
+        // jugador) pero no un campo `marcador`/`manos_rivales`, así que no
+        // se cruza automáticamente — se declara igual porque es la misma
+        // variable que reparte turnos y hojas en `nuevaPartida`.
+        ASIENTOS: jugadores,
         nombre: 'generala',
 
         nuevaPartida(opts = {}) {

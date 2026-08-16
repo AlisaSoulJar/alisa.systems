@@ -163,6 +163,9 @@ export const go = {
     /** A que se juega, para quien no ve el tablero. Lo publica ProtoHub.state. */
     OBJETIVO: 'Objetivo: rodear mas territorio que el rival; una piedra sin libertades se captura.',
 
+    // CUÁNTAS SILLAS TIENE LA MESA: dos, negras y blancas. Fijo.
+    ASIENTOS: 2,
+
     /**
      * ⚠️ NO SE JUEGA EN LAS CASILLAS: SE JUEGA EN LOS CRUCES.
      *

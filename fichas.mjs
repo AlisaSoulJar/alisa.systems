@@ -50,12 +50,39 @@ const { JUEGOS, cargarReglas } = await impo('public/arcade/js/protohub/rules/ind
  * que pedírsela a `sustratoDe()` y no buscarla en el estado, que fue mi primer
  * intento: daba «faltan las 35» cuando en realidad la mitad la tiene.
  */
-const { sustratoDe } = await impo('public/arcade/js/protohub/sustrato.js');
+/**
+ * ⚠️ `obtenerSustrato`, NO `sustratoDe` — Y ESA DIFERENCIA ME HIZO PUBLICAR UN
+ *    NÚMERO FALSO.
+ *
+ * Hay DOS caminos para el sustrato: 18 juegos publican el suyo propio desde sus
+ * reglas, y los otros 17 pasan por el adaptador, que es el único que usa el mapa
+ * `LEYENDAS` de `sustrato.js`. `sustratoDe()` es sólo la segunda mitad.
+ *
+ * Preguntándole a esa mitad salía «30 de 35 juegos no dicen qué se ve en pantalla» y
+ * lo dije en voz alta: la puerta de visión al 14 %, el agujero más grande del banco.
+ * Falso — diecisiete de los que contaba como mudos declaran su leyenda dentro de su
+ * propio `sustrato()`, y nunca pasan por el mapa. Estaba midiendo un camino y
+ * concluyendo sobre los dos.
+ *
+ * `obtenerSustrato()` es el que decide cuál de los dos toca, o sea el que ven de
+ * verdad los jugadores. Preguntar por donde se entra, no por donde uno mira.
+ */
+const { obtenerSustrato } = await impo('public/arcade/js/protohub/sustrato.js');
 const paginas = await leer('public/data/paginas.json', {});
 const tabla = await leer('resultados/tabla.json', {});
 const prosa = await leer('public/data/fichas_prosa.json', {});
 const capturas = new Set(
     (await import('node:fs')).readdirSync(path.join(AQUI, 'capturas_laboratorio')));
+
+/**
+ * Qué juegos tienen puerta HTTP. Se mira el texto entero del OpenAPI en vez de
+ * recorrer su estructura: las rutas nombran el juego de varias formas —en el path,
+ * en un enum de parámetros, en los ejemplos— y bastaría cambiar una de ellas para
+ * que un recorrido fino diera un falso «no está» sobre un juego perfectamente
+ * servido.
+ */
+const textoApi = await readFile(path.join(AQUI, 'public/openapi.json'), 'utf-8').catch(() => '');
+const enOpenApi = new Set(JUEGOS.filter(j => textoApi.includes(`"${j}"`) || textoApi.includes(`/${j}`)));
 
 /** Lo que la clasificación dice de un juego: si entra y con qué hueco, o por qué no. */
 const enClasificacion = (j) => {
@@ -92,10 +119,11 @@ for (const juego of JUEGOS) {
         if (!reglas.mover(q, legales[0])) break;
     }
 
-    let leyenda = null;
+    let leyenda = null, tieneRejilla = false;
     try {
-        const sus = sustratoDe(juego, st);
+        const sus = obtenerSustrato(juego, reglas, p, st);
         if (sus?.leyenda && Object.keys(sus.leyenda).length) leyenda = sus.leyenda;
+        tieneRejilla = !!sus?.rejilla;
     } catch { /* un juego sin sustrato no tiene leyenda que dar */ }
     /**
      * ⚠️ SI NO SE SABE, SE DICE `null`. NO SE PONE 1.
@@ -109,14 +137,22 @@ for (const juego of JUEGOS) {
      * que ese hueco es real y sale en el informe de lo que falta EN EL CÓDIGO, no
      * en el de lo que falta por escribir.
      */
-    const asientos = Array.isArray(st.marcador) ? st.marcador.length
+    const asientos = Number.isInteger(reglas.ASIENTOS) ? reglas.ASIENTOS
+                   : Array.isArray(st.marcador) ? st.marcador.length
                    : Array.isArray(st.manos_rivales) ? st.manos_rivales.length + 1 : null;
     const cl = enClasificacion(juego);
     const textos = prosa[juego] ?? {};
 
     if (!textos.reglas) faltan.prosa.push(juego);
     if (!textos.origen) faltan.origen.push(juego);
-    if (!leyenda) faltan.leyenda.push(juego);
+    /**
+     * Un juego SIN REJILLA no necesita leyenda y contarlo como hueco es inventar
+     * deuda: las mesas de cartas son montones y zonas, no un tablero de casillas, y
+     * forzarles una leyenda sería relleno. Se cuentan aparte para que se vea que no
+     * están olvidados, sino que no aplica.
+     */
+    if (!leyenda && tieneRejilla) faltan.leyenda.push(juego);
+    else if (!leyenda) (faltan.sinRejilla ??= []).push(juego);
     if (!capturas.has(`${juego}.png`)) faltan.captura.push(juego);
     if (asientos === null) (faltan.asientos ??= []).push(juego);
 
@@ -157,6 +193,42 @@ for (const juego of JUEGOS) {
         reglas: textos.reglas ?? null,
         origen: textos.origen ?? null,
     };
+
+    /**
+     * ⚠️ Y UNA COLUMNA POR PUERTA: LA FICHA COMO TABLERO DE ESTADO.
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Idea de Oscar, y es la que le da a esto un segundo uso: si la ficha reúne lo
+     * que cada puerta necesita, entonces también dice **qué funciona y qué no**,
+     * juego por juego. No hace falta un panel aparte — sale de lo que ya se ha
+     * recogido arriba.
+     *
+     * Cada puerta se marca según lo que le hace falta para poder jugar de verdad:
+     *
+     *   persona   una captura para reconocer el juego y un objetivo que leer
+     *   llm       el objetivo y un vocabulario o formato de jugada que mandar
+     *   visión    la leyenda: sin ella se ve la pantalla y no se entiende
+     *   fsm       que el juego ENTRE en la clasificación; si no, su rival de casa
+     *             no sirve para medir a nadie, aunque el juego se pueda jugar
+     *   openapi   que el juego esté declarado en la puerta HTTP
+     *
+     * ⚠️ Esto dice si la puerta está MONTADA, no si está BIEN. Un objetivo puede
+     * estar escrito y ser malo, y una leyenda puede nombrar mal las casillas. Lo
+     * que se puede comprobar de verdad —que lo declarado coincida con lo que hace
+     * el juego— es trabajo de `prueba_fichas.mjs`, no de esta cuenta.
+     */
+    const f = fichas[juego];
+    f.puertas = {
+        persona: !!(f.captura && f.objetivo),
+        llm: !!(f.objetivo && (f.verbos?.length || f.formatoJugada)),
+        // Un juego sin rejilla no puede tener leyenda y no por eso su pantalla es
+        // ilegible: son montones de cartas, y lo que hay que entender de ellos lo
+        // cuentan el objetivo y el panel. Contarlos como puerta rota sería inventar
+        // un agujero.
+        vision: !!f.leyenda || !tieneRejilla,
+        fsm: !!f.clasificacion?.entra,
+        openapi: enOpenApi.has(juego),
+    };
 }
 
 await writeFile(path.join(AQUI, 'public/data/fichas.json'),
@@ -170,6 +242,26 @@ console.log(`    verbos      ${Object.values(fichas).filter(f => f.verbos?.lengt
 console.log(`    asientos    ${n - (faltan.asientos?.length ?? 0)}/${n}`);
 console.log(`    captura     ${n - faltan.captura.length}/${n}`);
 console.log(`    en la tabla ${Object.values(fichas).filter(f => f.clasificacion?.entra).length}/${n}`);
+
+/**
+ * El tablero de estado: cuántos juegos tiene montada cada puerta. Es la lectura que
+ * pidió Oscar —«esto nos vale también para ver qué funciona y qué no»— y sale gratis
+ * de lo ya recogido.
+ */
+const puertas = ['persona', 'llm', 'vision', 'fsm', 'openapi'];
+console.log(`\n  por PUERTA (de las cinco maneras de jugar):`);
+for (const p of puertas) {
+    const ok = Object.values(fichas).filter(f => f.puertas?.[p]).length;
+    const barra = '█'.repeat(Math.round(ok / n * 20)).padEnd(20, '·');
+    console.log(`    ${p.padEnd(8)} ${barra} ${ok}/${n}`);
+}
+const cojos = Object.entries(fichas)
+    .filter(([, f]) => puertas.filter(p => f.puertas?.[p]).length <= 2)
+    .map(([j]) => j);
+if (cojos.length) {
+    console.log(`\n  con dos puertas o menos (${cojos.length}): ${cojos.slice(0, 8).join(', ')}`
+              + (cojos.length > 8 ? '…' : ''));
+}
 
 console.log(`\n  falta por escribir a mano:`);
 console.log(`    reglas en prosa   ${faltan.prosa.length}/${n}`
