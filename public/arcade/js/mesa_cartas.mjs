@@ -174,9 +174,40 @@ const sitios = (estrecha, conLaterales = false) => ({
  * La carta que acabas de robar es «tuya» (`de: 0`), pero ponerla junto a tu caja
  * la metía en el mismo reparto y desplazaba la rejilla del centro. Va delante de
  * todo, entre tú y tu caja, que es donde la tendrías en la mano.
+ *
+ * ⚠️ Y LA BAZA EN CURSO, POR LO MISMO — MEDIDO CON `bajo_el_panel.mjs`.
+ *
+ * `baza` tiene `de: null` (`sustrato.js`), así que sin esta entrada caía en el
+ * mismo cubo `'mesa'` que `mazo`: el reparto de `onStateSync` los separa a los
+ * lados del centro (uno a +2,5, el otro a -2,5 en mundo, con cuatro jugadores),
+ * y el que le toca ir hacia la izquierda —la baza— cae bajo el panel en cuanto
+ * se juega la primera carta. Brisca y tute lo enseñan igual: dos juegos de la
+ * misma familia (`bazas.js`), la misma cámara, el mismo cubo compartido.
+ *
+ * ⚠️ Y NO SE ARREGLA PANEANDO LA CÁMARA, QUE FUE EL PRIMER INTENTO.
+ *
+ * `apartarDescarteDelPanel()` sabe alejar y panear para sacar el `mazo` o el
+ * `descarte` de debajo del panel, y parecía el sitio natural para sumar `baza`
+ * a la misma caja. Medido con captura y con `bajo_el_panel.mjs` repetido: el
+ * paneo que hacía falta para despejar la baza —que queda cerca del centro— era
+ * suficiente para arrastrar la mano del rival de la IZQUIERDA (`mano_2`, ya al
+ * borde de la pantalla por diseño) hasta meterla bajo el propio panel. El veto
+ * de esa función sólo cuenta el TOTAL de piezas tapadas, así que a veces
+ * aceptaba el cambio (tapaba `mano_2` en vez de `baza`, total igual) y otras
+ * veces lo rechazaba (el total no bajaba) dejando la baza tapada igual que
+ * antes — cuatro pasadas seguidas dieron baza, mano, baza, mano: cambiaba de
+ * sitio el problema, no lo resolvía, y encima de forma que no se podía predecir.
+ *
+ * La baza no es un montón de nadie que viva bien a un lado —es la jugada que
+ * se acaba de hacer, y los cuatro la tiran hacia el CENTRO de la mesa, no hacia
+ * un borde—. Fijarla en el punto exacto al que ya mira la cámara en escritorio
+ * (`encuadrar()`, más abajo: `camera.lookAt(0, 0, 1.3)`) la deja donde nunca
+ * hace falta desplazar nada para verla. El `z: 1.3` en vez de `0` es además lo
+ * que evita que se pinte encima del `mazo`, que se queda en su cubo de siempre.
  */
 const SITIO_ZONA = {
     robada: { x: 0, z: 5.6, layout: 'line', paso: 0 },
+    baza:   { x: 0, z: 1.3, layout: 'line', paso: 0 },
 };
 
 /** El mismo hueco entre cartas que usa la mesa de póker. */
@@ -727,6 +758,27 @@ function apartarDescarteDelPanel(motor, objetivo, eje, dEntrada, tanH) {
      * bloquear el arreglo del panel por un problema que ya estaba ahí y que no
      * es el que se pidió arreglar. La condición de verdad es «no empeorar lo
      * que ya había», no «partir siempre de cero».
+     *
+     * ⚠️ LÍMITE CONOCIDO DE ESTE VETO: CUENTA CUÁNTAS, NO CUÁLES.
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Compara TOTALES, así que da por bueno cualquier cambio que tape una pieza
+     * distinta mientras el número no suba. Y eso deja pasar el peor resultado
+     * posible: mover el problema de sitio y que parezca resuelto.
+     *
+     * Medido el 16-08 al intentar destapar la baza de brisca metiéndola en esta
+     * misma caja: el paneo necesario arrastraba la mano izquierda del rival —ya al
+     * borde por diseño— bajo el panel, y como el total no subía, unas veces se
+     * aceptaba (tapando la mano en vez de la baza) y otras se rechazaba. Cuatro
+     * pasadas seguidas dieron baza / mano / baza / mano. Un veto que da resultados
+     * distintos con la misma entrada no está midiendo lo que cree.
+     *
+     * No se arregla aquí porque para aquel caso había una solución mejor —darle a
+     * la baza un sitio propio donde la cámara ya mira, en `SITIO_ZONA`, sin mover
+     * ninguna cámara— y porque comparar identidades pide llevar la lista de qué
+     * pieza estaba tapada antes, que es más máquina de la que este veto necesita
+     * hoy. Pero quien vuelva a apoyarse en él para un caso nuevo: esto es lo que
+     * NO comprueba.
      */
     const fueraInicial = Math.max(0, invadeBorde());
     if (invadePanel() <= 0) return { d: dEntrada, pan: 0 };   // ya se ve entero: no se toca nada

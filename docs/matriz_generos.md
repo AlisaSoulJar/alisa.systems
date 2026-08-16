@@ -48,14 +48,14 @@
 | nave | ● | ● | ● | · | ● | ● | ? | · | sí |
 | remigio | · | ● | ● | · | ● | · | · | · | sí |
 | parchis | ● | · | ● | · | ● | ? | ? | ? | sí |
-| generala | · | ● | ● | · | ● | · | · | · | sí |
+| generala | · | · | ● | · | ● | · | · | · | sí |
 | oca | ● | · | ● | · | ● | · | · | · | sí |
 | canadiense | ● | ● | ● | ● | ● | · | · | · | sí |
 
 ## Cobertura
 
 - `espacial`: **23/35**
-- `oculto`: **18/35**
+- `oculto`: **17/35**
 - `rival`: **27/35**
 - `autonomo`: **8/35**
 - `irreversible`: **35/35**
@@ -65,7 +65,7 @@
 
 ## Perfiles demostrados
 
-- `oculto+rival+irreversible` — blackjack, poker, brisca, tute, hearts, spades, gofish, unit, entropy, remigio, generala
+- `oculto+rival+irreversible` — blackjack, poker, brisca, tute, hearts, spades, gofish, unit, entropy, remigio
 - `espacial+rival+irreversible` — ajedrez, go, reversi, damas, xiangqi, mancala, parchis, oca
 - `espacial+autonomo+irreversible` — fagocito, peaton, rebano, pradera
 - `espacial+irreversible` — snake, sokoban
@@ -78,3 +78,4 @@
 - `espacial+oculto+rival+irreversible+cooperativo` — relevo
 - `espacial+rival+irreversible+cooperativo+comunicacion` — cabina
 - `espacial+oculto+rival+irreversible+simultaneo` — nave
+- `rival+irreversible` — generala
