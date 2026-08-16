@@ -56,5 +56,85 @@
       "Tampoco hay parejas: el spades estándar es dos contra dos con las apuestas sumadas por equipo. Aquí los cuatro van por libre."
     ],
     "origen": "Estadounidense, de los años treinta, de la familia del whist. Es de los juegos de cartas más jugados en Estados Unidos, y casi siempre en parejas."
+  },
+
+  "tute": {
+    "que_es": "El juego de bazas serio de la baraja española: se reparte todo de una vez, hay que servir al palo, y quien cuenta las cartas que van saliendo gana.",
+    "reparto": "Diez cartas a cada uno y se acaba la baraja: no queda mazo ni se roba. La última carta repartida se enseña y su palo es el triunfo.",
+    "turno": "Hay que servir al palo de salida si tienes: ésta es la diferencia grande con la brisca, donde puedes tirar lo que quieras. Se lleva la baza el triunfo más alto, y si no ha salido triunfo, la carta más alta del palo de salida. El que gana sale a la siguiente.",
+    "gana": "Al acabar las diez bazas se cuentan los puntos de las cartas ganadas. Gana quien más sume.",
+    "ojo": [
+      "El orden de fuerza es el de la brisca —as, tres, rey, caballo, sota, y luego 7, 6, 5, 4, 2— y sigue sin tener nada que ver con el orden de los números.",
+      "Como se reparte la baraja entera, todo lo que no tienes lo tienen los demás. Contar lo que va saliendo no es un adorno: es el juego."
+    ],
+    "diferencias": [
+      "⚠️ NO HAY CANTES, Y EN EL TUTE LOS CANTES SON MEDIA PARTIDA. En el tute de la calle, quien tiene el rey y el caballo del mismo palo puede cantar: 40 puntos si es del triunfo, 20 si es de otro palo. Aquí no existe la jugada de cantar, así que las cartas sólo valen por su valor de baza.",
+      "Tampoco están las «diez de últimas»: quien se lleva la última baza no gana los 10 puntos de regalo que le corresponderían.",
+      "Ni el tute propiamente dicho —tener los cuatro reyes o los cuatro caballos, que gana la partida directamente—.",
+      "Y a cuatro jugadores el tute se juega EN PAREJAS. Aquí los cuatro van por libre: el motor no tiene concepto de equipo."
+    ],
+    "origen": "Español, emparentado con el bézique y el marriage centroeuropeos, de donde vienen los cantes de rey y caballo. El guiñote aragonés es su primo cercano."
+  },
+
+  "hearts": {
+    "que_es": "El juego de bazas al revés: aquí ganar bazas es un castigo. Cada corazón que te llevas suma en tu contra, y la dama de picas vale ella sola por trece.",
+    "reparto": "La baraja francesa entera repartida entre los cuatro, trece cartas cada uno. No hay mazo, no hay robo y no hay triunfo — y lo de no haber triunfo es la regla, no un olvido.",
+    "turno": "Hay que servir al palo de salida si tienes. No hay triunfo, así que la baza se la lleva siempre la carta más alta del palo con el que se salió. El que la gana sale a la siguiente, y se lleva también todo lo que haya caído dentro.",
+    "gana": "Al acabar se cuentan las cartas malas: 1 por cada corazón y 13 por la dama de picas, 26 en total. Gana quien MENOS haya recogido.",
+    "ojo": [
+      "El marcador que ves ya viene con el signo cambiado, para que en todo el banco «más alto es mejor». Un -13 no es un error: es que llevas trece de penalización.",
+      "La dama de picas vale por trece corazones ella sola. Media partida consiste en no comérsela y en colársela a otro.",
+      "Es el juego del banco donde un agente que sólo sepa maximizar se hunde solo: aquí ganar la baza casi siempre es perder."
+    ],
+    "diferencias": [
+      "No hay pase de cartas. En el hearts de verdad, antes de cada mano cada jugador pasa tres cartas boca abajo —a la izquierda, a la derecha, al de enfrente, y la cuarta mano sin pasar—. Ese pase es donde te quitas la dama de picas de encima, y aquí no existe.",
+      "No está la «luna»: en el hearts estándar, si te llevas TODAS las cartas malas no sumas 26, sino que se los comen los otros tres. Es la jugada heroica del juego y aquí no se premia.",
+      "No hay restricción de salida: en el estándar sale obligatoriamente el dos de tréboles y no se puede salir de corazones hasta que alguien haya cortado con uno. Aquí puedes salir de lo que quieras desde la primera baza.",
+      "Y es UNA mano suelta, no una partida a 100 puntos. En el estándar se juegan manos hasta que alguien pasa de 100 y gana el que menos tenga."
+    ],
+    "origen": "De la familia de los juegos de bazas «al revés», emparentado con el Reversis francés. La dama de picas como carta maldita es una aportación estadounidense de principios del siglo XX."
+  },
+
+  "guerra": {
+    "que_es": "El juego más tonto de la casa, y está aquí a propósito: se voltea una carta cada uno y gana la más alta. No hay ni una sola decisión que tomar.",
+    "reparto": "Una baraja francesa barajada. No se reparte en montones: las cartas se van volteando del mazo común.",
+    "turno": "Sólo hay una jugada posible, «voltear». Salen dos cartas, la más alta se lleva las dos. Si empatan, las cartas se quedan en el bote y se las lleva quien gane el siguiente volteo.",
+    "gana": "Se acaba cuando el mazo no da para otro volteo. Gana quien más cartas haya acumulado.",
+    "ojo": [
+      "Que no haya nada que decidir ES el motivo de que exista. Es el control del banco de pruebas: cualquier jugador —una persona, un modelo, un dado— tiene que puntuar aquí lo mismo. Si algún día la tabla dice que un modelo juega mejor a la Guerra, el que está mal es nuestro medidor, no el jugador.",
+      "El código vigila que no se pierda ni una carta: la suma de mazo, bote y ganadas tiene que dar siempre el total de la baraja. El original en Python tenía justo ese fallo —en los empates las cartas se quedaban en el limbo— y lo destapó esa invariante, no un jugador quejándose."
+    ],
+    "diferencias": [
+      "En la guerra de verdad, un empate desencadena una «guerra»: cada uno pone tres cartas boca abajo y una boca arriba, y ésa decide. Aquí un empate sólo acumula el bote para el siguiente volteo.",
+      "Y no se reparte la baraja en dos montones para quitársela al otro: se voltea de un mazo común hasta que se acaba. Lo que se cuenta al final es cuántas cartas ha recogido cada uno."
+    ],
+    "origen": "Universal y sin autor, de las que se aprenden antes de saber leer. Aquí no está por nostalgia: está como control de laboratorio."
+  },
+
+  "mancala": {
+    "que_es": "Sembrar y recoger. Doce hoyos con semillas y un granero por jugador; se coge un hoyo entero y se va dejando una semilla en cada hueco. Ni azar ni nada oculto: pura aritmética.",
+    "reparto": "Cuatro semillas en cada uno de los doce hoyos. Los dos graneros empiezan vacíos.",
+    "turno": "Se elige uno de TUS hoyos que tenga semillas, se cogen todas y se van soltando de una en una en sentido antihorario, saltándose el granero del rival. Dónde cae la última decide lo que pasa: si cae en tu granero, repites turno; si cae en un hueco vacío de tu lado, te llevas esa semilla y todas las del hueco de enfrente.",
+    "gana": "Acaba cuando uno de los dos lados se queda sin semillas; el otro se lleva las que le quedaban. Gana quien tenga más en su granero.",
+    "ojo": [
+      "Encadenar turnos es más fuerte que capturar: cada vez que la última semilla cae en tu granero, vuelves a jugar. Una buena mano de mancala son cuatro o cinco jugadas seguidas.",
+      "Es el único de la casa sin azar y sin nada escondido. Aquí un agente no puede excusarse en la suerte: si pierde, es que ha contado peor. Por eso es el complemento exacto de la brisca, donde media baraja está oculta."
+    ],
+    "diferencias": [],
+    "origen": "La familia de juegos de siembra es africana y milenaria, con decenas de variantes. Ésta es Kalah, la versión occidental con graneros que se popularizó a mediados del siglo XX."
+  },
+
+  "snake": {
+    "que_es": "La serpiente de toda la vida: crece cada vez que come, y cuanto más crece menos sitio le queda. Aquí no va por reflejos sino por pasos.",
+    "reparto": "Una rejilla de 20x20, la serpiente empieza con tres segmentos mirando a la derecha, y una comida colocada al azar en una casilla libre.",
+    "turno": "Se elige una de las cuatro direcciones y el mundo avanza un paso. Si la cabeza cae sobre la comida, la serpiente crece y aparece otra comida; si cae sobre un muro o sobre su propio cuerpo, se acabó.",
+    "gana": "No hay rival: se juega contra el entorno. Cada comida vale 10 puntos y la partida termina al chocar. Llenar el tablero entero es la victoria perfecta.",
+    "ojo": [
+      "No puedes girar 180 grados: si vas a la derecha y pides izquierda, la jugada se IGNORA en vez de matarte. Es lo que hace el juego real y evita que un agente se suicide por un error de tecleo.",
+      "La comida nunca aparece dentro de la serpiente: se elige entre las casillas libres.",
+      "Parece un juego de reflejos y como entorno es por pasos —eliges dirección, el mundo avanza un tick—, que es exactamente la forma de un gym. Quien lo juega con las manos sólo está llamando a `step` con un temporizador."
+    ],
+    "diferencias": [],
+    "origen": "De los arcades de los años setenta, y clásico de los bancos de pruebas de aprendizaje por refuerzo desde que llevaba serpiente el móvil de todo el mundo."
   }
 }
