@@ -71,6 +71,16 @@ const { obtenerSustrato } = await impo('public/arcade/js/protohub/sustrato.js');
 const paginas = await leer('public/data/paginas.json', {});
 const tabla = await leer('resultados/tabla.json', {});
 const prosa = await leer('public/data/fichas_prosa.json', {});
+/**
+ * Lo que midieron `npm run tacto` y `npm run verbos` al pasar por los 35. Si no están,
+ * quedan vacíos y la ficha dirá «sin medir»: esto NO se recalcula aquí, porque medirlo
+ * pide abrir treinta y cinco páginas en un navegador y `fichas.mjs` tiene que poder
+ * correr en dos segundos dentro de `npm test`.
+ */
+// Nombres largos a propósito: dentro del bucle ya hay un `verbos` local —el conjunto de
+// jugadas del juego— y llamar `verbos` a esto lo taparía sin dar ningún error.
+const medidoTacto = await leer('public/data/tacto.json', {});
+const medidoVerbos = await leer('public/data/verbos.json', {});
 const capturas = new Set(
     (await import('node:fs')).readdirSync(path.join(AQUI, 'capturas_laboratorio')));
 
@@ -189,6 +199,50 @@ for (const juego of JUEGOS) {
         // ── de lo medido, no de lo prometido ───────────────────────────────
         clasificacion: cl,
         captura: capturas.has(`${juego}.png`) ? `capturas_laboratorio/${juego}.png` : null,
+        /**
+         * ⚠️ CÓMO SE JUEGA CON LA MANO, MEDIDO. Y `null` SI NADIE LO HA MEDIDO.
+         *
+         * Hasta hoy la ficha decía qué necesita cada puerta pero no si una persona
+         * puede JUGAR: mancala llevaba quién sabe cuánto sin un solo escuchador de
+         * clic —sólo se puede jugar desde el panel— y ninguna ficha lo decía. Un
+         * betatester abría el juego y descubría eso él solo, si es que lo descubría.
+         *
+         * Sale de `tacto.json` y `verbos.json`, que escriben los instrumentos al pasar
+         * por los 35. Si el fichero no está, esto es `null` y la ficha dice «sin
+         * medir» — que es distinto de «no se puede». Poner un valor por defecto aquí
+         * sería repetir el `asientos: 1` que hizo a la ficha del ajedrez publicar que
+         * es un juego de una persona.
+         */
+        conLaMano: (() => {
+            const t = medidoTacto.juegos?.[juego], v = medidoVerbos.juegos?.[juego];
+            if (!t && !v) return null;
+            const tocando = t ? (t.mesa?.dedo ?? 0) > 0 || (t.casillas?.ok ?? 0) > 0 || (t.pares?.ok ?? 0) > 0 : null;
+            return {
+                medido: t ? medidoTacto.fecha : medidoVerbos.fecha,
+                panel: t ? t.panel.dedo : null,
+                tocandoLaMesa: tocando,
+                barraDeVerbos: v ? v.enLaBarra : null,
+                verbos: v ? v.verbos : null,
+                // La frase que le interesa a quien va a probarlo, en vez de seis números.
+                /**
+                 * La frase que le interesa a quien va a probarlo, en vez de seis
+                 * números. Y sólo se dice «sólo desde el panel» cuando las DOS cosas
+                 * se han mirado y las dos han salido que no: con una sin medir, la
+                 * frase sería una acusación sin pruebas.
+                 */
+                resumen: tocando ? 'se juega tocando la mesa'
+                    : (v?.verbos ?? 0) > 0 ? 'se juega con los botones de abajo'
+                    : tocando === false && v?.verbos === 0 ? 'SÓLO se puede jugar desde el panel'
+                    /**
+                     * Ni tocando ni con botones, pero el juego tampoco ofrecía verbos
+                     * en ese instante — o sea que no se puede afirmar que NUNCA los
+                     * tenga. Se dice lo que se vio y cuándo, en vez de dejarlo en
+                     * blanco: en blanco se lee «sin medir», y esto sí se midió.
+                     */
+                    : tocando === false ? 'en el momento de medir, sólo respondía el panel'
+                    : null,
+            };
+        })(),
         // ── lo único escrito a mano ────────────────────────────────────────
         reglas: textos.reglas ?? null,
         origen: textos.origen ?? null,

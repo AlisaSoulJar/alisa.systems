@@ -28,6 +28,17 @@
       "motivo": null
     },
     "captura": "capturas_laboratorio/ajedrez.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        5,
+        5
+      ],
+      "tocandoLaMesa": false,
+      "barraDeVerbos": null,
+      "verbos": null,
+      "resumen": "en el momento de medir, sólo respondía el panel"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -63,6 +74,17 @@
       "motivo": "el tope de 120 decisiones corta la partida"
     },
     "captura": "capturas_laboratorio/go.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        5,
+        5
+      ],
+      "tocandoLaMesa": true,
+      "barraDeVerbos": true,
+      "verbos": 1,
+      "resumen": "se juega tocando la mesa"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -97,6 +119,17 @@
       "motivo": null
     },
     "captura": "capturas_laboratorio/reversi.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        4,
+        4
+      ],
+      "tocandoLaMesa": true,
+      "barraDeVerbos": null,
+      "verbos": null,
+      "resumen": "se juega tocando la mesa"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -135,6 +168,17 @@
       "motivo": "el tope de 120 decisiones corta la partida"
     },
     "captura": "capturas_laboratorio/damas.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        5,
+        5
+      ],
+      "tocandoLaMesa": true,
+      "barraDeVerbos": null,
+      "verbos": null,
+      "resumen": "se juega tocando la mesa"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -175,6 +219,17 @@
       "motivo": "el tope de 120 decisiones corta la partida"
     },
     "captura": "capturas_laboratorio/xiangqi.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        5,
+        5
+      ],
+      "tocandoLaMesa": true,
+      "barraDeVerbos": null,
+      "verbos": null,
+      "resumen": "se juega tocando la mesa"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -207,6 +262,17 @@
       "motivo": null
     },
     "captura": "capturas_laboratorio/mancala.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        5,
+        5
+      ],
+      "tocandoLaMesa": false,
+      "barraDeVerbos": null,
+      "verbos": null,
+      "resumen": "en el momento de medir, sólo respondía el panel"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -241,6 +307,17 @@
       "motivo": "el tope de 120 decisiones corta la partida"
     },
     "captura": "capturas_laboratorio/snake.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        4,
+        4
+      ],
+      "tocandoLaMesa": false,
+      "barraDeVerbos": true,
+      "verbos": 4,
+      "resumen": "se juega con los botones de abajo"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -277,6 +354,17 @@
       "motivo": "el tope de 120 decisiones corta la partida"
     },
     "captura": "capturas_laboratorio/fagocito.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        2,
+        2
+      ],
+      "tocandoLaMesa": false,
+      "barraDeVerbos": true,
+      "verbos": 2,
+      "resumen": "se juega con los botones de abajo"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -312,6 +400,17 @@
       "motivo": null
     },
     "captura": "capturas_laboratorio/peaton.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        5,
+        5
+      ],
+      "tocandoLaMesa": true,
+      "barraDeVerbos": true,
+      "verbos": 5,
+      "resumen": "se juega tocando la mesa"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -342,6 +441,17 @@
       "motivo": null
     },
     "captura": "capturas_laboratorio/blackjack.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        3,
+        3
+      ],
+      "tocandoLaMesa": false,
+      "barraDeVerbos": true,
+      "verbos": 3,
+      "resumen": "se juega con los botones de abajo"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -373,6 +483,17 @@
       "motivo": null
     },
     "captura": "capturas_laboratorio/poker.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        2,
+        2
+      ],
+      "tocandoLaMesa": false,
+      "barraDeVerbos": true,
+      "verbos": 2,
+      "resumen": "se juega con los botones de abajo"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -400,6 +521,17 @@
       "motivo": null
     },
     "captura": "capturas_laboratorio/brisca.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        3,
+        3
+      ],
+      "tocandoLaMesa": false,
+      "barraDeVerbos": null,
+      "verbos": null,
+      "resumen": "en el momento de medir, sólo respondía el panel"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -427,6 +559,17 @@
       "motivo": null
     },
     "captura": "capturas_laboratorio/tute.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        5,
+        5
+      ],
+      "tocandoLaMesa": true,
+      "barraDeVerbos": null,
+      "verbos": null,
+      "resumen": "se juega tocando la mesa"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -454,6 +597,17 @@
       "motivo": null
     },
     "captura": "capturas_laboratorio/hearts.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        5,
+        5
+      ],
+      "tocandoLaMesa": true,
+      "barraDeVerbos": null,
+      "verbos": null,
+      "resumen": "se juega tocando la mesa"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -481,6 +635,17 @@
       "motivo": "no medido en la última pasada"
     },
     "captura": "capturas_laboratorio/spades.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        5,
+        5
+      ],
+      "tocandoLaMesa": true,
+      "barraDeVerbos": null,
+      "verbos": null,
+      "resumen": "se juega tocando la mesa"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -508,6 +673,17 @@
       "motivo": "la casa no supera al suelo: la escala se invertiría"
     },
     "captura": "capturas_laboratorio/guerra.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        1,
+        1
+      ],
+      "tocandoLaMesa": false,
+      "barraDeVerbos": true,
+      "verbos": 1,
+      "resumen": "se juega con los botones de abajo"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -535,6 +711,17 @@
       "motivo": null
     },
     "captura": "capturas_laboratorio/gofish.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        5,
+        5
+      ],
+      "tocandoLaMesa": false,
+      "barraDeVerbos": null,
+      "verbos": null,
+      "resumen": "en el momento de medir, sólo respondía el panel"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -563,6 +750,17 @@
       "motivo": "el hueco (3.3) no supera al ruido de la medida (±34.0)"
     },
     "captura": "capturas_laboratorio/unit.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        3,
+        3
+      ],
+      "tocandoLaMesa": true,
+      "barraDeVerbos": true,
+      "verbos": 1,
+      "resumen": "se juega tocando la mesa"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -593,6 +791,17 @@
       "motivo": null
     },
     "captura": "capturas_laboratorio/entropy.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        2,
+        2
+      ],
+      "tocandoLaMesa": true,
+      "barraDeVerbos": true,
+      "verbos": 2,
+      "resumen": "se juega tocando la mesa"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -624,6 +833,17 @@
       "motivo": "el tope de 120 decisiones corta la partida"
     },
     "captura": "capturas_laboratorio/sokoban.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        1,
+        1
+      ],
+      "tocandoLaMesa": false,
+      "barraDeVerbos": true,
+      "verbos": 1,
+      "resumen": "se juega con los botones de abajo"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -658,6 +878,17 @@
       "motivo": "el tope de 120 decisiones corta la partida"
     },
     "captura": "capturas_laboratorio/cripta.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        4,
+        4
+      ],
+      "tocandoLaMesa": false,
+      "barraDeVerbos": true,
+      "verbos": 4,
+      "resumen": "se juega con los botones de abajo"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -695,6 +926,17 @@
       "motivo": null
     },
     "captura": "capturas_laboratorio/flota.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        5,
+        5
+      ],
+      "tocandoLaMesa": true,
+      "barraDeVerbos": null,
+      "verbos": null,
+      "resumen": "se juega tocando la mesa"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -730,6 +972,17 @@
       "motivo": null
     },
     "captura": "capturas_laboratorio/defensa.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        5,
+        5
+      ],
+      "tocandoLaMesa": true,
+      "barraDeVerbos": true,
+      "verbos": 8,
+      "resumen": "se juega tocando la mesa"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -765,6 +1018,17 @@
       "motivo": "no medido en la última pasada"
     },
     "captura": "capturas_laboratorio/sigilo.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        4,
+        4
+      ],
+      "tocandoLaMesa": true,
+      "barraDeVerbos": true,
+      "verbos": 4,
+      "resumen": "se juega tocando la mesa"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -799,6 +1063,17 @@
       "motivo": null
     },
     "captura": "capturas_laboratorio/frentes.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        5,
+        5
+      ],
+      "tocandoLaMesa": true,
+      "barraDeVerbos": true,
+      "verbos": 5,
+      "resumen": "se juega tocando la mesa"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -836,6 +1111,17 @@
       "motivo": "el tope de 120 decisiones corta la partida"
     },
     "captura": "capturas_laboratorio/relevo.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        3,
+        3
+      ],
+      "tocandoLaMesa": true,
+      "barraDeVerbos": true,
+      "verbos": 3,
+      "resumen": "se juega tocando la mesa"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -870,6 +1156,17 @@
       "motivo": null
     },
     "captura": "capturas_laboratorio/cabina.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        5,
+        5
+      ],
+      "tocandoLaMesa": true,
+      "barraDeVerbos": null,
+      "verbos": null,
+      "resumen": "se juega tocando la mesa"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -904,6 +1201,17 @@
       "motivo": "el tope de 120 decisiones corta la partida"
     },
     "captura": "capturas_laboratorio/rebano.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        3,
+        3
+      ],
+      "tocandoLaMesa": false,
+      "barraDeVerbos": true,
+      "verbos": 3,
+      "resumen": "se juega con los botones de abajo"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -939,6 +1247,17 @@
       "motivo": "el tope de 120 decisiones corta la partida"
     },
     "captura": "capturas_laboratorio/pradera.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        4,
+        4
+      ],
+      "tocandoLaMesa": false,
+      "barraDeVerbos": true,
+      "verbos": 4,
+      "resumen": "se juega con los botones de abajo"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -977,6 +1296,17 @@
       "motivo": "no medido en la última pasada"
     },
     "captura": "capturas_laboratorio/nave.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        3,
+        3
+      ],
+      "tocandoLaMesa": false,
+      "barraDeVerbos": true,
+      "verbos": 3,
+      "resumen": "se juega con los botones de abajo"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -1006,6 +1336,17 @@
       "motivo": "el hueco (10.0) no supera al ruido de la medida (±30.4)"
     },
     "captura": "capturas_laboratorio/remigio.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        2,
+        2
+      ],
+      "tocandoLaMesa": true,
+      "barraDeVerbos": true,
+      "verbos": 2,
+      "resumen": "se juega tocando la mesa"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -1040,6 +1381,17 @@
       "motivo": "la casa no supera al suelo: la escala se invertiría"
     },
     "captura": "capturas_laboratorio/parchis.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        1,
+        1
+      ],
+      "tocandoLaMesa": false,
+      "barraDeVerbos": true,
+      "verbos": 1,
+      "resumen": "se juega con los botones de abajo"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -1074,6 +1426,17 @@
       "motivo": null
     },
     "captura": "capturas_laboratorio/generala.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        1,
+        1
+      ],
+      "tocandoLaMesa": false,
+      "barraDeVerbos": true,
+      "verbos": 1,
+      "resumen": "se juega con los botones de abajo"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -1116,6 +1479,17 @@
       "motivo": "la casa no supera al suelo: la escala se invertiría"
     },
     "captura": "capturas_laboratorio/oca.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        1,
+        1
+      ],
+      "tocandoLaMesa": false,
+      "barraDeVerbos": true,
+      "verbos": 1,
+      "resumen": "se juega con los botones de abajo"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {
@@ -1151,6 +1525,17 @@
       "motivo": "el tope de 120 decisiones corta la partida"
     },
     "captura": "capturas_laboratorio/canadiense.png",
+    "conLaMano": {
+      "medido": "2026-08-16",
+      "panel": [
+        4,
+        4
+      ],
+      "tocandoLaMesa": false,
+      "barraDeVerbos": null,
+      "verbos": null,
+      "resumen": "en el momento de medir, sólo respondía el panel"
+    },
     "reglas": null,
     "origen": null,
     "puertas": {

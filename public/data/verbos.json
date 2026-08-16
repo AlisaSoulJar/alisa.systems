@@ -1,0 +1,159 @@
+{
+ "fecha": "2026-08-16",
+ "panelEsLegalMoves": true,
+ "juegos": {
+  "ajedrez": {
+   "verbos": null,
+   "enLaBarra": null,
+   "nota": "sin verbos ahora"
+  },
+  "go": {
+   "verbos": 1,
+   "enLaBarra": true
+  },
+  "reversi": {
+   "verbos": null,
+   "enLaBarra": null,
+   "nota": "sin verbos ahora"
+  },
+  "damas": {
+   "verbos": null,
+   "enLaBarra": null,
+   "nota": "sin verbos ahora"
+  },
+  "xiangqi": {
+   "verbos": null,
+   "enLaBarra": null,
+   "nota": "sin verbos ahora"
+  },
+  "mancala": {
+   "verbos": null,
+   "enLaBarra": null,
+   "nota": "sin verbos ahora"
+  },
+  "snake": {
+   "verbos": 4,
+   "enLaBarra": true
+  },
+  "fagocito": {
+   "verbos": 2,
+   "enLaBarra": true
+  },
+  "peaton": {
+   "verbos": 5,
+   "enLaBarra": true
+  },
+  "blackjack": {
+   "verbos": 3,
+   "enLaBarra": true
+  },
+  "poker": {
+   "verbos": 2,
+   "enLaBarra": true
+  },
+  "brisca": {
+   "verbos": null,
+   "enLaBarra": null,
+   "nota": "sin verbos ahora"
+  },
+  "tute": {
+   "verbos": null,
+   "enLaBarra": null,
+   "nota": "sin verbos ahora"
+  },
+  "hearts": {
+   "verbos": null,
+   "enLaBarra": null,
+   "nota": "sin verbos ahora"
+  },
+  "spades": {
+   "verbos": null,
+   "enLaBarra": null,
+   "nota": "sin verbos ahora"
+  },
+  "guerra": {
+   "verbos": 1,
+   "enLaBarra": true
+  },
+  "gofish": {
+   "verbos": null,
+   "enLaBarra": null,
+   "nota": "sin verbos ahora"
+  },
+  "unit": {
+   "verbos": 1,
+   "enLaBarra": true
+  },
+  "entropy": {
+   "verbos": 2,
+   "enLaBarra": true
+  },
+  "sokoban": {
+   "verbos": 1,
+   "enLaBarra": true
+  },
+  "cripta": {
+   "verbos": 4,
+   "enLaBarra": true
+  },
+  "flota": {
+   "verbos": null,
+   "enLaBarra": null,
+   "nota": "sin verbos ahora"
+  },
+  "defensa": {
+   "verbos": 8,
+   "enLaBarra": true
+  },
+  "sigilo": {
+   "verbos": 4,
+   "enLaBarra": true
+  },
+  "frentes": {
+   "verbos": 5,
+   "enLaBarra": true
+  },
+  "relevo": {
+   "verbos": 3,
+   "enLaBarra": true
+  },
+  "cabina": {
+   "verbos": null,
+   "enLaBarra": null,
+   "nota": "sin verbos ahora"
+  },
+  "rebano": {
+   "verbos": 3,
+   "enLaBarra": true
+  },
+  "pradera": {
+   "verbos": 4,
+   "enLaBarra": true
+  },
+  "nave": {
+   "verbos": 3,
+   "enLaBarra": true
+  },
+  "remigio": {
+   "verbos": 2,
+   "enLaBarra": true
+  },
+  "parchis": {
+   "verbos": 1,
+   "enLaBarra": true
+  },
+  "generala": {
+   "verbos": 1,
+   "enLaBarra": true
+  },
+  "oca": {
+   "verbos": 1,
+   "enLaBarra": true
+  },
+  "canadiense": {
+   "verbos": null,
+   "enLaBarra": null,
+   "nota": "sin verbos ahora"
+  }
+ }
+}

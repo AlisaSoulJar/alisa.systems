@@ -42,7 +42,7 @@
  */
 import { spawn } from 'node:child_process';
 import { chromium } from 'playwright-core';
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 
 const P = 8137;
 const RAIZ = new URL('.', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
@@ -805,6 +805,39 @@ const medidos = porJuego.filter(([d, r]) => d?.medible && r?.medible && d.legale
 const rotos = medidos.filter(([d, r]) =>
     !(d.botones > 0 && d.panelBien === d.botones && r.panelBien === r.botones));
 const conMesa = medidos.filter(([d, r]) => d.alcanzables > 0 || r.alcanzables > 0);
+
+/**
+ * ⚠️ LO MEDIDO SE ESCRIBE, PORQUE SI NO LA FICHA NO PUEDE SABERLO.
+ *
+ * Esto se imprimía y se iba con la terminal. La ficha de cada juego deriva todo lo que
+ * puede —objetivo, verbos, asientos, hueco en la clasificación— y de lo que se puede
+ * TOCAR no sabía nada, así que un betatester abría mancala sin que nadie le dijera que
+ * ese juego no tiene ni un escuchador de clic. Un instrumento cuyo resultado sólo vive
+ * en una terminal no puede llegar a quien lo necesita.
+ *
+ * Va con FECHA y la ficha la enseña. Un número medido hace tres semanas y presentado
+ * como si fuera de hoy es peor que no tenerlo: la clasificación ya estuvo ocho días
+ * publicando lo de la semana anterior sin decirlo.
+ *
+ * Y sólo se escribe en la pasada COMPLETA. Corriendo `node tacto.mjs go` se guardaría
+ * un fichero con un juego y treinta y cuatro huecos que parecerían «sin medir».
+ */
+if (!soloEstos.length) {
+    const salida = {};
+    for (const [d, r] of porJuego) {
+        if (!d?.medible && !r?.medible) continue;
+        salida[d?.juego ?? r.juego] = {
+            panel: { dedo: [d?.panelBien ?? null, d?.botones ?? null], raton: [r?.panelBien ?? null, r?.botones ?? null] },
+            mesa: { dedo: d?.alcanzables ?? null, raton: r?.alcanzables ?? null, de: d?.legalesMesa ?? null },
+            piezas: d?.apuntando ? { dianas: d.dianas, sinAsomar: d.tapadas } : null,
+            casillas: d?.rejilla ? { rejilla: d.rejilla, tocadas: d.casillasTocadas, ok: d.casillasOk } : null,
+            pares: d?.pares ? { de: Math.min(d.pares, 24), ok: d.paresOk } : null,
+        };
+    }
+    await writeFile(new URL('./public/data/tacto.json', import.meta.url),
+        JSON.stringify({ fecha: new Date().toISOString().slice(0, 10), pantalla: '390x844', juegos: salida }, null, 1));
+    console.log(`\n  escrito public/data/tacto.json (${Object.keys(salida).length} juegos)`);
+}
 
 console.log(`\n  ${medidos.length} juegos medidos con jugadas legales`);
 console.log(`  PANEL (la garantía): ${medidos.length - rotos.length}/${medidos.length}`

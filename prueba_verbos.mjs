@@ -26,7 +26,7 @@
  */
 import { chromium } from 'playwright-core';
 import { spawn } from 'node:child_process';
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 
 const PUERTO = 8941;
 const SEMILLA = 7;
@@ -152,5 +152,36 @@ if (desajustes.length) {
 } else {
     console.log(`  ✓ en los ${filas.length} el panel ofrece EXACTAMENTE las jugadas legales del agente`);
 }
+/**
+ * ⚠️ SE ESCRIBE LO MEDIDO, CON FECHA, Y SÓLO EN LA PASADA COMPLETA.
+ *
+ * La ficha de cada juego deriva lo que puede y de la barra de verbos no sabía nada.
+ * Corriendo `node prueba_verbos.mjs snake` se guardaría un fichero con un juego y
+ * treinta y cuatro huecos, que en la ficha se leerían como «sin verbos» — y eso es
+ * poner un valor por defecto donde la verdad es «no lo he mirado».
+ */
+if (!pedidos.length) {
+    const salida = {};
+    for (const f of filas) {
+        /**
+         * ⚠️ `null`, NO CERO, CUANDO NO SE PUDO COMPROBAR.
+         *
+         * Escribir `verbos: 0` para un juego que en ese instante no ofrecía ninguno
+         * hace que la ficha publique «este juego no tiene verbos», que es una
+         * afirmación distinta y puede ser falsa: hearts no ofrece verbos al empezar la
+         * mano y sí los tiene después. Cero es un dato; «no lo he mirado» es otro.
+         */
+        salida[f.juego] = f.estado === 'ok' || f.estado === 'MAL'
+            ? { verbos: f.n, enLaBarra: f.estado === 'ok' }
+            : { verbos: null, enLaBarra: null, nota: f.estado };
+    }
+    await writeFile(new URL('./public/data/verbos.json', import.meta.url), JSON.stringify({
+        fecha: new Date().toISOString().slice(0, 10),
+        panelEsLegalMoves: desajustes.length === 0,
+        juegos: salida,
+    }, null, 1));
+    console.log(`  escrito public/data/verbos.json (${filas.length} juegos)\n`);
+}
+
 console.log();
 process.exit(mal || desajustes.length ? 1 : 0);

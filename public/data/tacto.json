@@ -1,0 +1,964 @@
+{
+ "fecha": "2026-08-16",
+ "pantalla": "390x844",
+ "juegos": {
+  "ajedrez": {
+   "panel": {
+    "dedo": [
+     5,
+     5
+    ],
+    "raton": [
+     5,
+     5
+    ]
+   },
+   "mesa": {
+    "dedo": 0,
+    "raton": 0,
+    "de": 23
+   },
+   "piezas": {
+    "dianas": 32,
+    "sinAsomar": 12
+   },
+   "casillas": {
+    "rejilla": {
+     "cols": 8,
+     "filas": 8
+    },
+    "tocadas": 0,
+    "ok": 0
+   },
+   "pares": {
+    "de": 23,
+    "ok": 0
+   }
+  },
+  "go": {
+   "panel": {
+    "dedo": [
+     5,
+     5
+    ],
+    "raton": [
+     5,
+     5
+    ]
+   },
+   "mesa": {
+    "dedo": 300,
+    "raton": 311,
+    "de": 357
+   },
+   "piezas": {
+    "dianas": 2,
+    "sinAsomar": 2
+   },
+   "casillas": {
+    "rejilla": {
+     "cols": 19,
+     "filas": 19
+    },
+    "tocadas": 317,
+    "ok": 299
+   },
+   "pares": null
+  },
+  "reversi": {
+   "panel": {
+    "dedo": [
+     4,
+     4
+    ],
+    "raton": [
+     4,
+     4
+    ]
+   },
+   "mesa": {
+    "dedo": 4,
+    "raton": 4,
+    "de": 4
+   },
+   "piezas": {
+    "dianas": 2,
+    "sinAsomar": 0
+   },
+   "casillas": {
+    "rejilla": {
+     "cols": 8,
+     "filas": 8
+    },
+    "tocadas": 4,
+    "ok": 4
+   },
+   "pares": null
+  },
+  "damas": {
+   "panel": {
+    "dedo": [
+     5,
+     5
+    ],
+    "raton": [
+     5,
+     5
+    ]
+   },
+   "mesa": {
+    "dedo": 7,
+    "raton": 7,
+    "de": 7
+   },
+   "piezas": {
+    "dianas": 2,
+    "sinAsomar": 2
+   },
+   "casillas": {
+    "rejilla": {
+     "cols": 8,
+     "filas": 8
+    },
+    "tocadas": 0,
+    "ok": 0
+   },
+   "pares": {
+    "de": 7,
+    "ok": 7
+   }
+  },
+  "xiangqi": {
+   "panel": {
+    "dedo": [
+     5,
+     5
+    ],
+    "raton": [
+     5,
+     5
+    ]
+   },
+   "mesa": {
+    "dedo": 25,
+    "raton": 25,
+    "de": 42
+   },
+   "piezas": {
+    "dianas": 2,
+    "sinAsomar": 1
+   },
+   "casillas": {
+    "rejilla": {
+     "cols": 9,
+     "filas": 10
+    },
+    "tocadas": 3,
+    "ok": 3
+   },
+   "pares": {
+    "de": 24,
+    "ok": 24
+   }
+  },
+  "mancala": {
+   "panel": {
+    "dedo": [
+     5,
+     5
+    ],
+    "raton": [
+     5,
+     5
+    ]
+   },
+   "mesa": {
+    "dedo": 0,
+    "raton": 0,
+    "de": 6
+   },
+   "piezas": null,
+   "casillas": {
+    "rejilla": {
+     "cols": 6,
+     "filas": 1
+    },
+    "tocadas": 0,
+    "ok": 0
+   },
+   "pares": null
+  },
+  "snake": {
+   "panel": {
+    "dedo": [
+     4,
+     4
+    ],
+    "raton": [
+     4,
+     4
+    ]
+   },
+   "mesa": {
+    "dedo": 0,
+    "raton": 0,
+    "de": 4
+   },
+   "piezas": {
+    "dianas": 4,
+    "sinAsomar": 1
+   },
+   "casillas": null,
+   "pares": null
+  },
+  "fagocito": {
+   "panel": {
+    "dedo": [
+     2,
+     2
+    ],
+    "raton": [
+     2,
+     2
+    ]
+   },
+   "mesa": {
+    "dedo": 0,
+    "raton": 0,
+    "de": 3
+   },
+   "piezas": {
+    "dianas": 3,
+    "sinAsomar": 3
+   },
+   "casillas": {
+    "rejilla": {
+     "cols": 28,
+     "filas": 28
+    },
+    "tocadas": 0,
+    "ok": 0
+   },
+   "pares": null
+  },
+  "peaton": {
+   "panel": {
+    "dedo": [
+     5,
+     5
+    ],
+    "raton": [
+     5,
+     5
+    ]
+   },
+   "mesa": {
+    "dedo": 1,
+    "raton": 0,
+    "de": 5
+   },
+   "piezas": {
+    "dianas": 25,
+    "sinAsomar": 10
+   },
+   "casillas": null,
+   "pares": null
+  },
+  "blackjack": {
+   "panel": {
+    "dedo": [
+     3,
+     3
+    ],
+    "raton": [
+     3,
+     3
+    ]
+   },
+   "mesa": {
+    "dedo": 0,
+    "raton": 0,
+    "de": 1
+   },
+   "piezas": {
+    "dianas": 5,
+    "sinAsomar": 0
+   },
+   "casillas": null,
+   "pares": null
+  },
+  "poker": {
+   "panel": {
+    "dedo": [
+     2,
+     2
+    ],
+    "raton": [
+     2,
+     2
+    ]
+   },
+   "mesa": {
+    "dedo": 0,
+    "raton": 0,
+    "de": 2
+   },
+   "piezas": {
+    "dianas": 7,
+    "sinAsomar": 1
+   },
+   "casillas": null,
+   "pares": null
+  },
+  "brisca": {
+   "panel": {
+    "dedo": [
+     3,
+     3
+    ],
+    "raton": [
+     3,
+     3
+    ]
+   },
+   "mesa": {
+    "dedo": 0,
+    "raton": 0,
+    "de": 3
+   },
+   "piezas": {
+    "dianas": 9,
+    "sinAsomar": 2
+   },
+   "casillas": null,
+   "pares": null
+  },
+  "tute": {
+   "panel": {
+    "dedo": [
+     5,
+     5
+    ],
+    "raton": [
+     5,
+     5
+    ]
+   },
+   "mesa": {
+    "dedo": 1,
+    "raton": 1,
+    "de": 1
+   },
+   "piezas": {
+    "dianas": 13,
+    "sinAsomar": 0
+   },
+   "casillas": null,
+   "pares": null
+  },
+  "hearts": {
+   "panel": {
+    "dedo": [
+     5,
+     5
+    ],
+    "raton": [
+     5,
+     5
+    ]
+   },
+   "mesa": {
+    "dedo": 2,
+    "raton": 2,
+    "de": 2
+   },
+   "piezas": {
+    "dianas": 16,
+    "sinAsomar": 0
+   },
+   "casillas": null,
+   "pares": null
+  },
+  "spades": {
+   "panel": {
+    "dedo": [
+     5,
+     5
+    ],
+    "raton": [
+     5,
+     5
+    ]
+   },
+   "mesa": {
+    "dedo": 2,
+    "raton": 2,
+    "de": 2
+   },
+   "piezas": {
+    "dianas": 16,
+    "sinAsomar": 0
+   },
+   "casillas": null,
+   "pares": null
+  },
+  "guerra": {
+   "panel": {
+    "dedo": [
+     1,
+     1
+    ],
+    "raton": [
+     1,
+     1
+    ]
+   },
+   "mesa": {
+    "dedo": 0,
+    "raton": 0,
+    "de": 1
+   },
+   "piezas": {
+    "dianas": 1,
+    "sinAsomar": 0
+   },
+   "casillas": null,
+   "pares": null
+  },
+  "gofish": {
+   "panel": {
+    "dedo": [
+     5,
+     5
+    ],
+    "raton": [
+     5,
+     5
+    ]
+   },
+   "mesa": {
+    "dedo": 0,
+    "raton": 0,
+    "de": 10
+   },
+   "piezas": {
+    "dianas": 13,
+    "sinAsomar": 0
+   },
+   "casillas": null,
+   "pares": null
+  },
+  "unit": {
+   "panel": {
+    "dedo": [
+     3,
+     3
+    ],
+    "raton": [
+     3,
+     3
+    ]
+   },
+   "mesa": {
+    "dedo": 1,
+    "raton": 1,
+    "de": 2
+   },
+   "piezas": {
+    "dianas": 11,
+    "sinAsomar": 0
+   },
+   "casillas": null,
+   "pares": null
+  },
+  "entropy": {
+   "panel": {
+    "dedo": [
+     2,
+     2
+    ],
+    "raton": [
+     2,
+     2
+    ]
+   },
+   "mesa": {
+    "dedo": 1,
+    "raton": 2,
+    "de": 2
+   },
+   "piezas": {
+    "dianas": 18,
+    "sinAsomar": 0
+   },
+   "casillas": null,
+   "pares": null
+  },
+  "sokoban": {
+   "panel": {
+    "dedo": [
+     1,
+     1
+    ],
+    "raton": [
+     1,
+     1
+    ]
+   },
+   "mesa": {
+    "dedo": 0,
+    "raton": 0,
+    "de": 1
+   },
+   "piezas": {
+    "dianas": 2,
+    "sinAsomar": 1
+   },
+   "casillas": {
+    "rejilla": {
+     "cols": 5,
+     "filas": 3
+    },
+    "tocadas": 0,
+    "ok": 0
+   },
+   "pares": null
+  },
+  "cripta": {
+   "panel": {
+    "dedo": [
+     4,
+     4
+    ],
+    "raton": [
+     4,
+     4
+    ]
+   },
+   "mesa": {
+    "dedo": 0,
+    "raton": 0,
+    "de": 4
+   },
+   "piezas": {
+    "dianas": 2,
+    "sinAsomar": 2
+   },
+   "casillas": {
+    "rejilla": {
+     "cols": 24,
+     "filas": 18
+    },
+    "tocadas": 0,
+    "ok": 0
+   },
+   "pares": null
+  },
+  "flota": {
+   "panel": {
+    "dedo": [
+     5,
+     5
+    ],
+    "raton": [
+     5,
+     5
+    ]
+   },
+   "mesa": {
+    "dedo": 62,
+    "raton": 62,
+    "de": 62
+   },
+   "piezas": {
+    "dianas": 2,
+    "sinAsomar": 2
+   },
+   "casillas": {
+    "rejilla": {
+     "cols": 17,
+     "filas": 8
+    },
+    "tocadas": 62,
+    "ok": 62
+   },
+   "pares": null
+  },
+  "defensa": {
+   "panel": {
+    "dedo": [
+     5,
+     5
+    ],
+    "raton": [
+     5,
+     5
+    ]
+   },
+   "mesa": {
+    "dedo": 6,
+    "raton": 6,
+    "de": 8
+   },
+   "piezas": {
+    "dianas": 3,
+    "sinAsomar": 3
+   },
+   "casillas": {
+    "rejilla": {
+     "cols": 15,
+     "filas": 10
+    },
+    "tocadas": 67,
+    "ok": 0
+   },
+   "pares": null
+  },
+  "sigilo": {
+   "panel": {
+    "dedo": [
+     4,
+     4
+    ],
+    "raton": [
+     4,
+     4
+    ]
+   },
+   "mesa": {
+    "dedo": 2,
+    "raton": 2,
+    "de": 2
+   },
+   "piezas": {
+    "dianas": 1,
+    "sinAsomar": 1
+   },
+   "casillas": {
+    "rejilla": {
+     "cols": 21,
+     "filas": 15
+    },
+    "tocadas": 4,
+    "ok": 0
+   },
+   "pares": null
+  },
+  "frentes": {
+   "panel": {
+    "dedo": [
+     5,
+     5
+    ],
+    "raton": [
+     5,
+     5
+    ]
+   },
+   "mesa": {
+    "dedo": 3,
+    "raton": 3,
+    "de": 5
+   },
+   "piezas": {
+    "dianas": 2,
+    "sinAsomar": 2
+   },
+   "casillas": {
+    "rejilla": {
+     "cols": 5,
+     "filas": 17
+    },
+    "tocadas": 10,
+    "ok": 0
+   },
+   "pares": null
+  },
+  "relevo": {
+   "panel": {
+    "dedo": [
+     3,
+     3
+    ],
+    "raton": [
+     3,
+     3
+    ]
+   },
+   "mesa": {
+    "dedo": 3,
+    "raton": 3,
+    "de": 3
+   },
+   "piezas": {
+    "dianas": 3,
+    "sinAsomar": 3
+   },
+   "casillas": {
+    "rejilla": {
+     "cols": 19,
+     "filas": 13
+    },
+    "tocadas": 6,
+    "ok": 0
+   },
+   "pares": null
+  },
+  "cabina": {
+   "panel": {
+    "dedo": [
+     5,
+     5
+    ],
+    "raton": [
+     5,
+     5
+    ]
+   },
+   "mesa": {
+    "dedo": 3,
+    "raton": 0,
+    "de": 4
+   },
+   "piezas": {
+    "dianas": 2,
+    "sinAsomar": 2
+   },
+   "casillas": {
+    "rejilla": {
+     "cols": 15,
+     "filas": 11
+    },
+    "tocadas": 13,
+    "ok": 0
+   },
+   "pares": null
+  },
+  "rebano": {
+   "panel": {
+    "dedo": [
+     3,
+     3
+    ],
+    "raton": [
+     3,
+     3
+    ]
+   },
+   "mesa": {
+    "dedo": 0,
+    "raton": 0,
+    "de": 4
+   },
+   "piezas": {
+    "dianas": 2,
+    "sinAsomar": 2
+   },
+   "casillas": {
+    "rejilla": {
+     "cols": 19,
+     "filas": 13
+    },
+    "tocadas": 0,
+    "ok": 0
+   },
+   "pares": null
+  },
+  "pradera": {
+   "panel": {
+    "dedo": [
+     4,
+     4
+    ],
+    "raton": [
+     4,
+     4
+    ]
+   },
+   "mesa": {
+    "dedo": 0,
+    "raton": 0,
+    "de": 4
+   },
+   "piezas": {
+    "dianas": 3,
+    "sinAsomar": 2
+   },
+   "casillas": {
+    "rejilla": {
+     "cols": 20,
+     "filas": 14
+    },
+    "tocadas": 0,
+    "ok": 0
+   },
+   "pares": null
+  },
+  "nave": {
+   "panel": {
+    "dedo": [
+     3,
+     3
+    ],
+    "raton": [
+     3,
+     3
+    ]
+   },
+   "mesa": {
+    "dedo": 0,
+    "raton": 0,
+    "de": 4
+   },
+   "piezas": {
+    "dianas": 2,
+    "sinAsomar": 2
+   },
+   "casillas": {
+    "rejilla": {
+     "cols": 19,
+     "filas": 13
+    },
+    "tocadas": 0,
+    "ok": 0
+   },
+   "pares": null
+  },
+  "remigio": {
+   "panel": {
+    "dedo": [
+     2,
+     2
+    ],
+    "raton": [
+     2,
+     2
+    ]
+   },
+   "mesa": {
+    "dedo": 2,
+    "raton": 2,
+    "de": 2
+   },
+   "piezas": {
+    "dianas": 14,
+    "sinAsomar": 0
+   },
+   "casillas": null,
+   "pares": null
+  },
+  "parchis": {
+   "panel": {
+    "dedo": [
+     1,
+     1
+    ],
+    "raton": [
+     1,
+     1
+    ]
+   },
+   "mesa": {
+    "dedo": 0,
+    "raton": 0,
+    "de": 1
+   },
+   "piezas": {
+    "dianas": 5,
+    "sinAsomar": 5
+   },
+   "casillas": {
+    "rejilla": {
+     "cols": 18,
+     "filas": 18
+    },
+    "tocadas": 0,
+    "ok": 0
+   },
+   "pares": null
+  },
+  "generala": {
+   "panel": {
+    "dedo": [
+     1,
+     1
+    ],
+    "raton": [
+     1,
+     1
+    ]
+   },
+   "mesa": {
+    "dedo": 0,
+    "raton": 0,
+    "de": 16
+   },
+   "piezas": {
+    "dianas": 4,
+    "sinAsomar": 4
+   },
+   "casillas": null,
+   "pares": null
+  },
+  "oca": {
+   "panel": {
+    "dedo": [
+     1,
+     1
+    ],
+    "raton": [
+     1,
+     1
+    ]
+   },
+   "mesa": {
+    "dedo": 0,
+    "raton": 0,
+    "de": 2
+   },
+   "piezas": {
+    "dianas": 5,
+    "sinAsomar": 5
+   },
+   "casillas": {
+    "rejilla": {
+     "cols": 9,
+     "filas": 9
+    },
+    "tocadas": 0,
+    "ok": 0
+   },
+   "pares": null
+  },
+  "canadiense": {
+   "panel": {
+    "dedo": [
+     4,
+     4
+    ],
+    "raton": [
+     4,
+     4
+    ]
+   },
+   "mesa": {
+    "dedo": 0,
+    "raton": 0,
+    "de": 4
+   },
+   "piezas": {
+    "dianas": 13,
+    "sinAsomar": 13
+   },
+   "casillas": {
+    "rejilla": {
+     "cols": 18,
+     "filas": 18
+    },
+    "tocadas": 0,
+    "ok": 0
+   },
+   "pares": null
+  }
+ }
+}
