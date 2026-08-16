@@ -503,6 +503,62 @@ function acercar(motor, margen = 1.12) {
 }
 
 /**
+ * ⚠️ Y HAY QUE VOLVER A LLAMAR A `acercar()` CUANDO LA CARTA YA HA ATERRIZADO,
+ * NO SÓLO CUANDO SE REPARTE — ESTO ES LO QUE VOLVÍA A TAPAR EL DESCARTE.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Medido con trazas de consola, no adivinado: las tres hipótesis que se
+ * barajaban eran que `apartarDescarteDelPanel()` no se llamara tras jugar, que
+ * el VETO la rechazara, o que el panel hubiera crecido. Ninguna. Se llama, se
+ * acepta y da 0 piezas tapadas EN EL INSTANTE en que corre — el problema pasa
+ * DESPUÉS, sin que nadie mueva la cámara.
+ *
+ * `drawZone()` (`SovereignCardEngine.js`) no coloca la carta nueva en su sitio:
+ * la lanza con un `TWEEN` que tarda hasta 500-600 ms en llegar (el descarte de
+ * entropy entra por la rama de «voltear», que primero da un salto y sólo
+ * empieza a moverse en X/Z pasados los primeros 200 ms). `acercar()` corre
+ * DENTRO del mismo `onStateSync` que dispara ese `drawZone()`, así que mide la
+ * escena con la carta todavía en el aire —o sin haber empezado a moverse— y
+ * calcula el paneo para una caja más pequeña de la que va a tener un momento
+ * después.
+ *
+ * La prueba está en la propia traza: entre dos medidas separadas 600 ms, con
+ * la posición de la CÁMARA idéntica en las dos (nadie la tocó), las piezas
+ * tapadas pasan de 0 a 1. Lo único que se movió fue la carta, aterrizando bajo
+ * un panel que la cámara había despejado para una caja que aún no la incluía.
+ * Y como nada vuelve a llamar a `acercar()` hasta la SIGUIENTE jugada, el hueco
+ * dura lo que tarde el rival en mover — que es tiempo de sobra para que
+ * `bajo_el_panel.mjs` lo pille.
+ *
+ * ⚠️ Y EL PLAZO NO SE ADIVINA A OJO, SE PREGUNTA.
+ *
+ * Un `setTimeout` fijo sería otro número inventado como el `0,42` que ya costó
+ * una vez en `acercar()` — y si algún día un juego usara `sequenceDelay` para
+ * repartir en cascada, un plazo corto se quedaría corto. `TWEEN.getAll()` dice
+ * cuántas animaciones siguen vivas; se espera a que sea cero. El tope de
+ * 900 ms es sólo la red de seguridad si algo se queda animando para siempre.
+ *
+ * `tanda` evita que una jugada vieja reencuadre por encima de una más nueva:
+ * si llega otro `onStateSync` mientras se espera, ésta se retira sola — la
+ * llamada nueva ya está esperando lo suyo.
+ */
+function reencuadrarCuandoAsiente(motor) {
+    // Mismo guardián que `acercar()`: de invitado no hay cámara propia que
+    // reencuadrar, y sin él este bucle quedaría girando 900 ms de balde en
+    // cada jugada de una mesa hospedada.
+    if (motor.invitado || !motor.camera || !motor.scene) return;
+    const tanda = (motor._tandaAcercar = (motor._tandaAcercar ?? 0) + 1);
+    const t0 = performance.now();
+    const paso = () => {
+        if (motor._tandaAcercar !== tanda) return;   // una jugada más nueva tomó el relevo
+        const vivas = (typeof TWEEN !== 'undefined') ? TWEEN.getAll().length : 0;
+        if (vivas === 0 || performance.now() - t0 > 900) { acercar(motor); return; }
+        requestAnimationFrame(paso);
+    };
+    requestAnimationFrame(paso);
+}
+
+/**
  * ⚠️ EL DESCARTE NO PUEDE QUEDAR DEBAJO DEL PANEL. EN ENTROPY DE AHÍ SE ROBA.
  * ═══════════════════════════════════════════════════════════════════════════
  *
@@ -1394,6 +1450,10 @@ const engine = new SovereignCardEngine({
         // Con las cartas ya colocadas se puede medir qué ocupan, que es lo único
         // que dice a qué distancia hay que ponerse. Antes de repartir no hay nada.
         acercar(this);
+        // Y otra vez cuando hayan terminado de volar hasta su sitio — ver el
+        // aviso de `reencuadrarCuandoAsiente()` para el porqué: la de arriba mide
+        // la carta todavía en el aire.
+        reencuadrarCuandoAsiente(this);
     },
 });
 
