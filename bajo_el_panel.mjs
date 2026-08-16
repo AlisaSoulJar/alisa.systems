@@ -104,20 +104,66 @@
  *     sería la lista escrita a mano que este instrumento existe para no tener,
  *     y el día que un `muro` tapado importe, más vale que salga.
  *
- * ⚠️ HUECO CONOCIDO: ESTO MIDE LA PRIMERA PANTALLA, Y EL PANEL CRECE AL JUGAR
+ * ⚠️ Y LO QUE AÑADIÓ LA SEGUNDA MEDIDA (16-08, más tarde) — GRAVES QUE LA
+ * PRIMERA PANTALLA NO PODÍA VER:
+ *
+ *   generala   1 `z0:v0` (el primer dado) en cuanto tiras — el caso que abrió esto,
+ *              y sale IGUAL en cada pasada: es el control positivo, más abajo
+ *   entropy    vuelve a tapar 1 `descarte_mesa` tras unas jugadas — otra vez de
+ *              donde se roba, la cámara sólo lo despejaba al abrir
+ *   brisca     2 `baza_mesa` en cuanto cae la primera carta — no salía porque al
+ *              abrir la mesa está vacía; tute gana lo mismo (`baza_mesa×1`) además
+ *              de su mano rival de siempre
+ *
+ * Y varios DECORADO de arriba crecen al jugar sin cambiar de categoría: defensa
+ * 5→7, cabina 2→4, rebaño 1→3, pradera 1→4, nave 1→3 — más `muro`/`sueloB` a la
+ * vista según se mueve la cámara o se reparte más mesa, ninguno cambia lo que se
+ * puede hacer.
+ *
+ * ⚠️ Y ESTOS NÚMEROS DE «TRAS JUGAR» PUEDEN TEMBLAR UNA FICHA DE UNA PASADA A
+ * OTRA, Y ESO NO ES EL INSTRUMENTO ROTO.
+ *
+ * A diferencia de «al abrir» —una foto fija de la misma partida con la misma
+ * semilla—, «tras jugar» depende de qué haya hecho el rival (con su propio
+ * temporizador, no atado a `SEMILLA`) en el rato que tarda el clic en llegar.
+ * Medido dos veces: gofish dio 5 `mano` una vez y 4 la siguiente; remigio dio 1
+ * `mano` una vez y 0 la siguiente. Generala y entropy, en cambio, salieron
+ * idénticos las dos veces — su hueco no depende de qué responda nadie, sólo de
+ * que exista un `tirar` o una carta que jugar. Un número que tiembla de 4 a 5 no
+ * es una alarma; que un juego DESAPAREZCA de la lista de golpe sin razón sí lo
+ * sería, y para eso está el control positivo.
+ *
+ * Los números completos, con el momento de cada uno, están en la salida de la
+ * pasada; esto es sólo el resumen de qué categoría le tocó a cada uno.
+ *
+ * ⚠️ HUECO CERRADO (16-08, más tarde): SE MEDÍA SÓLO LA PRIMERA PANTALLA, Y EL
+ * PANEL CRECE AL JUGAR
  *
  * El panel es alto o bajo según cuántas jugadas legales haya, y eso cambia con la
  * partida. La GENERALA lo enseña perfectamente: abre con UN botón (`tirar`) y en
  * cuanto tiras tiene quince —anotar:1..6, escalera, full, póker, generala, doble,
  * guardar…—, así que crece y **tapa el primer dado**. Se ve en la captura del
- * 16-08, y esta pasada dice «generala 0 piezas tapadas», que es verdad al abrir y
- * mentira al segundo turno.
+ * 16-08, y la pasada de aquel día decía «generala 0 piezas tapadas», que era
+ * verdad al abrir y mentira al segundo turno.
  *
- * O sea que un «0 tapadas» de aquí significa «0 al empezar», no «0 nunca». Está
- * dicho aquí y no arreglado porque medir en varios momentos es rehacerle el bucle
- * al instrumento, y prefiero un hueco declarado a un número que parece cubrirlo
- * todo. Quien lo retome: hacen falta dos medidas, al abrir y tras unas jugadas, y
- * quedarse con la PEOR.
+ * Ahora se mide DOS VECES por juego: al abrir (como siempre) y tras jugar unas
+ * pocas jugadas pulsando `.mesa-jugada` —el mismo botón que usa `tacto.mjs`, así
+ * que es un tacto real, no un truco de este fichero— y se publica la PEOR de las
+ * dos, con el momento en que se dio.
+ *
+ * ⚠️ Y NO BASTA CON MEDIR UNA VEZ AL FINAL DE LA RACHA DE CLICS.
+ *
+ * El primer intento jugaba N jugadas seguidas y medía sólo al final. En generala
+ * eso daba TAMBIÉN cero: un turno entero es `tirar, tirar, tirar, anotar:x`, y
+ * `anotar` CIERRA el turno — el panel vuelve a un único botón `tirar` para el
+ * siguiente, la misma foto pequeña de siempre. La foto grande vive a MITAD del
+ * turno, no al final de él. Así que se mide tras CADA clic —no sólo al final— y
+ * se guarda la peor de todas: la propia partida, jugada hasta el final de un
+ * turno, borraba el rastro del hueco que se estaba buscando.
+ *
+ * Un juego sin `.mesa-jugada` que pulsar (avanza solo, o ya terminó) o que tras
+ * jugar se queda sin estado medible se queda con la medida de abrir, y eso se
+ * DICE — no se cuenta como si la segunda medida hubiera dado cero piezas.
  *
  * ⚠️ EL PANEL SE FUERZA DESPLEGADO: ES EL PEOR CASO, Y EL PRIMERO QUE VE ALGUIEN
  *
@@ -241,6 +287,46 @@ async function medir(page) {
     return datos;
 }
 
+/**
+ * ⚠️ JUEGA UNAS POCAS JUGADAS Y MIDE TRAS CADA UNA — NO SÓLO AL FINAL.
+ *
+ * Pulsa el primer `.mesa-jugada` que encuentre, hasta `intentos` veces: es el
+ * mismo botón y el mismo criterio que usa `tacto.mjs` para su muestra, y no hace
+ * falta elegir con más criterio — cualquier jugada legal sirve para que la
+ * partida avance y el panel reaccione.
+ *
+ * Por qué se mide DENTRO del bucle y no una vez al salir: en generala un turno
+ * entero es `tirar, tirar, tirar, anotar:x`, y `anotar` CIERRA el turno — el
+ * panel vuelve a un único botón para el siguiente. Medir sólo al final de la
+ * racha habría vuelto a dar cero, exactamente el mismo hueco que esto viene a
+ * cerrar. Midiendo tras cada clic y quedándose con la peor, la foto de en medio
+ * del turno —donde están los quince botones— no se pierde aunque la racha
+ * termine cerrando uno.
+ *
+ * Devuelve `{ peor, jugadas }`: `peor` es la medida (medible) con más piezas
+ * tapadas de todas las que se tomaron tras jugar, o `null` si no se pudo jugar
+ * ninguna o ninguna salió medible. `jugadas` es cuántos clics se llegaron a dar,
+ * para poder decir «tras cuántas jugadas» en el informe.
+ */
+async function jugarYMedirPeor(page, intentos = 4) {
+    let peor = null, jugadas = 0;
+    for (let i = 0; i < intentos; i++) {
+        const botones = page.locator('.mesa-jugada');
+        const cuantos = await botones.count().catch(() => 0);
+        if (!cuantos) break;   // nada que pulsar: el juego avanza solo, o ya terminó sin botón de «nueva»
+        try {
+            await botones.first().click({ timeout: 3000 });
+        } catch {
+            break;   // el botón desapareció entre contarlo y pulsarlo — no insistir a ciegas
+        }
+        jugadas++;
+        await page.waitForTimeout(600);   // que el hub conteste y el panel se repinte
+        const datos = await medir(page);
+        if (datos.medible && (!peor || datos.tapadas > peor.tapadas)) peor = datos;
+    }
+    return { peor, jugadas };
+}
+
 /** Se serializa dentro de `page.evaluate`: no puede usar nada de fuera del navegador. */
 function evaluarEscena(panelRect) {
     const cap = window.__CAPTURA;
@@ -340,23 +426,58 @@ for (const juego of juegos) {
     try {
         await page.goto(url, { waitUntil: 'load', timeout: 25000 });
         await page.waitForTimeout(4500);   // que reparta y termine de montar la escena
-        const datos = await medir(page);
-        fila = { juego, ...datos };
+        const alAbrir = await medir(page);
+
+        // ⚠️ LA SEGUNDA MEDIDA — TRAS JUGAR — Y QUEDARSE CON LA PEOR.
+        //
+        // Sólo tiene sentido intentarlo si la primera se pudo medir: sin
+        // `.hud-panel` o sin `render()` interceptado no hay nada que comparar,
+        // y jugar a ciegas sobre una página que ya se sabe no medible sólo
+        // gastaría tiempo de los 35.
+        let peor = null, jugadas = 0, sinSegunda = null;
+        if (alAbrir.medible) {
+            ({ peor, jugadas } = await jugarYMedirPeor(page));
+            if (!peor) {
+                sinSegunda = jugadas === 0
+                    ? 'sin `.mesa-jugada` que pulsar — el juego avanza solo o no ofreció botón'
+                    : 'tras jugar no quedó ningún estado medible';
+            }
+        }
+
+        const usarPeor = peor && peor.tapadas > alAbrir.tapadas;
+        const datos = usarPeor ? peor : alAbrir;
+        fila = {
+            juego, ...datos,
+            momento: usarPeor ? 'tras jugar' : 'al abrir',
+            jugadasProbadas: jugadas,
+            tapadasAlAbrir: alAbrir.medible ? alAbrir.tapadas : null,
+            tapadasTrasJugar: peor ? peor.tapadas : null,
+            ...(sinSegunda ? { sinSegundaMedida: sinSegunda } : {}),
+        };
     } catch (e) {
         fila = { juego, medible: false, motivo: String(e.message ?? e).split('\n')[0].slice(0, 90) };
     }
     await ctx.close();
     filas.push(fila);
 
+    // ⚠️ SI LA SEGUNDA MEDIDA NO SALIÓ, SE DICE — NO SE CALLA COMO UN "AL ABRIR" MÁS.
+    // Un juego que nunca llegó a tener un estado medible tras jugar no es lo mismo
+    // que uno que se midió tras jugar y salió mejor: el primero es una medida que
+    // falta, el segundo es una medida que se tomó y no empeoró nada.
+    const notaSinSegunda = fila.sinSegundaMedida ? `  (${fila.sinSegundaMedida})` : '';
+
     if (!fila.medible) {
         console.log(`  ?  ${juego.padEnd(11)} no medible — ${fila.motivo}`);
     } else if (fila.tapadas === 0) {
         console.log(`  ✓  ${juego.padEnd(11)} 0 piezas tapadas`
-            + `  (${fila.totalPiezas} piezas vistas, ${fila.estructuras} estructuras excluidas)`);
+            + `  (${fila.totalPiezas} piezas vistas, ${fila.estructuras} estructuras excluidas`
+            + `, ${fila.jugadasProbadas} jugada(s) probada(s))${notaSinSegunda}`);
     } else {
         const detalle = Object.entries(fila.porNombre)
             .map(([n, c]) => `${n}×${c}`).join(', ');
-        console.log(`  ✗  ${juego.padEnd(11)} ${fila.tapadas} pieza(s) tapada(s): ${detalle}`);
+        const cuando = fila.momento === 'tras jugar'
+            ? ` tras jugar (${fila.jugadasProbadas} jugada(s))` : ' al abrir';
+        console.log(`  ✗  ${juego.padEnd(11)} ${fila.tapadas} pieza(s) tapada(s)${cuando}: ${detalle}${notaSinSegunda}`);
     }
 }
 
@@ -407,43 +528,45 @@ if (conTapadas.length) {
  * comprobado con captura en los dos: se ve el descarte entero, la mano propia
  * se lee carta por carta, nada se sale de ningún borde—. El relevo natural
  * IBA A SER remigio (el otro juego con el mismo problema real), pero el mismo
- * arreglo lo despejó también. Así que hoy este instrumento SE QUEDA SIN
- * CONTROL POSITIVO NATURAL entre las mesas de cartas: no queda una tercera con
- * un descarte tapado de verdad para relevar a entropy.
+ * arreglo lo despejó también. Entre las mesas de cartas no quedó ninguna con un
+ * descarte tapado de verdad para relevar a entropy — sólo la mano del rival, que
+ * es a propósito (se explica arriba y en `mesa_cartas.mjs`) y no sirve de
+ * control: gritaría «FALLIDO» contra algo que nunca se va a tocar.
  *
- * Lo que sigue tapado en tute/hearts/spades/gofish/unit es la MANO DEL RIVAL,
- * y es a propósito —se explica arriba y en `mesa_cartas.mjs`—: no sirve de
- * control, porque no es un fallo que algún día haya que arreglar, es el
- * estado correcto. Usarlo como control gritaría «FALLIDO» contra algo que
- * nunca se va a tocar.
+ * ⚠️ EL RELEVO QUE SÍ LLEGÓ: GENERALA, TRAS TIRAR — Y ES DE REGALO.
  *
- * Por eso esto ya NO hace fallar la pasada por sí solo — hacerlo sería castigar
- * el arreglo del 16-08 para siempre, el mismo error que se evitó con snake.
- * Queda como AVISO: hace falta buscarle un control positivo nuevo —una mesa
- * con un problema real y sin arreglar, en alguno de los 35— cuando aparezca
- * uno. Mientras tanto, que un juego no se pueda MEDIR (`noMedidos`) sigue
- * siendo motivo de fallo: eso sí es una rotura del instrumento, no un
- * arreglo del juego.
+ * La medida en dos momentos que cierra el hueco de este mismo fichero (ver
+ * cabecera) tenía, sin buscarlo, el control que le faltaba a este bloque: la
+ * GENERALA es un fallo real y sin arreglar —el primer dado queda bajo el panel
+ * en cuanto tiras—, y ADEMÁS es un fallo que la medida VIEJA (una sola pantalla)
+ * no podía ver: al abrir sólo hay un botón (`tirar`), así que «generala 0
+ * piezas tapadas» era la respuesta de siempre y parecía limpio. Sólo tras jugar
+ * se destapa. O sea que demuestra la mejora de esta tarea Y hace de control a
+ * la vez — el mismo caso sirviendo para las dos cosas, sin montar nada aparte.
+ *
+ * Por eso el control positivo de aquí en adelante es generala, y es OBLIGATORIO:
+ * si algún día mide 0 piezas tapadas en los dos momentos, lo más probable no es
+ * que el juego se haya arreglado —nadie ha tocado su cámara ni su panel— es que
+ * el instrumento se ha roto. En ese caso no te creas ningún otro cero de la
+ * misma pasada sin revisar primero el parche.
  */
-const controlEntropy = filas.find(f => f.juego === 'entropy');
-const controlRemigio = filas.find(f => f.juego === 'remigio');
-const controles = [controlEntropy, controlRemigio].filter(Boolean);
+const controlGenerala = filas.find(f => f.juego === 'generala');
 console.log('');
-if (!controles.length) {
-    console.log('  ⚠ CONTROL POSITIVO no evaluado — ni "entropy" ni "remigio" estaban en la lista pedida.');
+if (!controlGenerala) {
+    console.log('  ⚠ CONTROL POSITIVO no evaluado — "generala" no estaba en la lista pedida.');
+} else if (!controlGenerala.medible) {
+    console.log(`  ✗ CONTROL — generala no se pudo medir (${controlGenerala.motivo}). El instrumento está roto, no generala.`);
+} else if (controlGenerala.tapadas > 0) {
+    const detalle = Object.entries(controlGenerala.porNombre).map(([n, c]) => `${n}×${c}`).join(', ');
+    const cuando = controlGenerala.momento === 'tras jugar'
+        ? `tras jugar (${controlGenerala.jugadasProbadas} jugada(s))` : 'al abrir';
+    console.log(`  ✓ CONTROL POSITIVO — generala da ${controlGenerala.tapadas} pieza(s) tapada(s) ${cuando}`
+        + ` (${detalle}), como se esperaba.`);
 } else {
-    const rotos = controles.filter(f => !f.medible);
-    const tapados = controles.filter(f => f.medible && f.tapadas > 0);
-    for (const f of rotos) {
-        console.log(`  ✗ CONTROL — ${f.juego} no se pudo medir (${f.motivo}). El instrumento está roto, no ${f.juego}.`);
-    }
-    for (const f of tapados) {
-        const detalle = Object.entries(f.porNombre).map(([n, c]) => `${n}×${c}`).join(', ');
-        console.log(`  ✓ CONTROL POSITIVO — ${f.juego} da ${f.tapadas} pieza(s) tapada(s) (${detalle}), como se esperaba.`);
-    }
-    if (!rotos.length && !tapados.length) {
-        console.log('  ⚠ SIN CONTROL POSITIVO NATURAL — entropy y remigio miden 0 los dos (el arreglo del 16-08 despejó su descarte). No es un fallo de esta pasada: hace falta buscarle un relevo, ver el aviso de arriba.');
-    }
+    console.log('  ✗ CONTROL POSITIVO FALLIDO — generala midió 0 piezas tapadas al abrir Y tras jugar.'
+        + ' Es un fallo real y sin arreglar (el primer dado queda bajo el panel en cuanto tiras): un cero'
+        + ' aquí no es buena noticia, es señal de que el instrumento se ha roto. No te creas ningún otro'
+        + ' cero de esta pasada sin revisar primero el parche.');
 }
 
 process.exit(noMedidos.length ? 1 : 0);
