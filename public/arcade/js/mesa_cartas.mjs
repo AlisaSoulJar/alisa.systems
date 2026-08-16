@@ -195,7 +195,40 @@ function nombrarPiezas(motor, cartas, zona, layout, dueño) {
         // en abanico/fila/montón es la carta (`baseId`) más su índice.
         const trackId = layout === 'grid' ? `${zona}_${idx}` : `${zona}_${c.id}_${idx}`;
         const malla = motor.cardMeshes[trackId];
-        if (malla) malla.name = c.oculta ? 'oculta' : `p:carta:${dueño ?? 'mesa'}`;
+        if (!malla) return;
+        malla.name = c.oculta ? (c.pila > 1 ? `oculta:${c.pila}` : 'oculta')
+                              : `p:carta:${dueño ?? 'mesa'}`;
+
+        /**
+         * ⚠️ EL GROSOR ES EL DATO. Una sola malla engordada dice cuántas cartas hay.
+         *
+         * ⚠️ Y EL GROSOR ES LA `depth`, NO LA `height`. Lo primero que hice fue
+         * escalar el eje Y «porque la carta está tumbada», y salieron COLUMNAS ROJAS
+         * cruzando la pantalla entera: la carta es `BoxGeometry(1.2, 1.8, 0.05)`, así
+         * que su Y es el LARGO —1,8— y estirarlo por trece da una torre de veintitrés
+         * unidades. El grosor es la `depth`, 0,05, o sea el eje Z.
+         *
+         * Se vio abriendo la captura. Ninguna cuenta lo habría dicho: la malla seguía
+         * siendo una, el sustrato seguía cuadrando y `prueba_vistas` seguía en verde.
+         * Mirar encuentra, medir explica — y aquí medir fue preguntarle a la geometría
+         * sus parámetros en vez de suponerlos.
+         *
+         * La carta va rotada -90° en X (tumbada sobre el fieltro), así que su Z local
+         * apunta hacia arriba en el mundo: por eso se engorda en Z y se sube en Y la
+         * mitad de lo que crece, o la pila quedaría medio hundida en la mesa.
+         *
+         * El tope de 14 es por lo que se ve, no por lo que se cuenta: un mazo de
+         * ochenta a escala real sería una torre que taparía media mesa. A partir de
+         * ahí deja de crecer, y el número exacto lo sigue diciendo el panel en texto.
+         */
+        const n = c.pila ?? 1;
+        if (c.oculta && n > 1) {
+            const alto = Math.min(n, 14);
+            const grosor = malla.geometry?.parameters?.depth ?? 0.05;
+            malla.scale.z = alto;
+            malla.position.y = (malla.userData.__y0 ??= malla.position.y)
+                             + (alto - 1) * 0.5 * grosor;
+        }
     });
 }
 
@@ -1395,11 +1428,43 @@ const engine = new SovereignCardEngine({
                     return;
                 }
 
+                /**
+                 * ═══════════════════════════════════════════════════════════════
+                 *  ⚠️ LO TAPADO SE DIBUJA UNA VEZ, CON GROSOR. NO N VECES.
+                 * ═══════════════════════════════════════════════════════════════
+                 *
+                 * Aquí se creaba UNA CARTA POR CADA REVERSO: `Array.from({length:
+                 * z.ocultas})`. Y medido el 16-08, eso era casi toda la mesa —
+                 * proporción de mallas que no son información:
+                 *
+                 *     unit 85% · entropy 85% · brisca 74% · gofish 73% · hearts 63%
+                 *
+                 * Cien mallas para decir «tengo trece cartas», que además hay que
+                 * CONTAR a ojo. Y el remate: esas manos se salen de la pantalla a
+                 * propósito —está explicado dos veces en este mismo fichero— así que
+                 * se pagaba por dibujar cien objetos para luego echarlos de cuadro.
+                 *
+                 * Una baraja de verdad encima de una mesa no son trece cartas: es un
+                 * bloque, y su GROSOR es el dato. Así que se dibuja una sola y se le
+                 * da la altura que le toca. Un vistazo dice cuántas hay sin contar, y
+                 * la vista pasa a decir lo mismo que el sustrato en vez de obligar a
+                 * sumar.
+                 *
+                 * ⚠️ Y NO SE QUITA DEL TODO: sigue habiendo un objeto. Una mesa que
+                 * no dibujara nada donde hay trece cartas mentiría diciendo que ese
+                 * rival no tiene mano — el error contrario, y peor.
+                 *
+                 * (El `CroupierSystem` del motor tiene un layout `'pile'` que suena a
+                 * esto y NO lo es: apila N cartas con `oy = c * 0.001`, o sea las N
+                 * mallas siguen ahí. Comprobado antes de intentar conectarlo; además
+                 * no lo usa nadie más que una prueba que lo cuenta.)
+                 */
+                const tapadas = z.ocultas ?? 0;
                 const cartas = [
                     ...z.items.map(c => (c && typeof c === 'object'
                         ? { ...c, id: caraDe(c.id ?? c), oculta: false }
                         : { id: caraDe(c), oculta: false })),
-                    ...Array.from({ length: z.ocultas ?? 0 }, () => ({ id: dorso(this), oculta: true })),
+                    ...(tapadas > 0 ? [{ id: dorso(this), oculta: true, pila: tapadas }] : []),
                 ];
                 if (!cartas.length) return;
 
