@@ -31,6 +31,28 @@ const COLOR = {
     velo: 'rgba(58,72,92,0.34)',
 };
 
+/**
+ * ⚠️ EL DISCO LLEVABA LA INICIAL EN INGLÉS, Y ESA ES UNA PUERTA DE MENOS.
+ *
+ * Un peón salía con una `P` y una dama con una `Q`: las iniciales de `pawn` y `queen`.
+ * Para un agente de visión eso no es la pieza, es su nombre en un idioma — tiene que
+ * saber inglés y ajedrez para leer un tablero. El símbolo lo entiende cualquiera que
+ * haya visto un tablero, y es el mismo dibujo que ve una persona.
+ *
+ * Se pintan los glifos SÓLIDOS en los dos bandos, no el par sólido/hueco: quién es de
+ * quién ya lo dice el color del disco, y los huecos sobre un disco de color no se ven.
+ *
+ * ⚠️ Y XIANGQI NO ES AJEDREZ CON OTRO NOMBRE.
+ *
+ * Comparte `r n b k p` con el ajedrez —carro, caballo, elefante, general, soldado— y
+ * tiene dos que no existen allí: el consejero (`a`) y el cañón (`c`), que no tienen
+ * glifo de ajedrez. Mezclar `♜` con `砲` sería peor que las iniciales, así que el
+ * juego chino lleva sus caracteres, que es lo que las piezas dicen de verdad. Se usa
+ * el juego de un solo bando: el sustrato da el tipo y el dueño, no el color histórico.
+ */
+const SIMBOLOS_AJEDREZ = { r: '♜', n: '♞', b: '♝', q: '♛', k: '♚', p: '♟' };
+const SIMBOLOS_XIANGQI = { r: '車', n: '馬', b: '象', a: '士', k: '將', c: '砲', p: '卒' };
+
 /** Cómo se dibuja cada tipo de pieza. Lo que no esté aquí sale como disco. */
 const FORMAS = {
     muro: 'cuadro', bolita: 'punto', comida: 'punto',
@@ -127,14 +149,23 @@ function pintarRejilla(ctx, sus, W, H) {
         }
     }
 
+    /**
+     * Qué alfabeto toca se decide MIRANDO las piezas que hay, no pasando el nombre del
+     * juego: el consejero y el cañón sólo existen en xiangqi, así que su presencia lo
+     * identifica. Preguntar el juego obligaría a que esta función lo supiera, y hoy
+     * pinta los 35 sin saber a cuál está pintando — que es justo por lo que funciona.
+     */
+    const tipos = new Set((sus.piezas ?? []).map(p => p.t));
+    const simbolos = (tipos.has('a') || tipos.has('c')) ? SIMBOLOS_XIANGQI : SIMBOLOS_AJEDREZ;
+
     for (const p of (sus.piezas ?? [])) {
         const cx = x0 + p.x * lado + lado / 2;
         const cy = y0 + p.y * lado + lado / 2;
-        pintarPieza(ctx, p, cx, cy, lado, sus.leyenda, sus.colores);
+        pintarPieza(ctx, p, cx, cy, lado, sus.leyenda, sus.colores, simbolos);
     }
 }
 
-function pintarPieza(ctx, p, cx, cy, lado, leyenda, colores) {
+function pintarPieza(ctx, p, cx, cy, lado, leyenda, colores, simbolos = SIMBOLOS_AJEDREZ) {
     /**
      * ⚠️ EL COLOR QUE DECLARA EL JUEGO MANDA TAMBIÉN AQUÍ.
      *
@@ -166,13 +197,23 @@ function pintarPieza(ctx, p, cx, cy, lado, leyenda, colores) {
         ctx.closePath(); ctx.fill();
     } else {
         ctx.beginPath(); ctx.arc(cx, cy, lado * 0.36, 0, Math.PI * 2); ctx.fill();
-        // La inicial encima, que es lo que distingue un peón de una dama sin
+        // El símbolo encima, que es lo que distingue un peón de una dama sin
         // necesitar treinta y dos sprites.
         if (lado >= 16 && p.t && p.t.length <= 2) {
+            const glifo = simbolos[p.t] ?? p.t.toUpperCase();
+            const propio = glifo !== p.t.toUpperCase();
             ctx.fillStyle = '#fff';
-            ctx.font = `bold ${Math.floor(lado * 0.42)}px ui-monospace, monospace`;
+            /**
+             * El glifo va más grande que la letra y con su propia pila de fuentes: en
+             * `ui-monospace` los símbolos de ajedrez y los caracteres chinos no están,
+             * y el navegador dibuja el rectángulo vacío sin avisar de nada. Si no hay
+             * símbolo para este tipo se cae a la inicial, con la fuente de antes.
+             */
+            ctx.font = propio
+                ? `${Math.floor(lado * 0.62)}px "Segoe UI Symbol", "Noto Sans Symbols 2", "Noto Sans CJK SC", "Microsoft YaHei", "DejaVu Sans", sans-serif`
+                : `bold ${Math.floor(lado * 0.42)}px ui-monospace, monospace`;
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillText(p.t.toUpperCase(), cx, cy + 1);
+            ctx.fillText(glifo, cx, cy + 1);
         }
     }
 }

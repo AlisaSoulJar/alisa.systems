@@ -48,6 +48,7 @@ const nav = await chromium.launch({ channel: 'chrome', headless: true });
 const ctx = await nav.newContext({ viewport: { width: 1100, height: 660 } });
 
 const filas = [];
+const desajustes = [];
 for (const juego of juegos) {
     const pag = paginas[juego];
     const url = `${base}/arcade/${pag.pagina}?semilla=${SEMILLA}`
@@ -77,10 +78,45 @@ for (const juego of juegos) {
             const jugada = (b) => (b.title || b.textContent).trim();
             const panel = [...document.querySelectorAll('.mesa-jugada')].map(jugada).filter(Boolean);
             const barra = [...document.querySelectorAll('.alisa-verbo')].map(jugada);
-            return { panel, verbos: panel.filter(esVerbo), barra };
+            /**
+             * ⚠️ Y LO QUE EL AGENTE RECIBE, PARA PODER COMPARARLO CON LO QUE SE VE.
+             *
+             * «El panel de jugadas es literalmente `legal_moves`» está escrito en cinco
+             * comentarios de este proyecto y era la frase en la que se apoya el banco
+             * entero: si las puertas no ofrecen lo mismo, comparar a una persona con un
+             * agente deja de significar nada. No la medía nadie.
+             */
+            const st = window.ALISA_PROTOHUB?.state?.(window.ALISA_JUEGO) ?? {};
+            const legales = (st.legal_moves ?? []).map(String);
+            return { panel, verbos: panel.filter(esVerbo), barra, legales };
         });
     } catch { r = null; }
     await p.close();
+
+    /**
+     * ⚠️ LA PUERTA HUMANA Y LA DEL AGENTE, ¿OFRECEN LO MISMO?
+     *
+     * Se comparan las LISTAS y no los totales. Un panel al que le falte una jugada y le
+     * sobre otra tiene el mismo número de botones, y ése es exactamente el caso que
+     * importa: significa que una persona y un agente están jugando a cosas distintas
+     * sin que nada dé error. `nueva` y `reset` se descuentan porque el panel las manda
+     * a la pantalla de fin, que es otro sitio y a propósito.
+     *
+     * ⚠️ COMPROBADO CORTANDO EL CABLE: quitando una jugada del pintado de `jugadas.js`
+     * (`legales.slice(1)`), parchís sale en rojo diciendo «no salen tirar». Y con el
+     * mismo sabotaje snake seguía en verde, que NO es un fallo de esta prueba sino el
+     * recordatorio de que hay TRES caminos de panel: cortar uno sólo prueba ése. Un
+     * sabotaje aquí hay que hacerlo tres veces o no dice lo que parece.
+     */
+    if (r?.legales?.length) {
+        const inter = (a, b) => a.filter(x => !b.includes(x));
+        const leg = r.legales.filter(m => m !== 'nueva' && m !== 'reset');
+        const pan = r.panel.filter(m => m !== 'nueva' && m !== 'reset');
+        const faltanEnPanel = inter(leg, pan), sobranEnPanel = inter(pan, leg);
+        if (faltanEnPanel.length || sobranEnPanel.length) {
+            desajustes.push({ juego, faltanEnPanel, sobranEnPanel });
+        }
+    }
 
     if (!r || !r.panel.length) { filas.push({ juego, estado: 'sin panel' }); continue; }
     if (!r.verbos.length) { filas.push({ juego, estado: 'sin verbos ahora', panel: r.panel.length }); continue; }
@@ -103,5 +139,18 @@ for (const f of filas) {
         console.log(`  ${f.juego.padEnd(13)} ${String(f.n).padStart(6)}   ✗  ${q}`);
     } else { mudos++; console.log(`  ${f.juego.padEnd(13)}      ·   ${f.estado}`); }
 }
-console.log(`\n  ${ok} con la barra puesta · ${mal} mal · ${mudos} no comprobables ahora\n`);
-process.exit(mal ? 1 : 0);
+console.log(`\n  ${ok} con la barra puesta · ${mal} mal · ${mudos} no comprobables ahora`);
+
+if (desajustes.length) {
+    console.log(`\n  ✗ ${desajustes.length} juego(s) donde el panel NO es lo que recibe el agente:`);
+    for (const d of desajustes) {
+        const q = [d.faltanEnPanel.length ? `no salen ${d.faltanEnPanel.slice(0, 6).join(', ')}` : '',
+                   d.sobranEnPanel.length ? `sobran ${d.sobranEnPanel.slice(0, 6).join(', ')}` : ''].filter(Boolean).join(' · ');
+        console.log(`     ${d.juego.padEnd(12)} ${q}`);
+    }
+    console.log(`     Una persona y un agente estarían jugando a cosas distintas sin que nada dé error.`);
+} else {
+    console.log(`  ✓ en los ${filas.length} el panel ofrece EXACTAMENTE las jugadas legales del agente`);
+}
+console.log();
+process.exit(mal || desajustes.length ? 1 : 0);
