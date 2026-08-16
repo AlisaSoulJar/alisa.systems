@@ -196,7 +196,7 @@
    "ruta": "gym/ProtoHubEnv.js",
    "nombre": "ProtoHubEnv",
    "familia": "gym",
-   "kb": 16.5
+   "kb": 23.0
   },
   {
    "ruta": "gym/registro.js",
@@ -544,7 +544,7 @@
    "ruta": "world/CroupierSystem.js",
    "nombre": "CroupierSystem",
    "familia": "world",
-   "kb": 5.0
+   "kb": 5.4
   },
   {
    "ruta": "world/OverworldECS.js",
@@ -574,7 +574,7 @@
    "ruta": "world/core/FlickerSystem.js",
    "nombre": "FlickerSystem",
    "familia": "core",
-   "kb": 4.7
+   "kb": 5.0
   },
   {
    "ruta": "world/core/GeometryBaker.js",
@@ -790,13 +790,13 @@
    "ruta": "world/systems/CabinetEscapeSystem.js",
    "nombre": "CabinetEscapeSystem",
    "familia": "systems",
-   "kb": 10.4
+   "kb": 10.8
   },
   {
    "ruta": "world/systems/CabinetJumpscareSystem.js",
    "nombre": "CabinetJumpscareSystem",
    "familia": "systems",
-   "kb": 4.5
+   "kb": 4.9
   },
   {
    "ruta": "world/systems/CarverEntitySystem.js",
@@ -850,7 +850,7 @@
    "ruta": "world/systems/FileSystemDioramaSystem.js",
    "nombre": "FileSystemDioramaSystem",
    "familia": "systems",
-   "kb": 54.0
+   "kb": 54.8
   },
   {
    "ruta": "world/systems/FoodChainSystem.js",
@@ -868,7 +868,7 @@
    "ruta": "world/systems/IDMSystem.js",
    "nombre": "IDMSystem",
    "familia": "systems",
-   "kb": 9.4
+   "kb": 9.6
   },
   {
    "ruta": "world/systems/InteractionLabEngine.js",
@@ -898,7 +898,7 @@
    "ruta": "world/systems/KatamariSystem.js",
    "nombre": "KatamariSystem",
    "familia": "systems",
-   "kb": 7.5
+   "kb": 7.9
   },
   {
    "ruta": "world/systems/KinematicControllerSystem.js",
@@ -910,7 +910,7 @@
    "ruta": "world/systems/KinematicRageSystem.js",
    "nombre": "KinematicRageSystem",
    "familia": "systems",
-   "kb": 5.2
+   "kb": 5.6
   },
   {
    "ruta": "world/systems/LinearNavAgentSystem.js",
@@ -934,19 +934,19 @@
    "ruta": "world/systems/NeuralDrivingSystem.js",
    "nombre": "NeuralDrivingSystem",
    "familia": "systems",
-   "kb": 3.7
+   "kb": 4.2
   },
   {
    "ruta": "world/systems/OrbitalKinematicsSystem.js",
    "nombre": "OrbitalKinematicsSystem",
    "familia": "systems",
-   "kb": 10.1
+   "kb": 10.6
   },
   {
    "ruta": "world/systems/PhantomFSMSystem.js",
    "nombre": "PhantomFSMSystem",
    "familia": "systems",
-   "kb": 5.3
+   "kb": 5.6
   },
   {
    "ruta": "world/systems/PheromoneGrid.js",
@@ -994,7 +994,7 @@
    "ruta": "world/systems/RoboticArmSystem.js",
    "nombre": "RoboticArmSystem",
    "familia": "systems",
-   "kb": 30.8
+   "kb": 31.3
   },
   {
    "ruta": "world/systems/ScummInteractionEngine.js",
@@ -1036,25 +1036,25 @@
    "ruta": "world/systems/TrafficSurvivalSystem.js",
    "nombre": "TrafficSurvivalSystem",
    "familia": "systems",
-   "kb": 20.0
+   "kb": 20.3
   },
   {
    "ruta": "world/systems/TrafficSystem.js",
    "nombre": "TrafficSystem",
    "familia": "systems",
-   "kb": 5.3
+   "kb": 5.7
   },
   {
    "ruta": "world/systems/TurretCombatSystem.js",
    "nombre": "TurretCombatSystem",
    "familia": "systems",
-   "kb": 6.2
+   "kb": 6.7
   },
   {
    "ruta": "world/systems/WorldBuilderSystem.js",
    "nombre": "WorldBuilderSystem",
    "familia": "systems",
-   "kb": 12.9
+   "kb": 13.2
   },
   {
    "ruta": "world/systems/ml_dqn_idm.js",

@@ -380,22 +380,55 @@ if (conTapadas.length) {
  * haciendo su trabajo, no rompiéndose: seguir usando snake aquí habría hecho
  * que este instrumento gritara «FALLIDO» contra su propio arreglo para siempre.
  *
- * El relevo es ENTROPY: su montón de descarte sigue cayendo bajo el panel hoy
- * (medido: `descarte_mesa×1` + la mesa verde bajo la esquina), y en ese juego SÍ
- * importa — es de donde se roba. El día que alguien lo arregle, este control
- * volverá a fallar por el mismo motivo bueno, y tocará buscar el siguiente.
+ * El relevo fue ENTROPY: su montón de descarte seguía cayendo bajo el panel
+ * (medido entonces: `descarte_mesa×1` + la mesa verde bajo la esquina), y en
+ * ese juego SÍ importaba — es de donde se roba.
+ *
+ * ⚠️ 16-08 (más tarde, el mismo día): ENTROPY TAMBIÉN CADUCÓ — Y CON ÉL SE
+ * FUE EL RELEVO QUE IBA A SER SU SIGUIENTE.
+ *
+ * `apartarDescarteDelPanel()`, en `public/arcade/js/mesa_cartas.mjs`, aleja y
+ * panea la cámara de la mesa de cartas cuando el descarte cae bajo el panel —
+ * comprobado con captura en los dos: se ve el descarte entero, la mano propia
+ * se lee carta por carta, nada se sale de ningún borde—. El relevo natural
+ * IBA A SER remigio (el otro juego con el mismo problema real), pero el mismo
+ * arreglo lo despejó también. Así que hoy este instrumento SE QUEDA SIN
+ * CONTROL POSITIVO NATURAL entre las mesas de cartas: no queda una tercera con
+ * un descarte tapado de verdad para relevar a entropy.
+ *
+ * Lo que sigue tapado en tute/hearts/spades/gofish/unit es la MANO DEL RIVAL,
+ * y es a propósito —se explica arriba y en `mesa_cartas.mjs`—: no sirve de
+ * control, porque no es un fallo que algún día haya que arreglar, es el
+ * estado correcto. Usarlo como control gritaría «FALLIDO» contra algo que
+ * nunca se va a tocar.
+ *
+ * Por eso esto ya NO hace fallar la pasada por sí solo — hacerlo sería castigar
+ * el arreglo del 16-08 para siempre, el mismo error que se evitó con snake.
+ * Queda como AVISO: hace falta buscarle un control positivo nuevo —una mesa
+ * con un problema real y sin arreglar, en alguno de los 35— cuando aparezca
+ * uno. Mientras tanto, que un juego no se pueda MEDIR (`noMedidos`) sigue
+ * siendo motivo de fallo: eso sí es una rotura del instrumento, no un
+ * arreglo del juego.
  */
-const entropy = filas.find(f => f.juego === 'entropy');
+const controlEntropy = filas.find(f => f.juego === 'entropy');
+const controlRemigio = filas.find(f => f.juego === 'remigio');
+const controles = [controlEntropy, controlRemigio].filter(Boolean);
 console.log('');
-if (!entropy) {
-    console.log('  ⚠ CONTROL POSITIVO no evaluado — "entropy" no estaba en la lista pedida.');
-} else if (!entropy.medible) {
-    console.log(`  ✗ CONTROL POSITIVO FALLIDO — entropy no se pudo medir (${entropy.motivo}). El instrumento está roto, no entropy.`);
-} else if (entropy.tapadas > 0) {
-    const detalle = Object.entries(entropy.porNombre).map(([n, c]) => `${n}×${c}`).join(', ');
-    console.log(`  ✓ CONTROL POSITIVO — entropy da ${entropy.tapadas} pieza(s) tapada(s) (${detalle}), como se esperaba.`);
+if (!controles.length) {
+    console.log('  ⚠ CONTROL POSITIVO no evaluado — ni "entropy" ni "remigio" estaban en la lista pedida.');
 } else {
-    console.log('  ✗ CONTROL POSITIVO FALLIDO — entropy midió 0 piezas tapadas y se sabe que el descarte cae bajo el panel. Sospecha del instrumento, no de entropy.');
+    const rotos = controles.filter(f => !f.medible);
+    const tapados = controles.filter(f => f.medible && f.tapadas > 0);
+    for (const f of rotos) {
+        console.log(`  ✗ CONTROL — ${f.juego} no se pudo medir (${f.motivo}). El instrumento está roto, no ${f.juego}.`);
+    }
+    for (const f of tapados) {
+        const detalle = Object.entries(f.porNombre).map(([n, c]) => `${n}×${c}`).join(', ');
+        console.log(`  ✓ CONTROL POSITIVO — ${f.juego} da ${f.tapadas} pieza(s) tapada(s) (${detalle}), como se esperaba.`);
+    }
+    if (!rotos.length && !tapados.length) {
+        console.log('  ⚠ SIN CONTROL POSITIVO NATURAL — entropy y remigio miden 0 los dos (el arreglo del 16-08 despejó su descarte). No es un fallo de esta pasada: hace falta buscarle un relevo, ver el aviso de arriba.');
+    }
 }
 
-process.exit(noMedidos.length || (entropy && entropy.medible && entropy.tapadas === 0) ? 1 : 0);
+process.exit(noMedidos.length ? 1 : 0);

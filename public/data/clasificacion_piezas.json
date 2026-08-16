@@ -797,7 +797,7 @@
    "ruta": "gym/ProtoHubEnv.js",
    "nombre": "ProtoHubEnv",
    "familia": "gym",
-   "kb": 16.5,
+   "kb": 23,
    "clase": "gym",
    "exporta": [
     "crearEnvDeProtoHub"
@@ -812,6 +812,7 @@
    "usa_three_sin_importar": false,
    "arranca_al_importar": false,
    "metodos": [
+    "contarSillas",
     "reset",
     "_estado",
     "_asegurarPartida",
@@ -2128,7 +2129,7 @@
    "ruta": "world/CroupierSystem.js",
    "nombre": "CroupierSystem",
    "familia": "world",
-   "kb": 5,
+   "kb": 5.4,
    "clase": "apagada",
    "exporta": [
     "CroupierSystem"
@@ -2252,7 +2253,7 @@
    "ruta": "world/core/FlickerSystem.js",
    "nombre": "FlickerSystem",
    "familia": "core",
-   "kb": 4.7,
+   "kb": 5,
    "clase": "apagada",
    "exporta": [
     "FlickerSystem"
@@ -2863,7 +2864,7 @@
     "syncKatamariConsumption"
    ],
    "objetos": 54,
-   "mallas": 138,
+   "mallas": 132,
    "luces": 4
   },
   {
@@ -3328,7 +3329,7 @@
    "ruta": "world/systems/CabinetEscapeSystem.js",
    "nombre": "CabinetEscapeSystem",
    "familia": "systems",
-   "kb": 10.4,
+   "kb": 10.8,
    "clase": "apagada",
    "exporta": [
     "CabinetEscapeSystem"
@@ -3352,7 +3353,7 @@
    "ruta": "world/systems/CabinetJumpscareSystem.js",
    "nombre": "CabinetJumpscareSystem",
    "familia": "systems",
-   "kb": 4.5,
+   "kb": 4.9,
    "clase": "apagada",
    "exporta": [
     "CabinetJumpscareSystem"
@@ -3582,7 +3583,7 @@
    "ruta": "world/systems/FileSystemDioramaSystem.js",
    "nombre": "FileSystemDioramaSystem",
    "familia": "systems",
-   "kb": 54,
+   "kb": 54.8,
    "clase": "escena",
    "exporta": [
     "FileSystemDioramaSystem"
@@ -3671,7 +3672,7 @@
    "ruta": "world/systems/IDMSystem.js",
    "nombre": "IDMSystem",
    "familia": "systems",
-   "kb": 9.4,
+   "kb": 9.6,
    "clase": "gym",
    "exporta": [
     "IDMSystem"
@@ -3785,7 +3786,7 @@
    "ruta": "world/systems/KatamariSystem.js",
    "nombre": "KatamariSystem",
    "familia": "systems",
-   "kb": 7.5,
+   "kb": 7.9,
    "clase": "escena",
    "exporta": [
     "KatamariSystem"
@@ -3836,7 +3837,7 @@
    "ruta": "world/systems/KinematicRageSystem.js",
    "nombre": "KinematicRageSystem",
    "familia": "systems",
-   "kb": 5.2,
+   "kb": 5.6,
    "clase": "apagada",
    "exporta": [
     "KinematicRageSystem"
@@ -3918,7 +3919,7 @@
    "ruta": "world/systems/NeuralDrivingSystem.js",
    "nombre": "NeuralDrivingSystem",
    "familia": "systems",
-   "kb": 3.7,
+   "kb": 4.2,
    "clase": "apagada",
    "exporta": [
     "NeuralDrivingSystem"
@@ -3940,7 +3941,7 @@
    "ruta": "world/systems/OrbitalKinematicsSystem.js",
    "nombre": "OrbitalKinematicsSystem",
    "familia": "systems",
-   "kb": 10.1,
+   "kb": 10.6,
    "clase": "gym",
    "exporta": [
     "OrbitalKinematicsSystem"
@@ -3964,7 +3965,7 @@
    "ruta": "world/systems/PhantomFSMSystem.js",
    "nombre": "PhantomFSMSystem",
    "familia": "systems",
-   "kb": 5.3,
+   "kb": 5.6,
    "clase": "apagada",
    "exporta": [
     "PhantomComponent",
@@ -4151,7 +4152,7 @@
    "ruta": "world/systems/RoboticArmSystem.js",
    "nombre": "RoboticArmSystem",
    "familia": "systems",
-   "kb": 30.8,
+   "kb": 31.3,
    "clase": "apagada",
    "exporta": [
     "RoboticArm",
@@ -4315,7 +4316,7 @@
    "ruta": "world/systems/TrafficSurvivalSystem.js",
    "nombre": "TrafficSurvivalSystem",
    "familia": "systems",
-   "kb": 20,
+   "kb": 20.3,
    "clase": "apagada",
    "exporta": [
     "TrafficSurvivalSystem"
@@ -4345,7 +4346,7 @@
    "ruta": "world/systems/TrafficSystem.js",
    "nombre": "TrafficSystem",
    "familia": "systems",
-   "kb": 5.3,
+   "kb": 5.7,
    "clase": "apagada",
    "exporta": [
     "TrafficSystem"
@@ -4365,7 +4366,7 @@
    "ruta": "world/systems/TurretCombatSystem.js",
    "nombre": "TurretCombatSystem",
    "familia": "systems",
-   "kb": 6.2,
+   "kb": 6.7,
    "clase": "gym",
    "exporta": [
     "TurretCombatSystem"
@@ -4390,7 +4391,7 @@
    "ruta": "world/systems/WorldBuilderSystem.js",
    "nombre": "WorldBuilderSystem",
    "familia": "systems",
-   "kb": 12.9,
+   "kb": 13.2,
    "clase": "escena",
    "exporta": [
     "WorldBuilderSystem"

@@ -262,8 +262,25 @@ function encuadrar(motor) {
         motor.camera.lookAt(0, 0, 1.3);
     }
     if (motor.controls) { motor.controls.target.set(0, 0, estrecha ? 0.9 : 1.3); motor.controls.update(); }
+
+    /**
+     * ⚠️ Y SE GUARDA TAMBIÉN EL OBJETIVO Y EL EJE, NO SÓLO EL TECHO — VER
+     * `apartarDescarteDelPanel` PARA EL PORQUÉ.
+     *
+     * `acercar()` solía leer su punto de partida de `motor.controls.target` y
+     * `motor.camera.position` EN VIVO. Mientras nada más los tocaba entre
+     * llamadas eso era inocuo. En cuanto algo apartara la cámara del panel
+     * escribiendo en esos dos sitios, la SIGUIENTE llamada a `acercar()` — hay
+     * una por jugada — volvía a leer el resultado YA desplazado como si fuera
+     * el de partida, y el desplazamiento se sumaba solo. Guardar aquí una copia
+     * fija —que sólo esta función reescribe, nunca `acercar()`— es lo que
+     * rompe esa cadena: cada jugada se calcula desde el mismo punto fijo, no
+     * desde donde quedó la cámara la vez anterior.
+     */
+    motor._objetivoBase = motor.controls ? motor.controls.target.clone() : new THREE.Vector3(0, 0, estrecha ? 0.9 : 1.3);
+    motor._ejeBase = motor.camera.position.clone().sub(motor._objetivoBase).normalize();
     // Se acaba de recalibrar, así que el techo de `acercar()` vuelve a ser éste.
-    motor.techoCamara = 0;
+    motor.techoCamara = motor.camera.position.distanceTo(motor._objetivoBase);
 }
 
 /**
@@ -307,16 +324,23 @@ function acercar(motor, margen = 1.12) {
     });
     if (!hay || caja.isEmpty()) return;   // sin repartir todavía: no hay qué encuadrar
 
-    const objetivo = motor.controls ? motor.controls.target.clone()
-                                    : new THREE.Vector3(0, 0, 1.3);
-    const eje = motor.camera.position.clone().sub(objetivo);
-    const lejos = eje.length();
-    if (!(lejos > 0.001)) return;
-    eje.normalize();
+    /**
+     * ⚠️ EL OBJETIVO Y EL EJE SALEN DE `encuadrar()`, NUNCA DE LA CÁMARA EN VIVO.
+     *
+     * Antes se leían de `motor.controls.target` y `motor.camera.position` tal
+     * como estuvieran. Con `apartarDescarteDelPanel()` moviendo los dos al
+     * final de esta misma función, leerlos aquí habría vuelto a sumar el
+     * desplazamiento de la vuelta anterior — el fallo ya documentado en
+     * `encuadrar()`. `_objetivoBase`/`_ejeBase` son la copia fija que esa
+     * función guarda y que ésta sólo lee.
+     */
+    const objetivo = (motor._objetivoBase ?? (motor.controls ? motor.controls.target.clone() : new THREE.Vector3(0, 0, 1.3))).clone();
+    const eje = (motor._ejeBase ?? motor.camera.position.clone().sub(objetivo).normalize()).clone();
+    if (!(eje.length() > 0.001)) return;
 
-    // El techo es la distancia CALIBRADA, no la de ahora. `encuadrar()` la fija y
-    // la borra cada vez que cambia la pantalla, que es cuando deja de valer.
-    if (!(motor.techoCamara > 0.001)) motor.techoCamara = lejos;
+    // El techo es la distancia CALIBRADA, no la de ahora. `encuadrar()` la fija
+    // de nuevo cada vez que cambia la pantalla, que es cuando deja de valer.
+    if (!(motor.techoCamara > 0.001)) motor.techoCamara = motor.camera.position.distanceTo(objetivo);
     const techo = motor.techoCamara;
 
     const esquinas = [];
@@ -327,7 +351,10 @@ function acercar(motor, margen = 1.12) {
     const tanV = Math.tan((motor.camera.fov * Math.PI) / 360);
     const tanH = tanV * motor.camera.aspect;
 
-    let d = lejos;
+    // Antes arrancaba de `lejos` (la distancia leída de la cámara en vivo, que
+    // ya no se calcula). Arranca del techo calibrado, que es lo mismo que
+    // valía `lejos` la primera vez que esto se ejecutaba tras un `encuadrar()`.
+    let d = techo;
     for (let paso = 0; paso < 5; paso++) {
         motor.camera.position.copy(objetivo).addScaledVector(eje, d);
         motor.camera.lookAt(objetivo);
@@ -453,9 +480,226 @@ function acercar(motor, margen = 1.12) {
         if (ancho > TOPE) d *= ancho / TOPE;
     }
 
-    motor.camera.position.copy(objetivo).addScaledVector(eje, d);
-    motor.camera.lookAt(objetivo);
+    // Con la distancia ya decidida por lo de arriba, lo último es comprobar si
+    // el descarte queda debajo del panel — y si hace falta, alejar y panear
+    // juntos para sacarlo sin sacar nada más por el otro lado.
+    const { d: dFinal, pan } = apartarDescarteDelPanel(motor, objetivo, eje, d, tanH);
+
+    if (pan > 0.0001) {
+        const salto = new THREE.Vector3(-pan, 0, 0);
+        const mira = objetivo.clone().add(salto);
+        motor.camera.position.copy(objetivo).addScaledVector(eje, dFinal).add(salto);
+        motor.camera.lookAt(mira);
+        // ⚠️ El `target` se actualiza aquí y sólo aquí, con el valor final de
+        // ESTA vuelta — nunca se lee de vuelta en la siguiente (ver el aviso de
+        // `encuadrar()`), así que no hay desplazamiento que se pueda acumular.
+        if (motor.controls) motor.controls.target.copy(mira);
+    } else {
+        motor.camera.position.copy(objetivo).addScaledVector(eje, dFinal);
+        motor.camera.lookAt(objetivo);
+        if (motor.controls) motor.controls.target.copy(objetivo);
+    }
     if (motor.controls) motor.controls.update();
+}
+
+/**
+ * ⚠️ EL DESCARTE NO PUEDE QUEDAR DEBAJO DEL PANEL. EN ENTROPY DE AHÍ SE ROBA.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Medido con `bajo_el_panel.mjs`: en escritorio el mazo y el descarte van a
+ * los lados (±5,5 en mundo, `sitios()` más arriba) y el panel es una columna a
+ * la izquierda. El que le toca estar a la izquierda —hoy, en entropy y en
+ * remigio, el descarte— cae debajo.
+ *
+ * ⚠️ DOS INTENTOS ANTERIORES SE REVIRTIERON POR ESTO, Y NO ERA UN SIGNO.
+ *
+ * La idea de correr cámara y objetivo juntos era la buena — es lo que hace
+ * `encuadre.js` en el motor de tablero, y funciona ahí. Lo que rompía todo era
+ * DE DÓNDE leía `acercar()` su propio eje: de `motor.controls.target` y
+ * `motor.camera.position` EN VIVO. En cuanto un intento desplazaba el
+ * `target` para apartar el descarte, la SIGUIENTE llamada a `acercar()` —hay
+ * una por jugada, en `onStateSync`— volvía a leer ese `target` ya desplazado
+ * como si fuera el de partida, y el desplazamiento de esta vuelta se sumaba al
+ * de la anterior. De ahí salía el mismo signo moviendo dos mesas en sentidos
+ * contrarios: no era geometría distinta de cada juego, era una deriva que
+ * dependía de cuántas jugadas llevara cada partida en el momento de medir.
+ *
+ * El arreglo no es un signo: es que `encuadrar()` ahora guarda `_objetivoBase`
+ * y `_ejeBase` —fijos, sólo esa función los reescribe— y esta función SIEMPRE
+ * calcula desde ahí, nunca desde dónde quedó la cámara la vez anterior. Medido
+ * proyectando cada zona a mano: mazo y descarte están en el mismo mundo
+ * x=∓5,5 en los dos juegos, así que un único signo (correr la imagen a la
+ * derecha) sirve a los dos por igual — la contradicción de signos de los
+ * intentos anteriores era la deriva, no la geometría.
+ *
+ * ⚠️ Y EL PANEO SOLO NO BASTA: HAY QUE ALEJAR PRIMERO, COMO `margenX`.
+ *
+ * Panear corre la imagen entera: el descarte se libra pero el mazo y tu
+ * mano —que en remigio ya llegan cerca del borde derecho, porque `acercar()`
+ * acerca la cámara hasta que tu mano ocupa el 72% de la pantalla— se corren
+ * CON él y se saldrían por el otro lado. Cambiar «tapado» por «fuera de
+ * cuadro» ya costó dos veces en este proyecto (snake, y las mesas de cartas la
+ * primera vez que se intentó esto). Por eso el alejamiento y el paneo van
+ * atados a una sola fracción `frac`, igual que `izquierdaLibre` en
+ * `encuadre.js`: cuanto más hace falta panear, más se aleja la cámara
+ * primero, reservando el hueco antes de correr la vista.
+ *
+ * Se busca por bisección la `frac` mínima que despeja el panel, igual que
+ * `SovereignBoardEngine.apartarDelPanel`: confiar en una fracción calculada de
+ * un tirón sobrecorrige (ahí ya pasó: un desplazamiento «razonable» dejó el
+ * tablero minúsculo en una esquina). Y si ni con el máximo alcanza, se
+ * devuelve sin panear —tapado sigue siendo mejor que fuera de cuadro— en vez
+ * de dejar algo a medias sin comprobar.
+ */
+function apartarDescarteDelPanel(motor, objetivo, eje, dEntrada, tanH) {
+    if (motor.esPantallaEstrecha()) return { d: dEntrada, pan: 0 };
+    const panel = document.querySelector('.hud-panel');
+    if (!panel) return { d: dEntrada, pan: 0 };
+    const anchoPantalla = window.innerWidth || 1;
+    const r = panel.getBoundingClientRect();
+    // Sólo si es una columna: en móvil el panel ocupa todo el ancho y correr la
+    // vista no tendría dónde meter lo que tapa — mismo guardián que usa
+    // `SovereignBoardEngine.apartarDelPanel`.
+    if (!(r.width / anchoPantalla > 0.05 && r.width / anchoPantalla < 0.5)) return { d: dEntrada, pan: 0 };
+
+    // Lo que tiene que asomar por la derecha del panel: mazo, descarte y la
+    // carta recién robada (`robada_`, delante de todo, por si acaba tapada).
+    const cajaMesa = new THREE.Box3();
+    // Lo que no puede salirse por el OTRO lado al panear: lo de arriba, MÁS tu
+    // mano. Nunca las manos rivales — se sacan de la pantalla a propósito, y
+    // metidas aquí el desplazamiento saldría de cientos de píxeles.
+    const cajaDerecha = new THREE.Box3();
+    let hayMesa = false;
+    motor.scene.traverse((o) => {
+        if (!o.isMesh || !o.visible) return;
+        const zona = String(o.userData?.zona ?? '');
+        if (zona.startsWith('mazo_') || zona.startsWith('descarte_') || zona.startsWith('robada_')) {
+            cajaMesa.expandByObject(o);
+            cajaDerecha.expandByObject(o);
+            hayMesa = true;
+        } else if (zona.startsWith('mano_0_')) {
+            cajaDerecha.expandByObject(o);
+        }
+    });
+    if (!hayMesa || cajaMesa.isEmpty()) return { d: dEntrada, pan: 0 };
+
+    const esquinasDe = (caja) => {
+        const es = [];
+        for (const x of [caja.min.x, caja.max.x])
+            for (const y of [caja.min.y, caja.max.y])
+                for (const z of [caja.min.z, caja.max.z]) es.push(new THREE.Vector3(x, y, z));
+        return es;
+    };
+    const esqMesa = esquinasDe(cajaMesa);
+    const esqDerecha = cajaDerecha.isEmpty() ? esqMesa : esquinasDe(cajaDerecha);
+    const BORDE = 12;   // el mismo dedo de aire que `SovereignBoardEngine.apartarDelPanel`, para el canto de la pantalla
+
+    const situar = (d, pan) => {
+        const salto = new THREE.Vector3(-pan, 0, 0);
+        motor.camera.position.copy(objetivo).addScaledVector(eje, d).add(salto);
+        motor.camera.lookAt(objetivo.clone().add(salto));
+        motor.camera.updateMatrixWorld(true);
+    };
+    const xPantalla = (v) => (v.clone().project(motor.camera).x * 0.5 + 0.5) * anchoPantalla;
+    /**
+     * ⚠️ CONTRA EL PANEL, SIN DEDO DE MÁS — SÓLO EL MISMO SOLAPE QUE MIDE
+     * `bajo_el_panel.mjs`.
+     *
+     * Un margen aquí «por si acaso» activa esta función en mesas que
+     * `bajo_el_panel.mjs` NO cuenta como tapadas —medido: pasaba en unit, cuyo
+     * descarte queda a un pelo del panel pero no lo toca— y el paneo que
+     * arregla un problema inexistente movía la cámara lo bastante para tapar
+     * MÁS mano rival de la que ya tapaba (2→4, regresión real, medida con
+     * `git stash`). Un solo píxel de gracia contra el parpadeo de coma
+     * flotante, nada más.
+     */
+    const invadePanel = () => (r.right + 1) - Math.min(...esqMesa.map(xPantalla));
+    const invadeBorde = () => Math.max(...esqDerecha.map(xPantalla)) - (anchoPantalla - BORDE);
+
+    /**
+     * ⚠️ Y EL ÁRBITRO DE VERDAD: CONTAR IGUAL QUE `bajo_el_panel.mjs`, NO CON
+     * LAS CAJAS DE ARRIBA.
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * `invadePanel`/`invadeBorde` miran las ESQUINAS de mazo/descarte/mano —
+     * más estrictas que lo que de verdad se mide, que es el CENTRO de cada
+     * malla (`bajo_el_panel.mjs`, `V.setFromMatrixPosition`). Y sólo miran las
+     * piezas de mesa y la mano propia, nunca las rivales, porque desplazarse
+     * pensando en ellas deshace la composición a propósito de `acercar()`.
+     *
+     * Pero panear mueve TODA la escena, rivales incluidas — y una mano rival
+     * que estaba fuera de pantalla A PROPÓSITO puede entrar justo en la franja
+     * del panel sin que las cajas de arriba se enteren, porque nunca miran las
+     * rivales. Pasó de verdad: en unit el paneo que despejaba el descarte
+     * metía una mano rival bajo el panel que antes ni se veía —de 2 piezas
+     * tapadas a 4, medido con `git stash` contra el original—.
+     *
+     * Así que el veto final no es una caja: es contar EXACTAMENTE como cuenta
+     * `bajo_el_panel.mjs` —centro de cada malla con zona, descartando lo que
+     * cae fuera del lienzo antes de mirar el panel— antes y después de panear,
+     * mirando la escena ENTERA, rivales incluidas. Si el número no baja de
+     * verdad, no se panea. Es la única forma de que «no empeore ninguno» no
+     * dependa de haber adivinado bien qué mirar.
+     */
+    const altoPantalla = window.innerHeight || 1;
+    const contarTapadas = () => {
+        let n = 0;
+        const v = new THREE.Vector3();
+        motor.scene.traverse((o) => {
+            if (!o.isMesh || !o.visible || o.userData?.zona === undefined) return;
+            o.getWorldPosition(v);
+            const p = v.clone().project(motor.camera);
+            if (!Number.isFinite(p.x) || !Number.isFinite(p.y) || p.z < -1 || p.z > 1) return;
+            const x = (p.x * 0.5 + 0.5) * anchoPantalla;
+            const y = (1 - (p.y * 0.5 + 0.5)) * altoPantalla;
+            if (x < 0 || y < 0 || x > anchoPantalla || y > altoPantalla) return;   // fuera del lienzo: no cuenta, ni antes ni después
+            if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) n++;
+        });
+        return n;
+    };
+
+    situar(dEntrada, 0);
+    const tapadasAntes = contarTapadas();
+    /**
+     * ⚠️ EL SUELO NO ES SIEMPRE CERO: SI YA INVADÍA EL BORDE ANTES DE TOCAR NADA,
+     * NO ES ESTA FUNCIÓN LA QUE LO CAUSÓ.
+     *
+     * `acercar()` acerca la cámara hasta que tu mano ocupa el 72% de la
+     * pantalla (más arriba, `TOPE`), y en una partida avanzada —la mano crece,
+     * en remigio se roba— eso puede empujar una carta más allá del borde ANTES
+     * de que esta función haga nada. Exigir `fuera <= 0` en ese caso sería
+     * bloquear el arreglo del panel por un problema que ya estaba ahí y que no
+     * es el que se pidió arreglar. La condición de verdad es «no empeorar lo
+     * que ya había», no «partir siempre de cero».
+     */
+    const fueraInicial = Math.max(0, invadeBorde());
+    if (invadePanel() <= 0) return { d: dEntrada, pan: 0 };   // ya se ve entero: no se toca nada
+
+    const probar = (frac) => {
+        const d = dEntrada / (1 - frac);
+        const pan = frac * d * tanH;
+        situar(d, pan);
+        return { d, pan, invade: invadePanel(), fuera: invadeBorde() };
+    };
+
+    let hi = 0.05, ultimo = probar(hi);
+    for (let i = 0; i < 8 && ultimo.invade > 2; i++) { hi = Math.min(hi * 1.6, 0.6); ultimo = probar(hi); }
+
+    let lo = 0, mejor = probar(lo);
+    for (let i = 0; i < 12; i++) {
+        const media = (lo + hi) / 2;
+        const r2 = probar(media);
+        if (r2.invade > 2) lo = media; else { hi = media; mejor = r2; }
+    }
+
+    // El paneo no puede sacar nada MÁS por el otro lado de lo que ya se salía
+    // —o, si no se salía nada, no puede sacar nada—. Si ni con el máximo
+    // alcanza, mejor no panear que cambiar «tapado» por «más fuera de cuadro».
+    if (mejor.fuera > fueraInicial + 2 || mejor.invade > 2) return { d: dEntrada, pan: 0 };
+
+    situar(mejor.d, mejor.pan);
+    if (contarTapadas() > tapadasAntes) return { d: dEntrada, pan: 0 };   // el veto de verdad: ver arriba
+    return { d: mejor.d, pan: mejor.pan };
 }
 
 /**
