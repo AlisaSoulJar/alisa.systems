@@ -104,6 +104,21 @@
  *     sería la lista escrita a mano que este instrumento existe para no tener,
  *     y el día que un `muro` tapado importe, más vale que salga.
  *
+ * ⚠️ HUECO CONOCIDO: ESTO MIDE LA PRIMERA PANTALLA, Y EL PANEL CRECE AL JUGAR
+ *
+ * El panel es alto o bajo según cuántas jugadas legales haya, y eso cambia con la
+ * partida. La GENERALA lo enseña perfectamente: abre con UN botón (`tirar`) y en
+ * cuanto tiras tiene quince —anotar:1..6, escalera, full, póker, generala, doble,
+ * guardar…—, así que crece y **tapa el primer dado**. Se ve en la captura del
+ * 16-08, y esta pasada dice «generala 0 piezas tapadas», que es verdad al abrir y
+ * mentira al segundo turno.
+ *
+ * O sea que un «0 tapadas» de aquí significa «0 al empezar», no «0 nunca». Está
+ * dicho aquí y no arreglado porque medir en varios momentos es rehacerle el bucle
+ * al instrumento, y prefiero un hueco declarado a un número que parece cubrirlo
+ * todo. Quien lo retome: hacen falta dos medidas, al abrir y tras unas jugadas, y
+ * quedarse con la PEOR.
+ *
  * ⚠️ EL PANEL SE FUERZA DESPLEGADO: ES EL PEOR CASO, Y EL PRIMERO QUE VE ALGUIEN
  *
  * `document.querySelector('.hud-panel').classList.remove('collapsed')` antes

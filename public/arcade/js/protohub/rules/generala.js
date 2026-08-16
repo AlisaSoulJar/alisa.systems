@@ -400,14 +400,35 @@ export function crearGenerala({ jugadores = 2 } = {}) {
              * imagen de las mesas rotas de esta mañana, y el laboratorio la marcó:
              * 0,3% de pantalla pintada.
              *
-             * En una mesa de verdad los cinco dados están ahí, en el cubilete,
-             * esperando. Eso es `ocultas`: existen y no se sabe qué cara traen.
+             * ⚠️ Y `ocultas` NO ERA LA RESPUESTA, AUNQUE LO PARECIERA.
+             *
+             * La primera versión ponía los cinco en `ocultas`, que es lo mismo que
+             * usan las cartas de un rival: EXISTE, pero no se sabe qué cara tiene.
+             * Medido en pantalla (capturas de antes/después de tirar): sale como
+             * cinco losas MORADAS idénticas, con el `mat.oculta` que `pintar3d.js`
+             * reserva para «hay información y está tapada» — literalmente cinco
+             * cartas boca abajo.
+             *
+             * Y en un dado sin tirar no hay ninguna información que tapar: no es que
+             * el 4 esté escondido, es que TODAVÍA NO HAY 4. `ocultas` describe lo
+             * primero y aquí pasaba lo segundo — la misma confusión que un jugador de
+             * mesa jamás tendría delante de un cubilete cerrado.
+             *
+             * La distinción se dibuja distinto: dados de verdad, con su cara — `?`,
+             * no un número — porque no hay número que mostrar todavía. Sigue siendo
+             * un montón de la misma zona `dados`, y con `ocultas: 0` no toca ni una
+             * línea de `pintar3d.js`: ese fichero es de mesa_tablero.mjs y lo
+             * comparten catorce juegos más, así que el arreglo vive aquí, en el
+             * único sitio que sabe que ESTOS cinco todavía no han caído.
              */
             const tirados = p.dados.length + p.guardados.length;
+            const esperando = Array.from({ length: DADOS }, () => 'd6_?');
             const zonas = [
                 // Los sueltos: de nadie, están sobre la mesa y se van a volver a tirar.
-                { id: 'dados', de: null, items: p.dados.map(d => `d6_${d}`),
-                  ocultas: tirados ? 0 : DADOS },
+                // Antes de la primera tirada son los cinco `d6_?` — ahí, esperando,
+                // no tapados.
+                { id: 'dados', de: null,
+                  items: tirados ? p.dados.map(d => `d6_${d}`) : esperando, ocultas: 0 },
                 // Los apartados: de quien tiene el turno. La diferencia entre estos
                 // dos montones ES la decisión del juego, por eso son dos zonas y no
                 // una con una marca.
