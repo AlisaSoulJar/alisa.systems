@@ -407,8 +407,19 @@ if (sinRestaurar.length) {
  */
 const { readdir } = await import('node:fs/promises');
 
-/** Ésta no se corre a sí misma: va aparte porque tarda, y está dicho en su script. */
-const APARTE = new Set(['prueba_de_las_pruebas.mjs']);
+/**
+ * Las que NO van en `npm test`, con su motivo. La lista es corta a propósito: cada
+ * entrada aquí es una comprobación que nadie corre por defecto, o sea una que se
+ * puede pudrir sin que salte. Sólo entran las que abren navegadores para los 35
+ * juegos —minutos por pasada— y por eso tienen su propio `npm run`.
+ *
+ * Estar aquí NO es un permiso para olvidarlas: es una deuda declarada. Si alguna
+ * deja de correrse nunca, mejor traerla a `npm test` aunque tarde.
+ */
+const APARTE = new Set([
+    'prueba_de_las_pruebas.mjs',   // es esto mismo: se corre con `npm run pruebas`
+    'prueba_vistas.mjs',           // abre los 35 en un navegador: `npm run vistas`
+]);
 
 const enDisco = (await readdir(new URL('.', import.meta.url)))
     .filter(f => /^(prueba_|check_).*\.mjs$/.test(f) && !APARTE.has(f));
