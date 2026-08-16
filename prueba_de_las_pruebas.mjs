@@ -103,6 +103,23 @@ const SABOTAJES = [
         vigila: 'que el sello del `?v=` corresponda al código que hay en disco',
     },
     {
+        nombre: 'fichas',
+        corre: 'node --import ./resolver_three.mjs prueba_fichas.mjs',
+        fichero: 'public/arcade/js/protohub/rules/bazas.js',
+        /**
+         * El fallo real: que la ficha PROMETA algo que el juego no cumple. Se le
+         * cambia el número de sillas a la familia de bazas —que reparte a cuatro— y
+         * tiene que saltar con nombre y cifra, no con un «algo no cuadra».
+         *
+         * Se sabotea aquí y no en un juego suelto porque esta fábrica sirve a cuatro
+         * a la vez: si la comprobación sólo mirara uno, el sabotaje se notaría igual
+         * y no se vería que cubre a los cuatro.
+         */
+        de: 'ASIENTOS: jugadores,',
+        a: 'ASIENTOS: 3,',
+        vigila: 'que la ficha de cada juego no prometa lo que el juego no cumple',
+    },
+    {
         nombre: 'clasificacion',
         corre: 'node prueba_clasificacion.mjs',
         fichero: 'public/clasificacion.html',
@@ -339,16 +356,83 @@ if (sinRestaurar.length) {
  * fallar» que esconde que hay siete sin mirar es la misma clase de media verdad que
  * este fichero persigue.
  */
-const CUBIERTAS = new Set(SABOTAJES.map(s => s.nombre));
-const TODAS = ['reglas', 'biblioteca', 'lenguaje', 'sustrato', 'objetivo', 'repetidor',
-               'final', 'teclado', 'css', 'openapi', 'version', 'semillas',
-               'gym_envs', 'funcion', 'preflight'];
-const faltan = TODAS.filter(n => !CUBIERTAS.has(n));
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *  ⚠️ EL CENSO SE DERIVA. ANTES ERA UNA LISTA A MANO, Y SE QUEDÓ VIEJA.
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *
+ * Aquí había un array `TODAS` con los nombres escritos a mano. Es la enésima lista
+ * de este proyecto que se separa de la realidad en silencio — y ésta era la peor,
+ * porque es la lista de la red de seguridad.
+ *
+ * Lo destapó una auditoría externa (Fable, 16-08) con un diagnóstico que no habíamos
+ * visto: **todos nuestros errores son de DENOMINADOR, no de predicado.** Toda esta
+ * maquinaria vigila si una condición detecta su fallo; ninguna pieza vigilaba si el
+ * conjunto sobre el que se mide es el conjunto que existe. Y el sabotaje es
+ * estructuralmente ciego a esa clase: una prueba con el universo recortado **sigue
+ * sabiendo suspender perfectamente dentro de su universo recortado**. Que este mismo
+ * fichero cazara el «6 de 41» de `check_gym_envs` fue un accidente afortunado —el
+ * sabotaje cayó justo en la zona no mirada— y nunca se convirtió en mecanismo.
+ *
+ * Al derivar el censo salieron a la primera DOS guardianes huérfanos: `prueba_fichas`
+ * —escrita esa misma mañana, la que vigila que la ficha no mienta— y
+ * `prueba_variantes`, que impide que el verificador acepte una partida jugada con
+ * otras normas. Existían, pasaban, y no las corría nadie. La duplicación que el
+ * proyecto daba por «vigilada» estaba vigilada por un guardia al que nadie pasaba
+ * lista.
+ *
+ * Tres alarmas, y las tres salen de comparar tres conjuntos que deberían coincidir:
+ * los ficheros que hay, los que corre `npm test`, y los que tienen sabotaje.
+ */
+const { readdir } = await import('node:fs/promises');
+
+/** Ésta no se corre a sí misma: va aparte porque tarda, y está dicho en su script. */
+const APARTE = new Set(['prueba_de_las_pruebas.mjs']);
+
+const enDisco = (await readdir(new URL('.', import.meta.url)))
+    .filter(f => /^(prueba_|check_).*\.mjs$/.test(f) && !APARTE.has(f));
+const guion = JSON.parse(
+    await readFile(new URL('./package.json', import.meta.url), 'utf-8')).scripts.test ?? '';
+const corridas = new Set(enDisco.filter(f => guion.includes(f)));
+/**
+ * Del comando se saca el fichero de la PRUEBA, no el primer `.mjs` que aparezca:
+ * varias se lanzan con `node --import ./resolver_three.mjs prueba_x.mjs`, y quedarse
+ * con el primero daba «sabotaje que apunta a una prueba que ya no existe:
+ * ./resolver_three.mjs» y tres falsos «sin sabotaje». Un cargador no es una prueba.
+ */
+const ficheroDe = (cmd) =>
+    (cmd.match(/(?:^|[\s/\\])((?:prueba_|check_)[\w.]+\.mjs)/) ?? [])[1];
+const conSabotaje = new Set(SABOTAJES.map(s => ficheroDe(s.corre)).filter(Boolean));
+
+const huerfanas = enDisco.filter(f => !corridas.has(f));
+const sinSabotaje = [...corridas].filter(f => !conSabotaje.has(f));
+const sabotajeMuerto = [...conSabotaje].filter(f => f && !enDisco.includes(f));
 
 console.log(`\n  ${lista.length} comprobaciones puestas a prueba`
     + (malas ? rojo(` · ${malas} no saben fallar`) : verde(' · todas suspenden cuando deben')));
-if (!pedidos.length && faltan.length) {
-    console.log(gris(`  todavía sin sabotaje declarado (${faltan.length}): ${faltan.join(', ')}`));
+
+if (!pedidos.length) {
+    if (huerfanas.length) {
+        console.log(rojo(`\n  ✗ ${huerfanas.length} comprobación(es) que NO CORRE NADIE:`));
+        for (const f of huerfanas) console.log(rojo(`      ${f}`));
+        console.log('    Existen, pasan, y `npm test` no las llama. Una prueba que');
+        console.log('    nadie ejecuta no vigila nada — es un guardia sin turno.');
+    }
+    if (sinSabotaje.length) {
+        console.log(gris(`\n  todavía sin sabotaje declarado (${sinSabotaje.length}): `
+                       + sinSabotaje.join(', ')));
+    }
+    if (sabotajeMuerto.length) {
+        console.log(rojo(`\n  ✗ sabotaje que apunta a una prueba que ya no existe: `
+                       + sabotajeMuerto.join(', ')));
+    }
 }
 console.log('');
-process.exit(malas ? 1 : 0);
+/**
+ * Las alarmas del censo sólo cuentan en la pasada COMPLETA. Pedir un sabotaje suelto
+ * —`node prueba_de_las_pruebas.mjs clasificacion`— es depurar uno concreto, y hacer
+ * que eso falle por una huérfana que no se ha llegado a listar da un rojo mudo: salía
+ * `exit 1` debajo de un «todas suspenden cuando deben».
+ */
+const censoMal = pedidos.length ? 0 : huerfanas.length + sabotajeMuerto.length;
+process.exit(malas || censoMal ? 1 : 0);
