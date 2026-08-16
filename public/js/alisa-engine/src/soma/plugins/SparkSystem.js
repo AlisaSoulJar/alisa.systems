@@ -1,7 +1,15 @@
 import * as THREE from 'three';
 
 export class SparkSystem {
-    constructor(scene) {
+    /**
+     * @param {THREE.Scene} scene
+     * @param {Object} [config]
+     * @param {() => number} [config.rng] Source of randomness, [0,1). Defaults to
+     *        `Math.random`. Pass a seeded generator to get a reproducible weld-spark
+     *        burst and noise-hiss timbre. See `prueba_semillas.mjs`.
+     */
+    constructor(scene, config = {}) {
+        this.rng = config.rng || Math.random;
         this.count = 400;
         this.geometry = new THREE.BufferGeometry();
         this.positions = new Float32Array(this.count * 3);
@@ -42,19 +50,19 @@ export class SparkSystem {
         const col = this.geometry.attributes.color.array;
         for (let i = 0; i < this.count; i++) {
             if (this.lifespans[i] <= 0) {
-                this.positions[i*3] = origin.x + (Math.random()-0.5)*0.2;
-                this.positions[i*3+1] = origin.y + (Math.random()-0.5)*0.2;
-                this.positions[i*3+2] = origin.z + (Math.random()-0.5)*0.2;
-                
-                const speed = 4 + Math.random() * 6;
+                this.positions[i*3] = origin.x + (this.rng()-0.5)*0.2;
+                this.positions[i*3+1] = origin.y + (this.rng()-0.5)*0.2;
+                this.positions[i*3+2] = origin.z + (this.rng()-0.5)*0.2;
+
+                const speed = 4 + this.rng() * 6;
                 this.velocities[i].set(
-                    (Math.random() - 0.5) * speed,
-                    (Math.random() * 10) + 3,
-                    (Math.random() - 0.5) * speed
+                    (this.rng() - 0.5) * speed,
+                    (this.rng() * 10) + 3,
+                    (this.rng() - 0.5) * speed
                 );
-                this.lifespans[i] = Math.random() * 0.6 + 0.3;
-                
-                const r = Math.random();
+                this.lifespans[i] = this.rng() * 0.6 + 0.3;
+
+                const r = this.rng();
                 if (r < 0.4) { col[i*3]=0; col[i*3+1]=1; col[i*3+2]=1; } // cyan
                 else if (r < 0.7) { col[i*3]=1; col[i*3+1]=0.7; col[i*3+2]=0.2; } // orange
                 else { col[i*3]=1; col[i*3+1]=1; col[i*3+2]=1; } // white-hot
@@ -73,18 +81,18 @@ export class SparkSystem {
             else return;
         }
         if (this.audioCtx.state === 'suspended') this.audioCtx.resume();
-        const duration = 0.15 + Math.random() * 0.1;
+        const duration = 0.15 + this.rng() * 0.1;
         const bufferSize = this.audioCtx.sampleRate * duration;
         const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
         const data = buffer.getChannelData(0);
-        for(let i=0; i<bufferSize; i++) data[i] = Math.random() * 2 - 1;
+        for(let i=0; i<bufferSize; i++) data[i] = this.rng() * 2 - 1;
         
         const noise = this.audioCtx.createBufferSource();
         noise.buffer = buffer;
         
         const filter = this.audioCtx.createBiquadFilter();
         filter.type = 'bandpass';
-        filter.frequency.value = 2000 + Math.random() * 1000;
+        filter.frequency.value = 2000 + this.rng() * 1000;
         filter.Q.value = 1.0;
         
         const gain = this.audioCtx.createGain();

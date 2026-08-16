@@ -4,10 +4,21 @@ import { AnimationUtils } from '../../../soma/utils/AnimationUtils.js';
 import { BaseSimulationSystem } from '../../avatar-pipeline/BaseSimulationSystem.js';
 
 export class ArachneIngestionSystem extends BaseSimulationSystem {
-    constructor(engine, environment, physics, uiConfig) {
+    /**
+     * @param {Object} engine
+     * @param {Object} environment
+     * @param {Object} physics
+     * @param {Object} [uiConfig]
+     * @param {() => number} [uiConfig.rng] Source of randomness, [0,1). Defaults to
+     *        `Math.random`. Pass a seeded generator to get a reproducible hunt/patrol
+     *        cycle and cocoon shape. Reuses `uiConfig` instead of a new parameter so
+     *        every existing caller keeps working unchanged.
+     */
+    constructor(engine, environment, physics, uiConfig = {}) {
         super(engine, environment, uiConfig);
         this.physics = physics;
-        
+        this.rng = uiConfig.rng || Math.random;
+
         this.ANIM = {
             IDLE: 'HumanArmature|Spider_Idle',
             WALK: 'HumanArmature|Spider_Walk',
@@ -91,8 +102,8 @@ export class ArachneIngestionSystem extends BaseSimulationSystem {
         this.env.tubeLight.intensity = 250;
         this.log(`Dispensing: ${filename}`);
 
-        const angle = Math.random() * Math.PI * 2;
-        const dist = 4 + Math.random() * (this.physics.webRadius * 0.3);
+        const angle = this.rng() * Math.PI * 2;
+        const dist = 4 + this.rng() * (this.physics.webRadius * 0.3);
         const lx = Math.cos(angle) * dist;
         const lz = Math.sin(angle) * dist;
         const landPos = new THREE.Vector3(lx, 0.5, lz);
@@ -144,7 +155,7 @@ export class ArachneIngestionSystem extends BaseSimulationSystem {
                 }
             }
 
-            await wait(4000 + Math.random() * 8000);
+            await wait(4000 + this.rng() * 8000);
         }
     }
 }
@@ -185,15 +196,15 @@ class ArachneBrain {
             case 'IDLE':
                 this.logBrain('STATE: IDLE', '#ffaa00');
                 if (this.timer < elapsed) {
-                    if (Math.random() < 0.2) {
+                    if (this.sys.rng() < 0.2) {
                         this.state = 'PATROL_MOVE';
-                        const rR = Math.random() * (this.sys.physics.webRadius * 0.6);
-                        const rA = Math.random() * Math.PI * 2;
+                        const rR = this.sys.rng() * (this.sys.physics.webRadius * 0.6);
+                        const rA = this.sys.rng() * Math.PI * 2;
                         this.sys.spiderTarget.set(Math.cos(rA) * rR, 0, Math.sin(rA) * rR);
                         this.sys.playAnim(this.sys.ANIM.WALK, true, 0.6);
                         this.logBrain('STATE: PATROL (Navigating)', '#00ffaa');
                     } else {
-                        this.timer = elapsed + 2 + Math.random() * 4;
+                        this.timer = elapsed + 2 + this.sys.rng() * 4;
                     }
                 }
                 break;
@@ -331,7 +342,7 @@ class ArachneBrain {
         for (let i = 0; i < 10; i++) {
             const pts = [];
             for (let j = 0; j < 5; j++) pts.push(new THREE.Vector3(
-                (Math.random() - 0.5) * 0.7, (Math.random() - 0.5) * 0.9, (Math.random() - 0.5) * 0.7
+                (this.sys.rng() - 0.5) * 0.7, (this.sys.rng() - 0.5) * 0.9, (this.sys.rng() - 0.5) * 0.7
             ));
             g.add(new THREE.Line(
                 new THREE.BufferGeometry().setFromPoints(new THREE.CatmullRomCurve3(pts, true).getPoints(16)), mat

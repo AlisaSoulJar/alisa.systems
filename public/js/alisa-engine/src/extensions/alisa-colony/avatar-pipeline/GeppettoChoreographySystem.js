@@ -17,12 +17,23 @@ export class GeppettoBrain {
 }
 
 export class GeppettoChoreographySystem {
-    constructor(engine, envFactory, kinematicsSys, uiConfig) {
+    /**
+     * @param {Object} engine
+     * @param {Object} envFactory
+     * @param {Object} kinematicsSys
+     * @param {Object} [uiConfig]
+     * @param {() => number} [uiConfig.rng] Source of randomness, [0,1). Defaults to
+     *        `Math.random`. Pass a seeded generator to get a reproducible joint
+     *        rig and explosion-pose scatter. Reuses `uiConfig` instead of a new
+     *        parameter so every existing caller keeps working unchanged.
+     */
+    constructor(engine, envFactory, kinematicsSys, uiConfig = {}) {
         this.engine = engine;
         this.env = envFactory;
         this.kinematics = kinematicsSys;
         this.ui = uiConfig;
-        
+        this.rng = uiConfig.rng || Math.random;
+
         this.dropQueue = [];
         this.brain = new GeppettoBrain(uiConfig);
         
@@ -160,7 +171,7 @@ export class GeppettoChoreographySystem {
             
             mesh.traverse(c => {
                 if (c.isBone || (c.isMesh && c !== largestMesh && c !== mesh)) {
-                    joints.push({ joint: c, baseRot: c.rotation.clone(), speed: Math.random() * 5 + 2, offset: Math.random() * Math.PI * 2 });
+                    joints.push({ joint: c, baseRot: c.rotation.clone(), speed: this.rng() * 5 + 2, offset: this.rng() * Math.PI * 2 });
                 }
             });
             this.env.propHolder.userData.joints = joints;
@@ -172,8 +183,8 @@ export class GeppettoChoreographySystem {
                         mesh: c,
                         basePos: c.position.clone(),
                         baseRot: c.rotation.clone(),
-                        expPos: c.position.clone().add(new THREE.Vector3((Math.random() - 0.5) * 12, (Math.random() - 0.5) * 12, (Math.random() - 0.5) * 12)),
-                        expRot: new THREE.Euler(Math.random() * Math.PI * 2, Math.random() * Math.PI * 2, Math.random() * Math.PI * 2)
+                        expPos: c.position.clone().add(new THREE.Vector3((this.rng() - 0.5) * 12, (this.rng() - 0.5) * 12, (this.rng() - 0.5) * 12)),
+                        expRot: new THREE.Euler(this.rng() * Math.PI * 2, this.rng() * Math.PI * 2, this.rng() * Math.PI * 2)
                     });
                 }
             });

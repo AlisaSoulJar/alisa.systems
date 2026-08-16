@@ -31,7 +31,7 @@ const AQUI = fileURLToPath(new URL('.', import.meta.url));
 const RAIZ = join(AQUI, 'public/js/alisa-engine/src');
 
 /**
- * ⚠️ TECHO DE SISTEMAS SIN SEMBRAR. Hoy son 7 de 54 (empezaron siendo 28).
+ * ⚠️ TECHO DE SISTEMAS SIN SEMBRAR. Hoy son 2 de 54 (empezaron siendo 28).
  * Cada uno que acepte `rng` baja este número. **Nunca sube.**
  *
  * 2026-08-15: bajó de 23 a 16 sembrando CroupierSystem, TurretCombatSystem,
@@ -50,13 +50,20 @@ const RAIZ = join(AQUI, 'public/js/alisa-engine/src');
  * sin constructor, así que la fuente de azar se cachea en `init(config)`, que
  * es lo más parecido a un constructor que tiene: mismo patrón, otro sitio.
  *
- * ⚠️ QUEDAN 5 FUERA DE ALCANCE: ArachneIngestionSystem, GeppettoChoreographySystem
- * y PygmalionTopologySystem viven en `extensions/alisa-colony/avatar-pipeline/`;
- * SovereignAvatarSystem en `extensions/alisa-colony/plugins/`; SparkSystem en
- * `soma/plugins/`. Ninguno está bajo `world/`, así que sembrarlos es trabajo de
- * otra sesión (la mía tiene prohibido tocar fuera de `world/`).
+ * Después bajó de 7 a 2 sembrando los cinco que antes quedaban fuera de
+ * `world/` (esa prohibición ya se levantó): ArachneIngestionSystem y
+ * GeppettoChoreographySystem reusan su `uiConfig` de siempre para llevar
+ * `.rng`; SovereignAvatarSystem ya tenía un `options` propio; SparkSystem no
+ * tenía ningún objeto de configuración así que ganó uno (`config = {}`); y
+ * PygmalionTopologySystem tampoco —su constructor son seis callbacks
+ * posicionales— así que se le añadió un séptimo parámetro `config = {}` al
+ * final, compatible con quien ya lo llama con seis. Pygmalion además
+ * construye su propio `SparkSystem` interno, y ahora le pasa el mismo `rng`
+ * (`new SparkSystem(this.scene, { rng: this.rng })`) para que ambos compartan
+ * un único flujo de azar — el mismo gesto que ya se hizo con `TrafficSurvivalSystem`
+ * → `IDMSystem`.
  *
- * ⚠️ Y QUEDAN 2 DENTRO DE ALCANCE PERO NO SEMBRADOS A PROPÓSITO:
+ * ⚠️ QUEDAN 2 DENTRO DE ALCANCE PERO NO SEMBRADOS A PROPÓSITO:
  *   AsteroidsSystem y CuccoGameSystem (con su base BulletHeavenEngine) NO
  *   aceptan `config.rng` cacheado en el constructor porque sus entornos del
  *   gym (`AsteroidsEnv._withSeed`, `CuccoSwarmEnv` + `DeterministicScope`)
@@ -66,7 +73,23 @@ const RAIZ = join(AQUI, 'public/js/alisa-engine/src');
  *   sin sembrar y rompería silenciosamente el entorno — exactamente la clase
  *   de arreglo que parece bueno y no lo es. Se dejan así a propósito.
  */
-const TECHO_SIN_SEMBRAR = 7;
+/**
+ * ⚠️ Y CON ESO, ESTE TRINQUETE HA TOCADO SUELO: **2 NO ES DEUDA, ES EL FONDO.**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Empezó en 28 y ha bajado hasta 2, pero esos dos últimos NO hay que sembrarlos —el
+ * bloque de arriba explica por qué—, así que la regla de siempre («este número sólo
+ * puede bajar») deja de valer aquí y se invierte:
+ *
+ *   · si SUBE de 2, alguien metió un sistema nuevo con azar incontrolado;
+ *   · si BAJA de 2, alguien sembró Asteroids o Cucco **y rompió su determinismo
+ *     en silencio**, que es peor que no haberlos tocado.
+ *
+ * Se deja escrito porque un trinquete cuyo texto dice «sólo puede bajar» invita a
+ * bajarlo, y la siguiente persona que lo lea con ganas de dejarlo en cero haría
+ * exactamente el daño que esta comprobación existe para evitar.
+ */
+const TECHO_SIN_SEMBRAR = 2;
 
 const sistemas = [];
 (function recorrer(dir) {

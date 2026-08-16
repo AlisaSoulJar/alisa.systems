@@ -7,16 +7,20 @@ export class SovereignAvatarSystem {
      * Initializes the Sovereign Avatar System module within the AlisaRenderCore.
      * @param {AlisaRenderCore} app - The core rendering context.
      * @param {Object} options - Configuration object.
+     * @param {() => number} [options.rng] Source of randomness, [0,1). Defaults to
+     *        `Math.random`. Pass a seeded generator to get reproducible spawn
+     *        positions, waypoint jitter and systemic-event scatter.
      */
     constructor(app, options = {}) {
         this.app = app;
         this.scene = app.scene;
         this.camera = app.camera;
         this.clock = app.clock;
-        
+        this.rng = options.rng || Math.random;
+
         this.activeAvatars = {};
         this.systemicEvents = [];
-        
+
         this.basePath = options.basePath || '../props/models/';
         this.loader = new GLTFLoader();
         this.vrmModuleLoaded = false;
@@ -229,8 +233,8 @@ export class SovereignAvatarSystem {
                 if (avatar._lastDesire !== mainDesire.desire) {
                     const waypoint = this._getWaypointForEvent(actionType, "world", beingName);
                     // Add some variance so they don't all stand on the exact same spot
-                    waypoint.x += (Math.random() - 0.5) * 2;
-                    waypoint.z += (Math.random() - 0.5) * 2;
+                    waypoint.x += (this.rng() - 0.5) * 2;
+                    waypoint.z += (this.rng() - 0.5) * 2;
                     
                     avatar.targetPos.copy(waypoint);
                     avatar.group.lookAt(avatar.targetPos);
@@ -382,16 +386,16 @@ export class SovereignAvatarSystem {
             return new THREE.Vector3(-5, 0, -4); // Go to Heti/Reception
         }
         if (t.includes('SOMA') || t.includes('PSYCHE')) {
-            return new THREE.Vector3(5, 0, 4 * (Math.random() > 0.5 ? 1 : -1)); // SOMA Desk
+            return new THREE.Vector3(5, 0, 4 * (this.rng() > 0.5 ? 1 : -1)); // SOMA Desk
         }
         if (domain === 'NODO') {
-            return new THREE.Vector3(14, 0, (Math.random() - 0.5) * 10); // Arcades on East wall
+            return new THREE.Vector3(14, 0, (this.rng() - 0.5) * 10); // Arcades on East wall
         }
         if (t.includes('SPEAK')) {
             return new THREE.Vector3(0, 0, 0); // Center stage
         }
         // Idle/Wander Default = Waiting Room
-        return new THREE.Vector3(-10, 0, (Math.random() - 0.5) * 6);
+        return new THREE.Vector3(-10, 0, (this.rng() - 0.5) * 6);
     }
 
     _createHolographicProp(domainHex) {
@@ -496,7 +500,7 @@ export class SovereignAvatarSystem {
             group.add(labelObj);
 
             // Set initial spawn
-            group.position.set((Math.random() - 0.5) * 8, 0, (Math.random() - 0.5) * 8);
+            group.position.set((this.rng() - 0.5) * 8, 0, (this.rng() - 0.5) * 8);
             this.scene.add(group);
             
             this.activeAvatars[beingName] = {
@@ -582,7 +586,7 @@ export class SovereignAvatarSystem {
         });
         
         const mesh = new THREE.Mesh(geometry, material);
-        mesh.position.set((Math.random() - 0.5) * 10, Math.random() * 2 + 1, (Math.random() - 0.5) * 10);
+        mesh.position.set((this.rng() - 0.5) * 10, this.rng() * 2 + 1, (this.rng() - 0.5) * 10);
         this.scene.add(mesh);
         
         this.systemicEvents.push({ mesh: mesh, spawnTime: this.clock.getElapsedTime(), domain: scene.domain });

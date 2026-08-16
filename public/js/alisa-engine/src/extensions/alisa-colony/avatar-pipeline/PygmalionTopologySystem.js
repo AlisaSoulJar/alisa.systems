@@ -26,12 +26,12 @@ export class PygmalionBrain {
             case 'IDLE':
                 this.logBrain('STATE: IDLE', '#ffaa00');
                 if (this.timer < elapsed) {
-                    if (Math.random() < 0.20) {
+                    if (this.ctx.rng() < 0.20) {
                         this.state = 'CALIBRATING';
                         this.logBrain('STATE: CALIBRATING', '#00ffaa');
                         this.doCalibration();
                     } else {
-                        this.timer = elapsed + 3 + Math.random() * 5;
+                        this.timer = elapsed + 3 + this.ctx.rng() * 5;
                     }
                 }
                 break;
@@ -214,7 +214,23 @@ export class PygmalionBrain {
 }
 
 export class PygmalionTopologySystem {
-    constructor(engine, envFactory, setUI, log, flashImpact, setProgress) {
+    /**
+     * @param {Object} engine
+     * @param {Object} envFactory
+     * @param {Function} [setUI]
+     * @param {Function} [log]
+     * @param {Function} [flashImpact]
+     * @param {Function} [setProgress]
+     * @param {Object} [config]
+     * @param {() => number} [config.rng] Source of randomness, [0,1). Defaults to
+     *        `Math.random`. Pass a seeded generator to get a reproducible idle/belt
+     *        cadence — also handed down to the internal `SparkSystem` so the weld
+     *        bursts share the same stream. There was no existing options object on
+     *        this constructor (six positional callbacks), so `config` is a new
+     *        trailing parameter; every existing caller passes only six args and
+     *        keeps working unchanged.
+     */
+    constructor(engine, envFactory, setUI, log, flashImpact, setProgress, config = {}) {
         this.engine = engine;
         this.scene = engine.scene;
         this.env = envFactory;
@@ -222,8 +238,9 @@ export class PygmalionTopologySystem {
         this.log = log || (() => {});
         this.flashImpact = flashImpact || (() => {});
         this.setProgress = setProgress || (() => {});
-        
-        this.sparks = new SparkSystem(this.scene);
+        this.rng = config.rng || Math.random;
+
+        this.sparks = new SparkSystem(this.scene, { rng: this.rng });
         this.armLeft = null;
         this.armRight = null;
         this.pygmalionArm = null;
@@ -543,9 +560,9 @@ export class PygmalionTopologySystem {
                         }
                     }
                 } catch(e) {
-                     if(Math.random() < 0.8) {
+                     if(this.rng() < 0.8) {
                          const mockFiles = ["Tarantula.glb", "Gorilla.glb", "Bear.glb", "Hyena.glb"];
-                         const chosen = mockFiles[Math.floor(Math.random() * mockFiles.length)];
+                         const chosen = mockFiles[Math.floor(this.rng() * mockFiles.length)];
                          const mockManifest = { 
                              target_tier: "Tier 2.0", 
                              deduced_size_meters: 1.5,
@@ -565,7 +582,7 @@ export class PygmalionTopologySystem {
                 this.setUI("AWAITING_COCOON", "—", "—", 0);
             }
             
-            await this.wait(2000 + Math.random() * 4000);
+            await this.wait(2000 + this.rng() * 4000);
         }
     }
 
