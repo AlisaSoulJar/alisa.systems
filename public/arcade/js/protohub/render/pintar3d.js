@@ -422,6 +422,35 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
             const dx = -(cols - 1) / 2, dz = -(filas - 1) / 2;
 
             /**
+             * ⚠️ DÓNDE CAE CADA CASILLA, PUBLICADO. ES EL CONTRATO QUE LE FALTABA.
+             *
+             * Las piezas se pueden comprobar desde fuera porque LLEVAN NOMBRE en la
+             * malla (`p:<tipo>:<dueño>`): un instrumento las proyecta y sabe a qué está
+             * apuntando. Las casillas no tenían nada equivalente, y sin eso la única
+             * medida posible de «¿se puede jugar tocando el tablero?» era una rejilla a
+             * ciegas — cuyo cero no distingue «no se puede tocar» de «no lo encontré».
+             *
+             * Intenté deducirlo mirando la escena y me equivoqué en tres juegos de seis
+             * sin un solo error en consola: la malla plana más grande, que parecía
+             * obviamente el tablero, era el SUELO de la habitación. Y de cerca son
+             * cuatro geometrías distintas: ajedrez tiene 64 casillas como objetos,
+             * reversi el tablero pintado en una sola malla, y el goban de go ni
+             * siquiera es una malla plana.
+             *
+             * ⚠️ Y NO SE HACE CON UNA MALLA POR CASILLA, AUNQUE ASÍ LO HAGA EL AJEDREZ.
+             *
+             * Aquí el terreno se dibuja con `InstancedMesh` justamente para que
+             * fagocito —28x28, 784 celdas— no cueste 784 objetos. Estandarizar «como el
+             * ajedrez» sería tirar esa optimización para poder medir, que es dejar que
+             * el instrumento decida cómo se dibuja. Lo que hace falta no es un objeto
+             * por casilla: es SABER DÓNDE ESTÁ CADA UNA, y eso son seis números.
+             *
+             * La regla es la misma que usa el pintado de abajo: la casilla (c,f) cae en
+             * (c + dx, f + dz) y mide una unidad de lado.
+             */
+            escena.userData.rejillaMundo = { cols, filas, dx, dz, lado: 1, y: 0 };
+
+            /**
              * ⚠️ AQUÍ FALTABAN DOS FAMILIAS, Y UNA LLEVABA TIEMPO FALTANDO.
              *
              * Esto agrupaba en tres montones: suelo claro, suelo oscuro y muro.

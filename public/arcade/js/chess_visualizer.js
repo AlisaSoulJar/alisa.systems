@@ -142,6 +142,23 @@ function buildBoard() {
         }
     }
 
+    /**
+     * ⚠️ DÓNDE CAE CADA CASILLA, PUBLICADO — EL MISMO CONTRATO QUE `pintar3d`.
+     *
+     * Una pieza se puede comprobar desde fuera porque su malla lleva nombre. Una
+     * casilla no tenía nada equivalente, y sin eso «¿se puede jugar tocando el
+     * tablero?» sólo se podía medir con una rejilla a ciegas, cuyo cero no distingue
+     * «no se puede tocar» de «no lo encontré».
+     *
+     * Intenté deducirlo de la escena y salió el SUELO de la habitación en tres juegos
+     * de seis, sin un solo error. Son seis números y aquí ya están calculados: la
+     * casilla (c,f) cae en (c·lado + dx, f·lado + dz).
+     */
+    boardGroup.userData.rejillaMundo = {
+        cols: 8, filas: 8, lado: SQUARE_SIZE,
+        dx: -HALF_BOARD + SQUARE_SIZE / 2, dz: -HALF_BOARD + SQUARE_SIZE / 2, y: 0,
+    };
+
     // Outer border
     const borderGeo = new THREE.BoxGeometry(SQUARE_SIZE * 8.6, 0.3, SQUARE_SIZE * 8.6);
     const borderMat = new THREE.MeshStandardMaterial({ color: 0x0c0c12, metalness: 0.9, roughness: 0.1 });

@@ -106,6 +106,49 @@ const filas = [];
 for (const juego of juegos) {
   for (const modo of MODOS) {
     const ctx = await b.newContext(modo.ctx);
+    /**
+     * ⚠️ SE ENGANCHA EL RENDERIZADOR PARA PODER APUNTAR, Y VA ANTES DE CARGAR NADA.
+     *
+     * La sonda de la mesa era una rejilla A CIEGAS de 16x20, y su número se leía como
+     * un límite de la sonda y no del juego: cuando unit daba «mesa 0/2» eso no quería
+     * decir que no se pudiera tocar, quería decir que 320 toques repartidos por la
+     * pantalla no habían acertado ninguna carta. Con esa medida no se puede decidir si
+     * el panel puede dejar de ser pulsable, que es justo lo que hay que decidir.
+     *
+     * Ahora se APUNTA. Las mallas llevan nombre desde el contrato de `prueba_vistas`
+     * —`p:<tipo>:<dueño>` para piezas, `z<n>:v<m>` para items de zona—, así que se
+     * proyecta cada una con la cámara y se toca su píxel. El parche es el mismo de
+     * `bajo_el_panel.mjs`: se envuelve `THREE.WebGLRenderer` y se guarda la escena y
+     * la cámara que le pasan, que funciona igual si el motor las publica en `window`
+     * como si no —el caso de peatón—.
+     *
+     * Va en `addInitScript` porque tiene que estar puesto ANTES del primer render, y
+     * `page.evaluate` después de cargar llega tarde.
+     */
+    await ctx.addInitScript(() => {
+        window.__CAPTURA = null;
+        const engancha = () => {
+            if (!window.THREE?.WebGLRenderer || window.__parcheado) return !!window.__parcheado;
+            const Original = THREE.WebGLRenderer;
+            function Parcheado(...args) {
+                const instancia = new Original(...args);
+                const renderOriginal = instancia.render.bind(instancia);
+                instancia.render = function (escena, camara) {
+                    window.__CAPTURA = { escena, camara };
+                    return renderOriginal(escena, camara);
+                };
+                return instancia;
+            }
+            Parcheado.prototype = Original.prototype;
+            THREE.WebGLRenderer = Parcheado;
+            window.__parcheado = true;
+            return true;
+        };
+        if (!engancha()) {
+            const reloj = setInterval(() => { if (engancha()) clearInterval(reloj); }, 20);
+            setTimeout(() => clearInterval(reloj), 20000);
+        }
+    });
     const p = await ctx.newPage();
     const url = `http://127.0.0.1:${P}/arcade/${paginas[juego].pagina}?semilla=7`
               + (paginas[juego].pagina === 'mesa.html' ? `&juego=${juego}` : '');
@@ -376,18 +419,267 @@ for (const juego of juegos) {
                 return Promise.resolve(st);
             };
         });
+        /**
+         * Las jugadas legales DE AHORA, leídas con el espía ya puesto —o sea, con el
+         * estado congelado— y antes de tocar nada. Se leen aquí y no al final porque
+         * las sondas de casillas las necesitan para saber a qué apuntar.
+         */
+        const legalesAhora = await p.evaluate(() => {
+            const st = window.ALISA_PROTOHUB?.state?.(window.ALISA_JUEGO) ?? {};
+            return (st.legal_moves ?? []).map(String).filter(m => m !== 'nueva' && m !== 'reset');
+        }).catch(() => legales.map(String));
+        const base = legalesAhora.length ? legalesAhora : legales.map(String);
+
         const { width: W, height: H } = modo.ctx.viewport;
         const bajoPanel = await p.evaluate(() => {
             const r = document.querySelector('.hud-panel')?.getBoundingClientRect();
             return r ? Math.max(0, Math.round(r.bottom + 8)) : 150;
         });
-        const COLS = 16, FILS = 20;
-        for (let cx = 0; cx < COLS; cx++) {
-            for (let cy = 0; cy < FILS; cy++) {
-                const x = Math.round((cx + 0.5) * W / COLS);
-                const y = Math.round(bajoPanel + (cy + 0.5) * (H - bajoPanel) / FILS);
-                if (y >= H - 2) continue;
-                await modo.tocar(p, x, y);
+
+        /**
+         * ── 2. LA MESA, APUNTANDO ─────────────────────────────────────────
+         *
+         * Dónde cae en pantalla cada malla CON NOMBRE. El nombre es el contrato que ya
+         * vigila `prueba_vistas`: sin él una pieza dibujada no se puede relacionar con
+         * nada del sustrato, y aquí tampoco se puede saber a qué se está apuntando.
+         *
+         * Se proyecta el centro del volumen envolvente, no la posición del objeto: una
+         * carta en un abanico está rotada y trasladada por sus padres, y `position` es
+         * la de su sistema local. Con `position` la mitad de los puntos caían fuera de
+         * la carta que decían señalar.
+         */
+        /**
+         * ⚠️ SE INSTALA COMO FUNCIÓN Y SE LLAMA ANTES DE CADA TOQUE, NO UNA VEZ.
+         *
+         * Calculando la lista entera de una vez, hearts se quedaba en 2 de 13. El
+         * motivo es que el primer toque reencuadra la mesa —`reencuadrarCuandoAsiente`
+         * acerca la cámara cuando las cartas dejan de moverse— y a partir de ahí los
+         * once píxeles que quedaban apuntaban a donde las cartas ESTABAN. Una lista de
+         * coordenadas calculada antes de tocar caduca en cuanto se toca.
+         *
+         * Se direcciona por ÍNDICE y no por nombre porque los nombres se repiten: las
+         * trece cartas de la mano se llaman todas `p:carta:0`.
+         */
+        await p.evaluate(() => {
+            const c = window.__CAPTURA;
+            if (!c?.escena || !c?.camara) { window.__APUNTA = null; return; }
+            const caja = new THREE.Box3(), v = new THREE.Vector3();
+            const rayo = new THREE.Raycaster();
+            const W = window.innerWidth, H = window.innerHeight;
+            const aPantalla = (p) => {
+                v.copy(p).project(c.camara);
+                return { x: (v.x + 1) / 2 * W, y: (1 - v.y) / 2 * H, delante: v.z < 1 };
+            };
+            /**
+             * ⚠️ EL CENTRO NO VALE: EN UN ABANICO LO TAPA LA CARTA SIGUIENTE.
+             *
+             * Apuntando al centro de cada malla, hearts daba 2 de 13 — y no porque no
+             * se puedan tocar once cartas, sino porque en un abanico cada carta sólo
+             * enseña una franja y el centro de casi todas está debajo de la de al lado.
+             * Un instrumento que apunta a un píxel tapado mide la colocación y lo
+             * cuenta como que la jugada no se puede hacer.
+             *
+             * Así que se prueban varios puntos de la pieza y se le pregunta al trazador
+             * de rayos QUÉ HAY DELANTE en cada uno. Vale el primero donde lo que
+             * contesta es esta misma pieza. Es literalmente la pregunta humana: ¿hay
+             * algún sitio donde tocando esto se toque esto?
+             */
+            const esta = (o, obj) => { for (let n = o; n; n = n.parent) if (n === obj) return true; return false; };
+            const nombradas = () => {
+                const lista = [];
+                c.escena.traverse((o) => {
+                    if (!o.visible || !o.isMesh || !o.name) return;
+                    // Sólo lo que el contrato nombra. El suelo, la niebla y el tapete no
+                    // llevan nombre y no son jugadas: apuntarles es volver a estar a ciegas.
+                    if (!/^(p:|z\d+:v\d+|oculta)/.test(o.name)) return;
+                    lista.push(o);
+                });
+                return lista;
+            };
+            window.__CUANTAS = () => nombradas().length;
+
+            /**
+             * ⚠️ Y LAS CASILLAS, QUE NO SON MALLAS Y HASTA HOY NO SE PODÍAN APUNTAR.
+             *
+             * El terreno se dibuja con `InstancedMesh` —una malla, N instancias— para
+             * que fagocito, que son 784 celdas, no cueste 784 objetos. Así que aquí no
+             * hay nada que proyectar: hay que saber DÓNDE está la casilla (c,f), y eso
+             * lo publica ahora el pintor en `userData.rejillaMundo`.
+             *
+             * Se busca recorriendo la escena y no en su raíz porque el pintor recibe un
+             * grupo, no la escena entera: `mesa_tablero` le pasa `grupo` y `jugar.html`
+             * le pasa `escena`. Buscar en la raíz habría funcionado en uno de los dos.
+             */
+            const conRejilla = () => {
+                let r = null;
+                c.escena.traverse((o) => { if (!r && o.userData?.rejillaMundo) r = { grupo: o, m: o.userData.rejillaMundo }; });
+                return r;
+            };
+            window.__CASILLA = (col, fil) => {
+                const r = conRejilla();
+                if (!r) return null;
+                const p = new THREE.Vector3(col * r.m.lado + r.m.dx, r.m.y ?? 0, fil * r.m.lado + r.m.dz);
+                r.grupo.localToWorld(p);
+                const s = aPantalla(p);
+                return { col, fil, x: Math.round(s.x), y: Math.round(s.y), delante: s.delante };
+            };
+            window.__REJILLA = () => {
+                const r = conRejilla();
+                return r ? { cols: r.m.cols, filas: r.m.filas } : null;
+            };
+            window.__APUNTA = (i) => {
+                const o = nombradas()[i];
+                if (!o) return null;
+                caja.setFromObject(o);
+                if (caja.isEmpty()) return null;
+                const mn = caja.min, mx = caja.max, cen = caja.getCenter(new THREE.Vector3());
+                // Centro primero, y luego hacia las esquinas de la caja: en un abanico
+                // la franja visible es siempre un borde.
+                const candidatos = [cen];
+                const alto = cen.y + (mx.y - cen.y) * 0.95;
+                for (const t of [0.75, 0.9, 0.97]) {
+                    // Esquinas, y también los medios de cada lado: en un abanico la
+                    // franja que asoma es un LADO entero, no una esquina, y muestreando
+                    // sólo las cuatro esquinas nueve cartas de trece salían «tapadas».
+                    for (const [ex, ez] of [[mn.x, mn.z], [mn.x, mx.z], [mx.x, mn.z], [mx.x, mx.z],
+                                            [mn.x, cen.z], [mx.x, cen.z], [cen.x, mn.z], [cen.x, mx.z]]) {
+                        candidatos.push(new THREE.Vector3(
+                            cen.x + (ex - cen.x) * t, alto, cen.z + (ez - cen.z) * t));
+                    }
+                }
+                for (const cand of candidatos) {
+                    const s = aPantalla(cand);
+                    if (!s.delante || s.x < 1 || s.y < 1 || s.x >= W - 1 || s.y >= H - 1) continue;
+                    rayo.setFromCamera({ x: (s.x / W) * 2 - 1, y: -(s.y / H) * 2 + 1 }, c.camara);
+                    const golpe = rayo.intersectObjects(c.escena.children, true)[0];
+                    if (golpe && esta(golpe.object, o)) {
+                        return { nombre: o.name, x: Math.round(s.x), y: Math.round(s.y), delante: true };
+                    }
+                }
+                // No hay ni un píxel donde esta pieza esté delante: se devuelve su centro
+                // Y SE MARCA, porque «tapada» y «no la encuentro» no son lo mismo.
+                const s = aPantalla(cen);
+                return { nombre: o.name, x: Math.round(s.x), y: Math.round(s.y), delante: s.delante, tapada: true };
+            };
+        });
+
+        /**
+         * ⚠️ SI NO HAY NADA CON NOMBRE SE VUELVE A LA REJILLA, Y SE DICE CUÁL SE USÓ.
+         *
+         * Trece de los treinta y cinco dibujan sin marcar sus piezas —`prueba_vistas`
+         * los cuenta como NO COMPROBABLES, que es una verdad distinta de aprobado— y
+         * ahí apuntar es imposible. Dar cero en esos sería mentir en la dirección
+         * cómoda: no es que no se puedan tocar, es que no sé dónde están.
+         */
+        const cuantas = await p.evaluate(() => window.__CUANTAS?.() ?? 0);
+        const apuntando = cuantas > 0;
+        const dianas = [];
+        if (apuntando) {
+            const vistos = new Set();
+            for (let i = 0; i < cuantas; i++) {
+                const d = await p.evaluate((k) => window.__APUNTA(k), i);
+                if (!d) continue;
+                dianas.push(d);
+                if (!d.delante || d.tapada) continue;
+                if (d.x < 2 || d.y < bajoPanel || d.x >= W - 2 || d.y >= H - 2) continue;
+                const clave = `${d.x},${d.y}`;
+                if (vistos.has(clave)) continue;   // cartas apiladas: un toque basta
+                vistos.add(clave);
+                await modo.tocar(p, d.x, d.y);
+            }
+        }
+
+        /**
+         * ── 2b. LAS CASILLAS, APUNTANDO ───────────────────────────────────
+         *
+         * Se recorre la rejilla que publica el pintor y se toca el centro de cada
+         * casilla. Es lo que le faltaba a este instrumento para poder decir algo de los
+         * once juegos que juegan a sitios y no a piezas.
+         *
+         * ⚠️ SE COMPRUEBA QUE LA JUGADA CORRESPONDA A LA CASILLA TOCADA.
+         *
+         * Repartir una rejilla sobre un tablero es una SUPOSICIÓN —que las casillas van
+         * uniformes y en ese orden— y una suposición que no se verifica es una rejilla
+         * a ciegas con más pasos. Si el reparto estuviera girado, del revés o corrido,
+         * saldrían jugadas de otras casillas y esto lo diría: se guarda qué coordenada
+         * se tocó y qué jugada salió, y luego se mira si hablan de lo mismo.
+         */
+        // Se pregunta SIEMPRE, tenga piezas o no: un tablero tiene las dos cosas y
+        // gatear esto tras «no hay piezas» dejó a ajedrez, damas y reversi sin medir
+        // las casillas justo el día que se puso la medida.
+        const rej = await p.evaluate(() => window.__REJILLA?.() ?? null);
+        let casillasOk = 0, casillasTocadas = 0;
+        if (rej && rej.cols * rej.filas <= 400) {
+            for (let f = 0; f < rej.filas; f++) {
+                for (let c = 0; c < rej.cols; c++) {
+                    const d = await p.evaluate(([a, b]) => window.__CASILLA(a, b), [c, f]);
+                    if (!d || !d.delante) continue;
+                    if (d.x < 2 || d.y < bajoPanel || d.x >= W - 2 || d.y >= H - 2) continue;
+                    const antes = await p.evaluate(() => (window.__tocadas ?? []).length);
+                    await modo.tocar(p, d.x, d.y);
+                    const salida = await p.evaluate((n) => (window.__tocadas ?? []).slice(n), antes);
+                    if (!salida.length) continue;
+                    casillasTocadas++;
+                    // ¿La jugada que salió habla de la casilla que toqué? Se acepta la
+                    // coordenada algebraica (`d2`, y también como destino de `d2d4`) o
+                    // el índice de casilla, que es como la nombran los otros.
+                    const alg = `${String.fromCharCode(97 + c)}${f + 1}`;
+                    const alg2 = `${String.fromCharCode(97 + c)}${rej.filas - f}`;
+                    const idx = String(f * rej.cols + c);
+                    if (salida.some(m => m.includes(alg) || m.includes(alg2) || m === idx)) casillasOk++;
+                }
+            }
+        }
+
+        /**
+         * ── 2c. LAS JUGADAS DE DOS CASILLAS ───────────────────────────────
+         *
+         * En ajedrez la jugada es `d2d4`: se toca la pieza y luego el destino. Con un
+         * toque por casilla salía 0 de 23 — y no porque no se pueda jugar tocando el
+         * tablero, sino porque la sonda hacía media jugada y la dejaba a medias.
+         *
+         * Aquí se recorren las jugadas legales que NOMBRAN dos casillas y se tocan las
+         * dos, en orden. Es lo que hace una persona, y es la única forma de que el cero
+         * de ajedrez signifique algo.
+         */
+        const dosCasillas = base.filter(m => /^[a-h][1-9][a-h][1-9]$/i.test(String(m)));
+        let paresOk = 0;
+        if (rej && dosCasillas.length) {
+            const aCol = (s) => s.charCodeAt(0) - 97;
+            for (const m of dosCasillas.slice(0, 24)) {
+                const s = String(m);
+                // La fila de la notación va de abajo a arriba y la de la rejilla de
+                // arriba a abajo; se prueban las dos porque cuál es cuál depende del
+                // visualizador, y equivocarse aquí daría un cero que parece del juego.
+                // Cuatro orientaciones y no dos: la fila de la notación va de abajo a
+                // arriba y la de la rejilla de arriba a abajo, PERO la columna también
+                // puede estar espejada según desde qué lado mire la cámara. Probarlas
+                // todas evita que un cero de orientación se lea como un cero del juego.
+                for (const [invF, invC] of [[true, false], [false, false], [true, true], [false, true]]) {
+                    const fila = (n) => invF ? rej.filas - Number(n) : Number(n) - 1;
+                    const col = (c) => invC ? rej.cols - 1 - c : c;
+                    const a = await p.evaluate(([c, f]) => window.__CASILLA(c, f), [col(aCol(s[0])), fila(s[1])]);
+                    const b = await p.evaluate(([c, f]) => window.__CASILLA(c, f), [col(aCol(s[2])), fila(s[3])]);
+                    if (!a?.delante || !b?.delante) continue;
+                    if (a.y < bajoPanel || b.y < bajoPanel) continue;
+                    const antes = await p.evaluate(() => (window.__tocadas ?? []).length);
+                    await modo.tocar(p, a.x, a.y);
+                    await modo.tocar(p, b.x, b.y);
+                    const salida = await p.evaluate((n) => (window.__tocadas ?? []).slice(n), antes);
+                    if (salida.includes(s)) { paresOk++; break; }
+                }
+            }
+        }
+
+        if (!apuntando && !rej) {
+            const COLS = 16, FILS = 20;
+            for (let cx = 0; cx < COLS; cx++) {
+                for (let cy = 0; cy < FILS; cy++) {
+                    const x = Math.round((cx + 0.5) * W / COLS);
+                    const y = Math.round(bajoPanel + (cy + 0.5) * (H - bajoPanel) / FILS);
+                    if (y >= H - 2) continue;
+                    await modo.tocar(p, x, y);
+                }
             }
         }
         /**
@@ -412,12 +704,33 @@ for (const juego of juegos) {
         await p.waitForTimeout(300);
         const tocadas = [...new Set(await p.evaluate(() => window.__tocadas ?? []))];
 
-        const legalesSet = new Set(legales.map(String));
+        /**
+         * ⚠️ EL DENOMINADOR ES LA LISTA DE AHORA, NO LA DEL PRINCIPIO.
+         *
+         * Aquí se comparaba contra las jugadas legales medidas ANTES de la fase del
+         * panel. Pero esa fase juega de verdad —tiene que hacerlo, si no no se puede
+         * ver si la partida avanza al pulsar—, así que para cuando se toca la mesa la
+         * mano ya no es la misma. En hearts salía «2 de 13» y las dos cosas eran
+         * ciertas por separado: se tocaban las trece cartas que había, y sólo dos de
+         * ellas estaban en la lista de trece de hace tres minutos.
+         *
+         * Aislada, la misma sonda llega a 13 de 13. El fallo no estaba en apuntar:
+         * estaba en contra qué se comparaba. Es la misma clase de error que el filtro
+         * de `check_gym_envs` —medir bien sobre el conjunto equivocado— y el sabotaje
+         * no la ve, porque una comprobación con el universo cambiado sigue sabiendo
+         * suspender dentro de su universo cambiado.
+         */
+        const legalesSet = new Set(base);
         const alcanzables = tocadas.filter(m => legalesSet.has(m));
-        const pct = legales.length ? Math.round(100 * alcanzables.length / legales.length) : null;
+        const pct = base.length ? Math.round(100 * alcanzables.length / base.length) : null;
         filas.push({ juego, modo: modo.nombre, medible: true, legales: legales.length,
                      botones: panelProbados, panelBien, panelReintentos, panelTapados,
-                     alcanzables: alcanzables.length, pct, tocadas: tocadas.length });
+                     alcanzables: alcanzables.length, pct, tocadas: tocadas.length,
+                     legalesMesa: base.length, legalesLista: base,
+                     rejilla: rej, casillasOk, casillasTocadas,
+                     pares: dosCasillas.length, paresOk,
+                     apuntando, dianas: dianas.length,
+                     tapadas: dianas.filter(z => z.tapada).length });
     } catch (e) {
         console.log(`  ! ${juego.padEnd(11)} ${modo.nombre.padEnd(5)} ${String(e.message).split('\n')[0].slice(0, 55)}`);
         filas.push({ juego, modo: modo.nombre, medible: false });
@@ -428,7 +741,9 @@ for (const juego of juegos) {
   // Las dos entradas del mismo juego, una al lado de la otra. Se imprime aquí y no
   // dentro del bucle para poder decir en la misma línea si coinciden.
   const [d, r] = MODOS.map(m => filas.find(f => f.juego === juego && f.modo === m.nombre));
-  const num = (f) => (f?.medible ? `${f.alcanzables}/${f.legales}` : '—');
+  // El divisor de la mesa es `legalesMesa` —las jugadas legales EN EL MOMENTO de tocar—
+// y no `legales`, que son las del principio. Ver el comentario del denominador.
+const num = (f) => (f?.medible ? `${f.alcanzables}/${f.legalesMesa ?? f.legales}` : '—');
   const pan = (f) => (f?.medible ? `${f.panelBien}/${f.botones}` : '—');
 
   /**
@@ -458,6 +773,19 @@ for (const juego of juegos) {
   const marca = !d?.medible || !r?.medible ? '?' : panelOk ? '✓' : '✗';
   console.log(`  ${marca} ${juego.padEnd(11)} panel dedo ${pan(d).padEnd(7)} ratón ${pan(r).padEnd(7)}`
       + ` · mesa dedo ${num(d).padEnd(7)} ratón ${num(r).padEnd(7)}`
+      /**
+       * ⚠️ SE DICE SI SE APUNTÓ O SE FUE A CIEGAS, Y CUÁNTAS PIEZAS NO ASOMAN.
+       *
+       * Sin esto, «mesa 2/13» se lee igual tanto si la sonda apuntó a las trece cartas
+       * como si tiró 320 toques al azar, y son dos frases distintas: la primera dice
+       * que once cartas NO SE PUEDEN TOCAR, la segunda que no las encontré. Marcar de
+       * dónde sale el número es lo que separa un fallo del juego de un límite mío.
+       */
+      + (d?.pares ? ` · ${d.paresOk}/${Math.min(d.pares, 24)} jugadas de dos casillas`
+         : d?.casillasTocadas ? ` · casillas ${d.casillasOk}/${d.casillasTocadas} tocadas`
+         : d?.rejilla ? ` · rejilla ${d.rejilla.cols}x${d.rejilla.filas} y NINGUNA contestó`
+         : d?.apuntando ? ` · apuntando a ${d.dianas}${d.tapadas ? `, ${d.tapadas} sin asomar` : ''}`
+         : ' · a ciegas')
       + (panelOk ? '' : '   ⚠ HAY UNA JUGADA QUE NO SE PUEDE PULSAR'));
 }
 
@@ -507,8 +835,122 @@ if (suma('panelReintentos')) {
               + ` ${quien('panelReintentos').join(', ')})`);
 }
 if (rotos.length) console.log(`  ✗ no del todo: ${rotos.map(([d]) => d.juego).join(', ')}`);
-console.log(`  MESA (comodidad, sondeo a ciegas): ${conMesa.length}/${medidos.length}`
-          + ` responden a tocar el tablero`);
+/**
+ * ⚠️ ESTA LÍNEA YA NO DICE «COMODIDAD», Y ES EL CAMBIO QUE IMPORTA.
+ *
+ * Mientras la mesa se sondeaba a ciegas, su número no podía significar nada: 320
+ * toques repartidos por la pantalla no aciertan una carta, y ese cero se leía como
+ * un límite de la sonda. Por eso la garantía tenía que ser el panel — y por eso el
+ * panel no podía dejar de ser pulsable.
+ *
+ * Ahora se APUNTA a cada pieza con nombre y se le pregunta al trazador de rayos si
+ * hay algún píxel donde esté delante. Con eso, «0 de 3» ya no es una limitación mía:
+ * es una jugada que una persona no puede hacer tocando la mesa. Ahí es donde se puede
+ * empezar a mover la garantía del panel al tablero.
+ *
+ * Los que dibujan sin nombrar sus piezas siguen yendo a ciegas y SE DICEN aparte:
+ * mezclarlos volvería a juntar «no se puede tocar» con «no sé dónde está».
+ */
+/**
+ * ⚠️ ESTA SONDA APUNTA A PIEZAS, Y HAY JUGADAS QUE NO SON UNA PIEZA.
+ *
+ * En ajedrez la jugada es `d2d4`: DOS casillas, y la segunda casi siempre está vacía.
+ * En go son los 357 cruces libres del goban, que no tienen malla porque todavía no hay
+ * piedra. Tocar una pieza no hace ninguna de esas jugadas ni queriendo, así que su
+ * cero no dice nada del juego — dice que esta sonda no sabe apuntar a un hueco.
+ *
+ * La primera pasada dio «7 de 35 responden a tocar el tablero» y esa frase, tal cual,
+ * es la clase de número que ya me ha engañado hoy dos veces: cierto por dentro y falso
+ * al leerlo. De los 28 restantes, la inmensa mayoría juegan a casillas.
+ *
+ * Se separan por lo que NOMBRAN sus jugadas, que es la misma pregunta que ya contesta
+ * `_panel.mjs`: si la mayoría son coordenadas o números, la jugada es un SITIO y este
+ * instrumento no llega. Y se dice, en vez de contarlo como suspenso.
+ */
+const deCasillas = ([d]) => {
+    const cola = (m) => String(m).split(':').pop();
+    const n = (d.legalesLista ?? []).filter(m => /^[a-z]\d[a-z]?\d?$/i.test(cola(m)) || /^\d+$/.test(cola(m))).length;
+    return n * 2 > (d.legalesLista ?? []).length;
+};
+/**
+ * ⚠️ Y HAY UNA TERCERA CLASE: LOS QUE JUEGAN A VERBOS.
+ *
+ * Con sólo dos grupos —casillas y piezas— snake y peatón caían en «piezas» y el titular
+ * salía 7 de 24. Pero la jugada de snake es `arriba`: tocar la serpiente no la mueve, y
+ * nunca debió contar como un juego que se juega tocando algo. Esos ya tienen su sitio
+ * medido, que es la barra de verbos de `npm run verbos`.
+ *
+ * Tres clases, y cada número dice de qué habla. Es la misma corrección que la del
+ * denominador, sólo que aquí el conjunto equivocado no era el divisor sino el grupo.
+ */
+const esVerbo = (m) => { const s = String(m); return !s.includes(':') && !/^[a-z]\d[a-z]?\d?$/i.test(s) && !/^\d+$/.test(s) && !/^[a-z]\d[a-z]?\d?$|^\d+$/i.test(s.split(/[_\s]/).pop()); };
+const deVerbos = ([d]) => {
+    const l = d.legalesLista ?? [];
+    return l.length > 0 && l.filter(esVerbo).length * 2 > l.length;
+};
+const aCiegas = medidos.filter(([d]) => !d.apuntando).map(([d]) => d.juego);
+const casillas = medidos.filter(deCasillas).map(([d]) => d.juego);
+const verbos = medidos.filter(f => !deCasillas(f) && deVerbos(f)).map(([d]) => d.juego);
+const dePiezas = medidos.filter((f) => !deCasillas(f) && !deVerbos(f) && f[0].apuntando);
+const okPiezas = dePiezas.filter(([d]) => d.alcanzables > 0);
+console.log(`  MESA, apuntando a las piezas con nombre: ${okPiezas.length}/${dePiezas.length}`
+          + ` de los juegos cuya jugada ES una pieza responden a tocarla`
+          + (okPiezas.length < dePiezas.length
+             ? `  (no: ${dePiezas.filter(([d]) => !d.alcanzables).map(([d]) => d.juego).join(', ')})` : ''));
+/**
+ * ⚠️ LAS CASILLAS YA SE MIDEN, DESDE QUE EL PINTOR PUBLICA DÓNDE ESTÁN.
+ *
+ * Hasta el 16-08 esta línea decía «esta sonda no sabe apuntar a un hueco» y era verdad:
+ * el terreno se dibuja con `InstancedMesh`, así que no hay una malla por casilla a la
+ * que apuntar. Se arregló publicando seis números —`userData.rejillaMundo`— en vez de
+ * adivinando la geometría, que es lo que ya funcionó para las piezas con sus nombres.
+ *
+ * Primeros números: reversi 4/4, damas 7/7, go 300/357 tocando el goban.
+ */
+/**
+ * ⚠️ «TIENE REJILLA» NO ES «JUEGA A CASILLAS», Y CONTARLO ASÍ SALÍA MAL.
+ *
+ * Sokoban, cripta o defensa publican rejilla —viven en un tablero— pero sus jugadas son
+ * VERBOS: `arriba`, `torre a1`. Contándolos aquí salían en las dos listas a la vez y el
+ * titular decía «5 de 21» cuando el denominador real son los que de verdad juegan
+ * nombrando una casilla. Es el mismo error de conjunto de esta mañana, en el sitio de
+ * al lado.
+ */
+const conCasillas = medidos.filter(f => f[0].rejilla && deCasillas(f));
+if (conCasillas.length) {
+    const bien = conCasillas.filter(([d]) => (d.paresOk ?? 0) > 0 || d.casillasOk > 0);
+    console.log(`  · de los ${conCasillas.length} que juegan a CASILLAS, ${bien.length} responden a tocar el tablero`
+              + (bien.length < conCasillas.length
+                 ? `  (no: ${conCasillas.filter(([d]) => !d.paresOk && !d.casillasOk).map(([d]) => d.juego).join(', ')})` : ''));
+}
+if (casillas.length && !conCasillas.length) {
+    console.log(`  (${casillas.length} juegan a CASILLAS y su tablero no publica dónde están:`
+              + ` ${casillas.join(', ')})`);
+}
+if (verbos.length) {
+    console.log(`  (${verbos.length} juegan a VERBOS —arriba, robar, plantarse— que no están en la mesa:`
+              + ` ${verbos.join(', ')}. Ésos se miden con \`npm run verbos\`, no aquí)`);
+}
+if (aCiegas.length) {
+    console.log(`  (${aCiegas.length} van todavía a ciegas porque no nombran sus piezas:`
+              + ` ${aCiegas.join(', ')} — ahí un cero no significa que no se pueda tocar)`);
+}
+/**
+ * ⚠️ «SIN ASOMAR» ES LO QUE MIDE ESTE MUESTREO, NI MÁS NI MENOS.
+ *
+ * Se prueban el centro y veinticuatro puntos hacia los bordes de la caja envolvente. Si
+ * en ninguno el trazador de rayos contesta esta pieza, se cuenta como que no asoma. Con
+ * un muestreo más flojo —sólo las cuatro esquinas— hearts daba nueve cartas tapadas de
+ * trece y no era verdad. Así que esto es una PISTA de dónde mirar, no una sentencia, y
+ * se dice para que nadie lo lea como que hay 83 piezas rotas.
+ */
+const sinAsomar = medidos.filter(([d]) => d.tapadas > 0);
+if (sinAsomar.length) {
+    console.log(`  · ${sinAsomar.reduce((s, [d]) => s + d.tapadas, 0)} pieza(s) donde el muestreo no encontró`
+              + ` ni un píxel suyo delante (${sinAsomar.map(([d]) => `${d.juego} ${d.tapadas}`).join(', ')}).`);
+    console.log(`    Es una pista de dónde mirar, no una sentencia: con un muestreo más flojo`
+              + ` hearts daba 9 de 13 «tapadas» y todas se podían tocar.`);
+}
 /**
  * ⚠️ Y LO QUE ESTE INSTRUMENTO NO PUEDE VER, DICHO EN VOZ ALTA.
  *

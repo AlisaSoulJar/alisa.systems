@@ -103,6 +103,22 @@ function buildBoard() {
     const topBoard = new THREE.Mesh(boardGeo, boardMat);
     topBoard.position.y = 0;
     boardGroup.add(topBoard);
+
+    /**
+     * ⚠️ DÓNDE CAE CADA HOYO, PUBLICADO — EL MISMO CONTRATO QUE `pintar3d`.
+     *
+     * Los hoyos de este tablero son AGUJEROS en una forma extruida, no mallas: no hay
+     * nada a lo que ponerle nombre ni nada que proyectar. Por eso mancala salía «a
+     * ciegas» en `tacto` —trescientos veinte toques repartidos por la pantalla— y su
+     * cero no significaba que no se pudiera tocar, sino que no lo encontraba.
+     *
+     * Y le encaja igual que a un tablero de casillas, porque su jugada ES el índice del
+     * hoyo (`0`…`5`): con una fila de seis, el índice de la casilla y el nombre de la
+     * jugada son el mismo número. La geometría es la de arriba, sin duplicar cuentas.
+     */
+    boardGroup.userData.rejillaMundo = {
+        cols: 6, filas: 1, lado: X_SPACING, dx: -3.25, dz: 1.0, y: 0,
+    };
 }
 function syncMancalaState(state) {
     const board = state.board;
