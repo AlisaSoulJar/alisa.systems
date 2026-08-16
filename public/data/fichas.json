@@ -39,9 +39,21 @@
       "verbos": null,
       "resumen": "en el momento de medir, sólo respondía el panel"
     },
-    "reglas": null,
-    "prosa": null,
-    "origen": null,
+    "reglas": "Mueves una pieza tuya a una casilla donde pueda ir, con una condición que lo gobierna todo: no puedes dejar a tu rey en jaque. La lista de jugadas legales ya viene filtrada por eso, así que lo que se ofrece es siempre legal de verdad.",
+    "prosa": {
+      "que_es": "El ajedrez, entero. No es una versión reducida: están el enroque, la captura al paso, la coronación a las cuatro piezas, el ahogado, la regla de las 50 jugadas y el material insuficiente.",
+      "reparto": "La posición inicial de siempre. Se habla FEN por dentro y las jugadas van en notación UCI: casilla de origen y casilla de destino pegadas, `e2e4`. Para coronar se añade la pieza, `e7e8q`.",
+      "turno": "Mueves una pieza tuya a una casilla donde pueda ir, con una condición que lo gobierna todo: no puedes dejar a tu rey en jaque. La lista de jugadas legales ya viene filtrada por eso, así que lo que se ofrece es siempre legal de verdad.",
+      "gana": "Gana quien da jaque mate. Son tablas el ahogado —quedarse sin jugadas sin estar en jaque—, las 50 jugadas sin mover peón ni capturar, y el material insuficiente.",
+      "ojo": [
+        "Se corona a las CUATRO piezas, no sólo a dama: `e7e8n` es legal y a veces es la buena.",
+        "Al tocar una pieza en la mesa se marcan sus destinos, y el segundo toque juega. Si la jugada exige coronar, corona dama por defecto, que es lo que quiere el 99% de las veces."
+      ],
+      "diferencias": [
+        "No está la triple repetición. En el ajedrez de verdad, repetir tres veces la misma posición son tablas; aquí una partida repetitiva sigue hasta que la corta la regla de las 50 jugadas. Es la única regla de tablas que falta."
+      ]
+    },
+    "origen": "Su forma moderna se fija en Europa en el siglo XV, a partir del shatranj persa, que a su vez viene del chaturanga indio. El xiangqi de esta misma casa es el otro gran nieto de aquel abuelo.",
     "puertas": {
       "persona": true,
       "llm": true,
@@ -86,9 +98,22 @@
       "verbos": 1,
       "resumen": "se juega tocando la mesa"
     },
-    "reglas": null,
-    "prosa": null,
-    "origen": null,
+    "reglas": "Pones una piedra en una intersección vacía, o pasas —pasar siempre es legal—. Al poner, se miran PRIMERO los grupos rivales que toca: los que se queden sin libertades se retiran del tablero.",
+    "prosa": {
+      "que_es": "Colocar piedras es lo fácil; el juego está en las libertades. Un grupo vive mientras toque alguna intersección vacía, y todo lo demás sale de ahí.",
+      "reparto": "Tablero de 19x19 vacío. Salen las negras. Las blancas reciben 6,5 puntos de compensación —el komi— por jugar segundas, y el medio punto está para que no haya empates.",
+      "turno": "Pones una piedra en una intersección vacía, o pasas —pasar siempre es legal—. Al poner, se miran PRIMERO los grupos rivales que toca: los que se queden sin libertades se retiran del tablero.",
+      "gana": "La partida acaba con dos pases seguidos. Se cuenta por área, la regla china: tus piedras en el tablero más el territorio que rodeas en exclusiva, y a las blancas se les suma el komi.",
+      "ojo": [
+        "El suicidio es ilegal… salvo que al hacerlo captures, porque entonces la captura te devuelve las libertades. El orden en que se resuelve importa y aquí está hecho en ese orden.",
+        "El ko impide recrear la posición inmediatamente anterior. Sin esa regla, dos jugadores pueden recapturarse la misma piedra eternamente y la partida no acaba jamás.",
+        "Se cuenta por área y no por territorio a propósito: el recuento japonés exige que los dos jugadores se pongan de acuerdo sobre qué piedras están muertas, y un banco de pruebas no puede depender de que dos agentes negocien."
+      ],
+      "diferencias": [
+        "El ko es el simple —no repetir la posición anterior— y no el superko posicional de las reglas chinas, que prohíbe repetir CUALQUIER posición anterior. La diferencia sólo aparece en situaciones raras de triple ko, pero en esas la partida puede no terminar."
+      ]
+    },
+    "origen": "Chino, con más de dos mil quinientos años. Es el juego de tablero más antiguo que se sigue jugando con las mismas reglas.",
     "puertas": {
       "persona": true,
       "llm": true,
@@ -132,9 +157,20 @@
       "verbos": null,
       "resumen": "se juega tocando la mesa"
     },
-    "reglas": null,
-    "prosa": null,
-    "origen": null,
+    "reglas": "Sólo puedes poner donde des la vuelta a algo: una jugada que no voltea ninguna ficha es ilegal. Se voltea en las ocho direcciones a la vez, todas las líneas que queden encerradas.",
+    "prosa": {
+      "que_es": "Se pone una ficha de forma que atrape fichas del rival entre la nueva y otra tuya, y todas las atrapadas cambian de color. Parece de contar y es de posición.",
+      "reparto": "Las cuatro fichas del centro en cruz: d5 y e4 negras, d4 y e5 blancas. Salen las negras.",
+      "turno": "Sólo puedes poner donde des la vuelta a algo: una jugada que no voltea ninguna ficha es ilegal. Se voltea en las ocho direcciones a la vez, todas las líneas que queden encerradas.",
+      "gana": "Acaba cuando ninguno de los dos puede jugar. Gana quien tenga más fichas de su color en el tablero.",
+      "ojo": [
+        "La estrategia obvia —comer el máximo cada turno— es MALA: te deja sin sitios donde jugar y acabas regalando las esquinas. Por eso está en el banco: separa a un agente que sólo maximiza lo inmediato de uno que entiende la posición.",
+        "Las esquinas no se pueden voltear nunca. Todo lo que rodea a una esquina vale menos justamente por eso.",
+        "Si no tienes jugada y el rival sí, te toca pasar, y `pass` sale como acción explícita para que ningún agente se quede colgado sin saber por qué no puede hacer nada."
+      ],
+      "diferencias": []
+    },
+    "origen": "El Reversi es inglés, de 1883. El Othello japonés de 1971 es el mismo juego con la posición inicial fijada, que es la que se juega aquí.",
     "puertas": {
       "persona": true,
       "llm": true,
@@ -182,9 +218,22 @@
       "verbos": null,
       "resumen": "se juega tocando la mesa"
     },
-    "reglas": null,
-    "prosa": null,
-    "origen": null,
+    "reglas": "Los peones avanzan en diagonal hacia el lado contrario. Si puedes comer, tienes que comer; y si después de comer puedes seguir comiendo, sigues en la misma jugada. Llegar a la última fila corona el peón en dama.",
+    "prosa": {
+      "que_es": "Damas en tablero de 8x8 con una regla que lo cambia todo: comer es obligatorio. Si hay captura disponible, no puedes hacer otra cosa.",
+      "reparto": "Doce piezas por bando en las casillas oscuras de las tres primeras filas de cada lado. Salen las blancas. Las jugadas se escriben origen+destino, `c3d4`, y una captura múltiple encadena las casillas: `c3e5g7`.",
+      "turno": "Los peones avanzan en diagonal hacia el lado contrario. Si puedes comer, tienes que comer; y si después de comer puedes seguir comiendo, sigues en la misma jugada. Llegar a la última fila corona el peón en dama.",
+      "gana": "Pierde quien se queda sin piezas o sin jugadas posibles.",
+      "ojo": [
+        "La obligación de comer le da la vuelta al juego: una captura que parece regalada suele ser una trampa, porque el rival te OBLIGA a entrar. Es el juego más barato de la casa para castigar la codicia a un solo movimiento de profundidad.",
+        "Este juego tiene VARIANTES de verdad, y viajan en el recibo de la partida: la misma lista de jugadas es legal con unas normas e ilegal con otras. Sin la norma dentro, el verificador tumbaría a jugadores honrados y dejaría pasar tramposos, las dos cosas a la vez."
+      ],
+      "diferencias": [
+        "Por defecto juega las reglas ANGLOSAJONAS, no las españolas, aunque se llame Damas: la dama se mueve una sola casilla y el peón sólo captura hacia delante. Las damas españolas —con la dama volando por la diagonal entera— se juegan poniendo la norma `damaVuela`, y la internacional añade `peonComeAtras`. Quien abra el juego esperando las de su casa se encontrará otras.",
+        "No está la regla de la mayoría: en las damas españolas, cuando hay varias capturas posibles estás obligado a hacer la que más piezas coma. Aquí puedes elegir cualquier captura."
+      ]
+    },
+    "origen": "El juego moderno se fija en Francia en el siglo XVI sobre el tablero de ajedrez. Las variantes nacionales —española, inglesa, internacional de 10x10— se separaron después, y por eso hacen falta las normas.",
     "puertas": {
       "persona": true,
       "llm": true,
@@ -234,9 +283,21 @@
       "verbos": null,
       "resumen": "se juega tocando la mesa"
     },
-    "reglas": null,
-    "prosa": null,
-    "origen": null,
+    "reglas": "Cada pieza tiene su regla y casi ninguna se parece a la occidental. El cañón se mueve como una torre pero para COMER necesita saltar exactamente una pieza. El caballo salta como el nuestro pero se traba si le tapan la casilla por la que sale la pata. El elefante va dos en diagonal, no cruza el río y se bloquea si le ocupan el punto de en medio. Consejero y general no salen del palacio de 3x3. El soldado va siempre adelante, y sólo después de cruzar el río puede ir también de lado.",
+    "prosa": {
+      "que_es": "El ajedrez chino, y no es el nuestro con otras piezas: se juega en las intersecciones, hay un río en medio, los generales viven encerrados en su palacio y el cañón come saltando.",
+      "reparto": "Tablero de 9 columnas por 10 filas, piezas sobre las intersecciones. Rojo abajo y sale primero, negro arriba. Las jugadas van origen+destino, `e6e5`.",
+      "turno": "Cada pieza tiene su regla y casi ninguna se parece a la occidental. El cañón se mueve como una torre pero para COMER necesita saltar exactamente una pieza. El caballo salta como el nuestro pero se traba si le tapan la casilla por la que sale la pata. El elefante va dos en diagonal, no cruza el río y se bloquea si le ocupan el punto de en medio. Consejero y general no salen del palacio de 3x3. El soldado va siempre adelante, y sólo después de cruzar el río puede ir también de lado.",
+      "gana": "Gana quien da mate. Y ojo: quedarse sin jugadas legales PIERDE, no es tablas como en el ajedrez.",
+      "ojo": [
+        "Los dos generales no pueden verse por una columna despejada. No hay nada parecido en el ajedrez occidental, y convierte la columna central en un arma a distancia.",
+        "Es el mejor separador de la casa para un agente que «sabe ajedrez»: aquí la intuición occidental estorba. Mover y capturar siguen reglas distintas en el cañón, y eso rompe casi todo lo aprendido en el otro tablero."
+      ],
+      "diferencias": [
+        "No están las reglas de repetición del xiangqi de competición, que son bastante más estrictas que las occidentales: dar jaque perpetuo o perseguir eternamente una pieza hacen PERDER a quien insiste, en vez de dar tablas. Aquí una partida así no se corta."
+      ]
+    },
+    "origen": "Chino, documentado desde el siglo XI. Comparte antepasado con el ajedrez occidental —el chaturanga indio— y por eso se reconocen las piezas aunque casi ninguna se mueva igual.",
     "puertas": {
       "persona": true,
       "llm": true,
