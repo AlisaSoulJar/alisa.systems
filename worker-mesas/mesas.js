@@ -591,9 +591,25 @@ export class MesaCompartida {
              * probando el código. Es el tipo de hueco que sólo aparece cuando
              * usas la cosa para lo que sirve.
              */
+            /**
+             * ⚠️ Y EL OBJETIVO SE ANTEPONE TAMBIÉN AQUÍ, PORQUE `describir` PROPIO
+             *    NO LO DICE.
+             *
+             * Arriba se añade `objetivo` al estado y con eso `describirEstado()` lo
+             * pone lo primero — pero los juegos con `describir()` propio no pasan por
+             * esa plantilla, así que su texto salía sin él. Medido: en una sala de
+             * flota el agente leía «Flota. Juegas azul. 0/12 tocados…» mientras en
+             * ajedrez leía «Ajedrez. Objetivo: dar jaque mate al rey rival…».
+             *
+             * Siete juegos —flota, defensa, sigilo, frentes, relevo, cabina, nave—
+             * y el campo `objetivo` SÍ estaba en el JSON. Que esté en el JSON y no en
+             * el texto deja al agente igual de a ciegas, que es justo lo que
+             * `prueba_mesa.mjs` comprueba: por eso mira el texto y no el campo.
+             */
             text: (() => {
                 try {
-                    if (reglas.describir) return reglas.describir(p, Math.max(0, i));
+                    const meta = reglas.OBJETIVO ? `${reglas.OBJETIVO} ` : '';
+                    if (reglas.describir) return meta + reglas.describir(p, Math.max(0, i));
                     return describirEstado(mesa.juego, mío);
                 } catch { return null; }
             })(),

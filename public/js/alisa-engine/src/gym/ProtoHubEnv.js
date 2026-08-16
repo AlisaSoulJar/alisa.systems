@@ -379,10 +379,39 @@ export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
         // El texto vive en `protohub/descripcion.js` y no aquí: un LLM sentado a
         // una mesa de una página tiene que leer LO MISMO que un LLM del banco de
         // pruebas, o los dos números dejan de ser comparables sin que se note.
+        /**
+         * ⚠️ EL OBJETIVO NO LLEGABA AQUÍ. LOS AGENTES DEL BANCO JUGABAN SIN SABER
+         *    A QUÉ.
+         * ═══════════════════════════════════════════════════════════════════════
+         *
+         * El objetivo lo declara el juego una vez en `reglas.OBJETIVO`, y quien lo
+         * mete en el estado es `ProtoHub.state()`. Este entorno no pasa por ahí:
+         * llama a `reglas.estado(p)` directamente, así que `st.objetivo` venía vacío
+         * y `describirEstado()` se saltaba su primera línea —la que pone el objetivo
+         * por delante de los puntos, porque «Puntos: -11» no significa nada sin él—.
+         * Y los diecinueve juegos con `describir()` propio ni siquiera pasaban por
+         * esa plantilla.
+         *
+         * Medido el 16-08: de nueve juegos mirados, **ninguno** decía a qué se juega
+         * por esta puerta. Ni el ajedrez.
+         *
+         * ⚠️ Y ES EXACTAMENTE EL MISMO FALLO QUE EL ÁRBITRO DE SALAS YA ARREGLÓ.
+         *
+         * `worker-mesas/mesas.js` lo cuenta en su propio comentario: «este árbitro no
+         * pasa por ahí, así que aquí no aparecían», y allí se corrigió. Aquí no, y
+         * nadie lo notó porque las dos puertas se probaban por separado. Lo destapó
+         * la comprobación de SALAS, que compara lo que dice la sala con lo que dice
+         * la casa — y resultó que la casa era la que callaba.
+         *
+         * Es el tercer «arreglado en un extremo y no en el otro» de esta semana.
+         * Cuando algo se arregla en un sitio, toca preguntar quién más hacía lo
+         * mismo.
+         */
         describe() {
             this._asegurarPartida();
-            if (reglas.describir) return reglas.describir(this.p);
-            return describirEstado(juego, this._estado());
+            const meta = reglas.OBJETIVO ? `${reglas.OBJETIVO} ` : '';
+            if (reglas.describir) return meta + reglas.describir(this.p);
+            return describirEstado(juego, { objetivo: reglas.OBJETIVO, ...this._estado() });
         }
 
         affordances() {
