@@ -131,5 +131,39 @@ if (mudos.length) {
               + (mudos.length > 10 ? '…' : ''));
 }
 
+/**
+ * ⚠️ ¿SE PUEDE PEDIR LO QUE LA FICHA PROMETE, O SÓLO EXISTE EN MI DISCO?
+ *
+ * La ficha decía «captura 35/35, derivado y listo» y no había NI UNA publicada: apuntaba
+ * a `capturas_laboratorio/`, que está en `.gitignore` porque son ficheros de trabajo que
+ * el laboratorio rehace en cada pasada. Treinta y cinco rutas que desde el sitio dan 404,
+ * y el instrumento en verde — porque comprobaba que el fichero EXISTA, no que se pueda
+ * PEDIR. Es un error de denominador, y el sabotaje no lo ve: la comprobación sabía
+ * suspender perfectamente dentro del árbol equivocado.
+ *
+ * Esto mira lo que de verdad se sirve. Una ruta que empiece por `/` sale de `public/`, y
+ * si no está ahí, no está en el sitio.
+ */
+{
+    const { existsSync, readFileSync } = await import('node:fs');
+    // Se lee el JSON PUBLICADO, no se recalcula: lo que hay que comprobar es lo que se
+    // sirve. Recalcularlo aquí comprobaría mi cuenta contra mi cuenta.
+    const fichas = JSON.parse(readFileSync(path.join(AQUI, 'public/data/fichas.json'), 'utf-8'));
+    const rotas = [];
+    for (const [juego, f] of Object.entries(fichas)) {
+        for (const [campo, valor] of Object.entries(f ?? {})) {
+            if (typeof valor !== 'string' || !valor.startsWith('/')) continue;
+            if (!existsSync(path.join(AQUI, 'public', valor.slice(1)))) rotas.push(`${juego}.${campo} → ${valor}`);
+        }
+    }
+    if (rotas.length) {
+        fallos++;
+        console.log(`\n  ✗ ${rotas.length} ruta(s) que la ficha promete y NO se publican:`);
+        for (const r of rotas.slice(0, 8)) console.log(`      ${r}`);
+        console.log('    Existir en tu disco no es estar en el sitio. Mira si la carpeta');
+        console.log('    está en .gitignore antes de mirar la ficha.');
+    }
+}
+
 console.log(fallos ? '' : '\n  ✓ ninguna ficha promete algo que el juego no cumpla\n');
 process.exit(fallos ? 1 : 0);

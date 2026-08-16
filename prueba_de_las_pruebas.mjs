@@ -141,6 +141,28 @@ const SABOTAJES = [
         vigila: 'que la ficha de cada juego no prometa lo que el juego no cumple',
     },
     {
+        nombre: 'fichas·rutas',
+        corre: 'node --import ./resolver_three.mjs prueba_fichas.mjs',
+        fichero: 'public/data/fichas.json',
+        /**
+         * ⚠️ DOS SABOTAJES PARA EL MISMO FICHERO, Y HACE FALTA.
+         *
+         * `prueba_fichas` vigila ahora dos cosas distintas: que lo declarado coincida
+         * con lo que hace el juego, y que las rutas que promete la ficha SE PUEDAN
+         * PEDIR. Con un solo sabotaje, la segunda estaría sin cubrir — y es justo la
+         * que acaba de fallar en los 35 sin que nadie lo notara: la ficha apuntaba a
+         * `capturas_laboratorio/`, que está en `.gitignore`, así que prometía treinta y
+         * cinco imágenes que desde el sitio dan 404. Un sabotaje que no se nota es un
+         * hueco de cobertura, no mala puntería.
+         *
+         * Se rompe la ruta en el JSON PUBLICADO, que es exactamente la forma del fallo:
+         * el fichero está en mi disco y no en lo que se sirve.
+         */
+        de: '"/capturas/snake.png"',
+        a: '"/capturas/snake_FUERA.png"',
+        vigila: 'que lo que la ficha promete se pueda pedir, y no sólo exista en mi disco',
+    },
+    {
         nombre: 'clasificacion',
         corre: 'node prueba_clasificacion.mjs',
         fichero: 'public/clasificacion.html',

@@ -27,7 +27,7 @@
       "entra": true,
       "motivo": null
     },
-    "captura": "capturas_laboratorio/ajedrez.png",
+    "captura": "/capturas/ajedrez.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -73,7 +73,7 @@
       "entra": false,
       "motivo": "el tope de 120 decisiones corta la partida"
     },
-    "captura": "capturas_laboratorio/go.png",
+    "captura": "/capturas/go.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -118,7 +118,7 @@
       "entra": true,
       "motivo": null
     },
-    "captura": "capturas_laboratorio/reversi.png",
+    "captura": "/capturas/reversi.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -167,7 +167,7 @@
       "entra": false,
       "motivo": "el tope de 120 decisiones corta la partida"
     },
-    "captura": "capturas_laboratorio/damas.png",
+    "captura": "/capturas/damas.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -218,7 +218,7 @@
       "entra": false,
       "motivo": "el tope de 120 decisiones corta la partida"
     },
-    "captura": "capturas_laboratorio/xiangqi.png",
+    "captura": "/capturas/xiangqi.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -261,7 +261,7 @@
       "entra": true,
       "motivo": null
     },
-    "captura": "capturas_laboratorio/mancala.png",
+    "captura": "/capturas/mancala.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -306,7 +306,7 @@
       "entra": false,
       "motivo": "el tope de 120 decisiones corta la partida"
     },
-    "captura": "capturas_laboratorio/snake.png",
+    "captura": "/capturas/snake.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -353,7 +353,7 @@
       "entra": false,
       "motivo": "el tope de 120 decisiones corta la partida"
     },
-    "captura": "capturas_laboratorio/fagocito.png",
+    "captura": "/capturas/fagocito.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -399,7 +399,7 @@
       "entra": true,
       "motivo": null
     },
-    "captura": "capturas_laboratorio/peaton.png",
+    "captura": "/capturas/peaton.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -440,7 +440,7 @@
       "entra": true,
       "motivo": null
     },
-    "captura": "capturas_laboratorio/blackjack.png",
+    "captura": "/capturas/blackjack.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -482,7 +482,7 @@
       "entra": true,
       "motivo": null
     },
-    "captura": "capturas_laboratorio/poker.png",
+    "captura": "/capturas/poker.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -520,7 +520,7 @@
       "entra": true,
       "motivo": null
     },
-    "captura": "capturas_laboratorio/brisca.png",
+    "captura": "/capturas/brisca.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -558,7 +558,7 @@
       "entra": true,
       "motivo": null
     },
-    "captura": "capturas_laboratorio/tute.png",
+    "captura": "/capturas/tute.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -596,7 +596,7 @@
       "entra": true,
       "motivo": null
     },
-    "captura": "capturas_laboratorio/hearts.png",
+    "captura": "/capturas/hearts.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -634,7 +634,7 @@
       "entra": false,
       "motivo": "no medido en la última pasada"
     },
-    "captura": "capturas_laboratorio/spades.png",
+    "captura": "/capturas/spades.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -672,7 +672,7 @@
       "entra": false,
       "motivo": "la casa no supera al suelo: la escala se invertiría"
     },
-    "captura": "capturas_laboratorio/guerra.png",
+    "captura": "/capturas/guerra.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -710,7 +710,7 @@
       "entra": true,
       "motivo": null
     },
-    "captura": "capturas_laboratorio/gofish.png",
+    "captura": "/capturas/gofish.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -749,7 +749,7 @@
       "entra": false,
       "motivo": "el hueco (3.3) no supera al ruido de la medida (±34.0)"
     },
-    "captura": "capturas_laboratorio/unit.png",
+    "captura": "/capturas/unit.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -790,7 +790,7 @@
       "entra": true,
       "motivo": null
     },
-    "captura": "capturas_laboratorio/entropy.png",
+    "captura": "/capturas/entropy.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -832,7 +832,7 @@
       "entra": false,
       "motivo": "el tope de 120 decisiones corta la partida"
     },
-    "captura": "capturas_laboratorio/sokoban.png",
+    "captura": "/capturas/sokoban.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -877,7 +877,7 @@
       "entra": false,
       "motivo": "el tope de 120 decisiones corta la partida"
     },
-    "captura": "capturas_laboratorio/cripta.png",
+    "captura": "/capturas/cripta.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -925,7 +925,7 @@
       "entra": true,
       "motivo": null
     },
-    "captura": "capturas_laboratorio/flota.png",
+    "captura": "/capturas/flota.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -971,7 +971,7 @@
       "entra": true,
       "motivo": null
     },
-    "captura": "capturas_laboratorio/defensa.png",
+    "captura": "/capturas/defensa.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -1017,7 +1017,7 @@
       "entra": false,
       "motivo": "no medido en la última pasada"
     },
-    "captura": "capturas_laboratorio/sigilo.png",
+    "captura": "/capturas/sigilo.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -1062,7 +1062,7 @@
       "entra": true,
       "motivo": null
     },
-    "captura": "capturas_laboratorio/frentes.png",
+    "captura": "/capturas/frentes.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -1110,7 +1110,7 @@
       "entra": false,
       "motivo": "el tope de 120 decisiones corta la partida"
     },
-    "captura": "capturas_laboratorio/relevo.png",
+    "captura": "/capturas/relevo.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -1155,7 +1155,7 @@
       "entra": true,
       "motivo": null
     },
-    "captura": "capturas_laboratorio/cabina.png",
+    "captura": "/capturas/cabina.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -1200,7 +1200,7 @@
       "entra": false,
       "motivo": "el tope de 120 decisiones corta la partida"
     },
-    "captura": "capturas_laboratorio/rebano.png",
+    "captura": "/capturas/rebano.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -1246,7 +1246,7 @@
       "entra": false,
       "motivo": "el tope de 120 decisiones corta la partida"
     },
-    "captura": "capturas_laboratorio/pradera.png",
+    "captura": "/capturas/pradera.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -1295,7 +1295,7 @@
       "entra": false,
       "motivo": "no medido en la última pasada"
     },
-    "captura": "capturas_laboratorio/nave.png",
+    "captura": "/capturas/nave.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -1335,7 +1335,7 @@
       "entra": false,
       "motivo": "el hueco (10.0) no supera al ruido de la medida (±30.4)"
     },
-    "captura": "capturas_laboratorio/remigio.png",
+    "captura": "/capturas/remigio.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -1380,7 +1380,7 @@
       "entra": false,
       "motivo": "la casa no supera al suelo: la escala se invertiría"
     },
-    "captura": "capturas_laboratorio/parchis.png",
+    "captura": "/capturas/parchis.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -1425,7 +1425,7 @@
       "entra": true,
       "motivo": null
     },
-    "captura": "capturas_laboratorio/generala.png",
+    "captura": "/capturas/generala.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -1478,7 +1478,7 @@
       "entra": false,
       "motivo": "la casa no supera al suelo: la escala se invertiría"
     },
-    "captura": "capturas_laboratorio/oca.png",
+    "captura": "/capturas/oca.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [
@@ -1524,7 +1524,7 @@
       "entra": false,
       "motivo": "el tope de 120 decisiones corta la partida"
     },
-    "captura": "capturas_laboratorio/canadiense.png",
+    "captura": "/capturas/canadiense.png",
     "conLaMano": {
       "medido": "2026-08-16",
       "panel": [

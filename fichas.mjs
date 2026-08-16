@@ -81,8 +81,34 @@ const prosa = await leer('public/data/fichas_prosa.json', {});
 // jugadas del juego— y llamar `verbos` a esto lo taparía sin dar ningún error.
 const medidoTacto = await leer('public/data/tacto.json', {});
 const medidoVerbos = await leer('public/data/verbos.json', {});
-const capturas = new Set(
-    (await import('node:fs')).readdirSync(path.join(AQUI, 'capturas_laboratorio')));
+/**
+ * ⚠️ LA FICHA PROMETÍA UNA CAPTURA QUE NO SE PUBLICA. 35 DE 35.
+ *
+ * Esto comprobaba que el fichero existiera en `capturas_laboratorio/` y daba «captura
+ * 35/35 derivado y listo». Pero esa carpeta está en `.gitignore` —y con razón: son
+ * ficheros de trabajo que el laboratorio rehace en cada pasada— así que no hay ni un
+ * png en `public/` ni en `dist_publico/`. La ficha apuntaba a una ruta que desde el
+ * sitio da 404, en los treinta y cinco.
+ *
+ * Es el mismo error de denominador que llevo cazando todo el día, esta vez en mi propio
+ * instrumento: comprobé que el fichero EXISTA, no que se pueda PEDIR. El día que montara
+ * el catálogo habrían salido 35 imágenes rotas y habría empezado a mirar el catálogo.
+ *
+ * Se arregla copiándolas a `public/capturas/` DESDE AQUÍ, o sea desde la misma línea que
+ * hace la promesa. Así no pueden volver a separarse: si no se copia, no se promete.
+ */
+const fs = await import('node:fs/promises');
+const origenCapturas = path.join(AQUI, 'capturas_laboratorio');
+const destinoCapturas = path.join(AQUI, 'public/capturas');
+await fs.mkdir(destinoCapturas, { recursive: true });
+const capturas = new Set();
+for (const juego of JUEGOS) {
+    const de = path.join(origenCapturas, `${juego}.png`);
+    try {
+        await fs.copyFile(de, path.join(destinoCapturas, `${juego}.png`));
+        capturas.add(`${juego}.png`);
+    } catch { /* no hay captura de ese juego: se cuenta abajo como que falta */ }
+}
 
 /**
  * Qué juegos tienen puerta HTTP. Se mira el texto entero del OpenAPI en vez de
@@ -198,7 +224,8 @@ for (const juego of JUEGOS) {
         leyenda,
         // ── de lo medido, no de lo prometido ───────────────────────────────
         clasificacion: cl,
-        captura: capturas.has(`${juego}.png`) ? `capturas_laboratorio/${juego}.png` : null,
+        // Ruta SERVIDA, no la de trabajo: es la que un navegador va a pedir de verdad.
+        captura: capturas.has(`${juego}.png`) ? `/capturas/${juego}.png` : null,
         /**
          * ⚠️ CÓMO SE JUEGA CON LA MANO, MEDIDO. Y `null` SI NADIE LO HA MEDIDO.
          *
