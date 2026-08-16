@@ -103,6 +103,27 @@ const SABOTAJES = [
         vigila: 'que el sello del `?v=` corresponda al código que hay en disco',
     },
     {
+        nombre: 'censo',
+        corre: 'node prueba_censo.mjs',
+        fichero: 'public/js/alisa-engine/src/gym/registro.js',
+        /**
+         * ⚠️ ÉSTE ES EL PRIMER SABOTAJE DE ENUMERACIÓN, Y ES OTRA COSA QUE LOS DEMÁS.
+         *
+         * Los quince de arriba rompen una CONDICIÓN y esperan que la comprobación la
+         * eche de menos. Éste rompe el UNIVERSO: le cambia el nombre a un juego del
+         * catálogo, de modo que el conjunto medido sigue teniendo treinta y cinco
+         * elementos pero ya no es el mismo conjunto.
+         *
+         * Se hace así a propósito, y es la parte que enseña algo: si `prueba_censo`
+         * comparara sólo el TOTAL, este sabotaje pasaría —35 y 35— y la comprobación
+         * parecería sana. Compara la lista, así que dice «existen y no se miden: oca»
+         * y «se miden y no existen: oca_FUERA».
+         */
+        de: "'oca'",
+        a: "'oca_FUERA'",
+        vigila: 'que los medidores midan sobre todos los juegos que hay',
+    },
+    {
         nombre: 'fichas',
         corre: 'node --import ./resolver_three.mjs prueba_fichas.mjs',
         fichero: 'public/arcade/js/protohub/rules/bazas.js',

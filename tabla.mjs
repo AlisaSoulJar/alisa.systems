@@ -46,6 +46,13 @@ globalThis.fetch = async (entrada, init) => {
 const impo = (rel) => import(pathToFileURL(path.join(AQUI, rel)).href);
 
 const { CATALOGO } = await impo('public/js/alisa-engine/src/gym/registro.js');
+/**
+ * El censo canónico de juegos, para comprobar más abajo que se mide sobre TODOS.
+ * Se importa del mismo sitio del que se sirven las reglas y el árbitro de salas: si
+ * el universo de esta tabla y ese censo divergen, uno de los dos miente y no vale
+ * seguir midiendo.
+ */
+const { JUEGOS } = await impo('public/arcade/js/protohub/rules/index.js');
 const { verificar } = await impo('public/arcade/js/protohub/Verificador.js');
 const { cargarReglas, TITULOS } = await impo('public/arcade/js/protohub/rules/index.js');
 const { jugarEpisodio } = await impo('public/arcade/js/agentes/llm.js');
@@ -85,6 +92,64 @@ const modelos = args.modelos ? String(args.modelos).split(',').map(s => s.trim()
 const entornos = CATALOGO.filter(e => e.familia !== 'propio')
     .filter(e => !pedidos || pedidos.includes(e.juego));
 if (!entornos.length) { console.log(rojo('  ningún entorno coincide')); process.exit(2); }
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *  ⚠️ ¿ESTAMOS MIDIENDO SOBRE TODOS LOS JUEGOS QUE HAY? EL CONTROL DEL DENOMINADOR
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *
+ * La línea de arriba es un `filter` por exclusión, y ese patrón exacto ya nos costó
+ * un fallo: `check_gym_envs` decía vigilar el banco entero y miraba **6 de 41**
+ * porque filtraba por una familia. Aquí es el complementario, y hoy da los 35
+ * correctos — pero es igual de frágil: el día que el catálogo gane una tercera
+ * familia, entrará aquí sin que nadie lo decida.
+ *
+ * Y este medidor no es uno cualquiera: de aquí sale la clasificación PUBLICADA. Un
+ * error de denominador en los otros muere en un informe interno que se rectifica;
+ * aquí saldría al dominio como una comparación persona-contra-agente falsa.
+ *
+ * Lo señaló una auditoría externa (16-08) con el diagnóstico que faltaba: nuestra
+ * maquinaria comprueba si una condición detecta su fallo, y nunca si el conjunto
+ * sobre el que mide es el que existe. Peor: **el sabotaje es ciego a esa clase**,
+ * porque una prueba con el universo recortado sigue suspendiendo perfectamente
+ * dentro de su universo recortado.
+ *
+ * Así que aquí no se comprueba una condición: se compara el universo con el CENSO
+ * CANÓNICO —`JUEGOS`, el mismo que usan las reglas y el árbitro de salas—. Si no
+ * coinciden, no se mide: se para. Una clasificación sobre el conjunto equivocado es
+ * peor que no tener clasificación, porque parece una.
+ */
+/**
+ * `--censo` imprime sobre qué mide esta tabla y sale, sin jugar nada.
+ *
+ * Es lo que permite vigilar el denominador SIN pagar una pasada entera: una
+ * comprobación de `npm test` le pregunta al medidor cuál es su universo y lo compara
+ * con el censo. Medir de verdad tarda minutos; preguntar tarda uno.
+ *
+ * La idea es de la auditoría del 16-08: que cada medidor declare su universo en una
+ * línea parseable, para que el conjunto deje de ser una suposición de quien lee el
+ * resultado.
+ */
+if (args.censo) {
+    const lista = entornos.map(e => e.juego);
+    console.log(`universo=${lista.length}`);
+    console.log(lista.join(','));
+    process.exit(0);
+}
+
+if (!pedidos) {
+    const mios = new Set(entornos.map(e => e.juego));
+    const faltan = JUEGOS.filter(j => !mios.has(j));
+    const sobran = [...mios].filter(j => !JUEGOS.includes(j));
+    if (faltan.length || sobran.length) {
+        console.log(rojo(`\n  ✗ el universo de la tabla NO es el censo de juegos.`));
+        if (faltan.length) console.log(rojo(`    existen y no se miden: ${faltan.join(', ')}`));
+        if (sobran.length) console.log(rojo(`    se miden y no están en el censo: ${sobran.join(', ')}`));
+        console.log('    Se para antes de medir: una clasificación sobre el conjunto');
+        console.log('    equivocado es peor que no tenerla, porque parece una.');
+        process.exit(2);
+    }
+}
 
 /** Los participantes: primero las líneas base, luego los modelos. */
 const participantes = [
