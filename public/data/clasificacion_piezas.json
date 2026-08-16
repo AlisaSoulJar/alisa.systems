@@ -797,7 +797,7 @@
    "ruta": "gym/ProtoHubEnv.js",
    "nombre": "ProtoHubEnv",
    "familia": "gym",
-   "kb": 23,
+   "kb": 24.9,
    "clase": "gym",
    "exporta": [
     "crearEnvDeProtoHub"
@@ -2864,7 +2864,7 @@
     "syncKatamariConsumption"
    ],
    "objetos": 54,
-   "mallas": 135,
+   "mallas": 138,
    "luces": 4
   },
   {

@@ -196,7 +196,7 @@
    "ruta": "gym/ProtoHubEnv.js",
    "nombre": "ProtoHubEnv",
    "familia": "gym",
-   "kb": 23.0
+   "kb": 24.9
   },
   {
    "ruta": "gym/registro.js",

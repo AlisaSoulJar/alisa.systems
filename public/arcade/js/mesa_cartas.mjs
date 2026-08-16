@@ -1657,6 +1657,45 @@ window.addEventListener('cardInspect', (ev) => {
         return;
     }
 
+    /**
+     * ═══════════════════════════════════════════════════════════════════════════
+     *  ⚠️ JUGAR UNA CARTA DE TU MANO CLICÁNDOLA. FALTABA EN SIETE MESAS DE OCHO.
+     * ═══════════════════════════════════════════════════════════════════════════
+     *
+     * Todo lo que había debajo era el vocabulario de ENTROPY —mazo, descarte, caja,
+     * comodín— y no había ninguna rama para `mano_0_*`. O sea que en brisca, tute,
+     * hearts, spades, gofish, unit y remigio pulsar tu propia carta no hacía nada.
+     *
+     * Nadie lo notó por dos motivos que conviene recordar: el PANEL sí funciona
+     * —la garantía del banco se cumplía— y `tacto.mjs` mide la mesa con una rejilla
+     * a ciegas, así que su «mesa 0/N» se leía como un límite de la sonda. Lo
+     * encontró Oscar jugando, que es como se encuentran estas cosas: «no parece que
+     * funcione con clic de ratón».
+     *
+     * ⚠️ Y LA TRADUCCIÓN NO SE INVENTA: SE BUSCA EN `legal_moves`.
+     *
+     * Cada familia nombra su jugada a su manera —unit dice `R_6`, brisca dice
+     * `jugar:C_3`— y una tabla de prefijos por juego sería la enésima lista escrita
+     * a mano de este proyecto. Así que se coge el ID de la carta pulsada y se busca
+     * la jugada legal que hable de ELLA: la que es exactamente ese id, o la que
+     * acaba en `:id`. Si no hay ninguna, no se manda nada — que es lo correcto
+     * cuando esa carta no se puede jugar ahora.
+     *
+     * Eso mantiene la ley de la casa: de aquí no sale nada que no esté en
+     * `legal_moves`. Un atajo que pudiera mandar algo ilegal sería un atajo que se
+     * cree las reglas.
+     */
+    if (String(zona).startsWith('mano_0')) {
+        const mia = st.mano ?? st.cartas ?? [];
+        const carta = mia[indice];
+        const id = carta && typeof carta === 'object' ? (carta.id ?? carta.carta) : carta;
+        if (id !== undefined && id !== null) {
+            const suya = legales.find(m => m === String(id) || m.endsWith(`:${id}`));
+            if (suya) { enviar(suya); return; }
+        }
+        return;
+    }
+
     if (!st.robada) {
         if (String(zona).startsWith('mazo_'))     enviar('robar_mazo');
         if (String(zona).startsWith('descarte_')) enviar('robar_descarte');
