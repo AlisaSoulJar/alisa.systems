@@ -46,6 +46,37 @@ async function pedir(ruta) {
 
 console.log(`\n  comprobando ${BASE}\n`);
 
+/**
+ * ⚠️ «NO LLEGO AL SITIO» Y «EL SITIO SIRVE ALGO MAL» NO SON LO MISMO.
+ *
+ * El 16-08-2026 esto escupió una traza de `undici` de veinte líneas acabada en
+ * `UND_ERR_CONNECT_TIMEOUT` justo después de un despliegue, y me hizo dudar de un
+ * despliegue que estaba perfecto. La causa no era el sitio: el ISP de esta casa no
+ * tiene ruta a `188.114.96.0/24`, uno de los pools de Cloudflare, y el resolutor del
+ * router devuelve precisamente ése. Pidiéndoselo a `1.1.1.1` salen `172.67.x`/`104.21.x`
+ * y el dominio contesta 200 en 0,2 s.
+ *
+ * O sea que el instrumento que existe para mirar HACIA FUERA se calla justo cuando lo
+ * de fuera no se puede mirar, y lo hace con la cara de un fallo del despliegue. Un
+ * fallo de red y un fallo de despliegue piden cosas distintas —uno se arregla en el
+ * router, el otro volviendo a desplegar— así que se separan y se dice cuál es.
+ */
+try {
+    await fetch(BASE + '/', { signal: AbortSignal.timeout(15000) });
+} catch (e) {
+    const host = new URL(BASE).host;
+    console.log(rojo(`  ✗ no se llega a ${host} desde esta máquina.`));
+    console.log(gris(`    (${e.cause?.code ?? e.name ?? e.message})`));
+    console.log(`\n  Esto NO dice nada del despliegue: dice que desde aquí no hay ruta.`);
+    console.log(`  Para separarlo:`);
+    console.log(gris(`    · qué IPs da tu resolutor      nslookup ${host}`));
+    console.log(gris(`    · qué IPs da Cloudflare        nslookup ${host} 1.1.1.1`));
+    console.log(gris(`    · si son distintas y sólo unas responden, es la RUTA del ISP`));
+    console.log(`\n  Y para comprobar el despliegue mientras tanto, por la URL de producción:`);
+    console.log(gris(`    node comprobar_desplegado.mjs https://alisa-systems.pages.dev\n`));
+    process.exit(2);
+}
+
 // ── 1. el canario ────────────────────────────────────────────────
 for (const ruta of ['/noexiste.html', '/tampoco/existe/', '/js/inventado.js']) {
     const { estado, cuerpo } = await pedir(ruta);
