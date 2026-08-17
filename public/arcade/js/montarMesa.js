@@ -51,10 +51,29 @@ import { JUEGOS, TITULOS, cargarReglas } from './protohub/rules/index.js';
  * `prueba_version.mjs` comprueba que corresponde a lo que hay en disco y, si no,
  * dice el valor que toca. No hay que acordarse: hay que hacer caso a la prueba.
  */
-const VERSION = 'ec1bfadb';
+const VERSION = '017f602b';
 
-/** Lo que toda página de tablero necesitaba y repetía. En orden. */
-const ANDAMIO = [
+/**
+ * Lo que toda página de tablero necesitaba y repetía. En orden.
+ *
+ * ⚠️ SE EXPORTA PORQUE HABÍA UNA SEGUNDA LISTA, MÁS CORTA, Y NADIE LO SABÍA.
+ *
+ * `sala.html` —la sala de bolsillo, a la que te lleva sentarte en una mesa de la
+ * Sala del Huevo— montaba `mesa_tablero.mjs` cargando sólo los tres de vendor. Le
+ * faltaban `gestos.js`, `objetivo_visible.js`, `encuadre.js` y `mandos.js`.
+ *
+ * El resultado, medido: las SEIS mesas de tablero de la Sala del Huevo —ajedrez, go,
+ * reversi, damas, xiangqi y mancala— daban pantalla negra con
+ * `Cannot read properties of undefined (reading 'deslizarParaMoverse')`. Las once de
+ * cartas funcionaban, porque `SovereignCardEngine` mira si existe antes de usarlo y
+ * `mesa_tablero.mjs` no.
+ *
+ * O sea: la mitad de la idea entera —te sientas en una mesa y entras al juego— llevaba
+ * rota quién sabe cuánto en su mitad de tablero, sin que ninguna prueba lo mirara.
+ * Es la octava lista de este proyecto que se separa de la realidad sin avisar, y la
+ * cura es siempre la misma: que haya una sola.
+ */
+export const ANDAMIO = [
     '/vendor/three-r128/three.min.js',
     '/vendor/three-r128/OrbitControls.js',
     '/vendor/tween/tween.umd.js',
@@ -91,7 +110,7 @@ const ANDAMIO = [
 const MOTOR_TABLERO = ['js/SovereignBoardEngine.js'];
 const MOTOR_CARTAS  = ['js/arcade_mats.js', 'js/SovereignCardEngine.js'];
 
-const cargar = (src) => new Promise((listo, falla) => {
+export const cargar = (src) => new Promise((listo, falla) => {
     /**
      * ⚠️ LO QUE YA ESTÁ EN LA PÁGINA NO SE VUELVE A CARGAR.
      *

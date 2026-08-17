@@ -216,7 +216,20 @@ const grupo = new THREE.Group();
 grupo.position.y = 0.985;
 escena.add(grupo);
 
-window.ALISA_ANFITRION = { grupo, escena, camara };
+/**
+ * ⚠️ Y EL LIENZO, QUE FALTABA.
+ *
+ * Un invitado que quiera escuchar gestos —deslizar para moverse, tocar una casilla—
+ * necesita el `<canvas>` sobre el que ocurren, y de invitado no tiene renderizador
+ * propio del que sacarlo: lo tiene la sala. `mesa_tablero.mjs` hacía
+ * `render.domElement` sin más y de invitada `render` está sin definir, así que las
+ * seis mesas de tablero morían aquí en cuanto se les cargó el andamio que les faltaba.
+ *
+ * Va en el contrato del anfitrión y no se busca con `querySelector('canvas')`: en esta
+ * sala hay uno, pero el día que haya dos —un minimapa, una vista de rival— el que
+ * aparezca primero no tiene por qué ser el bueno.
+ */
+window.ALISA_ANFITRION = { grupo, escena, camara, lienzo: render.domElement };
 
 const reglas = await cargarReglas(juego, {});
 const hub = new ProtoHub().registrar(juego, reglas);
@@ -499,6 +512,21 @@ if (deCartas) {
      * `mesa_tablero.mjs` se monta sola y respeta `ALISA_ANFITRION`, así que aquí
      * dibuja DENTRO de esta sala igual que hacía el trozo que sustituye.
      */
+    /**
+     * ⚠️ Y ANTES, EL ANDAMIO. AQUÍ FALTABA Y SE LLEVABA POR DELANTE SEIS MESAS.
+     *
+     * `mesa_tablero.mjs` da por hecho que existen `window.ALISA_GESTOS`,
+     * `ALISA_ENCUADRE` y compañía, que son scripts clásicos y globales. Esta sala
+     * cargaba sólo los tres de vendor, así que ajedrez, go, reversi, damas, xiangqi
+     * y mancala salían en negro con un `undefined (reading 'deslizarParaMoverse')`.
+     * Las once de cartas iban porque su motor comprueba antes de usarlo.
+     *
+     * La lista no se copia: se pide a `montarMesa.js`, que es de donde salía la
+     * buena. Copiarla habría arreglado hoy y roto el día que le añadan algo.
+     * Los de vendor ya están puestos arriba, y `cargar` no repite lo que ya está.
+     */
+    const { ANDAMIO, cargar } = await import('./js/montarMesa.js');
+    for (const s of ANDAMIO) await cargar(s);
     await import('./js/mesa_tablero.mjs');
 }
 

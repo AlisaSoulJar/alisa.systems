@@ -751,7 +751,10 @@ function alTocar(ev) {
  * cuenta es como se consigue que tres se arreglen y una no.
  */
 window.ALISA_GESTOS.deslizarParaMoverse({
-    lienzo: render.domElement,
+    // De invitada no hay renderizador propio: el lienzo lo pone la sala, que es la
+    // dueña del bucle. Sin esto las seis mesas de tablero de la Sala del Huevo salían
+    // en negro con un `undefined (reading 'domElement')`.
+    lienzo: anfitrion?.lienzo ?? render.domElement,
     camara,
     legales: () => legalesAhora,
     enviar: enviarSiEsLegal,
