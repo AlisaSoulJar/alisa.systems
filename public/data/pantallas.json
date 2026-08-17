@@ -1,0 +1,798 @@
+{
+ "fecha": "2026-08-17",
+ "pantallas": [
+  {
+   "nombre": "móvil",
+   "ancho": 390,
+   "alto": 844
+  },
+  {
+   "nombre": "tumbado",
+   "ancho": 844,
+   "alto": 390
+  },
+  {
+   "nombre": "tableta",
+   "ancho": 820,
+   "alto": 1180
+  },
+  {
+   "nombre": "escritorio",
+   "ancho": 1280,
+   "alto": 800
+  }
+ ],
+ "nota": "Sólo se cuenta lo alcanzable: tus cartas y las piezas del tablero. Las manos de los rivales se salen a propósito.",
+ "juegos": {
+  "ajedrez": {
+   "móvil": {
+    "dentro": 96,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 96,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tableta": {
+    "dentro": 96,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 96,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "go": {
+   "móvil": {
+    "dentro": 361,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 279,
+    "fuera": 0,
+    "tapadas": 82
+   },
+   "tableta": {
+    "dentro": 340,
+    "fuera": 0,
+    "tapadas": 21
+   },
+   "escritorio": {
+    "dentro": 358,
+    "fuera": 0,
+    "tapadas": 3
+   }
+  },
+  "reversi": {
+   "móvil": {
+    "dentro": 66,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 56,
+    "fuera": 0,
+    "tapadas": 10
+   },
+   "tableta": {
+    "dentro": 66,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 66,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "damas": {
+   "móvil": {
+    "dentro": 66,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 56,
+    "fuera": 0,
+    "tapadas": 10
+   },
+   "tableta": {
+    "dentro": 66,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 66,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "xiangqi": {
+   "móvil": {
+    "dentro": 92,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 71,
+    "fuera": 0,
+    "tapadas": 21
+   },
+   "tableta": {
+    "dentro": 80,
+    "fuera": 0,
+    "tapadas": 12
+   },
+   "escritorio": {
+    "dentro": 92,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "mancala": {
+   "móvil": {
+    "dentro": 6,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 6,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tableta": {
+    "dentro": 6,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 6,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "snake": {
+   "móvil": {
+    "dentro": 3,
+    "fuera": 1,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 4,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tableta": {
+    "dentro": 4,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 4,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "fagocito": {
+   "móvil": {
+    "dentro": 3,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 3,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tableta": {
+    "dentro": 3,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 3,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "peaton": {
+   "móvil": {
+    "dentro": 10,
+    "fuera": 15,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 21,
+    "fuera": 0,
+    "tapadas": 4
+   },
+   "tableta": {
+    "dentro": 23,
+    "fuera": 2,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 25,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "blackjack": {
+   "móvil": {
+    "dentro": 0,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 0,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tableta": {
+    "dentro": 0,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 0,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "poker": {
+   "móvil": {
+    "dentro": 0,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 0,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tableta": {
+    "dentro": 0,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 0,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "brisca": {
+   "móvil": {
+    "dentro": 3,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 3,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tableta": {
+    "dentro": 3,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 3,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "tute": {
+   "móvil": {
+    "dentro": 10,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 8,
+    "fuera": 0,
+    "tapadas": 2
+   },
+   "tableta": {
+    "dentro": 10,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 10,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "hearts": {
+   "móvil": {
+    "dentro": 13,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 11,
+    "fuera": 0,
+    "tapadas": 2
+   },
+   "tableta": {
+    "dentro": 13,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 13,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "spades": {
+   "móvil": {
+    "dentro": 13,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 10,
+    "fuera": 0,
+    "tapadas": 3
+   },
+   "tableta": {
+    "dentro": 9,
+    "fuera": 0,
+    "tapadas": 4
+   },
+   "escritorio": {
+    "dentro": 12,
+    "fuera": 0,
+    "tapadas": 1
+   }
+  },
+  "guerra": {
+   "móvil": {
+    "dentro": 0,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 0,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tableta": {
+    "dentro": 0,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 0,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "gofish": {
+   "móvil": {
+    "dentro": 7,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 5,
+    "fuera": 0,
+    "tapadas": 2
+   },
+   "tableta": {
+    "dentro": 7,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 7,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "unit": {
+   "móvil": {
+    "dentro": 7,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 7,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tableta": {
+    "dentro": 7,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 7,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "entropy": {
+   "móvil": {
+    "dentro": 0,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 0,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tableta": {
+    "dentro": 0,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 0,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "sokoban": {
+   "móvil": {
+    "dentro": 17,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 16,
+    "fuera": 0,
+    "tapadas": 1
+   },
+   "tableta": {
+    "dentro": 17,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 17,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "cripta": {
+   "móvil": {
+    "dentro": 0,
+    "fuera": 2,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 2,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tableta": {
+    "dentro": 0,
+    "fuera": 2,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 2,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "flota": {
+   "móvil": {
+    "dentro": 83,
+    "fuera": 54,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 62,
+    "fuera": 0,
+    "tapadas": 75
+   },
+   "tableta": {
+    "dentro": 87,
+    "fuera": 50,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 124,
+    "fuera": 1,
+    "tapadas": 12
+   }
+  },
+  "defensa": {
+   "móvil": {
+    "dentro": 152,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 111,
+    "fuera": 0,
+    "tapadas": 41
+   },
+   "tableta": {
+    "dentro": 135,
+    "fuera": 0,
+    "tapadas": 17
+   },
+   "escritorio": {
+    "dentro": 146,
+    "fuera": 0,
+    "tapadas": 6
+   }
+  },
+  "sigilo": {
+   "móvil": {
+    "dentro": 84,
+    "fuera": 232,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 274,
+    "fuera": 42,
+    "tapadas": 0
+   },
+   "tableta": {
+    "dentro": 127,
+    "fuera": 189,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 242,
+    "fuera": 74,
+    "tapadas": 0
+   }
+  },
+  "frentes": {
+   "móvil": {
+    "dentro": 87,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 87,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tableta": {
+    "dentro": 87,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 87,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "relevo": {
+   "móvil": {
+    "dentro": 60,
+    "fuera": 190,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 212,
+    "fuera": 38,
+    "tapadas": 0
+   },
+   "tableta": {
+    "dentro": 94,
+    "fuera": 156,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 182,
+    "fuera": 68,
+    "tapadas": 0
+   }
+  },
+  "cabina": {
+   "móvil": {
+    "dentro": 167,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 137,
+    "fuera": 0,
+    "tapadas": 30
+   },
+   "tableta": {
+    "dentro": 167,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 166,
+    "fuera": 0,
+    "tapadas": 1
+   }
+  },
+  "rebano": {
+   "móvil": {
+    "dentro": 249,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 211,
+    "fuera": 0,
+    "tapadas": 38
+   },
+   "tableta": {
+    "dentro": 249,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 249,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "pradera": {
+   "móvil": {
+    "dentro": 283,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 236,
+    "fuera": 0,
+    "tapadas": 47
+   },
+   "tableta": {
+    "dentro": 283,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 283,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "nave": {
+   "móvil": {
+    "dentro": 249,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 211,
+    "fuera": 0,
+    "tapadas": 38
+   },
+   "tableta": {
+    "dentro": 249,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 249,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "remigio": {
+   "móvil": {
+    "dentro": 10,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 10,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tableta": {
+    "dentro": 10,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 10,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "parchis": {
+   "móvil": {
+    "dentro": 328,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 280,
+    "fuera": 0,
+    "tapadas": 48
+   },
+   "tableta": {
+    "dentro": 328,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 328,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "generala": {
+   "móvil": {
+    "dentro": 1,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 1,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tableta": {
+    "dentro": 1,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 1,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "oca": {
+   "móvil": {
+    "dentro": 85,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 74,
+    "fuera": 0,
+    "tapadas": 11
+   },
+   "tableta": {
+    "dentro": 85,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 85,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  },
+  "canadiense": {
+   "móvil": {
+    "dentro": 334,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "tumbado": {
+    "dentro": 285,
+    "fuera": 0,
+    "tapadas": 49
+   },
+   "tableta": {
+    "dentro": 334,
+    "fuera": 0,
+    "tapadas": 0
+   },
+   "escritorio": {
+    "dentro": 334,
+    "fuera": 0,
+    "tapadas": 0
+   }
+  }
+ }
+}

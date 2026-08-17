@@ -81,6 +81,7 @@ const prosa = await leer('public/data/fichas_prosa.json', {});
 // jugadas del juego— y llamar `verbos` a esto lo taparía sin dar ningún error.
 const medidoTacto = await leer('public/data/tacto.json', {});
 const medidoVerbos = await leer('public/data/verbos.json', {});
+const medidoPantallas = await leer('public/data/pantallas.json', {});
 /**
  * ⚠️ LA FICHA PROMETÍA UNA CAPTURA QUE NO SE PUBLICA. 35 DE 35.
  *
@@ -271,6 +272,39 @@ for (const juego of JUEGOS) {
                      */
                     : tocando === false ? 'en el momento de medir, sólo respondía el panel'
                     : null,
+            };
+        })(),
+        /**
+         * ⚠️ ¿SE VE BIEN EN TODAS LAS PANTALLAS? — idea de Oscar, y hacía falta.
+         *
+         * Hoy aparecieron DOS juegos impecables en escritorio y roluptos en el móvil:
+         * mancala con 4 de sus 6 hoyos fuera de cuadro y ajedrez con 26 de sus 64
+         * casillas. Ninguno de mis instrumentos lo buscaba, y los dos se presentaron
+         * disfrazados de otra cosa — `tacto` decía «0 jugadas contestan» y yo leí que el
+         * clic estaba roto. Cuatro intentos perdidos en el ajedrez por creer el disfraz.
+         *
+         * Se mide en cuatro formas —móvil de pie, móvil tumbado, tableta y escritorio— y
+         * se distingue FUERA DE CUADRO (se arregla con la cámara) de BAJO EL PANEL (se
+         * arregla plegándolo). Son dos problemas y mezclarlos manda a arreglar el que no
+         * toca.
+         *
+         * Y no se cuentan las manos de los RIVALES: se salen a propósito en las mesas de
+         * cartas porque están boca abajo y de ellas sólo importa cuántas hay. Contarlas
+         * daría 35 falsas alarmas y enterraría las dos verdaderas.
+         */
+        pantallas: (() => {
+            const f = medidoPantallas.juegos?.[juego];
+            if (!f) return null;
+            const mal = Object.entries(f).filter(([, r]) => r && (r.fuera > 0 || r.tapadas > 0));
+            return {
+                medido: medidoPantallas.fecha,
+                bien: mal.length === 0,
+                donde: Object.fromEntries(Object.entries(f).map(([n, r]) => [n,
+                    !r ? null : r.fuera > 0 ? `${r.fuera} fuera de cuadro`
+                       : r.tapadas > 0 ? `${r.tapadas} bajo el panel`
+                       : 'se alcanza todo'])),
+                resumen: mal.length === 0 ? 'se ve bien en las cuatro pantallas'
+                    : `hay que plegar el panel o girar: ${mal.map(([n]) => n).join(', ')}`,
             };
         })(),
         // ── lo único escrito a mano ────────────────────────────────────────

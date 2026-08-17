@@ -139,6 +139,24 @@ function pintarFicha(j, f) {
             ${m?.medido ? `<div class="sin">medido el ${m.medido} en una pantalla de 390x844</div>` : ''}
           </div></div>
 
+          <!--
+            ⚠️ EN QUÉ PANTALLAS SE VE, Y NO ES UN ADORNO.
+
+            Dos juegos estaban impecables en escritorio y roluptos en el móvil —mancala
+            con cuatro de seis hoyos fuera de cuadro, ajedrez con 26 de 64 casillas— y
+            llevaban ahí quién sabe cuánto porque yo medía en pantalla ancha. Un
+            betatester que entre por el teléfono es el que lo nota, y esto le dice si lo
+            que ve mal es el juego o su pantalla.
+          -->
+          <div class="panel"><h2>en qué pantallas se ve</h2><div class="dentro">
+            ${f.pantallas ? `<div${f.pantallas.bien ? '' : ' class="aviso"'}>${esc(f.pantallas.resumen)}</div>
+              <dl style="margin-top:7px">${Object.entries(f.pantallas.donde).map(([n, v]) =>
+                `<dt>${esc(n)}</dt><dd>${v ? esc(v) : sin('sin medir')}</dd>`).join('')}</dl>
+              <div class="sin">medido el ${f.pantallas.medido}. No cuentan las manos de los rivales:
+              se salen a propósito porque están boca abajo.</div>`
+              : sin('sin medir')}
+          </div></div>
+
           <div class="panel"><h2>las cinco puertas</h2><div class="dentro">
             <div class="puertas">${Object.entries(f.puertas ?? {}).map(([n, ok]) => puerta(n, ok)).join('')}</div>
             <div class="sin" style="margin-top:7px">Dice si la puerta está MONTADA, no si está bien.</div>

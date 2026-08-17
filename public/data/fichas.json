@@ -39,6 +39,7 @@
       "verbos": null,
       "resumen": "en el momento de medir, sólo respondía el panel"
     },
+    "pantallas": null,
     "reglas": "Mueves una pieza tuya a una casilla donde pueda ir, con una condición que lo gobierna todo: no puedes dejar a tu rey en jaque. La lista de jugadas legales ya viene filtrada por eso, así que lo que se ofrece es siempre legal de verdad.",
     "prosa": {
       "que_es": "El ajedrez, entero. No es una versión reducida: están el enroque, la captura al paso, la coronación a las cuatro piezas, el ahogado, la regla de las 50 jugadas y el material insuficiente.",
@@ -98,6 +99,7 @@
       "verbos": 1,
       "resumen": "se juega tocando la mesa"
     },
+    "pantallas": null,
     "reglas": "Pones una piedra en una intersección vacía, o pasas —pasar siempre es legal—. Al poner, se miran PRIMERO los grupos rivales que toca: los que se queden sin libertades se retiran del tablero.",
     "prosa": {
       "que_es": "Colocar piedras es lo fácil; el juego está en las libertades. Un grupo vive mientras toque alguna intersección vacía, y todo lo demás sale de ahí.",
@@ -157,6 +159,7 @@
       "verbos": null,
       "resumen": "se juega tocando la mesa"
     },
+    "pantallas": null,
     "reglas": "Sólo puedes poner donde des la vuelta a algo: una jugada que no voltea ninguna ficha es ilegal. Se voltea en las ocho direcciones a la vez, todas las líneas que queden encerradas.",
     "prosa": {
       "que_es": "Se pone una ficha de forma que atrape fichas del rival entre la nueva y otra tuya, y todas las atrapadas cambian de color. Parece de contar y es de posición.",
@@ -218,6 +221,7 @@
       "verbos": null,
       "resumen": "se juega tocando la mesa"
     },
+    "pantallas": null,
     "reglas": "Los peones avanzan en diagonal hacia el lado contrario. Si puedes comer, tienes que comer; y si después de comer puedes seguir comiendo, sigues en la misma jugada. Llegar a la última fila corona el peón en dama.",
     "prosa": {
       "que_es": "Damas en tablero de 8x8 con una regla que lo cambia todo: comer es obligatorio. Si hay captura disponible, no puedes hacer otra cosa.",
@@ -283,6 +287,7 @@
       "verbos": null,
       "resumen": "se juega tocando la mesa"
     },
+    "pantallas": null,
     "reglas": "Cada pieza tiene su regla y casi ninguna se parece a la occidental. El cañón se mueve como una torre pero para COMER necesita saltar exactamente una pieza. El caballo salta como el nuestro pero se traba si le tapan la casilla por la que sale la pata. El elefante va dos en diagonal, no cruza el río y se bloquea si le ocupan el punto de en medio. Consejero y general no salen del palacio de 3x3. El soldado va siempre adelante, y sólo después de cruzar el río puede ir también de lado.",
     "prosa": {
       "que_es": "El ajedrez chino, y no es el nuestro con otras piezas: se juega en las intersecciones, hay un río en medio, los generales viven encerrados en su palacio y el cañón come saltando.",
@@ -344,6 +349,7 @@
       "verbos": null,
       "resumen": "en el momento de medir, sólo respondía el panel"
     },
+    "pantallas": null,
     "reglas": "Se elige uno de TUS hoyos que tenga semillas, se cogen todas y se van soltando de una en una en sentido antihorario, saltándose el granero del rival. Dónde cae la última decide lo que pasa: si cae en tu granero, repites turno; si cae en un hueco vacío de tu lado, te llevas esa semilla y todas las del hueco de enfrente.",
     "prosa": {
       "que_es": "Sembrar y recoger. Doce hoyos con semillas y un granero por jugador; se coge un hoyo entero y se va dejando una semilla en cada hueco. Ni azar ni nada oculto: pura aritmética.",
@@ -400,6 +406,7 @@
       "verbos": 4,
       "resumen": "se juega con los botones de abajo"
     },
+    "pantallas": null,
     "reglas": "Se elige una de las cuatro direcciones y el mundo avanza un paso. Si la cabeza cae sobre la comida, la serpiente crece y aparece otra comida; si cae sobre un muro o sobre su propio cuerpo, se acabó.",
     "prosa": {
       "que_es": "La serpiente de toda la vida: crece cada vez que come, y cuanto más crece menos sitio le queda. Aquí no va por reflejos sino por pasos.",
@@ -459,6 +466,7 @@
       "verbos": 2,
       "resumen": "se juega con los botones de abajo"
     },
+    "pantallas": null,
     "reglas": "Te mueves en las cuatro direcciones y el mundo avanza. Los perseguidores se mueven a la vez que tú.",
     "prosa": {
       "que_es": "Una célula que engulle mientras la persiguen. Recoger todo el alimento de un laberinto sin que te alcancen los que van detrás.",
@@ -518,6 +526,7 @@
       "verbos": 5,
       "resumen": "se juega tocando la mesa"
     },
+    "pantallas": null,
     "reglas": "Te mueves en las cuatro direcciones o ESPERAS, y el mundo avanza un tick. Si un coche te alcanza, se acabó.",
     "prosa": {
       "que_es": "Cruzar la calle. Carriles de coches yendo y viniendo, tú abajo, la acera de enfrente arriba. La decisión más difícil suele ser quedarse quieto.",
@@ -572,6 +581,7 @@
       "verbos": 3,
       "resumen": "se juega con los botones de abajo"
     },
+    "pantallas": null,
     "reglas": "`hit` pide otra carta y `stand` se planta. `double` dobla y te da una sola carta más, y sólo se puede con la mano inicial de dos. Pasarte de 21 pierde en el acto, sin esperar a la casa.",
     "prosa": {
       "que_es": "El 21 contra la casa. Pides cartas hasta plantarte, sin pasarte de 21, y luego la casa juega con una regla fija y sin margen.",
@@ -629,6 +639,7 @@
       "verbos": 2,
       "resumen": "se juega con los botones de abajo"
     },
+    "pantallas": null,
     "reglas": "Cuatro acciones: `fold` te retira y pierdes lo puesto, `check` pasa sin apostar, `call` iguala lo que ha puesto el otro y `raise` sube. Al haber límite fijo, la subida es de un tamaño fijo: no hay que decir cuánto.",
     "prosa": {
       "que_es": "Texas Hold'em cara a cara y a límite fijo. Dos cartas tuyas, cinco comunes, y cuatro rondas de apuestas para averiguar quién tiene mejor mano — o para convencer al otro de que la tienes tú.",
@@ -682,6 +693,7 @@
       "verbos": null,
       "resumen": "en el momento de medir, sólo respondía el panel"
     },
+    "pantallas": null,
     "reglas": "Quien sale tira la carta que quiera: aquí NO hay obligación de servir al palo, y eso es lo que separa a la brisca del tute. Se lleva la baza el triunfo más alto; si no ha salido ninguno, la carta más alta del palo con el que se salió. El que gana roba primero, luego los demás en orden, y vuelve a salir él.",
     "prosa": {
       "que_es": "El juego de bazas más extendido de España: cartas que valen puntos, un palo que manda sobre todos, y una mano de sólo tres cartas que se rellena sobre la marcha.",
@@ -734,6 +746,7 @@
       "verbos": null,
       "resumen": "se juega tocando la mesa"
     },
+    "pantallas": null,
     "reglas": "Hay que servir al palo de salida si tienes: ésta es la diferencia grande con la brisca, donde puedes tirar lo que quieras. Se lleva la baza el triunfo más alto, y si no ha salido triunfo, la carta más alta del palo de salida. El que gana sale a la siguiente.",
     "prosa": {
       "que_es": "El juego de bazas serio de la baraja española: se reparte todo de una vez, hay que servir al palo, y quien cuenta las cartas que van saliendo gana.",
@@ -788,6 +801,7 @@
       "verbos": null,
       "resumen": "se juega tocando la mesa"
     },
+    "pantallas": null,
     "reglas": "Hay que servir al palo de salida si tienes. No hay triunfo, así que la baza se la lleva siempre la carta más alta del palo con el que se salió. El que la gana sale a la siguiente, y se lleva también todo lo que haya caído dentro.",
     "prosa": {
       "que_es": "El juego de bazas al revés: aquí ganar bazas es un castigo. Cada corazón que te llevas suma en tu contra, y la dama de picas vale ella sola por trece.",
@@ -844,6 +858,7 @@
       "verbos": null,
       "resumen": "se juega tocando la mesa"
     },
+    "pantallas": null,
     "reglas": "Primero se apuesta: de 0 a 13, sin pasar y sin tener que superar al anterior. Cuando han apostado los cuatro empieza el juego, y ahí hay que servir al palo de salida si tienes. Las picas ganan a cualquier otro palo por alta que sea la carta contraria; entre cartas del mismo palo, manda el rango normal. El que gana la baza sale a la siguiente.",
     "prosa": {
       "que_es": "Juego de bazas con las picas siempre de triunfo, y con lo que lo hace distinto a todos los demás de la casa: antes de jugar APUESTAS cuántas bazas vas a hacer, y acertar vale más que ganar.",
@@ -898,6 +913,7 @@
       "verbos": 1,
       "resumen": "se juega con los botones de abajo"
     },
+    "pantallas": null,
     "reglas": "Sólo hay una jugada posible, «voltear». Salen dos cartas, la más alta se lleva las dos. Si empatan, las cartas se quedan en el bote y se las lleva quien gane el siguiente volteo.",
     "prosa": {
       "que_es": "El juego más tonto de la casa, y está aquí a propósito: se voltea una carta cada uno y gana la más alta. No hay ni una sola decisión que tomar.",
@@ -950,6 +966,7 @@
       "verbos": null,
       "resumen": "en el momento de medir, sólo respondía el panel"
     },
+    "pantallas": null,
     "reglas": "Pides a un rival todas sus cartas de un rango. Si las tiene, te las da y REPITES turno; si no, vas a pescar del mazo y el turno pasa. Cuatro del mismo rango forman un libro, sale de la mano y vale un punto.",
     "prosa": {
       "que_es": "Pedir cartas a los demás y acordarse de lo que han pedido ellos. No hay tablero ni posición: lo único que separa a un buen jugador de uno malo es la memoria.",
@@ -1003,6 +1020,7 @@
       "verbos": 1,
       "resumen": "se juega tocando la mesa"
     },
+    "pantallas": null,
     "reglas": "Tiras una carta que case en color o en número con la de arriba del descarte. Si no puedes, robas. Las especiales saltan al siguiente (SKIP), invierten el sentido (REV) o le hacen robar dos (D2), y el comodín te obliga a declarar el color que se juega a partir de ahí.",
     "prosa": {
       "que_es": "La familia del descarte: sueltas cartas que casen en color o en número con la de arriba del montón, y gana quien se queda sin cartas. Las especiales convierten el ORDEN DE JUEGO en parte del problema.",
@@ -1059,6 +1077,7 @@
       "verbos": 2,
       "resumen": "se juega tocando la mesa"
     },
+    "pantallas": null,
     "reglas": "Robas del mazo o del descarte —la del descarte la ha visto todo el mundo— y decides: la cambias por una de tu caja, o la tiras. Cada decisión enseña algo a los demás.",
     "prosa": {
       "que_es": "Gana quien MENOS desorden acumula. Tienes una caja de ocho cartas casi todas boca abajo, y cada turno decides qué hacer con la que robas. Al final se suma tu caja y la suma más baja gana.",
@@ -1113,6 +1132,7 @@
       "verbos": 1,
       "resumen": "se juega con los botones de abajo"
     },
+    "pantallas": null,
     "reglas": "Te mueves en las cuatro direcciones. Si al moverte hay una caja delante y detrás de ella hay hueco, la empujas. Nunca puedes tirar de una caja.",
     "prosa": {
       "que_es": "Empujar cajas hasta sus destinos. Sin azar, sin rival y sin nada oculto: pura planificación, con la particularidad de que hay movimientos que no se pueden deshacer.",
@@ -1171,6 +1191,7 @@
       "verbos": 4,
       "resumen": "se juega con los botones de abajo"
     },
+    "pantallas": null,
     "reglas": "Te mueves por lo que conoces. Los tesoros suman, los bichos restan vida, y pisar la salida termina la partida en el acto con lo que lleves encima.",
     "prosa": {
       "que_es": "Una mazmorra que no se ve entera. Se explora a oscuras, se recuerda lo visto, y en algún momento hay que decidir si seguir bajando o salir con lo que llevas.",
@@ -1230,6 +1251,7 @@
       "verbos": null,
       "resumen": "se juega tocando la mesa"
     },
+    "pantallas": null,
     "reglas": "Disparas a una casilla del mar enemigo. Te dicen si es agua o tocado, y cuando cae la última casilla de un barco, que está hundido.",
     "prosa": {
       "que_es": "Dos mares, una flota escondida en cada uno, y un disparo por turno. Deducir dónde está lo que el otro ha escondido, mientras él deduce lo mismo de ti.",
@@ -1290,6 +1312,7 @@
       "verbos": 8,
       "resumen": "se juega tocando la mesa"
     },
+    "pantallas": null,
     "reglas": "Gastas oro en poner una torre en una casilla de tu carril, o en enviar un bicho al del rival. También puedes no gastar y acumular.",
     "prosa": {
       "que_es": "Dos carriles. En el tuyo pones torres; al del rival le mandas bichos. El oro cae solo, y cada moneda gastada en atacar es una moneda que no defiende.",
@@ -1347,6 +1370,7 @@
       "verbos": 4,
       "resumen": "se juega tocando la mesa"
     },
+    "pantallas": null,
     "reglas": "Cada uno se mueve por lo que conoce. Ver al otro es información y también es riesgo: si lo ves, te ha visto.",
     "prosa": {
       "que_es": "Un ladrón entra a robar y un guardia lo busca. Ninguno ve el edificio entero, ninguno ve al otro salvo cuando lo tiene delante, y por los pasillos van drones que no obedecen a nadie.",
@@ -1403,6 +1427,7 @@
       "verbos": 5,
       "resumen": "se juega tocando la mesa"
     },
+    "pantallas": null,
     "reglas": "Eliges un frente. Los dos comprometen su elección a la vez y se resuelve cuando ya no se puede cambiar de idea.",
     "prosa": {
       "que_es": "Cinco frentes y ocho rondas. Cada ronda los dos eligen un frente sin ver lo que ha elegido el otro. Si eligen distinto, cada uno refuerza el suyo; si coinciden, chocan y no avanza ninguno.",
@@ -1462,6 +1487,7 @@
       "verbos": 3,
       "resumen": "se juega tocando la mesa"
     },
+    "pantallas": null,
     "reglas": "Cada uno se mueve o espera. Uno sostiene la placa de acá para que pase el otro, y el otro sostiene la de allá para que pase el primero. Después, los dos a la salida.",
     "prosa": {
       "que_es": "Dos autómatas en un almacén partido por un muro con una sola puerta. La puerta está abierta mientras alguien pisa una placa, y hay una placa a cada lado.",
@@ -1518,6 +1544,7 @@
       "verbos": null,
       "resumen": "se juega tocando la mesa"
     },
+    "pantallas": null,
     "reglas": "El piloto se mueve por donde cree. La guía tiene seis acciones y NINGUNA toca el mundo: sólo cambian lo que el piloto sabe.",
     "prosa": {
       "que_es": "Dos asientos con papeles opuestos. La GUÍA ve el almacén entero y no puede moverse. El PILOTO se mueve y no ve más que la casilla que pisa. Lo único que puede hacer la guía es decir cosas.",
@@ -1574,6 +1601,7 @@
       "verbos": 3,
       "resumen": "se juega con los botones de abajo"
     },
+    "pantallas": null,
     "reglas": "Te mueves. Las ovejas reaccionan solas: se juntan entre ellas, se separan si se agobian, y huyen de ti si te acercas demasiado.",
     "prosa": {
       "que_es": "Eres el perro. Hay doce ovejas y un redil. No puedes ordenarle nada a ninguna oveja: sólo colocarte, y dejar que huyan de ti.",
@@ -1631,6 +1659,7 @@
       "verbos": 4,
       "resumen": "se juega con los botones de abajo"
     },
+    "pantallas": null,
     "reglas": "Te mueves y cazas. El mundo sigue su ciclo: el queso crece, los ratones comen y crían, y tu hambre sube.",
     "prosa": {
       "que_es": "Eres el depredador. Los ratones comen queso y se reproducen; tú comes ratones o te mueres de hambre. Cazar resuelve hoy y arruina el mes que viene.",
@@ -1691,6 +1720,7 @@
       "verbos": 3,
       "resumen": "se juega con los botones de abajo"
     },
+    "pantallas": null,
     "reglas": "Te mueves, haces tu tarea o esperas. El impostor, además, puede eliminar. En una junta todos votan a la vez y el más votado sale por la esclusa, sea culpable o no.",
     "prosa": {
       "que_es": "Cuatro sillas y una miente. Tres tripulantes reparan la nave; un impostor los elimina de uno en uno. Cuando aparece un cadáver se convoca junta y todos votan a la vez.",
@@ -1742,6 +1772,7 @@
       "verbos": 2,
       "resumen": "se juega tocando la mesa"
     },
+    "pantallas": null,
     "reglas": "Robas una carta —del mazo, a ciegas, o la de encima del descarte, que todos han visto— y tiras otra. Las combinaciones válidas son el TRÍO, tres o más del mismo número, y la ESCALERA, tres o más seguidas del mismo palo.",
     "prosa": {
       "que_es": "El rummy español: robar, combinar y cerrar. Tienes diez cartas y ganas cuando las diez forman combinaciones enteras.",
@@ -1801,6 +1832,7 @@
       "verbos": 1,
       "resumen": "se juega con los botones de abajo"
     },
+    "pantallas": null,
     "reglas": "Tiras el dado y decides qué ficha gasta esa tirada. Con un 5 puedes sacar ficha de casa. Si caes donde hay una del contrario, la comes y vuelve a su casa a empezar de nuevo.",
     "prosa": {
       "que_es": "Sacar las cuatro fichas de casa, dar la vuelta al tablero y meterlas en la meta, comiendo al que se ponga por delante.",
@@ -1860,6 +1892,7 @@
       "verbos": 1,
       "resumen": "se juega con los botones de abajo"
     },
+    "pantallas": null,
     "reglas": "Tiras los dados que te queden sueltos, apartas los que te interesen y puedes repetir hasta tres tiradas en total. Al acabar anotas en una casilla libre de tu hoja; si no te entra nada, la tachas con cero.",
     "prosa": {
       "que_es": "Cinco dados y una hoja de once casillas. Tiras, apartas lo que te sirve, vuelves a tirar, y decides en qué casilla anotas. Cada casilla se usa UNA vez en toda la partida.",
@@ -1930,6 +1963,7 @@
       "verbos": 1,
       "resumen": "se juega con los botones de abajo"
     },
+    "pantallas": null,
     "reglas": "Tiras el dado y decides CUÁL de tus dos fichas avanza. Si caes en una oca saltas a la siguiente y vuelves a tirar; los puentes te mandan al otro puente y los dados al otro dado; la posada te para un turno y la cárcel dos; el pozo te deja ahí hasta que otra ficha caiga y te releve; el laberinto te devuelve a la 30 y la muerte a la salida.",
     "prosa": {
       "que_es": "De la salida a la 63, y cada casilla hace algo. Ocas que te adelantan, puentes que te teletransportan, un pozo del que no sales solo y una muerte que te devuelve al principio.",
@@ -1989,6 +2023,7 @@
       "verbos": null,
       "resumen": "en el momento de medir, sólo respondía el panel"
     },
+    "pantallas": null,
     "reglas": "Juegas una carta de tu mano y haces lo que dice. El AS saca ficha de casa o avanza 1; del 2 al 10 avanzan su número, salvo el 4 que RETROCEDE cuatro; el 7 avanza siete con una ficha o se reparte entre dos tuyas; la J intercambia una ficha tuya con una del rival.",
     "prosa": {
       "que_es": "El parchís que se juega con CARTAS en vez de dado. Mismo tablero y mismo objetivo, pero el movimiento sale de tu mano — así que el azar deja de ser público y pasa a ser tuyo.",

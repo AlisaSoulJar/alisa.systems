@@ -453,6 +453,12 @@ const APARTE = new Set([
      * test` porque juega setenta mil jugadas y tarda: `npm run guardia`.
      */
     'prueba_guardia.mjs',
+    /**
+     * Mide, no comprueba una condición: abre los 35 en CUATRO pantallas y cuenta qué se
+     * sale de cuadro y qué cae bajo el panel. Necesita navegador y tarda 140 cargas de
+     * página: `npm run pantallas`.
+     */
+    'prueba_pantallas.mjs',
 ]);
 
 const enDisco = (await readdir(new URL('.', import.meta.url)))
