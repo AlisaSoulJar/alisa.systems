@@ -1,0 +1,10 @@
+{
+ "fecha": "2026-08-17",
+ "medido_con_semillas": 120,
+ "nota": "tope medido × 2. Lo que no está aquí usa el global de tabla.mjs.",
+ "juegos": {
+  "go": 3600,
+  "snake": 2400,
+  "fagocito": 2400
+ }
+}

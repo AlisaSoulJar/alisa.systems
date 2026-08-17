@@ -443,6 +443,10 @@ const APARTE = new Set([
     'prueba_vistas.mjs',           // abre los 35 en un navegador: `npm run vistas`
     'prueba_verbos.mjs',           // abre los 35 en un navegador: `npm run verbos`
     'prueba_portal.mjs',           // abre las 35 fichas en un navegador: `npm run portal`
+    // Mide, no comprueba: juega cada juego con topes crecientes para averiguar cuántas
+    // decisiones necesita y lo escribe en `topes.json`. No tiene veredicto que sabotear
+    // —su salida es un número—, y tarda lo que tarda jugar 480 partidas: `npm run topes`.
+    'prueba_topes.mjs',
 ]);
 
 const enDisco = (await readdir(new URL('.', import.meta.url)))

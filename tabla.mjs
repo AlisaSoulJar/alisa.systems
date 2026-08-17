@@ -86,6 +86,28 @@ const SEMILLAS = Number(args.semillas ?? 2);
  */
 const SEMILLAS_BASE = Number(args['semillas-base'] ?? 60);
 const TOPE = Number(args.tope ?? 25);
+
+/**
+ * ⚠️ UN TOPE POR JUEGO, MEDIDO, EN VEZ DE UN NÚMERO IGUAL PARA TODOS.
+ *
+ * Un tope global tiene que servir a la vez a la generala —once casillas, se acaba en
+ * cincuenta jugadas— y al go, que con la política tonta llena el tablero y necesita
+ * mil ochocientas. Puesto bajo, corta las partidas largas y el juego cae de la tabla;
+ * puesto alto, se pagan minutos de más en los treinta que no lo necesitan.
+ *
+ * Y el descarte por corte no es un detalle: la clasificación excluía ONCE juegos por
+ * «el tope de 120 decisiones corta la partida», y al medirlo resultó que nueve sólo
+ * necesitaban sitio. La creencia de que snake y fagocito no terminaban NUNCA —que yo
+ * misma defendí— era falsa: terminan con 1200. Se midió con `_topes.mjs`.
+ *
+ * Así que el tope de esos juegos sale de `public/data/topes.json`, que escribe esa
+ * sonda. Lo que no esté ahí usa el global. Un número medido y guardado, no elegido.
+ */
+const TOPES_POR_JUEGO = await (await import('node:fs/promises'))
+    .readFile(path.join(AQUI, 'public/data/topes.json'), 'utf-8')
+    .then(t => JSON.parse(t).juegos ?? {})
+    .catch(() => ({}));
+const topeDe = (juego) => TOPES_POR_JUEGO[juego] ?? TOPE;
 const pedidos = args.juegos ? String(args.juegos).split(',').map(s => s.trim()) : null;
 const modelos = args.modelos ? String(args.modelos).split(',').map(s => s.trim()) : [];
 
@@ -159,8 +181,13 @@ const participantes = [
     ...modelos.map(m => ({ nombre: m, tipo: 'modelo', proveedor: proveedorDesde(m) })),
 ];
 
+const conTopePropio = entornos.filter(e => TOPES_POR_JUEGO[e.juego]);
 console.log(`\n  ${entornos.length} juegos · ${SEMILLAS} semillas · tope ${TOPE}`
-          + ` · ${participantes.length} participantes\n`);
+          + ` · ${participantes.length} participantes`
+          + (conTopePropio.length
+             ? `\n  ${conTopePropio.length} con tope propio medido: `
+               + conTopePropio.map(e => `${e.juego} ${TOPES_POR_JUEGO[e.juego]}`).join(' · ')
+             : '') + '\n');
 
 /** Corre un participante sobre un juego. Verifica cada recibo. */
 async function correr(part, e, Clase, reglas) {
@@ -245,7 +272,7 @@ async function correr(part, e, Clase, reglas) {
         const asiento = args['sin-rotar'] ? 0 : (s - 1);
 
         const r = await jugarEpisodio(Clase, part.proveedor ?? (async () => ({ texto: '1' })), {
-            semilla: s, tope: TOPE, politica: part.politica, asiento,
+            semilla: s, tope: topeDe(e.juego), politica: part.politica, asiento,
         });
         if (r.error) throw new Error(r.error);
         serie.push(r.puntos);
@@ -345,17 +372,49 @@ for (const e of entornos) {
      * (sesenta veces más que qwen2.5) y con eso se llevó por delante los
      * veintiséis juegos y las tres líneas base.
      */
+    /**
+     * ⚠️ EXIGIR EL 100% BORRABA UN JUEGO POR DOS PARTIDAS DE DOSCIENTAS CUARENTA.
+     *
+     * Esto pedía que TODAS las partidas de las dos referencias terminaran. Medido en
+     * fagocito con las 120 semillas que juega la tabla: 238 de 240 terminan, y las dos
+     * que no son de la política TONTA —«la primera jugada legal siempre»— que entra en
+     * un bucle por el laberinto y los fantasmas no llegan a alcanzarla. Puntúa 10 y no
+     * se muere nunca.
+     *
+     * Y eso es exactamente lo que dice el párrafo de arriba, aplicado a la referencia
+     * en vez de al modelo: que un jugador concreto no llegue al final es un dato SOBRE
+     * ESE JUGADOR. Una política tonta que cicla en el 0,8% de las partidas sigue siendo
+     * un suelo perfectamente válido — el promedio se calcula con las 240 y esas dos
+     * están dentro.
+     *
+     * Lo que el corte protege de verdad es de un marcador al que le falta el desenlace
+     * EN GENERAL. Con 238 de 240 no le falta a casi nadie. Así que se exige la inmensa
+     * mayoría y NO se calla el resto: la fracción exacta se publica en el motivo.
+     *
+     * El umbral es una decisión, no un dato, y por eso está aquí con un nombre y no
+     * escondido en una comparación.
+     */
+    const MINIMO_TERMINADAS = 0.95;
     const REFERENCIAS = ['primera (suelo)', 'casa (techo blando)'];
-    const cortadas = REFERENCIAS.some(nombre => {
+    let peorFraccion = 1;
+    for (const nombre of REFERENCIAS) {
         const r = fila[nombre];
-        return r && (r.terminadas ?? 0) < (r.semillas ?? SEMILLAS);
-    });
+        if (!r) continue;
+        const f = (r.terminadas ?? 0) / (r.semillas ?? SEMILLAS);
+        if (f < peorFraccion) peorFraccion = f;
+    }
+    const cortadas = peorFraccion < MINIMO_TERMINADAS;
     // El veredicto de SI el juego puntúa se toma con los promedios largos.
     const { hueco, se, ok } = separaDeVerdad(fila);
 
     descartes.set(e.juego,
         !(hueco > 0) ? 'la casa no supera al suelo: la escala se invertiría'
-        : cortadas ? `el tope de ${TOPE} decisiones corta la partida`
+        // Se dice el tope DE ESE JUEGO, no el global: con topes por juego, publicar el
+        // número general convertiría el motivo en una pista falsa.
+        // Se dice la FRACCIÓN, no sólo que se corta: «sólo termina el 60%» y «termina
+        // el 94%» son dos diagnósticos muy distintos y antes se leían igual.
+        : cortadas ? `el tope de ${topeDe(e.juego)} decisiones corta la partida`
+                   + ` (sólo termina el ${Math.round(peorFraccion * 100)}% de las de referencia)`
         : !ok ? `el hueco (${hueco.toFixed(1)}) no supera al ruido de la medida (±${(2 * se).toFixed(1)})`
         : null);
 
@@ -529,6 +588,11 @@ const dir = path.join(AQUI, 'resultados');
 await mkdir(dir, { recursive: true });
 await writeFile(path.join(dir, 'tabla.json'), JSON.stringify(
     { fecha: new Date().toISOString(), semillas: SEMILLAS, tope: TOPE,
+      // Los topes propios van en el resultado porque cambian lo que significa el
+      // número: una puntuación de go a 1800 decisiones y otra a 400 no son la misma
+      // medida, y quien lea el JSON tiene que poder saber cuál es cuál.
+      topesPorJuego: Object.fromEntries(entornos.map(e => [e.juego, topeDe(e.juego)])
+                                                .filter(([j]) => TOPES_POR_JUEGO[j])),
       juegos: juegosUtiles,
       descartados: Object.fromEntries([...descartes].filter(([, m]) => m)),
       resumen }, null, 2));

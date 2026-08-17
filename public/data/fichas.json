@@ -83,8 +83,8 @@
       "b": "piedra blanca"
     },
     "clasificacion": {
-      "entra": false,
-      "motivo": "el tope de 400 decisiones corta la partida"
+      "entra": true,
+      "motivo": null
     },
     "captura": "/capturas/go.png",
     "conLaMano": {
@@ -118,7 +118,7 @@
       "persona": true,
       "llm": true,
       "vision": true,
-      "fsm": false,
+      "fsm": true,
       "openapi": true
     }
   },
@@ -385,8 +385,8 @@
       "comida": "cómetela para crecer"
     },
     "clasificacion": {
-      "entra": false,
-      "motivo": "el tope de 400 decisiones corta la partida"
+      "entra": true,
+      "motivo": null
     },
     "captura": "/capturas/snake.png",
     "conLaMano": {
@@ -418,7 +418,7 @@
       "persona": true,
       "llm": true,
       "vision": true,
-      "fsm": false,
+      "fsm": true,
       "openapi": true
     }
   },
@@ -444,8 +444,8 @@
       "errante": "fantasma que se mueve al azar"
     },
     "clasificacion": {
-      "entra": false,
-      "motivo": "el tope de 400 decisiones corta la partida"
+      "entra": true,
+      "motivo": null
     },
     "captura": "/capturas/fagocito.png",
     "conLaMano": {
@@ -478,7 +478,7 @@
       "persona": true,
       "llm": true,
       "vision": true,
-      "fsm": false,
+      "fsm": true,
       "openapi": true
     }
   },

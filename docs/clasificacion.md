@@ -18,17 +18,14 @@ hay un juego mandando. Es por lo que los bancos de Atari publican mediana.
 
 | participante | mediana | media | ± | forzadas | tokens | recibos verificados |
 |---|---|---|---|---|---|---|
-| primera (suelo) | **0.00** | 0.00 | ±0.04 | 0/0 | 0.0k | 2807/3240 |
-| azar | **0.03** | -0.65 | ±0.13 | 0/0 | 0.0k | 2800/3240 |
-| casa (techo blando) | **1.00** | 1.00 | ±0.05 | 0/0 | 0.0k | 2816/3240 |
+| primera (suelo) | **0.00** | 0.00 | ±0.04 | 0/0 | 0.0k | 3167/3600 |
+| azar | **0.09** | -0.55 | ±0.12 | 0/0 | 0.0k | 3160/3600 |
+| casa (techo blando) | **1.00** | 1.00 | ±0.05 | 0/0 | 0.0k | 3176/3600 |
 
-Juegos que puntúan: ajedrez, reversi, damas, xiangqi, mancala, peaton, blackjack, poker, brisca, tute, hearts, spades, gofish, entropy, sokoban, cripta, flota, defensa, sigilo, frentes, relevo, cabina, rebano, pradera, nave, generala, canadiense.
+Juegos que puntúan: ajedrez, go, reversi, damas, xiangqi, mancala, snake, fagocito, peaton, blackjack, poker, brisca, tute, hearts, spades, gofish, entropy, sokoban, cripta, flota, defensa, sigilo, frentes, relevo, cabina, rebano, pradera, nave, generala, canadiense.
 
 Fuera de la media, y por qué:
 
-- **go** — el tope de 400 decisiones corta la partida
-- **snake** — el tope de 400 decisiones corta la partida
-- **fagocito** — el tope de 400 decisiones corta la partida
 - **guerra** — la casa no supera al suelo: la escala se invertiría
 - **unit** — el hueco (19.3) no supera al ruido de la medida (±26.3)
 - **remigio** — el hueco (10.4) no supera al ruido de la medida (±21.3)
