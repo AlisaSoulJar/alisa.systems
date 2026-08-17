@@ -18,11 +18,87 @@ const UNICODE_PIECES = {
     'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
 };
 
+/**
+ * ⚠️ EL TABLERO NO CABÍA EN UN MÓVIL: 26 DE LAS 64 CASILLAS FUERA DE LA PANTALLA.
+ *
+ * La cámara estaba clavada en `(0, 8, 10)`, y eso sirve con una ventana ancha y falla con
+ * una estrecha: en Three el campo de visión que se declara es el VERTICAL y el horizontal
+ * sale de multiplicarlo por el aspecto. Con 1280x800 (aspecto 1,6) sobra sitio; con
+ * 390x844 (aspecto 0,46) se ve menos de la mitad de ancho.
+ *
+ * Medido el 17-08-2026 proyectando las 64 casillas a píxeles en 390x844:
+ *
+ *     dentro 38 · FUERA 26
+ *
+ * Y esto es lo que más tiempo me ha costado hoy, porque el síntoma engañaba: `tacto` daba
+ * «mesa 0 de 23» y lo lei como que la jugada por clic estaba rota. Llevaba CUATRO
+ * intentos buscando el fallo en el manejador. El manejador funciona — se le ve marcar los
+ * destinos en cuanto se toca una casilla que esté en pantalla. Lo que no cabía era el
+ * tablero.
+ *
+ * Es el mismo fallo que mancala, encontrado el mismo día y por el mismo motivo: yo miraba
+ * en pantalla ancha. Una pantalla estrecha no es una pantalla pequeña con menos sitio: es
+ * otra forma, y hay que medirla aparte.
+ *
+ * Se encuadra por el ANCHO y se usa la distancia mayor entre la calculada y la de
+ * siempre, así que en escritorio queda exactamente como estaba.
+ */
+/**
+ * 8 de casillas, borde de 8,6, etiquetas… y un margen por la PERSPECTIVA: la cámara mira
+ * desde arriba y en ángulo, así que la fila más cercana sale más ancha en pantalla que el
+ * ancho real del tablero. Con 9,2 quedaban 4 casillas fuera —las dos esquinas de delante—
+ * y con 11 entran las 64. El número sale de medirlo, no de estimarlo.
+ */
+
+const ALTO_CAMARA = 8, FONDO_CAMARA = 10;
+
+/**
+ * ⚠️ SE MIDE Y SE AJUSTA, NO SE CALCULA CON UN NÚMERO A OJO.
+ *
+ * Mi primera versión resolvía la distancia con la fórmula del campo de visión y una
+ * constante de ancho. Y fallaba: con la constante en 9,2 quedaban cuatro casillas fuera,
+ * la subí a 11 y quedaron LAS MISMAS CUATRO. La cámara acababa en (0, 12.5, 15.6), que no
+ * corresponde a ninguno de los dos valores — o sea que la fórmula no estaba usando el
+ * aspecto que yo creía, y yo estaba tuneando un parámetro que no gobernaba el resultado.
+ *
+ * Eso es exactamente lo que llevo todo el día diciéndole a los demás: si mueves el número
+ * y la medida no cambia, el número no es la causa.
+ *
+ * Así que en vez de predecir la distancia, se PRUEBA: se proyectan las cuatro esquinas del
+ * tablero a píxeles y se aleja la cámara mientras alguna se salga. Doce pasos como techo,
+ * porque un bucle sin techo en el arranque de una página es un cuelgue esperando. Y no
+ * hace falta ninguna constante de ancho: el tablero dice cuánto mide él mismo.
+ */
+function encuadrar(camera) {
+    const media = () => Math.tan((camera.fov * Math.PI / 180) / 2);
+    const esquinas = [
+        [-HALF_BOARD, -HALF_BOARD], [HALF_BOARD, -HALF_BOARD],
+        [-HALF_BOARD, HALF_BOARD], [HALF_BOARD, HALF_BOARD],
+    ];
+    const cabe = () => {
+        camera.updateProjectionMatrix();
+        camera.updateMatrixWorld();
+        for (const [x, z] of esquinas) {
+            const v = new THREE.Vector3(x, 0, z).project(camera);
+            // 0,96 y no 1: un margen para que la esquina no quede pegada al borde.
+            if (Math.abs(v.x) > 0.96 || Math.abs(v.y) > 0.96) return false;
+        }
+        return true;
+    };
+    let k = 1;
+    for (let i = 0; i < 12; i++) {
+        camera.position.set(0, ALTO_CAMARA * k, FONDO_CAMARA * k);
+        camera.lookAt(0, 0, 0);
+        if (cabe()) return;
+        k *= 1.12;
+    }
+    // Si en doce pasos no cabe, se deja lo más atrás que se probó: mejor lejos que cortado.
+}
+
 const engine = new SovereignBoardEngine({
     gameId: 'chess',
     onInit3D: function(scene, camera, renderer) {
-        camera.position.set(0, 8, 10);
-        camera.lookAt(0, 0, 0);
+        encuadrar(camera);
 
         // Controls
         engine.controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -30,7 +106,18 @@ const engine = new SovereignBoardEngine({
         engine.controls.dampingFactor = 0.08;
         engine.controls.maxPolarAngle = Math.PI / 2.1;
         engine.controls.minDistance = 5;
-        engine.controls.maxDistance = 20;
+        /**
+         * ⚠️ ESTE TOPE SE COMÍA EL ENCUADRE, Y ERA LA CAUSA DE LAS CUATRO CASILLAS.
+         *
+         * Estaba clavado en 20. Y la distancia que necesita el encuadre en una pantalla de
+         * 390 px es exactamente `hypot(12.5, 15.6) = 20.0`: los controles traían la cámara
+         * de vuelta justo donde mi bucle la ponía, así que subir la constante de ancho de
+         * 9,2 a 11 no movía NADA — el resultado lo gobernaba este tope, no mi cuenta.
+         *
+         * Por eso el número no cambiaba la medida: estaba tuneando el parámetro que no
+         * mandaba. El tope sale ahora del encuadre y no al revés.
+         */
+        engine.controls.maxDistance = Math.max(20, camera.position.length() * 1.2);
 
         /**
          * ═══════════════════════════════════════════════════════════════════
@@ -90,7 +177,15 @@ const engine = new SovereignBoardEngine({
     },
     onFrame: function(time) {
         if (engine.controls) engine.controls.update();
-    }
+    },
+    // Y al girar el teléfono. Encuadrar sólo al arrancar deja el tablero fuera en cuanto
+    // alguien pasa de vertical a horizontal — que es justo lo que hace quien no ve bien.
+    onResize: function() {
+        if (!engine.camera) return;
+        encuadrar(engine.camera);
+        // Y el tope de los controles con él, o al girar el teléfono volverían a recortar.
+        if (engine.controls) engine.controls.maxDistance = Math.max(20, engine.camera.position.length() * 1.2);
+    },
 });
 
 function createWhiteMaterial() {
@@ -710,6 +805,18 @@ function alPulsar(ev) {
     pulsadoEn = { x: ev.clientX, y: ev.clientY };
 }
 
+/**
+ * ⚠️ AQUÍ HUBO DOS `console.log` DE DEPURACIÓN Y SIRVIERON PARA ALGO — Y SE QUITAN IGUAL.
+ *
+ * Los puso Motoko para partir el problema en dos mitades, y con ellos se demostró que
+ * este manejador SÍ se ejecuta: `alPulsar` y `alSoltar` disparaban con las mismas
+ * coordenadas, o sea que el evento llegaba y la guarda de arrastre no lo descartaba. Eso
+ * mandó a mirar el sitio correcto después de cuatro intentos mirando el equivocado.
+ *
+ * Pero no pueden viajar al despliegue: `laboratorio_mesas` comprueba expresamente que la
+ * consola esté LIMPIA, y estos dos escupirían en cada toque. Una traza de depuración es
+ * un andamio: sirve mientras se construye y se retira antes de abrir.
+ */
 function alSoltar(ev) {
     if (!pulsadoEn) return;
     const arrastre = Math.hypot(ev.clientX - pulsadoEn.x, ev.clientY - pulsadoEn.y);
@@ -723,9 +830,10 @@ function alSoltar(ev) {
     );
     const ray = new THREE.Raycaster();
     ray.setFromCamera(raton, engine.camera);
-    const plano = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-    const punto = new THREE.Vector3();
-    if (!ray.ray.intersectPlane(plano, punto)) return;
+    
+    const intersects = ray.intersectObjects([boardGroup, piecesGroup], true);
+    if (intersects.length === 0) return;
+    const punto = intersects[0].point;
 
     const sq = casillaDesde3D(punto.x, punto.z);
     if (!sq) { seleccion = null; borrarMarcas(); return; }

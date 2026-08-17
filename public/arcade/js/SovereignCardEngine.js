@@ -312,7 +312,7 @@ class SovereignCardEngine {
             if (!this.isDragging && this.pointerDownPos) {
                 const dx = event.clientX - this.pointerDownPos.x;
                 const dy = event.clientY - this.pointerDownPos.y;
-                if (Math.sqrt(dx*dx + dy*dy) > 8) {
+                if (Math.sqrt(dx*dx + dy*dy) > 20) {
                     this.isDragging = true;
                     // Lift card for dragging
                     new TWEEN.Tween(this.draggedCard.position).to({ y: 4 }, 100).start();

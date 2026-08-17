@@ -642,6 +642,23 @@ for (const juego of juegos) {
          * dos, en orden. Es lo que hace una persona, y es la única forma de que el cero
          * de ajedrez signifique algo.
          */
+        /**
+         * ⚠️ Y AQUÍ HAY UN CERO QUE NO ES DEL JUEGO, Y HAY QUE DECIRLO.
+         *
+         * El ajedrez sale 0 de 23 con esta sonda, y su jugada por clic FUNCIONA: medido a
+         * mano el 17-08-2026, tocando el píxel de `a2` aparecen las dos marcas de destino
+         * (`a2a3` y `a2a4`) — la escena pasa de 97 mallas a 99. Los dos manejadores se
+         * ejecutan y la guarda de arrastre no los descarta.
+         *
+         * O sea que este cero es un límite de la sonda, no un defecto de la mesa. Lo que
+         * falta por entender es por qué la pareja de toques no cuaja aquí cuando a mano sí:
+         * el candidato es que los dos toques van seguidos sin dejar asentar el primero.
+         *
+         * Se deja escrito porque un cero sin explicación se lee como un juego roto, y ese
+         * malentendido ya me costó cuatro intentos buscando el fallo en el sitio
+         * equivocado. Lo que de verdad estaba roto era otra cosa: el tablero no cabía en la
+         * pantalla del móvil —26 de 64 casillas fuera— y eso ya está arreglado.
+         */
         const dosCasillas = base.filter(m => /^[a-h][1-9][a-h][1-9]$/i.test(String(m)));
         let paresOk = 0;
         if (rej && dosCasillas.length) {
