@@ -818,9 +818,10 @@
   "spades": {
     "titulo": "Spades",
     "pagina": "spades.html",
-    "objetivo": "Objetivo: llevarte el mayor número de BAZAS. Aquí no puntúan las cartas sino las bazas, una por cada una. Las picas son siempre triunfo y hay que servir al palo.",
+    "objetivo": "Objetivo: ACERTAR cuántas bazas vas a ganar. Primero se apuesta (de 0 a 13). Ganar exactamente tu apuesta da 10 puntos por baza. Cada baza extra (bolsa) da 1 punto. Si no llegas a tu apuesta, pierdes 10 puntos por cada baza apostada. Apostar 0 (Nil) da 100 puntos si aciertas, o resta 100 si fallas. Las picas son siempre triunfo y hay que servir al palo.",
     "asientos": 4,
     "verbos": [
+      "apostar",
       "jugar"
     ],
     "formatoJugada": null,
@@ -843,18 +844,21 @@
       "verbos": null,
       "resumen": "se juega tocando la mesa"
     },
-    "reglas": "Hay que servir al palo de salida si tienes. Las picas ganan a cualquier otro palo por alta que sea la carta contraria; entre cartas del mismo palo, manda el rango normal. El que gana la baza sale a la siguiente.",
+    "reglas": "Primero se apuesta: de 0 a 13, sin pasar y sin tener que superar al anterior. Cuando han apostado los cuatro empieza el juego, y ahí hay que servir al palo de salida si tienes. Las picas ganan a cualquier otro palo por alta que sea la carta contraria; entre cartas del mismo palo, manda el rango normal. El que gana la baza sale a la siguiente.",
     "prosa": {
-      "que_es": "Juego de bazas con las picas siempre de triunfo. En su forma completa, cada jugador APUESTA cuántas bazas va a hacer antes de jugar, y acertar vale más que ganar.",
-      "reparto": "Se reparte la baraja entera entre los cuatro, trece cartas cada uno. No hay mazo ni robo: se juega con lo que te tocó.",
-      "turno": "Hay que servir al palo de salida si tienes. Las picas ganan a cualquier otro palo por alta que sea la carta contraria; entre cartas del mismo palo, manda el rango normal. El que gana la baza sale a la siguiente.",
-      "gana": "Aquí puntúa cada baza ganada, una por una. Gana quien más bazas se lleve.",
+      "que_es": "Juego de bazas con las picas siempre de triunfo, y con lo que lo hace distinto a todos los demás de la casa: antes de jugar APUESTAS cuántas bazas vas a hacer, y acertar vale más que ganar.",
+      "reparto": "Se reparte la baraja entera entre los cuatro, trece cartas cada uno. No hay mazo ni robo: se juega con lo que te tocó. Y antes de la primera carta, cada uno apuesta.",
+      "turno": "Primero se apuesta: de 0 a 13, sin pasar y sin tener que superar al anterior. Cuando han apostado los cuatro empieza el juego, y ahí hay que servir al palo de salida si tienes. Las picas ganan a cualquier otro palo por alta que sea la carta contraria; entre cartas del mismo palo, manda el rango normal. El que gana la baza sale a la siguiente.",
+      "gana": "Al acabar las trece bazas se cuenta contra la apuesta. Si haces exactamente lo que dijiste o más, 10 puntos por baza apostada, y 1 por cada baza de más (las «bolsas»). Si te quedas corto, pierdes 10 por cada baza que apostaste. Y apostar 0 —el nil— vale 100 si no haces ninguna y resta 100 si haces alguna.",
       "ojo": [
-        "Las picas no son sólo un palo más: cortan cualquier otro palo. Guardar una pica baja para el final vale más de lo que parece."
+        "Las picas no son sólo un palo más: cortan cualquier otro palo. Guardar una pica baja para el final vale más de lo que parece.",
+        "Apostar de más se castiga MÁS que apostar de menos: fallar una apuesta de 13 cuesta 130 puntos, y las bazas que sobran valen 1 en vez de 10. Aquí no gana quien mejor juega las cartas, gana quien mejor se conoce.",
+        "El nil es la jugada valiente: 100 puntos por no ganar NADA en trece bazas, con la baraja repartida entera y sin poder descartar. Y si te cae una baza encima, 100 en contra.",
+        "Es el único de los 35 que mide predecir tu propio rendimiento antes de actuar. En los otros treinta y cuatro basta con jugar bien; aquí hay que saber además cuánto vas a jugar de bien."
       ],
       "diferencias": [
-        "⚠️ ESTO NO ES EL SPADES DE VERDAD, Y LA DIFERENCIA ES EL JUEGO ENTERO. En spades, antes de jugar cada jugador apuesta cuántas bazas hará, y se puntúa por acertar: 10 puntos por baza apostada si el equipo llega, cero si se queda corto, y las bazas de más («bolsas») acaban restando 100 al acumular diez. Aquí NO HAY SUBASTA: simplemente gana quien más bazas hace. Eso convierte una decisión de predecirse a uno mismo —que es justo lo interesante para medir a un agente— en «haz todas las que puedas», que es otro juego. Sin subasta, esto se parece más a un whist con picas de triunfo.",
-        "Tampoco hay parejas: el spades estándar es dos contra dos con las apuestas sumadas por equipo. Aquí los cuatro van por libre."
+        "No hay parejas: el spades estándar es dos contra dos con las apuestas SUMADAS por equipo, y ahí está media estrategia —cubrir el nil de tu compañero, repartirse las bazas—. Aquí los cuatro van por libre, que es la variante individual y se llama cutthroat. El motor no tiene concepto de equipo: el marcador es por jugador.",
+        "Y sin parejas no hay penalización acumulada por bolsas: en el estándar, diez bolsas acumuladas restan 100 al equipo. Aquí cada bolsa vale su punto y no pasa nada más."
       ]
     },
     "origen": "Estadounidense, de los años treinta, de la familia del whist. Es de los juegos de cartas más jugados en Estados Unidos, y casi siempre en parejas.",

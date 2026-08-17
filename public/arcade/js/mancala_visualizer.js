@@ -17,10 +17,52 @@ const X_SPACING = 1.3;
 
 let whiteMat, blackMat, pitMat, boardMat, seedGeo;
 
+/**
+ * ⚠️ EL TABLERO SE SALÍA DE LA PANTALLA EN UN MÓVIL, Y EN ESCRITORIO ESTABA PERFECTO.
+ *
+ * La cámara estaba clavada en `(0, 8, 5)`, y eso funciona con una ventana ancha y falla
+ * con una estrecha. En Three el campo de visión que se declara es el VERTICAL; el
+ * horizontal sale de multiplicarlo por el aspecto. En escritorio (1280x800, aspecto
+ * 1,6) sobra sitio de ancho. En un móvil de 390x844 el aspecto es 0,46, o sea que se ve
+ * menos de la mitad de ancho que de alto — y el tablero de mancala mide diez unidades
+ * de ancho por cuatro de fondo, justo la forma que peor encaja ahí.
+ *
+ * Medido el 17-08-2026 proyectando los seis hoyos a píxeles en 390x844:
+ *
+ *     x = -177 · -28 · 121 · 269 · 418 · 567     ← cuatro de los seis FUERA
+ *
+ * Y mirando la captura era peor que el número: no se veía el tablero, se veían cuatro
+ * agujeros gigantes cortados por los dos lados, sin graneros y sin saber cuál era tu
+ * fila. Ninguna prueba lo cazó, y no por falta de instrumentos: `tacto` mide en 390x844
+ * y daba «0 de 6 hoyos contestan», que yo leí como un problema del clic. El clic estaba
+ * bien; lo que estaba fuera era el tablero.
+ *
+ * Es la SEGUNDA vez que me pasa lo mismo —la primera fue el panel de peatón— y la
+ * lección es la de siempre: una pantalla ancha no es una pantalla pequeña con más sitio,
+ * es otra forma.
+ *
+ * SE ENCUADRA POR EL ANCHO, NO CON UN NÚMERO A OJO. Para que quepa un ancho `A` a una
+ * distancia `d` con campo vertical `f` y aspecto `a`, hace falta
+ * `d >= (A/2) / (tan(f/2) · a)`. Se calcula, se compara con la distancia de siempre y se
+ * usa la mayor: así el escritorio se queda EXACTAMENTE como estaba —que se veía bien— y
+ * sólo se aleja cuando el aspecto lo pide.
+ */
+const ANCHO_TABLERO = 11.5;      // 10,2 del tablero más el borde y los dos graneros
+const ALTO_CAMARA = 8, FONDO_CAMARA = 5;
+
+function encuadrar(camera) {
+    const media = (camera.fov * Math.PI / 180) / 2;
+    const dMin = (ANCHO_TABLERO / 2) / (Math.tan(media) * Math.max(0.2, camera.aspect));
+    const dBase = Math.hypot(ALTO_CAMARA, FONDO_CAMARA);
+    const k = Math.max(1, dMin / dBase);
+    camera.position.set(0, ALTO_CAMARA * k, FONDO_CAMARA * k);
+    camera.lookAt(0, 0, 0);
+}
+
 const engine = new SovereignBoardEngine({
     gameId: 'mancala',
     onInit3D: function(scene, camera, renderer) {
-        camera.position.set(0, 8, 5);
+        encuadrar(camera);
 
         // ⚠️ MANCALA ES EL RARO, Y POR ESO ENCAJA IGUAL.
         // Sus jugadas no son coordenadas sino el ÍNDICE del hoyo: `0`…`5`. Aun
@@ -63,7 +105,13 @@ const engine = new SovereignBoardEngine({
     },
     onStateSync: function(data) {
         if (data.state) syncMancalaState(data.state);
-    }
+    },
+    /**
+     * Y al girar el móvil también. Encuadrar sólo al arrancar deja el tablero fuera de
+     * la pantalla en cuanto alguien pasa de vertical a horizontal, que es justo lo que
+     * hace quien no ve bien algo — y es el mismo fallo con otra puerta de entrada.
+     */
+    onResize: function() { if (engine.camera) encuadrar(engine.camera); },
 });
 
 function buildBoard() {

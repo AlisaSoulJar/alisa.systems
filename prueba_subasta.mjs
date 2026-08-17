@@ -127,6 +127,57 @@ const nueva = () => reglas.nuevaPartida({ semilla: 7, seed: 7 });
         'sin esto el verificador rechaza partidas honradas');
 }
 
+/**
+ * ⚠️ ESTO FALTABA EN MI SPEC, Y ES EL FALLO QUE SE COLÓ POR EL HUECO.
+ *
+ * La primera versión de esta prueba pasó entera con una implementación que dejaba el
+ * juego MUERTO DE PIE: `prueba_reglas` lo cazó con «1 jugada · sin jugadas legales y sin
+ * terminar». La causa, medida:
+ *
+ *     brisca (la fábrica)   tras 1 jugada: turno=1 · asiento publicado=0 · legales=3
+ *     spades (con subasta)  tras 1 apuesta: turno=1 · estado(p) legales=0
+ *                                           estado(p, p.turno) legales=14
+ *
+ * O sea: la convención de la fábrica es que **la vista por defecto sigue al TURNO**, no
+ * al asiento. `estado(p)` sin asiento tiene que devolver las jugadas de quien le toca —
+ * es lo que hacen los otros tres juegos de la misma fábrica y lo que espera el arnés que
+ * juega las partidas. Una implementación que sólo las ofrece cuando el asiento pedido
+ * coincide con el turno deja al arnés a cero en cuanto el turno pasa del 0.
+ *
+ * Y mi prueba no lo veía porque preguntaba SIEMPRE por el asiento 0 y apostaba cuatro
+ * veces seguidas sin mirar de quién era el turno. Probar desde un solo punto de vista es
+ * el mismo error de conjunto de siempre, esta vez con los asientos.
+ */
+{
+    const p = nueva();
+    let vivo = true, paso = 0;
+    for (let i = 0; i < 4 && vivo; i++) {
+        // Sin asiento, como pregunta el arnés.
+        const st = reglas.estado(p);
+        const movs = st.legal_moves ?? [];
+        if (!movs.length && !st.is_game_over) { vivo = false; break; }
+        if (!reglas.mover(p, movs[0])) { vivo = false; break; }
+        paso++;
+    }
+    comprueba(vivo && paso === 4,
+        'sin pedir asiento, `estado(p)` ofrece las jugadas de QUIEN LE TOCA durante toda la subasta',
+        vivo ? `${paso} apuestas seguidas` : `se murió de pie tras ${paso} apuesta(s)`);
+
+    // Y el control: los otros tres de la misma fábrica siguen cumpliéndolo.
+    for (const otro of ['brisca', 'tute', 'hearts']) {
+        const r = await cargarReglas(otro, {});
+        const q = r.nuevaPartida({ semilla: 7, seed: 7 });
+        const m0 = r.estado(q).legal_moves ?? [];
+        if (m0.length) r.mover(q, m0[0]);
+        const m1 = r.estado(q).legal_moves ?? [];
+        comprueba(m1.length > 0, `${otro}: la fábrica compartida sigue viva tras una jugada`,
+            m1.length ? '' : 'se murió de pie — el cambio de spades ha roto a su hermano');
+    }
+}
+
+{
+}
+
 // ── 3. La puntuación premia ACERTAR, no ganar ────────────────────
 //
 // Es la comprobación que da sentido a todo lo demás: si acertar una apuesta baja no

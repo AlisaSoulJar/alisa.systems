@@ -353,9 +353,98 @@ export const crearHearts = (o) => crearBazas({
                         : (palo(id) === 'S' && rango(id) === 'Q') ? 13 : 0),
 })._cargar(o?.url);
 
-export const crearSpades = (o) => crearBazas({
-    nombre: 'spades', baraja: 'french_52', jugadores: 4, mano: 13,
-    OBJETIVO: 'Objetivo: llevarte el mayor número de BAZAS. Aquí no puntúan las cartas sino las bazas, '
-            + 'una por cada una. Las picas son siempre triunfo y hay que servir al palo.',
-    FUERZA: FRANCESA, SEGUIR_PALO: true, ROBAR_TRAS_BAZA: false,
-    PUNTOS_POR_BAZA: 1, triunfoFijo: 'S' })._cargar(o?.url);
+export const crearSpades = (o) => {
+    const base = crearBazas({
+        nombre: 'spades', baraja: 'french_52', jugadores: 4, mano: 13,
+        OBJETIVO: 'Objetivo: ACERTAR cuántas bazas vas a ganar. Primero se apuesta (de 0 a 13). '
+                + 'Ganar exactamente tu apuesta da 10 puntos por baza. Cada baza extra (bolsa) da 1 punto. '
+                + 'Si no llegas a tu apuesta, pierdes 10 puntos por cada baza apostada. '
+                + 'Apostar 0 (Nil) da 100 puntos si aciertas, o resta 100 si fallas. '
+                + 'Las picas son siempre triunfo y hay que servir al palo.',
+        FUERZA: FRANCESA, SEGUIR_PALO: true, ROBAR_TRAS_BAZA: false,
+        triunfoFijo: 'S'
+    });
+
+    const _nuevaPartida = base.nuevaPartida;
+    base.nuevaPartida = function(opts) {
+        const p = _nuevaPartida.call(this, opts);
+        p.fase = 'apuestas';
+        p.apuestas = Array(p.jugadores).fill(null);
+        return p;
+    };
+
+    const _estado = base.estado;
+    base.estado = function(p, asiento) {
+        const st = _estado.call(this, p, asiento);
+        if (p.fase === 'apuestas') {
+            st.apuestas = p.apuestas;
+            const legales = [];
+            for (let i = 0; i <= 13; i++) legales.push(`apostar:${i}`);
+            st.legal_moves = legales;
+            st.is_game_over = false;
+        } else {
+            st.apuestas = p.apuestas;
+        }
+        return st;
+    };
+
+    const _mover = base.mover;
+    base.mover = function(p, jugada) {
+        const j = String(jugada ?? '');
+        if (j === 'nueva' || j === 'reset') return false;
+
+        if (p.fase === 'apuestas') {
+            const match = j.match(/^(?:apostar:)?(\d{1,2})$/);
+            if (!match) return false;
+            const bet = parseInt(match[1], 10);
+            if (bet < 0 || bet > 13) return false;
+            
+            p.apuestas[p.turno] = bet;
+            p.historial.push(j);
+            p.turno = (p.turno + 1) % p.jugadores;
+            
+            if (p.apuestas.every(a => a !== null)) {
+                p.fase = 'juego';
+            }
+            return true;
+        }
+
+        const ok = _mover.call(this, p, jugada);
+        if (ok) {
+            const terminada = p.manos.every(m => m.length === 0);
+            if (terminada && !p.puntos_calculados) {
+                for (let i = 0; i < p.jugadores; i++) {
+                    const bet = p.apuestas[i];
+                    const won = p.bazas[i];
+                    if (bet === 0) {
+                        p.puntos[i] += (won === 0 ? 100 : -100 + won);
+                    } else {
+                        if (won >= bet) {
+                            p.puntos[i] += (bet * 10) + (won - bet);
+                        } else {
+                            p.puntos[i] -= (bet * 10);
+                        }
+                    }
+                }
+                p.puntos_calculados = true;
+            }
+        }
+        return ok;
+    };
+
+    const _sugerencia = base.sugerencia;
+    base.sugerencia = function(p) {
+        if (p.fase === 'apuestas') {
+            const mano = p.manos[p.turno];
+            let bet = 0;
+            for (const c of mano) {
+                if (c.startsWith('S')) bet += 0.5;
+                if (c.endsWith('A') || c.endsWith('K')) bet += 1;
+            }
+            return `apostar:${Math.floor(bet) || 1}`;
+        }
+        return _sugerencia.call(this, p);
+    };
+
+    return base._cargar(o?.url);
+};
