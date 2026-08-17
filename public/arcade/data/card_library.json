@@ -1899,6 +1899,29 @@
         }
       ],
       "total": 98
+    },
+    "canadiense": {
+      "name": "Canadiense (Tock / Dog)",
+      "category": "tablero_con_cartas",
+      "deck": "french_52",
+      "players": {
+        "min": 2,
+        "max": 4
+      },
+      "zones": {
+        "hand": {
+          "per_player": true,
+          "max_cards": 5,
+          "hidden": true,
+          "layout": "fan"
+        },
+        "discard": {
+          "shared": true,
+          "layout": "pile"
+        }
+      },
+      "board": "parchis",
+      "note": "Rangos = movimientos. As y rey sacan de casa, 4 retrocede, 7 se reparte, J intercambia."
     }
   }
 }

@@ -198,6 +198,26 @@ const SABOTAJES = [
         vigila: 'que los juegos de cartas lean el catálogo que se les indica',
     },
     {
+        nombre: 'barajas',
+        corre: 'node prueba_barajas.mjs',
+        fichero: 'public/arcade/js/protohub/rules/gofish.js',
+        /**
+         * ⚠️ ES OTRA PREGUNTA QUE LA DE `biblioteca`, Y POR ESO OTRO SABOTAJE.
+         *
+         * Aquélla comprueba que los juegos LEEN el catálogo que se les pasa. Ésta,
+         * que cogen de él LA BARAJA QUE LES TOCA. Un juego francés que pidiera la
+         * española leería el catálogo impecablemente y repartiría oros en una mesa de
+         * póker, y `biblioteca` lo saludaría en verde: verifica su condición, y su
+         * condición no es la que importa.
+         *
+         * El sabotaje es literalmente ese fallo — al gofish se le da la española — y
+         * tiene que salir «declara french_52 y reparte spanish_40».
+         */
+        de: "cargarBaraja('french_52', url)",
+        a: "cargarBaraja('spanish_40', url)",
+        vigila: 'que cada juego reparta la baraja que la biblioteca le asigna',
+    },
+    {
         nombre: 'reglas',
         corre: 'node prueba_reglas.mjs',
         fichero: 'public/arcade/js/protohub/rules/azar.js',
