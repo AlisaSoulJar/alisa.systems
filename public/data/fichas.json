@@ -84,7 +84,7 @@
     },
     "clasificacion": {
       "entra": false,
-      "motivo": "el tope de 120 decisiones corta la partida"
+      "motivo": "el tope de 400 decisiones corta la partida"
     },
     "captura": "/capturas/go.png",
     "conLaMano": {
@@ -203,8 +203,8 @@
       "dama": "dama (corona)"
     },
     "clasificacion": {
-      "entra": false,
-      "motivo": "el tope de 120 decisiones corta la partida"
+      "entra": true,
+      "motivo": null
     },
     "captura": "/capturas/damas.png",
     "conLaMano": {
@@ -238,7 +238,7 @@
       "persona": true,
       "llm": true,
       "vision": true,
-      "fsm": false,
+      "fsm": true,
       "openapi": true
     }
   },
@@ -268,8 +268,8 @@
       "k": "general"
     },
     "clasificacion": {
-      "entra": false,
-      "motivo": "el tope de 120 decisiones corta la partida"
+      "entra": true,
+      "motivo": null
     },
     "captura": "/capturas/xiangqi.png",
     "conLaMano": {
@@ -302,7 +302,7 @@
       "persona": true,
       "llm": true,
       "vision": true,
-      "fsm": false,
+      "fsm": true,
       "openapi": true
     }
   },
@@ -322,7 +322,12 @@
       "5"
     ],
     "normas": [],
-    "leyenda": null,
+    "leyenda": {
+      "0": "tu lado: hoyos 0 a 5, y son tus jugadas",
+      "6": "TU GRANERO — lo que caiga aquí puntúa, y caer en él repite turno",
+      "7": "el lado del rival: hoyos 7 a 12",
+      "13": "el granero del rival — se salta al sembrar"
+    },
     "clasificacion": {
       "entra": true,
       "motivo": null
@@ -355,7 +360,7 @@
     "puertas": {
       "persona": true,
       "llm": true,
-      "vision": false,
+      "vision": true,
       "fsm": true,
       "openapi": true
     }
@@ -381,7 +386,7 @@
     },
     "clasificacion": {
       "entra": false,
-      "motivo": "el tope de 120 decisiones corta la partida"
+      "motivo": "el tope de 400 decisiones corta la partida"
     },
     "captura": "/capturas/snake.png",
     "conLaMano": {
@@ -440,7 +445,7 @@
     },
     "clasificacion": {
       "entra": false,
-      "motivo": "el tope de 120 decisiones corta la partida"
+      "motivo": "el tope de 400 decisiones corta la partida"
     },
     "captura": "/capturas/fagocito.png",
     "conLaMano": {
@@ -823,8 +828,8 @@
     "normas": [],
     "leyenda": null,
     "clasificacion": {
-      "entra": false,
-      "motivo": "no medido en la última pasada"
+      "entra": true,
+      "motivo": null
     },
     "captura": "/capturas/spades.png",
     "conLaMano": {
@@ -857,7 +862,7 @@
       "persona": true,
       "llm": true,
       "vision": true,
-      "fsm": false,
+      "fsm": true,
       "openapi": true
     }
   },
@@ -980,7 +985,7 @@
     "leyenda": null,
     "clasificacion": {
       "entra": false,
-      "motivo": "el hueco (3.3) no supera al ruido de la medida (±34.0)"
+      "motivo": "el hueco (19.3) no supera al ruido de la medida (±26.3)"
     },
     "captura": "/capturas/unit.png",
     "conLaMano": {
@@ -1089,8 +1094,8 @@
       "jugador": "tú"
     },
     "clasificacion": {
-      "entra": false,
-      "motivo": "el tope de 120 decisiones corta la partida"
+      "entra": true,
+      "motivo": null
     },
     "captura": "/capturas/sokoban.png",
     "conLaMano": {
@@ -1123,7 +1128,7 @@
       "persona": true,
       "llm": true,
       "vision": true,
-      "fsm": false,
+      "fsm": true,
       "openapi": true
     }
   },
@@ -1147,8 +1152,8 @@
       "tesoro": "tesoro"
     },
     "clasificacion": {
-      "entra": false,
-      "motivo": "el tope de 120 decisiones corta la partida"
+      "entra": true,
+      "motivo": null
     },
     "captura": "/capturas/cripta.png",
     "conLaMano": {
@@ -1179,7 +1184,7 @@
       "persona": true,
       "llm": true,
       "vision": true,
-      "fsm": false,
+      "fsm": true,
       "openapi": true
     }
   },
@@ -1323,8 +1328,8 @@
       "botin": "botín"
     },
     "clasificacion": {
-      "entra": false,
-      "motivo": "no medido en la última pasada"
+      "entra": true,
+      "motivo": null
     },
     "captura": "/capturas/sigilo.png",
     "conLaMano": {
@@ -1355,7 +1360,7 @@
       "persona": true,
       "llm": true,
       "vision": true,
-      "fsm": false,
+      "fsm": true,
       "openapi": true
     }
   },
@@ -1438,8 +1443,8 @@
       "puerta_abierta": "puerta abierta"
     },
     "clasificacion": {
-      "entra": false,
-      "motivo": "el tope de 120 decisiones corta la partida"
+      "entra": true,
+      "motivo": null
     },
     "captura": "/capturas/relevo.png",
     "conLaMano": {
@@ -1470,7 +1475,7 @@
       "persona": true,
       "llm": true,
       "vision": true,
-      "fsm": false,
+      "fsm": true,
       "openapi": true
     }
   },
@@ -1550,8 +1555,8 @@
       "perro": "tú"
     },
     "clasificacion": {
-      "entra": false,
-      "motivo": "el tope de 120 decisiones corta la partida"
+      "entra": true,
+      "motivo": null
     },
     "captura": "/capturas/rebano.png",
     "conLaMano": {
@@ -1582,7 +1587,7 @@
       "persona": true,
       "llm": true,
       "vision": true,
-      "fsm": false,
+      "fsm": true,
       "openapi": true
     }
   },
@@ -1607,8 +1612,8 @@
       "queso": "queso"
     },
     "clasificacion": {
-      "entra": false,
-      "motivo": "el tope de 120 decisiones corta la partida"
+      "entra": true,
+      "motivo": null
     },
     "captura": "/capturas/pradera.png",
     "conLaMano": {
@@ -1639,7 +1644,7 @@
       "persona": true,
       "llm": true,
       "vision": true,
-      "fsm": false,
+      "fsm": true,
       "openapi": true
     }
   },
@@ -1667,8 +1672,8 @@
       "tripulante_d": "tripulante d"
     },
     "clasificacion": {
-      "entra": false,
-      "motivo": "no medido en la última pasada"
+      "entra": true,
+      "motivo": null
     },
     "captura": "/capturas/nave.png",
     "conLaMano": {
@@ -1699,7 +1704,7 @@
       "persona": true,
       "llm": true,
       "vision": true,
-      "fsm": false,
+      "fsm": true,
       "openapi": true
     }
   },
@@ -1719,7 +1724,7 @@
     "leyenda": null,
     "clasificacion": {
       "entra": false,
-      "motivo": "el hueco (10.0) no supera al ruido de la medida (±30.4)"
+      "motivo": "el hueco (10.4) no supera al ruido de la medida (±21.3)"
     },
     "captura": "/capturas/remigio.png",
     "conLaMano": {
@@ -1778,7 +1783,7 @@
     },
     "clasificacion": {
       "entra": false,
-      "motivo": "la casa no supera al suelo: la escala se invertiría"
+      "motivo": "el hueco (59.0) no supera al ruido de la medida (±60.7)"
     },
     "captura": "/capturas/parchis.png",
     "conLaMano": {
@@ -1907,7 +1912,7 @@
     },
     "clasificacion": {
       "entra": false,
-      "motivo": "la casa no supera al suelo: la escala se invertiría"
+      "motivo": "el hueco (78.9) no supera al ruido de la medida (±140.4)"
     },
     "captura": "/capturas/oca.png",
     "conLaMano": {
@@ -1965,8 +1970,8 @@
       "ficha": "ficha"
     },
     "clasificacion": {
-      "entra": false,
-      "motivo": "el tope de 120 decisiones corta la partida"
+      "entra": true,
+      "motivo": null
     },
     "captura": "/capturas/canadiense.png",
     "conLaMano": {
@@ -2000,7 +2005,7 @@
       "persona": true,
       "llm": true,
       "vision": true,
-      "fsm": false,
+      "fsm": true,
       "openapi": true
     }
   }

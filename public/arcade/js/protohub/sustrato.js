@@ -364,6 +364,21 @@ const LEYENDAS = {
     xiangqi: { p: 'soldado', c: 'cañón', r: 'carro', n: 'caballo', b: 'elefante',
                a: 'consejero', k: 'general' },
     damas: { w: 'peón claro', b: 'peón oscuro' },
+    /**
+     * ⚠️ MANCALA ERA EL ÚNICO DE LOS 35 SIN LEYENDA, Y ES EL QUE MÁS LA NECESITA.
+     *
+     * Su tablero son catorce números seguidos y las jugadas son el ÍNDICE del hoyo:
+     * `0`…`5` para un lado y `7`…`12` para el otro. Sin decir qué es cada índice, un
+     * agente que mire la pantalla ve una fila de cuentas y no puede saber cuál es su
+     * lado ni cuál es el granero — y el granero es donde se gana.
+     *
+     * Los índices 6 y 13 no son hoyos: son los graneros, y por eso se saltan al
+     * sembrar. Eso es exactamente lo que una leyenda tiene que decir.
+     */
+    mancala: { 0: 'tu lado: hoyos 0 a 5, y son tus jugadas',
+               6: 'TU GRANERO — lo que caiga aquí puntúa, y caer en él repite turno',
+               7: 'el lado del rival: hoyos 7 a 12',
+               13: 'el granero del rival — se salta al sembrar' },
     reversi: { w: 'ficha clara', b: 'ficha oscura' },
     go: { n: 'piedra negra', b: 'piedra blanca' },
     // Piezas (campo `t`); la rejilla en sí no lleva muros ni marcas.
