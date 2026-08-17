@@ -447,6 +447,12 @@ const APARTE = new Set([
     // decisiones necesita y lo escribe en `topes.json`. No tiene veredicto que sabotear
     // —su salida es un número—, y tarda lo que tarda jugar 480 partidas: `npm run topes`.
     'prueba_topes.mjs',
+    /**
+     * Lleva su sabotaje DENTRO: `npm run guardia -- --autoprueba` avería cuatro juegos en
+     * memoria y exige que los cuatro detectores los denuncien. Se queda aparte de `npm
+     * test` porque juega setenta mil jugadas y tarda: `npm run guardia`.
+     */
+    'prueba_guardia.mjs',
 ]);
 
 const enDisco = (await readdir(new URL('.', import.meta.url)))
