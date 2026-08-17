@@ -268,7 +268,29 @@ function encajar() {
         if (o.name === 'niebla' && o.visible && o.count > 0) conNiebla = true;
         if (o.name === 'muro' && o.visible && o.count > 0) conMuros = true;
     });
-    if (conNiebla) {
+    /**
+     * ⚠️ HAY NIEBLA QUE ES TERRENO POR EXPLORAR Y NIEBLA QUE ES EL TABLERO ENEMIGO.
+     *
+     * Saltarse la niebla al encuadrar nació de cripta y sigilo, donde lo desconocido
+     * es un mapa entero que aún no has pisado: apartar la cámara hasta que quepa deja
+     * tu personaje en una esquina de tres centímetros. Ahí está bien.
+     *
+     * En FLOTA es lo contrario y se veía a simple vista: la niebla ES el tablero al
+     * que disparas. Medido, la caja sin niebla va de x=−0,2 a x=5,0 y la cámara se
+     * centraba en 2,42 —tu propia flota, encuadrada impecablemente— mientras el
+     * tablero enemigo vivía entre −5 y 0, fuera de pantalla por la izquierda y con lo
+     * poco que asomaba tapado por el panel. Se podía mirar tu flota y nada más.
+     *
+     * La diferencia no hay que declararla por juego: la dice el propio estado. En
+     * cripta y sigilo las jugadas son direcciones —`arriba`, `abajo`—; en frentes son
+     * columnas —`a`, `b`—; en flota son CASILLAS —`a1`, `h8`—, sesenta y cuatro, y
+     * todas caen dentro de la niebla. Si puedes jugar ahí, tiene que verse.
+     */
+    // `legalesAhora` se declara más abajo y se rellena en cada refresco del estado.
+    // Vale aquí porque esto corre en el bucle de animación, con el módulo ya evaluado
+    // y después del primer refresco — antes de eso no hay mallas y se sale arriba.
+    const nieblaJugable = legalesAhora.some(m => /^[a-z]\d+$/i.test(String(m)));
+    if (conNiebla && !nieblaJugable) {
         const s = cajaReal(grupo, SIN_NIEBLA).getSize(new THREE.Vector3());
         const sabido = Math.max(s.x, s.z);
         // El suelo: nunca más de 3x el tablero entero, o una casilla llenaría la mesa.
@@ -323,7 +345,7 @@ function encajar() {
         // La niebla tampoco cuenta aquí: si la cámara se aparta hasta que quepa lo
         // desconocido, escalar sólo lo conocido no sirve de nada — se ganaría por
         // un lado y se perdería por el otro.
-        saltar: conNiebla ? SIN_NIEBLA : null,
+        saltar: (conNiebla && !nieblaJugable) ? SIN_NIEBLA : null,
 
         /**
          * ⚠️ CUÁNTO SE COME EL PANEL, PREGUNTADO Y NO SUPUESTO.

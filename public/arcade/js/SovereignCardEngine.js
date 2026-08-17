@@ -1608,11 +1608,21 @@ class SovereignCardEngine {
      * tenemos arte. Deducirlo pediría 78 imágenes del tarot que no existen y llenaría
      * la consola de 404. La lista de abajo es la de lo que HAY, y por eso está escrita.
      *
-     * ⚠️ LAS DOS EXTENSIONES HACEN FALTA. Las francesas son `.webp` de 22 KB y las
-     * españolas `.png` de 50 KB, tal como vinieron de Commons. Se prueban las dos y
-     * gana la que cargue; convertirlas a un formato común obligaría a redistribuir una
-     * VERSIÓN NUESTRA de una obra CC BY-SA, y eso arrastra la licencia a un fichero
-     * generado por nosotros. Sale más barato servir el original.
+     * ⚠️ CADA FAMILIA TRAE SU EXTENSIÓN, Y SE DECLARA. NO SE PRUEBA.
+     *
+     * Las francesas son `.webp` de 22 KB y las españolas `.png` de 50 KB, tal como
+     * vinieron de Commons. Convertirlas a un formato común obligaría a redistribuir
+     * una VERSIÓN NUESTRA de una obra CC BY-SA, y eso arrastra la licencia a un
+     * fichero generado por nosotros; sale más barato servir el original.
+     *
+     * Mi primera versión encadenaba `webp` y luego `png`, y funcionaba: la carta salía
+     * bien. Lo que no salía bien era el camino — DOCE 404 en cada mesa de cartas, uno
+     * por figura española. En pantalla no se nota nada y la captura sale perfecta, así
+     * que ni mirando las treinta y cinco lo vi. Lo cazó `npm run laboratorio`, que lee
+     * la consola y puso en rojo los once juegos de cartas de golpe.
+     *
+     * Y el arreglo era más simple que el fallo: yo SÉ de qué familia es cada una, así
+     * que no hay nada que adivinar. Probar es lo que se hace cuando no se sabe.
      *
      * Autoría de las figuras españolas: Basquetteur y Germarquezm, CC BY-SA 3.0.
      * Está en `CREDITOS.md`, que es donde alguien lo va a buscar.
@@ -1624,29 +1634,24 @@ class SovereignCardEngine {
             // `completa` = la imagen es la carta entera, con su marco y sus índices, no
             // sólo el retrato. Cambia dónde se pinta, y por eso se declara aquí y no se
             // adivina: las dos familias tienen la misma proporción.
-            { suits: ['S', 'H', 'D', 'C'], ranks: ['J', 'Q', 'K'], completa: false },
-            { suits: ['O', 'P', 'E', 'B'], ranks: ['S', 'C', 'R'], completa: true },
+            { suits: ['S', 'H', 'D', 'C'], ranks: ['J', 'Q', 'K'], ext: 'webp', completa: false },
+            { suits: ['O', 'P', 'E', 'B'], ranks: ['S', 'C', 'R'], ext: 'png',  completa: true },
         ];
-        const EXTENSIONES = ['webp', 'png'];
 
-        for (const { suits, ranks, completa } of FAMILIAS) {
+        for (const { suits, ranks, ext, completa } of FAMILIAS) {
             for (const rank of ranks) {
                 for (const suit of suits) {
                     const key = `${suit}_${rank}`;
                     if (completa) this._courtCompleta[key] = true;
-                    // Se encadenan las extensiones: si la primera da 404, se prueba la
-                    // siguiente, y si se acaban se calla y queda el dibujo.
-                    const intentar = (i) => {
-                        if (i >= EXTENSIONES.length) return;
-                        const img = new Image();
-                        img.onload = () => {
-                            this._courtImages[key] = img;
-                            this._repintarFigura(key);
-                        };
-                        img.onerror = () => intentar(i + 1);
-                        img.src = `${basePath}/${key}.${EXTENSIONES[i]}`;
+                    const img = new Image();
+                    img.onload = () => {
+                        this._courtImages[key] = img;
+                        this._repintarFigura(key);
                     };
-                    intentar(0);
+                    // Si falta, se calla y queda el dibujo: una figura menos no es
+                    // motivo para romper la mesa.
+                    img.onerror = () => {};
+                    img.src = `${basePath}/${key}.${ext}`;
                 }
             }
         }
