@@ -442,6 +442,7 @@ const APARTE = new Set([
     'prueba_de_las_pruebas.mjs',   // es esto mismo: se corre con `npm run pruebas`
     'prueba_vistas.mjs',           // abre los 35 en un navegador: `npm run vistas`
     'prueba_verbos.mjs',           // abre los 35 en un navegador: `npm run verbos`
+    'prueba_portal.mjs',           // abre las 35 fichas en un navegador: `npm run portal`
 ]);
 
 const enDisco = (await readdir(new URL('.', import.meta.url)))

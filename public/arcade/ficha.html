@@ -150,7 +150,26 @@ function pintarFicha(j, f) {
                 : f.formatoJugada ? esc(f.formatoJugada) + (f.ejemplos ? ' — ' + f.ejemplos.map(e => `<code>${esc(e)}</code>`).join(' ') : '')
                 : sin('sin declarar')}</dd>
             <dt>variantes</dt><dd>${f.normas?.length ? f.normas.map(n => `<code>${esc(n)}</code>`).join(' ') : sin('ninguna')}</dd>
-            <dt>leyenda</dt><dd>${f.leyenda ? esc(f.leyenda) : sin('el juego no dice qué significa lo que se ve')}</dd>
+            <!--
+              ⚠️ LA LEYENDA ES UN DICCIONARIO, NO UNA FRASE.
+
+              ⚠️ Y OJO CON LOS ACENTOS GRAVES AQUÍ DENTRO: este comentario vive DENTRO
+              de una plantilla de texto, así que un acento grave la cierra y rompe el
+              fichero entero. Pasó al escribir este mismo comentario.
+
+              Aquí ponía esc(f.leyenda) y en los veintitrés juegos que la declaran
+              salía el "[object Object]" de siempre. No lo vio ninguna prueba —se generaba,
+              la página cargaba sin un error en consola y el panel estaba ahí— y no lo
+              habría visto nunca de no abrir una captura. La lección del proyecto otra
+              vez: mirar encuentra lo que medir no busca.
+
+              Y es el campo de la puerta de VISIÓN: sin él se ve la pantalla y no se
+              entiende. Publicarlo roto es peor que no publicarlo.
+            -->
+            <dt>leyenda</dt><dd>${f.leyenda && typeof f.leyenda === 'object'
+                ? Object.entries(f.leyenda).map(([k, v]) => `<code>${esc(k)}</code> ${esc(v)}`).join('<br>')
+                : f.leyenda ? esc(f.leyenda)
+                : sin('el juego no dice qué significa lo que se ve')}</dd>
             <dt>clasificación</dt><dd>${f.clasificacion?.entra ? 'entra en la tabla'
                 : sin('fuera' + (f.clasificacion?.motivo ? ' — ' + esc(f.clasificacion.motivo) : ''))}</dd>
           </dl></div></div>
