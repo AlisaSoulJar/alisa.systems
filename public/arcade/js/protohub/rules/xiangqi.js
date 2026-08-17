@@ -198,6 +198,13 @@ const gridAFEN = (g) => g.map(f => {
  */
 const VALOR_PIEZA = { P: 1, A: 2, B: 2, N: 4, C: 4.5, R: 9, K: 0 };
 
+/**
+ * Medias jugadas sin capturar que declaran tablas: 30 de cada bando, la regla del
+ * xiangqi. No es opcional aunque los reglamentos varíen en el número — lo que garantiza
+ * es que la partida TERMINE, y eso en un banco de pruebas no puede ser una variante.
+ */
+const TABLAS_SIN_CAPTURAS = 60;
+
 function marcadorRojo(g, resultado) {
     let material = 0;
     for (const fila of g) {
@@ -234,7 +241,10 @@ export const xiangqi = {
     nombre: 'Xiangqi',
 
     nuevaPartida() {
-        return { grid: tableroInicial(), rojoJuega: true, historial: [] };
+        // `sinCapturas` va DENTRO de la partida y no en una variable del módulo: todo lo
+        // que afecta al resultado tiene que viajar en el estado, o el verificador no
+        // puede repetir la partida. Es la lección que costó el recuento de `entropy`.
+        return { grid: tableroInicial(), rojoJuega: true, historial: [], sinCapturas: 0 };
     },
 
     estado(p) {
@@ -242,7 +252,25 @@ export const xiangqi = {
         const jaque = enJaque(p.grid, p.rojoJuega);
         const mate = movs.length === 0 && jaque;
         const ahogado = movs.length === 0 && !jaque;   // en xiangqi ahogado = PIERDE
-        const fin = movs.length === 0;
+        /**
+         * ⚠️ TABLAS POR FALTA DE PROGRESO. SIN ELLO LA PARTIDA NO PODÍA ACABAR.
+         *
+         * Medido con `_topes.mjs`: la política de la casa NO TERMINA ni con un tope de
+         * cuatro mil decisiones, en ninguna semilla. No es que el tope sea corto — es
+         * que nada en las reglas cortaba una partida sin avances. El ajedrez de esta
+         * misma casa sí tiene su regla de las 50 jugadas; el xiangqi no tenía la suya.
+         *
+         * La regla del xiangqi son 30 jugadas de cada bando sin capturar, o sea 60
+         * medias jugadas. Se cuenta en medias como en el ajedrez, y se dice aquí porque
+         * los reglamentos varían y elegir uno es una decisión, no un dato.
+         *
+         * ⚠️ Y NO ES LO MISMO QUE EL JAQUE PERPETUO. En el xiangqi de competición,
+         * perseguir o dar jaque eternamente hace PERDER a quien insiste, no da tablas.
+         * Eso sigue sin estar y sigue declarado en la ficha: esto sólo garantiza que la
+         * partida termine, no reproduce el reglamento de torneo.
+         */
+        const tablas = (p.sinCapturas ?? 0) >= TABLAS_SIN_CAPTURAS;
+        const fin = movs.length === 0 || tablas;
 
         return {
             state: { grid: p.grid.map(f => f.slice()), fen: gridAFEN(p.grid) },
@@ -253,18 +281,26 @@ export const xiangqi = {
             is_check: jaque,
             is_checkmate: mate,
             is_game_over: fin,
-            // Ojo: aquí quedarse sin jugadas PIERDE, no es tablas como en ajedrez.
-            result: fin ? (p.rojoJuega ? 'black' : 'white') : null,
+            // Ojo: aquí quedarse sin jugadas PIERDE, no es tablas como en ajedrez. Las
+            // únicas tablas son las de falta de progreso, y se dicen aparte.
+            result: fin ? (tablas ? 'draw' : (p.rojoJuega ? 'black' : 'white')) : null,
             ahogado,
-            score: marcadorRojo(p.grid, fin ? (p.rojoJuega ? 'black' : 'white') : null),
-            puntos: marcadorRojo(p.grid, fin ? (p.rojoJuega ? 'black' : 'white') : null),
+            tablas_sin_capturas: tablas,
+            score: marcadorRojo(p.grid, fin && !tablas ? (p.rojoJuega ? 'black' : 'white') : null),
+            puntos: marcadorRojo(p.grid, fin && !tablas ? (p.rojoJuega ? 'black' : 'white') : null),
         };
     },
 
     mover(p, jugada) {
         if (!legales(p.grid, p.rojoJuega).includes(jugada)) return false;
-        p.historial.push({ grid: p.grid.map(f => f.slice()), rojoJuega: p.rojoJuega });
+        p.historial.push({ grid: p.grid.map(f => f.slice()), rojoJuega: p.rojoJuega,
+                           sinCapturas: p.sinCapturas ?? 0 });
+        // Si el destino estaba ocupado, ha habido captura. Se mira ANTES de aplicar la
+        // jugada, que es el único momento en que se puede saber.
+        const [rd, cd] = aRC(jugada.slice(2, 4));
+        const comio = !!p.grid[rd][cd];
         p.grid = aplica(p.grid, jugada);
+        p.sinCapturas = comio ? 0 : (p.sinCapturas ?? 0) + 1;
         p.rojoJuega = !p.rojoJuega;
         return true;
     },
@@ -274,6 +310,10 @@ export const xiangqi = {
         if (!h) return false;
         p.grid = h.grid;
         p.rojoJuega = h.rojoJuega;
+        // El rival de la casa prueba jugadas y las deshace: sin devolver el contador,
+        // las tablas saltarían antes de tiempo por culpa de las jugadas que sólo se
+        // pensaron.
+        p.sinCapturas = h.sinCapturas ?? 0;
         return true;
     },
 

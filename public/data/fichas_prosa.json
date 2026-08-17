@@ -418,9 +418,9 @@
       "Los carriles avanzan por reloj de la partida, no por tiempo real: la misma semilla y las mismas jugadas dan exactamente la misma partida, que es lo que exige el banco."
     ],
     "diferencias": [
-      "Es un pariente del Frogger de 1981 con nombre propio. Las mecánicas no se registran, los nombres comerciales sí, y esto se publica — el mismo cuidado que con `unit` y `entropy`."
+      "Es un pariente del arcade de cruzar carriles de 1981, con nombre propio. Las mecánicas no se registran, los nombres comerciales sí, y esto se publica — el mismo cuidado que con `unit` y `entropy`."
     ],
-    "origen": "El género del cruce de carriles nace con el Frogger de Konami en 1981, y es desde entonces un banco de pruebas clásico de aprendizaje por refuerzo por su recompensa muy separada del riesgo."
+    "origen": "El género del cruce de carriles nace en los arcades de Konami en 1981, y es desde entonces un banco de pruebas clásico de aprendizaje por refuerzo por su recompensa muy separada del riesgo."
   },
 
   "fagocito": {
@@ -435,7 +435,7 @@
     "diferencias": [
       "Es un pariente del comecocos con nombre propio y sin sus personajes: laberinto generado en vez de fijo, y tres perseguidores en vez de cuatro. Mismo motivo que `unit` y `peaton` — las mecánicas no se registran y los nombres sí."
     ],
-    "origen": "El género lo funda el Pac-Man de Namco en 1980, y los laberintos con perseguidores de carácter distinto son de los primeros ejemplos de comportamiento no trivial en un videojuego."
+    "origen": "El género lo funda el comecocos de Namco en 1980, y sus laberintos con perseguidores de carácter distinto son de los primeros ejemplos de comportamiento no trivial en un videojuego."
   },
 
   "cripta": {

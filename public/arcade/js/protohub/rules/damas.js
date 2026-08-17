@@ -82,6 +82,13 @@ function tableroInicial() {
  */
 export const NORMAS = { damaVuela: false, peonComeAtras: false };
 
+/**
+ * Medias jugadas sin comer ni coronar que declaran tablas: 40 de cada bando. No es una
+ * norma variable como las de arriba porque no cambia CÓMO se juega, sino que garantiza
+ * que la partida termine — y eso no puede ser opcional en un banco de pruebas.
+ */
+const TABLAS_SIN_PROGRESO = 80;
+
 const normasDe = (o = {}) => ({ ...NORMAS, ...o });
 
 /** Las diagonales por las que puede ir esta pieza. */
@@ -273,6 +280,10 @@ export const damas = {
             tablero: tableroInicial(),
             blancasJuegan: true,
             historial: [],
+            // Medias jugadas sin comer ni coronar. Va DENTRO de la partida, no en una
+            // variable del módulo: todo lo que afecta al resultado tiene que viajar en
+            // el estado o el verificador no puede repetir la partida.
+            sinProgreso: 0,
             // Con qué normas nació esta partida. Todo lo demás las lee de aquí.
             normas: normasDe(opts.normas),
         };
@@ -330,9 +341,13 @@ export const damas = {
         const n = normasDe(p.normas);
         const { movs, sonCapturas } = jugadasConTipo(p.tablero, p.blancasJuegan, n);
         const { w, b } = cuenta(p.tablero);
-        const fin = movs.length === 0 || w === 0 || b === 0;
+        // 40 jugadas de cada bando sin comer ni coronar son tablas. Ver la nota en
+        // `mover`: sin esto la partida podía no acabar nunca, y se midió que no acababa.
+        const tablas = (p.sinProgreso ?? 0) >= TABLAS_SIN_PROGRESO;
+        const fin = movs.length === 0 || w === 0 || b === 0 || tablas;
         // Pierde quien no puede mover: gana el que TIENE el turno siguiente.
         const ganador = !fin ? null
+            : tablas ? 'draw'
             : (w === 0 || (movs.length === 0 && p.blancasJuegan)) ? 'black' : 'white';
 
         return {
@@ -368,24 +383,71 @@ export const damas = {
 
         const pasos = jugada.match(/[a-h][1-8]/g);
         const t = p.tablero;
-        p.historial.push({ tablero: t.map(f => f.slice()), blancasJuegan: p.blancasJuegan });
+        p.historial.push({ tablero: t.map(f => f.slice()), blancasJuegan: p.blancasJuegan,
+                           sinProgreso: p.sinProgreso ?? 0 });
+        let comio = false;
 
         let [f, c] = aFC(pasos[0]);
         let pieza = t[f][c];
         t[f][c] = null;
 
+        /**
+         * ⚠️ AQUÍ LA CAPTURA DE LA DAMA VOLADORA NO COMÍA. LAS VARIANTES ESPAÑOLA E
+         * INTERNACIONAL ESTABAN ROTAS.
+         *
+         * Ponía `if (Math.abs(nf - f) === 2)` y quitaba la ficha del medio: correcto
+         * para un salto de peón, que siempre es de dos casillas. Pero con `damaVuela`
+         * la dama recorre la diagonal entera, así que puede saltar de a1 a e5 comiéndose
+         * lo que hay en d4 — y ese salto mide CUATRO. La condición no entraba, la
+         * víctima se quedaba en el tablero, y la jugada se aceptaba igual.
+         *
+         * Medido: con `damaVuela`, dama blanca en a1 y peón negro en d4, `a1e5` sale
+         * como jugada legal, se acepta, y d4 sigue ocupado. O sea que en las variantes
+         * española e internacional **se capturaba sin comer**: el material no bajaba
+         * nunca. Eso no da error en ninguna parte — el tablero es legal, la partida
+         * sigue, y sólo se nota si cuentas las fichas.
+         *
+         * El arreglo quita la casuística: se recorre la diagonal entre origen y destino
+         * y se retira lo que haya en medio. Para un salto de dos, eso es exactamente la
+         * casilla de en medio; para un avance simple o un vuelo sin captura, el camino
+         * está vacío y no se retira nada. Un solo caso en vez de dos, y el que faltaba
+         * deja de poder faltar.
+         */
         for (let i = 1; i < pasos.length; i++) {
             const [nf, nc] = aFC(pasos[i]);
-            // Si el salto es de dos, hay una víctima en medio.
-            if (Math.abs(nf - f) === 2) t[(f + nf) / 2][(c + nc) / 2] = null;
+            const pf = Math.sign(nf - f), pc = Math.sign(nc - c);
+            for (let mf = f + pf, mc = c + pc; mf !== nf || mc !== nc; mf += pf, mc += pc) {
+                if (t[mf][mc]) { t[mf][mc] = null; comio = true; }
+            }
             f = nf; c = nc;
         }
 
         // Coronación: llegar a la última fila del rival.
+        let corono = false;
         if (!esDama(pieza) && ((esBlanca(pieza) && f === 0) || (!esBlanca(pieza) && f === 7))) {
             pieza = esBlanca(pieza) ? 'W' : 'B';
+            corono = true;
         }
         t[f][c] = pieza;
+        /**
+         * ⚠️ EL CONTADOR DE FALTA DE PROGRESO. SIN ÉL LA PARTIDA NO PODÍA ACABAR.
+         *
+         * Medido con `_topes.mjs`: la política de la casa jugando contra sí misma NO
+         * TERMINA ni con un tope de cuatro mil decisiones, en ninguna semilla. Y no es
+         * que el tope sea corto: es que dos damas pueden pasearse por las diagonales
+         * eternamente y nada en las reglas lo corta. El ajedrez de esta misma casa sí
+         * tiene su regla de las 50 jugadas; las damas no tenían la suya.
+         *
+         * La consecuencia era doble y silenciosa: el juego caía de la clasificación
+         * -«el tope corta la partida»-, y una persona jugando contra la casa podía
+         * quedarse en una partida sin final sin que nada avisara.
+         *
+         * La regla estándar son 40 jugadas de cada bando sin comer ni coronar. Se
+         * cuentan medias jugadas, como en el ajedrez, así que el tope son 80 — y se
+         * dice aquí porque los reglamentos nacionales varían entre 25 y 40 y elegir uno
+         * es una decisión, no un dato.
+         */
+        p.sinProgreso = (comio || corono) ? 0 : (p.sinProgreso ?? 0) + 1;
         p.blancasJuegan = !p.blancasJuegan;
         return true;
     },
@@ -395,6 +457,10 @@ export const damas = {
         if (!h) return false;
         p.tablero = h.tablero;
         p.blancasJuegan = h.blancasJuegan;
+        // Sin esto, el rival de la casa —que prueba jugadas y las deshace— dejaría el
+        // contador adelantado y las tablas saltarían antes de tiempo. Deshacer tiene que
+        // devolver TODO lo que afecta al resultado, no sólo el tablero.
+        p.sinProgreso = h.sinProgreso ?? 0;
         return true;
     },
 
