@@ -402,10 +402,32 @@ for (const juego of juegos) {
          * propósito y por eso va aparte: una persona apunta a la casilla y esto no
          * puede. Sirve para ver si tocar la mesa hace ALGO, no para puntuar.
          */
-        // ⚠️ Y AQUÍ SE VUELVE A PONER EL MUÑECO, porque la recarga de la fase
-        // anterior se llevó el de antes. Sin esto, los trescientos veinte toques
-        // de la rejilla se juegan DE VERDAD sobre una partida viva y lo que sale
-        // es una lista de jugadas que nunca fueron legales a la vez.
+        /**
+         * ⚠️ SE RECARGA OTRA VEZ, PORQUE SI NO SE MIDE CON EL TURNO EN OTRA SILLA.
+         *
+         * La fase del panel juega DE VERDAD —tiene que hacerlo, si no no se puede ver si
+         * la partida avanza al pulsar—. Y en un juego de cuatro sillas eso deja el turno
+         * donde caiga. Tocar mis cartas cuando le toca a un rival no hace nada, con toda
+         * la razón: la mesa está bien y el cero es mío.
+         *
+         * Medido en brisca el 17-08-2026: tocando mis tres cartas a mano salen las tres
+         * jugadas legales (`jugar:O_2`, `jugar:B_4`, `jugar:P_2`), 3 de 3. Por esta sonda
+         * salía 0 de 3. La diferencia era el turno.
+         *
+         * Y NO se arregla mirando de quién es el turno para tocar sus piezas: en un juego
+         * de información oculta, las piezas del rival ni se ven ni deben. Se arregla
+         * volviendo a una partida limpia, donde por convención abre el asiento 0 — el
+         * mismo que mide esta sonda.
+         *
+         * Cuesta una recarga más por juego y por modo. Barato al lado de un cero que se
+         * lee como una mesa rota: ése me ha costado hoy cuatro intentos en el ajedrez.
+         */
+        await p.reload({ waitUntil: 'load' }).catch(() => {});
+        await p.waitForTimeout(4200);
+
+        // ⚠️ Y AQUÍ SE VUELVE A PONER EL MUÑECO, porque la recarga se llevó el de antes.
+        // Sin esto, los toques se juegan DE VERDAD sobre una partida viva y lo que sale es
+        // una lista de jugadas que nunca fueron legales a la vez.
         await p.evaluate(() => {
             const hub = window.ALISA_PROTOHUB;
             const st = hub.state(window.ALISA_JUEGO);
