@@ -198,6 +198,25 @@ const SABOTAJES = [
         vigila: 'que los juegos de cartas lean el catálogo que se les indica',
     },
     {
+        nombre: 'figuras',
+        corre: 'node prueba_figuras.mjs',
+        fichero: 'public/arcade/js/SovereignCardEngine.js',
+        /**
+         * Se vuelve a poner el fallo original: borrar del caché en vez de repintar el
+         * material que la malla ya tiene. Eso deja las cartas de la mesa con su letra
+         * y sin dibujo, y es exactamente lo que estuvo pasando con las doce figuras
+         * francesas sin que nadie lo notara.
+         *
+         * Tenía que ser ESTE sabotaje y no «que no carguen las imágenes»: si las
+         * imágenes no cargan, la carta cae al dibujo de respaldo y la prueba lo caza
+         * por otro camino. Lo que hay que comprobar es que caza el caso en que la
+         * imagen SÍ está y aun así no llega a la mesa, que es el que engaña.
+         */
+        de: '            this._repintarFigura(key);',
+        a: '            delete this.cachedMaterials[key];',
+        vigila: 'que la figura llegue a la carta que ya está repartida',
+    },
+    {
         nombre: 'barajas',
         corre: 'node prueba_barajas.mjs',
         fichero: 'public/arcade/js/protohub/rules/gofish.js',

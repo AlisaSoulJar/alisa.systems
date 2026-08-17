@@ -307,6 +307,27 @@ otra gente que los regaló, y eso merece decirse aunque su licencia no lo exija.
 
 CC0 no pide atribución. Está aquí porque sin ellos esto no tendría cara.
 
+## Figuras de la baraja española — CC BY-SA 3.0
+
+Las doce figuras españolas —sota, caballo y rey de oros, copas, espadas y
+bastos— son de **Basquetteur y Germarquezm**, publicadas en Wikimedia Commons
+bajo [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/deed.es):
+
+- [Category:Castilian pattern](https://commons.wikimedia.org/wiki/Category:Castilian_pattern)
+- Ficheros: `arcade/assets/cards/courts/{O,P,E,B}_{S,C,R}.png`
+
+Ésta es la única licencia del sitio que pide algo a cambio, y pide dos cosas:
+crédito —esto— y que las propias imágenes sigan siendo CC BY-SA. **No afecta al
+código**, que sigue siendo MIT: son obras separadas que viajan juntas.
+
+Se sirven **tal cual vinieron**, sin recortar ni convertir. No es pereza: una
+versión modificada sería obra derivada y la licencia se arrastraría a un fichero
+generado por nosotros. Colocarlas bien en pantalla no las modifica.
+
+Se buscó una baraja española completa en dominio público y no la hay: todos los
+caminos abiertos llevan al mismo dibujante. Las de 1889 que hay escaneadas en
+Commons también están bajo CC BY-SA, por el escaneo.
+
 ## Lo que NO se publica
 
 `Lowpoly Animals` (Seaeees) se usa en local pero **no viaja en el paquete**: su

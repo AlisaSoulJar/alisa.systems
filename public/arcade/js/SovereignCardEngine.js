@@ -1427,6 +1427,32 @@ class SovereignCardEngine {
          * Los tamaños de aquí abajo no son gusto, son el mínimo que pasa el suelo de
          * `_tintaDeCara()`. Si alguien los baja, la prueba lo dice.
          */
+        /**
+         * ⚠️ HAY IMÁGENES QUE SON LA CARTA ENTERA, NO EL RETRATO.
+         *
+         * Las figuras francesas que teníamos son sólo el dibujo, y por eso van
+         * encajadas en el hueco del centro. Las españolas que bajamos de Commons son
+         * CARTAS COMPLETAS —traen su marco y sus índices—, así que metidas en ese
+         * hueco salía una carta dentro de otra carta, con dos marcos y dos índices.
+         *
+         * Van a sangre, ocupando toda la cara, y ANTES de los índices de esquina para
+         * que los nuestros queden encima. Los suyos son diminutos: en la mesa la carta
+         * mide unos 50 píxeles y ese índice acaba midiendo dos. Los nuestros son los
+         * que pasan el suelo de tinta de `_tintaDeCara()`, así que se quedan.
+         *
+         * No se recorta el original. Recortar crearía una versión NUESTRA de una obra
+         * CC BY-SA y arrastraría la licencia a un fichero generado; servir el original
+         * y colocarlo bien no.
+         */
+        const figura = ['J', 'Q', 'K', 'S', 'C', 'R'].includes(rank)
+            ? this._getCourtImage(suitId, rank) : null;
+        if (figura && this._courtCompleta?.[`${suitId}_${rank}`]) {
+            ctx.save();
+            ctx.beginPath(); ctx.roundRect(2, 2, W - 4, H - 4, 10); ctx.clip();
+            ctx.drawImage(figura, 2, 2, W - 4, H - 4);
+            ctx.restore();
+        }
+
         ctx.fillStyle = color;
         // Arriba a la izquierda
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -1445,7 +1471,8 @@ class SovereignCardEngine {
 
         // --- COURT CARDS ---
         const isCourt = ['J','Q','K','S','C','R'].includes(rank);
-        if (isCourt) {
+        // Las que van a sangre ya están pintadas arriba, debajo de los índices.
+        if (isCourt && !this._courtCompleta?.[`${suitId}_${rank}`]) {
             // Hybrid: try image first, procedural fallback
             const courtImg = this._getCourtImage(suitId, rank);
             if (courtImg) {
@@ -1565,27 +1592,97 @@ class SovereignCardEngine {
     }
 
     // ═══ HYBRID IMAGE LOADING (for courts/special cards) ═══
-    // Call this to preload image assets for a specific deck
-    // If images exist, they override the procedural court cards
+    /**
+     * ═══════════════════════════════════════════════════════════════════════════
+     *  LAS FIGURAS, Y POR QUÉ LAS ESPAÑOLAS NO SALÍAN
+     * ═══════════════════════════════════════════════════════════════════════════
+     *
+     * `getCardCanvas` sabe pintar una figura desde imagen o dibujarla, y su lista de
+     * rangos ya incluía los seis: `['J','Q','K','S','C','R']`. Quien se quedaba corto
+     * era ESTE cargador, que sólo pedía J/Q/K de los cuatro palos franceses. Así que
+     * una sota de oros nunca tenía imagen que encontrar y caía siempre al dibujo, que
+     * es una letra grande con la palabra debajo. Al lado de una J francesa ilustrada,
+     * canta.
+     *
+     * No se deduce de la biblioteca a propósito: allí hay siete barajas y sólo de dos
+     * tenemos arte. Deducirlo pediría 78 imágenes del tarot que no existen y llenaría
+     * la consola de 404. La lista de abajo es la de lo que HAY, y por eso está escrita.
+     *
+     * ⚠️ LAS DOS EXTENSIONES HACEN FALTA. Las francesas son `.webp` de 22 KB y las
+     * españolas `.png` de 50 KB, tal como vinieron de Commons. Se prueban las dos y
+     * gana la que cargue; convertirlas a un formato común obligaría a redistribuir una
+     * VERSIÓN NUESTRA de una obra CC BY-SA, y eso arrastra la licencia a un fichero
+     * generado por nosotros. Sale más barato servir el original.
+     *
+     * Autoría de las figuras españolas: Basquetteur y Germarquezm, CC BY-SA 3.0.
+     * Está en `CREDITOS.md`, que es donde alguien lo va a buscar.
+     */
     preloadCourtImages(basePath) {
         if (!this._courtImages) this._courtImages = {};
-        const ranks = ['J', 'Q', 'K'];
-        const suits = ['S', 'H', 'D', 'C'];
-        
-        for (const rank of ranks) {
-            for (const suit of suits) {
-                const key = `${suit}_${rank}`;
-                const img = new Image();
-                img.onload = () => {
-                    this._courtImages[key] = img;
-                    // Invalidate cached material so it re-renders with image
-                    delete this.cachedMaterials[key];
-                    console.log(`[ALISA] Court image loaded: ${key}`);
-                };
-                img.onerror = () => {}; // Silent fail — procedural fallback
-                img.src = `${basePath}/${key}.webp`;
+        if (!this._courtCompleta) this._courtCompleta = {};
+        const FAMILIAS = [
+            // `completa` = la imagen es la carta entera, con su marco y sus índices, no
+            // sólo el retrato. Cambia dónde se pinta, y por eso se declara aquí y no se
+            // adivina: las dos familias tienen la misma proporción.
+            { suits: ['S', 'H', 'D', 'C'], ranks: ['J', 'Q', 'K'], completa: false },
+            { suits: ['O', 'P', 'E', 'B'], ranks: ['S', 'C', 'R'], completa: true },
+        ];
+        const EXTENSIONES = ['webp', 'png'];
+
+        for (const { suits, ranks, completa } of FAMILIAS) {
+            for (const rank of ranks) {
+                for (const suit of suits) {
+                    const key = `${suit}_${rank}`;
+                    if (completa) this._courtCompleta[key] = true;
+                    // Se encadenan las extensiones: si la primera da 404, se prueba la
+                    // siguiente, y si se acaban se calla y queda el dibujo.
+                    const intentar = (i) => {
+                        if (i >= EXTENSIONES.length) return;
+                        const img = new Image();
+                        img.onload = () => {
+                            this._courtImages[key] = img;
+                            this._repintarFigura(key);
+                        };
+                        img.onerror = () => intentar(i + 1);
+                        img.src = `${basePath}/${key}.${EXTENSIONES[i]}`;
+                    };
+                    intentar(0);
+                }
             }
         }
+    }
+
+    /**
+     * ⚠️ BORRAR DEL CACHÉ NO REPINTA LA CARTA QUE YA ESTÁ EN LA MESA.
+     *
+     * Aquí había un `delete this.cachedMaterials[key]` con el comentario «invalidate
+     * cached material so it re-renders with image». Y no: el reparto ocurre antes de
+     * que carguen las imágenes, así que la carta se monta con el material de la figura
+     * DIBUJADA, y esa malla se queda con ese objeto en la mano. Borrar la entrada del
+     * caché sólo hace que la SIGUIENTE carta que se pida se genere bien; la que ya
+     * está en el tapete no se entera de nada.
+     *
+     * Se veía y no se veía: la sota se pintaba con su letra y su palo, o sea una carta
+     * perfectamente válida y jugable. Sólo que sin dibujo. Y la medida mentía en la
+     * dirección peor —`_tintaDeCara` regenera el canvas desde cero, así que daba 30 %
+     * y decía «hay figura»— mientras la pantalla enseñaba una carta en blanco.
+     *
+     * Le pasaba igual a las doce francesas desde siempre, y nadie lo había visto
+     * porque la única forma de notarlo es abrir una mano con figura y mirarla.
+     *
+     * Se arregla al revés: en vez de tirar el material, se le cambia la textura al que
+     * ya existe. La malla apunta al mismo objeto, así que se entera sola.
+     */
+    _repintarFigura(key) {
+        const mats = this.cachedMaterials?.[key];
+        if (!Array.isArray(mats)) return;
+        const cara = mats[4];               // [lado ×4, cara, dorso]
+        if (!cara) return;
+        const textura = new THREE.CanvasTexture(this.getCardCanvas(key));
+        if (this.renderer) textura.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+        cara.map?.dispose();
+        cara.map = textura;
+        cara.needsUpdate = true;
     }
 
     // Check if we have a preloaded court image for this card
