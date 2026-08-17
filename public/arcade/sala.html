@@ -292,11 +292,23 @@ const ANCHO_CM = (Number.isFinite(cm) && cm > 2) ? cm : 11;   // 8,8 es la real
  * mismo sirve para los que no son juegos de mesa —el laberinto, el rebaño, la
  * flota—, que sobre una mesa son un diorama y un diorama tiene su tamaño.
  *
- *   `?tablero=80` en centímetros, para ajustarlo a ojo. Esto es estética y se
- *   decide mirando, igual que `?carta=`.
+ * ⚠️ Y AUN ASÍ SE QUEDÓ CORTO, PORQUE ESTA MESA NO ES UNA MESA DE VERDAD.
+ *
+ * Mide tres metros. Viene de una sala donde es decoración, y ese motivo ya estaba
+ * escrito dos veces en este fichero sin que nadie sacara la consecuencia: sobre una
+ * tapa de tres metros, un tablero de torneo de 55 cm se ve como un juguete olvidado
+ * en una mesa de banquete. Se ve en la captura, no hay que discutirlo.
+ *
+ * Una mano de cartas repartida ocupa 1,30 en esta misma mesa —medido— y ahí sí
+ * parece una partida. Así que un tablero ocupa lo mismo. Deja de ser «un ajedrez de
+ * torneo» y pasa a ser «lo que hay encima de ESTA mesa», que es lo que se pedía al
+ * decir que las diecisiete se vieran iguales.
+ *
+ *   `?tablero=55` en centímetros, para volver al tamaño de torneo o probar otro.
+ *   Esto es estética y se decide mirando, igual que `?carta=`.
  */
 const tcm = Number(p.get('tablero'));
-const TABLERO_CM = (Number.isFinite(tcm) && tcm > 5) ? tcm : 55;
+const TABLERO_CM = (Number.isFinite(tcm) && tcm > 5) ? tcm : 130;
 
 /** Lo que cabe en el tapete sin colgar por el borde. Es el TECHO, no el objetivo. */
 const CABE_EN = 2.55;
@@ -361,7 +373,37 @@ let encuadrado = false;
 function encuadrar(caja) {
     if (encuadrado) return;
     const t = caja.getSize(new THREE.Vector3());
-    const mayor = Math.max(t.x, t.z);
+    /**
+     * ⚠️ UNA MESA SE MIRA DESDE LA MISMA DISTANCIA, JUEGUES A LO QUE JUEGUES.
+     *
+     * Esto encuadraba el JUEGO al 55 % del ancho de pantalla, y como los juegos no
+     * miden lo mismo, cada uno acababa a una distancia distinta. Medido: la brisca
+     * reparte 1,30 m y deja la cámara a 1,99 de alto —ves tu mesa, los taburetes, la
+     * sala—; el ajedrez mide 0,55 y la dejaba a 1,55, o sea a sesenta y siete
+     * centímetros del tablero. Con la nariz encima no cabe la mesa en el cuadro, y
+     * las seis de tablero parecían flotar en negro mientras las once de cartas
+     * parecían una partida.
+     *
+     * O sea que las dos familias tenían mueble —está medido, la mesa, el pie y los
+     * tres taburetes están en la escena en los diecisiete casos— y una de las dos
+     * no lo veía.
+     *
+     * El suelo no es un gusto: es lo que ocupa un juego de cartas repartido en esta
+     * misma mesa. Encuadrando por lo menos eso, sentarse a un ajedrez y sentarse a
+     * una brisca son el mismo gesto y se ven desde el mismo sitio, que es todo lo
+     * que quería decir «estandarizar las mesas».
+     *
+     * Un tablero más grande que eso manda él, como siempre: esto es un mínimo.
+     */
+    /**
+     * Y el suelo es 2,2 y no 1,3 por una razón que se vio mirando: con 1,3 la mesa
+     * entra en cuadro pero SIN BORDE, así que se lee como una mancha blanca detrás
+     * del tablero en vez de como una mesa. Lo que convierte una superficie en un
+     * mueble es verle el canto. La tapa mide 3,0 de diámetro; encuadrando 2,2 se ve
+     * el borde del fondo y parte del de los lados, y ya es una mesa.
+     */
+    const VER_EL_BORDE = 2.2;
+    const mayor = Math.max(t.x, t.z, VER_EL_BORDE);
     if (!(mayor > 0.01)) return;
 
     const centro = caja.getCenter(new THREE.Vector3());
