@@ -160,6 +160,56 @@ async function reversoDeLaBaraja(mesa) {
 const dorso = (mesa) => `back_${mesa.activeDeckBack || 'classic_red'}`;
 
 /**
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *  EL PALO EN PALABRAS — Y OTRA VEZ, SALE DE LA BIBLIOTECA
+ * ═══════════════════════════════════════════════════════════════════════════════
+ *
+ * El estado publica la LETRA (`O`, `S`), porque es lo que comparte con el verificador
+ * y con la puerta de texto. Para una persona `O` no dice oros.
+ *
+ * Mi primera versión escribió el diccionario a mano y se equivocó en dos cosas a la
+ * vez: puso copas en la `C` —es la `P`— e inventó una colisión con los tréboles que
+ * no existe, porque los dos juegos de palos son disjuntos (`O P E B` contra `S H D C`).
+ * Después me acordé de preguntarlo y la respuesta ya estaba escrita treinta líneas
+ * dentro de `SovereignCardEngine.parseCardId`: LOS PALOS SALEN DE LA BIBLIOTECA.
+ *
+ * Así que se lee `card_library.json`, que declara siete barajas y para cada palo su
+ * id, su símbolo, su color y su NOMBRE. `engine.biblioteca` ya lo tiene cargado —lo
+ * pide el constructor— y el nombre de la baraja viene en el propio estado, en
+ * `data.baraja`, que es quien sabe con qué se está jugando: deducirlo de las cartas
+ * visibles fallaría en cuanto una mano no tuviera ningún corazón.
+ *
+ * ⚠️ Y EL ESTADO NO DECLARA LA BARAJA: `data.baraja` viene vacío en los cinco juegos
+ * medidos. Así que hay que adivinarla, y ahí está el cuidado: las letras SÍ chocan.
+ * `C` es tréboles en la francesa, copas en el tarot y cian en la nuestra. Por eso el
+ * respaldo mira sólo las dos barajas de las que sale un triunfo en lo que tenemos
+ * —española y francesa, cuyos ids entre sí no se pisan (`O P E B` contra `S H D C`)—
+ * en vez de recorrerlas todas y quedarse con la primera que conteste.
+ *
+ * El día que un juego de tarot cante triunfo, esto le pondrá el nombre equivocado sin
+ * avisar. La solución de verdad es que el estado publique con qué se juega; hasta
+ * entonces la lista de abajo es la frontera de lo que este atajo sabe.
+ *
+ * Devuelve la letra cuando no encuentra nada. Es peor que un nombre, pero es lo que el
+ * estado dijo: preferible a inventarse un palo.
+ */
+const BARAJAS_CON_TRIUNFO = ['spanish_40', 'french_52'];
+const nombreDePalo = (letra, engine, baraja) => {
+    if (!letra) return null;
+    const barajas = engine?.biblioteca?.decks ?? engine?.biblioteca ?? {};
+    const donde = baraja && barajas[baraja]
+        ? [barajas[baraja]]
+        : BARAJAS_CON_TRIUNFO.map(n => barajas[n]).filter(Boolean);
+    for (const b of donde) {
+        const palo = (Array.isArray(b?.suits) ? b.suits : []).find(s => s?.id === letra);
+        // `nombre` es el castellano; `name` el que ya usaba el pintor de cartas.
+        const como = palo?.nombre ?? palo?.name;
+        if (como) return palo.symbol ? `${palo.symbol} ${como}` : como;
+    }
+    return letra;
+};
+
+/**
  * ⚠️ ÉSTE ES EL SITIO DONDE ESTA MESA EMPIEZA A DECIR LA VERDAD.
  * ═══════════════════════════════════════════════════════════════════════════
  * `drawZone()` (`SovereignCardEngine.js`) nunca pone `mesh.name` — sólo
@@ -222,12 +272,31 @@ function nombrarPiezas(motor, cartas, zona, layout, dueño) {
          * ahí deja de crecer, y el número exacto lo sigue diciendo el panel en texto.
          */
         const n = c.pila ?? 1;
+        const grosor = malla.geometry?.parameters?.depth ?? 0.05;
         if (c.oculta && n > 1) {
             const alto = Math.min(n, 14);
-            const grosor = malla.geometry?.parameters?.depth ?? 0.05;
             malla.scale.z = alto;
             malla.position.y = (malla.userData.__y0 ??= malla.position.y)
                              + (alto - 1) * 0.5 * grosor;
+        } else if (malla.userData.__y0 !== undefined || malla.scale.z !== 1) {
+            /**
+             * ⚠️ Y AQUÍ FALTABA EL `else`, QUE ES EL GLITCH QUE VIO OSCAR.
+             *
+             * Las mallas se REUTILIZAN por `trackId`. Engordar una y no devolverla nunca
+             * a su tamaño deja el grosor puesto para siempre: cuando el mazo baja de dos
+             * cartas a una, o cuando esa misma malla se recicla para una carta destapada
+             * de tu mano, sale una carta suelta con el grosor de un mazo de catorce y
+             * flotando a la altura a la que estaba la pila.
+             *
+             * No da ningún error y no rompe la partida: sólo se ve mal. Y es la clase de
+             * fallo que sólo encuentra alguien JUGANDO —lo reportó Oscar, no un
+             * instrumento— porque ninguna de mis medidas mira el grosor de una malla.
+             *
+             * Se restaura de lo guardado: `scale.z` a 1 y la altura a la original. La
+             * condición evita tocar las mallas que nunca fueron pila.
+             */
+            malla.scale.z = 1;
+            if (malla.userData.__y0 !== undefined) malla.position.y = malla.userData.__y0;
         }
     });
 }
@@ -535,12 +604,12 @@ function acercar(motor, margen = 1.12) {
      * el mismo peso que la tuya es tratar igual lo que se cuenta y lo que se lee.
      */
     const miCaja = new THREE.Box3();
-    let mia = false;
+    let mia = false, misCartas = 0;
     motor.scene.traverse((o) => {
         // `mano_0_0`, no `mano_0`: la zona lleva dueño Y un índice detrás. Con la
         // igualdad exacta este bloque entero era código muerto.
         if (o.isMesh && String(o.userData?.zona ?? '').startsWith('mano_0_')) {
-            miCaja.expandByObject(o); mia = true;
+            miCaja.expandByObject(o); mia = true; misCartas++;
         }
     });
     if (mia && !miCaja.isEmpty()) {
@@ -558,7 +627,35 @@ function acercar(motor, margen = 1.12) {
                     if (prof > 0.01) ancho = Math.max(ancho, Math.abs(v.x) / (prof * tanH));
                 }
 
-        const MINIMO = 0.80;
+        /**
+         * ⚠️ EL OBJETIVO ES QUE CADA CARTA SE LEA, NO QUE LA MANO LLENE UN PORCENTAJE.
+         *
+         * Aquí había un `MINIMO = 0.80` fijo: si tu mano ocupaba menos del 80% del
+         * semiancho, la cámara se acercaba hasta que lo ocupara. Con trece cartas está
+         * bien. Con TRES —que es la brisca— es absurdo: tres cartas llenando el 80% de la
+         * pantalla son tres cartas gigantes cortadas por abajo, y el resto de la mesa
+         * fuera de cuadro. Lo vio Oscar jugando: «parece que se glitchean».
+         *
+         * Y la captura lo confirmaba de la peor manera: mis tres cartas ocupando media
+         * pantalla y el fieltro VACÍO, con el panel diciendo que había tres manos y un
+         * mazo de veintiocho que no se veían por ningún lado.
+         *
+         * El objetivo real está escrito tres párrafos más arriba: que una carta llegue a
+         * unos 90 px. Con diez en la mano eso son 0,72 del semiancho, o sea ~0,075 por
+         * carta. Así que el objetivo se calcula POR CARTA y se limita al 80% de antes:
+         * con trece cartas sale el mismo comportamiento que había, y con tres deja de
+         * acercarse a lo bestia.
+         *
+         * ⚠️ Y NO ES EL CAMBIO DE ABANICOS A PILAS, QUE ERA LA SOSPECHA DE LOS DOS.
+         *
+         * Antes de llegar aquí busqué el fallo en el grosor de las pilas y encontré un
+         * hueco real —una malla engordada no volvía nunca a su tamaño— pero el sabotaje
+         * demostró que ESE no era el que se veía. Dos fallos en la misma zona y sólo uno
+         * era el reportado; arreglar el primero y cantar victoria habría dejado el de
+         * Oscar intacto.
+         */
+        const POR_CARTA = 0.075;
+        const MINIMO = Math.min(0.80, Math.max(1, misCartas) * POR_CARTA);
         if (ancho > 0.001 && ancho < MINIMO) {
             d *= ancho / MINIMO;
             // Un suelo por si el reparto es de UNA carta: sin esto la cámara se
@@ -1532,6 +1629,28 @@ const engine = new SovereignCardEngine({
             (this.sala ? fila('Tú', this.sala.espectador ? `mirando (${this.sala.yo})` : this.sala.yo, '#9ecbff') : '')
           + (data.turn !== undefined ? fila('Turno', data.turn, '#00ffaa') : '')
           + (marcador !== undefined ? fila('Puntos', marcador, '#FFD700') : '')
+          /**
+           * ⚠️ EL TRIUNFO. LA PUERTA DEL LLM LO DECÍA Y LA PERSONA NO PODÍA VERLO.
+           *
+           * En brisca el triunfo va destapado DEBAJO DEL MAZO, y el mazo cae fuera de
+           * cuadro: la cámara prioriza que tu mano se lea. Así que quien juega no tenía
+           * forma de saber a qué palo manda — en un juego donde eso lo decide todo.
+           *
+           * Y no era una carencia de los dos lados. El texto que recibe un agente dice
+           * literalmente «Brisca. Puntos: 0. Turno: player. Tu mano: O_2 B_4 P_2.
+           * Triunfo: O.» Lo tenía el agente y no la persona, lo cual es exactamente la
+           * asimetría que este proyecto existe para no tener: si las puertas no muestran
+           * el mismo juego, comparar a una persona con un agente deja de significar algo.
+           *
+           * Lo encontró Oscar jugando —«parece que se glitchean»— y salió tirando de ese
+           * hilo. Ningún instrumento lo buscaba, porque todos preguntan si algo se puede
+           * TOCAR y ninguno si se puede SABER.
+           *
+           * Se pinta con el palo legible, no con la letra: `O` no dice oros a nadie que
+           * no haya leído el código.
+           */
+          + (data.triunfo ? fila('Triunfo',
+                nombreDePalo(data.triunfo, this, data.baraja ?? data.deck), '#ffb86c') : '')
           + zonas.map(z => fila(
                 `${z.id}${z.de === null || z.de === undefined ? '' : ' · ' + z.de}`,
                 `${z.items.length} vistas${z.ocultas ? ` + ${z.ocultas} tapadas` : ''}`)).join('')

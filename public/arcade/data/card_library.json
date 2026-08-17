@@ -14,25 +14,29 @@
           "id": "S",
           "symbol": "♠",
           "color": "#222222",
-          "name": "Spades"
+          "name": "Spades",
+          "nombre": "Picas"
         },
         {
           "id": "H",
           "symbol": "♥",
           "color": "#D32F2F",
-          "name": "Hearts"
+          "name": "Hearts",
+          "nombre": "Corazones"
         },
         {
           "id": "D",
           "symbol": "♦",
           "color": "#D32F2F",
-          "name": "Diamonds"
+          "name": "Diamonds",
+          "nombre": "Diamantes"
         },
         {
           "id": "C",
           "symbol": "♣",
           "color": "#222222",
-          "name": "Clubs"
+          "name": "Clubs",
+          "nombre": "Tréboles"
         }
       ],
       "ranks": [
@@ -173,25 +177,29 @@
           "id": "W",
           "symbol": "🪄",
           "color": "#F44336",
-          "name": "Wands"
+          "name": "Wands",
+          "nombre": "Bastos"
         },
         {
           "id": "C",
           "symbol": "🏆",
           "color": "#2196F3",
-          "name": "Cups"
+          "name": "Cups",
+          "nombre": "Copas"
         },
         {
           "id": "S",
           "symbol": "⚔️",
           "color": "#9C27B0",
-          "name": "Swords"
+          "name": "Swords",
+          "nombre": "Espadas"
         },
         {
           "id": "P",
           "symbol": "🪙",
           "color": "#FFC107",
-          "name": "Pentacles"
+          "name": "Pentacles",
+          "nombre": "Oros"
         }
       ],
       "ranks": [
@@ -244,25 +252,29 @@
           "id": "R",
           "symbol": "●",
           "color": "#F44336",
-          "name": "Red"
+          "name": "Red",
+          "nombre": "Rojo"
         },
         {
           "id": "B",
           "symbol": "●",
           "color": "#2196F3",
-          "name": "Blue"
+          "name": "Blue",
+          "nombre": "Azul"
         },
         {
           "id": "G",
           "symbol": "●",
           "color": "#4CAF50",
-          "name": "Green"
+          "name": "Green",
+          "nombre": "Verde"
         },
         {
           "id": "Y",
           "symbol": "●",
           "color": "#FFEB3B",
-          "name": "Yellow"
+          "name": "Yellow",
+          "nombre": "Amarillo"
         }
       ],
       "ranks": [
