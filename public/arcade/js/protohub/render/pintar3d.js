@@ -48,6 +48,10 @@ const COLOR_DE = { 0: 0x2a3550, 1: 0xc0392b, 2: 0x2e8b57, 3: 0xd68910, null: 0x7
  */
 const yoSoy = (sus) => sus?.yo ?? sus?.asiento ?? 0;
 
+// Los dados, en su propia pieza: los piden generala, parchís y oca, y los tres pasan
+// por aquí. THREE se le entrega, como a `tapete.js` y `mueble.js`.
+import { crearDado, esDado, valorDeDado, LADO as LADO_DADO } from '../dados.js';
+
 export function crearPintor3d(escena, THREE, opciones = {}) {
     const { croupier = null, alturaCarta = 0.02 } = opciones;
 
@@ -212,6 +216,8 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
      * el mismo problema que crear mallas sueltas, sólo que más difícil de ver.
      */
     const montones = new Map();
+    /** Los dados van aparte de los montones: seis materiales no se instancian. */
+    const dados = new Map();
     const M = new THREE.Matrix4(), Q = new THREE.Quaternion();
     const POS = new THREE.Vector3(), ESC = new THREE.Vector3();
 
@@ -691,6 +697,48 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
              * pasara por aquí una baraja entera serían cuarenta grupos, que sigue
              * siendo poco — y esa mesa tiene su propio motor precisamente por eso.
              */
+            /**
+             * ⚠️ UN DADO SE DIBUJA COMO UN DADO, NO COMO UNA LÁMINA CON UN NÚMERO.
+             *
+             * Aquí ya se arregló una vez lo importante —que un `d6_5` y un `d6_2` no
+             * salieran idénticos— pintando el valor sobre la carta plana. El DATO
+             * quedó bien y el objeto no: sobre una mesa, un dado tumbado del grosor de
+             * un naipe se lee como una ficha, y en cuanto orbitas la cámara se ve que
+             * es una lámina. La generala reparte cinco y el parchís y la oca uno.
+             *
+             * `protohub/dados.js` da un cubo de verdad, con las opuestas sumando siete
+             * y el valor arriba por GIRO, así que aguanta que lo mires desde donde sea.
+             *
+             * No van instanciados como el resto: un dado son seis materiales, uno por
+             * cara, y `InstancedMesh` comparte material. Son cinco como mucho, así que
+             * mallas sueltas — con el mismo trato que los montones, reaprovechadas por
+             * clave y escondidas cuando no se usan, que es lo que evita crear y tirar
+             * objetos sesenta veces por segundo.
+             */
+            if (z.items.some(it => esDado(it?.id ?? it))) {
+                z.items.forEach((it, k) => {
+                    const id = String(it?.id ?? it ?? '·');
+                    const clave = `dado:${iz}:${k}`;
+                    const valor = valorDeDado(id);
+                    let d = dados.get(clave);
+                    // Se rehace sólo si CAMBIÓ el valor: las caras son texturas y
+                    // repintarlas en cada cuadro sería el mismo derroche.
+                    if (!d || d.userData.valor !== valor) {
+                        if (d) { raiz.remove(d); d.geometry.dispose();
+                                 for (const m of d.material) { m.map?.dispose(); m.dispose(); } }
+                        d = crearDado(THREE, valor);
+                        d.userData.valor = valor;
+                        raiz.add(d);
+                        dados.set(clave, d);
+                    }
+                    const s = sitios[k] ?? { x: 0, z: 0, rot: 0 };
+                    d.visible = true;
+                    d.position.set(s.x, LADO_DADO / 2 + 0.1, s.z);
+                    usados.add(clave);
+                });
+                return;
+            }
+
             const porId = new Map();
             z.items.forEach((it, k) => {
                 const id = String(it?.id ?? it ?? '·');
@@ -726,6 +774,9 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
 
         // Lo que no se usó este cuadro se esconde, no se destruye: volverá.
         for (const [clave, m] of montones) if (!usados.has(clave)) m.visible = false;
+        // Y los dados igual: la generala guarda dados entre tiradas, así que la zona
+        // encoge y crece, y esconder es más barato que rehacer.
+        for (const [clave, d] of dados) if (!usados.has(clave)) d.visible = false;
     }
 
     /** Dónde va cada carta. Con `CroupierSystem` si lo hay; si no, en fila. */

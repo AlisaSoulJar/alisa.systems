@@ -245,6 +245,7 @@ function cajaReal(raiz) {
  */
 const SIN_NIEBLA = new Set(['niebla']);
 
+let conRejillaAhora = true;
 let encuadrado = false;
 function encajar() {
     if (anfitrion || !grupo.children.length) return;   // de invitada manda la sala
@@ -297,7 +298,24 @@ function encajar() {
         if (sabido > 0.001) mayor = Math.max(sabido, mayorTodo / 3);
     }
 
-    grupo.scale.setScalar(LADO / mayor);
+    /**
+     * ⚠️ UN PUÑADO DE OBJETOS SUELTOS NO SE NORMALIZA COMO UN TABLERO.
+     *
+     * `LADO / mayor` infla lo que haya hasta que ocupe diez unidades, y para un
+     * tablero es lo correcto: un go de 19×19 y un sokoban de 5×3 tienen que caber
+     * igual, así que se normalizan. Pero la generala no tiene rejilla — son cinco
+     * dados sueltos— y con esa cuenta salían a escala 2,92, o sea dados de casi dos
+     * unidades: tan anchos como media fila de un ajedrez, llenando la pantalla y
+     * cortados por los bordes. Se vio en la captura en cuanto los dados dejaron de ser
+     * láminas y pasaron a tener volumen.
+     *
+     * Un dado ya tiene su tamaño de verdad —0,62, medido contra el naipe del arcade—
+     * así que aquí no hay nada que normalizar: como mucho se ENCOGE si no cabe. Es el
+     * mismo razonamiento que la sala de bolsillo aplica a las cartas: «primero manda
+     * que una carta parezca una carta».
+     */
+    const factor = LADO / mayor;
+    grupo.scale.setScalar(conRejillaAhora ? factor : Math.min(1, factor));
 
     if (encuadrado) return;
     // El centro y el `target` de los controles los pone ya `encajarCamara`.
@@ -777,6 +795,7 @@ async function refrescar() {
             const { sustratoDe } = await import('./protohub/sustrato.js');
             const sus = sustratoDe(juego, st);
             pintor.pintar(sus);
+            conRejillaAhora = !!sus?.rejilla;
             const txt = document.getElementById('estado-txt');
             if (txt) {
                 txt.innerHTML = `<span>Turno</span><span class="val">${st.turn ?? '—'}</span>`
@@ -805,6 +824,10 @@ async function refrescar() {
     // Para el encuadre: un tablero grande necesita más inclinación o el fondo se
     // comprime. Se apunta aquí, que es donde se conoce el sustrato.
     filasDelTablero = susLocal?.rejilla?.alto ?? 0;
+    // Y si hay rejilla o no: lo necesita `encajar()` para decidir si normaliza el
+    // tamaño —un tablero— o lo deja como está —unos dados sueltos—. Se apunta aquí,
+    // que es donde se conoce el sustrato, igual que la línea de arriba.
+    conRejillaAhora = !!susLocal?.rejilla;
 
     const marcador = st.puntos ?? st.score ?? st.marcador;
     const txt = document.getElementById('estado-txt');
