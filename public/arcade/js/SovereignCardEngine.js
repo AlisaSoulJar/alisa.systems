@@ -38,7 +38,22 @@ class SovereignCardEngine {
          * que no distingue quién es el dueño. Por eso el cambio cabe aquí y no
          * hay que tocar una línea de lo que pinta.
          */
-        this.anfitrion = config.anfitrion ?? null;
+        /**
+         * ⚠️ Y SI NADIE LO PASA, SE MIRA EL `window`.
+         *
+         * `mesa_cartas.mjs` se lo pasa a mano porque es un módulo que se monta solo.
+         * Los visualizadores propios —blackjack, póker— son scripts clásicos que
+         * construyen su motor con un literal escrito hace meses, así que nunca van a
+         * pasar un `anfitrion` que no existía cuando se escribieron. Sin este respaldo
+         * el blackjack de la sala de bolsillo montaba su propio renderizador encima
+         * del de la sala y dibujaba cero cartas.
+         *
+         * Es el mismo respaldo que ya tiene `SovereignBoardEngine`, y por el mismo
+         * motivo: quien pone la sala publica `window.ALISA_ANFITRION` antes de cargar
+         * a nadie, así que preguntarlo aquí cubre a todos los que aún no saben pedirlo.
+         */
+        this.anfitrion = config.anfitrion ?? (typeof window !== 'undefined'
+            ? (window.ALISA_ANFITRION ?? null) : null);
         this.invitado = !!this.anfitrion;
         
         // Agent UI State
@@ -149,6 +164,15 @@ class SovereignCardEngine {
             this.cardGeo = new THREE.BoxGeometry(1.2, 1.8, 0.05);
             this.cardMatFront = new THREE.MeshLambertMaterial({ color: 0xE8ECEF });
             this.cardMatBack = new THREE.MeshLambertMaterial({ color: 0x882222 });
+
+            /**
+             * ⚠️ TAMBIÉN DE INVITADO. El motor se publicaba treinta líneas más abajo,
+             * en el camino de dueño, así que de invitado no lo publicaba nadie: quien
+             * mirase `window.ALISA_MOTOR` en la sala de bolsillo encontraba el de la
+             * mesa genérica, o nada. `npm run invitados` lo dijo con «el motor no se
+             * reconoce invitado» sobre un blackjack que sí lo era.
+             */
+            if (typeof window !== 'undefined') window.ALISA_MOTOR = this;
 
             this.onInit3D(this.scene, this.camera, null);
             return;   // ni `animate()`: el anfitrión ya tiene su bucle

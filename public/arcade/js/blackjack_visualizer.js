@@ -33,24 +33,42 @@ function nombrarCartas(engine, cartas, zona, dueño) {
 const engine = new SovereignCardEngine({
     gameId: 'blackjack',
     onInit3D: function(scene, camera, renderer) {
-        camera.position.set(0, 5, 8);
-        camera.lookAt(0, 0, 0);
+        /**
+         * ⚠️ DE INVITADO NO SE TRAE MUEBLE NI LUZ. LOS PONE LA SALA.
+         *
+         * Estas tres cosas —cámara, mesa y foco— son de cuando este juego era dueño de
+         * su página. Dentro de la sala de bolsillo cada una estorba de su manera: la
+         * cámara le desharía el encuadre a la sala; el foco iluminaría el muro y los
+         * taburetes con una intensidad pensada para una escena vacía; y la mesa mide
+         * VEINTE UNIDADES de diámetro, así que dentro de un grupo escalado a metro y
+         * pico se traga la habitación entera. Era eso lo que se veía en el póker
+         * —«tapete de tamaño de sala y ninguna carta»—, y aquí habría pasado igual.
+         *
+         * Perder el fieltro rojo tiene un coste: el blackjack deja de tener su mesa y
+         * pasa a jugarse en la verde de la casa. Eso no es una pérdida, es lo que se
+         * pidió: que sentarse en cualquier mesa de la Sala del Huevo se sienta el
+         * mismo sitio. Su página propia la conserva intacta.
+         */
+        if (!this.invitado) {
+            camera.position.set(0, 5, 8);
+            camera.lookAt(0, 0, 0);
 
-        // Blackjack specific table
-        const tableGeo = new THREE.CylinderGeometry(10, 10, 0.4, 64);
-        tableGeo.scale(1, 1, 0.5); // Semi-circle feel
-        const tableMat = new THREE.MeshStandardMaterial({color: 0x660000, roughness: 0.8}); // Deep red felt
-        const table = new THREE.Mesh(tableGeo, tableMat);
-        table.position.y = -0.2;
-        table.receiveShadow = true;
-        scene.add(table);
-        
-        // Lighting
-        const spotLight = new THREE.SpotLight(0xffffff, 0.8, 0, Math.PI / 4, 0.5, 1);
-        spotLight.position.set(0, 6, 0);
-        spotLight.castShadow = true;
-        scene.add(spotLight);
-        
+            // Blackjack specific table
+            const tableGeo = new THREE.CylinderGeometry(10, 10, 0.4, 64);
+            tableGeo.scale(1, 1, 0.5); // Semi-circle feel
+            const tableMat = new THREE.MeshStandardMaterial({color: 0x660000, roughness: 0.8}); // Deep red felt
+            const table = new THREE.Mesh(tableGeo, tableMat);
+            table.position.y = -0.2;
+            table.receiveShadow = true;
+            scene.add(table);
+
+            // Lighting
+            const spotLight = new THREE.SpotLight(0xffffff, 0.8, 0, Math.PI / 4, 0.5, 1);
+            spotLight.position.set(0, 6, 0);
+            spotLight.castShadow = true;
+            scene.add(spotLight);
+        }
+
         // Load Court Assets for Hybrid Mode
         this.preloadCourtImages('/arcade/assets/cards/courts');
         this.activeDeckBack = 'classic_blue';

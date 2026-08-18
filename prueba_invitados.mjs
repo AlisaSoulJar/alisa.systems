@@ -87,6 +87,14 @@ const DONDE_PINCHAR = {
      * vuelta. Un cambio cada vez, o no se sabe cuál era.
      */
     ajedrez: { clics: [[0.5, 0.02, 2.5], [0.5, 0.02, 0.5]], testigo: 'fen' },
+    /**
+     * El blackjack no se juega tocando la mesa: se juega con verbos —pedir,
+     * plantarse, doblar— y ésos viven en el panel, que `npm run verbos` ya vigila en
+     * los treinta y cinco. Se declara `null` a propósito, para que la ausencia sea
+     * una decisión escrita y no un olvido: un hueco en blanco se lee igual que un
+     * despiste, y esta prueba avisa de los despistes.
+     */
+    blackjack: null,
 };
 
 /**
@@ -155,10 +163,31 @@ for (const juego of SABE_SER_INVITADO) {
             try { return window.ALISA_PROTOHUB.state(motor?.gameId ?? window.ALISA_JUEGO); }
             catch { return null; }
         })();
+        /**
+         * ⚠️ CUÁNTAS MALLAS SON POCAS LO DICE EL SUSTRATO, NO UN NÚMERO MÍO.
+         *
+         * Aquí había un `< 10` escrito a ojo, y era un número de TABLERO: el ajedrez
+         * dibuja noventa y siete. El blackjack reparte cuatro cartas y con eso está
+         * entero, así que la prueba lo puso en rojo por «sólo 4 mallas» sobre un
+         * blackjack perfecto. La misma sobreaproximación de siempre: una constante
+         * elegida mirando un caso y aplicada a todos.
+         *
+         * Lo que hay que exigir ya está publicado: cada cosa que el sustrato declara
+         * VISIBLE tiene que tener su malla. Es literalmente la tesis del banco —lo que
+         * se dibuja sale del sustrato— usada como criterio.
+         */
+        const sus = (() => {
+            try { return window.ALISA_PROTOHUB.sustrato(motor?.gameId ?? window.ALISA_JUEGO); }
+            catch { return null; }
+        })();
+        const esperadas = (sus?.piezas?.length ?? 0)
+            + (sus?.zonas ?? []).reduce((n, z) => n + (z.items?.length ?? 0), 0);
+
         return {
             invitado: !!motor?.invitado,
             sinRenderPropio: !motor?.renderer,
             mallas,
+            esperadas,
             jugadas: (st?.legal_moves ?? []).length,
         };
     });
@@ -175,8 +204,12 @@ for (const juego of SABE_SER_INVITADO) {
     if (errs.length) mal.push(errs[0]);
     if (!m.invitado) mal.push('el motor no se reconoce invitado');
     if (!m.sinRenderPropio) mal.push('se ha montado su propio renderizador');
-    // Diez es el mínimo de cualquier tablero dibujado; por debajo está vacío.
-    if (m.mallas < 10) mal.push(`sólo ${m.mallas} mallas en la mesa`);
+    // Todo lo que el sustrato declara visible tiene que estar dibujado. Y algo tiene
+    // que haber: un sustrato que no declarara nada dejaría pasar una mesa vacía.
+    const suelo = Math.max(1, m.esperadas);
+    if (m.mallas < suelo) {
+        mal.push(`${m.mallas} mallas para ${m.esperadas} cosas que el sustrato declara visibles`);
+    }
     if (!m.jugadas) mal.push('sin jugadas legales: hay decorado pero no partida');
 
     if (mal.length) {
@@ -184,14 +217,17 @@ for (const juego of SABE_SER_INVITADO) {
         console.log(`  ✗ ${juego.padEnd(10)} ${VISUALIZADOR[juego]} — ${mal.join(' · ')}`);
     } else {
         console.log(`  ✓ ${juego.padEnd(10)} ${VISUALIZADOR[juego]} — `
-                  + `${m.mallas} mallas en la mesa · ${m.jugadas} jugadas`
+                  + `${m.mallas} mallas para ${m.esperadas} visibles · ${m.jugadas} jugadas`
                   + (jugable ? ' · se juega con el ratón' : ''));
     }
     // Un juego sin punto declarado se aprueba sin haber sido pinchado, y eso hay que
     // decirlo: una cobertura que no se nombra se lee como cobertura completa.
-    if (!punto) {
+    if (!punto && !(juego in DONDE_PINCHAR)) {
         console.log(`    · ${juego}: sin punto en \`DONDE_PINCHAR\`, así que nadie ha`
                   + ` comprobado que se pueda jugar con el ratón`);
+    } else if (!punto) {
+        console.log(`    · ${juego}: se juega con verbos, no tocando la mesa`
+                  + ` — eso lo vigila \`npm run verbos\``);
     }
     if (jugable === null && punto) {
         console.log(`    · no se ha podido pinchar: la sonda no encontró el motor`);
