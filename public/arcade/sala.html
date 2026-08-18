@@ -233,9 +233,30 @@ window.ALISA_ANFITRION = { grupo, escena, camara, lienzo: render.domElement };
 
 const reglas = await cargarReglas(juego, {});
 const hub = new ProtoHub().registrar(juego, reglas);
+
+/**
+ * ⚠️ Y TAMBIÉN CON EL NOMBRE QUE USE SU VISUALIZADOR, SI ES OTRO.
+ *
+ * `chess_visualizer.js` construye su motor con `gameId: 'chess'` y le pregunta al hub
+ * por ese nombre; las reglas se llaman `ajedrez`. En su página propia eso lo resuelve
+ * `montarMesa({ juego:'ajedrez', idJuego:'chess' })`, que registra las reglas bajo el
+ * id que el visualizador espera. Aquí no había nada equivalente, así que el ajedrez
+ * de esta sala dibujaba su tablero y se quedaba «SIN CONEXIÓN» y sin piezas: la
+ * partida existía, sólo que con otro nombre.
+ *
+ * Se registra bajo los DOS. No es un alias cosmético: son la misma partida, el mismo
+ * objeto de reglas, así que quien pregunte por cualquiera de los dos ve lo mismo.
+ */
+const { ALIAS_DE_VISUALIZADOR } = await import('./js/visualizadores.js');
+const otroId = ALIAS_DE_VISUALIZADOR[juego];
+if (otroId && otroId !== juego) hub.registrar(otroId, reglas);
+
 window.ALISA_PROTOHUB = hub;
 const semilla = Number(p.get('semilla'));
-if (Number.isFinite(semilla) && semilla > 0) hub.reset(juego, { semilla, seed: semilla });
+if (Number.isFinite(semilla) && semilla > 0) {
+    hub.reset(juego, { semilla, seed: semilla });
+    if (otroId && otroId !== juego) hub.reset(otroId, { semilla, seed: semilla });
+}
 
 /**
  * ⚠️ LA ESCALA LA MANDA LA CARTA, NO LA MESA.
@@ -523,7 +544,37 @@ function ajustar() {
  * No hay lista de qué juego usa qué. El dato ya está en lo que cada juego
  * publica; sólo había que mirarlo.
  */
-if (deCartas) {
+/**
+ * ⚠️ Y SI EL JUEGO TIENE VISUALIZADOR PROPIO, SE USA EL SUYO.
+ *
+ * Aquí se montaba siempre la mesa genérica, así que el ajedrez de esta sala salía
+ * con discos y hexágonos mientras `chess_visualizer.js` estaba en la misma carpeta
+ * sin usar. La lista no se copia: es la de `visualizadores.js`, la misma que lee
+ * `montarMesa`. Sentarse a una mesa y abrir la página del juego tienen que dibujar
+ * lo mismo, y con dos listas eso dura hasta que alguien toque una.
+ *
+ * Los visualizadores son scripts clásicos: construyen su motor solos y hablan por
+ * globales. Como `window.ALISA_ANFITRION` ya está puesto, los dos motores lo
+ * recogen del `window` y entran de invitados sin que haya que decírselo.
+ */
+const { VISUALIZADOR, SABE_SER_INVITADO } = await import('./js/visualizadores.js');
+// Sólo los verificados. Los demás siguen con la mesa genérica, que es lo que hacían
+// antes y funcionaba: enchufarlos todos de golpe dejó el póker con un tapete de
+// tamaño de sala y el mancala muerto, o sea peor que no haberlos tocado.
+const propio = SABE_SER_INVITADO.has(juego) ? VISUALIZADOR[juego] : null;
+if (propio) {
+    if (deCartas) await import('./js/arcade_mats.js').catch(() => {});
+    for (const s of [deCartas ? 'js/SovereignCardEngine.js' : 'js/SovereignBoardEngine.js',
+                     `js/${propio}`]) {
+        await new Promise((listo, falla) => {
+            const e = document.createElement('script');
+            e.src = s;
+            e.onload = listo;
+            e.onerror = () => falla(new Error(`no se pudo cargar ${s}`));
+            document.head.appendChild(e);
+        });
+    }
+} else if (deCartas) {
     await import('./js/arcade_mats.js').catch(() => {});
     await new Promise((listo, falla) => {
         const s = document.createElement('script');

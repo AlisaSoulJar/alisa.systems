@@ -14,7 +14,33 @@ class SovereignBoardEngine {
         this.onStateSync = config.onStateSync || function(data) {};
         this.onFrame = config.onFrame || function(time) {};
         this.onResize = config.onResize || function() {};
-        
+
+        /**
+         * ⚠️ INVITADO EN VEZ DE DUEÑO: `config.anfitrion`.
+         *
+         * Es exactamente el mismo cambio que ya tenía `SovereignCardEngine`, y por
+         * eso está escrito igual: allí lo llevó a que la Sala del Huevo pudiera
+         * enseñar una partida de cartas DENTRO de su propia mesa en vez de
+         * abducirte a un iframe. Aquí faltaba, y la consecuencia era visible: en la
+         * sala de bolsillo los seis juegos de tablero los dibujaba el pintor
+         * universal, así que el ajedrez salía con discos y hexágonos. Las piezas de
+         * ajedrez existían —`chess_visualizer.js`— pero sólo sabían vivir en una
+         * página entera para ellas solas.
+         *
+         * Con `anfitrion: { grupo, escena, camara }` este motor no monta escena, ni
+         * cámara, ni renderer, ni bucle: cuelga lo que dibuje del grupo que le den.
+         * Los once visualizadores propios no se enteran, porque todos reciben la
+         * escena por parámetro en `onInit3D(scene, camera, renderer)` y lo que se
+         * les pasa es el grupo.
+         *
+         * ⚠️ SALVO LOS QUE MIRAN `renderer`. De invitado no hay, así que llega
+         * `null`; el que lo use tiene que aguantarlo. Se comprueba con
+         * `npm run invitados`, que abre los diecisiete y mira si dibujan.
+         */
+        this.anfitrion = config.anfitrion ?? (typeof window !== 'undefined'
+            ? (window.ALISA_ANFITRION ?? null) : null);
+        this.invitado = !!this.anfitrion;
+
         // Agent UI State
         this.autoMode = false;
         // ⚠️ LOS ASIENTOS SE INICIALIZAN AQUÍ, NO EN EL HUD, Y HAY MOTIVO.
@@ -63,9 +89,13 @@ class SovereignBoardEngine {
          */
         if (typeof window !== 'undefined' && window.ALISA_GESTOS) {
             const enganchar = () => {
-                if (!this.renderer?.domElement || !this.camera) return false;
+                // De invitado no hay renderizador propio: el lienzo es el de la sala,
+                // que es la dueña del bucle. Sin esto el gesto no se engancha nunca y
+                // el reloj de abajo gira cuarenta veces para nada.
+                const lienzo = this.anfitrion?.lienzo ?? this.renderer?.domElement;
+                if (!lienzo || !this.camera) return false;
                 window.ALISA_GESTOS.deslizarParaMoverse({
-                    lienzo: this.renderer.domElement,
+                    lienzo,
                     camara: this.camera,
                     legales: () => this.currentLegalMoves ?? [],
                     enviar: (m) => this.sendMove(m),
@@ -137,7 +167,58 @@ class SovereignBoardEngine {
     // ═══════════════════════════════════════════════════════════════════
     // THREE.JS CORE
     // ═══════════════════════════════════════════════════════════════════
+    /**
+     * El lienzo sobre el que ocurren los gestos, sea de quien sea.
+     *
+     * Los visualizadores propios escribían `engine.renderer.domElement` en cinco o
+     * seis sitios cada uno. De invitado no hay renderizador —lo tiene la sala— así
+     * que eso es `undefined` y el visualizador muere al enganchar sus punteros. Un
+     * solo sitio que sepa contestar evita cuatro copias de la misma condición, que
+     * es como se consigue que tres se arreglen y una no.
+     */
+    get lienzo() {
+        return this.anfitrion?.lienzo ?? this.renderer?.domElement ?? null;
+    }
+
+    /**
+     * Los controles de órbita, sólo si son nuestros.
+     *
+     * De invitado la sala ya tiene los suyos apuntando a la mesa. Montar unos
+     * segundos encima significa dos objetos escuchando la misma rueda y peleándose
+     * por la misma cámara: la vista da tirones y no hay error que lo diga.
+     */
+    montarControles(camara = this.camera) {
+        if (this.invitado || !camara || !this.lienzo) return null;
+        this.controls = new THREE.OrbitControls(camara, this.lienzo);
+        return this.controls;
+    }
+
     init3D() {
+        /**
+         * De invitado no se monta nada: ni escena, ni cámara, ni renderer, ni bucle.
+         * Se dibuja en el grupo que da el anfitrión y él sigue mandando en su sala.
+         *
+         * `this.scene` apunta al GRUPO, no a la escena, por el mismo motivo que en la
+         * mesa de cartas: es lo que los visualizadores usan para colgar sus piezas, y
+         * colgarlas de la escena las dejaría fuera del grupo — sin heredar su posición
+         * ni su escala, o sea sueltas por la sala a tamaño de sala.
+         *
+         * Y NO se pone niebla. La de aquí (`FogExp2` a 0,025) está calculada para una
+         * página entera donde el tablero mide dos metros; dentro de una sala de
+         * bolsillo, donde mide uno y pico y hay paredes de verdad a once metros,
+         * teñiría la partida del color del fondo de otra escena.
+         */
+        if (this.invitado) {
+            const { grupo, escena, camara } = this.anfitrion;
+            this.scene = grupo;
+            this.escenaReal = escena ?? grupo;
+            this.camera = camara ?? null;
+            this.renderer = null;
+            if (typeof window !== 'undefined') window.ALISA_MOTOR = this;
+            this.onInit3D(this.scene, this.camera, null);
+            return;   // ni `animate()`: el anfitrión ya tiene su bucle
+        }
+
         const container = document.getElementById('canvas-container');
         if (!container) return;
 

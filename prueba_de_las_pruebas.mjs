@@ -198,6 +198,36 @@ const SABOTAJES = [
         vigila: 'que los juegos de cartas lean el catálogo que se les indica',
     },
     {
+        nombre: 'visualizadores',
+        corre: 'node prueba_visualizadores.mjs',
+        fichero: 'public/arcade/chess.html',
+        // La novena lista paralela de este proyecto: el mapa y la página diciendo
+        // cosas distintas sobre con qué se dibuja el ajedrez. Se separa a mano una y
+        // tiene que saltar.
+        de: "visualizador: 'chess_visualizer.js'",
+        a: "visualizador: 'mancala_visualizer.js'",
+        vigila: 'que el mapa de visualizadores y las páginas no se separen',
+    },
+    {
+        nombre: 'invitados',
+        corre: 'node prueba_invitados.mjs',
+        fichero: 'public/arcade/js/visualizadores.js',
+        /**
+         * Se le quita el alias con el que `chess_visualizer.js` le pregunta al hub.
+         * Es el fallo que tuvo de verdad: dibujaba su tablero perfecto y se quedaba
+         * «SIN CONEXIÓN» y sin piezas, porque preguntaba por `chess` y la sala tenía
+         * registrado `ajedrez`.
+         *
+         * Tenía que ser ÉSTE y no «que no cargue el fichero»: si el visualizador no
+         * carga, la sala cae a la mesa genérica y se ve una partida perfectamente
+         * jugable — la prueba pasaría. Lo que hay que cazar es el decorado: cuando
+         * está todo dibujado y no hay partida detrás.
+         */
+        de: "    ajedrez: 'chess',",
+        a: "",
+        vigila: 'que un visualizador invitado tenga partida y no sólo decorado',
+    },
+    {
         nombre: 'figuras',
         corre: 'node prueba_figuras.mjs',
         fichero: 'public/arcade/js/SovereignCardEngine.js',

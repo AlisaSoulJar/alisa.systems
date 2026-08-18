@@ -98,10 +98,26 @@ function encuadrar(camera) {
 const engine = new SovereignBoardEngine({
     gameId: 'chess',
     onInit3D: function(scene, camera, renderer) {
-        encuadrar(camera);
-
-        // Controls
-        engine.controls = new THREE.OrbitControls(camera, renderer.domElement);
+        /**
+         * ⚠️ DE INVITADO NO SE TOCA LA CÁMARA NI SE MONTAN CONTROLES.
+         *
+         * En la sala de bolsillo este visualizador dibuja DENTRO de la mesa de otro:
+         * la cámara es la suya, encuadrada sobre su mesa, y sus controles ya están
+         * escuchando la rueda. `encuadrar` la mandaría a doce metros de altura para
+         * ver un tablero que aquí mide metro y pico, y unos controles nuestros encima
+         * de los suyos son dos objetos peleándose por la misma cámara: la vista da
+         * tirones y no hay ningún error que lo diga.
+         *
+         * Lo que sí se hace igual es TODO LO DEMÁS —luces, tablero, piezas—, porque
+         * cuelga de `scene`, que de invitado es el grupo de la sala. Las piezas de
+         * ajedrez existían desde siempre; lo único que no sabían era vivir dentro de
+         * la escena de otro.
+         */
+        if (!engine.invitado) {
+            encuadrar(camera);
+            engine.montarControles(camera);
+        }
+        if (engine.controls) {
         engine.controls.enableDamping = true;
         engine.controls.dampingFactor = 0.08;
         engine.controls.maxPolarAngle = Math.PI / 2.1;
@@ -118,6 +134,7 @@ const engine = new SovereignBoardEngine({
          * mandaba. El tope sale ahora del encuadre y no al revés.
          */
         engine.controls.maxDistance = Math.max(20, camera.position.length() * 1.2);
+        }
 
         /**
          * ═══════════════════════════════════════════════════════════════════
@@ -148,23 +165,38 @@ const engine = new SovereignBoardEngine({
          *
          * Probado en vivo antes de escribirlo, comparando las dos capturas.
          */
-        scene.add(new THREE.AmbientLight(0xffffff, 1.1));
+        /**
+         * ⚠️ DE INVITADO NO SE ENCIENDE NADA. LA LUZ ES DE LA SALA.
+         *
+         * Estas cuatro luces están pensadas para una escena vacía donde lo único que
+         * hay es un tablero. Dentro de la sala de bolsillo iluminan TODO —la mesa, el
+         * muro, el suelo, los taburetes— y además a una escala que no es la suya: el
+         * foco a doce metros de altura cae fuera de una habitación de once.
+         *
+         * Se vio y no hay que discutirlo: al enchufarlas, el cuarto blanco de la sala
+         * se puso marrón y las piezas blancas se lavaron contra la tapa. Una luz
+         * añadida a la escena de otro no es un detalle del invitado; es repintarle la
+         * casa. La sala ya tiene su hemisférica y su foco, calculados para su tamaño.
+         */
+        if (!engine.invitado) {
+            scene.add(new THREE.AmbientLight(0xffffff, 1.1));
 
-        const keyLight = new THREE.SpotLight(0xfff4e0, 2.2);
-        keyLight.position.set(-6, 12, 6);
-        keyLight.angle = Math.PI / 4;
-        keyLight.penumbra = 0.6;
-        keyLight.castShadow = true;
-        scene.add(keyLight);
+            const keyLight = new THREE.SpotLight(0xfff4e0, 2.2);
+            keyLight.position.set(-6, 12, 6);
+            keyLight.angle = Math.PI / 4;
+            keyLight.penumbra = 0.6;
+            keyLight.castShadow = true;
+            scene.add(keyLight);
 
-        const fillLight = new THREE.SpotLight(0x4fc3f7, 0.5);
-        fillLight.position.set(6, 10, -6);
-        fillLight.penumbra = 0.8;
-        scene.add(fillLight);
+            const fillLight = new THREE.SpotLight(0x4fc3f7, 0.5);
+            fillLight.position.set(6, 10, -6);
+            fillLight.penumbra = 0.8;
+            scene.add(fillLight);
 
-        const rimLight = new THREE.PointLight(0xff4081, 0.25);
-        rimLight.position.set(0, 3, -8);
-        scene.add(rimLight);
+            const rimLight = new THREE.PointLight(0xff4081, 0.25);
+            rimLight.position.set(0, 3, -8);
+            scene.add(rimLight);
+        }
 
         // Build scene
         scene.add(boardGroup);
@@ -181,7 +213,9 @@ const engine = new SovereignBoardEngine({
     // Y al girar el teléfono. Encuadrar sólo al arrancar deja el tablero fuera en cuanto
     // alguien pasa de vertical a horizontal — que es justo lo que hace quien no ve bien.
     onResize: function() {
-        if (!engine.camera) return;
+        // De invitado la cámara es de la sala y ella la reencuadra: tocarla aquí le
+        // desharía el encuadre cada vez que alguien gire el teléfono.
+        if (!engine.camera || engine.invitado) return;
         encuadrar(engine.camera);
         // Y el tope de los controles con él, o al girar el teléfono volverían a recortar.
         if (engine.controls) engine.controls.maxDistance = Math.max(20, engine.camera.position.length() * 1.2);
@@ -823,7 +857,9 @@ function alSoltar(ev) {
     pulsadoEn = null;
     if (arrastre > 5) return;                  // estaba girando la cámara
 
-    const rect = engine.renderer.domElement.getBoundingClientRect();
+    // `engine.lienzo` y no `engine.renderer.domElement`: de invitado el renderizador
+    // es de la sala, y ahí ese camino es `undefined`.
+    const rect = engine.lienzo.getBoundingClientRect();
     const raton = new THREE.Vector2(
         ((ev.clientX - rect.left) / rect.width) * 2 - 1,
         -((ev.clientY - rect.top) / rect.height) * 2 + 1
@@ -873,5 +909,8 @@ function alSoltar(ev) {
 // líneas dejaba el juego entero muerto.
 engine.start();
 
-engine.renderer.domElement.addEventListener('pointerdown', alPulsar);
-engine.renderer.domElement.addEventListener('pointerup', alSoltar);
+// De invitado el lienzo es el de la sala, y por eso se pregunta al motor en vez de
+// ir por `renderer`: es el mismo motivo del comentario de arriba llevado un paso
+// más allá — no sólo «cuándo existe» sino «de quién es».
+engine.lienzo.addEventListener('pointerdown', alPulsar);
+engine.lienzo.addEventListener('pointerup', alSoltar);

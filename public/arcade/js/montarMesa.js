@@ -51,7 +51,7 @@ import { JUEGOS, TITULOS, cargarReglas } from './protohub/rules/index.js';
  * `prueba_version.mjs` comprueba que corresponde a lo que hay en disco y, si no,
  * dice el valor que toca. No hay que acordarse: hay que hacer caso a la prueba.
  */
-const VERSION = '017f602b';
+const VERSION = 'b99688f4';
 
 /**
  * Lo que toda página de tablero necesitaba y repetía. En orden.
@@ -339,7 +339,18 @@ export async function montarMesa(cfg) {
      * si reparte cartas, la mesa de casino; si no, la de tablero. Un `visualizador`
      * declarado sigue mandando, para los que tienen uno a medida y bonito.
      */
-    await cargar(`js/${visualizador ?? (deCartas ? 'mesa_cartas.mjs' : 'mesa_tablero.mjs')}`);
+    /**
+     * ⚠️ Y SI LA PÁGINA NO LO DICE, LO DICE EL JUEGO.
+     *
+     * `VISUALIZADOR` es el mismo dato que estas páginas venían pasando a mano, pero
+     * puesto donde pertenece: en el juego, no en una de las páginas donde se le mira.
+     * Lo que declare la página sigue mandando —no se rompe ninguna— y quien no declare
+     * nada hereda el suyo. La sala de bolsillo lee ESTE mapa, así que sentarse a una
+     * mesa y abrir la página del juego dibujan lo mismo, que es lo que no pasaba.
+     */
+    const { VISUALIZADOR } = await import('./visualizadores.js');
+    await cargar(`js/${visualizador ?? VISUALIZADOR[juego]
+        ?? (deCartas ? 'mesa_cartas.mjs' : 'mesa_tablero.mjs')}`);
 
     // Pantalla completa y esconder el panel, en las treinta y cinco. Va DESPUÉS del
     // visualizador porque uno de los botones necesita el panel, y espera a que
