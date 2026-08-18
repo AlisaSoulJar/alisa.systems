@@ -73,20 +73,31 @@ const DONDE_PINCHAR = {
      * y la casilla es `letra[file] + (8 - rank)`. Así que e2 es (0.5, 2.5) y e4 es
      * (0.5, 0.5).
      *
-     * ⚠️ Y A RAS DE TABLERO, `y = 0.02`. Aquí perdí tres intentos.
+     * ⚠️ CADA CLIC A SU ALTURA, Y NO ES CAPRICHO: SON DOS PROBLEMAS DISTINTOS.
      *
-     * Apuntaba a `y = 0.6`, la altura de una pieza. Para coger el peón vale —el rayo
-     * choca con la pieza— pero para SOLTAR en una casilla vacía el rayo atraviesa ese
-     * punto y sigue hasta la madera, que está más lejos: con la cámara a unos 40°,
-     * seiscientos milímetros de altura son setenta centímetros de más en el tablero,
-     * o sea una casilla entera. Se soltaba en e5 queriendo e4, e5 no es legal desde
-     * e2, y no pasaba nada.
+     * COGER la pieza: hay que apuntar A LA PIEZA (`y = 0.6`). Si se apunta al suelo de
+     * su casilla, el rayo pasa rozando la fila de delante y choca con lo que haya de
+     * pie ahí — medido: apuntando al suelo de e2 el rayo choca con `p:k:0`, el REY de
+     * e1, que está más cerca de la cámara y es alto. e1 no tiene jugadas, así que no
+     * se seleccionaba nada.
      *
-     * Y de paso: cambié DOS COSAS A LA VEZ —el número de clics y el signo de la z—
-     * así que la primera corrección siguió en rojo por otro motivo y me costó otra
-     * vuelta. Un cambio cada vez, o no se sabe cuál era.
+     * SOLTAR en una casilla vacía: hay que apuntar al SUELO (`y = 0.02`). Si se apunta
+     * a media altura, el rayo atraviesa ese punto y sigue hasta la madera, que está
+     * más lejos: con la cámara a unos 40°, sesenta centímetros de altura son setenta
+     * de más sobre el tablero, o sea una casilla entera. Se soltaba en e5 queriendo e4.
+     *
+     * ⚠️ Y ESTO ES LO QUE ME COSTÓ CARO: probé `0.6, 0.6` y `0.02, 0.02`, las dos
+     * combinaciones homogéneas, y las dos fallan por motivos OPUESTOS. Nunca probé la
+     * mezcla, que es la buena. Con las dos en rojo di por hecho que el fallo era del
+     * juego y se lo conté así a Oscar y al mensaje del commit. No lo era: el ajedrez
+     * se juega perfectamente con el ratón en los dos sitios — `sendMove: [e2e4]` y la
+     * casa contesta `a7a6`.
+     *
+     * Lo cazó mirar lo mismo de tres formas a la vez: qué casilla calcula la cuenta
+     * del propio visualizador, si `sendMove` llega a llamarse, y si aparecen las
+     * marcas de destino. Una sola de las tres me habría dejado donde estaba.
      */
-    ajedrez: { clics: [[0.5, 0.02, 2.5], [0.5, 0.02, 0.5]], testigo: 'fen' },
+    ajedrez: { clics: [[0.5, 0.6, 2.5], [0.5, 0.02, 0.5]], testigo: 'fen' },
     /**
      * El blackjack no se juega tocando la mesa: se juega con verbos —pedir,
      * plantarse, doblar— y ésos viven en el panel, que `npm run verbos` ya vigila en

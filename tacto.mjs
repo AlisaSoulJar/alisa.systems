@@ -295,6 +295,58 @@ for (const juego of juegos) {
                 if (j && j !== 'move') window.__tocadas.push(String(j));
                 return orig(juego, accion);      // ← y se deja jugar
             };
+
+            /**
+             * ⚠️ Y TAMBIÉN EL MOTOR, PORQUE NO TODOS PASAN POR ESTA PUERTA.
+             *
+             * Esto espiaba SÓLO `hub.move`. La mesa genérica llama ahí, así que damas,
+             * xiangqi y reversi se medían bien. Pero `SovereignBoardEngine.sendMove`
+             * manda por `this.backend.move(payload)` —un adaptador que se quedó con su
+             * propia referencia al hub cuando se construyó—, así que cambiar `hub.move`
+             * después no le afecta. Los juegos con visualizador propio pasaban por
+             * delante de la grabadora sin que ésta los viera.
+             *
+             * Resultado publicado en las fichas: «ajedrez: 0 de 20 jugadas llegan
+             * tocando el tablero» y lo mismo en mancala. Las dos son mentira. El
+             * ajedrez mueve perfectamente —medido aparte envolviendo `sendMove`:
+             * `[e2e4]` y la casa contesta `a7a6`— y el mancala también.
+             *
+             * O sea que el cero no decía «no responde»: decía «no miro por ahí». Es la
+             * cuarta forma distinta de mentir que le encuentro hoy a un instrumento de
+             * esta casa, y la más silenciosa: no falla, no avisa, y publica un número.
+             */
+            /**
+             * ⚠️⚠️ Y ESTO NO ARREGLÓ EL CERO DEL AJEDREZ. QUEDA ABIERTO.
+             *
+             * Tres cambios en esta pasada —escuchar también al motor, comprobar con un
+             * rayo que se apunta donde se cree, y calcular el destino DESPUÉS de coger
+             * la pieza— y la medida del ajedrez sigue en 0 de 20, con damas, xiangqi y
+             * reversi exactamente igual que antes. Por la regla de esta casa, si mueves
+             * algo y la medida no cambia, eso no era la causa.
+             *
+             * Los tres se quedan porque cada uno está justificado por lo que se vio
+             * —el ajedrez manda por `backend.move` y aquí no se miraba; el destino
+             * `acierta: true` sólo después del primer toque— pero NINGUNO explica el
+             * cero. Falta al menos una causa.
+             *
+             * Lo que sí está medido, por tres caminos independientes y en las dos
+             * páginas: el ajedrez SE JUEGA con el ratón y con el dedo. Envolviendo
+             * `sendMove` a mano sale `[e2e4]` y la casa contesta `a7a6`.
+             *
+             * O sea que el «no: ajedrez» que publica esta prueba —y que sale en su
+             * ficha— es FALSO y se sabe. No se tapa a mano: taparlo sería exactamente
+             * la mentira que esta prueba existe para no contar. Se deja el número, se
+             * deja escrito aquí que está mal, y se busca la causa cuando toque.
+             */
+            const motor = window.ALISA_MOTOR;
+            if (motor && typeof motor.sendMove === 'function' && !motor.__espiado) {
+                motor.__espiado = true;
+                const suyo = motor.sendMove.bind(motor);
+                motor.sendMove = (m) => {
+                    if (m) window.__tocadas.push(String(m));
+                    return suyo(m);
+                };
+            }
         });
 
         const MUESTRA = 5;
@@ -537,13 +589,127 @@ for (const juego of juegos) {
                 c.escena.traverse((o) => { if (!r && o.userData?.rejillaMundo) r = { grupo: o, m: o.userData.rejillaMundo }; });
                 return r;
             };
+            /**
+             * ⚠️ APUNTAR AL SUELO DE UNA CASILLA NO ES APUNTAR A LA CASILLA.
+             *
+             * Esto devolvía el píxel del centro de la celda a la altura del tablero
+             * (`y = 0`). Parece lo correcto y falla en cuanto hay piezas de pie: el
+             * rayo hasta ese punto pasa rozando la fila de DELANTE, y si allí hay algo
+             * alto, choca con eso. Medido en el ajedrez: apuntando al suelo de e2 el
+             * rayo choca con `p:k:0`, el REY de e1 — que está más cerca de la cámara.
+             * e1 no tiene jugadas, así que no se seleccionaba nada y esta prueba
+             * publicaba «ajedrez: 0 de 20 jugadas llegan tocando el tablero».
+             *
+             * Es mentira. El ajedrez se juega perfectamente con el ratón y con el
+             * dedo: comprobado enviando los dos toques a la altura correcta,
+             * `sendMove: [e2e4]` y la casa contesta. Lo que estaba mal era la
+             * puntería de la sonda, no el juego.
+             *
+             * Ahora se apunta A LO QUE HAY: si alguna malla ocupa esa celda, al centro
+             * de esa malla; si no hay nada, al suelo, que para una casilla vacía es lo
+             * correcto. Es la distinción entre coger una pieza y soltarla en un hueco,
+             * y son dos gestos distintos aunque se escriban igual.
+             *
+             * ⚠️ Y NO SE PUEDE ARREGLAR SÓLO SUBIENDO LA ALTURA: apuntar alto en una
+             * casilla VACÍA hace que el rayo atraviese ese punto y siga hasta la
+             * madera, que cae una casilla más allá. Las dos correcciones homogéneas
+             * fallan por motivos opuestos; hay que mirar si hay pieza.
+             */
             window.__CASILLA = (col, fil) => {
                 const r = conRejilla();
                 if (!r) return null;
-                const p = new THREE.Vector3(col * r.m.lado + r.m.dx, r.m.y ?? 0, fil * r.m.lado + r.m.dz);
-                r.grupo.localToWorld(p);
-                const s = aPantalla(p);
-                return { col, fil, x: Math.round(s.x), y: Math.round(s.y), delante: s.delante };
+                const suelo = new THREE.Vector3(
+                    col * r.m.lado + r.m.dx, r.m.y ?? 0, fil * r.m.lado + r.m.dz);
+                r.grupo.localToWorld(suelo);
+
+                // ¿Hay algo de pie en esta celda? Se busca la malla cuyo centro caiga
+                // dentro de media casilla, y se apunta a su centro real.
+                /**
+                 * ⚠️ SE RECORRE LA ESCENA, NO EL GRUPO DE LA REJILLA.
+                 *
+                 * Mi primera versión recorría `r.grupo`, que es quien publica
+                 * `rejillaMundo` — o sea el TABLERO. En el ajedrez las piezas cuelgan
+                 * de `piecesGroup`, que es HERMANO del tablero y no hijo, así que no
+                 * encontraba ninguna y el arreglo no arreglaba nada: seguía apuntando
+                 * al suelo y seguía saliendo 0 de 20. Di por sabida la estructura en
+                 * vez de preguntarla, otra vez.
+                 */
+                let encima = null, cerca = Infinity;
+                const c2 = new THREE.Vector3(), caja2 = new THREE.Box3();
+                c.escena.traverse(o => {
+                    if (!o.isMesh || !o.visible) return;
+                    caja2.setFromObject(o);
+                    if (caja2.isEmpty()) return;
+                    caja2.getCenter(c2);
+                    const d = Math.hypot(c2.x - suelo.x, c2.z - suelo.z);
+                    // Media casilla en unidades de MUNDO: `lado` es local, así que se
+                    // escala con el grupo o el umbral no significa nada.
+                    const lado = r.m.lado * (r.grupo.getWorldScale(new THREE.Vector3()).x || 1);
+                    if (d < lado * 0.4 && d < cerca && c2.y > suelo.y + 1e-4) {
+                        cerca = d; encima = c2.clone();
+                    }
+                });
+
+                /**
+                 * ⚠️ Y DESPUÉS SE COMPRUEBA QUE SE ESTÁ APUNTANDO DONDE SE CREE.
+                 *
+                 * Calcular el píxel de una casilla no es apuntar a esa casilla. El rayo
+                 * desde la cámara hasta el suelo de la celda pasa por encima de las
+                 * celdas que tiene DELANTE, y si en alguna hay algo de pie, choca con
+                 * eso. Medido en el ajedrez: para la jugada `a2a3`, el toque de destino
+                 * sobre el suelo de a3 chocaba con el peón de a2 — se veía porque el
+                 * primer toque seleccionaba (aparecían las dos marcas de destino) y el
+                 * segundo las borraba sin mover nada.
+                 *
+                 * Ningún ajuste de altura arregla esto para todos los casos: apuntar
+                 * alto falla en las casillas vacías y apuntar bajo falla en las tapadas.
+                 * Lo que sí vale es MIRAR: se lanza el rayo desde el píxel candidato y
+                 * se pregunta en qué celda cae. Si no es la que se quería, se prueban
+                 * otros puntos dentro de la misma celda —empezando por el borde más
+                 * cercano a la cámara, que es el que menos vecinos tiene delante—.
+                 *
+                 * Y si ninguno acierta, se dice (`acierta: false`) en vez de tocar a
+                 * ciegas. Un toque que cae en otra casilla no es una medida floja: es
+                 * una medida de otra cosa.
+                 */
+                // Misma convención que `aPantalla`, que trabaja en coordenadas de
+                // VENTANA y no del lienzo. Mezclarlas desplaza el rayo lo que mida el
+                // margen, y entonces la comprobación mentiría igual que lo que arregla.
+                const aCelda = (px, py) => {
+                    rayo.setFromCamera(
+                        new THREE.Vector2((px / W) * 2 - 1, -(py / H) * 2 + 1), c.camara);
+                    const h = rayo.intersectObjects(c.escena.children, true)
+                        .filter(x => x.object.isMesh && x.object.visible);
+                    if (!h.length) return null;
+                    const q = r.grupo.worldToLocal(h[0].point.clone());
+                    return [Math.round((q.x - r.m.dx) / r.m.lado),
+                            Math.round((q.z - r.m.dz) / r.m.lado)];
+                };
+
+                // Candidatos: la pieza si la hay, el centro del suelo, y cuatro puntos
+                // dentro de la celda tirando hacia la cámara.
+                const haciaCamara = new THREE.Vector3()
+                    .subVectors(c.camara.position, suelo).setY(0).normalize();
+                const escala = r.grupo.getWorldScale(new THREE.Vector3()).x || 1;
+                const paso = r.m.lado * escala;
+                const candidatos = [];
+                if (encima) candidatos.push(encima);
+                candidatos.push(suelo);
+                for (const k of [0.3, 0.42, 0.15, -0.3]) {
+                    candidatos.push(suelo.clone().addScaledVector(haciaCamara, paso * k));
+                }
+
+                let mejor = null, acierta = false;
+                for (const punto of candidatos) {
+                    const s = aPantalla(punto);
+                    if (!s.delante) continue;
+                    if (!mejor) mejor = s;
+                    const cel = aCelda(s.x, s.y);
+                    if (cel && cel[0] === col && cel[1] === fil) { mejor = s; acierta = true; break; }
+                }
+                if (!mejor) return null;
+                return { col, fil, x: Math.round(mejor.x), y: Math.round(mejor.y),
+                         delante: mejor.delante, conPieza: !!encima, acierta };
             };
             window.__REJILLA = () => {
                 const r = conRejilla();
@@ -698,11 +864,31 @@ for (const juego of juegos) {
                     const fila = (n) => invF ? rej.filas - Number(n) : Number(n) - 1;
                     const col = (c) => invC ? rej.cols - 1 - c : c;
                     const a = await p.evaluate(([c, f]) => window.__CASILLA(c, f), [col(aCol(s[0])), fila(s[1])]);
-                    const b = await p.evaluate(([c, f]) => window.__CASILLA(c, f), [col(aCol(s[2])), fila(s[3])]);
-                    if (!a?.delante || !b?.delante) continue;
-                    if (a.y < bajoPanel || b.y < bajoPanel) continue;
+                    if (!a?.delante || a.y < bajoPanel) continue;
                     const antes = await p.evaluate(() => (window.__tocadas ?? []).length);
                     await modo.tocar(p, a.x, a.y);
+
+                    /**
+                     * ⚠️ EL DESTINO SE CALCULA DESPUÉS DE COGER LA PIEZA, NO ANTES.
+                     *
+                     * Este fichero ya aprendió esto con hearts —«una lista de
+                     * coordenadas calculada antes de tocar caduca en cuanto se toca»— y
+                     * aquí seguía calculando LAS DOS casillas antes del primer toque.
+                     *
+                     * No es sólo que caduque: es que el primer toque CAMBIA LA ESCENA.
+                     * El ajedrez, al coger una pieza, dibuja un cilindro sobre cada
+                     * casilla de destino. Antes de tocar, el suelo de a3 está tapado por
+                     * el peón de a2 —que está delante— y no hay ángulo desde el que
+                     * tocarlo; después, hay una marca encima que sí se puede tocar, y
+                     * que además es lo que tocaría una persona, porque es lo que el
+                     * juego le está enseñando.
+                     *
+                     * Medido: el primer toque seleccionaba (aparecían las dos marcas) y
+                     * el segundo las borraba sin mover. La sonda apuntaba a un sitio que
+                     * ya no era el sitio.
+                     */
+                    const b = await p.evaluate(([c, f]) => window.__CASILLA(c, f), [col(aCol(s[2])), fila(s[3])]);
+                    if (!b?.delante || b.y < bajoPanel) continue;
                     await modo.tocar(p, b.x, b.y);
                     const salida = await p.evaluate((n) => (window.__tocadas ?? []).slice(n), antes);
                     if (salida.includes(s)) { paresOk++; break; }
