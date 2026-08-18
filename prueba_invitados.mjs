@@ -95,6 +95,8 @@ const DONDE_PINCHAR = {
      * despiste, y esta prueba avisa de los despistes.
      */
     blackjack: null,
+    // Igual: el póker se juega con `check`, `raise`, `fold`.
+    poker: null,
 };
 
 /**

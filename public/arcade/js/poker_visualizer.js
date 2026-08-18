@@ -57,23 +57,42 @@ const engine = new SovereignCardEngine({
          * cinco cartas comunes y las dos propias quedan enteras dentro del
          * encuadre, con sitio de sobra.
          */
-        camera.position.set(0, 8.5, 4);
-        camera.lookAt(0, 0, 0);
+        /**
+         * ⚠️ DE INVITADO, NADA DE ESTO. Y ERA EL CASO QUE MÁS SE NOTABA.
+         *
+         * Todo el párrafo de arriba razona sobre una mesa que flota en la niebla sin
+         * suelo ni sala alrededor. Dentro de la sala de bolsillo hay las dos cosas,
+         * así que el razonamiento no aplica: la cámara la pone la sala y encuadra su
+         * mesa, no ésta.
+         *
+         * Y el óvalo mide VEINTE unidades de diámetro. Metido en un grupo escalado a
+         * metro y pico se come la habitación entera: eso fue literalmente lo que se
+         * midió al enchufar los cuatro visualizadores de golpe —«el póker puso un
+         * tapete de tamaño de sala y ninguna carta»—. Las cartas estaban; lo que no
+         * había era sitio para verlas.
+         *
+         * Dicho de otro modo: este fichero traía SU PROPIA MESA de casino, y la sala
+         * de bolsillo ya es una mesa de casino. Dos mesas en el mismo sitio.
+         */
+        if (!this.invitado) {
+            camera.position.set(0, 8.5, 4);
+            camera.lookAt(0, 0, 0);
 
-        // Procedural Casino Table
-        const tableGeo = new THREE.CylinderGeometry(10, 10, 0.4, 64);
-        tableGeo.scale(1, 1, 0.6); // Oval
-        const tableMat = new THREE.MeshStandardMaterial({ color: 0x073b18, roughness: 0.9 }); // Deep green felt
-        const table = new THREE.Mesh(tableGeo, tableMat);
-        table.position.y = -0.2;
-        table.receiveShadow = true;
-        scene.add(table);
-        
-        // Lighting
-        const spotLight = new THREE.SpotLight(0xffffff, 0.8, 0, Math.PI / 4, 0.5, 1);
-        spotLight.position.set(0, 6, 0);
-        spotLight.castShadow = true;
-        scene.add(spotLight);
+            // Procedural Casino Table
+            const tableGeo = new THREE.CylinderGeometry(10, 10, 0.4, 64);
+            tableGeo.scale(1, 1, 0.6); // Oval
+            const tableMat = new THREE.MeshStandardMaterial({ color: 0x073b18, roughness: 0.9 }); // Deep green felt
+            const table = new THREE.Mesh(tableGeo, tableMat);
+            table.position.y = -0.2;
+            table.receiveShadow = true;
+            scene.add(table);
+
+            // Lighting
+            const spotLight = new THREE.SpotLight(0xffffff, 0.8, 0, Math.PI / 4, 0.5, 1);
+            spotLight.position.set(0, 6, 0);
+            spotLight.castShadow = true;
+            scene.add(spotLight);
+        }
 
         // Load Court Assets for Hybrid Mode
         this.preloadCourtImages('/arcade/assets/cards/courts');

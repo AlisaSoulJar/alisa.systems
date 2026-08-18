@@ -78,4 +78,5 @@ export const SABE_SER_INVITADO = new Set([
     'ajedrez',
     'mancala',
     'blackjack',
+    'poker',
 ]);
