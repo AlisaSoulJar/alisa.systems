@@ -144,27 +144,32 @@ techo.position.y = 5;
 escena.add(techo);
 
 /**
- * ⚠️ LA MESA, COPIADA DE LA SALA DEL HUEVO. Mismos números a propósito:
- * tablero de radio 1,5 a 0,92 de alto, pie cónico y tres taburetes alrededor.
- * Cambiar cualquiera de ellos haría que la misma mesa se viera distinta según
- * por dónde entres, y entonces no sería la misma mesa.
+ * ⚠️ LA MESA YA NO SE COPIA: SE PIDE.
+ *
+ * Aquí estaban la tapa, el pie y los tres taburetes escritos a mano, con el
+ * comentario «copiada de la Sala del Huevo, mismos números a propósito». Los números
+ * lo estaban. Lo demás no, y se midió recorriendo las DOS escenas en vivo y
+ * comparando cilindro a cilindro:
+ *
+ *     pieza        aquí                      Sala del Huevo
+ *     tapa         #ffffff rough .85 met 0   #ffffff rough .55 met .06
+ *     pie          #1b232e rough .90 met 0   #1b232e rough .42 met .22
+ *     taburetes    #ffffff rough .85 met 0   #ffffff rough .55 met .06
+ *
+ * La geometría idéntica y el acabado distinto en las tres. Y ya había pasado antes:
+ * el comentario que estaba aquí contaba que los COLORES se habían desincronizado y
+ * que hubo que igualarlos a mano malla a malla. Se igualó lo que se comparó y quedó
+ * lo que no se miró, que es lo que siempre le pasa a una copia mantenida a mano.
+ *
+ * Ahora es una pieza —`protohub/mueble.js`, al lado de `tapete.js`, que ya se sacó
+ * por lo mismo— y las dos salas la piden. «Es la misma mesa» deja de ser una promesa
+ * que alguien mantiene y pasa a ser un hecho.
  */
-const mesa = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 1.5, 0.11, 40), matClara);
-mesa.position.y = 0.92;
-mesa.castShadow = mesa.receiveShadow = true;
-escena.add(mesa);
-
-const pie = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.34, 0.92, 20), matOscura);
-pie.position.y = 0.46;
-escena.add(pie);
-
-for (let i = 0; i < 3; i++) {
-    const t = (i / 3) * Math.PI * 2 + 0.7;
-    const tab = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.5, 16), matClara);
-    tab.position.set(Math.cos(t) * 2.5, 0.25, Math.sin(t) * 2.5);
-    tab.castShadow = true;
-    escena.add(tab);
-}
+const { crearMesaRedonda } = await import('./js/protohub/mueble.js');
+// El desfase de los taburetes: aquí fijo, porque sólo hay una mesa y no hay de qué
+// distinguirla. La Sala del Huevo le pasa su azar sembrado para que sus cinco no
+// salgan calcadas.
+escena.add(crearMesaRedonda(THREE, { angulo: 0.7 }));
 
 /**
  * Tapete: es lo que dice «aquí se juega», y además recibe la sombra de las cartas.
