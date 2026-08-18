@@ -62,7 +62,16 @@ function encuadrar(camera) {
 const engine = new SovereignBoardEngine({
     gameId: 'mancala',
     onInit3D: function(scene, camera, renderer) {
-        encuadrar(camera);
+        /**
+         * ⚠️ DE INVITADO LA CÁMARA Y LA LUZ SON DE LA SALA.
+         *
+         * Es el mismo trato que ya tiene `chess_visualizer.js` y por el mismo motivo:
+         * dentro de la sala de bolsillo esto dibuja sobre la mesa de otro. `encuadrar`
+         * mandaría la cámara a la altura que hace falta para ver un tablero de dos
+         * metros cuando aquí mide poco más de uno, y unos controles nuestros encima de
+         * los suyos son dos objetos peleándose por la misma cámara.
+         */
+        if (!engine.invitado) encuadrar(camera);
 
         // ⚠️ MANCALA ES EL RARO, Y POR ESO ENCAJA IGUAL.
         // Sus jugadas no son coordenadas sino el ÍNDICE del hoyo: `0`…`5`. Aun
@@ -79,17 +88,21 @@ const engine = new SovereignBoardEngine({
                 nombrar: (c) => String(c),
             });
         });
-        camera.lookAt(0, 0, 0);
+        if (!engine.invitado) {
+            camera.lookAt(0, 0, 0);
+            engine.montarControles(camera);
+            engine.controls.enableDamping = true;
+            engine.controls.dampingFactor = 0.08;
+            engine.controls.maxPolarAngle = Math.PI / 2.1;
 
-        engine.controls = new THREE.OrbitControls(camera, renderer.domElement);
-        engine.controls.enableDamping = true;
-        engine.controls.dampingFactor = 0.08;
-        engine.controls.maxPolarAngle = Math.PI / 2.1;
-        
-        scene.add(new THREE.AmbientLight(0xffffff, 0.7));
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
-        dirLight.position.set(2, 10, 2);
-        scene.add(dirLight);
+            // Las luces tampoco: dentro de la sala iluminarían el muro, el suelo y los
+            // taburetes con una direccional pensada para una escena vacía. La sala ya
+            // tiene la suya, calculada para su tamaño.
+            scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+            dirLight.position.set(2, 10, 2);
+            scene.add(dirLight);
+        }
 
         // Geometries
         seedGeo = new THREE.SphereGeometry(0.12, 16, 16);
@@ -111,7 +124,9 @@ const engine = new SovereignBoardEngine({
      * la pantalla en cuanto alguien pasa de vertical a horizontal, que es justo lo que
      * hace quien no ve bien algo — y es el mismo fallo con otra puerta de entrada.
      */
-    onResize: function() { if (engine.camera) encuadrar(engine.camera); },
+    // De invitado la reencuadra la sala: tocarla aquí le desharía el encuadre cada
+    // vez que alguien gire el teléfono.
+    onResize: function() { if (engine.camera && !engine.invitado) encuadrar(engine.camera); },
 });
 
 function buildBoard() {

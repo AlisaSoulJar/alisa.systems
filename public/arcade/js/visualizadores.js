@@ -76,4 +76,5 @@ export const ALIAS_DE_VISUALIZADOR = {
  */
 export const SABE_SER_INVITADO = new Set([
     'ajedrez',
+    'mancala',
 ]);

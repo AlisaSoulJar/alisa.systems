@@ -45,7 +45,18 @@ export const nombrarLetraNumero = ({ desdeCero = false, filaInvertida = false, f
  */
 export function engancharRaton({ engine, columnas, filas, paso, origen,
                                  nombrar, modo = 'colocar', alMarcar }) {
-    const lienzo = engine.renderer.domElement;
+    /**
+     * ⚠️ `engine.lienzo` Y NO `engine.renderer.domElement`.
+     *
+     * De invitado —dentro de la sala de bolsillo— el renderizador es de la sala, así
+     * que ese camino es `null` y esto moría con
+     * `Cannot read properties of null (reading 'domElement')`, llevándose por delante
+     * al mancala entero. El motor sabe de quién es el lienzo; aquí sólo hay que
+     * preguntárselo. Lo usan cuatro visualizadores, así que arreglarlo aquí los
+     * arregla a los cuatro.
+     */
+    const lienzo = engine.lienzo;
+    if (!lienzo) return () => {};
     const rayo = new THREE.Raycaster();
     const raton = new THREE.Vector2();
     // Un plano a la altura del tablero. Se traza contra ÉL y no contra las
@@ -56,12 +67,46 @@ export function engancharRaton({ engine, columnas, filas, paso, origen,
     const punto = new THREE.Vector3();
     let seleccion = null;
 
+    /**
+     * ⚠️ EL TABLERO NO SIEMPRE ESTÁ EN `y = 0` NI A ESCALA 1.
+     *
+     * Esta cuenta —«redondea `(x - origen.x) / paso`»— está escrita en las mismas
+     * unidades en que el visualizador construyó su tablero. Eso vale mientras el
+     * tablero cuelgue de la escena, que no tiene transformación.
+     *
+     * De invitado cuelga del GRUPO de la sala, que lo baja a la altura de la mesa
+     * (0,985) y lo encoge hasta 1,30 m. Un plano en `y = 0` del mundo está entonces
+     * un metro por debajo del tablero, y aunque acertara, las coordenadas del punto
+     * estarían en metros de sala y no en las del visualizador: se clicaría el hoyo 0
+     * queriendo el 4, o ninguno.
+     *
+     * Se resuelve preguntándole al propio contenedor dónde está: el plano se saca de
+     * SU matriz de mundo, y el punto se traduce a SUS coordenadas antes de contar
+     * casillas. Sin invitado, `engine.scene` es la escena, su matriz es la identidad
+     * y todo esto vale exactamente lo que valía antes.
+     */
+    const raiz = () => engine.scene ?? null;
+    const arriba = new THREE.Vector3();
+    const centro = new THREE.Vector3();
+    const situarPlano = () => {
+        const r = raiz();
+        if (!r) { plano.set(new THREE.Vector3(0, 1, 0), 0); return; }
+        r.updateMatrixWorld();
+        centro.set(0, 0, 0).applyMatrix4(r.matrixWorld);
+        arriba.set(0, 1, 0).transformDirection(r.matrixWorld).normalize();
+        plano.setFromNormalAndCoplanarPoint(arriba, centro);
+    };
+
     const casillaEn = (ev) => {
         const r = lienzo.getBoundingClientRect();
         raton.x = ((ev.clientX - r.left) / r.width) * 2 - 1;
         raton.y = -((ev.clientY - r.top) / r.height) * 2 + 1;
         rayo.setFromCamera(raton, engine.camera);
+        // Se resitúa en cada clic: la sala encuadra y escala mientras la partida
+        // arranca, así que un plano calculado una vez se queda viejo.
+        situarPlano();
         if (!rayo.ray.intersectPlane(plano, punto)) return null;
+        raiz()?.worldToLocal(punto);
         const col = Math.round((punto.x - origen.x) / paso);
         const fil = Math.round((punto.z - origen.z) / paso);
         if (col < 0 || col >= columnas || fil < 0 || fil >= filas) return null;

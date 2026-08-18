@@ -239,10 +239,17 @@ const hub = new ProtoHub().registrar(juego, reglas);
  *
  * `chess_visualizer.js` construye su motor con `gameId: 'chess'` y le pregunta al hub
  * por ese nombre; las reglas se llaman `ajedrez`. En su página propia eso lo resuelve
- * `montarMesa({ juego:'ajedrez', idJuego:'chess' })`, que registra las reglas bajo el
- * id que el visualizador espera. Aquí no había nada equivalente, así que el ajedrez
- * de esta sala dibujaba su tablero y se quedaba «SIN CONEXIÓN» y sin piezas: la
- * partida existía, sólo que con otro nombre.
+ * el parámetro `idJuego` de montarMesa, que registra las reglas bajo el id que el
+ * visualizador espera. Aquí no había nada equivalente, así que el ajedrez de esta
+ * sala dibujaba su tablero y se quedaba «SIN CONEXIÓN» y sin piezas: la partida
+ * existía, sólo que con otro nombre.
+ *
+ * ⚠️ Y AQUÍ NO SE ESCRIBE LA LLAMADA DE EJEMPLO ENTERA, aunque se leería mejor.
+ * `gen_paginas.mjs` averigua en qué página se juega cada juego con una expresión
+ * regular sobre estos ficheros, y una llamada dentro de un comentario le parece
+ * exactamente igual que una de verdad: la primera versión de este párrafo la traía,
+ * y el generador decidió que el ajedrez se juega en `sala.html`. Lo cazó
+ * `prueba_repetidor.mjs` con «sobran [ajedrez], faltan [ajedrez]».
  *
  * Se registra bajo los DOS. No es un alias cosmético: son la misma partida, el mismo
  * objeto de reglas, así que quien pregunte por cualquiera de los dos ve lo mismo.

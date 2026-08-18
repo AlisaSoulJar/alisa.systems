@@ -869,7 +869,23 @@ function alSoltar(ev) {
     
     const intersects = ray.intersectObjects([boardGroup, piecesGroup], true);
     if (intersects.length === 0) return;
-    const punto = intersects[0].point;
+    /**
+     * ⚠️ EL PUNTO DEL RAYO VIENE EN COORDENADAS DEL MUNDO, Y `casillaDesde3D`
+     * CUENTA EN LAS DEL TABLERO.
+     *
+     * Mientras el tablero colgaba de la escena eran lo mismo y esto funcionó. De
+     * invitado cuelga del grupo de la sala, que lo baja a la altura de la mesa y lo
+     * encoge hasta metro y pico: entonces `punto.x` viene en metros de sala y la
+     * cuenta da otra casilla, o ninguna. El tablero se veía perfecto, las piezas
+     * también, y al pincharlas no pasaba nada — un decorado.
+     *
+     * Lo cazó `npm run invitados` DESPUÉS de que yo diera el ajedrez por terminado,
+     * que es exactamente para lo que existe: mirar si hay partida y no sólo dibujo.
+     *
+     * `worldToLocal` sobre el propio tablero vale en los dos casos: sin invitado su
+     * matriz es la identidad y esto no cambia nada.
+     */
+    const punto = boardGroup.worldToLocal(intersects[0].point.clone());
 
     const sq = casillaDesde3D(punto.x, punto.z);
     if (!sq) { seleccion = null; borrarMarcas(); return; }

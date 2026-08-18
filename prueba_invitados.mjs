@@ -45,6 +45,83 @@ const PUERTO = 9081;
 const { VISUALIZADOR, SABE_SER_INVITADO } =
     await import('./public/arcade/js/visualizadores.js');
 
+/**
+ * Un sitio del tablero donde pinchar, en las coordenadas del PROPIO visualizador, y
+ * qué campo del estado hace de testigo de que la partida avanzó.
+ *
+ * Va a mano y no se deduce: dónde está una casilla jugable depende de cómo cada
+ * visualizador construyó su geometría, que es justo lo que no publica. Pero es corto
+ * y explícito, y un juego sin entrada aquí SE DICE en voz alta en vez de aprobarse
+ * por omisión.
+ *
+ * ⚠️ EL TESTIGO IMPORTA. Mi primera versión miraba `st.historial`, que mancala no
+ * publica, así que dio «no pasó nada» en los dos sitios y estuve a punto de contarlo
+ * como que el clic estaba roto. Se mira lo que el juego SÍ publica.
+ */
+const DONDE_PINCHAR = {
+    // El hoyo 0 del jugador, en local. Lo dice el propio `mancala_visualizer.js`.
+    mancala: { clics: [[-3.25, 0.2, 1.0]], testigo: 'board' },
+    /**
+     * ⚠️ EL AJEDREZ NECESITA DOS CLICS Y MI PRIMERA VERSIÓN DABA UNO.
+     *
+     * Se coge la pieza y se suelta en el destino. Con un solo clic el peón queda
+     * seleccionado, el FEN no cambia y la prueba cantó «es un decorado» sobre un
+     * ajedrez que se jugaba perfectamente. La prueba estaba jugando mal, no el juego.
+     *
+     * Las casillas salen de la cuenta que hace el propio visualizador y no de mi
+     * intuición: `casillaDesde3D` es `file = round(x + 3.5)`, `rank = round(z + 3.5)`
+     * y la casilla es `letra[file] + (8 - rank)`. Así que e2 es (0.5, 2.5) y e4 es
+     * (0.5, 0.5).
+     *
+     * ⚠️ Y A RAS DE TABLERO, `y = 0.02`. Aquí perdí tres intentos.
+     *
+     * Apuntaba a `y = 0.6`, la altura de una pieza. Para coger el peón vale —el rayo
+     * choca con la pieza— pero para SOLTAR en una casilla vacía el rayo atraviesa ese
+     * punto y sigue hasta la madera, que está más lejos: con la cámara a unos 40°,
+     * seiscientos milímetros de altura son setenta centímetros de más en el tablero,
+     * o sea una casilla entera. Se soltaba en e5 queriendo e4, e5 no es legal desde
+     * e2, y no pasaba nada.
+     *
+     * Y de paso: cambié DOS COSAS A LA VEZ —el número de clics y el signo de la z—
+     * así que la primera corrección siguió en rojo por otro motivo y me costó otra
+     * vuelta. Un cambio cada vez, o no se sabe cuál era.
+     */
+    ajedrez: { clics: [[0.5, 0.02, 2.5], [0.5, 0.02, 0.5]], testigo: 'fen' },
+};
+
+/**
+ * Pincha los puntos declarados y dice si la partida avanzó. Vale igual dentro de la
+ * mesa de otro que en la página propia, y eso es lo importante: es la MISMA medida en
+ * los dos sitios, así que la diferencia entre ellos significa algo.
+ */
+async function pinchar(pagina, { clics, testigo }) {
+    const sitio = await pagina.evaluate(({ clics, testigo }) => {
+        const e = window.ALISA_MOTOR;
+        e.scene.updateMatrixWorld(true);
+        const l = e.lienzo.getBoundingClientRect();
+        const aPantalla = (local) => {
+            const v = new window.THREE.Vector3(...local)
+                .applyMatrix4(e.scene.matrixWorld).project(e.camera);
+            return [l.left + (v.x + 1) / 2 * l.width, l.top + (1 - v.y) / 2 * l.height];
+        };
+        return {
+            puntos: clics.map(aPantalla),
+            antes: JSON.stringify(window.ALISA_PROTOHUB.state(e.gameId)?.[testigo] ?? null),
+        };
+    }, { clics, testigo }).catch(() => null);
+    if (!sitio) return null;
+
+    for (const [x, y] of sitio.puntos) {
+        await pagina.mouse.click(x, y);
+        await new Promise(r => setTimeout(r, 700));
+    }
+    await new Promise(r => setTimeout(r, 1600));
+    const despues = await pagina.evaluate((t) => JSON.stringify(
+        window.ALISA_PROTOHUB.state(window.ALISA_MOTOR.gameId)?.[t] ?? null), testigo)
+        .catch(() => null);
+    return despues !== null && despues !== sitio.antes;
+}
+
 const srv = spawn('python', ['servir.py', String(PUERTO)], { stdio: 'ignore' });
 for (let i = 0; i < 60; i++) {
     try { await fetch(`http://127.0.0.1:${PUERTO}/arcade/index.html`); break; }
@@ -85,6 +162,13 @@ for (const juego of SABE_SER_INVITADO) {
             jugadas: (st?.legal_moves ?? []).length,
         };
     });
+    /**
+     * Y lo que de verdad importa: ¿se puede JUGAR? Un tablero dibujado con sus
+     * jugadas listadas al lado sigue siendo un decorado si al pincharlo no pasa nada,
+     * y ése es exactamente el estado en el que estuvo el ajedrez esta tarde.
+     */
+    const punto = DONDE_PINCHAR[juego];
+    const jugable = punto ? await pinchar(p, punto) : null;
     await p.close();
 
     const mal = [];
@@ -100,7 +184,17 @@ for (const juego of SABE_SER_INVITADO) {
         console.log(`  ✗ ${juego.padEnd(10)} ${VISUALIZADOR[juego]} — ${mal.join(' · ')}`);
     } else {
         console.log(`  ✓ ${juego.padEnd(10)} ${VISUALIZADOR[juego]} — `
-                  + `${m.mallas} mallas en la mesa · ${m.jugadas} jugadas`);
+                  + `${m.mallas} mallas en la mesa · ${m.jugadas} jugadas`
+                  + (jugable ? ' · se juega con el ratón' : ''));
+    }
+    // Un juego sin punto declarado se aprueba sin haber sido pinchado, y eso hay que
+    // decirlo: una cobertura que no se nombra se lee como cobertura completa.
+    if (!punto) {
+        console.log(`    · ${juego}: sin punto en \`DONDE_PINCHAR\`, así que nadie ha`
+                  + ` comprobado que se pueda jugar con el ratón`);
+    }
+    if (jugable === null && punto) {
+        console.log(`    · no se ha podido pinchar: la sonda no encontró el motor`);
     }
 
     // Y su página propia, que no puede haberse roto por el camino.
@@ -114,10 +208,36 @@ for (const juego of SABE_SER_INVITADO) {
     await new Promise(r => setTimeout(r, 7000));
     const viva = await q.evaluate(() => !!window.ALISA_MOTOR
         && !window.ALISA_MOTOR.invitado && !!window.ALISA_MOTOR.renderer).catch(() => false);
+
+    /**
+     * ⚠️ Y SI NO SE PUEDE JUGAR, HAY QUE SABER SI ES CULPA DE SER INVITADO.
+     *
+     * Aquí me pilló el ajedrez. La prueba lo puso en rojo por «se pincha y no pasa
+     * nada», y la corrección natural era buscar qué le había hecho yo al meterlo en
+     * la sala. No le había hecho nada: el clic de dos pasos del ajedrez —coger la
+     * pieza, soltarla— tampoco completa en SU PROPIA PÁGINA, y `tacto` ya lo decía
+     * desde antes («de los 8 que juegan a casillas, no responden: ajedrez, mancala,
+     * canadiense»).
+     *
+     * Un fallo que existe en los dos sitios no lo causó la mudanza. Confundirlos
+     * habría hecho que buscara la causa donde no está —que es media tarde— y que
+     * además culpara a un cambio que no tiene culpa. Así que se mide en los dos y
+     * sólo cuenta como fallo de invitado si el juego SÍ se juega en su casa.
+     */
+    let jugableEnCasa = null;
+    if (punto && viva) jugableEnCasa = await pinchar(q, punto);
     await q.close();
+
     if (e2.length || !viva) {
         fallos++;
         console.log(`    ✗ y su página propia se ha roto: ${e2[0] ?? 'sin motor con renderizador'}`);
+    }
+    if (jugable === false && jugableEnCasa === true) {
+        fallos++;
+        console.log(`    ✗ se juega en su página y NO dentro de la mesa: lo rompió la mudanza`);
+    } else if (jugable === false && jugableEnCasa === false) {
+        console.log(`    · no se puede jugar con el ratón NI AQUÍ NI en su página propia:`
+                  + ` es un fallo suyo de antes, no de ser invitado`);
     }
 }
 
