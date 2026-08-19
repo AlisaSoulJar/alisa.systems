@@ -830,7 +830,7 @@
    "ruta": "gym/registro.js",
    "nombre": "registro",
    "familia": "gym",
-   "kb": 16.3,
+   "kb": 16.7,
    "clase": "apagada",
    "exporta": [
     "CATALOGO",
@@ -2864,7 +2864,7 @@
     "syncKatamariConsumption"
    ],
    "objetos": 54,
-   "mallas": 134,
+   "mallas": 128,
    "luces": 4
   },
   {

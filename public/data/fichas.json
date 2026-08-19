@@ -2144,8 +2144,17 @@
       "reparto": "Baraja de 48 —del uno al nueve más sota, caballo y rey en oros, copas, espadas y bastos—. Siete cartas para cada uno, una boca arriba para empezar el descarte, y el resto al mazo.",
       "turno": "Robas una carta: del mazo, a ciegas, o la de encima del descarte, que todos han visto. Luego tiras una. Coger del descarte te da justo lo que te hace falta y le dice al rival exactamente qué estás juntando — ése es el precio.",
       "gana": "El que cierra. Puedes cerrar cuando lo que NO has ligado suma cinco puntos o menos: las figuras valen diez y las demás su número. Si se acaba el mazo sin que nadie cierre, gana el que menos puntos sueltos tenga.",
-      "ojo": "Los cinco puntos de margen son todo el juego. En el remigio o ligas las diez o no cierras, así que esperas. Aquí cada turno preguntas otra cosa: ¿cierro ya con cuatro puntos encima, o aguanto a bajarlos y arriesgo que cierre el otro? Y está el chinchón: las siete seguidas del mismo palo, que gana con premio. Casi nunca sale, y por eso vale.",
-      "diferencias": "En la mesa se juega una SERIE: se acumulan puntos mano a mano y quien pasa de cien queda eliminado. Aquí una partida es UNA mano, la misma decisión que en el dominó y por el mismo motivo — este banco compara partidas, no veladas. Tampoco hay comodines, igual que en el remigio: multiplican las formas de repartir una mano y encarecen la pregunta «¿esto está cerrado?», que se contesta en cada jugada de cada turno."
+      "ojo": [
+        "Los cinco puntos de margen son todo el juego. En el remigio o ligas las diez o no cierras, así que esperas. Aquí cada turno preguntas otra cosa: ¿cierro ya con cuatro puntos encima, o aguanto a bajarlos y arriesgo que cierre el otro?",
+        "Coger del descarte te da justo la carta que te hace falta y le dice al rival exactamente qué estás juntando. Ése es el precio, y se paga en cada turno.",
+        "Las figuras valen diez. Quedarse con un rey «por si acaso» no es un descuido, es apostar dos cartas de margen.",
+        "Y está el chinchón: las siete seguidas del mismo palo, que gana con premio. Casi nunca sale, y por eso vale."
+      ],
+      "diferencias": [
+        "En la mesa se juega una SERIE: se acumulan puntos mano a mano y quien pasa de cien queda eliminado. Aquí una partida es UNA mano, la misma decisión que en el dominó y por el mismo motivo — este banco compara partidas, no veladas.",
+        "Sin comodines, igual que el remigio: multiplican las formas de repartir una mano y encarecen la pregunta «¿esto está cerrado?», que se contesta en cada jugada de cada turno.",
+        "Con la baraja de 48. En muchas mesas se juega con la de 40, sin ochos ni nueves; es un parámetro, y con 10 rangos en vez de 12 el chinchón es todavía más raro."
+      ]
     },
     "origen": "Español, del siglo XX, emparentado con el gin rummy. Se juega en toda España y en Argentina y Uruguay, donde llegó con la emigración.",
     "puertas": {
@@ -2487,8 +2496,16 @@
       "reparto": "Siete fichas para cada uno; las catorce restantes se quedan en el pozo, boca abajo. Nadie ve la mano del otro, pero sí cuántas le quedan — y eso es la mitad de la información del juego.",
       "turno": "Pones una ficha en la punta izquierda o en la derecha, si casa. Si no tienes ninguna que case, robas del pozo hasta que salga una. Si el pozo se acaba y sigues sin poder, pasas.",
       "gana": "Quien se queda sin fichas. Y si nadie puede seguir —eso es cerrar, o trancar— gana el que menos puntos tenga en la mano, sumando las dos mitades de cada ficha que le sobra.",
-      "ojo": "La orientación no la eliges tú: puesta la ficha en una punta, el sentido en que casa ya está decidido. Lo que sí eliges, cuando tu ficha entra por los dos lados, es POR CUÁL — y eso decide qué número le dejas vivo al rival. Ahí está el juego. Contar lo que ya ha salido y cerrar cuando vas ligero es la otra mitad.",
-      "diferencias": "Se juega a DOS y no a parejas, que es como se juega en la calle: con cuatro, la mitad de la decisión es lo que le señalas a tu compañero, y eso pide un canal que este banco todavía no tiene. Y una partida es UNA mano, no una serie a cien puntos: el marcador que se compara es lo que te queda en la mano, en negativo."
+      "ojo": [
+        "La orientación no la eliges tú: puesta la ficha en una punta, el sentido en que casa ya está decidido.",
+        "Lo que SÍ eliges, cuando tu ficha entra por los dos lados, es por cuál — y eso decide qué número le dejas vivo al rival. Ahí está el juego.",
+        "Contar lo que ya ha salido y cerrar cuando vas ligero es la otra mitad: si nadie puede seguir, gana el que menos puntos tenga en la mano.",
+        "Cada vez que alguien pasa está diciendo en voz alta que no lleva ninguna de las dos puntas. Es información gratis y casi nadie la usa."
+      ],
+      "diferencias": [
+        "Se juega a DOS y no a parejas, que es como se juega en la calle: con cuatro, la mitad de la decisión es lo que le señalas a tu compañero, y eso pide un canal que este banco todavía no tiene.",
+        "Una partida es UNA mano, no una serie a cien puntos: el marcador que se compara es lo que te queda en la mano, en negativo."
+      ]
     },
     "origen": "El dominó llegó a Europa desde China en el siglo XVIII. Esta versión es la de pozo con doble-seis, la más extendida en España y en el Caribe.",
     "puertas": {

@@ -442,7 +442,32 @@ for (const [juego, fila] of datos) {
     const suelo = fila['primera (suelo)']?.puntosCortos;
     const techo = fila['casa (techo blando)']?.puntosCortos;
     const hueco = techo - suelo;
-    if (!Number.isFinite(hueco) || hueco <= 0) continue;
+    /**
+     * ⚠️ UN JUEGO NO PUEDE DESAPARECER DE LAS DOS LISTAS A LA VEZ.
+     *
+     * Esto era un `continue` a secas: el juego no entraba en la clasificación Y
+     * tampoco en `descartados`, así que se evaporaba. Ni ranqueado ni descartado ni
+     * mencionado — la tabla decía «29 juegos» y el catálogo tenía 37, y los dos
+     * números eran ciertos por separado.
+     *
+     * Lo destapó el dominó: se lo saltó una pasada completa y no dijo por qué;
+     * corriéndolo solo daba hueco 5,0 ± 3,1, o sea que ENTRABA. Un juego que se cae
+     * de la tabla en silencio es peor que uno descartado, porque el descarte lleva
+     * motivo y esto no llevaba nada — y este banco publica esa tabla como su
+     * argumento principal.
+     *
+     * `descartes` ya es el sitio donde vive «por qué no puntúa este juego». Se usa.
+     */
+    if (!Number.isFinite(hueco)) {
+        descartes.set(juego, 'no se pudo medir el hueco entre el suelo y la casa '
+                           + `(suelo ${suelo}, casa ${techo}): faltan partidas terminadas`);
+        continue;
+    }
+    if (hueco <= 0) {
+        descartes.set(juego, `la casa no supera al suelo (hueco ${hueco.toFixed(1)}): `
+                           + 'la escala se invertiría');
+        continue;
+    }
     juegosUtiles.push(juego);
     const n = {};
     const inc = {};

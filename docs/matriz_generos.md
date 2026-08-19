@@ -1,6 +1,6 @@
 # Matriz de géneros
 
-> Generado por `matriz_generos.mjs` **jugando** los 36 juegos.
+> Generado por `matriz_generos.mjs` **jugando** los 37 juegos.
 > No hay ninguna etiqueta escrita a mano: `●` medido presente, `·` medido ausente,
 > `?` no observable. Se clasifica por estructura de decisión y no por género de
 > tienda, porque «puzle» o «cartas» no dicen qué hay que saber hacer para jugar bien.
@@ -47,6 +47,7 @@
 | pradera | ● | · | · | ● | ● | · | · | · | sí |
 | nave | ● | ● | ● | · | ● | ● | ? | · | sí |
 | remigio | · | ● | ● | · | ● | · | · | · | sí |
+| chinchon | · | ● | ● | · | ● | · | · | · | sí |
 | parchis | ● | · | ● | · | ● | ? | ? | ? | sí |
 | generala | · | · | ● | · | ● | · | · | · | sí |
 | oca | ● | · | ● | · | ● | · | · | · | sí |
@@ -55,18 +56,18 @@
 
 ## Cobertura
 
-- `espacial`: **23/36**
-- `oculto`: **18/36**
-- `rival`: **28/36**
-- `autonomo`: **8/36**
-- `irreversible`: **36/36**
-- `simultaneo`: **2/36**
-- `cooperativo`: **2/36**
-- `comunicacion`: **2/36**
+- `espacial`: **23/37**
+- `oculto`: **19/37**
+- `rival`: **29/37**
+- `autonomo`: **8/37**
+- `irreversible`: **37/37**
+- `simultaneo`: **2/37**
+- `cooperativo`: **2/37**
+- `comunicacion`: **2/37**
 
 ## Perfiles demostrados
 
-- `oculto+rival+irreversible` — blackjack, poker, brisca, tute, hearts, gofish, unit, entropy, remigio, domino
+- `oculto+rival+irreversible` — blackjack, poker, brisca, tute, hearts, gofish, unit, entropy, remigio, chinchon, domino
 - `espacial+rival+irreversible` — ajedrez, go, reversi, damas, xiangqi, mancala, parchis, oca
 - `espacial+autonomo+irreversible` — fagocito, peaton, rebano, pradera
 - `espacial+irreversible` — snake, sokoban

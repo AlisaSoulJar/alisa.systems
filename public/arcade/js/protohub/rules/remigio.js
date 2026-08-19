@@ -152,9 +152,29 @@ const normasDe = (o = {}) => ({ ...NORMAS, ...o });
  * que en el dominó, porque el banco compara partidas y no veladas. Va dicho en la
  * ficha, en `diferencias`.
  */
-export const crearChinchon = (o = {}) => crearRemigio({
-    jugadores: 2, mano: 7, ...o,
-    nombre: 'chinchon', baraja: 'spanish_48', corte: 5, conChinchon: true,
+/**
+ * ⚠️ LA BARAJA ES LO ÚNICO QUE SE PUEDE CAMBIAR, Y NO ES UN CAPRICHO.
+ *
+ * En la mesa el chinchón se juega con las dos: la de 48 y la de 40 —sin ochos ni
+ * nueves—, según la casa. Va por delante de `...o` para que se pueda pedir la otra,
+ * y el resto va detrás para que NO se pueda: si alguien pudiera pasar `corte: 0` o
+ * `conChinchon: false` tendría un juego llamado chinchón que no es el chinchón, y
+ * su recibo diría «chinchon» igual.
+ *
+ * Con la de 40 hay 10 rangos en vez de 12, así que la escalera de siete pasa de seis
+ * sitios posibles por palo a cuatro: el chinchón es todavía más raro. El orden de
+ * escaleras se ajusta solo, porque sale de `baraja.ranks` y no de una lista escrita
+ * a mano.
+ *
+ * La baraja se resuelve al CREAR las reglas —`cargarBaraja` es asíncrono— así que no
+ * puede ser una norma de partida como `dosBarajas`. La consecuencia hay que decirla:
+ * un recibo de una partida con la de 40 no se puede re-jugar contra unas reglas
+ * montadas con la de 48. Se rechaza, que es lo correcto — falla ruidosamente en vez
+ * de dar por buena una partida que no cuadra.
+ */
+export const crearChinchon = ({ baraja = 'spanish_48', ...o } = {}) => crearRemigio({
+    jugadores: 2, mano: 7, ...o, baraja,
+    nombre: 'chinchon', corte: 5, conChinchon: true,
 });
 
 export async function crearRemigio({ url = RUTA_BIBLIOTECA, jugadores = 2, mano = 10,

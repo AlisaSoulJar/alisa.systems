@@ -55,9 +55,23 @@ const cat = await p.evaluate(() => ({
     conImagen: [...document.querySelectorAll('.tarjeta img')].filter(i => i.naturalWidth > 0).length,
     texto: document.body.innerText,
 }));
-const catBien = cat.tarjetas === 35 && cat.conImagen === 35;
+/**
+ * ⚠️ CUÁNTAS TARJETAS SE ESPERAN NO SE ESCRIBE A MANO.
+ *
+ * Estaba clavado en 35 y el catálogo tenía 37, así que esta comprobación suspendía
+ * enseñando `37/35` — un rojo que significaba «hay DE MÁS», que no es un fallo del
+ * catálogo sino de esta línea. Y el modo de fallo peligroso es el contrario: si un
+ * día el catálogo bajara a 35 de verdad, esto lo daría por bueno.
+ *
+ * El número sale de `fichas.json`, que es de donde el catálogo saca sus tarjetas: si
+ * los dos divergen es que el catálogo no pinta lo que hay, y eso sí es el fallo que
+ * esta prueba quiere ver.
+ */
+const ESPERADAS = juegos.length;
+const catBien = cat.tarjetas === ESPERADAS && cat.conImagen === ESPERADAS;
 if (!catBien) fallos++;
-console.log(`\n  ${catBien ? '✓' : '✗'} catálogo: ${cat.tarjetas}/35 tarjetas · ${cat.conImagen}/35 con la imagen CARGADA`);
+console.log(`\n  ${catBien ? '✓' : '✗'} catálogo: ${cat.tarjetas}/${ESPERADAS} tarjetas · `
+          + `${cat.conImagen}/${ESPERADAS} con la imagen CARGADA`);
 
 // ── Las 35 fichas ────────────────────────────────────────────────
 const MARCAS = ['[object Object]', 'undefined', 'NaN'];
