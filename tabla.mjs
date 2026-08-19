@@ -458,14 +458,35 @@ for (const [juego, fila] of datos) {
      *
      * `descartes` ya es el sitio donde vive «por qué no puntúa este juego». Se usa.
      */
+    /**
+     * ⚠️ Y ESTE MOTIVO NO ES EL MISMO QUE EL DE ARRIBA, AUNQUE SE PAREZCA.
+     *
+     * El veredicto de SI un juego puntúa lo da `separaDeVerdad` con los promedios
+     * LARGOS —las `--semillas-base` que juegan las referencias— y ya está escrito
+     * arriba. Esto de aquí es otra cosa: el DENOMINADOR con el que se normaliza a los
+     * modelos, que tiene que salir de las mismas semillas que ellos jugaron, o se
+     * compararía un modelo de 15 partidas contra un suelo de 200.
+     *
+     * Así que un juego puede separar de verdad y aun así no poder normalizarse, si en
+     * el trozo corto el suelo y el techo se cruzan por azar. Eso NO es «la casa no
+     * supera al suelo»: es «con estas semillas no se puede poner la escala», y se
+     * arregla subiendo `--semillas`, no tocando el juego.
+     *
+     * Lo destapó el dominó: con 2 semillas daba hueco +5,0 y con 15 daba −2,6. El
+     * mismo juego y la misma casa; lo que cambiaba era el trozo. Escribirlo como
+     * «la casa no supera al suelo» habría mandado a arreglar una heurística que está
+     * bien — y que en el largo gana 56,8 % de las partidas.
+     */
     if (!Number.isFinite(hueco)) {
-        descartes.set(juego, 'no se pudo medir el hueco entre el suelo y la casa '
-                           + `(suelo ${suelo}, casa ${techo}): faltan partidas terminadas`);
+        descartes.set(juego, descartes.get(juego)
+            ?? 'no se pudo poner la escala: faltan partidas terminadas en las semillas cortas');
         continue;
     }
     if (hueco <= 0) {
-        descartes.set(juego, `la casa no supera al suelo (hueco ${hueco.toFixed(1)}): `
-                           + 'la escala se invertiría');
+        descartes.set(juego, descartes.get(juego)
+            ?? `no se puede poner la escala: en las ${SEMILLAS} semillas que juegan los `
+             + `modelos el suelo y la casa se cruzan (hueco ${hueco.toFixed(1)}). `
+             + 'El juego sí separa en el promedio largo; sube --semillas.');
         continue;
     }
     juegosUtiles.push(juego);
