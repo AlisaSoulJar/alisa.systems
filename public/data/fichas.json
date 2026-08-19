@@ -2107,6 +2107,55 @@
       "openapi": true
     }
   },
+  "chinchon": {
+    "titulo": "Chinchón",
+    "pagina": "chinchon.html",
+    "objetivo": "Objetivo: cerrar ligando tus cartas en grupos y escaleras, con 5 puntos sueltos o menos. Las siete seguidas del mismo palo son chinchón y ganan con premio.",
+    "asientos": 2,
+    "verbos": [
+      "descartar",
+      "robar_descarte",
+      "robar_mazo"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": null,
+    "clasificacion": {
+      "entra": false,
+      "motivo": "no medido en la última pasada"
+    },
+    "captura": "/capturas/chinchon.png",
+    "conLaMano": {
+      "medido": "2026-08-19",
+      "panel": [
+        2,
+        2
+      ],
+      "tocandoLaMesa": true,
+      "barraDeVerbos": null,
+      "verbos": null,
+      "resumen": "se juega tocando la mesa"
+    },
+    "pantallas": null,
+    "reglas": "Robas una carta: del mazo, a ciegas, o la de encima del descarte, que todos han visto. Luego tiras una. Coger del descarte te da justo lo que te hace falta y le dice al rival exactamente qué estás juntando — ése es el precio.",
+    "prosa": {
+      "que_es": "El rummy de baraja española. Siete cartas, y ganas ligándolas en grupos del mismo número o escaleras del mismo palo. Es el hermano del remigio, y se juega sobre el mismo motor: lo que cambia es CUÁNDO puedes cerrar.",
+      "reparto": "Baraja de 48 —del uno al nueve más sota, caballo y rey en oros, copas, espadas y bastos—. Siete cartas para cada uno, una boca arriba para empezar el descarte, y el resto al mazo.",
+      "turno": "Robas una carta: del mazo, a ciegas, o la de encima del descarte, que todos han visto. Luego tiras una. Coger del descarte te da justo lo que te hace falta y le dice al rival exactamente qué estás juntando — ése es el precio.",
+      "gana": "El que cierra. Puedes cerrar cuando lo que NO has ligado suma cinco puntos o menos: las figuras valen diez y las demás su número. Si se acaba el mazo sin que nadie cierre, gana el que menos puntos sueltos tenga.",
+      "ojo": "Los cinco puntos de margen son todo el juego. En el remigio o ligas las diez o no cierras, así que esperas. Aquí cada turno preguntas otra cosa: ¿cierro ya con cuatro puntos encima, o aguanto a bajarlos y arriesgo que cierre el otro? Y está el chinchón: las siete seguidas del mismo palo, que gana con premio. Casi nunca sale, y por eso vale.",
+      "diferencias": "En la mesa se juega una SERIE: se acumulan puntos mano a mano y quien pasa de cien queda eliminado. Aquí una partida es UNA mano, la misma decisión que en el dominó y por el mismo motivo — este banco compara partidas, no veladas. Tampoco hay comodines, igual que en el remigio: multiplican las formas de repartir una mano y encarecen la pregunta «¿esto está cerrado?», que se contesta en cada jugada de cada turno."
+    },
+    "origen": "Español, del siglo XX, emparentado con el gin rummy. Se juega en toda España y en Argentina y Uruguay, donde llegó con la emigración.",
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": false,
+      "openapi": true
+    }
+  },
   "parchis": {
     "titulo": "Parchís",
     "pagina": "parchis.html",
@@ -2426,10 +2475,10 @@
         5,
         5
       ],
-      "tocandoLaMesa": false,
+      "tocandoLaMesa": true,
       "barraDeVerbos": null,
       "verbos": null,
-      "resumen": "en el momento de medir, sólo respondía el panel"
+      "resumen": "se juega tocando la mesa"
     },
     "pantallas": null,
     "reglas": "Pones una ficha en la punta izquierda o en la derecha, si casa. Si no tienes ninguna que case, robas del pozo hasta que salga una. Si el pozo se acaba y sigues sin poder, pasas.",

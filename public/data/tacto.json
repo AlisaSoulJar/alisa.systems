@@ -844,6 +844,29 @@
    "casillas": null,
    "pares": null
   },
+  "chinchon": {
+   "panel": {
+    "dedo": [
+     2,
+     2
+    ],
+    "raton": [
+     2,
+     2
+    ]
+   },
+   "mesa": {
+    "dedo": 2,
+    "raton": 2,
+    "de": 2
+   },
+   "piezas": {
+    "dianas": 10,
+    "sinAsomar": 0
+   },
+   "casillas": null,
+   "pares": null
+  },
   "parchis": {
    "panel": {
     "dedo": [
@@ -969,8 +992,8 @@
     ]
    },
    "mesa": {
-    "dedo": 0,
-    "raton": 0,
+    "dedo": 7,
+    "raton": 7,
     "de": 7
    },
    "piezas": {
