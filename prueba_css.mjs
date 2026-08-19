@@ -119,3 +119,55 @@ if (malas.length) {
     process.exit(1);
 }
 console.log(`\n  ✓ todas cierran lo que abren`);
+
+/**
+ * ⚠️ Y LO SEGUNDO: EL PANEL NO PUEDE TRAGARSE TOQUES QUE VAN A LA MESA.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * `jugables.css` pone `.hud-panel { pointer-events: none }` y devuelve el clic sólo
+ * a lo que HACE algo — la regla está escrita ahí y explicada: el panel flota sobre el
+ * lienzo con fondo traslúcido, así que ves el tablero por debajo, pulsas donde lo ves
+ * y no pasa nada. Ni un error.
+ *
+ * `.mesa-pista` —una línea de texto que explica la fase— se coló en esa lista. En
+ * escritorio no se nota; en un móvil de 276 px el panel ocupa media pantalla y el
+ * mazo de entropy cae justo debajo. Dos betatesters lo reportaron: «no se puede robar
+ * del mazo, hay que hacerlo desde los comandos del menú».
+ *
+ * Así que la lista se vigila. Un selector nuevo que recupere el toque tiene que ser
+ * algo pulsable; si no lo es, aquí salta. No es una lista paralela: es la MISMA lista
+ * del CSS, leída del fichero y contrastada contra qué es interactivo.
+ *
+ * SABOTAJE: se le devuelve `pointer-events: auto` a `.mesa-pista` y esto debe suspender.
+ */
+/**
+ * ⚠️ ESTA COMPROBACIÓN EMPEZÓ SIENDO LISTA Y GRITABA EN FALSO.
+ *
+ * El primer intento exigía que todo lo que recuperase el toque «pareciera
+ * interactivo», con una expresión regular. Acusó a tres inocentes: un trozo de
+ * comentario que mi regex leyó como selector, el propio `.hud-panel`, y
+ * `.historial-lista`, que necesita el toque para poder DESPLAZARSE.
+ *
+ * Una prueba que grita en falso se acaba ignorando, y entonces no protege de nada.
+ * Así que se estrecha a lo que de verdad muerde: lo que por su nombre es INFORMACIÓN
+ * —una pista, un texto, un marcador— no puede quedarse el toque, porque encima del
+ * lienzo eso es un muro. Cubre el caso que reportaron los betatesters y no inventa
+ * culpables.
+ */
+const SOLO_INFORMA = /(pista|texto|marcador|estado-txt|leyenda|aviso)/i;
+const jugables = path.join(AQUI, 'public/arcade/css/jugables.css');
+// Sin comentarios: mi primera versión los leyó como selectores.
+const css = (await readFile(jugables, 'utf8')).replace(/\/\*[\s\S]*?\*\//g, '');
+const culpables = [];
+for (const m of css.matchAll(/([^{}]+)\{[^{}]*pointer-events\s*:\s*auto[^{}]*\}/g)) {
+    for (const sel of m[1].split(',').map(s => s.trim()).filter(Boolean)) {
+        if (SOLO_INFORMA.test(sel)) culpables.push(sel);
+    }
+}
+if (culpables.length) {
+    console.log(`\n  ✗ el panel devuelve el toque a cosas que no se pulsan:`);
+    for (const c of culpables) console.log(`      ↳ ${c}`);
+    console.log('    Sobre el lienzo eso es un muro: se ve la carta, se toca, y no pasa nada.');
+    process.exit(1);
+}
+console.log(`  ✓ el panel sólo se queda los toques de lo que se pulsa`);

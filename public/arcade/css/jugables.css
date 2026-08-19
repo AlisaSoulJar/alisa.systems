@@ -64,8 +64,28 @@
 .hud-panel textarea,
 .hud-panel a,
 .hud-panel .mesa-jugada,
-.hud-panel #mesa-jugadas,
-.hud-panel .mesa-pista { pointer-events: auto; }
+.hud-panel #mesa-jugadas { pointer-events: auto; }
+
+/**
+ * ⚠️ Y LA PISTA NO. ERA UN MURO SOBRE LA MESA, Y SE COLÓ EN LA LISTA DE ARRIBA.
+ *
+ * La regla de este bloque está escrita tres párrafos más arriba: recuperan el clic
+ * «sólo las cosas que hacen algo». `.mesa-pista` es una línea de TEXTO que explica la
+ * fase — no responde a nada — y estaba en la lista, probablemente por ir pegada a
+ * `#mesa-jugadas`.
+ *
+ * En escritorio no se nota. En un móvil de 276 px el panel ocupa de 8 a 268 de ancho
+ * y hasta 279 de alto, o sea media pantalla, y el mazo de entropy cae justo debajo:
+ * medido con `elementFromPoint`, bajo el punto del mazo estaba `DIV.mesa-pista` y no
+ * el lienzo. El toque moría ahí.
+ *
+ * Dos betatesters lo dijeron: «no se puede robar del mazo, hay que hacerlo desde los
+ * comandos del menú» y «no funcionan las cartas a modo táctil». Es el MISMO fallo que
+ * el comentario de arriba cuenta para el escritorio, en otro sitio y a otra escala:
+ * ves la carta a través de un panel traslúcido, la tocas donde la ves, y no pasa nada.
+ * Ni un error.
+ */
+.hud-panel .mesa-pista { pointer-events: none; }
 
 /**
  * ⚠️ EL BOTÓN DE VOLCAR LA MESA NO SE PARECE A UNA JUGADA, Y ES A PROPÓSITO.
@@ -151,7 +171,10 @@
     color: #cbbcff;
     font: 12px/1.45 Inter, system-ui, sans-serif;
     max-width: 340px;
-    pointer-events: auto;
+    /* Sin `pointer-events: auto`: estaba aquí ADEMÁS de en la lista de arriba, y lo
+       encontró la comprobación nueva. En pantalla ya ganaba la regla de al lado por
+       especificidad, así que el arreglo funcionaba y el fichero seguía diciendo dos
+       cosas distintas — que es como vuelven los fallos. */
 }
 
 /**

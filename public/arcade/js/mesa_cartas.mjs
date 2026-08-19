@@ -271,14 +271,26 @@ function nombrarPiezas(motor, cartas, zona, layout, dueño) {
          * ochenta a escala real sería una torre que taparía media mesa. A partir de
          * ahí deja de crecer, y el número exacto lo sigue diciendo el panel en texto.
          */
+        /**
+         * ⚠️ AQUÍ SÓLO SE ENGORDA. LA ALTURA LA PONE EL MOTOR, EN EL DESTINO.
+         *
+         * Esto además SUBÍA la carta —`position.y = __y0 + medio grosor por carta`—
+         * para que la pila no quedara medio hundida. Y el motor escribe esa misma
+         * coordenada con un tween, sesenta veces por segundo, llevándola a su sitio.
+         *
+         * Dos dueños de la misma coordenada: el tween tiraba abajo, esto subía, y el
+         * mazo no paraba nunca. Dos betatesters lo dijeron con las mismas palabras
+         * —«hay un bucle en el mazo que no para de moverse»— y se midió: la cámara
+         * recorría 32,6 unidades para desplazarse 2,96, o sea iba y volvía, porque el
+         * mazo en movimiento cambiaba la caja que encuadra `acercar()`.
+         *
+         * La subida vive ahora en `drawZone`, sumada al `targetY` que el tween
+         * persigue. El engorde se queda aquí porque el motor no toca `scale`.
+         */
         const n = c.pila ?? 1;
-        const grosor = malla.geometry?.parameters?.depth ?? 0.05;
         if (c.oculta && n > 1) {
-            const alto = Math.min(n, 14);
-            malla.scale.z = alto;
-            malla.position.y = (malla.userData.__y0 ??= malla.position.y)
-                             + (alto - 1) * 0.5 * grosor;
-        } else if (malla.userData.__y0 !== undefined || malla.scale.z !== 1) {
+            malla.scale.z = Math.min(n, 14);
+        } else if (malla.scale.z !== 1) {
             /**
              * ⚠️ Y AQUÍ FALTABA EL `else`, QUE ES EL GLITCH QUE VIO OSCAR.
              *
@@ -292,11 +304,10 @@ function nombrarPiezas(motor, cartas, zona, layout, dueño) {
              * fallo que sólo encuentra alguien JUGANDO —lo reportó Oscar, no un
              * instrumento— porque ninguna de mis medidas mira el grosor de una malla.
              *
-             * Se restaura de lo guardado: `scale.z` a 1 y la altura a la original. La
-             * condición evita tocar las mallas que nunca fueron pila.
+             * Basta con devolver `scale.z` a 1: de la altura ya no se ocupa nadie
+             * aquí, la pone el motor en el destino del tween y sin pila vale cero.
              */
             malla.scale.z = 1;
-            if (malla.userData.__y0 !== undefined) malla.position.y = malla.userData.__y0;
         }
     });
 }

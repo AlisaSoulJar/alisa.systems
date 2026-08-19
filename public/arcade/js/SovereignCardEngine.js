@@ -1868,8 +1868,38 @@ class SovereignCardEngine {
             }
             const tmb = mesh.userData.temblor;
 
+            /**
+             * ⚠️ EL GROSOR DE UNA PILA SE SUMA AQUÍ, EN EL DESTINO. NUNCA DESPUÉS.
+             * ═══════════════════════════════════════════════════════════════════
+             *
+             * Una carta que representa un montón se engorda en su Z local —que
+             * tumbada apunta al cielo— y hay que subirla la mitad de lo que crece, o
+             * queda medio hundida en el fieltro. Esa subida se hacía FUERA, en
+             * `nombrarPiezas`, escribiendo `mesh.position.y` a mano.
+             *
+             * Y aquí se escribe lo mismo, con un tween, sesenta veces por segundo.
+             * Dos dueños para la misma coordenada: el tween tiraba de la carta al
+             * suelo y el engorde la volvía a subir, en cada refresco, para siempre.
+             *
+             * Lo reportaron dos betatesters con las mismas palabras —«hay un bucle en
+             * el mazo que no para de moverse», «se mueve todo el rato»— y se midió:
+             * diez segundos sin tocar nada, la cámara con 32,6 unidades de recorrido
+             * y 2,96 de desplazamiento neto. O sea que iba y volvía. Se movía el mazo,
+             * eso cambiaba la caja que encuadra `acercar()`, y la cámara detrás.
+             *
+             * Entropy lo sufría más que nadie porque su mazo oculto son 81 cartas: la
+             * pila sube trece grosores y el tirón se ve. Con dos o tres cartas el mismo
+             * fallo es un temblor que nadie reporta.
+             *
+             * El tope de 14 y el medio grosor son los mismos números de antes: lo único
+             * que cambia es QUIÉN los aplica.
+             */
+            const pila = Math.min((card && typeof card === 'object' && card.pila) || 1, 14);
+            const grosorCarta = this.cardGeo?.parameters?.depth ?? 0.05;
+            const subidaPila = (pila - 1) * 0.5 * grosorCarta;
+
             let targetX = startX;
-            let targetY = (this.tableY !== undefined ? this.tableY : 0.1);
+            let targetY = (this.tableY !== undefined ? this.tableY : 0.1) + subidaPila;
             let targetZ = startZ;
             let targetRotX = oculta ? Math.PI/2 : -Math.PI / 2;
             let targetRotY = 0;
@@ -1885,7 +1915,7 @@ class SovereignCardEngine {
                 if(options.jitter !== false) targetRotZ += tmb.a * 0.03 * jForce; targetX += tmb.b * 0.005 * jForce;
             } 
             else if (layout === 'pile') {
-                targetY = (this.tableY !== undefined ? this.tableY : 0.1) + (idx * 0.002); // Tighter stack mapping physically
+                targetY = (this.tableY !== undefined ? this.tableY : 0.1) + subidaPila + (idx * 0.002); // Tighter stack mapping physically
                 const jForce = typeof options.jitter === "number" ? options.jitter : 1;
                 if(options.jitter !== false) targetRotZ += tmb.a * 0.08 * jForce; targetX += tmb.b * 0.01 * jForce; targetZ += tmb.c * 0.01 * jForce; 
             }
@@ -1896,13 +1926,13 @@ class SovereignCardEngine {
                 const radius = 6 * (spacing || 1); 
                 targetX = startX + Math.sin(-angle) * radius;
                 targetZ = startZ + radius - Math.cos(-angle) * radius;
-                targetY = (this.tableY !== undefined ? this.tableY : 0.1) + (idx * 0.005); 
+                targetY = (this.tableY !== undefined ? this.tableY : 0.1) + subidaPila + (idx * 0.005); 
                 targetRotZ += angle; 
             }
             else if (layout === 'cascade') {
                 const tz = options.cascadeZ !== undefined ? options.cascadeZ : 0.03;
                 const tx = options.cascadeX || 0;
-                targetY = (this.tableY !== undefined ? this.tableY : 0.1) + (idx * 0.002);
+                targetY = (this.tableY !== undefined ? this.tableY : 0.1) + subidaPila + (idx * 0.002);
                 targetX = startX + idx * tx;
                 targetZ = startZ + idx * tz;
                 const jForce = typeof options.jitter === "number" ? options.jitter : 1;
@@ -1915,7 +1945,7 @@ class SovereignCardEngine {
                 const c = idx % cols;
                 targetX = startX + c * spacing;
                 targetZ = startZ + r * sz;
-                targetY = (this.tableY !== undefined ? this.tableY : 0.1) + tmb.d * 0.001; // Z-fighting prevention
+                targetY = (this.tableY !== undefined ? this.tableY : 0.1) + subidaPila + tmb.d * 0.001; // Z-fighting prevention
             }
             else if (layout === 'circle') {
                 const r = options.radius || 0.4;
@@ -1935,7 +1965,7 @@ class SovereignCardEngine {
                 const rowWidth = row * spacing; 
                 targetX = startX - (rowWidth / 2) + (posInRow * spacing);
                 targetZ = startZ + row * (options.spacingZ || (spacing * 0.8));
-                targetY = (this.tableY !== undefined ? this.tableY : 0.1) + (idx * 0.002);
+                targetY = (this.tableY !== undefined ? this.tableY : 0.1) + subidaPila + (idx * 0.002);
             }
 
             // Universal Micro-Modifiers
