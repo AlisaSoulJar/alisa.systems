@@ -1,5 +1,5 @@
 {
-  "fecha": "2026-08-17T11:18:19.391Z",
+  "fecha": "2026-08-17T16:04:58.865Z",
   "semillas": 15,
   "tope": 400,
   "topesPorJuego": {
@@ -24,6 +24,7 @@
     "hearts",
     "spades",
     "gofish",
+    "unit",
     "entropy",
     "sokoban",
     "cripta",
@@ -36,15 +37,14 @@
     "rebano",
     "pradera",
     "nave",
+    "parchis",
     "generala",
     "canadiense"
   ],
   "descartados": {
     "guerra": "la casa no supera al suelo: la escala se invertiría",
-    "unit": "el hueco (19.3) no supera al ruido de la medida (±26.3)",
-    "remigio": "el hueco (10.4) no supera al ruido de la medida (±21.3)",
-    "parchis": "el hueco (59.0) no supera al ruido de la medida (±60.7)",
-    "oca": "el hueco (78.9) no supera al ruido de la medida (±140.4)"
+    "remigio": "el hueco (9.1) no supera al ruido de la medida (±10.6)",
+    "oca": "el hueco (19.2) no supera al ruido de la medida (±68.2)"
   },
   "resumen": [
     {
@@ -52,13 +52,13 @@
       "tipo": "base",
       "mediana": 0,
       "media": 0,
-      "incertidumbre": 0.040078904578914214,
+      "incertidumbre": 0.5960551727110125,
       "tokens": 0,
       "segundos": 0,
       "forzadas": 0,
       "llamadas": 0,
-      "verificadas": 3167,
-      "esperadas": 3600,
+      "verificadas": 13422,
+      "esperadas": 16000,
       "porJuego": {
         "ajedrez": 0,
         "go": 0,
@@ -76,6 +76,7 @@
         "hearts": 0,
         "spades": 0,
         "gofish": 0,
+        "unit": 0,
         "entropy": 0,
         "sokoban": 0,
         "cripta": 0,
@@ -88,6 +89,7 @@
         "rebano": 0,
         "pradera": 0,
         "nave": 0,
+        "parchis": null,
         "generala": 0,
         "canadiense": 0
       }
@@ -95,15 +97,15 @@
     {
       "participante": "azar",
       "tipo": "base",
-      "mediana": 0.08527131782945738,
-      "media": -0.5519397742871684,
-      "incertidumbre": 0.1170798706451756,
+      "mediana": 0.03100775193798451,
+      "media": -0.5357786104190447,
+      "incertidumbre": 0.657030565209558,
       "tokens": 0,
       "segundos": 0,
       "forzadas": 0,
       "llamadas": 0,
-      "verificadas": 3160,
-      "esperadas": 3600,
+      "verificadas": 13410,
+      "esperadas": 16000,
       "porJuego": {
         "ajedrez": -9.427160493827161,
         "go": 0.8497716894977169,
@@ -119,8 +121,9 @@
         "brisca": 0.36627906976744184,
         "tute": -1.4310344827586188,
         "hearts": -0.34666666666666685,
-        "spades": -0.5454545454545453,
+        "spades": -0.07092907092907094,
         "gofish": 0.3333333333333332,
+        "unit": -0.5254691689008043,
         "entropy": -0.14395886889460158,
         "sokoban": 0.24287593160894339,
         "cripta": 0.5220038267524787,
@@ -133,6 +136,7 @@
         "rebano": 0.22615509321804914,
         "pradera": 0.03100775193798451,
         "nave": 0.13953488372093023,
+        "parchis": null,
         "generala": 0.006560065600656005,
         "canadiense": 0.17450579413769596
       }
@@ -142,13 +146,13 @@
       "tipo": "base",
       "mediana": 1,
       "media": 1,
-      "incertidumbre": 0.045256371518191146,
+      "incertidumbre": 0.6288942902015481,
       "tokens": 0,
       "segundos": 0,
       "forzadas": 0,
       "llamadas": 0,
-      "verificadas": 3176,
-      "esperadas": 3600,
+      "verificadas": 13425,
+      "esperadas": 16000,
       "porJuego": {
         "ajedrez": 1,
         "go": 1,
@@ -157,7 +161,7 @@
         "xiangqi": 1,
         "mancala": 1,
         "snake": 1,
-        "fagocito": 1,
+        "fagocito": null,
         "peaton": 1,
         "blackjack": 1,
         "poker": 1,
@@ -166,6 +170,7 @@
         "hearts": 1,
         "spades": 1,
         "gofish": 1,
+        "unit": 1,
         "entropy": 1,
         "sokoban": 1,
         "cripta": 1,
@@ -178,6 +183,7 @@
         "rebano": 1,
         "pradera": 1,
         "nave": 1,
+        "parchis": null,
         "generala": 1,
         "canadiense": 1
       }

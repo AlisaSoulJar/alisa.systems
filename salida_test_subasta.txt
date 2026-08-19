@@ -1,0 +1,20 @@
+=== STDOUT ===
+
+¿Tiene spades su subasta?
+
+  [32m✓[0m la primera jugada es una APUESTA, no una carta[90m  — salen: apostar:0, apostar:1, apostar:2, apostar:3, apostar:4…[0m
+  [32m✓[0m se puede apostar desde 0 (nil) hasta 13[90m  — 0:sí 13:sí[0m
+  [32m✓[0m jugar una carta REAL antes de apostar se rechaza y no cambia nada[90m  — probado con jugar:H_Q[0m
+  [32m✓[0m apuestan los cuatro asientos antes de repartir juego[90m  — aceptadas 4 de 4[0m
+  [32m✓[0m después de las cuatro apuestas, las jugadas son CARTAS[90m  — salen: jugar:H_Q, jugar:S_J, jugar:C_K, jugar:H_6[0m
+  [32m✓[0m las apuestas viajan en el estado publicado[90m  — sin esto el verificador rechaza partidas honradas[0m
+  [32m✓[0m una partida con subasta llega al final
+  [32m✓[0m la partida publica una puntuación numérica[90m  — puntos = -30[0m
+  [32m✓[0m una partida CON sus cuatro apuestas se verifica volviéndola a jugar[90m  — 56 jugadas[0m
+
+  [32mla subasta está terminada[0m
+
+
+=== STDERR ===
+
+RETURN CODE: 0

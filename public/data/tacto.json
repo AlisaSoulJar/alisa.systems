@@ -1,5 +1,5 @@
 {
- "fecha": "2026-08-18",
+ "fecha": "2026-08-19",
  "pantalla": "390x844",
  "juegos": {
   "ajedrez": {
@@ -325,7 +325,7 @@
    },
    "piezas": {
     "dianas": 7,
-    "sinAsomar": 3
+    "sinAsomar": 0
    },
    "casillas": null,
    "pares": null
@@ -480,8 +480,8 @@
     ]
    },
    "mesa": {
-    "dedo": 1,
-    "raton": 1,
+    "dedo": 2,
+    "raton": 2,
     "de": 2
    },
    "piezas": {
@@ -798,8 +798,8 @@
      3
     ],
     "raton": [
-     0,
-     0
+     3,
+     3
     ]
    },
    "mesa": {
@@ -891,8 +891,8 @@
     "de": 1
    },
    "piezas": {
-    "dianas": 1,
-    "sinAsomar": 1
+    "dianas": 5,
+    "sinAsomar": 0
    },
    "casillas": null,
    "pares": null
@@ -955,6 +955,29 @@
     "tocadas": 0,
     "ok": 0
    },
+   "pares": null
+  },
+  "domino": {
+   "panel": {
+    "dedo": [
+     5,
+     5
+    ],
+    "raton": [
+     5,
+     5
+    ]
+   },
+   "mesa": {
+    "dedo": 0,
+    "raton": 0,
+    "de": 7
+   },
+   "piezas": {
+    "dianas": 7,
+    "sinAsomar": 0
+   },
+   "casillas": null,
    "pares": null
   }
  }

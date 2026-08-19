@@ -1662,6 +1662,31 @@ const engine = new SovereignCardEngine({
            */
           + (data.triunfo ? fila('Triunfo',
                 nombreDePalo(data.triunfo, this, data.baraja ?? data.deck), '#ffb86c') : '')
+          /**
+           * ⚠️ LO QUE YA TIENES LIGADO. ES EL MISMO CASO QUE EL TRIUNFO.
+           *
+           * El remigio publica en cada turno `grupos` —la mejor forma de partir tu mano
+           * en tríos y escaleras—, `sueltas` y `muerto`, los puntos que te sobran. Es la
+           * información con la que se juega: cuánto te falta para cerrar y qué estás
+           * cargando. El estado la daba y la mesa no la enseñaba, así que estaba ahí
+           * para quien abriera la consola y para nadie más.
+           *
+           * Lo pidió Oscar —«deberías saber qué jugadas tienes»— y tenía razón por partida
+           * doble: además de no verse, el motor agrupa por lo ÓPTIMO, y su partición no
+           * siempre es la que dirías tú. Con diez seguidas de corazones te las cuenta
+           * como 3+3+4, no como «una escalera de diez». Enseñarlas es el primer paso
+           * para poder discutirlas.
+           *
+           * Va con el mismo criterio que el triunfo: sólo aparece si el juego lo publica,
+           * así que los otros nueve juegos de cartas no se enteran.
+           */
+          + (Array.isArray(data.grupos) && data.grupos.length
+                ? fila('Ligado', data.grupos.map(g => g.join(' ')).join('  ·  '), '#7ee787') : '')
+          + (data.muerto !== undefined
+                ? fila('Te sobra', data.muerto === 0
+                    ? '¡nada! puedes cerrar'
+                    : `${data.muerto} pts en ${(data.sueltas ?? []).length} carta(s)`,
+                    data.muerto === 0 ? '#7ee787' : '#ffa657') : '')
           + zonas.map(z => fila(
                 `${z.id}${z.de === null || z.de === undefined ? '' : ' · ' + z.de}`,
                 `${z.items.length} vistas${z.ocultas ? ` + ${z.ocultas} tapadas` : ''}`)).join('')

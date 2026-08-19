@@ -7,7 +7,7 @@ Generada por `tabla.mjs` el 2026-08-17.
 **1,00** = tan bueno como el rival de casa del juego.
 Las dos referencias se miden en la misma tanda que los modelos.
 
-Los modelos juegan 15 semillas por juego; las líneas base, 120.
+Los modelos juegan 15 semillas por juego; las líneas base, 500.
 Las base no cuestan tokens, así que el metro se mide con muchas más partidas
 que lo que se mide con él. El ± es la incertidumbre real de cada fila.
 
@@ -18,19 +18,17 @@ hay un juego mandando. Es por lo que los bancos de Atari publican mediana.
 
 | participante | mediana | media | ± | forzadas | tokens | recibos verificados |
 |---|---|---|---|---|---|---|
-| primera (suelo) | **0.00** | 0.00 | ±0.04 | 0/0 | 0.0k | 3167/3600 |
-| azar | **0.09** | -0.55 | ±0.12 | 0/0 | 0.0k | 3160/3600 |
-| casa (techo blando) | **1.00** | 1.00 | ±0.05 | 0/0 | 0.0k | 3176/3600 |
+| primera (suelo) | **0.00** | 0.00 | ±0.60 | 0/0 | 0.0k | 13422/16000 |
+| azar | **0.03** | -0.54 | ±0.66 | 0/0 | 0.0k | 13410/16000 |
+| casa (techo blando) | **1.00** | 1.00 | ±0.63 | 0/0 | 0.0k | 13425/16000 |
 
-Juegos que puntúan: ajedrez, go, reversi, damas, xiangqi, mancala, snake, fagocito, peaton, blackjack, poker, brisca, tute, hearts, spades, gofish, entropy, sokoban, cripta, flota, defensa, sigilo, frentes, relevo, cabina, rebano, pradera, nave, generala, canadiense.
+Juegos que puntúan: ajedrez, go, reversi, damas, xiangqi, mancala, snake, fagocito, peaton, blackjack, poker, brisca, tute, hearts, spades, gofish, unit, entropy, sokoban, cripta, flota, defensa, sigilo, frentes, relevo, cabina, rebano, pradera, nave, parchis, generala, canadiense.
 
 Fuera de la media, y por qué:
 
 - **guerra** — la casa no supera al suelo: la escala se invertiría
-- **unit** — el hueco (19.3) no supera al ruido de la medida (±26.3)
-- **remigio** — el hueco (10.4) no supera al ruido de la medida (±21.3)
-- **parchis** — el hueco (59.0) no supera al ruido de la medida (±60.7)
-- **oca** — el hueco (78.9) no supera al ruido de la medida (±140.4)
+- **remigio** — el hueco (9.1) no supera al ruido de la medida (±10.6)
+- **oca** — el hueco (19.2) no supera al ruido de la medida (±68.2)
 
 
 Cada partida se re-simula contra el mismo fichero de reglas antes de contarse.

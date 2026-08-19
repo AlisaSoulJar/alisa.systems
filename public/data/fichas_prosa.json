@@ -26,7 +26,6 @@
     "               en nada», no «no lo he mirado»",
     "  origen       de dónde viene el juego"
   ],
-
   "brisca": {
     "que_es": "El juego de bazas más extendido de España: cartas que valen puntos, un palo que manda sobre todos, y una mano de sólo tres cartas que se rellena sobre la marcha.",
     "reparto": "Tres cartas a cada uno. La siguiente del mazo se destapa y su palo es el triunfo; se queda debajo del montón, boca arriba y a la vista de todos.",
@@ -42,7 +41,6 @@
     ],
     "origen": "Emparentada con la briscola italiana, de la que toma el nombre y casi todo. Se juega con la baraja española de 40 cartas en toda la península y en buena parte de Hispanoamérica."
   },
-
   "spades": {
     "que_es": "Juego de bazas con las picas siempre de triunfo, y con lo que lo hace distinto a todos los demás de la casa: antes de jugar APUESTAS cuántas bazas vas a hacer, y acertar vale más que ganar.",
     "reparto": "Se reparte la baraja entera entre los cuatro, trece cartas cada uno. No hay mazo ni robo: se juega con lo que te tocó. Y antes de la primera carta, cada uno apuesta.",
@@ -60,7 +58,6 @@
     ],
     "origen": "Estadounidense, de los años treinta, de la familia del whist. Es de los juegos de cartas más jugados en Estados Unidos, y casi siempre en parejas."
   },
-
   "tute": {
     "que_es": "El juego de bazas serio de la baraja española: se reparte todo de una vez, hay que servir al palo, y quien cuenta las cartas que van saliendo gana.",
     "reparto": "Diez cartas a cada uno y se acaba la baraja: no queda mazo ni se roba. La última carta repartida se enseña y su palo es el triunfo.",
@@ -78,7 +75,6 @@
     ],
     "origen": "Español, emparentado con el bézique y el marriage centroeuropeos, de donde vienen los cantes de rey y caballo. El guiñote aragonés es su primo cercano."
   },
-
   "hearts": {
     "que_es": "El juego de bazas al revés: aquí ganar bazas es un castigo. Cada corazón que te llevas suma en tu contra, y la dama de picas vale ella sola por trece.",
     "reparto": "La baraja francesa entera repartida entre los cuatro, trece cartas cada uno. No hay mazo, no hay robo y no hay triunfo — y lo de no haber triunfo es la regla, no un olvido.",
@@ -97,7 +93,6 @@
     ],
     "origen": "De la familia de los juegos de bazas «al revés», emparentado con el Reversis francés. La dama de picas como carta maldita es una aportación estadounidense de principios del siglo XX."
   },
-
   "guerra": {
     "que_es": "El juego más tonto de la casa, y está aquí a propósito: se voltea una carta cada uno y gana la más alta. No hay ni una sola decisión que tomar.",
     "reparto": "Una baraja francesa barajada. No se reparte en montones: las cartas se van volteando del mazo común.",
@@ -113,7 +108,6 @@
     ],
     "origen": "Universal y sin autor, de las que se aprenden antes de saber leer. Aquí no está por nostalgia: está como control de laboratorio."
   },
-
   "mancala": {
     "que_es": "Sembrar y recoger. Doce hoyos con semillas y un granero por jugador; se coge un hoyo entero y se va dejando una semilla en cada hueco. Ni azar ni nada oculto: pura aritmética.",
     "reparto": "Cuatro semillas en cada uno de los doce hoyos. Los dos graneros empiezan vacíos.",
@@ -126,7 +120,6 @@
     "diferencias": [],
     "origen": "La familia de juegos de siembra es africana y milenaria, con decenas de variantes. Ésta es Kalah, la versión occidental con graneros que se popularizó a mediados del siglo XX."
   },
-
   "snake": {
     "que_es": "La serpiente de toda la vida: crece cada vez que come, y cuanto más crece menos sitio le queda. Aquí no va por reflejos sino por pasos.",
     "reparto": "Una rejilla de 20x20, la serpiente empieza con tres segmentos mirando a la derecha, y una comida colocada al azar en una casilla libre.",
@@ -140,7 +133,6 @@
     "diferencias": [],
     "origen": "De los arcades de los años setenta, y clásico de los bancos de pruebas de aprendizaje por refuerzo desde que llevaba serpiente el móvil de todo el mundo."
   },
-
   "ajedrez": {
     "que_es": "El ajedrez, entero. No es una versión reducida: están el enroque, la captura al paso, la coronación a las cuatro piezas, el ahogado, la regla de las 50 jugadas y el material insuficiente.",
     "reparto": "La posición inicial de siempre. Se habla FEN por dentro y las jugadas van en notación UCI: casilla de origen y casilla de destino pegadas, `e2e4`. Para coronar se añade la pieza, `e7e8q`.",
@@ -155,7 +147,6 @@
     ],
     "origen": "Su forma moderna se fija en Europa en el siglo XV, a partir del shatranj persa, que a su vez viene del chaturanga indio. El xiangqi de esta misma casa es el otro gran nieto de aquel abuelo."
   },
-
   "go": {
     "que_es": "Colocar piedras es lo fácil; el juego está en las libertades. Un grupo vive mientras toque alguna intersección vacía, y todo lo demás sale de ahí.",
     "reparto": "Tablero de 19x19 vacío. Salen las negras. Las blancas reciben 6,5 puntos de compensación —el komi— por jugar segundas, y el medio punto está para que no haya empates.",
@@ -171,7 +162,6 @@
     ],
     "origen": "Chino, con más de dos mil quinientos años. Es el juego de tablero más antiguo que se sigue jugando con las mismas reglas."
   },
-
   "reversi": {
     "que_es": "Se pone una ficha de forma que atrape fichas del rival entre la nueva y otra tuya, y todas las atrapadas cambian de color. Parece de contar y es de posición.",
     "reparto": "Las cuatro fichas del centro en cruz: d5 y e4 negras, d4 y e5 blancas. Salen las negras.",
@@ -185,7 +175,6 @@
     "diferencias": [],
     "origen": "El Reversi es inglés, de 1883. El Othello japonés de 1971 es el mismo juego con la posición inicial fijada, que es la que se juega aquí."
   },
-
   "damas": {
     "que_es": "Damas en tablero de 8x8 con una regla que lo cambia todo: comer es obligatorio. Si hay captura disponible, no puedes hacer otra cosa.",
     "reparto": "Doce piezas por bando en las casillas oscuras de las tres primeras filas de cada lado. Salen las blancas. Las jugadas se escriben origen+destino, `c3d4`, y una captura múltiple encadena las casillas: `c3e5g7`.",
@@ -201,7 +190,6 @@
     ],
     "origen": "El juego moderno se fija en Francia en el siglo XVI sobre el tablero de ajedrez. Las variantes nacionales —española, inglesa, internacional de 10x10— se separaron después, y por eso hacen falta las normas."
   },
-
   "xiangqi": {
     "que_es": "El ajedrez chino, y no es el nuestro con otras piezas: se juega en las intersecciones, hay un río en medio, los generales viven encerrados en su palacio y el cañón come saltando.",
     "reparto": "Tablero de 9 columnas por 10 filas, piezas sobre las intersecciones. Rojo abajo y sale primero, negro arriba. Las jugadas van origen+destino, `e6e5`.",
@@ -216,7 +204,6 @@
     ],
     "origen": "Chino, documentado desde el siglo XI. Comparte antepasado con el ajedrez occidental —el chaturanga indio— y por eso se reconocen las piezas aunque casi ninguna se mueva igual."
   },
-
   "blackjack": {
     "que_es": "El 21 contra la casa. Pides cartas hasta plantarte, sin pasarte de 21, y luego la casa juega con una regla fija y sin margen.",
     "reparto": "Zapato de seis barajas francesas. Dos cartas para ti boca arriba y dos para la casa, una de ellas tapada. Las figuras valen 10 y el as vale 1 u 11, lo que más te convenga.",
@@ -233,7 +220,6 @@
     ],
     "origen": "Descendiente del veintiuno francés del siglo XVIII. Su forma actual, con la regla fija del crupier, viene de los casinos de Nevada."
   },
-
   "poker": {
     "que_es": "Texas Hold'em cara a cara y a límite fijo. Dos cartas tuyas, cinco comunes, y cuatro rondas de apuestas para averiguar quién tiene mejor mano — o para convencer al otro de que la tienes tú.",
     "reparto": "Dos cartas tapadas a cada uno. Después se descubren tres cartas comunes (el flop), luego una (el turn) y luego otra (el river), con una ronda de apuestas antes de cada revelación y otra al final.",
@@ -250,7 +236,6 @@
     ],
     "origen": "Texano, de principios del siglo XX, y el rey del póker moderno desde que la televisión enseñó las cartas tapadas."
   },
-
   "gofish": {
     "que_es": "Pedir cartas a los demás y acordarse de lo que han pedido ellos. No hay tablero ni posición: lo único que separa a un buen jugador de uno malo es la memoria.",
     "reparto": "Cartas repartidas de una baraja francesa y el resto en el mazo, para pescar.",
@@ -266,7 +251,6 @@
     ],
     "origen": "Anglosajón y universal en las casas con niños. Es de los pocos juegos clásicos cuya dificultad está entera en recordar lo que se ha dicho en voz alta."
   },
-
   "unit": {
     "que_es": "La familia del descarte: sueltas cartas que casen en color o en número con la de arriba del montón, y gana quien se queda sin cartas. Las especiales convierten el ORDEN DE JUEGO en parte del problema.",
     "reparto": "Una mano a cada jugador, una carta destapada para empezar el descarte y el resto en el mazo.",
@@ -283,7 +267,6 @@
     ],
     "origen": "La familia del Crazy Eights, de dominio público y con más de un siglo. La versión comercial de 1971 le añadió las cartas especiales, que son las que hacen el juego."
   },
-
   "entropy": {
     "que_es": "Gana quien MENOS desorden acumula. Tienes una caja de ocho cartas casi todas boca abajo, y cada turno decides qué hacer con la que robas. Al final se suma tu caja y la suma más baja gana.",
     "reparto": "Ocho cartas por jugador en una rejilla de 2x4, casi todas tapadas. Mazo y montón de descarte en el centro.",
@@ -297,7 +280,6 @@
     "diferencias": [],
     "origen": "La mecánica de rejilla-y-cambio con puntuación mínima es de la familia del Golf de cartas, de dominio público desde hace décadas. El nombre Entropy es nuestro: las mecánicas no se registran, los nombres comerciales sí, y esto se publica."
   },
-
   "remigio": {
     "que_es": "El rummy español: robar, combinar y cerrar. Tienes diez cartas y ganas cuando las diez forman combinaciones enteras.",
     "reparto": "Diez cartas a cada uno, el resto en el mazo y una carta destapada para empezar el descarte.",
@@ -313,7 +295,6 @@
     ],
     "origen": "De la familia del rummy, que llega a España desde el gin rummy estadounidense y se mezcla con juegos de combinación anteriores. Cada casa tiene su versión; ésta es la de diez cartas."
   },
-
   "generala": {
     "que_es": "Cinco dados y una hoja de once casillas. Tiras, apartas lo que te sirve, vuelves a tirar, y decides en qué casilla anotas. Cada casilla se usa UNA vez en toda la partida.",
     "reparto": "La hoja vacía y cinco dados sobre la mesa. Todo el estado visible son dos montones —los dados sueltos y los apartados— más la hoja de cada jugador.",
@@ -332,7 +313,6 @@
     ],
     "origen": "Rioplatense, prima del Yahtzee estadounidense y del Poker Dice. Las dos vienen del mismo juego de dados de principios del siglo XX y se separaron en las tablas de puntuación."
   },
-
   "oca": {
     "que_es": "De la salida a la 63, y cada casilla hace algo. Ocas que te adelantan, puentes que te teletransportan, un pozo del que no sales solo y una muerte que te devuelve al principio.",
     "reparto": "El tablero de 63 casillas y dos fichas por jugador en la salida.",
@@ -347,7 +327,6 @@
     ],
     "origen": "Europea, documentada desde el siglo XVI en Italia y extendida por toda Europa. Es de los tableros de recorrido más antiguos que siguen imprimiéndose igual."
   },
-
   "parchis": {
     "que_es": "Sacar las cuatro fichas de casa, dar la vuelta al tablero y meterlas en la meta, comiendo al que se ponga por delante.",
     "reparto": "Cuatro fichas por jugador en casa, un recorrido común de 68 casillas con los seguros marcados, y un pasillo de 7 hasta la meta.",
@@ -363,7 +342,6 @@
     ],
     "origen": "Español, del siglo XIX, adaptado del pachisi indio como el ludo británico y el parcheesi estadounidense. Los cuatro son el mismo juego con reglas de premio distintas."
   },
-
   "canadiense": {
     "que_es": "El parchís que se juega con CARTAS en vez de dado. Mismo tablero y mismo objetivo, pero el movimiento sale de tu mano — así que el azar deja de ser público y pasa a ser tuyo.",
     "reparto": "El tablero del parchís, las fichas en casa, y una mano de cartas para cada jugador.",
@@ -379,7 +357,6 @@
     ],
     "origen": "Conocido en Canadá como Tock y en Alemania como Dog. Toda la familia desciende del pachisi indio, igual que el parchís, pero cambiando el dado por una mano de cartas."
   },
-
   "sokoban": {
     "que_es": "Empujar cajas hasta sus destinos. Sin azar, sin rival y sin nada oculto: pura planificación, con la particularidad de que hay movimientos que no se pueden deshacer.",
     "reparto": "Un almacén con muros, cajas y destinos, y tú dentro. La semilla elige cuál de los ocho niveles clásicos toca.",
@@ -394,7 +371,6 @@
     ],
     "origen": "Japonés, de 1982, de Hiroyuki Imabayashi. Es el rompecabezas de empujar cajas del que salieron todos los demás, y un clásico de la investigación en planificación automática."
   },
-
   "flota": {
     "que_es": "Dos mares, una flota escondida en cada uno, y un disparo por turno. Deducir dónde está lo que el otro ha escondido, mientras él deduce lo mismo de ti.",
     "reparto": "Cada bando coloca cuatro barcos en su mar: uno de cuatro casillas, dos de tres y uno de dos, doce casillas de flota por lado.",
@@ -410,7 +386,6 @@
     ],
     "origen": "El «hundir la flota» de toda la vida, jugado con lápiz y papel desde antes de la Primera Guerra Mundial y comercializado en tablero desde 1931."
   },
-
   "peaton": {
     "que_es": "Cruzar la calle. Carriles de coches yendo y viniendo, tú abajo, la acera de enfrente arriba. La decisión más difícil suele ser quedarse quieto.",
     "reparto": "Rejilla de 11x11 con carriles generados por semilla, cada uno con su sentido y su velocidad. Empiezas abajo del todo.",
@@ -425,7 +400,6 @@
     ],
     "origen": "El género del cruce de carriles nace en los arcades de Konami en 1981, y es desde entonces un banco de pruebas clásico de aprendizaje por refuerzo por su recompensa muy separada del riesgo."
   },
-
   "fagocito": {
     "que_es": "Una célula que engulle mientras la persiguen. Recoger todo el alimento de un laberinto sin que te alcancen los que van detrás.",
     "reparto": "Laberinto de 28x28 generado con semilla, alimento repartido por los pasillos, tú dentro y tres perseguidores.",
@@ -440,7 +414,6 @@
     ],
     "origen": "El género lo funda el comecocos de Namco en 1980, y sus laberintos con perseguidores de carácter distinto son de los primeros ejemplos de comportamiento no trivial en un videojuego."
   },
-
   "cripta": {
     "que_es": "Una mazmorra que no se ve entera. Se explora a oscuras, se recuerda lo visto, y en algún momento hay que decidir si seguir bajando o salir con lo que llevas.",
     "reparto": "Un mapa generado por semilla con tesoros, bichos y una salida. Tú sólo ves lo que has pisado.",
@@ -453,7 +426,6 @@
     "diferencias": [],
     "origen": "Original de esta casa. Nació de un hueco medido: de veintiún juegos, ninguno ocultaba el MAPA. Ajedrez y go son información perfecta, la brisca esconde cartas pero el tablero está a la vista, y sokoban enseña el nivel entero desde el primer paso."
   },
-
   "sigilo": {
     "que_es": "Un ladrón entra a robar y un guardia lo busca. Ninguno ve el edificio entero, ninguno ve al otro salvo cuando lo tiene delante, y por los pasillos van drones que no obedecen a nadie.",
     "reparto": "Un edificio generado por semilla, el ladrón en una entrada, el guardia patrullando, y drones con su propio recorrido.",
@@ -466,7 +438,6 @@
     "diferencias": [],
     "origen": "Original de esta casa. Lo pidió la matriz de géneros, que tenía vacía la casilla `oculto + autónomo + rival` y ningún juego que juntara los cinco ejes."
   },
-
   "defensa": {
     "que_es": "Dos carriles. En el tuyo pones torres; al del rival le mandas bichos. El oro cae solo, y cada moneda gastada en atacar es una moneda que no defiende.",
     "reparto": "Un carril para cada jugador, sin torres y sin bichos, y un goteo de oro que empieza a caer desde el primer turno.",
@@ -479,7 +450,6 @@
     "diferencias": [],
     "origen": "Original de esta casa. Lo pidió la matriz de géneros por dos huecos a la vez: sólo tres de veintidós juegos tenían mundo autónomo, y ninguno tenía economía — que no es un juego que falte, es una familia entera, la que va de la defensa de torres a la estrategia en tiempo real."
   },
-
   "frentes": {
     "que_es": "Cinco frentes y ocho rondas. Cada ronda los dos eligen un frente sin ver lo que ha elegido el otro. Si eligen distinto, cada uno refuerza el suyo; si coinciden, chocan y no avanza ninguno.",
     "reparto": "Cinco frentes empatados y ocho rondas por delante.",
@@ -492,7 +462,6 @@
     "diferencias": [],
     "origen": "Original de esta casa, de la familia de los juegos de decisión simultánea. Es un pariente lejano del Blotto de la teoría de juegos, donde dos bandos reparten fuerzas entre frentes sin verse."
   },
-
   "relevo": {
     "que_es": "Dos autómatas en un almacén partido por un muro con una sola puerta. La puerta está abierta mientras alguien pisa una placa, y hay una placa a cada lado.",
     "reparto": "El almacén, los dos autómatas a un lado, las dos placas y la salida.",
@@ -505,7 +474,6 @@
     "diferencias": [],
     "origen": "Original de esta casa. Lo pidió la matriz de géneros, que medía cooperativo en 0 de 25."
   },
-
   "cabina": {
     "que_es": "Dos asientos con papeles opuestos. La GUÍA ve el almacén entero y no puede moverse. El PILOTO se mueve y no ve más que la casilla que pisa. Lo único que puede hacer la guía es decir cosas.",
     "reparto": "Un almacén con pozos y una salida. La guía lo ve todo; el piloto, nada.",
@@ -518,7 +486,6 @@
     "diferencias": [],
     "origen": "Original de esta casa, de la familia de los cooperativos asimétricos —la del Keep Talking and Nobody Explodes—, donde cada jugador tiene la mitad de la información y ninguna mitad sirve sola."
   },
-
   "rebano": {
     "que_es": "Eres el perro. Hay doce ovejas y un redil. No puedes ordenarle nada a ninguna oveja: sólo colocarte, y dejar que huyan de ti.",
     "reparto": "Un prado, las ovejas repartidas y el redil en una esquina.",
@@ -531,7 +498,6 @@
     "diferencias": [],
     "origen": "Original de esta casa, de la familia de los juegos de pastoreo. La física de rebaño son boids, el modelo de bandadas de Craig Reynolds de 1986, que es el mismo que mueve los peces y los pájaros del cine."
   },
-
   "pradera": {
     "que_es": "Eres el depredador. Los ratones comen queso y se reproducen; tú comes ratones o te mueres de hambre. Cazar resuelve hoy y arruina el mes que viene.",
     "reparto": "Un prado con queso, una población de ratones y tú, con hambre.",
@@ -544,7 +510,6 @@
     "diferencias": [],
     "origen": "Original de esta casa, sobre el modelo depredador-presa de Lotka-Volterra, que es de los años veinte y describe justamente eso: dos poblaciones que se regulan la una a la otra hasta que alguien rompe el ciclo."
   },
-
   "nave": {
     "que_es": "Cuatro sillas y una miente. Tres tripulantes reparan la nave; un impostor los elimina de uno en uno. Cuando aparece un cadáver se convoca junta y todos votan a la vez.",
     "reparto": "La nave con sus tareas, tres tripulantes y un impostor. Nadie sabe quién es quién.",
@@ -556,5 +521,14 @@
     ],
     "diferencias": [],
     "origen": "Original de esta casa, de la familia de la deducción social —la del juego de los lobos y del Among Us—, donde la información que importa no está en el tablero sino en lo que los demás dicen y dejan de decir."
+  },
+  "domino": {
+    "que_es": "Veintiocho fichas, cada una con dos mitades numeradas del cero al seis. Vas poniendo fichas en las dos puntas de una cadena, y cada una sólo entra si uno de sus números casa con la punta. Es el único juego de la casa donde DÓNDE puede ir una pieza depende de QUÉ es.",
+    "reparto": "Siete fichas para cada uno; las catorce restantes se quedan en el pozo, boca abajo. Nadie ve la mano del otro, pero sí cuántas le quedan — y eso es la mitad de la información del juego.",
+    "turno": "Pones una ficha en la punta izquierda o en la derecha, si casa. Si no tienes ninguna que case, robas del pozo hasta que salga una. Si el pozo se acaba y sigues sin poder, pasas.",
+    "gana": "Quien se queda sin fichas. Y si nadie puede seguir —eso es cerrar, o trancar— gana el que menos puntos tenga en la mano, sumando las dos mitades de cada ficha que le sobra.",
+    "ojo": "La orientación no la eliges tú: puesta la ficha en una punta, el sentido en que casa ya está decidido. Lo que sí eliges, cuando tu ficha entra por los dos lados, es POR CUÁL — y eso decide qué número le dejas vivo al rival. Ahí está el juego. Contar lo que ya ha salido y cerrar cuando vas ligero es la otra mitad.",
+    "diferencias": "Se juega a DOS y no a parejas, que es como se juega en la calle: con cuatro, la mitad de la decisión es lo que le señalas a tu compañero, y eso pide un canal que este banco todavía no tiene. Y una partida es UNA mano, no una serie a cien puntos: el marcador que se compara es lo que te queda en la mano, en negativo.",
+    "origen": "El dominó llegó a Europa desde China en el siglo XVIII. Esta versión es la de pozo con doble-seis, la más extendida en España y en el Caribe."
   }
 }

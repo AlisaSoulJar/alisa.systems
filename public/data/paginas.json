@@ -208,5 +208,11 @@
     "propia": true,
     "titulo": "Canadiense",
     "sillas": 4
+  },
+  "domino": {
+    "pagina": "domino.html",
+    "propia": true,
+    "titulo": "Domino",
+    "sillas": 2
   }
 }

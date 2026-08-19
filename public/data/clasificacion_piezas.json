@@ -1,5 +1,5 @@
 {
- "fecha": "2026-08-17",
+ "fecha": "2026-08-19",
  "total": 179,
  "cuenta": {
   "apagada": 120,
@@ -830,7 +830,7 @@
    "ruta": "gym/registro.js",
    "nombre": "registro",
    "familia": "gym",
-   "kb": 15.9,
+   "kb": 16.3,
    "clase": "apagada",
    "exporta": [
     "CATALOGO",

@@ -1,0 +1,523 @@
+=== NODE PRUEBA_SUBASTA.MJS ===
+
+¿Tiene spades su subasta?
+
+  [32m✓[0m la primera jugada es una APUESTA, no una carta[90m  — salen: apostar:0, apostar:1, apostar:2, apostar:3, apostar:4…[0m
+  [32m✓[0m se puede apostar desde 0 (nil) hasta 13[90m  — 0:sí 13:sí[0m
+  [32m✓[0m jugar una carta REAL antes de apostar se rechaza y no cambia nada[90m  — probado con jugar:H_Q[0m
+  [32m✓[0m apuestan los cuatro asientos antes de repartir juego[90m  — aceptadas 4 de 4[0m
+  [32m✓[0m después de las cuatro apuestas, las jugadas son CARTAS[90m  — salen: jugar:H_Q, jugar:S_J, jugar:C_K, jugar:H_6[0m
+  [32m✓[0m las apuestas viajan en el estado publicado[90m  — sin esto el verificador rechaza partidas honradas[0m
+  [32m✓[0m sin pedir asiento, `estado(p)` ofrece las jugadas de QUIEN LE TOCA durante toda la subasta[90m  — 4 apuestas seguidas[0m
+  [32m✓[0m brisca: la fábrica compartida sigue viva tras una jugada
+  [32m✓[0m tute: la fábrica compartida sigue viva tras una jugada
+  [32m✓[0m hearts: la fábrica compartida sigue viva tras una jugada
+  [32m✓[0m una partida con subasta llega al final
+  [32m✓[0m la partida publica una puntuación numérica[90m  — puntos = -30[0m
+  [32m✓[0m una partida CON sus cuatro apuestas se verifica volviéndola a jugar[90m  — 56 jugadas[0m
+
+  [32mla subasta está terminada[0m
+
+
+RETURN CODE: 0
+
+=== NPM TEST ===
+
+> alisa-engine@1.0.0 test
+> node prueba_reglas.mjs && node prueba_biblioteca.mjs && node prueba_lenguaje.mjs && node prueba_sustrato.mjs && node prueba_objetivo.mjs && node --import ./resolver_three.mjs prueba_variantes.mjs && node prueba_repetidor.mjs && node prueba_final.mjs && node prueba_teclado.mjs && node prueba_css.mjs && node prueba_openapi.mjs && node prueba_version.mjs && node prueba_clasificacion.mjs && node prueba_censo.mjs && node --import ./resolver_three.mjs prueba_fichas.mjs && node --import ./resolver_three.mjs prueba_semillas.mjs && node check_gym_envs.mjs && node prueba_funcion.mjs && python preflight.py
+
+
+  35 juegos declarados en rules/index.js
+
+  [32m✓[0m ajedrez    179 jugadas · puntos     -6 · termina · huella 62ffbb1b
+  [32m✓[0m go         326 jugadas · puntos    146 · termina · huella f104bf42
+  [32m✓[0m reversi     60 jugadas · puntos     40 · termina · huella eeb09ff6
+  [32m✓[0m damas       25 jugadas · puntos   1000 · termina · huella 31aac568
+  [32m✓[0m xiangqi    171 jugadas · puntos      7 · termina · huella f80e027b
+  [32m✓[0m mancala     22 jugadas · puntos     22 · termina · huella 7655cf40
+  [32m✓[0m snake      306 jugadas · puntos    210 · termina · huella 052d3fa2
+  [32m✓[0m fagocito    31 jugadas · puntos    310 · termina · huella dcbfd451
+  [32m✓[0m peaton      10 jugadas · puntos    200 · termina · huella 9a91707a
+  [32m✓[0m blackjack  130 jugadas · puntos    -34 · termina · huella 0d93b796
+  [32m✓[0m poker       89 jugadas · puntos    -22 · termina · huella a407aaa1
+  [32m✓[0m brisca      40 jugadas · puntos      0 · termina · huella e696197a
+  [32m✓[0m tute        40 jugadas · puntos     21 · termina · huella 532c474b
+  [32m✓[0m hearts      52 jugadas · puntos     -8 · termina · huella 3c44142a
+  [32m✓[0m spades      56 jugadas · puntos    -95 · termina · huella 1e4b7258
+  [32m✓[0m guerra      26 jugadas · puntos     28 · termina · huella 051d069f
+  [32m✓[0m gofish      54 jugadas · puntos      3 · termina · huella 4f9e89ba
+  [32m✓[0m unit        52 jugadas · puntos    -65 · termina · huella d1291073
+  [32m✓[0m entropy     60 jugadas · puntos    -34 · termina · huella d2c7678e
+  [32m✓[0m sokoban    300 jugadas · puntos   -202 · termina · huella d98bf970
+  [32m✓[0m cripta     400 jugadas · puntos   -359 · termina · huella 681a0282
+  [32m✓[0m flota       81 jugadas · puntos    379 · termina · huella 7cd0df9f
+  [32m✓[0m defensa    160 jugadas · puntos     36 · termina · huella 401b318c
+  [32m✓[0m sigilo     200 jugadas · puntos   -143 · termina · huella 7f02943e
+  [32m✓[0m frentes     16 jugadas · puntos      0 · termina · huella 08f826cd
+  [32m✓[0m relevo      97 jugadas · puntos    587 · termina · huella f04ea89a
+  [32m✓[0m cabina      36 jugadas · puntos    283 · termina · huella b6acea43
+  [32m✓[0m rebano     140 jugadas · puntos   -251 · termina · huella d929a5ec
+  [32m✓[0m pradera     34 jugadas · puntos    -18 · termina · huella 95063faf
+  [32m✓[0m nave       276 jugadas · puntos    380 · termina · huella bf58ce50
+  [32m✓[0m remigio     20 jugadas · puntos    -72 · termina · huella 77ea51b2
+  [32m✓[0m parchis    600 jugadas · puntos    287 · tope    · huella c2b20d9c
+  [32m✓[0m generala   119 jugadas · puntos     21 · termina · huella efc2f5ea
+  [32m✓[0m oca         46 jugadas · puntos     10 · termina · huella 1221d5f6
+  [32m✓[0m canadiense 287 jugadas · puntos    194 · termina · huella f66fc9ba
+
+  [32m✓[0m control de laboratorio (guerra): misma semilla ⇒ mismo marcador · 50 partidas sin perder una carta
+
+  [32m✓[0m nadie pierde una carta: guerra, unit, entropy — 30 partidas cada uno, jugadas por el rival de la casa
+
+  [32m35 de 35 juegos se juegan, se repiten y se verifican[0m
+
+
+¿Cada juego de cartas usa el catálogo que se le da?
+
+  ✓ blackjack
+  ✓ poker
+  ✓ brisca
+  ✓ tute
+  ✓ hearts
+  ✓ spades
+  ✓ guerra
+  ✓ gofish
+  ✓ unit
+  ✓ entropy
+  ✓ remigio
+  ✓ canadiense
+
+✓ los 12 leen el catálogo que se les indica
+
+
+¿Qué lee un agente sin visión?
+
+  ✓ ajedrez      280 car · Tablero (FEN): r1bqkbnr/pppppppp/n7/P7/8/8/1PPPPPPP/RNBQKB…
+  ✓ go           654 car · Tablero (19 filas, . vacío X negras O blancas): XOXOXO....…
+  ✓ reversi      148 car · Tablero (FEN): 1WB5/2WB4/3WB3/3WB3/3WB3/8/8/8 b. discs: {"…
+  ✓ damas        272 car · Tablero (FEN): 1b1b1b1b/2b1b1b1/1b3b1b/b7/1b1w4/4w1w1/1w1w…
+  ✓ xiangqi      556 car · Tablero (FEN): 3akabnr/r8/nc2b2c1/P1p1p1p1p/9/9/2P1P1P1P/1…
+  ✓ mancala      152 car · Tus hoyos 0-5: 0 0 0 0 8 7 (tu granero: 3). Hoyos del riva…
+  ✓ snake        203 car · Serpiente de 3, cabeza en (10,4) mirando arriba. Cuerpo: (…
+  ✓ fagocito    1033 car · Laberinto (# muro, . bolita, G fantasma, @ tú): ##########…
+  ✓ peaton       300 car · Calle (F tú, > y < coches según su sentido, . libre): ....…
+  ✓ blackjack    242 car · Tu mano: D_9 C_7. Quedan 296 cartas en el mazo. dealer_han…
+  ✓ poker        261 car · Tu mano: D_9 S_2. Cartas comunes: S_J S_7 S_10. Bote: 4. p…
+  ✓ brisca       239 car · Tu mano: P_7 B_6 O_6. Triunfo: O. En la baza: 2 juega O_7,…
+  ✓ tute         255 car · Tu mano: B_6 B_3 E_R O_2 O_R O_7 P_4 B_2. Triunfo: O. En l…
+  ✓ hearts       282 car · Tu mano: S_10 C_2 D_7 H_J S_4 D_6 H_8 D_4 C_J S_8 H_6. En …
+  ✓ spades       274 car · Tu mano: H_4 S_10 C_2 D_7 H_J S_4 D_6 H_8 D_4 C_J S_8 H_6.…
+  ✓ guerra       191 car · Quedan 40 cartas en el mazo. bote: 0. ganadas: [10,2]. ult…
+  ✓ gofish       353 car · Tu mano: S_10 D_7 H_J S_Q C_3. Rivales con 10 10 cartas. Ú…
+  ✓ unit         423 car · Tu mano: B_SKIP Y_4 R_6 R_9 W_WD4 Y_6 Y_0. Cima del descar…
+  ✓ entropy      368 car · Tu caja: 0:7 1:? 2:? 3:? 4:12 5:? 6:? 7:?. Descarte: 11. C…
+  ✓ sokoban      169 car · nivel: 1. cajas_colocadas: 0. cajas_totales: 1. pasos: 6. …
+  ✓ cripta       181 car · vida: 5. tesoros: 0. tesoros_totales: 3. pasos: 6. explora…
+  ✓ flota        281 car · bando: azul. tocados: 1. hundidos: 0. encajados: 0. hundid…
+  ✓ defensa      436 car · bando: azul. oro: 24. vida: 10. vida_rival: 10. torres: 2.…
+  ✓ sigilo       186 car · bando: ladron. botin: 0. botin_total: 2. pasos: 6. explora…
+  ✓ frentes      335 car · bando: azul. ronda: 3. rondas: 8. mias: [2,0,0,0,1]. suyas…
+  ✓ relevo       211 car · silla: uno. companero: dos. salidos: 0. fuera_ambos: false…
+  ✓ cabina       208 car · silla: guia. vidas: 3. pasos: 6. mensaje: arriba. dichos: …
+  ✓ rebano       123 car · en_redil: 0. ovejas: 12. pasos: 6. dispersion: 110.…
+  ✓ pradera      150 car · hambre: 82. ratones: 8. quesos: 1. comidos: 0. turnos: 6. …
+  ✓ nave         195 car · silla: a. soy_impostor: true. vivo: true. vivos: 4. tareas…
+  ✓ remigio      501 car · Tu mano: S_10 C_2 D_7 H_J S_4 D_6 H_8 D_4 C_6 C_3. Descart…
+  ✓ parchis      191 car · Marcador: 0 0 0 0. fase: tirar. mis_fichas: [-1,-1,-1,-1].…
+  ✓ generala     805 car · dados: [2,3,5,6,6]. guardados: []. tiradas: 2. tiradas_res…
+  ✓ oca          969 car · Marcador: 20 130. fase: tirar. fichas: [{"de":0,"ficha":0,…
+  ✓ canadiense   488 car · Tu mano: S_10 C_2 D_7 C_6 D_8. Descarte: S_4. Rivales con …
+
+✓ los 35 se cuentan, ninguno filtra, todos deterministas
+
+
+¿El estado es de verdad una matriz plana?
+
+  · ajedrez    rejilla 8x8 · 32 piezas
+  · go         rejilla 19x19 · 5 piezas
+  ✓ reversi    rejilla 8x8 · 9 piezas
+  ✓ damas      rejilla 8x8 · 23 piezas
+  · xiangqi    rejilla 9x10 · 31 piezas
+  · mancala    rejilla 7x2
+  · snake      rejilla 11x8 · 4 piezas
+  · fagocito   rejilla 28x28 · 550 piezas
+  · peaton     rejilla 11x11 · 26 piezas
+  · blackjack  2 zonas
+  · poker      2 zonas
+  · brisca     6 zonas
+  · tute       6 zonas
+  · hearts     6 zonas
+  · spades     6 zonas
+  · guerra     1 zonas
+  · gofish     4 zonas
+  · unit       6 zonas
+  · entropy    5 zonas
+  ✓ sokoban    rejilla 8x6 · 3 piezas
+  ✓ cripta     rejilla 24x18 · 2 piezas
+  ✓ flota      rejilla 17x8 · 15 piezas
+  ✓ defensa    rejilla 15x10 · 4 piezas
+  ✓ sigilo     rejilla 21x15 · 1 piezas
+  ✓ frentes    rejilla 5x17 · 6 piezas
+  ✓ relevo     rejilla 19x13 · 3 piezas
+  ✓ cabina     rejilla 15x11 · 9 piezas
+  ✓ rebano     rejilla 19x13 · 13 piezas
+  ✓ pradera    rejilla 20x14 · 12 piezas
+  ✓ nave       rejilla 19x13 · 1 piezas
+  ✓ remigio    4 zonas
+  ✓ parchis    rejilla 18x18 · 5 zonas
+  ✓ generala   3 zonas
+  ✓ oca        rejilla 9x9 · 1 piezas · 3 zonas
+  ✓ canadiense rejilla 18x18 · 3 piezas · 10 zonas
+  ✓ README    dice 35 juegos, y hay 35
+  ✓ barajas   los documentos dicen 7, y hay 7
+  · híbridos  parchis, oca, canadiense — tablero Y montones a la vez. Van al motor de tablero, que los dibuja los dos.
+  ✓ mesa      12 juegos de cartas PODRÍAN usar la mesa compartida (suelo: 11)
+  ✓ páginas   9 la montan de verdad (suelo: 9) · con visualizador propio: blackjack, poker, generala
+
+1 pares de campos son el mismo dato con dos nombres (techo: 1)
+    puntos / score  — en 9 juegos
+
+  9 pares coinciden SIEMPRE pero en un solo juego — la mayoría serán casualidad, pero míralos:
+      height / width  (peaton)
+      avanceMaximo / t  (peaton)
+      turn / turno  (poker)
+      ganadas / perdidas  (poker)
+      bazas / marcador  (spades)
+      cajas_colocadas / distancia_restante  (sokoban)
+      vida / vida_rival  (defensa)
+      frentes_suyos / frentes_tuyos  (frentes)
+      semilla / tareas_totales  (nave)
+
+17/35 juegos dependen del adaptador (techo: 17)
+
+✓ los 35 tienen sustrato válido
+
+
+¿Sabe un agente a qué juega?
+
+  35/35 juegos declaran su objetivo (suelo: 35)
+
+  ✓ ninguno ha perdido el suyo
+
+¿Se pueden variar las normas con variables?
+
+  anglosajona   · 120 jugadas · la más larga: f6d4f2       · fin: sin terminar · normas publicadas en el estado: {"damaVuela":false,"peonComeAtras":false}
+  española      ·  39 jugadas · la más larga: b2d4b6d8     · fin: white · normas publicadas en el estado: {"damaVuela":true,"peonComeAtras":false}
+  internacional ·  34 jugadas · la más larga: f6d4f2h4     · fin: black · normas publicadas en el estado: {"damaVuela":true,"peonComeAtras":true}
+  peón feroz    ·  38 jugadas · la más larga: f6d4f2h4     · fin: black · normas publicadas en el estado: {"damaVuela":false,"peonComeAtras":true}
+
+  ¿La misma lista de jugadas vale con OTRAS normas?
+
+    jugado con anglosajona   -> anglosajona:sí  española:no  internacional:no  peón feroz:no
+    jugado con española      -> anglosajona:no  española:sí  internacional:no  peón feroz:no
+    jugado con internacional -> anglosajona:no  española:no  internacional:sí  peón feroz:no
+    jugado con peón feroz    -> anglosajona:no  española:no  internacional:no  peón feroz:sí
+
+  ✓ ninguna partida se valida con normas que no son las suyas
+
+  ¿Comer quita una ficha? (la invariante que faltaba)
+
+  ✓ anglosajona   · 16/16 capturas comieron
+  ✓ española      · 11/11 capturas comieron
+  ✓ internacional · 11/11 capturas comieron
+  ✓ peón feroz    · 12/12 capturas comieron
+
+  El vuelo largo, con la posición puesta a mano
+
+  ✓ a1e5 sobre d4 (salto de cuatro): la víctima desaparece
+
+EL REPETIDOR — que una partida se pueda ver volverse a jugar
+
+  ✓ tabla de alias al día (2: ajedrez→chess, damas→checkers)
+  ✓ los 35 juegos apuntan a una página que existe
+  ✓ damas {"damaVuela":false,"peonComeAtras":false}: 14 jugadas repetidas desde el enlace, mismo final
+  ✓ damas {"damaVuela":true,"peonComeAtras":true}: 14 jugadas repetidas desde el enlace, mismo final
+  ✓ brisca: 10 jugadas repetidas desde el enlace, mismo final
+  ✓ ajedrez: 8 jugadas repetidas desde el enlace, mismo final
+  ✓ mancala: 10 jugadas repetidas desde el enlace, mismo final
+  ✓ un recibo falso se para en la jugada exacta y dice cuál («h8h1»)
+  ✓ paso a paso y de golpe se paran en la misma jugada
+  ✓ los 4 caminos de panel montan el repetidor, y ninguna página se queda fuera
+
+✓ el repetidor cumple lo que promete el enlace
+
+
+EL FINAL DE LA PARTIDA — que siempre haya salida
+
+
+  34/35 llegan al final en 2500 jugadas · no terminan: go
+
+✓ los 35 tienen salida: 'nueva' empieza otra partida
+
+
+EL TECLADO — que escribir una frase no juegue la partida
+
+  ✓ Entrada.js: comprueba el foco antes de convertir una tecla en jugada
+  ✓ peaton_visualizer.js: comprueba el foco antes de convertir una tecla en jugada
+
+✓ los 2 manejadores de teclas respetan a quien escribe
+
+
+¿Hay algún comentario de CSS mal cerrado?
+
+  ✓ public/arcade/css/arcade.css
+  ✓ public/arcade/css/card_hud.css
+  ✓ public/arcade/css/jugables.css
+  ✓ public/arcade/css/mesa3d.css
+  ✓ public/games/corporate_building.css
+  ✓ public/vendor/fonts/fuentes.css
+
+  ✓ todas cierran lo que abren
+
+¿Dice la verdad `openapi.json`?
+
+  ✓ declarada  /api/dataset
+  ✓ declarada  /api/gym
+  ✓ declarada  /api/presencia
+  ✓ declarada  /api/verificar
+  ✓ declarada  /mesa/{sala}
+  ✓ declarada  /mesa/{sala}/jugar
+  ✓ declarada  /mesa/{sala}/reporte
+  ✓ declarada  /mesa/{sala}/sentarse
+
+  ✓ las 8 puertas están declaradas, y no sobra ninguna
+
+¿La versión de la URL corresponde al código?
+
+  22 ficheros sellados: Entrada.js, SovereignBoardEngine.js, SovereignCardEngine.js, arcade_mats.js, backgammon_visualizer.js, bestiario_visualizer.js, blackjack_visualizer.js, checkers_visualizer.js, chess_visualizer.js, entropy_visualizer.js, fagocito_visualizer.js, go_visualizer.js, grimorio_visualizer.js, mancala_visualizer.js, mesa_cartas.mjs, mesa_tablero.mjs, peaton_visualizer.js, poker_visualizer.js, reversi_visualizer.js, snake_visualizer.js, usura_visualizer.js, xiangqi_visualizer.js
+
+  ✓ versión '82c9edba' — al día
+
+¿La clasificación publicada es la que se midió?
+
+  ✓ primera (suelo)        0.00
+  ✓ azar                   0.09
+  ✓ casa (techo blando)    1.00
+
+  ✓ los 3 participantes publicados son los medidos.
+
+¿Miden los medidores sobre todos los juegos que hay?
+
+  censo canónico: 35 juegos
+
+  ✓ tabla.mjs    mide sobre los 35
+
+  ✓ ningún medidor se deja juegos fuera
+
+
+¿Lo que promete la ficha es lo que hace el juego?
+
+  35/35 juegos declaran sus asientos (suelo: 35)
+  ✓ 10 comprobados contra el juego: brisca, tute, hearts, spades, gofish, unit, remigio, parchis, oca, canadiense
+  ✓ 25 más, contra el mapa `SILLAS` del árbitro de mesas
+
+  ✓ ninguna ficha promete algo que el juego no cumpla
+
+
+¿Cuántos sistemas del motor se pueden meter en un banco de pruebas?
+
+  54 sistemas · 27 aceptan semilla · 2 con azar incontrolado
+  ✓ sembrados: ArachneIngestionSystem, GeppettoChoreographySystem, PygmalionTopologySystem, SovereignAvatarSystem, SparkSystem, BSPSystem, FlickerSystem, CroupierSystem, BoidsSystem, CabinetEscapeSystem, CabinetJumpscareSystem, CarverEntitySystem, CorporateSeekerSystem, EcosystemSystem, FileSystemDioramaSystem, FoodChainSystem, IDMSystem, KatamariSystem, KinematicRageSystem, NeuralDrivingSystem, OrbitalKinematicsSystem, PhantomFSMSystem, RoboticArmSystem, TrafficSurvivalSystem, TrafficSystem, TurretCombatSystem, WorldBuilderSystem
+
+2/54 sistemas sin sembrar (techo: 2)
+  · AsteroidsSystem
+  · CuccoGameSystem
+¿Los entornos nativos usan la semilla?
+
+  ✓ Asteroids            5/5 mundos distintos
+  ✓ Cabinet Escape       4/5 mundos distintos
+  ✓ Cucco Swarm          5/5 mundos distintos
+  ✓ Interestelar         5/5 mundos distintos
+  · Rue del Percebe      1/5 mundos distintos
+  ✓ Chopper Terrarium    4/5 mundos distintos
+
+¿Usamos lo que ya tenemos?
+
+  piezas del motor usadas por los juegos: 3 (mínimo 3)
+    BSPSystem, FoodChainSystem, BoidsSystem
+
+  visualizadores con marcas propias: 2 (techo 2)
+    checkers_visualizer.js, chess_visualizer.js
+  ✓ sin copias de hayLinea ni primerPaso en las reglas
+
+  ✓ semillas: la deuda no crece, los entornos usan su semilla y no hay copias
+
+41 entornos en el catalogo
+
+  ok alisa/Asteroids-v0             obs= 16  pasos=150  recompensa=    10.3
+  ok alisa/CabinetEscape-v0         obs= 26  pasos=150  recompensa=  -145.0
+  ok alisa/CuccoSwarm-v0            obs= 64  pasos=150  recompensa=     1.0
+  ok alisa/RaccoonSpace-v0          obs= 22  pasos=150  recompensa=     0.0
+  ok alisa/RueDelPercebe-v0         obs= 26  pasos=150  recompensa=  -150.0
+  ok alisa/ChopperAquarium-v0       obs= 10  pasos=150  recompensa=     0.0
+  ok alisa/ajedrez-protohub-v0      obs=  4  pasos= 40  recompensa=   -35.0
+  ok alisa/go-protohub-v0           obs=  4  pasos=150  recompensa=   180.0
+  ok alisa/reversi-protohub-v0      obs=  4  pasos= 31  recompensa=    36.0
+  ok alisa/damas-protohub-v0        obs=  4  pasos= 20  recompensa= -1011.0
+  ok alisa/xiangqi-protohub-v0      obs=  4  pasos= 61  recompensa=   -41.5
+  ok alisa/mancala-protohub-v0      obs=  4  pasos=  9  recompensa=    15.0
+  ok alisa/snake-protohub-v0        obs=  4  pasos= 21  recompensa=     0.0
+  ok alisa/fagocito-protohub-v0     obs=  4  pasos= 21  recompensa=    50.0
+  ok alisa/peaton-protohub-v0       obs=  4  pasos= 16  recompensa=    10.0
+  ok alisa/blackjack-protohub-v0    obs=  4  pasos= 64  recompensa=   -17.0
+  ok alisa/poker-protohub-v0        obs=  4  pasos= 77  recompensa=   -43.0
+  ok alisa/brisca-protohub-v0       obs=  4  pasos= 10  recompensa=    39.0
+  ok alisa/tute-protohub-v0         obs=  4  pasos= 10  recompensa=    41.0
+  ok alisa/hearts-protohub-v0       obs=  4  pasos= 13  recompensa=   -10.0
+  ok alisa/spades-protohub-v0       obs=  4  pasos= 14  recompensa=   -94.0
+  ok alisa/guerra-protohub-v0       obs=  4  pasos= 26  recompensa=    28.0
+  ok alisa/gofish-protohub-v0       obs=  4  pasos= 21  recompensa=     6.0
+  ok alisa/unit-protohub-v0         obs=  4  pasos= 12  recompensa=    38.0
+  ok alisa/entropy-protohub-v0      obs=  4  pasos= 28  recompensa=   -35.0
+  ok alisa/sokoban-protohub-v0      obs=  4  pasos=  1  recompensa=   100.0
+  ok alisa/cripta-protohub-v0       obs=  4  pasos=150  recompensa=  -143.0
+  ok alisa/flota-protohub-v0        obs=  4  pasos= 45  recompensa=    95.0
+  ok alisa/defensa-protohub-v0      obs=  4  pasos= 74  recompensa=  -175.0
+  ok alisa/sigilo-protohub-v0       obs=  4  pasos= 20  recompensa=  -332.0
+  ok alisa/frentes-protohub-v0      obs=  4  pasos=  8  recompensa=     0.0
+  ok alisa/relevo-protohub-v0       obs=  4  pasos=130  recompensa=  -156.0
+  ok alisa/cabina-protohub-v0       obs=  4  pasos= 80  recompensa=  -152.0
+  ok alisa/rebano-protohub-v0       obs=  4  pasos=140  recompensa=  -112.0
+  ok alisa/pradera-protohub-v0      obs=  4  pasos= 36  recompensa=    -9.0
+  ok alisa/nave-protohub-v0         obs=  4  pasos= 68  recompensa=  -120.0
+  ok alisa/remigio-protohub-v0      obs=  4  pasos= 40  recompensa=    10.0
+  ok alisa/parchis-protohub-v0      obs=  4  pasos=150  recompensa=   266.0
+  ok alisa/generala-protohub-v0     obs=  4  pasos= 32  recompensa=    20.0
+  ok alisa/oca-protohub-v0          obs=  4  pasos= 14  recompensa=   250.0
+  ok alisa/canadiense-protohub-v0   obs=  4  pasos=100  recompensa=     0.0
+
+OK — los 41 entornos se importan, aceptan sus verbos y son repetibles.
+
+  HUELLAS DE LAS REGLAS (Function)
+    ajedrez    62ffbb1b
+    go         f104bf42
+    reversi    eeb09ff6
+    damas      31aac568
+    xiangqi    f80e027b
+    mancala    7655cf40
+    snake      052d3fa2
+    fagocito   dcbfd451
+    peaton     9a91707a
+    blackjack  0d93b796
+    poker      a407aaa1
+    brisca     e696197a
+    tute       532c474b
+    hearts     3c44142a
+    spades     1e4b7258
+    guerra     051d069f
+    gofish     4f9e89ba
+    unit       d1291073
+    entropy    d2c7678e
+    sokoban    d98bf970
+    cripta     681a0282
+    flota      7cd0df9f
+    defensa    401b318c
+    sigilo     7f02943e
+    frentes    08f826cd
+    relevo     f04ea89a
+    cabina     b6acea43
+    rebano     d929a5ec
+    pradera    95063faf
+    nave       bf58ce50
+    remigio    77ea51b2
+    parchis    c2b20d9c
+    generala   efc2f5ea
+    oca        1221d5f6
+    canadiense f66fc9ba
+
+  PARTIDAS
+    [32m✓[0m ajedrez    dice     -17 · sale     -17 ·  196 jugadas · 14 ms
+    [32m✓[0m go         dice     141 · sale     141 ·  440 jugadas · 214 ms
+    [32m✓[0m reversi    dice      15 · sale      15 ·   60 jugadas · 1 ms
+    [32m✓[0m damas      dice   -1013 · sale   -1013 ·   48 jugadas · 1 ms
+    [32m✓[0m xiangqi    dice   -1032 · sale   -1032 ·   94 jugadas · 27 ms
+    [32m✓[0m mancala    dice      15 · sale      15 ·   42 jugadas · 0 ms
+    [32m✓[0m snake      dice       0 · sale       0 ·   54 jugadas · 0 ms
+    [32m✓[0m fagocito   dice     130 · sale     130 ·   30 jugadas · 2 ms
+    [32m✓[0m peaton     dice      10 · sale      10 ·    3 jugadas · 0 ms
+    [32m✓[0m blackjack  dice     -12 · sale     -12 ·  119 jugadas · 0 ms
+    [32m✓[0m poker      dice     -10 · sale     -10 ·   93 jugadas · 2 ms
+    [32m✓[0m brisca     dice      37 · sale      37 ·   40 jugadas · 0 ms
+    [32m✓[0m tute       dice       0 · sale       0 ·   40 jugadas · 1 ms
+    [32m✓[0m hearts     dice      -4 · sale      -4 ·   52 jugadas · 1 ms
+    [32m✓[0m spades     dice    -130 · sale    -130 ·   56 jugadas · 0 ms
+    [32m✓[0m guerra     dice      30 · sale      30 ·   26 jugadas · 0 ms
+    [32m✓[0m gofish     dice       2 · sale       2 ·   56 jugadas · 0 ms
+    [32m✓[0m unit       dice     -36 · sale     -36 ·   59 jugadas · 0 ms
+    [32m✓[0m entropy    dice     -39 · sale     -39 ·   42 jugadas · 0 ms
+    [32m✓[0m sokoban    dice    -223 · sale    -223 ·  220 jugadas · 1 ms
+    [32m✓[0m cripta     dice    -125 · sale    -125 ·  220 jugadas · 3 ms
+    [32m✓[0m flota      dice      92 · sale      92 ·   76 jugadas · 1 ms
+    [32m✓[0m defensa    dice    -175 · sale    -175 ·  144 jugadas · 1 ms
+    [32m✓[0m sigilo     dice    -294 · sale    -294 ·   69 jugadas · 1 ms
+    [32m✓[0m frentes    dice       0 · sale       0 ·   16 jugadas · 0 ms
+    [32m✓[0m relevo     dice    -127 · sale    -127 ·  260 jugadas · 4 ms
+    [32m✓[0m cabina     dice    -228 · sale    -228 ·  160 jugadas · 0 ms
+    [32m✓[0m rebano     dice     855 · sale     855 ·  140 jugadas · 7 ms
+    [32m✓[0m pradera    dice     -18 · sale     -18 ·   34 jugadas · 1 ms
+    [32m✓[0m nave       dice      70 · sale      70 ·  181 jugadas · 1 ms
+    [32m✓[0m remigio    dice     -54 · sale     -54 ·   72 jugadas · 15 ms
+    [32m✓[0m parchis    dice      95 · sale      95 ·  716 jugadas · 4 ms
+    [32m✓[0m generala   dice       9 · sale       9 ·  103 jugadas · 1 ms
+    [32m✓[0m oca        dice     178 · sale     178 ·   32 jugadas · 0 ms
+    [32m✓[0m canadiense dice      17 · sale      17 ·  264 jugadas · 6 ms
+
+  [32m35/35 legítimas aceptadas[0m · [32m70/70 trampas cazadas[0m
+
+  Falta por probar en producción: que el activo card_library.json
+  se lea desde el Worker. Prueba de aceptación tras desplegar:
+    curl https://alisa.systems/api/verificar   ← ¿misma huella?
+
+==========================================================================
+  ANTES DE PUBLICAR
+==========================================================================
+
+-- papeles --
+  ✓  LICENSE  — sin licencia nadie puede usarlo legalmente
+  ✓  README.md  — nadie sabrá qué es ni cómo arrancarlo
+  ✓  .gitignore
+  ✓  docs/PAQUETE_PUBLICO.md  — qué se publica y qué no
+  ✓  docs/ARQUITECTURA_BENCHMARK.md  — cómo se sostiene el benchmark
+  ✓  package.json con licencia  — MIT
+  ✓  package.json con descripción
+
+── marcas registradas ──
+  ✓  sin marcas en nombres de fichero
+  ✓  sin marcas en el contenido
+
+── imagen propia ──
+  ✓  sin paletas de otros juegos
+  ✓  sin nombres de personajes ajenos
+
+── el arcade ──
+  ✓  reglas locales (35)  — ajedrez, azar, baraja, bazas, blackjack, cabina, canadiense, cripta, damas, defensa, entropy, fagocito, flota, frentes, generala, go, gofish, guerra, index, mancala, nave, oca, parchis, peaton, poker, pradera, rebano, relevo, remigio, reversi, sigilo, snake, sokoban, unit, xiangqi
+  ✓  las páginas con reglas están enchufadas
+  ✓  páginas sin reglas locales (declaradas)  — backgammon.html, bestiario.html, grimorio.html, sala.html, usura.html
+  ✓  ningún visualizador vacío
+
+── enlaces ──
+  ✓  sin enlaces rotos
+
+── frontera con la colonia ──
+  ✓  guardián de frontera  — ✅ frontera limpia y ordenada.
+
+── el peso de lo que se publica ──
+  ✓  el paquete está construido  — dist_publico/
+  ✓  menos de 20,000 ficheros  — 1,996
+  ✓  ninguno pasa de 25 MB
+  ✓  el paquete no pasa de 350 MB  — 68 MB — clonar cuesta; mira qué recursos nombra el código sin usarlos de verdad
+  ✓  sin node_modules ni binarios  — 0 ficheros; p.ej. 
+  ✓  sin recursos que prohíban redistribuirse  — 0 ficheros de Seaeees — su licencia no lo permite
+  ✓  ninguna página carga código desde un CDN  — 0 páginas; p.ej. 
+
+── el verificador ──
+  ✓  partidas legítimas aceptadas y trampas cazadas  — 35/35 legítimas aceptadas · 70/70 trampas cazadas
+
+==========================================================================
+  ✅ LISTO PARA PUBLICAR
+
+  Recuerda: esto NO prueba las reglas de los juegos. Eso lo hacen los
+  laboratorios en el navegador (croupier_sin_hub, los perft, etc.).
+==========================================================================
+
+RETURN CODE: 0

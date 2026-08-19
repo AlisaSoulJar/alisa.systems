@@ -202,7 +202,7 @@
    "ruta": "gym/registro.js",
    "nombre": "registro",
    "familia": "gym",
-   "kb": 15.9
+   "kb": 16.3
   },
   {
    "ruta": "gym/envs/AsteroidsEnv.js",
