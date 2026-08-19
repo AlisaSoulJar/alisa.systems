@@ -50,7 +50,13 @@ import { RUTA_BIBLIOTECA, palo, rango, cargarBaraja, cartasDe } from './baraja.j
  * Lo que vale una carta suelta al final. Las figuras cuestan diez: es lo que
  * hace que quedarse con un rey «por si acaso» sea una decisión y no un descuido.
  */
-const VALOR_FIGURA = { J: 10, Q: 10, K: 10, A: 1 };
+/**
+ * ⚠️ Las dos familias caben en la MISMA tabla porque sus rangos no se pisan: la
+ * francesa usa `J Q K A` y la española `S C R` con el uno escrito `1`. Así que no
+ * hace falta preguntar qué baraja está en juego —esa pregunta sería otra cadena de
+ * datos que se rompe en silencio— y el chinchón sale sin tocar `valorDe`.
+ */
+const VALOR_FIGURA = { J: 10, Q: 10, K: 10, A: 1, S: 10, C: 10, R: 10 };
 const valorDe = (c) => VALOR_FIGURA[rango(c)] ?? Number(rango(c)) ?? 0;
 
 /** Índice del bit más bajo. `clz32` es exacto; `log2` no lo es para todo. */
@@ -116,9 +122,46 @@ const bitBajo = (m) => 31 - Math.clz32(m & -m);
 export const NORMAS = { dosBarajas: false };
 const normasDe = (o = {}) => ({ ...NORMAS, ...o });
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  EL CHINCHÓN — el rummy español, sobre esta misma maquinaria
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Arriba está escrito, del 14-08, que el chinchón «es un juego nuevo apoyado en esta
+ * misma maquinaria, no una variante de éste». Esto es exactamente eso, y se queda en
+ * cuatro parámetros porque tres de las diferencias salieron gratis:
+ *
+ *     baraja española de 48   ya cargaba: `extends: spanish_40` le da los cuatro palos
+ *     siete cartas            `mano` ya era parámetro
+ *     el uno sólo va bajo     el orden de escaleras sale de `baraja.ranks`, y la
+ *                             española no tiene `A`, así que el as de dos puntas
+ *                             —que es regla FRANCESA— no se aplica solo
+ *
+ * ⚠️ Y LAS DOS QUE NO SON GRATIS SON LAS QUE HACEN QUE SEA OTRO JUEGO:
+ *
+ *   · CERRAR CON CINCO, no con cero. En el remigio o ligas las diez o no cierras.
+ *     Aquí puedes cerrar cargando hasta cinco puntos, y eso cambia la pregunta de
+ *     cada turno: deja de ser «¿ya estoy perfecto?» y pasa a ser «¿cierro con cuatro
+ *     encima o aguanto a bajarlos y arriesgo que cierre el otro?».
+ *   · EL CHINCHÓN, las siete seguidas del mismo palo, que le da nombre y gana con
+ *     premio. Sin premio nadie la buscaría y el juego se llamaría como una jugada
+ *     que en la práctica no existe.
+ *
+ * ⚠️ Lo que NO se copia de la mesa de verdad: allí se juega una SERIE hasta que
+ * alguien pasa de cien y se elimina. Aquí una partida es UNA mano, la misma decisión
+ * que en el dominó, porque el banco compara partidas y no veladas. Va dicho en la
+ * ficha, en `diferencias`.
+ */
+export const crearChinchon = (o = {}) => crearRemigio({
+    jugadores: 2, mano: 7, ...o,
+    nombre: 'chinchon', baraja: 'spanish_48', corte: 5, conChinchon: true,
+});
+
 export async function crearRemigio({ url = RUTA_BIBLIOTECA, jugadores = 2, mano = 10,
-                                     normas: normasAlCrear = {} } = {}) {
-    const baraja = await cargarBaraja('french_52', url);
+                                     normas: normasAlCrear = {},
+                                     nombre = 'remigio', baraja: nombreBaraja = 'french_52',
+                                     corte = 0, conChinchon = false } = {}) {
+    const baraja = await cargarBaraja(nombreBaraja, url);
 
     /**
      * El orden para ESCALERAS, con el as en las dos puntas. Ver la nota de
@@ -280,14 +323,49 @@ export async function crearRemigio({ url = RUTA_BIBLIOTECA, jugadores = 2, mano 
     }
 
     /** Qué descartes dejarían la mano entera combinada. Ésos cierran la partida. */
+    /**
+     * ⚠️ `corte` ES LA DIFERENCIA ENTRE EL REMIGIO Y EL CHINCHÓN, Y NO ES UN NÚMERO.
+     *
+     * En el remigio cierras con CERO muerto: o ligas las diez o no cierras. En el
+     * chinchón puedes cerrar cargando hasta cinco puntos, y eso cambia la partida
+     * entera — deja de ser «espera a estar perfecto» y pasa a ser «¿cierro ya con
+     * cuatro puntos encima o aguanto a bajarlos y arriesgo que cierre el otro?».
+     * Es la decisión del juego, y sale de esta comparación.
+     */
     function cierres(p, cartas) {
         if (cartas.length !== mano + 1) return [];
         const out = [];
         for (let i = 0; i < cartas.length; i++) {
             const resto = cartas.filter((_, k) => k !== i);
-            if (repartoDe(p, resto).muerto === 0) out.push(cartas[i]);
+            if (repartoDe(p, resto).muerto <= corte) out.push(cartas[i]);
         }
         return out;
+    }
+
+    /**
+     * ⚠️ EL CHINCHÓN: LAS SIETE SEGUIDAS DEL MISMO PALO.
+     *
+     * Le da nombre al juego y no es un grupo más: gana en el acto y con premio.
+     *
+     * ⚠️ Y SE MIRA SOBRE LA MANO, NO SOBRE LA PARTICIÓN QUE ELIGIÓ `repartoDe`.
+     *
+     * Lo escribí primero pidiendo «un solo grupo que se coma la mano entera», y no
+     * puede funcionar: `O_1..O_7` deja cero muerto TAMBIÉN partido en `1-2-3` más
+     * `4-5-6-7`, y con cero muerto en las dos el optimizador puede devolver
+     * cualquiera de ellas. La comprobación dependía de una elección interna que a
+     * nadie le importa, así que el premio no saltaba nunca. Lo cazó el control
+     * positivo: se le puso un chinchón delante y no lo reconoció.
+     *
+     * Ahora se pregunta por el HECHO —mismo palo y rangos consecutivos— que es lo
+     * que dice la regla. Un trío no puede colarse: son palos distintos por
+     * definición, y la primera comprobación lo descarta sola.
+     */
+    function esChinchon(cartas) {
+        if (!conChinchon || cartas.length !== mano) return false;
+        const s = palo(cartas[0]);
+        if (!cartas.every(c => palo(c) === s)) return false;
+        const pos = cartas.map(c => ORDEN.indexOf(rango(c))).sort((a, b) => a - b);
+        return pos.every((v, i) => i === 0 || v === pos[i - 1] + 1);
     }
 
     const cima = (p) => p.descarte[p.descarte.length - 1] ?? null;
@@ -296,12 +374,18 @@ export async function crearRemigio({ url = RUTA_BIBLIOTECA, jugadores = 2, mano 
 
         /** A que se juega, para quien no ve la mesa. Lo publica ProtoHub.state. */
 
-        OBJETIVO: 'Objetivo: cerrar la mano ligando todas tus cartas en grupos y escaleras.',
+        // El objetivo NO puede ser el mismo texto en los dos: «ligando todas tus
+        // cartas» es falso en el chinchón, donde cierras cargando hasta cinco. Un
+        // agente que sólo lee esto jugaría a un juego más difícil que el suyo.
+        OBJETIVO: corte === 0
+            ? 'Objetivo: cerrar la mano ligando todas tus cartas en grupos y escaleras.'
+            : `Objetivo: cerrar ligando tus cartas en grupos y escaleras, con ${corte} `
+              + 'puntos sueltos o menos. Las siete seguidas del mismo palo son chinchón y ganan con premio.',
         // CUÁNTAS SILLAS TIENE LA MESA. Sale de `jugadores` (por defecto 2,
         // ver la nota de cabecera sobre por qué no más). Se cruza contra
         // `manos_rivales` en `estado()`.
         ASIENTOS: jugadores,
-        nombre: 'remigio',
+        nombre,
 
         nuevaPartida(opts = {}) {
             const semilla = (opts.semilla ?? opts.seed ?? Date.now()) >>> 0;
@@ -389,9 +473,17 @@ export async function crearRemigio({ url = RUTA_BIBLIOTECA, jugadores = 2, mano 
              * Restar lo muerto ordena también los fracasos, que es donde va a
              * estar casi toda la tabla.
              */
+            /**
+             * El premio del chinchón. Cerrar con las siete seguidas del mismo palo no
+             * es cerrar mejor: es la jugada que le da nombre al juego, y si valiera lo
+             * mismo que un cierre normal nadie la buscaría nunca — con lo cual el
+             * juego se llamaría como una jugada que no existe en la práctica.
+             */
+            const premioChinchon = (c) => (esChinchon(p.manos[c]) ? 100 : 0);
+
             const rivales = p.manos.reduce(
                 (s, m, i) => s + (i === yo ? 0 : repartoDe(p, m).muerto), 0);
-            const puntos = p.cerro === yo ? 100 + rivales : -mío.muerto;
+            const puntos = p.cerro === yo ? 100 + rivales + premioChinchon(yo) : -mío.muerto;
             // ⚠️ MISMA FÓRMULA, UNA POR ASIENTO. «rivales» es «lo muerto de los
             // DEMÁS visto desde `c`», así que no es `rivales` reutilizado —para
             // cada `c` los demás son otro conjunto— sino la misma suma rehecha
@@ -401,13 +493,13 @@ export async function crearRemigio({ url = RUTA_BIBLIOTECA, jugadores = 2, mano 
                 if (p.cerro === c) {
                     const rivalesDeC = p.manos.reduce(
                         (s, m, i) => s + (i === c ? 0 : repartoDe(p, m).muerto), 0);
-                    return 100 + rivalesDeC;
+                    return 100 + rivalesDeC + premioChinchon(c);
                 }
                 return -repartoDe(p, p.manos[c]).muerto;
             });
 
             return {
-                juego: 'remigio',
+                juego: nombre,
                 asiento: yo,
                 mano: miMano,
                 manos_rivales: p.manos.filter((_, i) => i !== yo).map(m => m.length),
@@ -446,8 +538,12 @@ export async function crearRemigio({ url = RUTA_BIBLIOTECA, jugadores = 2, mano 
                 legal_moves: legales,
                 is_game_over: terminada,
                 // Sin mazo y sin cierre no gana nadie: se acaba y manda lo muerto.
+                // Si el cierre fue un chinchón se DICE: gana con premio, y un premio
+                // que no se nombra es un número que aparece sin motivo en el marcador.
                 desenlace: p.cerro !== null
-                    ? (p.cerro === yo ? 'cerraste' : `cerró ${p.cerro}`)
+                    ? (esChinchon(p.manos[p.cerro])
+                        ? (p.cerro === yo ? '¡chinchón!' : `chinchón de ${p.cerro}`)
+                        : (p.cerro === yo ? 'cerraste' : `cerró ${p.cerro}`))
                     : (terminada ? 'se acabó el mazo' : null),
             };
         },
@@ -488,7 +584,22 @@ export async function crearRemigio({ url = RUTA_BIBLIOTECA, jugadores = 2, mano 
                 // y una jugada ilegal aceptada no da error: da una partida ganada
                 // que luego no verifica.
                 const resto = mi.filter((_, k) => k !== i);
-                if (repartoDe(p, resto).muerto !== 0) return false;
+                /**
+                 * ⚠️ Y EL UMBRAL TIENE QUE SER EL MISMO QUE EL DE `cierres`.
+                 *
+                 * Aquí decía `!== 0` mientras `cierres` ya comparaba contra `corte`:
+                 * dos comprobaciones del MISMO hecho con constantes distintas. En el
+                 * remigio no se notaba, porque su corte es 0 y las dos coincidían por
+                 * casualidad. En el chinchón el panel ofrecía `cerrar:X` y esto lo
+                 * rechazaba — la partida no se moría, seguía como si nada, y de 200
+                 * partidas se cerraban 4 en vez de casi todas.
+                 *
+                 * Es la clase de fallo que este banco vigila por encima de todas: «el
+                 * panel ES `legal_moves`» es la frase que lo sostiene. Lo cazó el
+                 * CONTROL de la sonda —la misma baraja con corte 0 cerraba el 97 %— y
+                 * no la medida principal, que sólo decía «cierra poco».
+                 */
+                if (repartoDe(p, resto).muerto > corte) return false;
                 mi.splice(i, 1);
                 p.descarte.push(carta);
                 p.cerro = pid;

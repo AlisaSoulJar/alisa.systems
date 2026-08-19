@@ -185,6 +185,12 @@
     "titulo": "Remigio",
     "sillas": 2
   },
+  "chinchon": {
+    "pagina": "chinchon.html",
+    "propia": true,
+    "titulo": "Chinchón",
+    "sillas": 2
+  },
   "parchis": {
     "pagina": "parchis.html",
     "propia": true,

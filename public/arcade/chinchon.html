@@ -1,0 +1,48 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA Arcade — Chinchón</title>
+<!--
+  El rummy español. Baraja de 48, siete cartas cada uno. Robas del mazo o del
+  descarte, tiras una, y cierras cuando lo que no has ligado suma cinco puntos o
+  menos. Las siete seguidas del mismo palo son chinchón y ganan con premio.
+
+  ⚠️ POR QUÉ ES UN JUEGO Y NO UNA CASILLA DE OPCIONES DEL REMIGIO.
+
+  Pregunta de Oscar: «el chinchón lo podemos hacer fácil, ¿sólo es una variación
+  del remigio?». Casi. Tres de las diferencias salieron gratis —la baraja española
+  ya cargaba, el reparto de siete ya era parámetro, y el uno sólo va bajo porque el
+  orden de escaleras sale de la biblioteca y la española no tiene as francés—. Pero
+  las dos que quedan no son ajustes:
+
+    · CERRAR CON CINCO, no con cero. En el remigio o ligas las diez o no cierras.
+      Aquí puedes cerrar cargando hasta cinco, y eso cambia la pregunta de cada
+      turno entera: «¿cierro ya con cuatro encima, o aguanto a bajarlos y arriesgo
+      que cierre el otro?». Eso no es el mismo juego más fácil, es otro juego.
+    · EL CHINCHÓN, que le da nombre. Sin premio nadie lo buscaría.
+
+  Y como son dos juegos, van a la clasificación por separado. Ahí está la gracia:
+  comparten motor, puerta de texto y espacio de acciones, así que un agente medido
+  en los dos se compara CONSIGO MISMO con y sin margen para cerrar. Es el par
+  controlado que ya hacen la brisca y el tute, o flota y canadiense.
+
+  ⚠️ LO QUE NO ES COMO EN LA MESA DE VERDAD, y va dicho en la ficha.
+
+  Allí se juega una SERIE: se acumulan puntos mano a mano y quien pasa de cien se
+  elimina. Aquí una partida es UNA mano — la misma decisión que en el dominó, y por
+  el mismo motivo: el banco compara partidas, no veladas.
+
+  Declara la mesa compartida, igual que el remigio y los otros ocho de cartas. Lo
+  escribí primero sin declararla, contando con que `montarMesa` la dedujera del
+  sustrato — y la deduce, pero `prueba_sustrato` cuenta las que la DECLARAN y me
+  sacó de la lista: para ese instrumento yo acababa de devolver un juego a un
+  visualizador propio. Tenía razón en desconfiar: deducirla es justo lo que le pasa
+  al dominó, que publica zonas sin rejilla y acabaría en la mesa de casino sin un
+  solo error en consola.
+
+      ?semilla=7   fija el reparto
+-->
+<script type="module">
+  import { montarMesa } from './js/montarMesa.js';
+  montarMesa({ juego: 'chinchon', visualizador: 'mesa_cartas.mjs' });
+</script>

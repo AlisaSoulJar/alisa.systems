@@ -69,6 +69,9 @@ const FICHA = {
     unit: 'unit',
     entropy: 'entropy',
     remigio: 'rummy_basic',
+    // Y éste sí es el `chinchon` de la biblioteca, con su `spanish_48`. La nota de
+    // arriba lo usaba como ejemplo de lo que NO era el remigio; ahora existe.
+    chinchon: 'chinchon',
     guerra: 'war',
     // ⚠️ CANADIENSE NO ES LA CANASTA, y eso lo dijo esta prueba. Yo lo había mandado
     // a `canasta` por el nombre, y saltó el aviso de que declara `french_54` y

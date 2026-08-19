@@ -136,6 +136,11 @@ const PROTOHUB = [
     // legalidad es un emparejamiento. Y con un espacio de acciones diminuto: la cadena
     // solo tiene dos puntas, tengas las fichas que tengas.
     { juego: 'domino', titulo: 'Domino', crear: 'crearDomino' },
+    // Chinchon: el par controlado del remigio. Misma maquinaria, misma puerta de
+    // texto y mismo espacio de acciones; lo unico que cambia es que aqui se cierra
+    // cargando hasta cinco puntos en vez de con cero. Un agente medido en los dos se
+    // compara consigo mismo con y sin margen para cerrar, que es la decision entera.
+    { juego: 'chinchon', titulo: 'Chinchon', modulo: 'remigio', crear: 'crearChinchon' },
 ];
 
 /** Entornos escritos a mano, cada uno con su propio módulo. */
