@@ -177,6 +177,11 @@ export const JUEGOS = Object.keys(REGLAS);
 const TITULOS_PROPIOS = {
     peaton: 'Peatón', poker: 'Póker', gofish: 'Go Fish',
     guerra: 'Guerra (control)', xiangqi: 'Xiangqi',
+    // Los identificadores van sin tildes porque viajan en la URL; el título no
+    // tiene por qué pagar eso. Estos tres llevaban meses saliendo pelados en la
+    // ficha y en la portada, y no lo vio nadie porque «Domino» también es una
+    // palabra: el defecto no da error, sólo escribe mal el nombre del juego.
+    domino: 'Dominó', parchis: 'Parchís', rebano: 'Rebaño',
 };
 export const TITULOS = Object.fromEntries(JUEGOS.map(
     j => [j, TITULOS_PROPIOS[j] ?? j.charAt(0).toUpperCase() + j.slice(1)]));

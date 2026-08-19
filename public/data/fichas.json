@@ -1837,7 +1837,7 @@
     }
   },
   "rebano": {
-    "titulo": "Rebano",
+    "titulo": "Rebaño",
     "pagina": "rebano.html",
     "objetivo": "Objetivo: meter las doce ovejas en el redil. No se les puede ordenar nada: sólo colocarte, porque huyen de ti. El miedo es la herramienta.",
     "asientos": 1,
@@ -2108,7 +2108,7 @@
     }
   },
   "parchis": {
-    "titulo": "Parchis",
+    "titulo": "Parchís",
     "pagina": "parchis.html",
     "objetivo": "Objetivo: llevar tus cuatro fichas a casa antes que nadie; un 5 saca ficha y un 6 repite.",
     "asientos": 4,
@@ -2399,7 +2399,7 @@
     }
   },
   "domino": {
-    "titulo": "Domino",
+    "titulo": "Dominó",
     "pagina": "domino.html",
     "objetivo": "Objetivo: quedarte sin fichas. Cada ficha va en una punta que case.",
     "asientos": 2,

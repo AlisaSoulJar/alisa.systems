@@ -164,7 +164,7 @@
   "rebano": {
     "pagina": "rebano.html",
     "propia": true,
-    "titulo": "Rebano",
+    "titulo": "Rebaño",
     "sillas": 1
   },
   "pradera": {
@@ -188,7 +188,7 @@
   "parchis": {
     "pagina": "parchis.html",
     "propia": true,
-    "titulo": "Parchis",
+    "titulo": "Parchís",
     "sillas": 4
   },
   "generala": {
@@ -212,7 +212,7 @@
   "domino": {
     "pagina": "domino.html",
     "propia": true,
-    "titulo": "Domino",
+    "titulo": "Dominó",
     "sillas": 2
   }
 }
