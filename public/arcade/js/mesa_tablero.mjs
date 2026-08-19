@@ -182,6 +182,30 @@ if (caja && !caja.querySelector('#mesa-jugadas')) {
  * que quiere decir «volcar la mesa», y además `pintor.raiz` es un `Group` sin
  * geometría, así que no hay piezas sueltas que medir.
  */
+/**
+ * ⚠️ LAS NORMAS VARIABLES, QUE ESTABAN ENCHUFADAS AL MOTOR QUE NO LAS TIENE.
+ *
+ * Aviso de un betatester en damas: «¿la reina dama sólo mueve de uno en uno?». Sí, y
+ * a propósito: `damaVuela` viene apagada, que es la regla inglesa. Lo que no había era
+ * forma de SABERLO ni de cambiarlo, y ahí sí tenía razón.
+ *
+ * `ponerNormas` existe desde hace tiempo y pinta una casilla por norma, pero sólo la
+ * llamaba `SovereignBoardEngine` — el motor del ajedrez y el mancala, que NO declaran
+ * ninguna. Y no la llamaba `mesa_tablero`, que es quien dibuja las damas, el único
+ * juego del arcade que sí las tiene. La función estaba escrita, montada, y servida a
+ * quien no la necesitaba.
+ *
+ * Va en la cabecera y no entre los botones de jugar por lo mismo que allí: cambiar
+ * una norma es una propiedad de la MESA, no una jugada. Entre las jugadas sería una
+ * acción que un agente no tiene, y eso rompe la comparación.
+ */
+if (window.ALISA_GESTOS?.ponerNormas && window.ALISA_NORMAS_POSIBLES) {
+    window.ALISA_GESTOS.ponerNormas(
+        document.querySelector('.hud-header'),
+        window.ALISA_NORMAS_POSIBLES,
+        window.ALISA_NORMAS ?? {});
+}
+
 ponerBoton(document.querySelector('.hud-header'), async () => {
     await volcarMesa([pintor.raiz], { comoTablero: true, suelo: -8 });
     await refrescar();
