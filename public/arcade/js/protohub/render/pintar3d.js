@@ -51,6 +51,9 @@ const yoSoy = (sus) => sus?.yo ?? sus?.asiento ?? 0;
 // Los dados, en su propia pieza: los piden generala, parchís y oca, y los tres pasan
 // por aquí. THREE se le entrega, como a `tapete.js` y `mueble.js`.
 import { crearDado, esDado, valorDeDado, LADO as LADO_DADO } from '../dados.js';
+// Las fichas de dominó. Van aparte de los dados por lo mismo que los dados van aparte
+// de las cartas: son otro material, con otra forma y otra manera de colocarse.
+import { crearFicha, esFicha, disponerCadena } from '../fichas.js';
 
 export function crearPintor3d(escena, THREE, opciones = {}) {
     const { croupier = null, alturaCarta = 0.02 } = opciones;
@@ -70,6 +73,9 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
         // normales y lo dejaría negro justo cuando su trabajo es que se vea.
         faro: new THREE.ConeGeometry(0.2, 0.45, 10).rotateX(Math.PI),
         carta: new THREE.BoxGeometry(0.62, 0.012, 0.9),
+        // La ficha de domino boca abajo: la misma silueta que crearFicha, para que
+        // lo tapado se distinga de lo tapado de una baraja.
+        ficha: new THREE.BoxGeometry(0.86, 0.10, 0.43),
     };
 
     /**
@@ -218,6 +224,8 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
     const montones = new Map();
     /** Los dados van aparte de los montones: seis materiales no se instancian. */
     const dados = new Map();
+    /** Y las fichas de domino igual: cada una lleva su propia cara pintada. */
+    const fichas = new Map();
     const M = new THREE.Matrix4(), Q = new THREE.Quaternion();
     const POS = new THREE.Vector3(), ESC = new THREE.Vector3();
 
@@ -421,6 +429,8 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
     function pintar(sus) {
         if (!sus) return;
         const usados = new Set();
+        // ¿Esta mesa reparte fichas de domino? Se mira lo que hay, no el nombre del juego.
+        const hayFichas = (sus?.zonas ?? []).some(z => (z.items ?? []).some(it => esFicha(it?.id ?? it)));
 
         // ── El terreno ──────────────────────────────────────────────────
         if (sus.rejilla) {
@@ -715,6 +725,45 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
              * clave y escondidas cuando no se usan, que es lo que evita crear y tirar
              * objetos sesenta veces por segundo.
              */
+            /**
+             * ⚠️ LA CADENA DE DOMINÓ NO SE COLOCA COMO UNA MANO. AQUÍ ESTÁ LO NUEVO.
+             *
+             * Todo lo demás que pasa por esta función se coloca en sitios que alguien
+             * decidió antes: una fila, un abanico, una rejilla. La cadena de dominó no
+             * tiene sitio previo — su forma sale de cómo se jugó, ficha a ficha, y hay
+             * que RECORRERLA para saber dónde acaba cada una.
+             *
+             * `disponerCadena` hace ese recorrido: pone en línea, dobla cuando se pasa
+             * de largo, y cruza los dobles (que además ocupan la mitad). Devuelve
+             * coordenadas y no dibuja, para que sirva a cualquier mesa.
+             *
+             * Las fichas de la MANO y del pozo también son fichas, pero ésas sí van en
+             * fila como cualquier mano: se colocan con `sitios`, como las cartas.
+             */
+            if (z.items.some(it => esFicha(it?.id ?? it))) {
+                const ids = z.items.map(it => String(it?.id ?? it));
+                const enCadena = z.id === 'cadena';
+                const puestos = enCadena ? disponerCadena(ids) : null;
+                ids.forEach((id, k) => {
+                    const clave = `ficha:${iz}:${k}`;
+                    let f = fichas.get(clave);
+                    if (!f || f.userData.id !== id) {
+                        if (f) { raiz.remove(f); f.geometry.dispose();
+                                 for (const m of f.material) { m.map?.dispose(); m.dispose(); } }
+                        f = crearFicha(THREE, id);
+                        f.userData.id = id;
+                        raiz.add(f);
+                        fichas.set(clave, f);
+                    }
+                    const s = puestos ? puestos[k] : (sitios[k] ?? { x: 0, z: 0, rot: 0 });
+                    f.visible = true;
+                    f.position.set(s.x, 0.15, s.z);
+                    f.rotation.y = s.rot ?? 0;
+                    usados.add(clave);
+                });
+                return;
+            }
+
             if (z.items.some(it => esDado(it?.id ?? it))) {
                 z.items.forEach((it, k) => {
                     const id = String(it?.id ?? it ?? '·');
@@ -758,11 +807,23 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
                 usados.add(clave);
             }
 
-            // Las tapadas siguen siendo todas iguales, que es lo que son.
+            /**
+             * Las tapadas siguen siendo todas iguales, que es lo que son.
+             *
+             * ⚠️ PERO CON LA FORMA DEL MATERIAL QUE SE ESTÁ JUGANDO. Boca abajo, una
+             * ficha de dominó y una carta se distinguen igual: por su silueta. Dibujar
+             * la mano del rival y el pozo del dominó como naipes dejaba una mesa donde
+             * lo que se ve es de dominó y lo que se adivina es de cartas — y en un
+             * juego donde CUÁNTAS le quedan al otro es la mitad de la información, esa
+             * silueta es un dato, no un adorno.
+             *
+             * Se decide mirando lo que hay en la mesa, no el nombre del juego: si
+             * alguna zona reparte fichas, las tapadas de esta mesa son fichas.
+             */
             const ocultas = z.ocultas ?? 0;
             if (ocultas > 0) {
                 const clave = `z${iz}:ocultas`;
-                const m = monton(clave, geo.carta, mat.oculta, ocultas);
+                const m = monton(clave, hayFichas ? geo.ficha : geo.carta, mat.oculta, ocultas);
                 for (let k = z.items.length; k < total; k++) {
                     const s = sitios[k] ?? { x: 0, z: 0, rot: 0 };
                     poner(m, s.x, alturaCarta * (k + 1) + 0.1, s.z, 1, s.rot ?? 0);
@@ -777,6 +838,7 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
         // Y los dados igual: la generala guarda dados entre tiradas, así que la zona
         // encoge y crece, y esconder es más barato que rehacer.
         for (const [clave, d] of dados) if (!usados.has(clave)) d.visible = false;
+        for (const [clave, f] of fichas) if (!usados.has(clave)) f.visible = false;
     }
 
     /** Dónde va cada carta. Con `CroupierSystem` si lo hay; si no, en fila. */
