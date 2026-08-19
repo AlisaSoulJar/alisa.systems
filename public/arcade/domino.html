@@ -1,0 +1,42 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA Arcade — Dominó</title>
+<!--
+  Doble-seis. Veintiocho fichas, siete cada uno y el resto al pozo. Pones una ficha
+  en una de las dos puntas de la cadena, si casa. Si no tienes ninguna, robas; si el
+  pozo se acaba, pasas. Gana quien se queda sin fichas, o el de menos puntos si nadie
+  puede seguir.
+
+  ⚠️ POR QUÉ ESTE ES DISTINTO A LOS TREINTA Y CINCO ANTERIORES.
+
+  Todos ellos colocan piezas en sitios LIBRES: una casilla vacía, un hueco de la caja
+  de entropy, un asiento. La legalidad es «¿está ocupado?». Aquí la legalidad es un
+  EMPAREJAMIENTO —el 6:3 sólo entra si en una punta hay un 6 o un 3— y el sitio donde
+  acaba la ficha no lo decide quien juega: lo decide la forma de lo que ya hay.
+
+  Idea de Oscar, y con el motivo dicho: quería un caso que enseñara a posicionar cosas
+  que encajan y cosas que no.
+
+  ⚠️ Y SIN EMBARGO EL ESPACIO DE ACCIONES ES DIMINUTO.
+
+  La cadena sólo tiene DOS puntas, tengas las fichas que tengas. Así que las jugadas
+  legales son `jugar:6-3:izq`, `jugar:6-3:der`, `robar` y `pasar`. Es el contrario
+  exacto del remigio, donde el estado es simple y las jugadas explotan.
+
+  ⚠️ POR QUÉ DECLARA VISUALIZADOR, COMO LA GENERALA Y POR EL MISMO MOTIVO.
+
+  Publica «zonas y ninguna rejilla», que es la firma de un juego de cartas, así que
+  `montarMesa` le daría la mesa de casino. Y esa mesa no lee el sustrato NATIVO: lee
+  `sustratoDe(juego, estado)`, un adaptador que sólo sabe de manos, mazos y descartes.
+  Con dominó no encontraría ninguna zona y pintaría un fieltro vacío con el cartel
+  «Este juego no reparte cartas», sin un solo error en consola. `mesa_tablero.mjs` sí
+  lee el nativo. El día que la mesa de cartas lea el nativo, esta línea sobra — y
+  entonces sobrará en los dos sitios a la vez.
+
+      ?semilla=7   fija el reparto
+-->
+<script type="module">
+  import { montarMesa } from './js/montarMesa.js';
+  montarMesa({ juego: 'domino', visualizador: 'mesa_tablero.mjs' });
+</script>

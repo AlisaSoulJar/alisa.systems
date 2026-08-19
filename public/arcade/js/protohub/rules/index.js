@@ -153,6 +153,11 @@ export const REGLAS = {
     // eso. Con dado no eliges tu tirada; con cartas eliges cuál gastas y cuál
     // guardas, y eso es información oculta que el dado no tiene.
     canadiense: (o) => import('./canadiense.js').then(m => m.crearCanadiense(o)),
+    // El primero donde DÓNDE puede ir una pieza depende de QUÉ es: los otros treinta
+    // y cinco colocan en sitios libres —una casilla vacía, un hueco, un asiento— y
+    // aquí la legalidad es un emparejamiento. Idea de Oscar, para tener un caso que
+    // enseñe a posicionar cosas que encajan y cosas que no.
+    domino: (o) => import('./domino.js').then(m => m.crearDomino(o)),
 };
 
 export const JUEGOS = Object.keys(REGLAS);
@@ -218,6 +223,7 @@ export const SILLAS = {
     parchis: 4,
     generala: 2, oca: 2,
     canadiense: 4,
+    domino: 2,
 };
 
 /** Carga las reglas de un juego. `opts.url` para los que leen la biblioteca. */

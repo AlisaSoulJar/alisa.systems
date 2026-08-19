@@ -131,6 +131,11 @@ const PROTOHUB = [
     // dado. Es el par controlado del banco — un agente medido en los dos se compara
     // consigo mismo con y sin informacion oculta, que es lo unico que cambia.
     { juego: 'canadiense', titulo: 'Parchis canadiense', crear: 'crearCanadiense' },
+    // Domino: el primero donde DONDE puede ir una pieza depende de QUE es. Los otros
+    // colocan en sitios libres —una casilla vacia, un hueco, un asiento— y aqui la
+    // legalidad es un emparejamiento. Y con un espacio de acciones diminuto: la cadena
+    // solo tiene dos puntas, tengas las fichas que tengas.
+    { juego: 'domino', titulo: 'Domino', crear: 'crearDomino' },
 ];
 
 /** Entornos escritos a mano, cada uno con su propio módulo. */
