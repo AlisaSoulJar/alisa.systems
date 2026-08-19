@@ -39,6 +39,7 @@ import { crearMarcas, VERDE, MORADO, RECHAZO, ACIERTO } from './protohub/marcas.
 import { pintarHistorial } from './protohub/historial.js';
 import { celdasDeJugada } from './protohub/sustrato.js';
 import { volcarMesa, volcando, ponerBoton } from './protohub/render/volcar.js';
+import { crearTapete } from './protohub/tapete.js';
 
 const hub = window.ALISA_PROTOHUB;
 const juego = window.ALISA_JUEGO;
@@ -270,6 +271,37 @@ function cajaReal(raiz) {
 const SIN_NIEBLA = new Set(['niebla']);
 
 let conRejillaAhora = true;
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ SIN TABLERO NO HAY SUPERFICIE, Y LA MESA SE VE COMO UN AGUJERO NEGRO
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Los quince juegos de esta mesa tienen rejilla, y la rejilla ES la superficie: se
+ * dibuja, tiene color y las piezas se apoyan encima. El dominó no tiene, así que sus
+ * fichas salían flotando sobre el fondo negro de la página. El laboratorio lo dijo con
+ * un número —6,9 % de píxeles pintados, contra el 69 % del remigio— y la captura lo
+ * enseñó: tres filas de fichas en el vacío.
+ *
+ * Se pone el MISMO tapete que las dos salas, no uno nuevo: es el paño verde `0x14352a`
+ * de `protohub/tapete.js`, que ya usan la mesa de cartas y la Sala del Huevo. Un verde
+ * distinto aquí sería un juego que no parece de la casa.
+ *
+ * Sólo si esta mesa es la dueña: de invitada, la superficie la pone el anfitrión, y
+ * dos tapetes superpuestos hacen el parpadeo de siempre.
+ */
+let tapetePuesto = false;
+
+function ponerTapeteSiHaceFalta(hayRejilla) {
+    if (tapetePuesto || hayRejilla || anfitrion) return;
+    // Bastante más ancho que lo que se dibuja, porque la cadena del dominó CRECE: un
+    // tapete ajustado a la primera ficha se queda corto a la quinta.
+    const paño = crearTapete(THREE, LADO * 1.6, { texto: '' });
+    paño.position.y = -0.06;      // justo debajo, para que las fichas se apoyen
+    paño.name = 'tapete-sin-tablero';
+    escena.add(paño);
+    tapetePuesto = true;
+}
 let encuadrado = false;
 function encajar() {
     if (anfitrion || !grupo.children.length) return;   // de invitada manda la sala
@@ -718,10 +750,126 @@ function avisarIlegal(celda, rej) {
     }, 320);
 }
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ TOCAR LA PIEZA CUANDO NO HAY REJILLA
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * `alTocar` se rendía en la primera línea si el juego no publicaba rejilla, y eso
+ * dejaba fuera al dominó entero: `tacto` lo medía y decía «sólo respondía el panel».
+ * Una ficha de dominó se coge con la mano, no se nombra.
+ *
+ * ⚠️ Y NO HACE FALTA QUE ESTA MESA SEPA JUGAR AL DOMINÓ.
+ *
+ * La pieza ya lleva su identificador puesto en el nombre de la malla —`p:ficha:6-3`,
+ * igual que una carta lleva `S_A` y un dado `d6_5`— y las jugadas legales lo nombran
+ * dentro: `jugar:6-3:izq`. Así que basta buscar cuáles de las legales hablan de la
+ * pieza que has tocado. Es el mismo truco que ya usa `sus.acciones` con las casillas,
+ * aplicado al otro vocabulario, y sirve a cualquier juego de zonas que venga después.
+ *
+ * ⚠️ EL SEGUNDO TOQUE ES LA PUNTA, Y ESO ES EL JUEGO.
+ *
+ * Cuando la ficha entra por los dos lados hay DOS jugadas y elegir por ti sería
+ * jugar por ti: en el dominó, por qué punta la metes es la decisión. Así que se coge
+ * la ficha y se toca el extremo de la cadena donde va — que es literalmente lo que
+ * se hace en una mesa. Se decide por CERCANÍA a las dos fichas de los extremos y no
+ * por la mitad de la pantalla, porque la cadena serpentea: después de doblar, la
+ * punta izquierda puede estar dibujada a la derecha.
+ */
+let piezaCogida = null;
+let piezaResaltada = null;
+
+function piezaDesde(ev) {
+    const lienzo = anfitrion?.lienzo ?? render.domElement;
+    const caja = lienzo.getBoundingClientRect();
+    const raton = new THREE.Vector2(
+        ((ev.clientX - caja.left) / caja.width) * 2 - 1,
+        -((ev.clientY - caja.top) / caja.height) * 2 + 1,
+    );
+    const rayo = new THREE.Raycaster();
+    rayo.setFromCamera(raton, camara);
+    for (const t of rayo.intersectObjects(grupo.children, true)) {
+        let o = t.object;
+        while (o && o !== grupo) {
+            const m = /^p:(?:ficha|carta|dado):(.+)$/.exec(o.name || '');
+            if (m) return { id: m[1], objeto: o, punto: t.point };
+            o = o.parent;
+        }
+    }
+    return null;
+}
+
+/** Resalta lo que llevas cogido. Sin esto se coge la ficha y no lo sabe nadie. */
+function resaltarPieza(o) {
+    if (piezaResaltada) {
+        for (const m of [].concat(piezaResaltada.material)) {
+            m.emissive?.setHex(piezaResaltada.userData._emisivoAntes ?? 0x000000);
+        }
+        piezaResaltada = null;
+    }
+    if (!o) return;
+    const mats = [].concat(o.material);
+    o.userData._emisivoAntes = mats[0]?.emissive?.getHex() ?? 0x000000;
+    for (const m of mats) m.emissive?.setHex(0x4a3a8a);
+    piezaResaltada = o;
+}
+
+/** Las jugadas que NOMBRAN esta pieza, con el identificador entero y no a trozos. */
+function jugadasDePieza(id) {
+    const escapado = id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp(`(^|:)${escapado}(:|$)`);
+    return legalesAhora.filter(m => re.test(m));
+}
+
+function tocarPieza(ev, sus) {
+    const t = piezaDesde(ev);
+    if (!t) { piezaCogida = null; resaltarPieza(null); return; }
+
+    const suyas = jugadasDePieza(t.id);
+
+    // Una sola forma de jugarla: se juega al primer toque, sin ceremonia.
+    if (suyas.length === 1) {
+        piezaCogida = null; resaltarPieza(null);
+        enviarSiEsLegal(suyas[0]);
+        return;
+    }
+
+    // Varias: se coge y se espera a que digas dónde.
+    if (suyas.length > 1) {
+        piezaCogida = { id: t.id, jugadas: suyas };
+        resaltarPieza(t.objeto);
+        return;
+    }
+
+    // Ninguna. Si llevabas algo cogido, esto es el segundo toque: la punta.
+    if (!piezaCogida) return;
+    const cadena = sus?.zonas?.find(z => z.id === 'cadena')?.items ?? [];
+    const malla = (item) => grupo.getObjectByName(`p:ficha:${String(item).replace(/^f:/, '')}`);
+    const izq = malla(cadena[0]);
+    const der = malla(cadena[cadena.length - 1]);
+
+    let donde = null;
+    if (izq && der && izq !== der) {
+        const d = (o) => o.getWorldPosition(new THREE.Vector3()).distanceTo(t.punto);
+        donde = d(izq) <= d(der) ? 'izq' : 'der';
+    } else if (izq) {
+        // Cadena de una sola ficha: las dos puntas son la misma pieza, así que la
+        // única señal que queda es por qué mitad de ELLA has tocado.
+        const c = izq.getWorldPosition(new THREE.Vector3());
+        donde = t.punto.x <= c.x ? 'izq' : 'der';
+    }
+    if (!donde) return;
+
+    const elegida = piezaCogida.jugadas.find(m => m.endsWith(`:${donde}`));
+    piezaCogida = null;
+    resaltarPieza(null);
+    if (elegida) enviarSiEsLegal(elegida);
+}
+
 function alTocar(ev) {
     const sus = hub.sustrato(juego);
     const rej = sus?.rejilla;
-    if (!rej) return;
+    if (!rej) { tocarPieza(ev, sus); return; }
     const p = celdaDesde(ev, rej);
     if (!p) return;
     const celda = p.f * rej.ancho + p.c;
@@ -820,6 +968,7 @@ async function refrescar() {
             const sus = sustratoDe(juego, st);
             pintor.pintar(sus);
             conRejillaAhora = !!sus?.rejilla;
+            ponerTapeteSiHaceFalta(conRejillaAhora);
             const txt = document.getElementById('estado-txt');
             if (txt) {
                 txt.innerHTML = `<span>Turno</span><span class="val">${st.turn ?? '—'}</span>`
@@ -852,6 +1001,7 @@ async function refrescar() {
     // tamaño —un tablero— o lo deja como está —unos dados sueltos—. Se apunta aquí,
     // que es donde se conoce el sustrato, igual que la línea de arriba.
     conRejillaAhora = !!susLocal?.rejilla;
+    ponerTapeteSiHaceFalta(conRejillaAhora);
 
     const marcador = st.puntos ?? st.score ?? st.marcador;
     const txt = document.getElementById('estado-txt');

@@ -345,7 +345,10 @@ function contarLaMesa(st, juego) {
     const cara = (c) => {
         if (c === null || c === undefined) return '?';
         if (st.cara !== 'valor' || !st.valores) return c;
-        const r = String(c).split('_').slice(1).join('_');
+        // El `#2` del sufijo de copia se quita antes de buscar el rango: en una mesa
+        // de dos barajas, `S_A#2` vale lo mismo que `S_A` y la tabla de valores está
+        // escrita una sola vez. Ver `sinCopia` en `rules/baraja.js`.
+        const r = String(c).split('#')[0].split('_').slice(1).join('_');
         return String(st.simbolos?.[r] ?? st.valores[r] ?? r);
     };
 

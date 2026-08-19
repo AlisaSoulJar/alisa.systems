@@ -683,7 +683,9 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
         (sus.zonas ?? []).forEach((z, iz) => {
             const total = z.items.length + (z.ocultas ?? 0);
             if (!total) return;
-            const sitios = colocar(z, iz, total);
+            // Una ficha de dominó es más larga que una carta: si el paso no lo sabe,
+            // la mano sale como una barra. Ver el respaldo de `colocar`.
+            const sitios = colocar(z, iz, total, hayFichas ? 0.98 : 0.7);
 
             /**
              * ⚠️ ESTO DIBUJABA «HAY ALGO», NO «QUÉ HAY». Y EL QUÉ ES TODO EL DATO.
@@ -842,7 +844,22 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
     }
 
     /** Dónde va cada carta. Con `CroupierSystem` si lo hay; si no, en fila. */
-    function colocar(z, iz, total) {
+    function colocar(z, iz, total, paso = 0.7) {
+        /**
+         * ⚠️ UN POZO NO ES UNA FILA, ES UN MONTÓN.
+         *
+         * Las catorce fichas del pozo del dominó salían tendidas en línea, ocupando
+         * más ancho que la cadena entera: la mesa decía «aquí hay catorce fichas
+         * expuestas» cuando lo que hay es un montón boca abajo. Y no es cosmético —
+         * cuántas quedan por robar es información pública, pero DÓNDE está cada una
+         * no lo es, y dibujarlas en fila la inventa.
+         *
+         * Se apilan en el mismo sitio; la altura ya la pone `poner`, que suma
+         * `alturaCarta * k`. Lo dice la zona, no el nombre del juego.
+         */
+        if (z.apilada) {
+            return Array.from({ length: total }, () => ({ x: 0, z: 2.4 + iz * 1.2, rot: 0 }));
+        }
         if (croupier?.calculatePlayerHands) {
             try {
                 const r = croupier.calculatePlayerHands(1, total, 'fan', (z.ocultas ?? 0) > 0);
@@ -854,8 +871,13 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
             } catch { /* si no encaja, la fila de abajo */ }
         }
         // Respaldo honesto: una fila. Fea pero correcta, y nunca falla.
+        //
+        // ⚠️ El paso lo manda quien llama, y no es un detalle: 0.7 es el ancho de una
+        // carta, y una ficha de dominó mide 0.86 de largo. Con el paso de carta las
+        // siete de tu mano se montaban unas sobre otras y se leían como UNA barra
+        // blanca — que es exactamente lo que se veía en la captura del 19-08.
         return Array.from({ length: total }, (_, k) => ({
-            x: (k - (total - 1) / 2) * 0.7, z: 2.4 + iz * 1.2, rot: 0,
+            x: (k - (total - 1) / 2) * paso, z: 2.4 + iz * 1.2, rot: 0,
         }));
     }
 

@@ -101,7 +101,23 @@ const bitBajo = (m) => 31 - Math.clz32(m & -m);
  * No lo hago de madrugada sobre una pregunta: queda dicho el coste para que se
  * decida con el número delante.
  */
-export async function crearRemigio({ url = RUTA_BIBLIOTECA, jugadores = 2, mano = 10 } = {}) {
+/**
+ * ⚠️ LA VARIANTE DE DOS BARAJAS.
+ *
+ * Oscar la pidió («remigio debería ser con dos barajas») y arriba está escrito lo que
+ * costaba. Ya no cuesta: el sufijo de copia vive en `rules/baraja.js` y lo entienden
+ * el pintor, el descriptor de texto y este chequeo de tríos. Se declara como norma,
+ * igual que `damaVuela` en las damas, para que viaje en el recibo y el verificador
+ * pueda re-jugar la partida con las normas con las que se jugó.
+ *
+ * ⚠️ Lo que NO es esto: no es el remigio con baraja española. Ese juego tiene nombre
+ * propio —chinchón—, otras reglas y otra puntuación, y está anotado arriba.
+ */
+export const NORMAS = { dosBarajas: false };
+const normasDe = (o = {}) => ({ ...NORMAS, ...o });
+
+export async function crearRemigio({ url = RUTA_BIBLIOTECA, jugadores = 2, mano = 10,
+                                     normas: normasAlCrear = {} } = {}) {
     const baraja = await cargarBaraja('french_52', url);
 
     /**
@@ -133,8 +149,18 @@ export async function crearRemigio({ url = RUTA_BIBLIOTECA, jugadores = 2, mano 
         const masks = [];
 
         // ── Tríos ────────────────────────────────────────────────────────
-        // Con UNA baraja, mismo rango implica palos distintos, así que no hace
-        // falta comprobarlo. Con dos, aquí es donde habría que mirarlo.
+        /**
+         * ⚠️ AQUÍ ES DONDE LAS DOS BARAJAS ROMPÍAN EL JUEGO, Y NO SE VEÍA.
+         *
+         * Con UNA baraja el mismo rango ya implica palos distintos, así que este
+         * bucle no los comprobaba: le bastaba con juntar tres sietes. Con dos,
+         * `7♦ 7♦#2 7♣` son tres sietes y NO es un trío — es una pareja con una
+         * carta repetida—, y el motor lo habría dado por bueno. Un remigio donde
+         * ligas con cartas repetidas no es un remigio más fácil, es otro juego, y
+         * habría salido en verde en todas las pruebas porque ninguna mira esto.
+         *
+         * Con una sola baraja el filtro no cambia nada: los palos ya eran únicos.
+         */
         const porRango = new Map();
         cartas.forEach((c, i) => {
             const r = rango(c);
@@ -145,13 +171,17 @@ export async function crearRemigio({ url = RUTA_BIBLIOTECA, jugadores = 2, mano 
             const n = idx.length;
             if (n < 3) continue;
             for (let sub = 1; sub < (1 << n); sub++) {
-                let cuenta = 0, bits = 0;
+                let cuenta = 0, bits = 0, repetido = false;
+                const palos = new Set();
                 for (let k = 0; k < n; k++) {
                     if (!(sub & (1 << k))) continue;
+                    const s = palo(cartas[idx[k]]);
+                    if (palos.has(s)) { repetido = true; break; }
+                    palos.add(s);
                     cuenta++;
                     bits |= 1 << idx[k];
                 }
-                if (cuenta >= 3) masks.push(bits);
+                if (!repetido && cuenta >= 3) masks.push(bits);
             }
         }
 
@@ -275,10 +305,21 @@ export async function crearRemigio({ url = RUTA_BIBLIOTECA, jugadores = 2, mano 
 
         nuevaPartida(opts = {}) {
             const semilla = (opts.semilla ?? opts.seed ?? Date.now()) >>> 0;
-            const cartas = barajar(cartasDe(baraja), mulberry32(semilla));
+            /**
+             * ⚠️ LAS NORMAS VIVEN EN LA PARTIDA, NO EN EL MÓDULO — como en `damas.js`.
+             *
+             * Si vivieran en el módulo, una partida no sabría con qué normas nació y el
+             * recibo tampoco: el verificador la volvería a jugar con las de HOY y la
+             * llamaría tramposa. Es el mismo motivo por el que damas las guarda, y ya
+             * costó una tarde de repeticiones que se paraban en la jugada 9.
+             */
+            // Las normas pueden venir al crear las reglas (la mesa las lee de la URL)
+            // o en cada partida. Ganan las de la partida, que son las más concretas.
+            const normas = normasDe({ ...normasAlCrear, ...(opts.normas ?? {}) });
+            const cartas = barajar(cartasDe(baraja, normas.dosBarajas ? 2 : 1), mulberry32(semilla));
 
             const p = {
-                semilla, jugadores, manos: [], mazo: [], descarte: [],
+                semilla, jugadores, normas, manos: [], mazo: [], descarte: [],
                 turno: 0, fase: 'robar', jugadas: [], cerro: null,
                 // De dónde robó cada uno la última vez: es información pública y
                 // es la mitad del juego. Se guarda para poder publicarla.
@@ -397,6 +438,9 @@ export async function crearRemigio({ url = RUTA_BIBLIOTECA, jugadores = 2, mano 
                 puntos,
                 score: puntos,
                 turn: pid === 0 ? 'player' : `cpu${pid}`,
+                // Con qué normas nació esta partida. Sin publicarlo, el recibo no las
+                // lleva y el verificador la re-juega con otras reglas.
+                normas: p.normas,
                 semilla: p.semilla,
                 biblioteca: p.biblioteca,
                 legal_moves: legales,

@@ -801,8 +801,17 @@ class SovereignCardEngine {
             E: ['⚔️', '#1565C0'], B: ['🪵', '#5D4037'],
         };
 
+        /**
+         * ⚠️ El sufijo de copia se quita ANTES de mirar nada. En una mesa de dos
+         * barajas la segunda copia es `S_A#2`, y sin esto el rango salía `A#2`: no
+         * existe esa figura, así que la carta se pintaba en blanco. Las dos copias
+         * son la misma carta a los ojos: el `#2` sólo sirve para nombrarlas aparte
+         * en la jugada y en el recibo. Ver `sinCopia` en `rules/baraja.js`.
+         */
+        const limpio = String(cardId).split('#')[0];
+
         // Handle formats: "S_2", "H_K", "O_1", "P_R", etc.
-        const m = cardId.match(/^([SHDCOEPB])(?:_)?(.+)$/);
+        const m = limpio.match(/^([SHDCOEPB])(?:_)?(.+)$/);
         if (m) {
             suitId = m[1];
             rank = m[2];

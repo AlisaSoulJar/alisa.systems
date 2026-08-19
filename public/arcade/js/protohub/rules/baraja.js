@@ -25,8 +25,30 @@
 
 export const RUTA_BIBLIOTECA = '../../../data/card_library.json';
 
-export const palo  = (id) => id.split('_')[0];
-export const rango = (id) => id.split('_').slice(1).join('_');
+/**
+ * ⚠️ EL SUFIJO DE COPIA: `S_A#2` ES EL SEGUNDO AS DE PICAS.
+ *
+ * Todo este proyecto direcciona las cartas por su IDENTIDAD: `descartar:S_A` es una
+ * jugada legal, viaja al recibo y el verificador la vuelve a jugar. Con dos barajas
+ * hay dos ases de picas, y en ese momento «el as de picas» deja de señalar una carta:
+ * las jugadas legales dejan de ser únicas, el recibo deja de poder re-simularse y el
+ * pintor no sabe cuál mover. Tres cosas rotas por el mismo sitio.
+ *
+ * El sufijo lo arregla dando nombre propio a cada copia. Y la PRIMERA no lo lleva —es
+ * `S_A` a secas— justo para que los nueve juegos de una baraja no se enteren de que
+ * esto existe: sus identificadores, sus recibos guardados y sus imágenes siguen
+ * valiendo. Sólo aparece un `#2` cuando de verdad hay una segunda.
+ */
+const sinCopia = (id) => String(id).split('#')[0];
+
+export const palo  = (id) => sinCopia(id).split('_')[0];
+export const rango = (id) => sinCopia(id).split('_').slice(1).join('_');
+
+/** De qué baraja sale esta carta: 1 la primera, 2 la segunda… */
+export const copiaDe = (id) => Number(String(id).split('#')[1] ?? 1);
+
+/** La misma carta mirando sólo el palo y el rango, ignorando de qué baraja viene. */
+export const mismaCarta = (a, b) => sinCopia(a) === sinCopia(b);
 
 /**
  * El respaldo. Sólo se usa si la biblioteca no carga —sin red, fichero movido,
@@ -107,6 +129,15 @@ export async function cargarBaraja(nombre, url = RUTA_BIBLIOTECA) {
     return { ...baraja, biblioteca: deLaBiblioteca };
 }
 
-/** La baraja entera como lista de cartas, sin barajar. */
-export const cartasDe = (baraja) =>
-    baraja.suits.flatMap(s => baraja.ranks.map(r => `${s}_${r}`));
+/**
+ * La baraja entera como lista de cartas, sin barajar.
+ *
+ * Con `copias > 1` se reparten varias barajas iguales y cada carta repetida lleva su
+ * sufijo. La primera va sin él a propósito: ver `sinCopia` arriba.
+ */
+export const cartasDe = (baraja, copias = 1) => {
+    const una = baraja.suits.flatMap(s => baraja.ranks.map(r => `${s}_${r}`));
+    if (copias <= 1) return una;
+    return Array.from({ length: copias }, (_, k) =>
+        k === 0 ? una : una.map(c => `${c}#${k + 1}`)).flat();
+};

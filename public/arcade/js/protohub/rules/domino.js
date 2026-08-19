@@ -242,6 +242,69 @@ export async function crearDomino({ jugadores = 2, mano = 7 } = {}) {
         },
 
         /**
+         * ⚠️ EL RIVAL DE LA CASA. NO VA DE SOLTAR FICHAS, VA DE MANDAR EN LAS PUNTAS.
+         *
+         * Sin esto la casa caía en `primera`: la primera jugada legal de la lista. Eso
+         * no es jugar mal al dominó, es no jugar al dominó — y como el banco compara a
+         * todo el mundo contra la casa, un rival así mide la suerte del reparto y nada
+         * más. El dominó se decide en QUÉ NÚMERO LE DEJAS VIVO al de enfrente, y esa
+         * decisión existe justo cuando tu ficha entra por los dos lados.
+         *
+         * Tres criterios, y el orden importa:
+         *
+         *   1. CONTROL — cuántas de las que me quedan podría poner después. Pesa diez
+         *      veces más que los puntos porque es lo único que se parece a jugar bien:
+         *      dejar vivo un número del que tú tienes muchas es quedarte con la mano.
+         *   2. PESO — a igualdad de control, suelta la gorda. Si la partida se tranca
+         *      gana quien menos puntos tenga, así que lo pesado quema.
+         *   3. EL DOBLE ANTES — es la ficha que menos sitios tiene, y quedarse con ella
+         *      es quedarse con el que no entra en ningún lado.
+         *
+         * ⚠️ Y DEJA TECHO A PROPÓSITO: no cuenta lo que el rival NO tiene. Cada vez que
+         * alguien pasa está diciendo en voz alta que no lleva ninguna de las dos puntas,
+         * y esa es la mitad buena del juego. No se usa. Un rival de casa que juega
+         * perfecto no separa a nadie, que es lo que ya dice `gofish.js`.
+         *
+         * Sin `Math.random`: el desempate es el orden de la lista, que es fijo. La misma
+         * semilla tiene que dar la misma partida o el recibo no vale nada.
+         */
+        sugerencia(p) {
+            const quien = p.turno;
+            const legales = jugablesDe(p, quien);
+            if (!legales.length) return p.pozo.length ? 'robar' : 'pasar';
+
+            const mano = p.manos[quien];
+
+            /** Cómo quedan las dos puntas DESPUÉS de poner esa ficha en ese extremo. */
+            const puntasTras = (ficha, donde) => {
+                const lee = comoQueda(p, ficha, donde);
+                const pt = puntas(p);
+                if (!pt) return [lee[0], lee[1]];
+                return donde === 'izq' ? [lee[0], pt[1]] : [pt[0], lee[1]];
+            };
+
+            const valor = (jugada) => {
+                const m = /^jugar:(\d-\d):(izq|der)$/.exec(jugada);
+                if (!m) return -Infinity;
+                const [, ficha, donde] = m;
+                const [a, b] = valoresDe(ficha);
+                const [izq, der] = puntasTras(ficha, donde);
+                const salidas = mano.filter(f => f !== ficha).filter(f => {
+                    const [x, y] = valoresDe(f);
+                    return x === izq || y === izq || x === der || y === der;
+                }).length;
+                return salidas * 10 + puntosDe(ficha) + (a === b ? 3 : 0);
+            };
+
+            let mejor = legales[0], tope = -Infinity;
+            for (const j of legales) {
+                const v = valor(j);
+                if (v > tope) { tope = v; mejor = j; }
+            }
+            return mejor;
+        },
+
+        /**
          * ⚠️ EL SUSTRATO: UNA ZONA POR MANO Y UNA POR LA CADENA.
          *
          * La cadena NO es una rejilla y no se declara como tal: su forma sale de cómo
@@ -262,7 +325,11 @@ export async function crearDomino({ jugadores = 2, mano = 7 } = {}) {
                 if (i === yo) continue;
                 zonas.push({ id: 'mano', de: i, items: [], ocultas: p.manos[i].length });
             }
-            zonas.push({ id: 'pozo', de: null, items: [], ocultas: p.pozo.length });
+            // `apilada` porque el pozo es un MONTÓN boca abajo, no una fila tendida.
+            // Cuántas quedan es público; dónde está cada una, no — y dibujarlas en
+            // línea inventaba esa segunda información. Lo dice la zona y lo obedece
+            // el pintor, así que sirve a cualquier juego con mazo, no sólo a éste.
+            zonas.push({ id: 'pozo', de: null, items: [], ocultas: p.pozo.length, apilada: true });
             return {
                 rejilla: null,
                 piezas: [],
