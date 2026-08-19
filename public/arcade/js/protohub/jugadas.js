@@ -375,7 +375,42 @@ export function pintarJugadas(caja, { acciones = [], meToca = true, turnoDe = nu
     caja.classList.toggle('mesa-jugadas-mudas', !!mapa && px < 18);
     const sitioDe = mapa ? new Map(mapa.sitios.map(s => [s.m, s])) : null;
 
+    /**
+     * ⚠️ LA TIRA ENSEÑA VARIEDAD, NO LAS OCHO PRIMERAS DE LA MISMA FAMILIA.
+     * ═══════════════════════════════════════════════════════════════════════════
+     *
+     * Aviso de un betatester en entropy: «la carta que robó, si no la quiero, no me
+     * deja descartarla». Y la pista de ese momento le decía exactamente lo que él
+     * quería —«cámbiala por una de tu caja, o tírala, pero destapando una de las
+     * tuyas»—, así que la acción existía y él la estaba buscando.
+     *
+     * Reproducido en su móvil de 276 px: catorce jugadas legales, y en la tira
+     * deslizante caben DOS. Las catorce llegan en el orden de `legal_moves`, que
+     * agrupa por verbo: ocho `cambiar:0…7` y detrás seis `descartar_y_voltear:N`. O
+     * sea que la primera pantalla eran ocho variantes de LO MISMO y el otro verbo
+     * empezaba en la novena. Deslizando se llega, pero nadie desliza buscando algo
+     * que no sabe que está.
+     *
+     * Se intercalan por familia: primero una de cada verbo, luego la segunda de cada
+     * uno, y así. Con eso la primera pantalla siempre enseña QUÉ SE PUEDE HACER, y
+     * las variantes vienen detrás.
+     *
+     * ⚠️ NO SE QUITA NI SE AGRUPA NINGUNA. Están las catorce, que es la regla de oro
+     * de estos botones: la persona ve la misma lista literal que recibe un agente. Lo
+     * único que cambia es en qué orden se enseñan, y el orden no es parte del juego.
+     */
+    const familias = new Map();
     for (const m of legales) {
+        const f = String(m).split(':')[0];
+        if (!familias.has(f)) familias.set(f, []);
+        familias.get(f).push(m);
+    }
+    const intercaladas = [];
+    for (let i = 0; intercaladas.length < legales.length; i++) {
+        for (const lote of familias.values()) if (lote[i] !== undefined) intercaladas.push(lote[i]);
+    }
+
+    for (const m of intercaladas) {
         const b = document.createElement('button');
         b.className = 'mesa-jugada';
         const s = sitioDe?.get(m);
