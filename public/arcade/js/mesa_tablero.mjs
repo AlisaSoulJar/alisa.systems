@@ -41,6 +41,7 @@ import { celdasDeJugada } from './protohub/sustrato.js';
 import { volcarMesa, volcando, ponerBoton } from './protohub/render/volcar.js';
 import { crearTapete } from './protohub/tapete.js';
 import { filasDeEstado } from './protohub/panel.js';
+import { crearAtmosfera } from './protohub/atmosfera.js';
 
 const hub = window.ALISA_PROTOHUB;
 const juego = window.ALISA_JUEGO;
@@ -292,6 +293,30 @@ let conRejillaAhora = true;
  * dos tapetes superpuestos hacen el parpadeo de siempre.
  */
 let tapetePuesto = false;
+
+/**
+ * ⚠️ EL AMBIENTE: CIELO, SUELO Y NIEBLA, SI EL JUEGO LO PIDE.
+ *
+ * Diez de los juegos de esta mesa tienen la misma cara —damero azul, cubitos marrones—
+ * porque el pintor dibuja sin saber a qué se juega. Eso es la tesis y también su techo.
+ * `atmosfera.js` levanta el techo sin tocar la tesis: pone material y aire alrededor,
+ * y sigue sin saber a qué se juega. Ver su nota de cabecera y la del cucco swarm, que
+ * es de donde salió el listón.
+ *
+ * Sólo si la rejilla lo declara (`ambiente: 'hierba'`), y sólo de dueña: de invitada,
+ * el cielo lo pone la sala — dos cielos superpuestos es el parpadeo de siempre.
+ */
+let ambientePuesto = null;
+let ambienteAhora = null;
+
+function ponerAmbiente(nombre) {
+    if (anfitrion || nombre === ambienteAhora) return;
+    ambientePuesto?.soltar?.();
+    ambientePuesto = null;
+    ambienteAhora = nombre;
+    if (!nombre) return;
+    ambientePuesto = crearAtmosfera(THREE, escena, nombre, { lado: LADO });
+}
 
 function ponerTapeteSiHaceFalta(hayRejilla) {
     if (tapetePuesto || hayRejilla || anfitrion) return;
@@ -970,6 +995,7 @@ async function refrescar() {
             pintor.pintar(sus);
             conRejillaAhora = !!sus?.rejilla;
             ponerTapeteSiHaceFalta(conRejillaAhora);
+            ponerAmbiente(sus?.rejilla?.ambiente ?? null);
             const txt = document.getElementById('estado-txt');
             if (txt) {
                 txt.innerHTML = `<span>Turno</span><span class="val">${st.turn ?? '—'}</span>`
@@ -1003,6 +1029,7 @@ async function refrescar() {
     // que es donde se conoce el sustrato, igual que la línea de arriba.
     conRejillaAhora = !!susLocal?.rejilla;
     ponerTapeteSiHaceFalta(conRejillaAhora);
+    ponerAmbiente(susLocal?.rejilla?.ambiente ?? null);
 
     const marcador = st.puntos ?? st.score ?? st.marcador;
     const txt = document.getElementById('estado-txt');

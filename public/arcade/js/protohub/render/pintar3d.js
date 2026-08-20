@@ -33,6 +33,21 @@
 
 import { colorDe } from './paleta.js';
 
+/**
+ * El tinte de las casillas y los muros por ambiente. Vive aquí y no en `atmosfera.js`
+ * porque son colores de MATERIAL DE PIEZA, y ese fichero es de cielo y niebla: quien
+ * dibuja el suelo es este pintor, y mezclarlos obligaría a importar uno desde el otro
+ * para nada. Las claves son las mismas de `AMBIENTES`, a propósito.
+ */
+const PALETAS = {
+    hierba: { claro: 0x9dc47a, oscuro: 0x5f8f45, muro: 0x6b5236 },
+    piedra: { claro: 0xa8a396, oscuro: 0x6e6a5f, muro: 0x8a7f68 },
+    metal:  { claro: 0xc6cdd6, oscuro: 0x7d8896, muro: 0x9aa3ad },
+    arena:  { claro: 0xe3cfa2, oscuro: 0xb59a68, muro: 0x8a7346 },
+    noche:  { claro: 0x9a93b5, oscuro: 0x6b6488, muro: 0x574f74 },
+};
+let paletaPuesta;
+
 /** Alturas por tipo. Lo que no esté aquí sale como ficha baja. */
 const ALTO = {
     muro: 1.0, cabeza: 0.6, cuerpo: 0.45, bolita: 0.12, comida: 0.3,
@@ -510,6 +525,34 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
              * (c + dx, f + dz) y mide una unidad de lado.
              */
             escena.userData.rejillaMundo = { cols, filas, dx, dz, lado: 1, y: 0 };
+
+            /**
+             * ═══════════════════════════════════════════════════════════════
+             *  ⚠️ Y LAS CASILLAS TAMBIÉN TOMAN EL AMBIENTE
+             * ═══════════════════════════════════════════════════════════════
+             *
+             * `atmosfera.js` puso cielo, suelo y niebla alrededor, y al mirar las tres
+             * capturas del piloto la conclusión fue la misma en las tres: **el aire
+             * funciona y el tablero no**. La pradera salía con hierba de verdad y encima
+             * un damero de ajedrez azul y blanco — un tablero tirado en un césped, no un
+             * prado. Y la nave, con casco metálico fuera y muros de MADERA dentro.
+             *
+             * Las casillas y los muros se pintaban con tres colores fijos que sirven a
+             * los veinticuatro. Aquí se les da el tinte del ambiente cuando lo hay, y se
+             * quedan como estaban cuando no. Es el mismo trato que el resto: lo declara
+             * el juego, no lo adivina nadie, y quien no pide nada no cambia.
+             *
+             * Se cambia el color del material que YA existe en vez de hacer otro: el
+             * suelo se dibuja instanciado —una llamada para las 784 celdas de fagocito—
+             * y crear un material por ambiente tiraría esa optimización para pintar.
+             */
+            const amb = PALETAS[sus.rejilla.ambiente];
+            if (amb !== paletaPuesta) {
+                paletaPuesta = amb;
+                mat.sueloA.color.setHex(amb?.claro ?? 0xeceff4);
+                mat.sueloB.color.setHex(amb?.oscuro ?? 0x4a5a70);
+                mat.muro.color.setHex(amb?.muro ?? 0x5c5040);
+            }
 
             /**
              * ═══════════════════════════════════════════════════════════════

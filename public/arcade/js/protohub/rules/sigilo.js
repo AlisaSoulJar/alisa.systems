@@ -146,7 +146,7 @@ export const sigilo = {
         if (aLaVista.has(idx(p[el]))) piezas.push({ x: p[el].x, y: p[el].y, t: el, de: 1 });
 
         return {
-            rejilla: { ancho: ANCHO, alto: ALTO, celdas, niebla },
+            rejilla: { ambiente: 'noche', ancho: ANCHO, alto: ALTO, celdas, niebla },
             piezas, zonas: [],
             leyenda: { ladron: 'ladrón', guardia: 'guardia', dron: 'dron de patrulla', botin: 'botín' },
             simbolos: { ladron: '@', guardia: 'G', dron: 'd', botin: '$' },

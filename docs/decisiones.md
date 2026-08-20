@@ -15,14 +15,14 @@ contrario. El problema no era que no estuviera escrito: era que no había índic
 Volver a decidir sale barato en el momento y carísimo a la semana, porque la
 segunda decisión casi nunca coincide con la primera y entonces hay dos verdades.
 
-**1620 decisiones** en 276 ficheros.
+**1622 decisiones** en 276 ficheros.
 
 ## Índice
 
 - [Herramientas de medida](#herramientas-de-medida) — 324
 - [Reglas de los juegos](#reglas-de-los-juegos) — 304
-- [Las mesas y los visualizadores](#las-mesas-y-los-visualizadores) — 284
-- [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 159
+- [Las mesas y los visualizadores](#las-mesas-y-los-visualizadores) — 285
+- [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 160
 - [Las comprobaciones](#las-comprobaciones) — 152
 - [Otros](#otros) — 139
 - [Las páginas de los juegos](#las-páginas-de-los-juegos) — 76
@@ -1936,13 +1936,15 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>De estos quince juegos sólo `flota` tiene jugadas que son casillas (`a1`, `b1`). La idea era: tocas la casilla, se mira cómo se llamaría, y si ese nombre está en `legal_moves` se manda. Comprobar contra la lista parecía suficiente garantía.</sub>
 - **Y DEBAJO, LO QUE EL JUEGO PUBLICA Y ANTES SÓLO LEÍA EL AGENTE.** <sub>línea 1011</sub>
   <br><sub>Esto era «Turno» y el marcador, y ya. Un agente de defensa leía `oro: 3. vida: 10. vida_rival: 10. bichos_en_camino: 2` porque el describidor vuelca el estado entero; la persona veía dos números. Medido en los 38 con</sub>
-- **`yo` VA VACÍO EN LA MESA LOCAL, Y ES A PROPÓSITO.** <sub>línea 1059</sub>
+- **LAS FILAS VAN AL LADO DE `#estado-txt`, NO DENTRO.** <sub>línea 1027</sub>
+  <br><sub>La primera versión las metía dentro, y `#estado-txt` YA es un `.status-row` —o sea una fila flex horizontal—, así que las once filas de defensa se apilaban de lado y salía «Turnoazul·0bandoazuloro15vida10vida10torre rival»</sub>
+- **`yo` VA VACÍO EN LA MESA LOCAL, Y ES A PROPÓSITO.** <sub>línea 1078</sub>
   <br><sub>Lo puse primero como `st.turn` y quedaba bonito —las jugadas propias en verde— hasta que se mira lo que significa: `turn` es DE QUIÉN ES EL TURNO AHORA, no quién soy yo. Así que el color se daba la vuelta en cada jugada</sub>
-- **EL REPETIDOR: LA TESIS DEL PROYECTO, PUESTA DONDE SE VE** <sub>línea 1080</sub>
+- **EL REPETIDOR: LA TESIS DEL PROYECTO, PUESTA DONDE SE VE** <sub>línea 1099</sub>
   <br><sub>/arcade/checkers.html?semilla=7&repetir=a3b4,b6a5,b4c5</sub>
-- **Y NO TOCA NI EL PINTOR NI LAS REGLAS.** <sub>línea 1089</sub>
+- **Y NO TOCA NI EL PINTOR NI LAS REGLAS.** <sub>línea 1108</sub>
   <br><sub>El repetidor sólo llama a `hub.reset` y `hub.move` — exactamente lo que hace jugar. La mesa repinta lo que el hub diga, como siempre, porque el render es un espectador y no un nervio. Consecuencia: sale gratis en los quince juegos de esta</sub>
-- **Y POR ESO EL HISTORIAL Y EL SUBRAYADO FUNCIONAN SOLOS.** <sub>línea 1096</sub>
+- **Y POR ESO EL HISTORIAL Y EL SUBRAYADO FUNCIONAN SOLOS.** <sub>línea 1115</sub>
   <br><sub>Como las jugadas se aplican de verdad, el hub las graba, `hub.partida()` las devuelve, y el registro y el subrayado de la última jugada aparecen sin una línea más. No estaba planeado: es lo que pasa cuando repetir es jugar otra vez y no</sub>
 
 ### `public/arcade/js/montarMesa.js`
@@ -2451,17 +2453,19 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>· fontanería — de dónde vino el estado, la semilla, la conexión. No es del juego. · lo que YA tiene su fila — turno, marcador, pista, triunfo, ligadas. · los objetos y las listas largas — una mano de diez cartas es un dibujo, no un</sub>
 - **Y ESTO NO PUEDE SER LA LISTA QUE USA `prueba_asimetria`.** <sub>línea 33</sub>
   <br><sub>Si la comprobación ignorase exactamente lo que este fichero oculta, no podría fallar nunca — sería su propio espejo. Así que la prueba mantiene SU lista, con sus motivos, y esta de aquí es otra. Que las dos digan cosas parecidas está bien; que</sub>
-- **UNA LISTA DE LISTAS TAMBIÉN SE PUEDE DECIR, Y HACÍA FALTA.** <sub>línea 67</sub>
+- **UNA LISTA DE LISTAS TAMBIÉN SE PUEDE DECIR, Y HACÍA FALTA.** <sub>línea 74</sub>
   <br><sub>`cajas_rivales` de entropy es una caja por rival, o sea un array de arrays, y la primera versión lo tiraba por «tiene objetos dentro». Resultado: en un juego de INFORMACIÓN OCULTA, el agente leía las cajas de los demás y la</sub>
-- **Con tope, y se dice cuando se corta: un panel de cuarenta filas tapa la** <sub>línea 109</sub>
+- **Con tope, y se dice cuando se corta: un panel de cuarenta filas tapa la** <sub>línea 118</sub>
   <br><sub>mesa, y cortar en silencio sería la misma clase de mentira que un `top-N` sin avisar. Doce entran de sobra en el juego que más publica. if (out.length >= tope) {</sub>
-- **Y LOS SIETE CON VISUALIZADOR PROPIO, QUE NO PUEDEN IMPORTAR ESTO** <sub>línea 122</sub>
+- **Y LOS SIETE CON VISUALIZADOR PROPIO, QUE NO PUEDEN IMPORTAR ESTO** <sub>línea 131</sub>
   <br><sub>Las dos mesas genéricas llaman a `filasDeEstado` y con eso quedaron veintiuno de los veintiocho. Los siete que faltaban —ajedrez, mancala, snake, peatón, blackjack, póker y entropy— tienen visualizador propio, y ésos son scripts CLÁSICOS: declaran</sub>
-- **SE HACE DESDE FUERA Y NO CON SIETE PARCHES.** <sub>línea 134</sub>
+- **SE HACE DESDE FUERA Y NO CON SIETE PARCHES.** <sub>línea 143</sub>
   <br><sub>Cada visualizador reescribe su HUD cuando le apetece, así que no vale con inyectar un bloque una vez: lo borraría en el siguiente repintado. Y siete parches serían siete sitios donde el juego 39 vuelve a nacer mudo — que es exactamente lo que pasó</sub>
-- **CADA 400 ms Y NO CADA SEGUNDO, Y NO ES UN CAPRICHO.** <sub>línea 161</sub>
+- **Y lo que el CANADIENSE repetía: su panel salía con la mano, el descarte y** <sub>línea 165</sub>
+  <br><sub>una matriz de -1 que es, literalmente, el tablero escrito en números. Lo vi abriendo la captura — quince filas de las que cinco eran el dibujo otra vez. 'posiciones', 'mis_fichas', 'fichas', 'manos_rivales', 'descarte', 'descartes',</sub>
+- **CADA 400 ms Y NO CADA SEGUNDO, Y NO ES UN CAPRICHO.** <sub>línea 175</sub>
   <br><sub>Con un segundo, el panel iba por detrás de tu propia jugada: haces algo, la mesa cambia, y el marcador tarda en enterarse. Lo cazó `prueba_asimetria`, que leía el panel antes de que refrescara y denunciaba al póker por esconder `puntos` cuando</sub>
-- **AQUÍ NO VALE LA LISTA DE «ESO YA ESTÁ», Y ME COSTÓ UNA PASADA VERLO.** <sub>línea 179</sub>
+- **AQUÍ NO VALE LA LISTA DE «ESO YA ESTÁ», Y ME COSTÓ UNA PASADA VERLO.** <sub>línea 193</sub>
   <br><sub>`filasDeEstado` se salta `puntos`, `turno` y el marcador porque las dos mesas genéricas ya les dan su fila. Los visualizadores propios NO — y por eso, tras el primer arreglo, ajedrez, mancala, blackjack y póker seguían escondiendo el</sub>
 
 ### `public/arcade/js/protohub/ProtoHub.js`
@@ -2637,11 +2641,11 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Se abre la página de verdad, se juegan unas jugadas, y se comparan DOS textos del mismo momento: lo que `describirEstado` le daría a un agente y lo que el panel tiene escrito. Se buscan los VALORES del primero en el segundo — números y palabras, no</sub>
 - **Y LO QUE NO ES UNA ASIMETRÍA: LO QUE SE VE EN LA MESA.** <sub>línea 38</sub>
   <br><sub>Un agente lee `dado: [3,3]` y la persona ve dos dados con tres puntos. Eso no es información escondida, es información dibujada — y contarlo como fallo llenaría esto de falsas alarmas hasta que nadie lo mirara. Así que las excepciones se</sub>
-- **Se espera a que el panel se ponga al día: el vigía de los visualizadores** <sub>línea 160</sub>
+- **Se espera a que el panel se ponga al día: el vigía de los visualizadores** <sub>línea 166</sub>
   <br><sub>propios refresca cada 400 ms, y leer antes denunciaba al póker por esconder algo que ya estaba escrito. Una prueba que corre más que la pantalla mide la carrera, no el juego.</sub>
-- **SE COMPARAN VALORES, NO NOMBRES DE CAMPO.** <sub>línea 181</sub>
+- **SE COMPARAN VALORES, NO NOMBRES DE CAMPO.** <sub>línea 187</sub>
   <br><sub>El panel dice «Triunfo: oros» donde el estado dice `triunfo: "O"`, así que buscar la palabra `triunfo` daría un falso negativo. Lo que tiene que estar en los dos sitios es el DATO: un número, o una cadena corta que signifique algo.</sub>
-- **Una excepción que ya no hace falta es una mentira guardada: se denuncia, igual** <sub>línea 223</sub>
+- **Una excepción que ya no hace falta es una mentira guardada: se denuncia, igual** <sub>línea 229</sub>
   <br><sub>que `prueba_de_las_pruebas` denuncia un sabotaje que apunta a una prueba borrada. const sobran = Object.keys(EN_LA_MESA).filter(k => !usadas.has(k));</sub>
 
 ### `prueba_barajas.mjs`

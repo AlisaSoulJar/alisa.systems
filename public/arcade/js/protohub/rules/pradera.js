@@ -88,7 +88,7 @@ export const pradera = {
         const enRango = (q) => Math.max(0, Math.min(ANCHO - 1, q.x));
         const enAlto = (q) => Math.max(0, Math.min(ALTO - 1, q.y));
         return {
-            rejilla: { ancho: ANCHO, alto: ALTO, celdas },
+            rejilla: { ambiente: 'hierba', ancho: ANCHO, alto: ALTO, celdas },
             piezas: [
                 ...p.quesos.map(q => { const c = rej(q); return { x: enRango(c), y: enAlto(c), t: 'queso', de: 2 }; }),
                 ...p.ratones.filter(r => r.alive).map(r => {

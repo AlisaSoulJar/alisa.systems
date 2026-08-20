@@ -121,7 +121,7 @@ export const rebano = {
             for (let x = REDIL.x0; x <= REDIL.x1; x++) celdas[y * ANCHO + x] = 2;
         }
         return {
-            rejilla: { ancho: ANCHO, alto: ALTO, celdas },
+            rejilla: { ambiente: 'hierba', ancho: ANCHO, alto: ALTO, celdas },
             piezas: [
                 ...p.ovejas.map(o => {
                     const q = rejilla(o);

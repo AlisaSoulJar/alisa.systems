@@ -194,7 +194,7 @@ export const nave = {
         piezas.push({ x: yo.x, y: yo.y, t: 'yo', de: 0 });
 
         return {
-            rejilla: { ancho: ANCHO, alto: ALTO, celdas, sinVista },
+            rejilla: { ambiente: 'metal', ancho: ANCHO, alto: ALTO, celdas, sinVista },
             piezas, zonas: [],
             leyenda: { yo: 'tú', cadaver: 'cadáver',
                        ...Object.fromEntries(SILLAS.map(s => [`tripulante_${s}`, `tripulante ${s}`])) },
