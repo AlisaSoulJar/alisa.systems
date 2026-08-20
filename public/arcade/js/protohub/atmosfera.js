@@ -50,26 +50,58 @@
  * que venga después. Si fueran nombres de juego, esto sería un mapa por juego, o sea
  * la lista paralela otra vez.
  */
+/**
+ * ⚠️ Y ESTO NO ME LO HE INVENTADO: ESTABA ESCRITO EN CASA DESDE ABRIL.
+ *
+ * `Data/Lecciones/2026-04-03_low_poly_deep_study.md` y
+ * `Data/Contracts/ARIS_LIGHT_ARTDIRECTION_FABLE_20260715.md`. Los encontró Oscar
+ * acordándose de que existían, que es la segunda vez hoy que lo que hacía falta ya
+ * estaba escrito. De ahí salen las tres reglas que sigue esta tabla:
+ *
+ *   · **NUNCA NEGRO PURO.** El contrato de luz define `Void #0B0E14` para fondo y
+ *     niebla y dice literalmente «nunca negro puro». Mis primeras paletas tenían
+ *     `metal` a `0x05070d` y `noche` a `0x070910` — más oscuras que el suelo que la
+ *     casa se había fijado. Corregidas al suelo del contrato.
+ *
+ *   · **CÁLIDO CONTRA FRÍO, Y NUNCA MEZCLADOS EN BARRO.** «Cada mood re-negocia ese
+ *     tratado; cálido y frío no se mezclan, se INTERCAMBIAN territorio.» Por eso cada
+ *     ambiente lleva ahora una `key` cálida y un `rim` frío, o al revés cuando el
+ *     mundo es cálido. Antes eran un color y su versión clara, que es exactamente el
+ *     barro que el contrato prohíbe.
+ *
+ *   · **POCAS LUCES, DURAS, LEGIBLES: UNA IDEA POR LUZ.** No se añaden focos: se le
+ *     da temperatura a los dos que la mesa ya tiene.
+ *
+ * Y del estudio de low poly, la frase que ordena todo lo demás: «geometría barata con
+ * iluminación cara». Nuestros cubos están bien; lo que faltaba era la luz.
+ */
 export const AMBIENTES = {
     hierba: {
         cielo: [0x7fb2e5, 0xdfeeff], suelo: 0x3f6b34, grano: 0x2c4d24,
         niebla: 0xbcd8ee, densidad: 0.014, halo: 0xfff3c4,
+        key: 0xfff0d0, rim: 0x9fbfff, fuerza: 1.15,
     },
     piedra: {
-        cielo: [0x14121c, 0x2b2440], suelo: 0x3a3a44, grano: 0x25252c,
+        cielo: [0x0b0e14, 0x2b2440], suelo: 0x3a3a44, grano: 0x25252c,
         niebla: 0x1a1826, densidad: 0.040, halo: 0x8f7fd8,
+        // Cueva: la única luz cálida es la antorcha que llevas; el mundo es frío.
+        key: 0xffc58f, rim: 0x9fbfff, fuerza: 1.0,
     },
     metal: {
-        cielo: [0x05070d, 0x16203a], suelo: 0x38414f, grano: 0x232a35,
+        cielo: [0x0b0e14, 0x16203a], suelo: 0x38414f, grano: 0x232a35,
         niebla: 0x0b1120, densidad: 0.026, halo: 0x6fd6ff,
+        // Nave: al revés que la cueva — la luz de servicio es fría y el rim, ámbar.
+        key: 0xcfe2ff, rim: 0xff9e4d, fuerza: 1.1,
     },
     arena: {
         cielo: [0xe8b06a, 0xfbe7c6], suelo: 0xbb9a5f, grano: 0x9a7c46,
         niebla: 0xf0d5a8, densidad: 0.018, halo: 0xfff0cf,
+        key: 0xffc58f, rim: 0x9fbfff, fuerza: 1.3,
     },
     noche: {
-        cielo: [0x070910, 0x1b2340], suelo: 0x232b3a, grano: 0x171d28,
+        cielo: [0x0b0e14, 0x1b2340], suelo: 0x232b3a, grano: 0x171d28,
         niebla: 0x0a0d18, densidad: 0.030, halo: 0x9fb6ff,
+        key: 0x9fbfff, rim: 0xffb46b, fuerza: 0.85,
     },
 };
 
@@ -199,8 +231,50 @@ export function crearAtmosfera(THREE, escena, nombre, opts = {}) {
     // hacia un color que no está en el cielo y se vería el truco.
     escena.fog = new THREE.FogExp2(a.niebla, a.densidad / (lado / 20));
 
+    /**
+     * ⚠️ LA LUZ, QUE ES DONDE ESTABA EL SALTO DE VERDAD.
+     *
+     * «Geometría barata con iluminación cara» — el estudio de low poly. Nuestros cubos
+     * no son el problema; lo era que las quince mesas de tablero comparten dos luces
+     * de color fijo, así que una cueva y un prado se iluminan igual.
+     *
+     * No se AÑADEN focos: se les da temperatura a los dos que ya hay, siguiendo el
+     * contrato de luz —pocas, duras, legibles, una idea por luz—. La direccional pasa
+     * a ser la `key` del ambiente y el hemisférico pasa a llevar el `rim` frío por
+     * abajo, que es lo que hace que las siluetas se despeguen del fondo.
+     *
+     * Se guardan los colores de antes y se restauran al soltar: un juego sin ambiente
+     * tiene que verse exactamente igual que ayer.
+     */
+    const luces = [];
+    escena.traverse((o) => {
+        if (o.isDirectionalLight || o.isHemisphereLight) luces.push(o);
+    });
+    const antes = luces.map(l => ({
+        l,
+        color: l.color.getHex(),
+        suelo: l.groundColor?.getHex?.() ?? null,
+        intensidad: l.intensity,
+    }));
+    for (const l of luces) {
+        if (l.isDirectionalLight) {
+            l.color.setHex(a.key);
+            l.intensity = a.fuerza;
+        } else {
+            // El hemisférico: cielo arriba, `rim` abajo. Es el rebote del suelo, y
+            // teñirlo del color frío es lo que separa la silueta sin meter otra luz.
+            l.color.setHex(a.cielo[1]);
+            l.groundColor?.setHex?.(a.rim);
+        }
+    }
+
     return {
         soltar() {
+            for (const s of antes) {
+                s.l.color.setHex(s.color);
+                if (s.suelo !== null) s.l.groundColor.setHex(s.suelo);
+                s.l.intensity = s.intensidad;
+            }
             for (const o of puestos) {
                 escena.remove(o);
                 o.geometry?.dispose?.();
