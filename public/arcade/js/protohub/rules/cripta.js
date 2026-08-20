@@ -164,7 +164,7 @@ export const cripta = {
 
         const aLaVista = campoVision(p);
         return {
-            rejilla: { ambiente: 'piedra', ancho: p.ancho, alto: p.alto, celdas, niebla },
+            rejilla: { ambiente: 'piedra', prop: 'roca', ancho: p.ancho, alto: p.alto, celdas, niebla },
             piezas: [
                 ...p.tesoros
                     .filter(t => !t.tomado && p.visto.has(idx(t)))

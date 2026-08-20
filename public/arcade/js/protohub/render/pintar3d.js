@@ -47,6 +47,9 @@ const PALETAS = {
     noche:  { claro: 0x9a93b5, oscuro: 0x6b6488, muro: 0x574f74 },
 };
 let paletaPuesta;
+// El prop pedido por la rejilla y las variantes ya cargadas. Llega tarde a proposito.
+let propPedido = null;
+let propMuros = null;
 
 /** Alturas por tipo. Lo que no esté aquí sale como ficha baja. */
 const ALTO = {
@@ -69,6 +72,8 @@ import { crearDado, esDado, valorDeDado, LADO as LADO_DADO } from '../dados.js';
 // Las fichas de dominó. Van aparte de los dados por lo mismo que los dados van aparte
 // de las cartas: son otro material, con otra forma y otra manera de colocarse.
 import { crearFicha, esFicha, disponerCadena } from '../fichas.js';
+// Los props en GLB: geometria de verdad para los muros, sin perder el instanciado.
+import { geometriasDeProp } from '../props.js';
 
 /**
  * Una etiqueta de casilla: el texto pintado en un lienzo y pegado a un plano tumbado.
@@ -546,6 +551,59 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
              * suelo se dibuja instanciado —una llamada para las 784 celdas de fagocito—
              * y crear un material por ambiente tiraría esa optimización para pintar.
              */
+            /**
+             * ═══════════════════════════════════════════════════════════════
+             *  ⚠️ LOS MUROS PUEDEN SER ROCAS DE VERDAD, Y SIGUEN SIENDO UNA LLAMADA
+             * ═══════════════════════════════════════════════════════════════
+             *
+             * `public/props/` tiene 21 variantes de roca en GLB, de 72 a 102 triángulos
+             * cada una, y el arcade dibujaba cubos. Con `rejilla.prop = 'roca'` se le
+             * cambia la GEOMETRÍA al `InstancedMesh` que ya existe: misma llamada de
+             * dibujo, otra forma. Ver la nota de `protohub/props.js` sobre por qué se
+             * pide la geometría y no el objeto.
+             *
+             * Es asíncrono y no se espera: los muros se pintan como cubos y se vuelven
+             * roca cuando el modelo llega. Bloquear el primer fotograma por esto sería
+             * cambiar una pantalla negra por otra.
+             *
+             * Y el material del GLB se deja en su sitio: la roca trae el suyo, con su
+             * color, y pisárselo con el nuestro sería traerse la geometría y tirar la
+             * mitad de lo que la hace parecer una roca.
+             */
+            const propMuro = sus.rejilla.prop ?? null;
+            if (propMuro && propMuro !== propPedido) {
+                propPedido = propMuro;
+                geometriasDeProp(THREE, propMuro).then((vs) => {
+                    if (!vs?.length || propPedido !== propMuro) return;
+                    /**
+                     * ⚠️ LA ROCA TOMA EL COLOR DEL MUNDO, Y NO ES ESTÉTICA: ES QUE SI NO
+                     * SE COME AL JUGADOR.
+                     *
+                     * Los GLB vienen gris oscuro, y el peón de la casa es `0x2a3550`.
+                     * `npm run legibilidad` lo cantó a la primera: «camuflaje —
+                     * p:disco:0 sobre muro (18)», por debajo del umbral de 32. Segunda
+                     * vez en el mismo día que hacerlo bonito hace invisible al jugador.
+                     *
+                     * Se TIÑE, no se pinta: `material.color` multiplica la textura, así
+                     * que la roca conserva su sombreado y sus facetas y sólo cambia de
+                     * familia de color. Y de paso obedece al contrato de luz de la casa
+                     * —una paleta por mundo—, en vez de meter un gris que no está en
+                     * ninguna de las cinco.
+                     *
+                     * Se clona el material porque el original vive en la caché del prop
+                     * y lo comparten todos los juegos que pidan esa roca: pisarlo aquí
+                     * teñiría la cripta con el color de la pradera.
+                     */
+                    const tinte = PALETAS[sus.rejilla.ambiente]?.muro;
+                    propMuros = vs.map(({ geometria, material }) => {
+                        if (!tinte) return { geometria, material };
+                        const m = material.clone();
+                        m.color = new THREE.Color(tinte);
+                        return { geometria, material: m };
+                    });
+                });
+            }
+
             const amb = PALETAS[sus.rejilla.ambiente];
             if (amb !== paletaPuesta) {
                 paletaPuesta = amb;
@@ -702,7 +760,10 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
             for (const [clave, lista, g, mt, alturaY, escY] of [
                 ['sueloA', claras, geo.celda, mat.sueloA, 0, 1],
                 ['sueloB', oscuras, geo.celda, mat.sueloB, 0, 1],
-                ['muro', muros, geo.cubo, mat.muro, ALTO.muro / 2, ALTO.muro],
+                // ⚠️ Si llegó el prop, el muro se dibuja con SU geometría y SU material.
+                // Ver la nota de arriba: es el mismo `InstancedMesh`, otra forma.
+                ['muro', muros, propMuros?.[0]?.geometria ?? geo.cubo,
+                        propMuros?.[0]?.material ?? mat.muro, ALTO.muro / 2, ALTO.muro],
                 ['destino', destinos, geo.celda, mat.destino, 0.02, 1],
                 // La niebla es un bloque bajo: se ve que hay algo sin decir qué.
                 ['niebla', nieblas, geo.cubo, mat.niebla, 0.18, 0.36],
