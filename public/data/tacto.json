@@ -1,5 +1,5 @@
 {
- "fecha": "2026-08-19",
+ "fecha": "2026-08-20",
  "pantalla": "390x844",
  "juegos": {
   "ajedrez": {
@@ -95,8 +95,8 @@
   "damas": {
    "panel": {
     "dedo": [
-     5,
-     5
+     4,
+     4
     ],
     "raton": [
      5,
@@ -614,8 +614,8 @@
   "sigilo": {
    "panel": {
     "dedo": [
-     4,
-     4
+     0,
+     0
     ],
     "raton": [
      4,
@@ -865,6 +865,36 @@
     "sinAsomar": 0
    },
    "casillas": null,
+   "pares": null
+  },
+  "alisapolis": {
+   "panel": {
+    "dedo": [
+     1,
+     1
+    ],
+    "raton": [
+     1,
+     1
+    ]
+   },
+   "mesa": {
+    "dedo": 0,
+    "raton": 0,
+    "de": 1
+   },
+   "piezas": {
+    "dianas": 1,
+    "sinAsomar": 1
+   },
+   "casillas": {
+    "rejilla": {
+     "cols": 9,
+     "filas": 9
+    },
+    "tocadas": 0,
+    "ok": 0
+   },
    "pares": null
   },
   "parchis": {

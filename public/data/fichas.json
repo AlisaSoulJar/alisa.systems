@@ -29,7 +29,7 @@
     },
     "captura": "/capturas/ajedrez.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         5,
         5
@@ -99,7 +99,7 @@
     },
     "captura": "/capturas/go.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         5,
         5
@@ -169,7 +169,7 @@
     },
     "captura": "/capturas/reversi.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         4,
         4
@@ -241,10 +241,10 @@
     },
     "captura": "/capturas/damas.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
-        5,
-        5
+        4,
+        4
       ],
       "tocandoLaMesa": true,
       "barraDeVerbos": null,
@@ -317,7 +317,7 @@
     },
     "captura": "/capturas/xiangqi.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         5,
         5
@@ -389,7 +389,7 @@
     },
     "captura": "/capturas/mancala.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         5,
         5
@@ -456,7 +456,7 @@
     },
     "captura": "/capturas/snake.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         4,
         4
@@ -526,7 +526,7 @@
     },
     "captura": "/capturas/fagocito.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         2,
         2
@@ -596,7 +596,7 @@
     },
     "captura": "/capturas/peaton.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         5,
         5
@@ -661,7 +661,7 @@
     },
     "captura": "/capturas/blackjack.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         3,
         3
@@ -729,7 +729,7 @@
     },
     "captura": "/capturas/poker.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         2,
         2
@@ -793,7 +793,7 @@
     },
     "captura": "/capturas/brisca.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         3,
         3
@@ -856,7 +856,7 @@
     },
     "captura": "/capturas/tute.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         5,
         5
@@ -921,7 +921,7 @@
     },
     "captura": "/capturas/hearts.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         5,
         5
@@ -988,7 +988,7 @@
     },
     "captura": "/capturas/spades.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         5,
         5
@@ -1053,7 +1053,7 @@
     },
     "captura": "/capturas/guerra.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         1,
         1
@@ -1116,7 +1116,7 @@
     },
     "captura": "/capturas/gofish.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         5,
         5
@@ -1180,7 +1180,7 @@
     },
     "captura": "/capturas/unit.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         3,
         3
@@ -1247,7 +1247,7 @@
     },
     "captura": "/capturas/entropy.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         2,
         2
@@ -1312,7 +1312,7 @@
     },
     "captura": "/capturas/sokoban.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         1,
         1
@@ -1381,7 +1381,7 @@
     },
     "captura": "/capturas/cripta.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         4,
         4
@@ -1451,7 +1451,7 @@
     },
     "captura": "/capturas/flota.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         5,
         5
@@ -1522,7 +1522,7 @@
     },
     "captura": "/capturas/defensa.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         5,
         5
@@ -1590,10 +1590,10 @@
     },
     "captura": "/capturas/sigilo.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
-        4,
-        4
+        0,
+        0
       ],
       "tocandoLaMesa": true,
       "barraDeVerbos": true,
@@ -1657,7 +1657,7 @@
     },
     "captura": "/capturas/frentes.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         5,
         5
@@ -1727,7 +1727,7 @@
     },
     "captura": "/capturas/relevo.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         3,
         3
@@ -1794,7 +1794,7 @@
     },
     "captura": "/capturas/cabina.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         5,
         5
@@ -1861,7 +1861,7 @@
     },
     "captura": "/capturas/rebano.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         3,
         3
@@ -1929,7 +1929,7 @@
     },
     "captura": "/capturas/pradera.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         4,
         4
@@ -2000,7 +2000,7 @@
     },
     "captura": "/capturas/nave.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         3,
         3
@@ -2057,12 +2057,12 @@
     "normas": [],
     "leyenda": null,
     "clasificacion": {
-      "entra": false,
-      "motivo": "el hueco (9.1) no supera al ruido de la medida (±10.6)"
+      "entra": true,
+      "motivo": null
     },
     "captura": "/capturas/remigio.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         2,
         2
@@ -2103,7 +2103,7 @@
       "persona": true,
       "llm": true,
       "vision": true,
-      "fsm": false,
+      "fsm": true,
       "openapi": true
     }
   },
@@ -2123,18 +2123,18 @@
     "leyenda": null,
     "clasificacion": {
       "entra": false,
-      "motivo": "no medido en la última pasada"
+      "motivo": "el hueco (1.5) no supera al ruido de la medida (±2.2)"
     },
     "captura": "/capturas/chinchon.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         2,
         2
       ],
       "tocandoLaMesa": true,
-      "barraDeVerbos": null,
-      "verbos": null,
+      "barraDeVerbos": true,
+      "verbos": 2,
       "resumen": "se juega tocando la mesa"
     },
     "pantallas": null,
@@ -2165,6 +2165,73 @@
       "openapi": true
     }
   },
+  "alisapolis": {
+    "titulo": "Alisápolis",
+    "pagina": "alisapolis.html",
+    "objetivo": "Objetivo: acabar con el patrimonio más alto. Caes en un distrito libre y lo compras al precio de lista o lo mandas a subasta, donde pujáis todos. Completar un distrito dobla el alquiler y deja construir.",
+    "asientos": 2,
+    "verbos": [
+      "pasar",
+      "pujar",
+      "tirar"
+    ],
+    "formatoJugada": null,
+    "ejemplos": null,
+    "normas": [],
+    "leyenda": {
+      "0": "casilla del anillo",
+      "1": "fuera del tablero",
+      "2": "tuya: aquí no pagas",
+      "peon": "tu peón y el de los demás",
+      "dados": "lo que has sacado",
+      "decretos": "el mazo, boca abajo",
+      "fincas": "lo que tiene cada uno"
+    },
+    "clasificacion": {
+      "entra": false,
+      "motivo": "no medido en la última pasada"
+    },
+    "captura": "/capturas/alisapolis.png",
+    "conLaMano": {
+      "medido": "2026-08-20",
+      "panel": [
+        1,
+        1
+      ],
+      "tocandoLaMesa": false,
+      "barraDeVerbos": null,
+      "verbos": null,
+      "resumen": "en el momento de medir, sólo respondía el panel"
+    },
+    "pantallas": null,
+    "reglas": "Tiras dos dados y avanzas. Si caes en algo sin dueño, SALE A SUBASTA: pujáis por turnos de diez en diez y quien queda último se lo lleva al precio al que se cerró. Si caes en finca ajena, pagas alquiler. Con el distrito entero puedes construir.",
+    "prosa": {
+      "que_es": "El monopoly de la casa: diez distritos —Data, World, Soma, Psyche, Genesis, Scripts, Docs, Laboratory, IrealWorld y Heritage— en un anillo de treinta y dos casillas. Es el único juego del banco que usa los cuatro materiales a la vez: tablero, dados, cartas y fichas.",
+      "reparto": "Mil de caja y el peón en Salida. Las veinte fincas empiezan sin dueño. El mazo de decretos, boca abajo en el tablero, se baraja con la semilla.",
+      "turno": "Tiras dos dados y avanzas. Si caes en algo sin dueño, SALE A SUBASTA: pujáis por turnos de diez en diez y quien queda último se lo lleva al precio al que se cerró. Si caes en finca ajena, pagas alquiler. Con el distrito entero puedes construir.",
+      "gana": "El patrimonio más alto cuando se acaban las doce vueltas: caja más fincas más casas. Si te quedas sin poder pagar, quiebras y vales cero, hayas invertido lo que hayas invertido.",
+      "ojo": [
+        "Todo sale a subasta y no hay precio de lista, así que lo que pagas lo pone la mesa. Pujar de más te arruina; pujar de menos le regala el distrito al de enfrente.",
+        "La segunda finca de un distrito vale mucho más que la primera: completar el distrito triplica el alquiler y deja construir. Y una finca cuyo distrito ya no puedes completar —porque el otro tiene la suya— vale su precio y ni un duro más.",
+        "Construir es una palanca que la casa NO usa: medido, tal y como está tarifado le costaba ciento veintitrés puntos. Está ahí a propósito, por si tú encuentras cuándo sí paga.",
+        "Quebrar vale cero. No es «vas perdiendo»: es que todo lo invertido se evapora, así que la caja que te dejas para el siguiente alquiler es parte de la jugada."
+      ],
+      "diferencias": [
+        "En la mesa compras al precio de la caja y sólo hay subasta si renuncias. Aquí TODO sale a subasta, y no es un capricho: con precio de lista, comprar es siempre correcto —el patrimonio cuenta la finca por lo que costó— así que nadie renuncia y la subasta no se dispara nunca. Medido: quitarle la disciplina de puja a la casa no cambiaba el resultado ni un decimal.",
+        "No se negocia entre jugadores. Cambiar «te doy Soma y 200 por Psyche» es espacio de acciones abierto y pide un canal de conversación que este banco todavía no tiene. Pujar sí cabe: es pujar o pasar.",
+        "No hay hipotecas, y en el Sandbox no se puede uno quedar a propósito para no caer en casa ajena. Las dos añaden juego y también la mitad del reglamento.",
+        "Una partida son doce vueltas a la mesa, no «hasta que alguien quiebre». El banco compara partidas, y una que dura lo que quiera no se puede comparar."
+      ]
+    },
+    "origen": "El monopoly viene de The Landlord's Game, que Elizabeth Magie patentó en 1904 para ENSEÑAR lo que pasa cuando la tierra se concentra en pocas manos. La versión que se hizo famosa le dio la vuelta a la moraleja. Ésta se juega en los diez distritos del propio repositorio.",
+    "puertas": {
+      "persona": true,
+      "llm": true,
+      "vision": true,
+      "fsm": false,
+      "openapi": true
+    }
+  },
   "parchis": {
     "titulo": "Parchís",
     "pagina": "parchis.html",
@@ -2185,12 +2252,12 @@
       "ficha": "ficha"
     },
     "clasificacion": {
-      "entra": true,
-      "motivo": null
+      "entra": false,
+      "motivo": "la casa no supera al suelo: la escala se invertiría"
     },
     "captura": "/capturas/parchis.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         1,
         1
@@ -2231,7 +2298,7 @@
       "persona": true,
       "llm": true,
       "vision": true,
-      "fsm": true,
+      "fsm": false,
       "openapi": true
     }
   },
@@ -2260,7 +2327,7 @@
     },
     "captura": "/capturas/generala.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         1,
         1
@@ -2336,12 +2403,12 @@
       "f2": "ficha 2"
     },
     "clasificacion": {
-      "entra": false,
-      "motivo": "el hueco (19.2) no supera al ruido de la medida (±68.2)"
+      "entra": true,
+      "motivo": null
     },
     "captura": "/capturas/oca.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         1,
         1
@@ -2381,7 +2448,7 @@
       "persona": true,
       "llm": true,
       "vision": true,
-      "fsm": false,
+      "fsm": true,
       "openapi": true
     }
   },
@@ -2411,7 +2478,7 @@
     },
     "captura": "/capturas/canadiense.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         4,
         4
@@ -2474,12 +2541,12 @@
       "pozo": "lo que queda por robar"
     },
     "clasificacion": {
-      "entra": false,
-      "motivo": "no medido en la última pasada"
+      "entra": true,
+      "motivo": null
     },
     "captura": "/capturas/domino.png",
     "conLaMano": {
-      "medido": "2026-08-19",
+      "medido": "2026-08-20",
       "panel": [
         5,
         5
@@ -2512,7 +2579,7 @@
       "persona": true,
       "llm": true,
       "vision": true,
-      "fsm": false,
+      "fsm": true,
       "openapi": true
     }
   }
