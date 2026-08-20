@@ -118,6 +118,12 @@ const EN_LA_MESA = {
     width:     'el ancho del tablero; se ve',
     height:    'el alto; ídem',
     board:     'el tablero ES el dibujo',
+
+    // ── Instrucciones para el pintor, no información del juego.
+    cara:      'le dice si escribe el número o el palo de la carta',
+    valores:   'la tabla de puntos de la baraja; sirve para dibujar',
+    simbolos:  'ídem',
+    palos:     'ídem',
 };
 
 const paginas = JSON.parse(await readFile(new URL('./public/data/paginas.json', import.meta.url), 'utf-8'));

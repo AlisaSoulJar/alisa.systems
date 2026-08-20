@@ -42,6 +42,13 @@
 const FONTANERIA = new Set([
     'juego', 'asiento', 'semilla', 'fuente', 'conexion', 'biblioteca', 'leyenda',
     'legal_moves', 'legal_actions', 'formato', 'version', 'normas',
+    /**
+     * `cara`, `valores`, `simbolos` y `palos` le dicen al PINTOR cómo dibujar la carta
+     * —el número en vez del palo, la tabla de puntos—. Son instrucciones de dibujo, no
+     * información del juego: en el panel de entropy salía «cara: valor», que no
+     * significa nada para quien está jugando. Lo vi abriendo la captura.
+     */
+    'cara', 'valores', 'simbolos', 'palos',
 ]);
 
 /** Lo que las mesas ya pintan en su propia fila; repetirlo sería ruido. */
@@ -90,7 +97,9 @@ function comoTexto(v) {
  */
 export function filasDeEstado(st, opts = {}) {
     if (!st || typeof st !== 'object') return [];
-    const fuera = new Set([...(opts.fuera ?? [])]);
+    // Por defecto se salta lo que YA está dibujado en la mesa: repetirlo en texto es
+    // contar dos veces lo mismo y taparle el juego a quien está jugando.
+    const fuera = new Set([...DIBUJADO, ...(opts.fuera ?? [])]);
     // Dieciséis y no doce: el canadiense publica trece campos que caben en una fila, y
     // `tope_turnos` —cuánta partida queda— se quedaba fuera por uno. Cuando de verdad
     // se corta, se dice; cortar en silencio sería la misma mentira que un top-N sin
@@ -149,10 +158,15 @@ export function filasDeEstado(st, opts = {}) {
  * veces lo mismo y taparle la mesa a quien está jugando — la mano del póker se mira,
  * no se lee.
  */
-const DIBUJADO = new Set([
+export const DIBUJADO = new Set([
     'player_hand', 'opponent_hand', 'dealer_hand', 'community_cards',
     'mano', 'mi_mano', 'descarte', 'mazo', 'baza', 'cartas', 'comunes',
     'board', 'tablero', 'rejilla', 'piezas', 'width', 'height',
+    // ⚠️ Y lo que el CANADIENSE repetía: su panel salía con la mano, el descarte y
+    // una matriz de -1 que es, literalmente, el tablero escrito en números. Lo vi
+    // abriendo la captura — quince filas de las que cinco eran el dibujo otra vez.
+    'posiciones', 'mis_fichas', 'fichas', 'manos_rivales', 'descarte', 'descartes',
+    'cadena', 'puntas', 'guardados', 'hojas', 'mi_hoja', 'caja',
 ]);
 
 export function vigilarPanel(hub, juego, opts = {}) {

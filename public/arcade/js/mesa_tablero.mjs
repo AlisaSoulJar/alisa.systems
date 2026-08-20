@@ -1019,13 +1019,32 @@ async function refrescar() {
          * describidor, y así el juego 39 nace viéndose. Ver la nota de `protohub/panel.js`
          * sobre por qué no son veintiocho parches.
          */
-        const filas = filasDeEstado(st);
         txt.innerHTML =
             `<span>Turno</span><span class="val">${st.turn ?? '—'}</span>`
-          + (marcador !== undefined ? ` <span>·</span><span class="val">${marcador}</span>` : '')
-          + filas.map(f =>
-                `<div class="status-row"><span>${f.nombre}</span>`
-              + `<span class="val">${f.valor}</span></div>`).join('');
+          + (marcador !== undefined ? ` <span>·</span><span class="val">${marcador}</span>` : '');
+
+        /**
+         * ⚠️ LAS FILAS VAN AL LADO DE `#estado-txt`, NO DENTRO. Y ESTO LO VI MIRANDO.
+         *
+         * La primera versión las metía dentro, y `#estado-txt` YA es un `.status-row`
+         * —o sea una fila flex horizontal—, así que las once filas de defensa se
+         * apilaban de lado y salía «Turnoazul·0bandoazuloro15vida10vida10torre rival»
+         * de corrido. Ninguna medida lo vio: `prueba_asimetria` buscaba los valores en
+         * el texto del panel y estaban todos ahí, pegados. Verde y con el panel
+         * ilegible, que es el modo de fallo de la casa.
+         *
+         * Lo cazó abrir la captura, como el suelo en cuñas y los once juegos con las
+         * jugadas en gris cortado. Sigue sin haber sustituto para mirar.
+         */
+        let extra = document.getElementById('mesa-extra');
+        if (!extra) {
+            extra = document.createElement('div');
+            extra.id = 'mesa-extra';
+            txt.after(extra);
+        }
+        extra.innerHTML = filasDeEstado(st).map(f =>
+            `<div class="status-row"><span>${f.nombre}</span>`
+          + `<span class="val">${f.valor}</span></div>`).join('');
     }
     legalesAhora = st.legal_moves ?? st.legal_actions ?? [];
     pintarJugadas(document.getElementById('mesa-jugadas'), {
