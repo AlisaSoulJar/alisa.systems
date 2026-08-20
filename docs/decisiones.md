@@ -15,17 +15,17 @@ contrario. El problema no era que no estuviera escrito: era que no había índic
 Volver a decidir sale barato en el momento y carísimo a la semana, porque la
 segunda decisión casi nunca coincide con la primera y entonces hay dos verdades.
 
-**1631 decisiones** en 277 ficheros.
+**1643 decisiones** en 277 ficheros.
 
 ## Índice
 
 - [Herramientas de medida](#herramientas-de-medida) — 324
 - [Reglas de los juegos](#reglas-de-los-juegos) — 304
-- [Las mesas y los visualizadores](#las-mesas-y-los-visualizadores) — 286
-- [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 167
-- [Las comprobaciones](#las-comprobaciones) — 152
+- [Las mesas y los visualizadores](#las-mesas-y-los-visualizadores) — 295
+- [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 168
+- [Las comprobaciones](#las-comprobaciones) — 153
 - [Otros](#otros) — 139
-- [Las páginas de los juegos](#las-páginas-de-los-juegos) — 76
+- [Las páginas de los juegos](#las-páginas-de-los-juegos) — 77
 - [Cómo se dibuja (el pintor)](#cómo-se-dibuja-el-pintor-) — 49
 - [El servidor y las salas](#el-servidor-y-las-salas) — 47
 - [El motor](#el-motor) — 30
@@ -1961,33 +1961,51 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Un despliegue llegó a medias y costó una tarde: el navegador tenía el `mesa_cartas.mjs` nuevo y el `montarMesa.js` viejo, una combinación que NUNCA existió en el repositorio. Se arregló en el panel de Cloudflare, pero eso deja</sub>
 - **SE EXPORTA PORQUE HABÍA UNA SEGUNDA LISTA, MÁS CORTA, Y NADIE LO SABÍA.** <sub>línea 59</sub>
   <br><sub>`sala.html` —la sala de bolsillo, a la que te lleva sentarte en una mesa de la Sala del Huevo— montaba `mesa_tablero.mjs` cargando sólo los tres de vendor. Le faltaban `gestos.js`, `objetivo_visible.js`, `encuadre.js` y `mandos.js`.</sub>
-- **QUÉ MOTOR HACE FALTA LO DICE EL SUSTRATO, NO UNA LISTA.** <sub>línea 98</sub>
+- **THREE 0.170 PARA TODO EL ARCADE, Y SIN TOCAR LOS 27 SCRIPTS CLÁSICOS** <sub>línea 78</sub>
+  <br><sub>El arcade corría en r128 y los laboratorios en 0.160/0.170. Esa frontera dejaba al arcade sin lo que de verdad cambia el aspecto: SSAO, bloom, cielo de Rayleigh y sombras en cascada viven en `vendor` SÓLO para las versiones modernas. O sea que</sub>
+- **Y LA MIGRACIÓN ERA MUCHO MÁS BARATA DE LO QUE PARECÍA.** <sub>línea 87</sub>
+  <br><sub>99 ficheros del arcade · 72 YA eran módulos · 27 clásicos THREE.Geometry 0 · Face3 0 · sRGBEncoding 0 · outputEncoding 0 physicallyCorrectLights 0 · OrbitControls 4</sub>
+- **ASÍ QUE NO SE MIGRAN 27 FICHEROS: SE MIGRA EL CARGADOR.** <sub>línea 96</sub>
+  <br><sub>Los 27 clásicos leen `window.THREE`. Se importa 0.170 como módulo, se deja en `window.THREE` con `OrbitControls` colgado, y los 27 siguen funcionando SIN TOCARLOS. Convertirlos uno a uno habría sido veintisiete oportunidades de romper algo para</sub>
+- **LO QUE SÍ VA A CAMBIAR DE ASPECTO, Y HAY QUE MIRARLO.** <sub>línea 103</sub>
+  <br><sub>De r155 en adelante las luces son físicamente correctas por defecto: `intensity` ya no significa lo mismo. Y desde r152 la salida es sRGB, así que los colores salen más vivos. Las dos cosas son CORRECTAS y las dos cambian lo que se ve — por eso esto no</sub>
+- **SE COPIA, NO SE USA EL MÓDULO TAL CUAL.** <sub>línea 118</sub>
+  <br><sub>«Cannot assign to property 'OrbitControls' of [object Module]». El objeto de espacio de nombres de un módulo es INMUTABLE, así que colgarle `OrbitControls` revienta — y con r128, que era un script clásico, se podía.</sub>
+- **LAS LUCES: EL ÚNICO PRECIO REAL DE LA MIGRACIÓN, Y SE PAGA AQUÍ** <sub>línea 132</sub>
+  <br><sub>De r155 en adelante `useLegacyLights` desapareció y las luces son físicamente correctas por defecto. La consecuencia: `intensity` NO significa lo mismo, y las intensidades afinadas contra r128 dan bastante menos luz.</sub>
+- **Y SE ARREGLA EN EL CONSTRUCTOR, NO EN DIECISÉIS FICHEROS.** <sub>línea 143</sub>
+  <br><sub>Las luces las crean las dos mesas y los CATORCE visualizadores propios, cada uno con sus números afinados a ojo contra r128. Retocar dieciséis sitios sería dieciséis oportunidades de dejarse uno — y el que se quedara oscuro no daría</sub>
+- **Y EL COLOR: UNA MIGRACIÓN TIENE QUE SER NEUTRA A LA VISTA** <sub>línea 176</sub>
+  <br><sub>De r152 en adelante three gestiona el color: la salida es sRGB y los colores que se escriben se interpretan como sRGB, se llevan a lineal para iluminar y se devuelven. Es lo correcto y es mejor. También cambia TODOS los contrastes.</sub>
+- **Y POR ESO ESTO SE QUEDA EN LINEAL, DE MOMENTO.** <sub>línea 188</sub>
+  <br><sub>Una migración que cambia el motor Y el aspecto a la vez es una migración que no se puede juzgar: cuando algo se vea raro no habrá forma de saber si es del cambio de versión o del cambio de color. Se separan las dos cosas — motor hoy,</sub>
+- **QUÉ MOTOR HACE FALTA LO DICE EL SUSTRATO, NO UNA LISTA.** <sub>línea 232</sub>
   <br><sub>Hay dos: `SovereignBoardEngine` para tableros y `SovereignCardEngine` para cartas. Se podría poner en la configuración de cada página —`motor:'cartas'`— y sería otra lista paralela que se separa el día que alguien añada un juego y</sub>
-- **LO QUE YA ESTÁ EN LA PÁGINA NO SE VUELVE A CARGAR.** <sub>línea 115</sub>
+- **LO QUE YA ESTÁ EN LA PÁGINA NO SE VUELVE A CARGAR.** <sub>línea 249</sub>
   <br><sub>`entropy.html` conservaba los tres <script> de vendor del cascarón viejo y esto los cargaba otra vez. Con three sólo salía un aviso; con tween salió caro: dos objetos TWEEN distintos, uno recibiendo los movimientos de las</sub>
-- **`.mjs` se carga como módulo.** <sub>línea 134</sub>
+- **`.mjs` se carga como módulo.** <sub>línea 268</sub>
   <br><sub>clásicos que hablan por variables globales; los nuevos importan el sustrato, que es un módulo. Distinguirlos por la extensión evita tener que declarar en la configuración algo que el nombre del fichero ya dice.</sub>
-- **LAS HOJAS DE ESTILO TAMBIÉN SE SELLAN.** <sub>línea 148</sub>
+- **LAS HOJAS DE ESTILO TAMBIÉN SE SELLAN.** <sub>línea 282</sub>
   <br><sub>Todo el sistema de `?v=` existe para que un navegador no empareje una copia guardada con código nuevo. Los `.js` iban sellados desde el principio y el CSS no, o sea que la mitad del cuadro podía llegar vieja.</sub>
-- **SE NOMBRAN LAS NORMAS, NO LAS VARIANTES.** <sub>línea 219</sub>
+- **SE NOMBRAN LAS NORMAS, NO LAS VARIANTES.** <sub>línea 353</sub>
   <br><sub>`?normas=española` sería más bonito de leer y sería otra lista paralela: el día que alguien añada una tercera norma habría que repasar los nombres de variante uno a uno, y el que se olvide se queda contando lo de antes. Las</sub>
-- **Y SÓLO SE ACEPTAN LAS QUE EL JUEGO DECLARA.** <sub>línea 226</sub>
+- **Y SÓLO SE ACEPTAN LAS QUE EL JUEGO DECLARA.** <sub>línea 360</sub>
   <br><sub>Una norma inventada en la dirección se ignora y se avisa. Si se pasara tal cual, la partida se jugaría con las de siempre mientras el recibo diría otra cosa — y eso es exactamente la clase de mentira silenciosa que aquí sale</sub>
-- **LAS NORMAS LAS DECLARAN LAS PROPIAS REGLAS, NO UNA RUTA ADIVINADA.** <sub>línea 237</sub>
+- **LAS NORMAS LAS DECLARAN LAS PROPIAS REGLAS, NO UNA RUTA ADIVINADA.** <sub>línea 371</sub>
   <br><sub>Primero lo escribí como `import('./protohub/rules/' + juego + '.js')` para leer su `NORMAS`. Parecía inofensivo porque el fallo estaba capturado — y rompió cuatro juegos de golpe: brisca, tute, hearts y spades no viven en esa</sub>
-- **Y A QUÉ SE JUEGA.** <sub>línea 269</sub>
+- **Y A QUÉ SE JUEGA.** <sub>línea 403</sub>
   <br><sub>Los visualizadores se cargan como `<script type="module">` que se montan solos: no hay a quién pasarle argumentos, así que leen `window.ALISA_JUEGO`. `entropy.html` lo ponía a mano de cuando era una página escrita entera, y al</sub>
-- **Y A QUÉ SE JUEGA, PARA LA PERSONA.** <sub>línea 284</sub>
+- **Y A QUÉ SE JUEGA, PARA LA PERSONA.** <sub>línea 418</sub>
   <br><sub>(«ni idea tengo de cómo se juega») el mismo día que terminé de escribir los treinta y cinco objetivos: se lo estaba contando al agente y no a él.</sub>
-- **`?semilla=` NO SE APLICABA, Y LAS PÁGINAS PROMETÍAN QUE SÍ.** <sub>línea 296</sub>
+- **`?semilla=` NO SE APLICABA, Y LAS PÁGINAS PROMETÍAN QUE SÍ.** <sub>línea 430</sub>
   <br><sub>Esto registraba las reglas y dejaba que la primera consulta creara la partida sola — y `nuevaPartida()` sin semilla usa `Date.now()`. O sea que abrir dos veces la misma dirección daba dos repartos distintos, mientras el</sub>
-- **SIN VISUALIZADOR PROPIO NO SE QUEDA EN BLANCO: SALE LA VISTA GENÉRICA.** <sub>línea 327</sub>
+- **SIN VISUALIZADOR PROPIO NO SE QUEDA EN BLANCO: SALE LA VISTA GENÉRICA.** <sub>línea 462</sub>
   <br><sub>Antes, un juego sin `visualizador` cargaba el motor y nada más — o sea una página con HUD y un lienzo vacío. Por eso los once juegos nuevos vivían en `mesa.html`, que es de TEXTO: era eso o nada.</sub>
-- **Y SI LA PÁGINA NO LO DICE, LO DICE EL JUEGO.** <sub>línea 343</sub>
+- **Y SI LA PÁGINA NO LO DICE, LO DICE EL JUEGO.** <sub>línea 478</sub>
   <br><sub>`VISUALIZADOR` es el mismo dato que estas páginas venían pasando a mano, pero puesto donde pertenece: en el juego, no en una de las páginas donde se le mira. Lo que declare la página sigue mandando —no se rompe ninguna— y quien no declare</sub>
-- **LOS DE VISUALIZADOR PROPIO NO PUEDEN ENSEÑAR EL ESTADO POR SÍ SOLOS.** <sub>línea 357</sub>
+- **LOS DE VISUALIZADOR PROPIO NO PUEDEN ENSEÑAR EL ESTADO POR SÍ SOLOS.** <sub>línea 492</sub>
   <br><sub>Las dos mesas genéricas ya pintan las filas del estado con `filasDeEstado`, así que veintiuno de los veintiocho juegos donde el agente sabía más que la persona quedaron arreglados solos. Los siete con visualizador propio no: son scripts</sub>
-- **EL BOTÓN DE «ALGO VA RARO», EN LAS TREINTA Y CINCO DE UNA LÍNEA.** <sub>línea 380</sub>
+- **EL BOTÓN DE «ALGO VA RARO», EN LAS TREINTA Y CINCO DE UNA LÍNEA.** <sub>línea 515</sub>
   <br><sub>Va aquí y no en cada página por el mismo motivo que todo lo demás de este fichero: una cosa que hay que acordarse de poner en cada página acaba faltando en una, y será justo en la que falle algo.</sub>
 
 ### `public/arcade/js/objetivo_visible.js`
@@ -2242,6 +2260,8 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Un `scene.background` plano no tiene degradado, y el degradado es justo lo que hace que el horizonte exista. Se pinta en un lienzo de 2×N —dos píxeles de ancho bastan, la textura se estira— y se mete en una esfera vista desde dentro.</sub>
 - **LA LUZ, QUE ES DONDE ESTABA EL SALTO DE VERDAD.** <sub>línea 235</sub>
   <br><sub>«Geometría barata con iluminación cara» — el estudio de low poly. Nuestros cubos no son el problema; lo era que las quince mesas de tablero comparten dos luces de color fijo, así que una cueva y un prado se iluminan igual.</sub>
+- **RELATIVA A LA QUE HABÍA, NO ABSOLUTA.** <sub>línea 263</sub>
+  <br><sub>Ponía `l.intensity = a.fuerza` con números afinados contra r128, y al migrar a 0.170 esa escala dejó de significar lo mismo — ver la nota de las luces en `montarMesa.js`. Multiplicando lo que la mesa ya había</sub>
 
 ### `public/arcade/js/protohub/dados.js`
 
@@ -2662,9 +2682,11 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Un agente lee `dado: [3,3]` y la persona ve dos dados con tres puntos. Eso no es información escondida, es información dibujada — y contarlo como fallo llenaría esto de falsas alarmas hasta que nadie lo mirara. Así que las excepciones se</sub>
 - **Se espera a que el panel se ponga al día: el vigía de los visualizadores** <sub>línea 166</sub>
   <br><sub>propios refresca cada 400 ms, y leer antes denunciaba al póker por esconder algo que ya estaba escrito. Una prueba que corre más que la pantalla mide la carrera, no el juego.</sub>
-- **SE COMPARAN VALORES, NO NOMBRES DE CAMPO.** <sub>línea 187</sub>
+- **SE LEE DOS VECES, Y NO ES DESCONFIANZA: ES QUE EL PANEL TIENE RITMO.** <sub>línea 173</sub>
+  <br><sub>Los visualizadores propios reciben sus filas de un vigía que refresca cada 400 ms, así que leer una vez mide la CARRERA y no el juego. Entropy pasaba corriéndolo solo y fallaba dentro de la tanda de 38 — el navegador va más</sub>
+- **SE COMPARAN VALORES, NO NOMBRES DE CAMPO.** <sub>línea 204</sub>
   <br><sub>El panel dice «Triunfo: oros» donde el estado dice `triunfo: "O"`, así que buscar la palabra `triunfo` daría un falso negativo. Lo que tiene que estar en los dos sitios es el DATO: un número, o una cadena corta que signifique algo.</sub>
-- **Una excepción que ya no hace falta es una mentira guardada: se denuncia, igual** <sub>línea 229</sub>
+- **Una excepción que ya no hace falta es una mentira guardada: se denuncia, igual** <sub>línea 246</sub>
   <br><sub>que `prueba_de_las_pruebas` denuncia un sabotaje que apunta a una prueba borrada. const sobran = Object.keys(EN_LA_MESA).filter(k => !usadas.has(k));</sub>
 
 ### `prueba_barajas.mjs`
@@ -3648,7 +3670,9 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Montaban el pintor universal, el HUD y los botones. Funcionaba — y era la única forma de ver en 3D once juegos, porque nada más usaba `crearPintor3d`. En cuanto `montarMesa` necesitó lo mismo para darles página propia, había que</sub>
 - **Y ANTES, EL ANDAMIO.** <sub>línea 621</sub>
   <br><sub>`mesa_tablero.mjs` da por hecho que existen `window.ALISA_GESTOS`, `ALISA_ENCUADRE` y compañía, que son scripts clásicos y globales. Esta sala cargaba sólo los tres de vendor, así que ajedrez, go, reversi, damas, xiangqi</sub>
-- **Y SE VUELVE A ENCUADRAR, QUE ES LA MITAD QUE FALTABA.** <sub>línea 655</sub>
+- **Y three ANTES del andamio, que ahora es 0.170 y llega como módulo.** <sub>línea 634</sub>
+  <br><sub>scripts clásicos del andamio leen `window.THREE`, así que si esto no va primero se encuentran el global vacío. Es la misma lección de esta página: la sala tenía su propia lista más corta y se llevó por delante seis mesas.</sub>
+- **Y SE VUELVE A ENCUADRAR, QUE ES LA MITAD QUE FALTABA.** <sub>línea 660</sub>
   <br><sub>Esto sólo cambiaba la proporción de la cámara. El encuadre se había calculado UNA vez, al cargar, con la pantalla que hubiera entonces — así que en un móvil en vertical la partida se salía por los lados y nadie se</sub>
 
 ## Cómo se dibuja (el pintor)

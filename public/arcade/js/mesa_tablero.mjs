@@ -42,6 +42,7 @@ import { volcarMesa, volcando, ponerBoton } from './protohub/render/volcar.js';
 import { crearTapete } from './protohub/tapete.js';
 import { filasDeEstado } from './protohub/panel.js';
 import { crearAtmosfera } from './protohub/atmosfera.js';
+import { encenderCine, calidadPedida } from './protohub/cine.js';
 
 const hub = window.ALISA_PROTOHUB;
 const juego = window.ALISA_JUEGO;
@@ -292,6 +293,9 @@ let conRejillaAhora = true;
  * Sólo si esta mesa es la dueña: de invitada, la superficie la pone el anfitrión, y
  * dos tapetes superpuestos hacen el parpadeo de siempre.
  */
+// El modo deluxe, si se pidió y si cargó. Vacío significa «pinta como siempre».
+let cine = null;
+
 let tapetePuesto = false;
 
 /**
@@ -1193,8 +1197,26 @@ if (!anfitrion) {
         if (typeof TWEEN !== 'undefined' && !document.hidden) TWEEN.update(t);
         encajar();
         controles.update();
-        render.render(escena, camara);
+        // ⚠️ Con el modo deluxe encendido, pinta el compositor: cuatro pasadas en vez
+        // de una (render → SSAO → bloom → salida). Si no se pudo encender, `cine` es
+        // `null` y se pinta como siempre — ver `protohub/cine.js`.
+        if (cine) cine.pintar(); else render.render(escena, camara);
     })();
+
+    /**
+     * ⚠️ EL MODO DELUXE SE ENCIENDE DESPUÉS DEL BUCLE, NO ANTES.
+     *
+     * Cargar el pipeline es una espera —imports dinámicos, mapa de importación— y
+     * hacerla antes de arrancar dejaría la pantalla en negro ese rato. Arrancando
+     * primero, la mesa se ve enseguida y las cuatro pasadas entran cuando llegan.
+     * Quien tenga un navegador viejo no espera para nada.
+     */
+    if (calidadPedida() === 'ultra') {
+        encenderCine({ escena, camara, render }).then((c) => {
+            cine = c;
+            if (c) console.log(`[cine] deluxe encendido · ${c.pases} pasadas`);
+        });
+    }
 
     addEventListener('resize', () => {
         if (!(innerWidth > 0 && innerHeight > 0)) return;

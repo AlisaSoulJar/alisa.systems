@@ -104,6 +104,47 @@
         barra.appendChild(bPanel);
 
         /**
+         * ═══════════════════════════════════════════════════════════════════
+         *  ⚠️ ULTRA / NORMAL — Y POR QUÉ ES UN BOTÓN Y NO OTRA VERSIÓN DEL ARCADE
+         * ═══════════════════════════════════════════════════════════════════
+         *
+         * Idea de Oscar: «como en los juegos, que puedes poner ultra o normal». La
+         * alternativa era mantener dos arcades —uno sencillo y otro con luces— y no se
+         * hizo por una razón medible: hay SEIS instrumentos que miden una página
+         * pintada (laboratorio, pantallas, legibilidad, tacto, contactos, asimetría).
+         * Con dos pinturas, o se mide el doble o una mitad se queda sin medir, y una
+         * mitad sin medir se pudre. Aquí es la MISMA escena con cuatro pasadas más.
+         *
+         * ⚠️ Y RECARGA LA PÁGINA A PROPÓSITO.
+         *
+         * El compositor se monta al arrancar y desmontarlo en caliente sería tocar el
+         * bucle de pintado mientras corre. Recargar cuesta un segundo y no puede dejar
+         * la mesa a medias — que en un juego con partida en curso importa más que la
+         * elegancia. La partida se conserva porque la semilla viaja en la dirección.
+         *
+         * Sólo sale donde puede hacer algo: la mesa de tablero. En una mesa de cartas
+         * el botón existiría y no cambiaría nada, que es peor que no tenerlo.
+         */
+        if (document.getElementById('canvas-container') && !window.ALISA_ANFITRION) {
+            const ultra = (() => {
+                const u = new URLSearchParams(location.search).get('calidad');
+                if (u) return u === 'ultra';
+                try { return localStorage.getItem('alisa.calidad') === 'ultra'; } catch { return false; }
+            })();
+            const bCalidad = boton(ultra ? '✦' : '✧',
+                ultra ? 'calidad: ultra — pulsa para normal' : 'calidad: normal — pulsa para ultra',
+                () => {
+                    const nueva = ultra ? 'normal' : 'ultra';
+                    try { localStorage.setItem('alisa.calidad', nueva); } catch { /* sin permiso */ }
+                    const u = new URL(location.href);
+                    u.searchParams.set('calidad', nueva);
+                    location.href = u.toString();
+                });
+            bCalidad.setAttribute('aria-pressed', String(ultra));
+            barra.appendChild(bCalidad);
+        }
+
+        /**
          * ⚠️ COMPARTIR LA PARTIDA — Y ESTE ES EL BOTÓN QUE LE DA SENTIDO AL RESTO.
          *
          * La tesis del proyecto es que cualquiera puede verificar una partida
