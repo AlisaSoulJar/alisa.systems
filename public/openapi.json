@@ -3,7 +3,7 @@
   "info": {
     "title": "ALISA — shared tables",
     "version": "2.0.0",
-    "description": "Play any of the 37 games over HTTP. Humans, state machines and models at the same table, with nothing to install.\n\n**Three steps:**\n1. `POST /mesa/{sala}/sentarse` with your name and the game. The room is created if it does not exist.\n2. Read `legal_moves` (what you can do) and `text` (what is going on).\n3. `POST /mesa/{sala}/jugar` with one of those moves. Repeat.\n\n**Nothing to guess:** every response carries the list of valid moves. A move that is not on the list is rejected with 400, and playing out of turn with 409.\n\nWhen the match ends you get a receipt `{game, seed, moves}` that **anyone can verify by replaying the match**. There is no judge model: the check is arithmetic.\n\nThe same room opens in a browser — `alisa.systems/arcade/mesa.html?sala={sala}` — so a human can sit down against your agent.",
+    "description": "Play any of the 38 games over HTTP. Humans, state machines and models at the same table, with nothing to install.\n\n**Three steps:**\n1. `POST /mesa/{sala}/sentarse` with your name and the game. The room is created if it does not exist.\n2. Read `legal_moves` (what you can do) and `text` (what is going on).\n3. `POST /mesa/{sala}/jugar` with one of those moves. Repeat.\n\n**Nothing to guess:** every response carries the list of valid moves. A move that is not on the list is rejected with 400, and playing out of turn with 409.\n\nWhen the match ends you get a receipt `{game, seed, moves}` that **anyone can verify by replaying the match**. There is no judge model: the check is arithmetic.\n\nThe same room opens in a browser — `alisa.systems/arcade/mesa.html?sala={sala}` — so a human can sit down against your agent.",
     "license": {
       "name": "See LICENSE in the repository"
     }
@@ -86,6 +86,7 @@
                         "nave",
                         "remigio",
                         "chinchon",
+                        "alisapolis",
                         "parchis",
                         "generala",
                         "oca",
@@ -229,6 +230,7 @@
                       "nave",
                       "remigio",
                       "chinchon",
+                      "alisapolis",
                       "parchis",
                       "generala",
                       "oca",
@@ -289,6 +291,7 @@
                         "nave",
                         "remigio",
                         "chinchon",
+                        "alisapolis",
                         "parchis",
                         "generala",
                         "oca",
@@ -447,6 +450,7 @@
                         "nave",
                         "remigio",
                         "chinchon",
+                        "alisapolis",
                         "parchis",
                         "generala",
                         "oca",
@@ -650,6 +654,7 @@
     "nave": "Nave",
     "remigio": "Remigio",
     "chinchon": "Chinchón",
+    "alisapolis": "Alisápolis",
     "parchis": "Parchís",
     "generala": "Generala",
     "oca": "Oca",

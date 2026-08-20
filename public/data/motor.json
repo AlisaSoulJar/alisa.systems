@@ -196,13 +196,13 @@
    "ruta": "gym/ProtoHubEnv.js",
    "nombre": "ProtoHubEnv",
    "familia": "gym",
-   "kb": 24.9
+   "kb": 27.0
   },
   {
    "ruta": "gym/registro.js",
    "nombre": "registro",
    "familia": "gym",
-   "kb": 16.7
+   "kb": 17.1
   },
   {
    "ruta": "gym/envs/AsteroidsEnv.js",

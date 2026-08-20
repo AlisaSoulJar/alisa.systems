@@ -682,7 +682,12 @@ export async function crearAlisapolis({ jugadores = 2, vueltas = 12 } = {}) {
             }
 
             return {
-                rejilla: { ancho: LADO, alto: LADO, celdas, nombres },
+                // tiquetas para que el pintor ESCRIBA los nombres en las casillas.
+                // Sin eso se ve el anillo y los peones y no distingues Data de
+                // Heritage — que en un monopoly es no ver el juego. Lo pide la rejilla
+                // y no lo adivina el pintor: flota tambien publica nombres (1..j10)
+                // y llenarle el tablero de cien rotulos seria arreglarle esto a otro.
+                rejilla: { ancho: LADO, alto: LADO, celdas, nombres, etiquetas: true },
                 piezas,
                 zonas,
                 leyenda: {

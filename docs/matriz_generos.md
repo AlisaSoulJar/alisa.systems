@@ -1,6 +1,6 @@
 # Matriz de géneros
 
-> Generado por `matriz_generos.mjs` **jugando** los 37 juegos.
+> Generado por `matriz_generos.mjs` **jugando** los 38 juegos.
 > No hay ninguna etiqueta escrita a mano: `●` medido presente, `·` medido ausente,
 > `?` no observable. Se clasifica por estructura de decisión y no por género de
 > tienda, porque «puzle» o «cartas» no dicen qué hay que saber hacer para jugar bien.
@@ -48,6 +48,7 @@
 | nave | ● | ● | ● | · | ● | ● | ? | · | sí |
 | remigio | · | ● | ● | · | ● | · | · | · | sí |
 | chinchon | · | ● | ● | · | ● | · | · | · | sí |
+| alisapolis | ● | ● | ● | · | · | · | ? | · | sí |
 | parchis | ● | · | ● | · | ● | ? | ? | ? | sí |
 | generala | · | · | ● | · | ● | · | · | · | sí |
 | oca | ● | · | ● | · | ● | · | · | · | sí |
@@ -56,14 +57,14 @@
 
 ## Cobertura
 
-- `espacial`: **23/37**
-- `oculto`: **19/37**
-- `rival`: **29/37**
-- `autonomo`: **8/37**
-- `irreversible`: **37/37**
-- `simultaneo`: **2/37**
-- `cooperativo`: **2/37**
-- `comunicacion`: **2/37**
+- `espacial`: **24/38**
+- `oculto`: **20/38**
+- `rival`: **30/38**
+- `autonomo`: **8/38**
+- `irreversible`: **37/38**
+- `simultaneo`: **2/38**
+- `cooperativo`: **2/38**
+- `comunicacion`: **2/38**
 
 ## Perfiles demostrados
 
@@ -81,4 +82,5 @@
 - `espacial+oculto+rival+irreversible+cooperativo` — relevo
 - `espacial+rival+irreversible+cooperativo+comunicacion` — cabina
 - `espacial+oculto+rival+irreversible+simultaneo` — nave
+- `espacial+oculto+rival` — alisapolis
 - `rival+irreversible` — generala

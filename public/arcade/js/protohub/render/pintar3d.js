@@ -55,6 +55,49 @@ import { crearDado, esDado, valorDeDado, LADO as LADO_DADO } from '../dados.js';
 // de las cartas: son otro material, con otra forma y otra manera de colocarse.
 import { crearFicha, esFicha, disponerCadena } from '../fichas.js';
 
+/**
+ * Una etiqueta de casilla: el texto pintado en un lienzo y pegado a un plano tumbado.
+ *
+ * Con lienzo y no con geometría de letras por lo mismo que los puntos de los dados y
+ * de las fichas: treinta y dos rótulos son treinta y dos texturas pequeñas, y en
+ * geometría serían cientos de mallas para leer «Data-1».
+ *
+ * `depthWrite: false` porque el plano va a seis centésimas del suelo y sin eso pelea
+ * con él por el mismo píxel — el efecto es el parpadeo de siempre al mover la cámara.
+ */
+function crearEtiqueta(THREE, texto) {
+    const W = 256, H = 128;
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const g = c.getContext('2d');
+    g.clearRect(0, 0, W, H);
+    g.fillStyle = '#12161c';
+    g.font = 'bold 34px system-ui, sans-serif';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    // Los nombres largos se parten por el guion, que es donde el nuestro los corta.
+    const partes = String(texto).split('-');
+    if (partes.length > 1) {
+        g.fillText(partes[0], W / 2, H / 2 - 20);
+        g.font = 'bold 44px system-ui, sans-serif';
+        g.fillText(partes.slice(1).join('-'), W / 2, H / 2 + 24);
+    } else {
+        const cabe = g.measureText(texto).width <= W - 16;
+        if (!cabe) g.font = 'bold 26px system-ui, sans-serif';
+        g.fillText(texto, W / 2, H / 2);
+    }
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.anisotropy = 4;
+    const m = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.92, 0.46),
+        new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }),
+    );
+    m.rotation.x = -Math.PI / 2;
+    m.name = `etiqueta:${texto}`;
+    return m;
+}
+
 export function crearPintor3d(escena, THREE, opciones = {}) {
     const { croupier = null, alturaCarta = 0.02 } = opciones;
 
@@ -226,6 +269,8 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
     const dados = new Map();
     /** Y las fichas de domino igual: cada una lleva su propia cara pintada. */
     const fichas = new Map();
+    // Los rótulos de las casillas, por clave t<celda>:<texto>. Ver crearEtiqueta.
+    const etiquetas = new Map();
     const M = new THREE.Matrix4(), Q = new THREE.Quaternion();
     const POS = new THREE.Vector3(), ESC = new THREE.Vector3();
 
@@ -465,6 +510,48 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
              * (c + dx, f + dz) y mide una unidad de lado.
              */
             escena.userData.rejillaMundo = { cols, filas, dx, dz, lado: 1, y: 0 };
+
+            /**
+             * ═══════════════════════════════════════════════════════════════
+             *  ⚠️ EL NOMBRE DE LA CASILLA, ESCRITO EN LA CASILLA
+             * ═══════════════════════════════════════════════════════════════
+             *
+             * `rejilla.nombres` lleva tiempo publicándose y no lo dibujaba nadie: sólo
+             * lo leía el respaldo del tacto. En un tablero de casillas ANÓNIMAS —el
+             * ajedrez, el go— no hace falta, pero en el alisápolis el nombre ES el
+             * juego: se ve el anillo y los peones y no distingues Data de Heritage.
+             *
+             * ⚠️ SE DIBUJA SÓLO SI LA REJILLA LO PIDE (`etiquetas: true`).
+             *
+             * Flota también publica nombres —`a1`…`j10`— y ponerle cien etiquetas
+             * encima sería llenarle el tablero de ruido para arreglarle el problema a
+             * otro juego. Lo dice el sustrato, no adivina el pintor.
+             *
+             * Provisional a propósito: texto negro sobre el propio suelo, tumbado, sin
+             * más diseño. Lo bonito ya se hará.
+             */
+            if (sus.rejilla.etiquetas && Array.isArray(sus.rejilla.nombres)) {
+                for (let k = 0; k < sus.rejilla.nombres.length; k++) {
+                    const txt = sus.rejilla.nombres[k];
+                    if (!txt) continue;
+                    const clave = `et${k}:${txt}`;
+                    let m = etiquetas.get(clave);
+                    if (!m) {
+                        // Se limpia la que hubiera en esa casilla con otro texto: si no,
+                        // al cambiar de partida se apilarían dos nombres en el mismo sitio.
+                        for (const [c, vieja] of etiquetas) {
+                            if (c.startsWith(`et${k}:`)) { raiz.remove(vieja); etiquetas.delete(c); }
+                        }
+                        m = crearEtiqueta(THREE, txt);
+                        raiz.add(m);
+                        etiquetas.set(clave, m);
+                    }
+                    const c = k % cols, f = Math.floor(k / cols);
+                    m.position.set(c + dx, 0.06, f + dz);
+                    m.visible = true;
+                    usados.add(clave);
+                }
+            }
 
             /**
              * ⚠️ AQUÍ FALTABAN DOS FAMILIAS, Y UNA LLEVABA TIEMPO FALTANDO.
@@ -841,6 +928,7 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
         // encoge y crece, y esconder es más barato que rehacer.
         for (const [clave, d] of dados) if (!usados.has(clave)) d.visible = false;
         for (const [clave, f] of fichas) if (!usados.has(clave)) f.visible = false;
+        for (const [clave, e] of etiquetas) if (!usados.has(clave)) e.visible = false;
     }
 
     /** Dónde va cada carta. Con `CroupierSystem` si lo hay; si no, en fila. */
