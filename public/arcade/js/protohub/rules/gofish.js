@@ -160,7 +160,7 @@ export async function crearGoFish({ url = RUTA_BIBLIOTECA, jugadores = 3, mano =
                 marcador: [...p.puntos],
                 puntos: p.puntos[0],
                 score: p.puntos[0],
-                turn: pid === 0 ? 'player' : `cpu${pid}`,
+                turn: pid === yo ? 'player' : `cpu${pid}`,
                 semilla: p.semilla,
                 biblioteca: p.biblioteca,
                 atascada,

@@ -179,7 +179,7 @@ export function crearBazas(cfg) {
                 manos_rivales: p.manos.filter((_, i) => i !== yo).map(m => m.length),
                 baza: p.baza.map(j => ({ jugador: j.pid, carta: j.carta })),
                 triunfo: p.triunfo,
-                turn: p.turno === 0 ? 'player' : `cpu${p.turno}`,
+                turn: p.turno === yo ? 'player' : `cpu${p.turno}`,
                 marcador: p.puntos,
                 bazas: p.bazas,
                 mazo_restante: p.mazo.length,

@@ -76,6 +76,20 @@ const SABOTAJES = [
         vigila: 'que el recibo se verifique desde la silla que jugó, y no desde la 0',
     },
     {
+        nombre: 'turno',
+        corre: 'node prueba_turno.mjs',
+        fichero: 'public/arcade/js/protohub/rules/entropy.js',
+        // El fallo REAL, en trece juegos hasta el 20-08-2026: `player` significa
+        // «tú», y comparar contra 0 sólo acierta para la silla 0. El segundo
+        // jugador leía «te toca» justo cuando NO le tocaba, y al revés. El árbitro
+        // repartía los turnos bien —decide con la silla 0 y `ordenAsientos`—, así
+        // que la mesa iba perfecta y lo único roto era la pantalla: nada fallaba,
+        // nadie daba error, y dos betatesters se miraban esperando al otro.
+        de: "turn: pid === yo ? 'player'",
+        a: "turn: pid === 0 ? 'player'",
+        vigila: 'que exactamente una silla vea «player», que es un pronombre',
+    },
+    {
         nombre: 'repetidor',
         corre: 'node prueba_repetidor.mjs',
         fichero: 'public/arcade/js/protohub/enlace_repetidor.js',

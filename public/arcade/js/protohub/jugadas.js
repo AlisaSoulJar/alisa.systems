@@ -179,7 +179,29 @@ export function pintarJugadas(caja, { acciones = [], meToca = true, turnoDe = nu
                                       estado = null, recibo = null, enSala = false } = {}) {
     if (!caja) return;
 
-    const aviso = (t) => { caja.innerHTML = `<span class="dato">${t}</span>`; };
+    /**
+     * ⚠️ LA BARRA DE VERBOS SE QUEDABA PUESTA EN LOS CUATRO ATAJOS.
+     *
+     * `barraDeVerbos` sólo se llama en la ÚLTIMA línea del camino feliz. Los cuatro
+     * caminos que salen antes —espectador, partida terminada, no te toca, sin jugadas—
+     * dejaban en pantalla los botones del repintado anterior. No es un resto visual:
+     * son botones que se pulsan, no hacen nada y no dicen por qué.
+     *
+     * Se vio abriendo una sala compartida de entropy con dos pestañas: el invitado leía
+     * «le toca a oscar…» en el panel —correcto— y a la vez tenía «robar mazo» y «robar
+     * descarte» sobre el tapete. Pulsé y no pasó nada, sin error en consola: el clic ni
+     * siquiera llegaba al árbitro, porque la sala ya devolvía `acciones: []`. Un
+     * betatester delante de eso concluye que la sala está rota, y tiene razón en
+     * concluirlo aunque el árbitro estuviera repartiendo los turnos perfectamente.
+     *
+     * Es la misma forma de fallo que el turno de esta mañana con otra ropa: una
+     * superficie sabía la verdad —el panel— y la otra seguía enseñando lo de antes.
+     *
+     * El borrado va dentro de `aviso` porque `aviso` significa exactamente «aquí no hay
+     * nada que pulsar»; dejarlo en cada `return` serían cuatro sitios donde olvidarse.
+     */
+    const sinVerbos = () => barraDeVerbos([], enviar, alSeñalar);
+    const aviso = (t) => { sinVerbos(); caja.innerHTML = `<span class="dato">${t}</span>`; };
     /**
      * La marca de «ya pinté el final» se suelta en cuanto hay partida viva otra vez,
      * venga el reinicio de donde venga. Fiarlo sólo al botón de «jugar otra» dejaría
@@ -209,6 +231,9 @@ export function pintarJugadas(caja, { acciones = [], meToca = true, turnoDe = nu
         if (caja.dataset.firma === '@mirando') return;
         caja.dataset.firma = '@mirando';
         caja.classList.remove('mesa-final');
+        // Quien mira no pulsa. Va aparte de `aviso` porque este camino pinta el
+        // recuadro él mismo y no pasa por ahí salvo si falla el módulo.
+        sinVerbos();
         if (typeof espectador === 'string') {
             import('./mando_repetir.js')
                 // La semilla sale del recibo de la partida que se está mirando: es
@@ -249,6 +274,9 @@ export function pintarJugadas(caja, { acciones = [], meToca = true, turnoDe = nu
          */
         if (caja.dataset.firma === '@final') return;
         caja.dataset.firma = '@final';
+        // Al terminar no queda ninguna jugada legal, así que los verbos que hubiera
+        // son todos muertos. La pantalla de fin trae sus propios botones.
+        sinVerbos();
         // Se carga a demanda: sólo hace falta al acabar, y así las mesas que nunca
         // llegan al final no pagan por ello.
         import('./final.js').then(({ pintarFinal }) => pintarFinal(caja, {

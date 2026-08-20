@@ -48,6 +48,21 @@
         const esc = (s) => s.replace(/[&<>"]/g, (c) => (
             { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
-        return `<div class="hud-objetivo"><b>A qué se juega</b> ${esc(cuerpo)}</div>`;
+        /**
+         * ⚠️ EL OBJETIVO VA EN SU PROPIO ELEMENTO PARA PODER RECORTARLO SOLO.
+         *
+         * Con el panel plegado, el CSS resume esto a dos líneas. Pero el rótulo es
+         * `display:block`, así que se llevaba UNA de las dos: del objetivo quedaba una
+         * línea, cortada a media palabra —«acabar con la caja mas BAJA… posible: cada
+         * carta suma su valor y»—. Un recuadro que existe para explicar a qué se juega
+         * y que se corta antes de decirlo.
+         *
+         * Lo pedía un betatester desde mancala («ni idea tengo de como se juega») y es
+         * lo primero que ve quien entra por la puerta de casuals, así que es justo el
+         * sitio donde no puede quedarse a medias. Separándolo, el recorte cuenta líneas
+         * de objetivo y el rótulo no le roba ninguna.
+         */
+        return `<div class="hud-objetivo"><b>A qué se juega</b>`
+             + `<span class="hud-objetivo-txt">${esc(cuerpo)}</span></div>`;
     };
 })();

@@ -453,7 +453,7 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
                 marcador: p.fin ? p.puntosFinales.map(v => -v) : null,
                 puntos,
                 score: puntos,
-                turn: pid === 0 ? 'player' : `cpu${pid}`,
+                turn: pid === yo ? 'player' : `cpu${pid}`,
                 semilla: p.semilla,
                 biblioteca: p.biblioteca,
                 // Las 96 cartas siguen ahí — la de la mano incluida, que es

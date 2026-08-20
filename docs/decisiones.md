@@ -15,22 +15,22 @@ contrario. El problema no era que no estuviera escrito: era que no había índic
 Volver a decidir sale barato en el momento y carísimo a la semana, porque la
 segunda decisión casi nunca coincide con la primera y entonces hay dos verdades.
 
-**1661 decisiones** en 279 ficheros.
+**1672 decisiones** en 281 ficheros.
 
 ## Índice
 
-- [Herramientas de medida](#herramientas-de-medida) — 324
+- [Herramientas de medida](#herramientas-de-medida) — 330
 - [Reglas de los juegos](#reglas-de-los-juegos) — 304
-- [Las mesas y los visualizadores](#las-mesas-y-los-visualizadores) — 299
-- [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 179
-- [Las comprobaciones](#las-comprobaciones) — 153
+- [Las mesas y los visualizadores](#las-mesas-y-los-visualizadores) — 300
+- [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 180
+- [Las comprobaciones](#las-comprobaciones) — 154
 - [Otros](#otros) — 139
 - [Las páginas de los juegos](#las-páginas-de-los-juegos) — 77
 - [Cómo se dibuja (el pintor)](#cómo-se-dibuja-el-pintor-) — 52
-- [El servidor y las salas](#el-servidor-y-las-salas) — 47
+- [El servidor y las salas](#el-servidor-y-las-salas) — 48
 - [El motor](#el-motor) — 30
 - [El gym y los entornos](#el-gym-y-los-entornos) — 26
-- [Estilos](#estilos) — 19
+- [Estilos](#estilos) — 20
 - [Los agentes y las políticas](#los-agentes-y-las-políticas) — 12
 
 ## Herramientas de medida
@@ -88,6 +88,24 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 
 - **Repo may already exist: {data.get('message', '')}")** <sub>línea 32</sub>
   <br><sub>Get existing repo info r2 = requests.get( f"https://api.github.com/repos/{get_username()}/{REPO_NAME}",</sub>
+
+### `_sonda_dos_personas.mjs`
+
+- **LA CUARTA ES LA QUE NO MIRABA NADIE, Y ERA LA ROTA.** <sub>línea 13</sub>
+  <br><sub>El árbitro decide con el estado de la silla 0 y con `ordenAsientos`, así que repartía los turnos bien. Pero cada jugador ve `estado(p, su_silla)`, y ahí `turn` comparaba contra 0 en vez de contra su asiento: el segundo leía «player»</sub>
+- **SE MIRA LA PANTALLA DE LOS DOS, NO LA DEL QUE JUEGA.** <sub>línea 59</sub>
+  <br><sub>`player` es un pronombre: significa «tú». Si los dos lo ven a la vez, uno de los dos tiene delante una pantalla que le miente, aunque la mesa reparta bien los turnos. Exactamente una silla puede verlo — y `?quien=` existe</sub>
+- **EN LA MISMA RESPUESTA VIENEN DOS `turn` CON VOCABULARIOS DISTINTOS.** <sub>línea 75</sub>
+  <br><sub>El de arriba es el NOMBRE de quien mueve —lo traduce el árbitro— y ése es el bueno. Dentro de `state` viaja el del juego, que es un pronombre por silla (`player`/`cpu1`). Se miran los dos porque un cliente puede leer</sub>
+- **Y LA MISMA LISTA, POR LA OTRA PUERTA.** <sub>línea 93</sub>
+  <br><sub>`legal_moves` de arriba ya se entregaba sólo a quien mueve. Dentro de `state` iba la misma lista para todo el mundo, y el motor de cartas pinta los botones desde AHÍ. Se mira el estado crudo y no el campo de arriba,</sub>
+
+### `_sonda_turno.mjs`
+
+- **EL FALLO QUE SE BUSCA: dos sillas que ven la MISMA palabra de «me toca».** <sub>línea 54</sub>
+  <br><sub>Con el vocabulario `player`/`cpuN`, «player» significa «tú». Si dos sillas lo ven a la vez, una de las dos está mintiendo. Con `white`/`black` no aplica: eso es un color, no un pronombre, y las dos sillas deben verlo igual.</sub>
+- **EL INVARIANTE ES «EXACTAMENTE UNA», NO «LA SILLA `p.turno`».** <sub>línea 66</sub>
+  <br><sub>Mi primera versión comparaba contra `p.turno` y denunciaba al alisápolis en 19 de 40 jugadas. Era falso: en una subasta quien decide es el pujador, no quien tiene el turno de la mesa, así que `p.turno` no es la respuesta a «¿quién mueve</sub>
 
 ### `aligerar_props.py`
 
@@ -2022,6 +2040,8 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>El 13-08-2026 llegó esto desde mancala:</sub>
 - **POR QUÉ VA FUERA DE `#hud-content`.** <sub>línea 25</sub>
   <br><sub>Es la misma razón por la que ya están fuera los botones de jugada y la pista: plegado, `#hud-content` queda con `max-height: 0`, y lo que esté dentro desaparece. Alguien que pliega el panel para ver la mesa es EXACTAMENTE quien</sub>
+- **EL OBJETIVO VA EN SU PROPIO ELEMENTO PARA PODER RECORTARLO SOLO.** <sub>línea 52</sub>
+  <br><sub>Con el panel plegado, el CSS resume esto a dos líneas. Pero el rótulo es `display:block`, así que se llevaba UNA de las dos: del objetivo quedaba una línea, cortada a media palabra —«acabar con la caja mas BAJA… posible: cada</sub>
 
 ### `public/arcade/js/peaton_visualizer.js`
 
@@ -2453,27 +2473,29 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Un verbo es una jugada sin `:`, que no es una coordenada (`d2d4`) ni un número (`12`). Cruzarlo contra las piezas del sustrato sería más exacto, pero obliga a traer el sustrato hasta aquí para decidir dónde va un botón — mucha máquina</sub>
 - **Y TAMPOCO ES VERBO SI ACABA EN UN SITIO, AUNQUE LLEVE PALABRA DELANTE.** <sub>línea 130</sub>
   <br><sub>Con la regla a secas, defensa metía SESENTA Y NUEVE botones en la barra: `torre_a1`, `torre_b1`… las 63 casillas del tablero con la palabra «torre» delante. No son verbos, son la misma jugada apuntando a sitios distintos, y ésas</sub>
-- **MIRAR GANA SOBRE TERMINAR, Y ESE ORDEN ES DELIBERADO.** <sub>línea 199</sub>
+- **LA BARRA DE VERBOS SE QUEDABA PUESTA EN LOS CUATRO ATAJOS.** <sub>línea 183</sub>
+  <br><sub>`barraDeVerbos` sólo se llama en la ÚLTIMA línea del camino feliz. Los cuatro caminos que salen antes —espectador, partida terminada, no te toca, sin jugadas— dejaban en pantalla los botones del repintado anterior. No es un resto visual:</sub>
+- **MIRAR GANA SOBRE TERMINAR, Y ESE ORDEN ES DELIBERADO.** <sub>línea 221</sub>
   <br><sub>Si la partida que estás VIENDO repetirse llega a su final, aquí no ha terminado la tuya: ha terminado la de otro. La pantalla de fin ofrecería «jugar otra» y «aportar al corpus», que están rechazados mientras se mira — tres botones</sub>
-- **AQUÍ PONÍA `return aviso('partida terminada')` Y AHÍ SE ACABABA LA PÁGINA.** <sub>línea 228</sub>
+- **AQUÍ PONÍA `return aviso('partida terminada')` Y AHÍ SE ACABABA LA PÁGINA.** <sub>línea 253</sub>
   <br><sub>Sin botón para jugar otra, en las treinta y cinco mesas: había que recargar. Y lo peor es que DIECISIETE juegos ofrecen `nueva` entre sus jugadas legales justo al terminar —con un comentario en el ProtoHub diciendo que es «para que</sub>
-- **NO SE REPINTA EN CADA SONDEO, Y ESO NO ES UNA OPTIMIZACIÓN.** <sub>línea 241</sub>
+- **NO SE REPINTA EN CADA SONDEO, Y ESO NO ES UNA OPTIMIZACIÓN.** <sub>línea 266</sub>
   <br><sub>El estado se consulta cada segundo. Sin esta marca, la pantalla de fin se reconstruiría entera una vez por segundo y un botón desaparecería debajo del dedo entre el `pointerdown` y el `pointerup` — el toque se pierde y</sub>
-- **AQUÍ PUSE UNA FIRMA PARA NO REPINTAR, Y EMPEORÓ.** <sub>línea 272</sub>
+- **AQUÍ PUSE UNA FIRMA PARA NO REPINTAR, Y EMPEORÓ.** <sub>línea 300</sub>
   <br><sub>El razonamiento era bueno y está medido: el panel se reconstruye entero cada segundo aunque la lista sea idéntica —comprobado en peatón: mismo texto, **nodo distinto** un segundo después— y los dos motores llevan justamente esa</sub>
-- **SE AÑADE, NO SE QUITA.** <sub>línea 316</sub>
+- **SE AÑADE, NO SE QUITA.** <sub>línea 344</sub>
   <br><sub>`tacto.mjs` garantiza que las 35 mesas dejan pulsar todas sus jugadas legales, y esa garantía mide el panel. Quitar botones aquí y reformular la garantía a la vez son dos cambios grandes a ciegas; primero existe el camino nuevo, se</sub>
-- **EL CRITERIO VIVE DENTRO DE `barraDeVerbos`, Y SE LE PASA LA LISTA ENTERA.** <sub>línea 324</sub>
+- **EL CRITERIO VIVE DENTRO DE `barraDeVerbos`, Y SE LE PASA LA LISTA ENTERA.** <sub>línea 352</sub>
   <br><sub>Hay TRES sitios que pintan el panel —éste, `SovereignBoardEngine` y `SovereignCardEngine`— y los tres montan ahora la barra. Filtrar en cada uno son tres copias de la misma regla, que es como acaban divergiendo: el día que</sub>
-- **CASILLA EN PÍXELES, NO EN `1fr`.** <sub>línea 339</sub>
+- **CASILLA EN PÍXELES, NO EN `1fr`.** <sub>línea 367</sub>
   <br><sub>Con `1fr` el mapa salía correcto y aplastado: sesenta y cuatro casillas de catorce píxeles. La causa es que el panel se encoge a su contenido, así que un ancho del 100% del padre es el ancho del contenido — se pide a sí mismo</sub>
-- **EL ANCHO TOTAL ES EL LÍMITE, NO EL DE LA CASILLA.** <sub>línea 352</sub>
+- **EL ANCHO TOTAL ES EL LÍMITE, NO EL DE LA CASILLA.** <sub>línea 380</sub>
   <br><sub>Con el tope por casilla, un go de 19 daba 19x15 más los huecos y se salía del panel: trescientas sesenta y una etiquetas amontonadas y desbordando por la derecha. El límite de verdad es lo que mide el panel, así que se reparte</sub>
-- **LA TIRA ENSEÑA VARIEDAD, NO LAS OCHO PRIMERAS DE LA MISMA FAMILIA.** <sub>línea 379</sub>
+- **LA TIRA ENSEÑA VARIEDAD, NO LAS OCHO PRIMERAS DE LA MISMA FAMILIA.** <sub>línea 407</sub>
   <br><sub>Aviso de un betatester en entropy: «la carta que robó, si no la quiero, no me deja descartarla». Y la pista de ese momento le decía exactamente lo que él quería —«cámbiala por una de tu caja, o tírala, pero destapando una de las</sub>
-- **NO SE QUITA NI SE AGRUPA NINGUNA.** <sub>línea 398</sub>
+- **NO SE QUITA NI SE AGRUPA NINGUNA.** <sub>línea 426</sub>
   <br><sub>de estos botones: la persona ve la misma lista literal que recibe un agente. Lo único que cambia es en qué orden se enseñan, y el orden no es parte del juego.</sub>
-- **SEÑALAR UN BOTÓN ENSEÑA DÓNDE CAE ESA JUGADA EN EL TABLERO.** <sub>línea 427</sub>
+- **SEÑALAR UN BOTÓN ENSEÑA DÓNDE CAE ESA JUGADA EN EL TABLERO.** <sub>línea 455</sub>
   <br><sub>El panel dice `c3d4` y hasta ahora había que saberse las coordenadas para situarlo. Es la norma primera de la guía de Board Game Arena —enseñar la consecuencia ANTES de comprometerse— y aquí sale gratis: `sus.acciones` ya</sub>
 
 ### `public/arcade/js/protohub/mando_repetir.js`
@@ -3075,7 +3097,9 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>El resumen no cubre `js/protohub/` —ni el pintor, ni el sustrato, ni las reglas—, y además esos ficheros se importan como módulos con rutas normales, así que ni siquiera podrían llevar `?v=`. Visto así parece el mismo fallo que</sub>
 - **Ojo con lo que NO entra en el resumen: el vendor (va sellado en su ruta,** <sub>línea 35</sub>
   <br><sub>`three-r128`) y `montarMesa.js` mismo, que no puede contener su propio hash. `montarMesa.js` no lo necesita: lo carga la página con `import`, y las páginas se sirven siempre frescas.</sub>
-- **Y LAS HOJAS DE ESTILO, QUE FALTABAN.** <sub>línea 59</sub>
+- **LA LISTA SE LEE DE `montarMesa.js`, QUE ES QUIEN SELLA.** <sub>línea 49</sub>
+  <br><sub>Aquí había cuatro nombres escritos —`Entrada.js`, los dos motores y `arcade_mats.js`— y `montarMesa.js` sella además todo su `ANDAMIO`: `gestos.js`, `objetivo_visible.js`, `encuadre.js` y `mandos.js`. Esos cuatro</sub>
+- **Y LAS HOJAS DE ESTILO, QUE FALTABAN.** <sub>línea 78</sub>
   <br><sub>El resumen sólo miraba los `.js`, así que cambiar el CSS no subía la versión y el sello seguía siendo el mismo: los navegadores servían la hoja guardada. Salió el 13-08-2026, cuando el arreglo de que el panel dejara pasar los clics resultó vivir</sub>
 
 ### `prueba_vistas.mjs`
@@ -3911,21 +3935,23 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>El primer intento lo hacía con `reglas.estado.length > 1`, y esa condición es SIEMPRE falsa: `Function.length` cuenta los parámetros hasta el primero con valor por defecto, y la firma es</sub>
 - **EL OBJETIVO Y EL PATRÓN NO LLEGABAN A LAS SALAS.** <sub>línea 482</sub>
   <br><sub>Los dos los declara el juego una vez —`OBJETIVO`, `PATRON`— y los mete en el estado `ProtoHub.state()`. Este árbitro no pasa por ahí: llama a `reglas.estado(p)` directamente, así que aquí no aparecían.</sub>
-- **EL SECRETO NO SALE DE AQUÍ.** <sub>línea 514</sub>
+- **LA FUGA DE `legal_moves` SE CERRÓ ARRIBA Y SE REABRÍA AQUÍ DENTRO.** <sub>línea 503</sub>
+  <br><sub>Abajo, `legal_moves` sólo se entrega a quien mueve, con su motivo escrito: en un juego de cartas esa lista ES la mano del rival. Pero el estado crudo viaja entero en `state`, y ahí volvía a ir la misma lista para todo el</sub>
+- **EL SECRETO NO SALE DE AQUÍ.** <sub>línea 537</sub>
   <br><sub>Esto era `{...a}`, que copia el asiento entero — y al añadir el secreto por asiento habría repartido el de todos a todo el mundo en cada respuesta. El arreglo de seguridad abriendo, él solo, un</sub>
-- **Y EL TOPE DECLARADO, QUE ES EL QUE DECIDE SI CABES.** <sub>línea 542</sub>
+- **Y EL TOPE DECLARADO, QUE ES EL QUE DECIDE SI CABES.** <sub>línea 565</sub>
   <br><sub>Este número ya estaba aquí —es el que devuelve el 409 de mesa completa— pero no salía, así que los clientes decidían si sentarse mirando `asientos_del_juego`, que se DESCUBRE jugando y vale 1 hasta</sub>
-- **LA SITUACIÓN, EN TEXTO — Y FALTABA.** <sub>línea 568</sub>
+- **LA SITUACIÓN, EN TEXTO — Y FALTABA.** <sub>línea 591</sub>
   <br><sub>La mesa entregaba `acciones` y nada más, así que un agente sabía qué podía hacer y no qué estaba pasando. Con eso sólo se puede elegir al azar entre lo ofrecido, que es exactamente la línea base</sub>
-- **Y SI EL JUEGO NO TIENE `describir` PROPIO, LO CUENTA EL** <sub>línea 584</sub>
+- **Y SI EL JUEGO NO TIENE `describir` PROPIO, LO CUENTA EL** <sub>línea 607</sub>
   <br><sub>DESCRIPTOR COMPARTIDO. Sin este respaldo, los diecinueve clásicos —ajedrez incluido— entregaban jugadas legales y ningún tablero: un agente recibía «a2a3, a2a4, b2b3…» sin saber qué está pasando, que</sub>
-- **Y EL OBJETIVO SE ANTEPONE TAMBIÉN AQUÍ, PORQUE `describir` PROPIO** <sub>línea 595</sub>
+- **Y EL OBJETIVO SE ANTEPONE TAMBIÉN AQUÍ, PORQUE `describir` PROPIO** <sub>línea 618</sub>
   <br><sub>NO LO DICE.</sub>
-- **LAS JUGADAS LEGALES SÓLO PARA QUIEN LE TOCA.** <sub>línea 623</sub>
+- **LAS JUGADAS LEGALES SÓLO PARA QUIEN LE TOCA.** <sub>línea 646</sub>
   <br><sub>`legal_moves` son las jugadas de quien mueve, y en un juego de cartas **eso es literalmente su mano**. Se enviaban a cualquiera que mirase la mesa, así que un jugador sondeando mientras el rival</sub>
-- **EL BUZÓN DE AVISOS.** <sub>línea 653</sub>
+- **EL BUZÓN DE AVISOS.** <sub>línea 676</sub>
   <br><sub>Un aviso trae el RECIBO de la partida —{juego, semilla, jugadas}—, así que no es una queja: es algo que se puede volver a jugar exactamente igual. Por eso vive aquí y no en un formulario cualquiera; aquí ya está el código que</sub>
-- **Y COMPARTE ALMACÉN CON LAS MESAS, QUE NO ES ELEGANTE Y SE DICE.** <sub>línea 660</sub>
+- **Y COMPARTE ALMACÉN CON LAS MESAS, QUE NO ES ELEGANTE Y SE DICE.** <sub>línea 683</sub>
   <br><sub>Un buzón no es una mesa. Tener su propia clase Durable Object obligaría a una migración del worker, y eso es riesgo de despliegue para guardar una lista. Va a una instancia con nombre fijo y su propia clave de almacén; el</sub>
 
 ### `worker-mesas/prueba_mesa.mjs`
@@ -4176,6 +4202,8 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Éste sí salió de una medida. `tacto.mjs`, mismos puntos y misma página, sólo cambiando la mano:</sub>
 - **ABAJO A LA IZQUIERDA, Y NO ARRIBA A LA DERECHA COMO PENSÉ PRIMERO.** <sub>línea 581</sub>
   <br><sub>Arriba a la derecha parecía la esquina libre: el panel está arriba a la izquierda y «¿algo va raro?» abajo a la derecha. En escritorio es verdad. En móvil NO: ahí el panel ocupa todo el ancho, así que «arriba a la derecha» es</sub>
+- **EL RECORTE VA EN EL TEXTO, NO EN EL RECUADRO.** <sub>línea 916</sub>
+  <br><sub>el rótulo es `display:block` se llevaba una de las dos líneas: del objetivo quedaba UNA, partida a media palabra. El rótulo mide siempre lo mismo y no necesita recorte; lo que hay que acotar es la frase.</sub>
 
 ## Los agentes y las políticas
 

@@ -499,8 +499,31 @@ export class MesaCompartida {
          * —sentarse, mirar, jugar—, que es la misma razón por la que se anota aquí
          * el asiento. Un sitio o se olvida uno.
          */
+        /**
+         * ⚠️ LA FUGA DE `legal_moves` SE CERRÓ ARRIBA Y SE REABRÍA AQUÍ DENTRO.
+         *
+         * Abajo, `legal_moves` sólo se entrega a quien mueve, con su motivo escrito:
+         * en un juego de cartas esa lista ES la mano del rival. Pero el estado crudo
+         * viaja entero en `state`, y ahí volvía a ir la misma lista para todo el
+         * mundo. La puerta cerrada y la ventana de al lado abierta.
+         *
+         * Y no era teórico: el motor de cartas lee `legal_moves` del estado, no del
+         * campo de arriba. Abriendo una sala de entropy con dos pestañas, el invitado
+         * leía «le toca a oscar…» en el panel y a la vez tenía sus dos botones sobre
+         * el tapete —pintados desde `state.legal_moves`—. En entropy es «robar»; en
+         * remigio o gofish habría sido la mano entera.
+         *
+         * Se tapa aquí y no en el cliente a propósito: lo que no sale del árbitro no
+         * lo puede enseñar ningún cliente, ni el que escriba otro mañana.
+         *
+         * Se quita también el alias `legal_actions` —veintiún juegos publican los dos
+         * campos con el mismo valor—, porque tapar sólo el canónico sería dejar la
+         * misma lista saliendo por el otro nombre.
+         */
+        const mueve = this.quienTiraAhora(mesa, st);
+        const { legal_moves: _lm, legal_actions: _la, ...crudoSinJugadas } = crudo;
         const mío = {
-            ...crudo,
+            ...(mueve && mueve !== quien ? crudoSinJugadas : crudo),
             ...(reglas.OBJETIVO ? { objetivo: reglas.OBJETIVO } : {}),
             ...(reglas.PATRON ? { patron: reglas.PATRON } : {}),
             ...(reglas.COLORES ? { colores: reglas.COLORES } : {}),

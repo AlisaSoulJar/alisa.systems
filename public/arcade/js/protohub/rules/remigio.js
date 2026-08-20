@@ -549,7 +549,7 @@ export async function crearRemigio({ url = RUTA_BIBLIOTECA, jugadores = 2, mano 
                 marcador,
                 puntos,
                 score: puntos,
-                turn: pid === 0 ? 'player' : `cpu${pid}`,
+                turn: pid === yo ? 'player' : `cpu${pid}`,
                 // Con qué normas nació esta partida. Sin publicarlo, el recibo no las
                 // lleva y el verificador la re-juega con otras reglas.
                 normas: p.normas,

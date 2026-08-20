@@ -45,14 +45,33 @@ const JS = new URL('./public/arcade/js/', import.meta.url);
 
 /** Todo lo que `cargar()` puede pedir: los motores, la entrada, y los visualizadores. */
 async function ficherosSellados() {
-    const sueltos = ['Entrada.js', 'SovereignBoardEngine.js', 'SovereignCardEngine.js',
-                     'arcade_mats.js'];
+    /**
+     * ⚠️ LA LISTA SE LEE DE `montarMesa.js`, QUE ES QUIEN SELLA. ERA A MANO.
+     *
+     * Aquí había cuatro nombres escritos —`Entrada.js`, los dos motores y
+     * `arcade_mats.js`— y `montarMesa.js` sella además todo su `ANDAMIO`:
+     * `gestos.js`, `objetivo_visible.js`, `encuadre.js` y `mandos.js`. Esos cuatro
+     * salían con `?v=` y NO contaban para el resumen, o sea que cambiar uno no subía
+     * la versión: el fichero se desplegaba y quien ya hubiera abierto una mesa se
+     * quedaba con el anterior, sin error en ninguna parte.
+     *
+     * Lo destapé arreglando el recuadro de «a qué se juega» —que vive justo en
+     * `objetivo_visible.js`—: el arreglo no habría llegado a nadie.
+     *
+     * Es la lista paralela otra vez, y esta vez en la herramienta que existe para
+     * cazar desajustes. Ahora se sacan las rutas del propio `montarMesa.js`, así que
+     * el día que alguien añada algo al andamio entra solo.
+     */
+    const fuente = await readFile(new URL('./montarMesa.js', JS), 'utf-8');
+    const delAndamio = [...fuente.matchAll(/'js\/([\w./-]+\.m?js)'/g)]
+        // `protohub/` se sella igual que el resto: si va con `?v=`, cuenta.
+        .map(m => m[1]);
     // Los visualizadores no son una lista: son lo que hay. Una lista escrita aquí
     // se separaría del directorio el día que alguien añada uno.
     const hay = await readdir(JS, { withFileTypes: true });
     const vis = hay.filter(e => e.isFile() && /_visualizer\.js$|^mesa_\w+\.mjs$/.test(e.name))
                    .map(e => e.name);
-    return [...new Set([...sueltos, ...vis])].sort();
+    return [...new Set([...delAndamio, ...vis])].sort();
 }
 
 /**

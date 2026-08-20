@@ -272,7 +272,7 @@ export function crearGenerala({ jugadores = 2 } = {}) {
                 totales: p.hojas.map(total),
                 puntos,
                 score: puntos,
-                turn: p.turno === 0 ? 'player' : `cpu${p.turno}`,
+                turn: p.turno === yo ? 'player' : `cpu${p.turno}`,
                 semilla: p.semilla,
                 legal_moves: legales(p),
                 is_game_over: p.fin,

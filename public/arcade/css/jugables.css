@@ -910,11 +910,19 @@
     margin-bottom: 3px;
 }
 
-/* Plegado se resume a dos líneas: sigue estando —que era el punto— pero no le
-   come la mesa a quien plegó el panel precisamente para verla. */
-.hud-panel.collapsed .hud-objetivo {
+/* Plegado se resume a tres líneas: sigue estando —que era el punto— pero no le
+   come la mesa a quien plegó el panel precisamente para verla.
+
+   ⚠️ EL RECORTE VA EN EL TEXTO, NO EN EL RECUADRO. Estaba en el recuadro, y como
+   el rótulo es `display:block` se llevaba una de las dos líneas: del objetivo
+   quedaba UNA, partida a media palabra. El rótulo mide siempre lo mismo y no
+   necesita recorte; lo que hay que acotar es la frase.
+
+   Y tres y no dos porque se midió: con dos, la frase de entropy —95 caracteres a
+   42ch— seguía cortándose. Tres las cubre sin comerse la mesa. */
+.hud-panel.collapsed .hud-objetivo-txt {
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }

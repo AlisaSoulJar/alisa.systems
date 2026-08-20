@@ -230,7 +230,7 @@ export async function crearUnit({ url = RUTA_BIBLIOTECA, jugadores = 4, mano = 7
                 ganadores: [...p.ganadores],
                 puntos,
                 score: puntos,
-                turn: pid === 0 ? 'player' : `cpu${pid}`,
+                turn: pid === yo ? 'player' : `cpu${pid}`,
                 semilla: p.semilla,
                 biblioteca: p.biblioteca,
                 // Invariante al estilo de `guerra`: las 108 cartas siguen ahí.
