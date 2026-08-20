@@ -157,9 +157,26 @@ export function crearSala({ sala, yo, juego, semilla, mesas = MESAS,
              */
             const sillas = m.max_seats ?? m.seats_seen ?? 1;
             const yaEstoy = (m.seats ?? []).some(a => a.who === yo);
-            // Antes de la primera jugada se deja pasar igualmente: si ni siquiera
-            // hay tope declarado, es el único momento en que no se puede saber.
-            return yaEstoy || m.moves === 0 || ocupados < sillas;
+            /**
+             * ⚠️ «ANTES DE LA PRIMERA JUGADA PASA CUALQUIERA» SÓLO VALE SIN TOPE.
+             *
+             * Esto era `yaEstoy || m.moves === 0 || ocupados < sillas`, y el `moves
+             * === 0` se tragaba la comprobación entera justo en el momento en que
+             * más se usa: dos betatesters sentados y todavía sin mover.
+             *
+             * Medido con tres pestañas en una mesa de entropy: el tercero pasaba el
+             * filtro, pedía silla, el árbitro le devolvía su 409 con el motivo —«la
+             * mesa está completa: Entropy es de 2 jugadores»— y la página se quedaba
+             * enseñándole la partida con «le toca a ana…». Ni jugador ni espectador:
+             * la misma pantalla que un jugador esperando su turno, esperando un
+             * turno que no iba a llegar nunca.
+             *
+             * El escape existía para cuando no se sabía cuántas sillas había. Ahora
+             * `max_seats` lo declara el juego, así que se reserva para eso: si NO
+             * hay tope declarado —worker viejo—, sigue pasando.
+             */
+            const sinTopeDeclarado = m.max_seats == null;
+            return yaEstoy || ocupados < sillas || (sinTopeDeclarado && m.moves === 0);
         },
 
         async entrar() {
@@ -171,6 +188,20 @@ export function crearSala({ sala, yo, juego, semilla, mesas = MESAS,
             // Un «no» con motivo se enseña tal cual. La mesa se toma la molestia de
             // explicar por qué en algunos juegos no cabe un segundo; tragarse esa
             // explicación y dejar la pantalla en blanco sería desperdiciarla.
+            /**
+             * ⚠️ Y SI EL «NO» ES «ESTÁ LLENA», SE MIRA. ES EL CINTURÓN DEL FILTRO.
+             *
+             * `mirarPrimero()` decide con lo que la mesa contó hace un instante, y
+             * entre esa foto y la petición cabe otra persona: dos pestañas que abren
+             * el enlace a la vez ven las dos un hueco, y una de las dos se lo
+             * encuentra ocupado al llegar. Con el filtro arreglado eso deja de pasar
+             * casi siempre, pero «casi siempre» no es una carrera ganada.
+             *
+             * Quien llega tarde a una mesa llena no ha fallado en nada: ha llegado a
+             * ver una partida. Eso es exactamente un espectador, y así el 409 se
+             * convierte en una pantalla que dice qué pasa en vez de un limbo.
+             */
+            if (r.codigo === 409) { this.ultimo = r; this.espectador = true; return true; }
             if (r.codigo !== 200) { this.ultimo = r; return false; }
             /**
              * Sólo se pisa el secreto si llega uno NUEVO. Cuando vuelves tras
