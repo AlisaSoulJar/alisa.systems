@@ -532,6 +532,7 @@ const APARTE = new Set([
     // navegador y ése es el motivo real de no estar en `npm test`.
     'prueba_figuras.mjs',          // abre mesas de cartas: `npm run figuras`
     'prueba_invitados.mjs',        // monta juegos dentro de otra escena: `npm run invitados`
+    'prueba_asimetria.mjs',        // abre los 38 y lee sus paneles: `npm run asimetria`
     // Mide, no comprueba: juega cada juego con topes crecientes para averiguar cuántas
     // decisiones necesita y lo escribe en `topes.json`. No tiene veredicto que sabotear
     // —su salida es un número—, y tarda lo que tarda jugar 480 partidas: `npm run topes`.
