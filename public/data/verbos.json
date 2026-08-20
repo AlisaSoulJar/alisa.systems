@@ -1,5 +1,5 @@
 {
- "fecha": "2026-08-16",
+ "fecha": "2026-08-20",
  "panelEsLegalMoves": true,
  "juegos": {
   "ajedrez": {
@@ -138,6 +138,10 @@
    "verbos": 2,
    "enLaBarra": true
   },
+  "chinchon": {
+   "verbos": 2,
+   "enLaBarra": true
+  },
   "parchis": {
    "verbos": 1,
    "enLaBarra": true
@@ -151,6 +155,11 @@
    "enLaBarra": true
   },
   "canadiense": {
+   "verbos": null,
+   "enLaBarra": null,
+   "nota": "sin verbos ahora"
+  },
+  "domino": {
    "verbos": null,
    "enLaBarra": null,
    "nota": "sin verbos ahora"

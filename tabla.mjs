@@ -324,7 +324,47 @@ function separaDeVerdad(fila) {
     const suelo = fila['primera (suelo)']?.serie ?? [];
     const techo = fila['casa (techo blando)']?.serie ?? [];
     const hueco = (fila['casa (techo blando)']?.puntos ?? 0) - (fila['primera (suelo)']?.puntos ?? 0);
-    const se = Math.hypot(errorTipico(suelo), errorTipico(techo));
+    /**
+     * ⚠️ LAS DOS REFERENCIAS JUEGAN LAS MISMAS SEMILLAS. NO SON MUESTRAS INDEPENDIENTES.
+     * ═══════════════════════════════════════════════════════════════════════════
+     *
+     * Esto era `Math.hypot(errorTipico(suelo), errorTipico(techo))`, que es el error de
+     * la diferencia entre dos muestras SUELTAS. Y no lo son: `serie[i]` es la partida
+     * de la semilla `i` en las dos, o sea el MISMO reparto jugado dos veces con dos
+     * políticas. En un juego de cartas el reparto es de lejos la mayor fuente de
+     * varianza —te tocan diez cartas ligadas o te tocan diez sueltas— y al parear se
+     * cancela sola. Sin parear, esa varianza se cuenta DOS veces y encima como ruido
+     * de la comparación, cuando es exactamente lo que las dos tienen en común.
+     *
+     * ⚠️ Y MEDIDO, NO CAMBIA NADA. LO DEJO PUESTO Y DIGO POR QUÉ.
+     *
+     * Vine a esto convencido de que era el culpable de que remigio, chinchón y unit
+     * salieran «no supera al ruido». No lo es: remigio pasa de ±16,6 a ±16,7 y
+     * chinchón de ±15,9 a ±16,4. O sea que las dos series están prácticamente SIN
+     * correlacionar, y parear sólo cuesta un grado de libertad.
+     *
+     * Tiene sentido visto a posteriori: la semilla fija el reparto y el orden del
+     * mazo, pero las dos políticas divergen en la PRIMERA jugada, así que a partir de
+     * ahí no comparten nada. En un juego de bazas o de tablero lo compartido pesa
+     * mucho más; aquí, casi nada.
+     *
+     * Se queda porque es el estadístico que corresponde al experimento que se hizo
+     * —las dos referencias juegan las mismas semillas y la misma silla, ver la nota de
+     * rotación en `correr`— y porque cuando SÍ haya correlación la aprovechará sin que
+     * nadie tenga que acordarse. Si algún día dejaran de compartir semillas, la
+     * comprobación de longitud lo devuelve solo a `hypot`.
+     *
+     * ⚠️ Y LO QUE DE VERDAD AHOGA A ESTOS TRES ESTÁ EN OTRO SITIO: el sesgo de silla.
+     * La nota de `correr` lo tiene medido — en remigio, con la política tonta, la
+     * silla 0 saca −54,5 y la silla 1 saca +131,8. Como se ROTA por semilla, cada
+     * partida cae en uno de dos regímenes separados por casi doscientos puntos, y esa
+     * varianza es la que se come el hueco de diez. No se arregla aquí ni de
+     * madrugada: es una decisión sobre cómo mide el banco los juegos asimétricos.
+     */
+    const pareable = suelo.length > 1 && suelo.length === techo.length;
+    const se = pareable
+        ? errorTipico(techo.map((v, i) => v - suelo[i]))
+        : Math.hypot(errorTipico(suelo), errorTipico(techo));
     // ⚠️ SIN `&& se > 0`, Y ESTA ES LA SEGUNDA VEZ QUE LO ESCRIBO MAL.
     // Puse ese guardia esta misma mañana en `calibrar.mjs`, lo quité allí porque
     // invertía el sentido, y lo volví a escribir aquí de memoria. Reversi sale de

@@ -88,6 +88,29 @@
 .hud-panel .mesa-pista { pointer-events: none; }
 
 /**
+ * ⚠️ LOS BOTONES DE ORDENAR LA MANO SÍ HACEN ALGO, ASÍ QUE RECUPERAN EL CLIC.
+ *
+ * Cumplen la regla del bloque de arriba —«sólo las cosas que hacen algo»— aunque lo
+ * que hacen NO sea una jugada: reordenan tu mano para verla. Se distinguen a la vista
+ * de los botones de jugada a propósito: son más pequeños y apagados, porque pulsarlos
+ * no gasta turno y confundirlos con una jugada sería el peor de los dos errores.
+ */
+.hud-panel .orden-mano {
+    pointer-events: auto;
+    font: inherit;
+    font-size: 11px;
+    padding: 2px 7px;
+    margin: 0 2px 2px 0;
+    border-radius: 6px;
+    border: 1px solid #2c3947;
+    background: #141b23;
+    color: #7d8fa3;
+    cursor: pointer;
+}
+.hud-panel .orden-mano:hover { border-color: #3d5165; color: #c3d2e0; }
+.hud-panel .orden-mano.puesto { border-color: #7ee787; color: #7ee787; }
+
+/**
  * ⚠️ EL BOTÓN DE VOLCAR LA MESA NO SE PARECE A UNA JUGADA, Y ES A PROPÓSITO.
  *
  *     (╯°□°)╯︵ ┻━┻

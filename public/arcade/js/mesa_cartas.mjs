@@ -36,6 +36,79 @@
  * contrario iba con las manos vacías.
  */
 import { sustratoDe } from './protohub/sustrato.js';
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ AGRUPAR LA MANO A MANO — Y POR QUÉ NO ES UNA JUGADA
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Lo pidió Oscar: «deberías poder modificar cómo agrupas las cartas». El motor elige
+ * la partición ÓPTIMA de tu mano y ésa no siempre es la que dirías tú — con diez
+ * seguidas te las cuenta como 3+3+4 y no como una escalera de diez. Eso no cambia el
+ * resultado, pero sí lo que entiendes al mirar la mesa.
+ *
+ * ⚠️ Y SE HACE COMO VISTA, NO COMO JUGADA. Es la decisión importante de aquí.
+ *
+ * Lo natural sería `agrupar:S_A:2` en `legal_moves`. Sería un error: son jugadas que
+ * NO cambian el estado, y este banco compara personas con agentes por el tamaño y la
+ * forma de esa lista. Meter movimientos decorativos multiplicaría el espacio de
+ * acciones de un agente para darle comodidad a una persona — y encima ensuciaría los
+ * recibos con jugadas que no hacen nada. Ordenar tu mano es como mover la cámara.
+ *
+ * Por eso vive aquí, en la mesa, y no en las reglas. El sustrato sigue diciendo lo
+ * mismo, el recibo también, y la partida se re-simula igual.
+ */
+const ORDENES = ['ligadas', 'palo', 'numero', 'reparto'];
+let ordenMano = 'ligadas';
+
+/**
+ * Lo que vale cada rango para ORDENAR (no para puntuar). Las dos familias caben en
+ * la misma tabla porque sus rangos no se pisan — la francesa usa `J Q K A` y la
+ * española `S C R`— que es el mismo truco que ya usa `valorDe` en `remigio.js`.
+ * Si un día llega una baraja con otros nombres, la carta cae al final y se ve: no
+ * se rompe nada, sólo se ordena mal, que es lo que puede permitirse una vista.
+ */
+const RANGO_ORDEN = { A: 14, K: 13, Q: 12, J: 11, R: 12, C: 11, S: 10 };
+const pesoDe = (c) => {
+    const r = String(c).split('#')[0].split('_').slice(1).join('_');
+    return RANGO_ORDEN[r] ?? Number(r) ?? 99;
+};
+const paloDe = (c) => String(c).split('#')[0].split('_')[0];
+
+/**
+ * Reordena TU mano —sólo la tuya, y sólo para verla—. Devuelve el mismo sustrato
+ * con los items de esa zona permutados; ninguna otra cosa se toca.
+ */
+function ordenarMano(sus, data) {
+    if (ordenMano === 'reparto' || !sus?.zonas) return sus;
+    const mio = data?.asiento ?? 0;
+    return {
+        ...sus,
+        zonas: sus.zonas.map((z) => {
+            if (z.id !== 'mano' || z.de !== mio || !Array.isArray(z.items) || z.items.length < 2) return z;
+            let items;
+            if (ordenMano === 'ligadas' && Array.isArray(data?.grupos) && data.grupos.length) {
+                // Las ligadas primero y juntas, y lo suelto detrás de mayor a menor:
+                // es el orden en el que se mira una mano de rummy en una mesa.
+                const enGrupo = new Set(data.grupos.flat());
+                const sueltas = z.items.filter(c => !enGrupo.has(c)).sort((a, b) => pesoDe(b) - pesoDe(a));
+                // Sólo las que de verdad están en la mano: `grupos` puede traer la
+                // carta que acabas de robar y todavía no está en esta zona.
+                const ligadas = data.grupos.flat().filter(c => z.items.includes(c));
+                items = [...ligadas, ...sueltas];
+                // Si algo no encajó, se cae del lado seguro: se pinta la mano entera.
+                if (items.length !== z.items.length) items = z.items;
+            } else if (ordenMano === 'numero') {
+                items = [...z.items].sort((a, b) => pesoDe(a) - pesoDe(b)
+                                                 || paloDe(a).localeCompare(paloDe(b)));
+            } else {
+                items = [...z.items].sort((a, b) => paloDe(a).localeCompare(paloDe(b))
+                                                 || pesoDe(a) - pesoDe(b));
+            }
+            return { ...z, items };
+        }),
+    };
+}
 import { crearMarcas, VERDE, MORADO, ACIERTO } from './protohub/marcas.js';
 import { amueblar, ponerMesaDeVerdad } from './protohub/habitacion.js';
 import { pintarJugadas as pintarBotones } from './protohub/jugadas.js';
@@ -1416,9 +1489,11 @@ const engine = new SovereignCardEngine({
         // porque la escena anterior se queda en pantalla y parece que todo va bien.
         const enPartidaCompartida = this.backend?.tipo === 'sala';
         const hub = window.ALISA_PROTOHUB;
-        const sus = (!enPartidaCompartida && hub?.soporta?.(juego))
-            ? hub.sustrato(juego, 0)
-            : sustratoDe(juego, data);
+        const sus = ordenarMano(
+            (!enPartidaCompartida && hub?.soporta?.(juego))
+                ? hub.sustrato(juego, 0)
+                : sustratoDe(juego, data),
+            data);
 
         /**
          * ⚠️ LA CARA DE LA CARTA LA ELIGE EL JUEGO, NO LA MESA.
@@ -1687,11 +1762,49 @@ const engine = new SovereignCardEngine({
                     ? '¡nada! puedes cerrar'
                     : `${data.muerto} pts en ${(data.sueltas ?? []).length} carta(s)`,
                     data.muerto === 0 ? '#7ee787' : '#ffa657') : '')
+          /**
+           * El mando para reordenar tu mano. Sólo sale donde hay algo que agrupar —los
+           * juegos que publican `grupos`, o sea el remigio y el chinchón—: en una
+           * brisca de tres cartas sería un botón que no sirve para nada, y esta mesa
+           * ya tiene bastantes cosas en pantalla.
+           *
+           * Los botones NO pasan por `enviarSiEsLegal`: no son jugadas. Ver la nota
+           * larga arriba, en `ordenarMano`.
+           */
+          + (Array.isArray(data.grupos)
+                ? fila('Ordenar', ORDENES.map(o =>
+                    `<button class="orden-mano${o === ordenMano ? ' puesto' : ''}" data-orden="${o}">${o}</button>`
+                  ).join(' '), '#9fb3c8') : '')
           + zonas.map(z => fila(
                 `${z.id}${z.de === null || z.de === undefined ? '' : ' · ' + z.de}`,
                 `${z.items.length} vistas${z.ocultas ? ` + ${z.ocultas} tapadas` : ''}`)).join('')
           + (data.is_game_over ? fila('Estado', data.desenlace ?? 'Terminada', '#ff8080') : '')
           ;
+
+        /**
+         * El mando de ordenar, enganchado por DELEGACIÓN sobre el panel: el HUD se
+         * reescribe entero en cada refresco, así que un escuchador puesto en cada
+         * botón moriría con él. Es el mismo motivo por el que los botones de jugada
+         * no se enganchan uno a uno.
+         *
+         * `_ordenEnganchado` para no apilar un escuchador por refresco — eso ya nos
+         * costó una vez, con el panel disparando la misma jugada cuatro veces.
+         */
+        if (!this._ordenEnganchado) {
+            this._ordenEnganchado = true;
+            hud.addEventListener('click', (ev) => {
+                const b = ev.target.closest?.('.orden-mano');
+                if (!b) return;
+                const o = b.dataset.orden;
+                if (!ORDENES.includes(o)) return;
+                ordenMano = o;
+                // Repintar sin pasar por el hub: no ha cambiado el estado, sólo cómo
+                // se mira. Si esto mandara algo al hub sería una jugada, y no lo es.
+                this.onStateSync?.(this._ultimoEstado ?? data);
+            });
+        }
+        // Se guarda el último estado para poder repintar al reordenar.
+        this._ultimoEstado = data;
 
         /**
          * ⚠️ PLEGAR EL PANEL NO PUEDE ESCONDER LA FORMA DE JUGAR.
