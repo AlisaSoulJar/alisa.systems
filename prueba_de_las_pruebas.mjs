@@ -63,6 +63,19 @@ const gris  = (s) => `\x1b[90m${s}\x1b[0m`;
  */
 const SABOTAJES = [
     {
+        nombre: 'recibos',
+        corre: 'node prueba_recibos.mjs',
+        fichero: 'public/arcade/js/protohub/Verificador.js',
+        // El fallo REAL, tal cual estaba escrito hasta el 20-08-2026: leer la
+        // puntuación final desde la silla 0 pasara lo que pasara. Con eso, toda
+        // partida jugada fuera de esa silla se rechazaba por «la puntuación no
+        // cuadra» — brisca daba 12/12, 1/12, 0/12, 0/12— y el contador de la
+        // clasificación lo enseñaba como un `100/200` que nadie leyó como un fallo.
+        de: 'reglas.estado(p, Number(partida.asiento) || 0)',
+        a: 'reglas.estado(p)',
+        vigila: 'que el recibo se verifique desde la silla que jugó, y no desde la 0',
+    },
+    {
         nombre: 'repetidor',
         corre: 'node prueba_repetidor.mjs',
         fichero: 'public/arcade/js/protohub/enlace_repetidor.js',
@@ -512,6 +525,13 @@ const APARTE = new Set([
     'prueba_vistas.mjs',           // abre los 35 en un navegador: `npm run vistas`
     'prueba_verbos.mjs',           // abre los 35 en un navegador: `npm run verbos`
     'prueba_portal.mjs',           // abre las 35 fichas en un navegador: `npm run portal`
+    // ⚠️ 20-08: estas dos salían denunciadas como «no las corre nadie» y era FALSO —
+    // tienen su propio mando desde el día que se escribieron. El aviso miraba sólo
+    // `scripts.test` y llamaba huérfana a cualquiera que viviera en otro guion. Se
+    // arregla abajo mirando TODOS los guiones, y éstas se quedan aquí porque abren
+    // navegador y ése es el motivo real de no estar en `npm test`.
+    'prueba_figuras.mjs',          // abre mesas de cartas: `npm run figuras`
+    'prueba_invitados.mjs',        // monta juegos dentro de otra escena: `npm run invitados`
     // Mide, no comprueba: juega cada juego con topes crecientes para averiguar cuántas
     // decisiones necesita y lo escribe en `topes.json`. No tiene veredicto que sabotear
     // —su salida es un número—, y tarda lo que tarda jugar 480 partidas: `npm run topes`.
@@ -530,11 +550,34 @@ const APARTE = new Set([
     'prueba_pantallas.mjs',
 ]);
 
-const enDisco = (await readdir(new URL('.', import.meta.url)))
-    .filter(f => /^(prueba_|check_).*\.mjs$/.test(f) && !APARTE.has(f));
-const guion = JSON.parse(
-    await readFile(new URL('./package.json', import.meta.url), 'utf-8')).scripts.test ?? '';
-const corridas = new Set(enDisco.filter(f => guion.includes(f)));
+/**
+ * ⚠️ DOS LISTAS Y NO UNA, PORQUE SE PREGUNTAN DOS COSAS DISTINTAS.
+ *
+ * `todasEnDisco` es lo que HAY. `enDisco` es lo que se vigila por huérfano, que
+ * excluye a las de `APARTE` porque de ésas ya se sabe por qué no van en `npm test`.
+ *
+ * Mezclarlas dio un falso al minuto de tocar `APARTE`: la comprobación de «sabotaje
+ * que apunta a una prueba que ya no existe» miraba la lista recortada y denunció a
+ * `prueba_figuras` y `prueba_invitados`, que estaban ahí mismo. Un fichero existe o
+ * no existe; eso no puede depender de si además lo vigilamos.
+ */
+const todasEnDisco = (await readdir(new URL('.', import.meta.url)))
+    .filter(f => /^(prueba_|check_).*\.mjs$/.test(f));
+const enDisco = todasEnDisco.filter(f => !APARTE.has(f));
+/**
+ * ⚠️ SE MIRAN TODOS LOS GUIONES, NO SÓLO `test`.
+ *
+ * Esto leía `scripts.test` y punto, así que denunciaba como huérfana a cualquier
+ * comprobación que viviera en otro mando —`npm run figuras`, `npm run invitados`—
+ * aunque se corriera a diario. Una acusación falsa dentro del instrumento que existe
+ * para detectar acusaciones falsas se lee mal, y a la tercera se ignora entera.
+ *
+ * Ahora huérfana significa lo que dice: que no la llama NINGÚN guion.
+ */
+const guiones = JSON.parse(
+    await readFile(new URL('./package.json', import.meta.url), 'utf-8')).scripts ?? {};
+const todosLosGuiones = Object.values(guiones).join(' \n ');
+const corridas = new Set(enDisco.filter(f => todosLosGuiones.includes(f)));
 /**
  * Del comando se saca el fichero de la PRUEBA, no el primer `.mjs` que aparezca:
  * varias se lanzan con `node --import ./resolver_three.mjs prueba_x.mjs`, y quedarse
@@ -547,7 +590,7 @@ const conSabotaje = new Set(SABOTAJES.map(s => ficheroDe(s.corre)).filter(Boolea
 
 const huerfanas = enDisco.filter(f => !corridas.has(f));
 const sinSabotaje = [...corridas].filter(f => !conSabotaje.has(f));
-const sabotajeMuerto = [...conSabotaje].filter(f => f && !enDisco.includes(f));
+const sabotajeMuerto = [...conSabotaje].filter(f => f && !todasEnDisco.includes(f));
 
 console.log(`\n  ${lista.length} comprobaciones puestas a prueba`
     + (malas ? rojo(` · ${malas} no saben fallar`) : verde(' · todas suspenden cuando deben')));

@@ -453,6 +453,26 @@ export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
          * semilla. En blackjack y póker sí, porque la semilla ES el mazo: con
          * otra, la décima jugada se vuelve ilegal y salta.
          */
+        /**
+         * ⚠️ Y DESDE QUÉ SILLA SE PUNTUÓ, QUE FALTABA Y COSTABA LA MITAD DE LOS RECIBOS.
+         * ═══════════════════════════════════════════════════════════════════════
+         *
+         * `puntos` sale de `_estado()`, que mira desde TU silla. El verificador
+         * re-simulaba y leía la puntuación desde la silla 0 — porque no sabía que
+         * había otra—, así que toda partida jugada fuera de la 0 salía «la puntuación
+         * no cuadra». Medido: remigio 12/12 en la silla 0 y 0/12 en la 1; brisca
+         * 12/12, 1/12, 0/12, 0/12. Y los números que no cuadraban eran literalmente
+         * los de las dos sillas: «dice −3, sale 103».
+         *
+         * ⚠️ Lo peor no es el fallo, es cómo se veía: con la silla rotando por semilla,
+         * el contador de la tabla ponía `100/200` — exactamente la mitad— y eso se lee
+         * como un número normal, no como «la mitad de mis filas no verifican». En un
+         * banco cuya frase es «lo que no verifica, no puntúa», media tabla estaba
+         * apoyada en nada. Salió al hacer que cada semilla se jugara en TODAS las
+         * sillas: el contador se desplomó a `1/500` y ahí ya no se podía leer bien.
+         *
+         * Va en el recibo y no se deduce: quien verifica sólo tiene el recibo delante.
+         */
         partida() {
             const e = this._estado();
             return {
@@ -460,6 +480,13 @@ export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
                 semilla: this.seed,
                 jugadas: [...this.jugadas],
                 puntos: this._puntosDe(e),
+                // ⚠️ `asientoReal` y no `asiento`. Son dos cosas distintas y me costó
+                // una pasada: `asiento` es lo que pide quien llama —«que la casa juegue
+                // n turnos antes de que me siente»— y `asientoReal` es la silla que
+                // resulta, envuelta sobre las que el juego tiene de verdad. `_estado()`
+                // mira desde `asientoReal`, así que es ésa la que hay que guardar.
+                // Guardando la otra, siete juegos seguían sin verificar fuera de la 0.
+                asiento: this.asientoReal ?? 0,
                 terminada: !!e.is_game_over,
                 reproducible: true,
             };

@@ -42,7 +42,25 @@ const { JUEGOS, cargarReglas } = await impo('public/arcade/js/protohub/rules/ind
  * pueda nacer mudo. El primero que se añada sin objetivo baja el número y esto
  * se pone rojo, que es exactamente para lo que se escribió.
  */
-const SUELO = 35;
+/**
+ * ⚠️ 20-08-2026: EL SUELO SE HABÍA QUEDADO EN 35 CON 37 JUEGOS, Y ESO ES HOLGURA.
+ *
+ * `npm run pruebas` lo cazó: con el sabotaje puesto —quitarle el objetivo a las
+ * damas— esta prueba APROBABA. Claro: bajaba de 37 a 36 y el suelo estaba en 35.
+ * Dos juegos de margen es exactamente lo que la nota de arriba dice que no puede
+ * pasar, «el primero que se añada sin objetivo lo pone rojo».
+ *
+ * Es el mismo defecto que ya está anotado para `prueba_sustrato`: un trinquete se
+ * afloja solo si nadie aprieta el techo cuando el número sube. Un número escrito a
+ * mano que hay que acordarse de subir acaba sin subirse — y con un juego nuevo cada
+ * pocos días, la holgura crece sola.
+ *
+ * Así que ya no se escribe: son TODOS. La nota de arriba dice que esto dejó de medir
+ * progreso el día que llegaron todos, y desde entonces mide «que un juego nuevo no
+ * pueda nacer mudo». Si eso es lo que mide, el suelo es el catálogo entero y no un
+ * número que se queda viejo.
+ */
+const SUELO = JUEGOS.length;
 
 const con = [], sin = [];
 for (const juego of JUEGOS) {

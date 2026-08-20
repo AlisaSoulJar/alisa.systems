@@ -146,7 +146,19 @@ export function verificar(reglas, partida, opts = {}) {
         }
     }
 
-    const fin = reglas.estado(p);
+    /**
+     * ⚠️ LA PUNTUACIÓN SE LEE DESDE LA SILLA QUE JUGÓ, NO DESDE LA 0.
+     *
+     * Esto era `reglas.estado(p)` a secas, y el segundo argumento por defecto es la
+     * silla 0. Así que una partida jugada desde cualquier otra silla se re-simulaba
+     * perfectamente —todas sus jugadas legales, el estado final idéntico— y se
+     * rechazaba en la última línea por «la puntuación no cuadra», comparando el
+     * marcador de una silla con el de otra. Medido: brisca 12/12 · 1/12 · 0/12 · 0/12.
+     *
+     * Los recibos viejos no llevan `asiento` y caen al 0, que es exactamente lo que
+     * hacían antes: nada de lo que ya verificaba deja de verificar.
+     */
+    const fin = reglas.estado(p, Number(partida.asiento) || 0);
     const puntos = puntuacionDe(fin);
 
     if (partida.puntos !== undefined && Number(partida.puntos) !== puntos) {

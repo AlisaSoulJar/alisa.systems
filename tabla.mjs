@@ -54,7 +54,7 @@ const { CATALOGO } = await impo('public/js/alisa-engine/src/gym/registro.js');
  */
 const { JUEGOS } = await impo('public/arcade/js/protohub/rules/index.js');
 const { verificar } = await impo('public/arcade/js/protohub/Verificador.js');
-const { cargarReglas, TITULOS } = await impo('public/arcade/js/protohub/rules/index.js');
+const { cargarReglas, TITULOS, SILLAS } = await impo('public/arcade/js/protohub/rules/index.js');
 const { jugarEpisodio } = await impo('public/arcade/js/agentes/llm.js');
 const { proveedorDesde } = await impo('public/arcade/js/agentes/proveedores.js');
 const { POLITICAS, semillaDe } = await impo('public/arcade/js/agentes/politicas.js');
@@ -269,21 +269,80 @@ async function correr(part, e, Clase, reglas) {
          * Ya no hace falta el `% 4` de antes: el entorno envuelve la silla sobre las
          * que el juego tiene de verdad, que era justamente lo que no sabía hacer.
          */
-        const asiento = args['sin-rotar'] ? 0 : (s - 1);
+        /**
+         * ═══════════════════════════════════════════════════════════════════════
+         *  ⚠️ CADA SEMILLA SE JUEGA EN TODAS LAS SILLAS, NO EN UNA
+         * ═══════════════════════════════════════════════════════════════════════
+         *
+         * Rotar la silla por semilla —lo de antes— reparte el sesgo pero NO lo quita
+         * de la medida: cada partida sigue cayendo entera en una silla u otra, así que
+         * la diferencia entre sillas se cuela como varianza de la muestra. Y en algunos
+         * juegos esa varianza se lo come todo.
+         *
+         * Medido en remigio, 120 semillas × 2 sillas, con `jugarEpisodio` (el mismo
+         * arnés de esta tabla, que medirlo con uno propio ya me dio un hueco cuatro
+         * veces mayor que el real):
+         *
+         *                 silla 0   silla 1   varianza dentro   entre sillas
+         *     primera       −55,4    +135,1              1471           9069
+         *     casa          +43,4     +54,7              3207             31
+         *
+         * ⚠️ Y AHÍ ESTÁ LO QUE NO ESPERABA: el sesgo de silla NO es del juego, es de
+         * QUIEN JUEGA MAL. La casa sale casi indiferente a la silla (31); la política
+         * tonta está a su merced (9069, seis veces su propia varianza interna). O sea
+         * que la silla no era una constante del entorno que se pudiera restar: es una
+         * interacción entre el entorno y la política, y por eso parear las dos series
+         * no la cancelaba —correlación medida 0,089 y −0,148, o sea nada—.
+         *
+         * Jugando cada semilla en las dos sillas y promediando:
+         *
+         *     remigio    como hoy  10,4 ± 20,4  ✗      las dos  9,2 ± 4,9  ✓
+         *     chinchón   como hoy  12,2 ± 20,6  ✗      las dos  1,2 ± 1,8  ✗
+         *
+         * El ruido cae cuatro veces. Y el chinchón sigue sin separar CON el ruido
+         * quitado, que es una respuesta distinta y mejor: ya no es «no se puede medir»
+         * sino «su rival de casa juega poco mejor que el tonto». Eso se arregla en el
+         * juego, no en la tabla.
+         *
+         * Sólo para las líneas base: no cuestan nada y son el metro. Un modelo paga
+         * tokens por partida, así que sigue con una silla por semilla, rotando — sobre
+         * muchas semillas pasa por todas igual, sólo que con más ruido.
+         */
+        const sillasDe = (part.tipo === 'base' && !args['sin-rotar'])
+            ? (SILLAS[e.juego] ?? 1) : 1;
+        const asientos = sillasDe > 1
+            ? Array.from({ length: sillasDe }, (_, k) => k)
+            : [args['sin-rotar'] ? 0 : (s - 1)];
 
-        const r = await jugarEpisodio(Clase, part.proveedor ?? (async () => ({ texto: '1' })), {
-            semilla: s, tope: topeDe(e.juego), politica: part.politica, asiento,
-        });
-        if (r.error) throw new Error(r.error);
-        serie.push(r.puntos);
-        puntos += r.puntos; forzadas += r.forzadas; llamadas += r.llamadas;
-        tokens += r.tokens.entrada + r.tokens.salida; ms += r.ms;
+        let suma = 0;
+        // ⚠️ Terminar y verificar se cuentan por SEMILLA y a la baja: la semilla
+        // cuenta como terminada sólo si terminaron TODAS sus sillas. Contar por
+        // silla cambiaría el denominador —`terminadas` se compara contra el número
+        // de semillas— y «termina el 94 %» pasaría a significar otra cosa sin que
+        // nadie lo notara. A la baja porque media partida no es una partida.
+        let todasFin = true, todasOk = true;
+        for (const asiento of asientos) {
+            const r = await jugarEpisodio(Clase, part.proveedor ?? (async () => ({ texto: '1' })), {
+                semilla: s, tope: topeDe(e.juego), politica: part.politica, asiento,
+            });
+            if (r.error) throw new Error(r.error);
+            suma += r.puntos;
+            forzadas += r.forzadas; llamadas += r.llamadas;
+            tokens += r.tokens.entrada + r.tokens.salida; ms += r.ms;
+            if (!r.metricas?.terminada) todasFin = false;
+            if (!(r.recibo && reglas && verificar(reglas, r.recibo).valida)) todasOk = false;
+        }
+        // La puntuación de la SEMILLA es la media de sus sillas. Es el número que
+        // deja de depender de dónde te tocó sentarte.
+        const puntosSemilla = suma / asientos.length;
+        serie.push(puntosSemilla);
+        puntos += puntosSemilla;
         // ⚠️ Que el episodio TERMINE importa tanto como la puntuación. Con un
         // tope corto, una brisca de 40 jugadas se corta a la mitad y el número
         // que sale es el de media partida — comparable entre participantes, sí,
         // pero no es «lo que saca en la brisca». Se cuenta y se avisa.
-        if (r.metricas?.terminada) fin++;
-        if (r.recibo && reglas && verificar(reglas, r.recibo).valida) ok++;
+        if (todasFin) fin++;
+        if (todasOk) ok++;
     }
     return {
         puntos: puntos / N, serie, forzadas, llamadas, tokens, ms,
