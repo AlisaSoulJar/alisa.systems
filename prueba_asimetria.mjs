@@ -106,6 +106,18 @@ const EN_LA_MESA = {
     manos_rivales: 'se ven las cartas tapadas de cada rival, y cuántas son',
     guardados: 'los dados guardados están apartados en la mesa',
     caja:      'la caja propia sale en la fila de puntos',
+
+    // ── Los visualizadores propios (blackjack, póker, entropy…) usan nombres en
+    //    inglés para las mismas cosas. Las cartas están repartidas en la mesa.
+    player_hand:     'tus cartas están sobre el tapete, boca arriba',
+    dealer_hand:     'las del crupier también, con la tapada tapada',
+    opponent_hand:   'las del rival, tapadas mientras lo estén',
+    community_cards: 'las comunes están en el centro de la mesa',
+
+    // ── Medidas del tablero, no del juego: la persona ve el tablero entero.
+    width:     'el ancho del tablero; se ve',
+    height:    'el alto; ídem',
+    board:     'el tablero ES el dibujo',
 };
 
 const paginas = JSON.parse(await readFile(new URL('./public/data/paginas.json', import.meta.url), 'utf-8'));
@@ -145,7 +157,11 @@ for (const juego of juegos) {
             await b.click().catch(() => {});
             await p.waitForTimeout(420);
         }
-        await p.waitForTimeout(700);
+        // ⚠️ Se espera a que el panel se ponga al día: el vigía de los visualizadores
+        // propios refresca cada 400 ms, y leer antes denunciaba al póker por esconder
+        // algo que ya estaba escrito. Una prueba que corre más que la pantalla mide
+        // la carrera, no el juego.
+        await p.waitForTimeout(1400);
 
         r = await p.evaluate(() => {
             const hub = window.ALISA_PROTOHUB;

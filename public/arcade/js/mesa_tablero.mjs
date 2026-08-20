@@ -40,6 +40,7 @@ import { pintarHistorial } from './protohub/historial.js';
 import { celdasDeJugada } from './protohub/sustrato.js';
 import { volcarMesa, volcando, ponerBoton } from './protohub/render/volcar.js';
 import { crearTapete } from './protohub/tapete.js';
+import { filasDeEstado } from './protohub/panel.js';
 
 const hub = window.ALISA_PROTOHUB;
 const juego = window.ALISA_JUEGO;
@@ -1006,9 +1007,25 @@ async function refrescar() {
     const marcador = st.puntos ?? st.score ?? st.marcador;
     const txt = document.getElementById('estado-txt');
     if (txt) {
+        /**
+         * ⚠️ Y DEBAJO, LO QUE EL JUEGO PUBLICA Y ANTES SÓLO LEÍA EL AGENTE.
+         *
+         * Esto era «Turno» y el marcador, y ya. Un agente de defensa leía `oro: 3.
+         * vida: 10. vida_rival: 10. bichos_en_camino: 2` porque el describidor vuelca
+         * el estado entero; la persona veía dos números. Medido en los 38 con
+         * `npm run asimetria`: pasaba en veintiocho.
+         *
+         * Se resuelve con `filasDeEstado`, que aplica la misma regla que el
+         * describidor, y así el juego 39 nace viéndose. Ver la nota de `protohub/panel.js`
+         * sobre por qué no son veintiocho parches.
+         */
+        const filas = filasDeEstado(st);
         txt.innerHTML =
             `<span>Turno</span><span class="val">${st.turn ?? '—'}</span>`
-          + (marcador !== undefined ? ` <span>·</span><span class="val">${marcador}</span>` : '');
+          + (marcador !== undefined ? ` <span>·</span><span class="val">${marcador}</span>` : '')
+          + filas.map(f =>
+                `<div class="status-row"><span>${f.nombre}</span>`
+              + `<span class="val">${f.valor}</span></div>`).join('');
     }
     legalesAhora = st.legal_moves ?? st.legal_actions ?? [];
     pintarJugadas(document.getElementById('mesa-jugadas'), {

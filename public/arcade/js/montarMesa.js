@@ -51,7 +51,7 @@ import { JUEGOS, TITULOS, cargarReglas } from './protohub/rules/index.js';
  * `prueba_version.mjs` comprueba que corresponde a lo que hay en disco y, si no,
  * dice el valor que toca. No hay que acordarse: hay que hacer caso a la prueba.
  */
-const VERSION = 'b383b8fd';
+const VERSION = '743ccced';
 
 /**
  * Lo que toda página de tablero necesitaba y repetía. En orden.
@@ -349,8 +349,26 @@ export async function montarMesa(cfg) {
      * mesa y abrir la página del juego dibujan lo mismo, que es lo que no pasaba.
      */
     const { VISUALIZADOR } = await import('./visualizadores.js');
-    await cargar(`js/${visualizador ?? VISUALIZADOR[juego]
-        ?? (deCartas ? 'mesa_cartas.mjs' : 'mesa_tablero.mjs')}`);
+    const cual = visualizador ?? VISUALIZADOR[juego]
+        ?? (deCartas ? 'mesa_cartas.mjs' : 'mesa_tablero.mjs');
+    await cargar(`js/${cual}`);
+
+    /**
+     * ⚠️ LOS DE VISUALIZADOR PROPIO NO PUEDEN ENSEÑAR EL ESTADO POR SÍ SOLOS.
+     *
+     * Las dos mesas genéricas ya pintan las filas del estado con `filasDeEstado`, así
+     * que veintiuno de los veintiocho juegos donde el agente sabía más que la persona
+     * quedaron arreglados solos. Los siete con visualizador propio no: son scripts
+     * clásicos y no pueden importar un módulo.
+     *
+     * Se les vigila el panel desde aquí. Ver la nota larga de `protohub/panel.js`
+     * sobre por qué no son siete parches — el juego 39 con visualizador propio
+     * nacería otra vez mudo.
+     */
+    if (!/^mesa_(cartas|tablero)\.mjs$/.test(cual)) {
+        const { vigilarPanel } = await import('./protohub/panel.js');
+        vigilarPanel(window.ALISA_PROTOHUB, idJuego);
+    }
 
     // Pantalla completa y esconder el panel, en las treinta y cinco. Va DESPUÉS del
     // visualizador porque uno de los botones necesita el panel, y espera a que

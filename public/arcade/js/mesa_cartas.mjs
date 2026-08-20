@@ -36,6 +36,7 @@
  * contrario iba con las manos vacías.
  */
 import { sustratoDe } from './protohub/sustrato.js';
+import { filasDeEstado } from './protohub/panel.js';
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -1778,6 +1779,19 @@ const engine = new SovereignCardEngine({
           + zonas.map(z => fila(
                 `${z.id}${z.de === null || z.de === undefined ? '' : ' · ' + z.de}`,
                 `${z.items.length} vistas${z.ocultas ? ` + ${z.ocultas} tapadas` : ''}`)).join('')
+          /**
+           * ⚠️ Y LO QUE EL JUEGO PUBLICA Y SÓLO LEÍA EL AGENTE.
+           *
+           * Misma regla que la mesa de tablero y que el describidor: ver la nota de
+           * `protohub/panel.js` sobre por qué esto se arregla una vez y no veintiocho.
+           * Se le dicen los campos que ESTA mesa ya pinta aparte —las zonas, la mano,
+           * el triunfo, las ligadas— para no decir dos veces lo mismo.
+           */
+          + filasDeEstado(data, {
+                fuera: [...zonas.map(z => z.id), 'mano', 'mi_mano', 'descarte', 'descartes',
+                        'mazo', 'baza', 'cartas', 'comunes', 'jugador', 'crupier',
+                        'manos_rivales', 'mazo_restante', 'descarte_restante'],
+            }).map(f => fila(f.nombre, f.valor)).join('')
           + (data.is_game_over ? fila('Estado', data.desenlace ?? 'Terminada', '#ff8080') : '')
           ;
 
