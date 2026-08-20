@@ -1,0 +1,50 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA Arcade — Alisápolis</title>
+<!--
+  Los diez distritos de la casa —Data, World, Soma, Psyche, Genesis, Scripts, Docs,
+  Laboratory, IrealWorld y Heritage— repartidos en un anillo de treinta y dos
+  casillas. Tiras dos dados, avanzas, y lo que cae libre SALE A SUBASTA.
+
+  ⚠️ EL PRIMERO QUE USA LOS CUATRO MATERIALES A LA VEZ.
+
+  Tablero (el anillo, como parchís y oca), dados (los mismos objetos de la generala y
+  el dominó), cartas (el mazo de decretos, boca abajo sobre el tablero) y fichas (los
+  peones). Sin motor nuevo: el contrato de siempre —rejilla, piezas y zonas— ya lo
+  expresaba todo. Era el punto de Oscar y resultó ser cierto.
+
+  ⚠️ Y EL PRIMERO QUE MIDE VALORAR BAJO COMPETENCIA.
+
+  La matriz de géneros tiene ocho columnas y ninguna cubre la pregunta de una subasta:
+  cuánto vale esto para mí sabiendo lo que vale para el otro. No es información oculta
+  —aquí está todo a la vista—, ni comunicación, ni simultaneidad. El póker se acerca y
+  no es lo mismo: allí apuestas sobre una mano que no ves; aquí el valor DEPENDE de
+  quién más lo quiere, y cambia cada vez que alguien compra algo.
+
+  ⚠️ NO SE COMPRA AL PRECIO DE LISTA, Y ESO NO ES UN DESCUIDO.
+
+  Lo escribí primero como en la mesa —compras, y sólo hay subasta si renuncias— y
+  midiéndolo resultó que mataba el juego: el patrimonio cuenta las fincas por su
+  precio, así que comprar al precio de lista es neutro y encima renta. O sea que
+  comprar es siempre correcto, nadie renuncia nunca, y la subasta no se dispara jamás.
+  Se vio aislando las partes de la heurística de la casa: quitarle la disciplina de
+  puja no cambiaba el resultado NI UN DECIMAL, que es la firma de un mecanismo que no
+  llega a ejecutarse.
+
+  ⚠️ LO QUE HACE QUE ESTE JUEGO ESTÉ EN EL BANCO Y NO SEA UN ADORNO.
+
+  Antes de escribir una línea del tablero se midió la subasta SOLA —cuarenta líneas,
+  sin dados ni cartas— para saber si separaba a un jugador bueno de uno malo. Separaba
+  con señal/ruido 30, y de paso destapó que a igualdad de valoración ganaba quien puja
+  antes, cosa que se arregla rotando quién abre. Encontrarlo con el juego construido
+  habría costado diez veces más.
+
+  Ya montado, la casa le gana a la política tonta por 941 ± 90 y al azar por 1.447 ± 62.
+
+      ?semilla=7   fija los dados y el mazo
+-->
+<script type="module">
+  import { montarMesa } from './js/montarMesa.js';
+  montarMesa({ juego: 'alisapolis', visualizador: 'mesa_tablero.mjs' });
+</script>

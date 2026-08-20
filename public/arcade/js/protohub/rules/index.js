@@ -134,6 +134,11 @@ export const REGLAS = {
     // española, siete cartas, cierre a cinco y su jugada con premio. Ver la nota
     // larga en `remigio.js` sobre qué salió gratis y qué no.
     chinchon: (o) => import('./remigio.js').then(m => m.crearChinchon(o)),
+    // ⚠️ EL PRIMERO QUE USA LOS CUATRO MATERIALES A LA VEZ —tablero, dados, cartas y
+    // fichas— y el primero que mide VALORAR BAJO COMPETENCIA: cuanto vale esto para mi
+    // sabiendo lo que vale para el otro. Ninguna de las ocho columnas de la matriz de
+    // generos cubria eso. Su subasta se midio SOLA antes de escribir el juego.
+    alisapolis: (o) => import('./alisapolis.js').then(m => m.crearAlisapolis(o)),
     // ⚠️ EL PRIMERO CON DADO, y el que vino a contestar una pregunta de
     // arquitectura: ¿hace falta un motor de dados como el de cartas y el de
     // tableros? No. Un dado no es una cuarta estructura — la tirada RESTRINGE
@@ -185,7 +190,7 @@ const TITULOS_PROPIOS = {
     // tiene por qué pagar eso. Estos tres llevaban meses saliendo pelados en la
     // ficha y en la portada, y no lo vio nadie porque «Domino» también es una
     // palabra: el defecto no da error, sólo escribe mal el nombre del juego.
-    domino: 'Dominó', parchis: 'Parchís', rebano: 'Rebaño', chinchon: 'Chinchón',
+    domino: 'Dominó', parchis: 'Parchís', rebano: 'Rebaño', chinchon: 'Chinchón', alisapolis: 'Alisápolis',
 };
 export const TITULOS = Object.fromEntries(JUEGOS.map(
     j => [j, TITULOS_PROPIOS[j] ?? j.charAt(0).toUpperCase() + j.slice(1)]));
@@ -229,6 +234,7 @@ export const SILLAS = {
     // justo lo que el juego mide.
     remigio: 2,
     chinchon: 2,
+    alisapolis: 2,
     // Cuatro colores, como el de verdad.
     parchis: 4,
     generala: 2, oca: 2,

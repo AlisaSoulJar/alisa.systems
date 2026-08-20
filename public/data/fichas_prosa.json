@@ -556,5 +556,24 @@
       "Con la baraja de 48. En muchas mesas se juega con la de 40, sin ochos ni nueves; es un parámetro, y con 10 rangos en vez de 12 el chinchón es todavía más raro."
     ],
     "origen": "Español, del siglo XX, emparentado con el gin rummy. Se juega en toda España y en Argentina y Uruguay, donde llegó con la emigración."
+  },
+  "alisapolis": {
+    "que_es": "El monopoly de la casa: diez distritos —Data, World, Soma, Psyche, Genesis, Scripts, Docs, Laboratory, IrealWorld y Heritage— en un anillo de treinta y dos casillas. Es el único juego del banco que usa los cuatro materiales a la vez: tablero, dados, cartas y fichas.",
+    "reparto": "Mil de caja y el peón en Salida. Las veinte fincas empiezan sin dueño. El mazo de decretos, boca abajo en el tablero, se baraja con la semilla.",
+    "turno": "Tiras dos dados y avanzas. Si caes en algo sin dueño, SALE A SUBASTA: pujáis por turnos de diez en diez y quien queda último se lo lleva al precio al que se cerró. Si caes en finca ajena, pagas alquiler. Con el distrito entero puedes construir.",
+    "gana": "El patrimonio más alto cuando se acaban las doce vueltas: caja más fincas más casas. Si te quedas sin poder pagar, quiebras y vales cero, hayas invertido lo que hayas invertido.",
+    "ojo": [
+      "Todo sale a subasta y no hay precio de lista, así que lo que pagas lo pone la mesa. Pujar de más te arruina; pujar de menos le regala el distrito al de enfrente.",
+      "La segunda finca de un distrito vale mucho más que la primera: completar el distrito triplica el alquiler y deja construir. Y una finca cuyo distrito ya no puedes completar —porque el otro tiene la suya— vale su precio y ni un duro más.",
+      "Construir es una palanca que la casa NO usa: medido, tal y como está tarifado le costaba ciento veintitrés puntos. Está ahí a propósito, por si tú encuentras cuándo sí paga.",
+      "Quebrar vale cero. No es «vas perdiendo»: es que todo lo invertido se evapora, así que la caja que te dejas para el siguiente alquiler es parte de la jugada."
+    ],
+    "diferencias": [
+      "En la mesa compras al precio de la caja y sólo hay subasta si renuncias. Aquí TODO sale a subasta, y no es un capricho: con precio de lista, comprar es siempre correcto —el patrimonio cuenta la finca por lo que costó— así que nadie renuncia y la subasta no se dispara nunca. Medido: quitarle la disciplina de puja a la casa no cambiaba el resultado ni un decimal.",
+      "No se negocia entre jugadores. Cambiar «te doy Soma y 200 por Psyche» es espacio de acciones abierto y pide un canal de conversación que este banco todavía no tiene. Pujar sí cabe: es pujar o pasar.",
+      "No hay hipotecas, y en el Sandbox no se puede uno quedar a propósito para no caer en casa ajena. Las dos añaden juego y también la mitad del reglamento.",
+      "Una partida son doce vueltas a la mesa, no «hasta que alguien quiebre». El banco compara partidas, y una que dura lo que quiera no se puede comparar."
+    ],
+    "origen": "El monopoly viene de The Landlord's Game, que Elizabeth Magie patentó en 1904 para ENSEÑAR lo que pasa cuando la tierra se concentra en pocas manos. La versión que se hizo famosa le dio la vuelta a la moraleja. Ésta se juega en los diez distritos del propio repositorio."
   }
 }

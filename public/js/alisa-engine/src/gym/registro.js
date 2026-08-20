@@ -141,6 +141,11 @@ const PROTOHUB = [
     // cargando hasta cinco puntos en vez de con cero. Un agente medido en los dos se
     // compara consigo mismo con y sin margen para cerrar, que es la decision entera.
     { juego: 'chinchon', titulo: 'Chinchon', modulo: 'remigio', crear: 'crearChinchon' },
+    // Alisapolis: el primero que usa los cuatro materiales -tablero, dados, cartas y
+    // fichas- y el primero cuya decision central es VALORAR BAJO COMPETENCIA. No es
+    // informacion oculta ni comunicacion ni simultaneidad: es que lo que vale una cosa
+    // depende de quien mas la quiere, y eso cambia cada vez que alguien compra algo.
+    { juego: 'alisapolis', titulo: 'Alisapolis', crear: 'crearAlisapolis' },
 ];
 
 /** Entornos escritos a mano, cada uno con su propio módulo. */

@@ -191,6 +191,12 @@
     "titulo": "Chinchón",
     "sillas": 2
   },
+  "alisapolis": {
+    "pagina": "alisapolis.html",
+    "propia": true,
+    "titulo": "Alisápolis",
+    "sillas": 2
+  },
   "parchis": {
     "pagina": "parchis.html",
     "propia": true,
