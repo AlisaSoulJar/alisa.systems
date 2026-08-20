@@ -15,18 +15,18 @@ contrario. El problema no era que no estuviera escrito: era que no había índic
 Volver a decidir sale barato en el momento y carísimo a la semana, porque la
 segunda decisión casi nunca coincide con la primera y entonces hay dos verdades.
 
-**1653 decisiones** en 278 ficheros.
+**1661 decisiones** en 279 ficheros.
 
 ## Índice
 
 - [Herramientas de medida](#herramientas-de-medida) — 324
 - [Reglas de los juegos](#reglas-de-los-juegos) — 304
 - [Las mesas y los visualizadores](#las-mesas-y-los-visualizadores) — 299
-- [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 174
+- [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 179
 - [Las comprobaciones](#las-comprobaciones) — 153
 - [Otros](#otros) — 139
 - [Las páginas de los juegos](#las-páginas-de-los-juegos) — 77
-- [Cómo se dibuja (el pintor)](#cómo-se-dibuja-el-pintor-) — 49
+- [Cómo se dibuja (el pintor)](#cómo-se-dibuja-el-pintor-) — 52
 - [El servidor y las salas](#el-servidor-y-las-salas) — 47
 - [El motor](#el-motor) — 30
 - [El gym y los entornos](#el-gym-y-los-entornos) — 26
@@ -2530,6 +2530,19 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **AQUÍ NO VALE LA LISTA DE «ESO YA ESTÁ», Y ME COSTÓ UNA PASADA VERLO.** <sub>línea 193</sub>
   <br><sub>`filasDeEstado` se salta `puntos`, `turno` y el marcador porque las dos mesas genéricas ya les dan su fila. Los visualizadores propios NO — y por eso, tras el primer arreglo, ajedrez, mancala, blackjack y póker seguían escondiendo el</sub>
 
+### `public/arcade/js/protohub/props.js`
+
+- **HAY 122 PROPS EN GLB Y NO LOS USABA NADIE.** <sub>línea 7</sub>
+  <br><sub>`public/props/` tiene 34 MB de modelos: 21 variantes de roca —con musgo y con nieve—, animales, objetos y personajes. Y el arcade dibuja cubos. La frontera era que el arcade corría en r128; se cayó hoy.</sub>
+- **Y SON PERFECTOS PARA ESTO, MEDIDO ANTES DE USARLOS.** <sub>línea 13</sub>
+  <br><sub>Rock_3        72 tris · 1 malla · 0 huesos · 0 clips Chicken      648 tris · 5 mallas · 0 huesos · 0 clips Beagle       712 tris · 1 malla</sub>
+- **SE PIDE LA GEOMETRÍA, NO EL OBJETO.** <sub>línea 25</sub>
+  <br><sub>El pintor dibuja los muros con `InstancedMesh`: UNA llamada para las 784 celdas de fagocito. Clonar un GLB por muro tiraría esa optimización a la basura — es literalmente el fallo que la cabecera de `pintar3d.js` cuenta que ya costó una vez,</sub>
+- **SE NORMALIZA LA GEOMETRÍA, NO LA INSTANCIA.** <sub>línea 93</sub>
+  <br><sub>Cada roca viene con el tamaño que tuviera en su escena original, y el pintor coloca las instancias suponiendo un lado de una unidad. Si se escalara la instancia, cada juego tendría que saber cuánto mide</sub>
+- **EL MOVIMIENTO: SENOS, NO ESQUELETOS.** <sub>línea 121</sub>
+  <br><sub>`Data/Lecciones/2026-04-03_giants_procedural_avatars_rayman_spore.md` lo deja dicho: el torso sube y baja con `Math.sin`, y si hay varias piezas se les desfasa el paso. «Cuesta 0 CPU» y da el trote saltarín retro. Los props no traen ni un hueso, así que</sub>
+
 ### `public/arcade/js/protohub/ProtoHub.js`
 
 - **Esta es la pieza que faltaba, y faltaba en el sitio menos obvio.** <sub>línea 50</sub>
@@ -3738,67 +3751,73 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>La primera versión creaba una malla por celda y otra por pieza. Con ajedrez (64 + 32) iba de sobra; con **fagocito, que son 28×28 celdas y 561 piezas**, son 1.345 llamadas de dibujo y el compositor del navegador dejaba de responder</sub>
 - **AQUÍ ES DONDE ENTRAN LAS FACTORÍAS Y LOS PLUGINS, Y NO ANTES.** <sub>línea 27</sub>
   <br><sub>`CroupierSystem` ya sabe **dónde va cada carta** en una mesa —en abanico, en arco, tapadas, comunitarias— y es agnóstico al juego. Se le pasa por `opciones` y coloca las zonas. No decide nada del juego: dice dónde poner las</sub>
-- **CADA BANDO CON SU FORMA, NO SÓLO CON SU COLOR** <sub>línea 141</sub>
+- **CADA BANDO CON SU FORMA, NO SÓLO CON SU COLOR** <sub>línea 146</sub>
   <br><sub>Es requisito de accesibilidad en la guía de interfaz de Board Game Arena, no un extra: «empareja color con iconos, texturas o formas», y un símbolo o contorno único por cada color de peón. Con azul contra rojo, una de cada doce</sub>
-- **SÓLO EN LOS DISCOS, Y A PROPÓSITO.** <sub>línea 157</sub>
+- **SÓLO EN LOS DISCOS, Y A PROPÓSITO.** <sub>línea 162</sub>
   <br><sub>Los cubos son muros y las bolitas comida: terreno y cosas de nadie, que no tienen bando que distinguir. Darles forma por dueño sería contar algo que no existe.</sub>
-- **EL DAMERO SE VE.** <sub>línea 179</sub>
+- **EL DAMERO SE VE.** <sub>línea 184</sub>
   <br><sub>Este pintor lleva desde siempre alternando dos suelos —`(f + c) % 2`, más abajo— pero eran `0xf2f4f7` y `0xd8dfe6`: dos blancos separados por un 7% de luminosidad. Con la luz cenital de esta mesa el damero desaparecía y el</sub>
-- **EL MURO ERA CASI EL MISMO AZUL QUE EL DUEÑO 0, Y ESE FUE EL FALLO.** <sub>línea 197</sub>
+- **EL MURO ERA CASI EL MISMO AZUL QUE EL DUEÑO 0, Y ESE FUE EL FALLO.** <sub>línea 202</sub>
   <br><sub>`0x39485c` contra `0x2a3550` son 19 puntos de distancia sobre 255. Por eso el jugador de fagocito —un cubo del dueño 0 en un laberinto de muros— estaba perfectamente dibujado y no se veía. Le puse un faro encima, que</sub>
-- **EL DESTINO ERA EXACTAMENTE EL MISMO ROJO QUE EL DUEÑO 1.** <sub>línea 214</sub>
+- **EL DESTINO ERA EXACTAMENTE EL MISMO ROJO QUE EL DUEÑO 1.** <sub>línea 219</sub>
   <br><sub>`0xc0392b` en los dos sitios. O sea que en sokoban una ficha del dueño 1 encima de su casilla objetivo desaparecía — justo en el momento en que más importa verla, que es cuando has resuelto ese hueco.</sub>
-- **LA NIEBLA ERA LO MÁS BRILLANTE DE LA PANTALLA, Y ESO ESTÁ AL REVÉS.** <sub>línea 229</sub>
+- **LA NIEBLA ERA LO MÁS BRILLANTE DE LA PANTALLA, Y ESO ESTÁ AL REVÉS.** <sub>línea 234</sub>
   <br><sub>En cripta lo sin explorar es casi todo el tablero, y con `0xaeb8c4` salía un campo blanco enorme que se comía la vista mientras lo YA EXPLORADO —que es lo único que has ganado jugando— quedaba de manchita en una</sub>
-- **Y AL OSCURECERLA ANOCHE LA DEJÉ CHOCANDO CON EL DUEÑO 0.** <sub>línea 245</sub>
+- **Y AL OSCURECERLA ANOCHE LA DEJÉ CHOCANDO CON EL DUEÑO 0.** <sub>línea 250</sub>
   <br><sub>`0x333c49` contra `0x2a3550` son NUEVE puntos. O sea que una pieza oscura sobre casilla con niebla —en cripta o en flota, que es media partida— quedaba invisible. Arreglé un problema de lectura y creé otro.</sub>
-- **La madera es MÁS OSCURA de lo que parece que debería. `0xd8b273` es el** <sub>línea 266</sub>
+- **La madera es MÁS OSCURA de lo que parece que debería. `0xd8b273` es el** <sub>línea 271</sub>
   <br><sub>color de un goban en una foto, y aquí salía amarillo fosforito: esta mesa lleva luz cenital fuerte y un tono claro se va de rango. Es el mismo error que el damero de dos blancos —elegir el color mirando la muestra en vez</sub>
-- **SE GUARDA POR TAMAÑO Y NO SE REHACE.** <sub>línea 351</sub>
+- **SE GUARDA POR TAMAÑO Y NO SE REHACE.** <sub>línea 356</sub>
   <br><sub>Un goban de 19x19 son treinta y ocho barras más la madera. Construirlo en cada repintado sería el mismo error que crear `InstancedMesh` a sesenta por segundo — el que ya está documentado dos veces en este fichero— sólo que</sub>
-- **LOS HOSHI. NO SON ADORNO: SON CÓMO SE LEE UN GOBAN.** <sub>línea 390</sub>
+- **LOS HOSHI. NO SON ADORNO: SON CÓMO SE LEE UN GOBAN.** <sub>línea 395</sub>
   <br><sub>Un tablero de go de verdad lleva nueve puntos marcados —las «estrellas»— y no están por decoración: son el sistema de coordenadas con el que se habla del juego. «El 4-4 de arriba a la</sub>
-- **EL TAMAÑO ESTÁ MEDIDO CONTRA EL TABLERO DE VERDAD, NO ELEGIDO.** <sub>línea 414</sub>
+- **EL TAMAÑO ESTÁ MEDIDO CONTRA EL TABLERO DE VERDAD, NO ELEGIDO.** <sub>línea 419</sub>
   <br><sub>Diámetro 0,15 sobre una casilla de 1 — el 15 %. En un goban real el punto son unos 4 mm sobre casillas de 22, o sea el 18 %. Y lo que decide si se lee es la comparación con la línea, no el número</sub>
-- **LO QUE LE FALTA A ESTA MESA PARA ADMITIR EL GO Y EL XIANGQI.** <sub>línea 466</sub>
+- **LO QUE LE FALTA A ESTA MESA PARA ADMITIR EL GO Y EL XIANGQI.** <sub>línea 471</sub>
   <br><sub>El 13-08-2026 porté los dos aquí y los DEVOLVÍ al verlos. El go salió como un damero de 19×19 —parecía un tablero de damas gigante— y el xiangqi igual con menos escándalo. Los dos se juegan sobre LÍNEAS, con las piezas en las</sub>
-- **DÓNDE CAE CADA CASILLA, PUBLICADO.** <sub>línea 501</sub>
+- **DÓNDE CAE CADA CASILLA, PUBLICADO.** <sub>línea 506</sub>
   <br><sub>Las piezas se pueden comprobar desde fuera porque LLEVAN NOMBRE en la malla (`p:<tipo>:<dueño>`): un instrumento las proyecta y sabe a qué está apuntando. Las casillas no tenían nada equivalente, y sin eso la única</sub>
-- **Y NO SE HACE CON UNA MALLA POR CASILLA, AUNQUE ASÍ LO HAGA EL AJEDREZ.** <sub>línea 516</sub>
+- **Y NO SE HACE CON UNA MALLA POR CASILLA, AUNQUE ASÍ LO HAGA EL AJEDREZ.** <sub>línea 521</sub>
   <br><sub>Aquí el terreno se dibuja con `InstancedMesh` justamente para que fagocito —28x28, 784 celdas— no cueste 784 objetos. Estandarizar «como el ajedrez» sería tirar esa optimización para poder medir, que es dejar que</sub>
-- **Y LAS CASILLAS TAMBIÉN TOMAN EL AMBIENTE** <sub>línea 531</sub>
+- **Y LAS CASILLAS TAMBIÉN TOMAN EL AMBIENTE** <sub>línea 536</sub>
   <br><sub>`atmosfera.js` puso cielo, suelo y niebla alrededor, y al mirar las tres capturas del piloto la conclusión fue la misma en las tres: **el aire funciona y el tablero no**. La pradera salía con hierba de verdad y encima</sub>
-- **EL NOMBRE DE LA CASILLA, ESCRITO EN LA CASILLA** <sub>línea 559</sub>
+- **LOS MUROS PUEDEN SER ROCAS DE VERDAD, Y SIGUEN SIENDO UNA LLAMADA** <sub>línea 556</sub>
+  <br><sub>`public/props/` tiene 21 variantes de roca en GLB, de 72 a 102 triángulos cada una, y el arcade dibujaba cubos. Con `rejilla.prop = 'roca'` se le cambia la GEOMETRÍA al `InstancedMesh` que ya existe: misma llamada de</sub>
+- **LA ROCA TOMA EL COLOR DEL MUNDO, Y NO ES ESTÉTICA: ES QUE SI NO** <sub>línea 579</sub>
+  <br><sub>SE COME AL JUGADOR.</sub>
+- **EL NOMBRE DE LA CASILLA, ESCRITO EN LA CASILLA** <sub>línea 617</sub>
   <br><sub>`rejilla.nombres` lleva tiempo publicándose y no lo dibujaba nadie: sólo lo leía el respaldo del tacto. En un tablero de casillas ANÓNIMAS —el ajedrez, el go— no hace falta, pero en el alisápolis el nombre ES el</sub>
-- **SE DIBUJA SÓLO SI LA REJILLA LO PIDE (`etiquetas: true`).** <sub>línea 567</sub>
+- **SE DIBUJA SÓLO SI LA REJILLA LO PIDE (`etiquetas: true`).** <sub>línea 625</sub>
   <br><sub>Flota también publica nombres —`a1`…`j10`— y ponerle cien etiquetas encima sería llenarle el tablero de ruido para arreglarle el problema a otro juego. Lo dice el sustrato, no adivina el pintor.</sub>
-- **AQUÍ FALTABAN DOS FAMILIAS, Y UNA LLEVABA TIEMPO FALTANDO.** <sub>línea 600</sub>
+- **AQUÍ FALTABAN DOS FAMILIAS, Y UNA LLEVABA TIEMPO FALTANDO.** <sub>línea 658</sub>
   <br><sub>Esto agrupaba en tres montones: suelo claro, suelo oscuro y muro. Todo lo que no era muro caía en «suelo» — así que **los destinos de sokoban no se dibujaban en 3D**. El mismo estado contado por tres</sub>
-- **HAY TABLEROS QUE NO SON CASILLAS, Y ESTA MESA NO LO SABÍA** <sub>línea 614</sub>
+- **HAY TABLEROS QUE NO SON CASILLAS, Y ESTA MESA NO LO SABÍA** <sub>línea 672</sub>
   <br><sub>El 13-08-2026 porté el go aquí y lo devolví al verlo: salió un damero de 19x19 y parecía un tablero de damas gigante. El xiangqi igual con menos escándalo. Los dos se juegan sobre LÍNEAS, con las</sub>
-- **Y LAS PIEZAS NO SE MUEVEN NI UN MILÍMETRO.** <sub>línea 628</sub>
+- **Y LAS PIEZAS NO SE MUEVEN NI UN MILÍMETRO.** <sub>línea 686</sub>
   <br><sub>Da un poco de vértigo, porque «va en la intersección» suena a que hay que desplazarlas media casilla. No: con casillas, la pieza va en el CENTRO de la celda (c, f); con intersecciones, va en el CRUCE</sub>
-- **CON CRUCES SE QUITA EL DAMERO, NO EL TERRENO.** <sub>línea 642</sub>
+- **CON CRUCES SE QUITA EL DAMERO, NO EL TERRENO.** <sub>línea 700</sub>
   <br><sub>La primera versión se saltaba este bucle entero cuando el tablero era de intersecciones. Funciona —el go y el xiangqi no tienen muros ni niebla ni destinos— y es una mina puesta a mano: el primer juego de</sub>
-- **EL 1 NO SIEMPRE ES UN MURO, Y LA LEYENDA LLEVABA DICIÉNDOLO DESDE** <sub>línea 654</sub>
+- **EL 1 NO SIEMPRE ES UN MURO, Y LA LEYENDA LLEVABA DICIÉNDOLO DESDE** <sub>línea 712</sub>
   <br><sub>EL PRINCIPIO.</sub>
-- **¿CUÁL SOY YO?** <sub>línea 744</sub>
+- **Si llegó el prop, el muro se dibuja con SU geometría y SU material.** <sub>línea 763</sub>
+  <br><sub>Ver la nota de arriba: es el mismo `InstancedMesh`, otra forma. ['muro', muros, propMuros?.[0]?.geometria ?? geo.cubo, propMuros?.[0]?.material ?? mat.muro, ALTO.muro / 2, ALTO.muro],</sub>
+- **¿CUÁL SOY YO?** <sub>línea 805</sub>
   <br><sub>En fagocito no se veía al jugador. No «se veía mal»: se abría la partida y no estabas. Y no estaba oculto — estaba CAMUFLADO, que es peor porque no se nota que falta algo: `ALTO.jugador` es 0,8, o</sub>
-- **LA REGLA SALE DEL DATO, NO DE UNA LISTA DE JUEGOS.** <sub>línea 761</sub>
+- **LA REGLA SALE DEL DATO, NO DE UNA LISTA DE JUEGOS.** <sub>línea 822</sub>
   <br><sub>Poner «fagocito, snake, peaton, cripta, sigilo…» sería otra lista paralela que se separa el día que alguien añada un juego — el fallo que este proyecto lleva arreglado seis veces. Lo que hace</sub>
-- **EL FARO SE MIDE EN PANTALLA, NO EN CASILLAS.** <sub>línea 778</sub>
+- **EL FARO SE MIDE EN PANTALLA, NO EN CASILLAS.** <sub>línea 839</sub>
   <br><sub>A tamaño fijo salía y se veía… en sokoban, que es 5x3. En el laberinto de 28x28 quedaba una mota amarilla de tres píxeles: técnicamente presente, prácticamente igual de invisible que</sub>
-- **ESTO DIBUJABA «HAY ALGO», NO «QUÉ HAY».** <sub>línea 821</sub>
+- **ESTO DIBUJABA «HAY ALGO», NO «QUÉ HAY».** <sub>línea 882</sub>
   <br><sub>El bucle de antes sólo usaba `z.items.length` y el índice: todas las vistas salían con el mismo material blanco. Nunca se leyó el CONTENIDO de `z.items`.</sub>
-- **UN DADO SE DIBUJA COMO UN DADO, NO COMO UNA LÁMINA CON UN NÚMERO.** <sub>línea 843</sub>
+- **UN DADO SE DIBUJA COMO UN DADO, NO COMO UNA LÁMINA CON UN NÚMERO.** <sub>línea 904</sub>
   <br><sub>Aquí ya se arregló una vez lo importante —que un `d6_5` y un `d6_2` no salieran idénticos— pintando el valor sobre la carta plana. El DATO quedó bien y el objeto no: sobre una mesa, un dado tumbado del grosor de</sub>
-- **LA CADENA DE DOMINÓ NO SE COLOCA COMO UNA MANO.** <sub>línea 861</sub>
+- **LA CADENA DE DOMINÓ NO SE COLOCA COMO UNA MANO.** <sub>línea 922</sub>
   <br><sub>Todo lo demás que pasa por esta función se coloca en sitios que alguien decidió antes: una fila, un abanico, una rejilla. La cadena de dominó no tiene sitio previo — su forma sale de cómo se jugó, ficha a ficha, y hay</sub>
-- **PERO CON LA FORMA DEL MATERIAL QUE SE ESTÁ JUGANDO.** <sub>línea 945</sub>
+- **PERO CON LA FORMA DEL MATERIAL QUE SE ESTÁ JUGANDO.** <sub>línea 1006</sub>
   <br><sub>ficha de dominó y una carta se distinguen igual: por su silueta. Dibujar la mano del rival y el pozo del dominó como naipes dejaba una mesa donde lo que se ve es de dominó y lo que se adivina es de cartas — y en un</sub>
-- **UN POZO NO ES UNA FILA, ES UN MONTÓN.** <sub>línea 980</sub>
+- **UN POZO NO ES UNA FILA, ES UN MONTÓN.** <sub>línea 1041</sub>
   <br><sub>Las catorce fichas del pozo del dominó salían tendidas en línea, ocupando más ancho que la cadena entera: la mesa decía «aquí hay catorce fichas expuestas» cuando lo que hay es un montón boca abajo. Y no es cosmético —</sub>
-- **El paso lo manda quien llama, y no es un detalle: 0.7 es el ancho de una** <sub>línea 1006</sub>
+- **El paso lo manda quien llama, y no es un detalle: 0.7 es el ancho de una** <sub>línea 1067</sub>
   <br><sub>carta, y una ficha de dominó mide 0.86 de largo. Con el paso de carta las siete de tu mano se montaban unas sobre otras y se leían como UNA barra blanca — que es exactamente lo que se veía en la captura del 19-08.</sub>
 
 ### `public/arcade/js/protohub/render/volcar.js`
