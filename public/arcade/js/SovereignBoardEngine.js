@@ -572,15 +572,18 @@ class SovereignBoardEngine {
         const sala = new URLSearchParams(location.search).get('sala');
         if (sala && proto && proto.soporta(this.gameId)) {
             try {
-                const { crearSala, limpiar, nombreParaSala } =
+                const { crearSala, limpiar, nombrePreguntando } =
                     await import('/arcade/js/protohub/sala.js');
                 const params = new URLSearchParams(location.search);
                 const salaLimpia = limpiar(sala, 40);
+                // Sin `?yo=` y sin nombre guardado se PREGUNTA, y la silla se pide
+                // después de contestar. Un solo enlace sigue sirviendo para todos:
+                // cada navegador contesta lo suyo y se sienta por orden.
+                const yo = await nombrePreguntando(salaLimpia, params.get('yo'),
+                    { juego: this.gameId, titulo: this.title ?? '' });
                 const mesa = window.ALISA_SALA = crearSala({
                     sala: salaLimpia,
-                    // Sin `?yo=` se coge nombre de invitado y SE RECUERDA: un solo
-                    // enlace sirve para todos y una recarga te devuelve a tu silla.
-                    yo: nombreParaSala(salaLimpia, params.get('yo')),
+                    yo,
                     juego: this.gameId,
                     semilla: Number(params.get('semilla')) || 1,
                 });

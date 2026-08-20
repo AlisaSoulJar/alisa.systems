@@ -308,7 +308,14 @@ export class MesaCompartida {
                 // Con personas no se notaba porque una persona tarda en pulsar. Es
                 // el tipo de suposición que sólo se cae cuando quien juega no tiene
                 // pantalla — y aquí tienen que poder jugar políticas y modelos.
-                esperaA: Math.max(1, Math.min(8, Number(d?.jugadores) || 1)),
+                /**
+                 * ⚠️ Y NUNCA A MÁS DE LOS QUE CABEN. El tope era 8 a secas, un
+                 * número redondo que no sale de ningún sitio: una mesa de entropy
+                 * podía quedarse esperando a ocho para siempre en un juego de dos.
+                 * El número que manda es el que el juego declara, el mismo con el
+                 * que se rechaza a quien sobra.
+                 */
+                esperaA: Math.max(1, Math.min(SILLAS[juego] ?? 1, Number(d?.jugadores) || 1)),
                 // El orden en que los juegos nombran sus asientos. Se descubre
                 // del primer estado en vez de codificarlo: hay dos convenciones
                 // en la casa —'player'/'cpu1' y 'white'/'black'— y adivinar cuál

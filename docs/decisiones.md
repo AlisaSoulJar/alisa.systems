@@ -15,19 +15,19 @@ contrario. El problema no era que no estuviera escrito: era que no había índic
 Volver a decidir sale barato en el momento y carísimo a la semana, porque la
 segunda decisión casi nunca coincide con la primera y entonces hay dos verdades.
 
-**1672 decisiones** en 281 ficheros.
+**1685 decisiones** en 281 ficheros.
 
 ## Índice
 
-- [Herramientas de medida](#herramientas-de-medida) — 330
+- [Herramientas de medida](#herramientas-de-medida) — 324
 - [Reglas de los juegos](#reglas-de-los-juegos) — 304
 - [Las mesas y los visualizadores](#las-mesas-y-los-visualizadores) — 300
-- [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 180
-- [Las comprobaciones](#las-comprobaciones) — 154
+- [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 187
+- [Las comprobaciones](#las-comprobaciones) — 164
 - [Otros](#otros) — 139
-- [Las páginas de los juegos](#las-páginas-de-los-juegos) — 77
+- [Las páginas de los juegos](#las-páginas-de-los-juegos) — 78
 - [Cómo se dibuja (el pintor)](#cómo-se-dibuja-el-pintor-) — 52
-- [El servidor y las salas](#el-servidor-y-las-salas) — 48
+- [El servidor y las salas](#el-servidor-y-las-salas) — 49
 - [El motor](#el-motor) — 30
 - [El gym y los entornos](#el-gym-y-los-entornos) — 26
 - [Estilos](#estilos) — 20
@@ -88,24 +88,6 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 
 - **Repo may already exist: {data.get('message', '')}")** <sub>línea 32</sub>
   <br><sub>Get existing repo info r2 = requests.get( f"https://api.github.com/repos/{get_username()}/{REPO_NAME}",</sub>
-
-### `_sonda_dos_personas.mjs`
-
-- **LA CUARTA ES LA QUE NO MIRABA NADIE, Y ERA LA ROTA.** <sub>línea 13</sub>
-  <br><sub>El árbitro decide con el estado de la silla 0 y con `ordenAsientos`, así que repartía los turnos bien. Pero cada jugador ve `estado(p, su_silla)`, y ahí `turn` comparaba contra 0 en vez de contra su asiento: el segundo leía «player»</sub>
-- **SE MIRA LA PANTALLA DE LOS DOS, NO LA DEL QUE JUEGA.** <sub>línea 59</sub>
-  <br><sub>`player` es un pronombre: significa «tú». Si los dos lo ven a la vez, uno de los dos tiene delante una pantalla que le miente, aunque la mesa reparta bien los turnos. Exactamente una silla puede verlo — y `?quien=` existe</sub>
-- **EN LA MISMA RESPUESTA VIENEN DOS `turn` CON VOCABULARIOS DISTINTOS.** <sub>línea 75</sub>
-  <br><sub>El de arriba es el NOMBRE de quien mueve —lo traduce el árbitro— y ése es el bueno. Dentro de `state` viaja el del juego, que es un pronombre por silla (`player`/`cpu1`). Se miran los dos porque un cliente puede leer</sub>
-- **Y LA MISMA LISTA, POR LA OTRA PUERTA.** <sub>línea 93</sub>
-  <br><sub>`legal_moves` de arriba ya se entregaba sólo a quien mueve. Dentro de `state` iba la misma lista para todo el mundo, y el motor de cartas pinta los botones desde AHÍ. Se mira el estado crudo y no el campo de arriba,</sub>
-
-### `_sonda_turno.mjs`
-
-- **EL FALLO QUE SE BUSCA: dos sillas que ven la MISMA palabra de «me toca».** <sub>línea 54</sub>
-  <br><sub>Con el vocabulario `player`/`cpuN`, «player» significa «tú». Si dos sillas lo ven a la vez, una de las dos está mintiendo. Con `white`/`black` no aplica: eso es un color, no un pronombre, y las dos sillas deben verlo igual.</sub>
-- **EL INVARIANTE ES «EXACTAMENTE UNA», NO «LA SILLA `p.turno`».** <sub>línea 66</sub>
-  <br><sub>Mi primera versión comparaba contra `p.turno` y denunciaba al alisápolis en 19 de 40 jugadas. Era falso: en una subasta quien decide es el pujador, no quien tiene el turno de la mesa, así que `p.turno` no es la respuesta a «¿quién mueve</sub>
 
 ### `aligerar_props.py`
 
@@ -1928,51 +1910,51 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Se mide el rectángulo del panel de verdad, ahora, en esta pantalla. Un número escrito a mano —«en móvil quita 200 px»— se queda viejo el día que el panel cambie de contenido, y anoche cambió tres veces.</sub>
 - **Y SI HAY `?sala=`, LA PARTIDA NO OCURRE AQUÍ: OCURRE EN EL ÁRBITRO.** <sub>línea 481</sub>
   <br><sub>Esta mesa hablaba SIEMPRE con el hub local, así que con un enlace compartido cada pestaña jugaba su propia partida tan contenta y sin un solo error. Es el mismo fallo que Oscar encontró en el ajedrez —abrió una sala en dos navegadores</sub>
-- **Y LO PRIMERO FUE MIRAR QUÉ FORMA TIENEN SUS JUGADAS, PORQUE NO SON CASILLAS.** <sub>línea 527</sub>
+- **Y LO PRIMERO FUE MIRAR QUÉ FORMA TIENEN SUS JUGADAS, PORQUE NO SON CASILLAS.** <sub>línea 529</sub>
   <br><sub>Iba a escribir un «toca la casilla y muevo ahí», y midiéndolo resultó que la mayoría de estos juegos no tiene jugadas espaciales:</sub>
-- **NADA QUE NO ESTÉ EN `legal_moves` SALE DE AQUÍ.** <sub>línea 541</sub>
+- **NADA QUE NO ESTÉ EN `legal_moves` SALE DE AQUÍ.** <sub>línea 543</sub>
   <br><sub>Todo pasa por `enviarSiEsLegal`. Un atajo que pudiera mandar algo ilegal sería un atajo que se cree las reglas, y eso ya nos costó caro. El panel sigue estando y sigue siendo la lista literal que ve un agente: esto es un segundo camino a las</sub>
-- **TOCAR UNA CASILLA: SÓLO SI LA CASILLA DICE CÓMO SE LLAMA.** <sub>línea 577</sub>
+- **TOCAR UNA CASILLA: SÓLO SI LA CASILLA DICE CÓMO SE LLAMA.** <sub>línea 579</sub>
   <br><sub>La rejilla puede publicar `nombres`, un array paralelo a `celdas` con el nombre de la jugada de cada casilla (y `null` donde no se puede jugar). Flota es el primero que lo hace, y salió de un aviso de Oscar: «que el panel no tenga la</sub>
-- **SE TOCA LA CASILLA, Y VALE PARA CUALQUIER JUEGO QUE PROYECTE SUS ACCIONES.** <sub>línea 608</sub>
+- **SE TOCA LA CASILLA, Y VALE PARA CUALQUIER JUEGO QUE PROYECTE SUS ACCIONES.** <sub>línea 610</sub>
   <br><sub>El sustrato dice ahora, por cada jugada legal, qué casillas toca:</sub>
-- **LA JUGADA SE VE ANTES DE HACERLA.** <sub>línea 625</sub>
+- **LA JUGADA SE VE ANTES DE HACERLA.** <sub>línea 627</sub>
   <br><sub>`seleccion` se guardaba desde hace días y no se dibujaba NUNCA. O sea que en damas, reversi o el ajedrez de esta mesa tocabas una pieza y la pantalla no cambiaba: ni sabías que la habías cogido, ni a dónde podía ir. La jugada existía</sub>
-- **Y EL DATO LLEVABA DOS DÍAS PUESTO.** <sub>línea 639</sub>
+- **Y EL DATO LLEVABA DOS DÍAS PUESTO.** <sub>línea 641</sub>
   <br><sub>`sus.acciones` dice, para cada jugada legal, qué casillas toca — se construyó para poder jugar tocando el tablero. Nadie lo usaba al revés. Esto no añade información nueva: enseña la que ya había.</sub>
-- **AHÍ NO». LA MESA TIENE QUE CONTESTAR ALGO.** <sub>línea 690</sub>
+- **AHÍ NO». LA MESA TIENE QUE CONTESTAR ALGO.** <sub>línea 692</sub>
   <br><sub>Hasta ahora, tocar una casilla a la que no se puede ir no hacía NADA: `enviarSiEsLegal` devolvía `false` en silencio y la pantalla se quedaba igual. Desde fuera eso no se distingue de que la mesa se haya colgado, y lo primero que</sub>
-- **Y SÓLO CUANDO DE VERDAD HA SIDO UN INTENTO.** <sub>línea 701</sub>
+- **Y SÓLO CUANDO DE VERDAD HA SIDO UN INTENTO.** <sub>línea 703</sub>
   <br><sub>Tocar en vacío para soltar la pieza es legítimo y no merece un rojo. La diferencia está en si HABÍA algo cogido: con una pieza en la mano, tocar una casilla es intentar ir ahí. Sin ella, es mirar.</sub>
-- **QUÉ ACABA DE PASAR.** <sub>línea 712</sub>
+- **QUÉ ACABA DE PASAR.** <sub>línea 714</sub>
   <br><sub>Esta mesa no anima: repinta el sustrato entero en cada vuelta, así que cuando mueve la casa las fichas aparecen en su sitio nuevo de golpe. Si estabas mirando el panel —que es lo normal, ahí están las jugadas— el tablero cambia y no sabes</sub>
-- **Y NO ES UNA ANIMACIÓN, ES UN SUBRAYADO.** <sub>línea 721</sub>
+- **Y NO ES UNA ANIMACIÓN, ES UN SUBRAYADO.** <sub>línea 723</sub>
   <br><sub>Interpolar de verdad obligaría a que el pintor recordara de dónde venía cada pieza entre dos estados, y este pintor está hecho justo al revés: recibe una matriz plana y la dibuja sin memoria. Ésa es la tesis del motor y no se toca por</sub>
-- **LAS CASILLAS SALEN DEL NOMBRE, NO DE `acciones`.** <sub>línea 745</sub>
+- **LAS CASILLAS SALEN DEL NOMBRE, NO DE `acciones`.** <sub>línea 747</sub>
   <br><sub>Lo escribí primero buscando la jugada en `sus.acciones`, y no puede funcionar: ese mapa son las jugadas LEGALES AHORA, y la que acaba de hacerse ya no lo es. Habría sido un subrayado que no aparece nunca — de los que se dan por</sub>
-- **TOCAR LA PIEZA CUANDO NO HAY REJILLA** <sub>línea 785</sub>
+- **TOCAR LA PIEZA CUANDO NO HAY REJILLA** <sub>línea 787</sub>
   <br><sub>`alTocar` se rendía en la primera línea si el juego no publicaba rejilla, y eso dejaba fuera al dominó entero: `tacto` lo medía y decía «sólo respondía el panel». Una ficha de dominó se coge con la mano, no se nombra.</sub>
-- **Y NO HACE FALTA QUE ESTA MESA SEPA JUGAR AL DOMINÓ.** <sub>línea 792</sub>
+- **Y NO HACE FALTA QUE ESTA MESA SEPA JUGAR AL DOMINÓ.** <sub>línea 794</sub>
   <br><sub>La pieza ya lleva su identificador puesto en el nombre de la malla —`p:ficha:6-3`, igual que una carta lleva `S_A` y un dado `d6_5`— y las jugadas legales lo nombran dentro: `jugar:6-3:izq`. Así que basta buscar cuáles de las legales hablan de la</sub>
-- **EL SEGUNDO TOQUE ES LA PUNTA, Y ESO ES EL JUEGO.** <sub>línea 800</sub>
+- **EL SEGUNDO TOQUE ES LA PUNTA, Y ESO ES EL JUEGO.** <sub>línea 802</sub>
   <br><sub>Cuando la ficha entra por los dos lados hay DOS jugadas y elegir por ti sería jugar por ti: en el dominó, por qué punta la metes es la decisión. Así que se coge la ficha y se toca el extremo de la cadena donde va — que es literalmente lo que</sub>
-- **Y NO SE ADIVINA.** <sub>línea 944</sub>
+- **Y NO SE ADIVINA.** <sub>línea 946</sub>
   <br><sub>De estos quince juegos sólo `flota` tiene jugadas que son casillas (`a1`, `b1`). La idea era: tocas la casilla, se mira cómo se llamaría, y si ese nombre está en `legal_moves` se manda. Comprobar contra la lista parecía suficiente garantía.</sub>
-- **Y DEBAJO, LO QUE EL JUEGO PUBLICA Y ANTES SÓLO LEÍA EL AGENTE.** <sub>línea 1042</sub>
+- **Y DEBAJO, LO QUE EL JUEGO PUBLICA Y ANTES SÓLO LEÍA EL AGENTE.** <sub>línea 1044</sub>
   <br><sub>Esto era «Turno» y el marcador, y ya. Un agente de defensa leía `oro: 3. vida: 10. vida_rival: 10. bichos_en_camino: 2` porque el describidor vuelca el estado entero; la persona veía dos números. Medido en los 38 con</sub>
-- **LAS FILAS VAN AL LADO DE `#estado-txt`, NO DENTRO.** <sub>línea 1058</sub>
+- **LAS FILAS VAN AL LADO DE `#estado-txt`, NO DENTRO.** <sub>línea 1060</sub>
   <br><sub>La primera versión las metía dentro, y `#estado-txt` YA es un `.status-row` —o sea una fila flex horizontal—, así que las once filas de defensa se apilaban de lado y salía «Turnoazul·0bandoazuloro15vida10vida10torre rival»</sub>
-- **`yo` VA VACÍO EN LA MESA LOCAL, Y ES A PROPÓSITO.** <sub>línea 1109</sub>
+- **`yo` VA VACÍO EN LA MESA LOCAL, Y ES A PROPÓSITO.** <sub>línea 1111</sub>
   <br><sub>Lo puse primero como `st.turn` y quedaba bonito —las jugadas propias en verde— hasta que se mira lo que significa: `turn` es DE QUIÉN ES EL TURNO AHORA, no quién soy yo. Así que el color se daba la vuelta en cada jugada</sub>
-- **EL REPETIDOR: LA TESIS DEL PROYECTO, PUESTA DONDE SE VE** <sub>línea 1130</sub>
+- **EL REPETIDOR: LA TESIS DEL PROYECTO, PUESTA DONDE SE VE** <sub>línea 1132</sub>
   <br><sub>/arcade/checkers.html?semilla=7&repetir=a3b4,b6a5,b4c5</sub>
-- **Y NO TOCA NI EL PINTOR NI LAS REGLAS.** <sub>línea 1139</sub>
+- **Y NO TOCA NI EL PINTOR NI LAS REGLAS.** <sub>línea 1141</sub>
   <br><sub>El repetidor sólo llama a `hub.reset` y `hub.move` — exactamente lo que hace jugar. La mesa repinta lo que el hub diga, como siempre, porque el render es un espectador y no un nervio. Consecuencia: sale gratis en los quince juegos de esta</sub>
-- **Y POR ESO EL HISTORIAL Y EL SUBRAYADO FUNCIONAN SOLOS.** <sub>línea 1146</sub>
+- **Y POR ESO EL HISTORIAL Y EL SUBRAYADO FUNCIONAN SOLOS.** <sub>línea 1148</sub>
   <br><sub>Como las jugadas se aplican de verdad, el hub las graba, `hub.partida()` las devuelve, y el registro y el subrayado de la última jugada aparecen sin una línea más. No estaba planeado: es lo que pasa cuando repetir es jugar otra vez y no</sub>
-- **Con el modo deluxe encendido, pinta el compositor: cuatro pasadas en vez** <sub>línea 1200</sub>
+- **Con el modo deluxe encendido, pinta el compositor: cuatro pasadas en vez** <sub>línea 1202</sub>
   <br><sub>de una (render → SSAO → bloom → salida). Si no se pudo encender, `cine` es `null` y se pinta como siempre — ver `protohub/cine.js`. if (cine) cine.pintar(); else render.render(escena, camara);</sub>
-- **EL MODO DELUXE SE ENCIENDE DESPUÉS DEL BUCLE, NO ANTES.** <sub>línea 1207</sub>
+- **EL MODO DELUXE SE ENCIENDE DESPUÉS DEL BUCLE, NO ANTES.** <sub>línea 1209</sub>
   <br><sub>Cargar el pipeline es una espera —imports dinámicos, mapa de importación— y hacerla antes de arrancar dejaría la pantalla en negro ese rato. Arrancando primero, la mesa se ve enseguida y las cuatro pasadas entran cuando llegan.</sub>
 
 ### `public/arcade/js/montarMesa.js`
@@ -2117,41 +2099,41 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>`127.0.0.1:8741` —el hub de la colonia, que es otro proyecto— y dejaba un 404 en la consola en cada carga, apuntando a una dirección privada nuestra. Desde https ese sondeo ni siquiera está permitido, así que en</sub>
 - **CON `?sala=` LA PARTIDA OCURRE EN EL ÁRBITRO, Y AQUÍ NO ESTABA.** <sub>línea 553</sub>
   <br><sub>Esto faltaba, y la forma en que se descubrió merece quedar escrita: Oscar abrió un ajedrez con `?sala=` en dos navegadores y salieron DOS PARTIDAS DISTINTAS. Ningún error, ninguna pista — cada pestaña jugaba su propia</sub>
-- **`params.action` PRIMERO. `sendMove` envuelve la jugada** <sub>línea 594</sub>
+- **`params.action` PRIMERO. `sendMove` envuelve la jugada** <sub>línea 597</sub>
   <br><sub>en `{action:'move', params:{action:<jugada>}}`, así que leer `a.action` da la palabra «move» y el árbitro la rechazaría culpando al juego en vez de a este desempaque.</sub>
-- **DOS CASILLAS, NO UNA: dirección Y modelo.** <sub>línea 771</sub>
+- **DOS CASILLAS, NO UNA: dirección Y modelo.** <sub>línea 774</sub>
   <br><sub>Antes sólo se pedía el nombre del modelo porque la jugada la pedía el HUB DE LA COLONIA, que sabía dónde vivía Ollama. En el sitio público no hay colonia, así</sub>
-- **Y SE RECOLOCA A MANO, PORQUE LA PLANTILLA NO BASTA.** <sub>línea 813</sub>
+- **Y SE RECOLOCA A MANO, PORQUE LA PLANTILLA NO BASTA.** <sub>línea 816</sub>
   <br><sub>La tira de jugadas se escribe arriba como HERMANA de `#hud-content`, con su comentario y todo. Medido en el ajedrez el 14-08-2026, el navegador la enseñaba DENTRO — y plegado (que en móvil es como arranca) `#hud-content`</sub>
-- **EN UN MÓVIL EMPIEZA PLEGADO, COMO EN LA MESA DE CARTAS.** <sub>línea 842</sub>
+- **EN UN MÓVIL EMPIEZA PLEGADO, COMO EN LA MESA DE CARTAS.** <sub>línea 845</sub>
   <br><sub>Esto lo tenía sólo `SovereignCardEngine`, y el resultado medido el 13-08-2026 en una pantalla de 390x844, contando qué elemento hay bajo cada punto con `elementFromPoint`:</sub>
-- **CERO NO ES ESTRECHO: ES «NO LO SÉ». `innerWidth` vale 0 en una pestaña** <sub>línea 891</sub>
+- **CERO NO ES ESTRECHO: ES «NO LO SÉ». `innerWidth` vale 0 en una pestaña** <sub>línea 894</sub>
   <br><sub>que aún no se ha compuesto, y cero es menor que 820, así que un monitor de 27 pulgadas se llevaría la vista de teléfono según cuándo mirases. Sin medida fiable se responde que no, que es lo que había antes.</sub>
-- **SE CORTA A CINCUENTA, Y SE DICE CUÁNTAS FALTAN.** <sub>línea 917</sub>
+- **SE CORTA A CINCUENTA, Y SE DICE CUÁNTAS FALTAN.** <sub>línea 920</sub>
   <br><sub>Go empieza con 361 jugadas legales. Trescientos sesenta y un botones no son una ayuda, son un muro — y ahí además no hacen falta: go se juega tocando la intersección. La caja de texto sigue para el resto, y ahora al menos se ve el</sub>
-- **ESTE MOTOR SE ME QUEDÓ FUERA, Y CASI NO ME ENTERO.** <sub>línea 931</sub>
+- **ESTE MOTOR SE ME QUEDÓ FUERA, Y CASI NO ME ENTERO.** <sub>línea 934</sub>
   <br><sub>Lo monté en la mesa genérica y en el motor de cartas y di el trabajo por terminado, sin haber contado nunca cuántos caminos había. Contándolos:</sub>
-- **SI NO HAY DÓNDE PONERLAS, SE PONE EL SITIO.** <sub>línea 993</sub>
+- **SI NO HAY DÓNDE PONERLAS, SE PONE EL SITIO.** <sub>línea 996</sub>
   <br><sub>Snake, fagocito y blackjack montan su propio panel —«Score», «Pellets Left»— y no pasan por `mountAgentHUD`, así que no tenían `#mesa-jugadas` y se quedaban con CERO jugadas pulsables. Medido en la pasada de los 35.</sub>
-- **REPITIENDO GANA SOBRE EL FINAL, Y ESTE ORDEN ME COSTÓ VERLO.** <sub>línea 1013</sub>
+- **REPITIENDO GANA SOBRE EL FINAL, Y ESTE ORDEN ME COSTÓ VERLO.** <sub>línea 1016</sub>
   <br><sub>Lo tenía debajo, y repitiendo el aviso de fagocito hasta el final salió la pantalla de fin de partida entera: «jugar otra», «copiar el enlace», «aportar al corpus» — los tres muertos, porque `sendMove` rechaza jugar</sub>
-- **AL TERMINAR, LA PANTALLA DE FIN.** <sub>línea 1036</sub>
+- **AL TERMINAR, LA PANTALLA DE FIN.** <sub>línea 1039</sub>
   <br><sub>Antes aquí no quedaba nada al acabar la partida: ni resultado, ni forma de empezar otra sin recargar. Y es el momento exacto en que alguien decide si sigue jugando. Va en `protohub/final.js`, compartido con el motor de</sub>
-- **LOS VERBOS TAMBIÉN SALEN ABAJO, Y ESTE ES EL TERCER CAMINO DE PANEL.** <sub>línea 1058</sub>
+- **LOS VERBOS TAMBIÉN SALEN ABAJO, Y ESTE ES EL TERCER CAMINO DE PANEL.** <sub>línea 1061</sub>
   <br><sub>La barra de verbos —lo único que una persona necesita PULSAR, porque el resto de jugadas son piezas que se tocan en la mesa— se monta en `jugadas.js`. Pero este motor NO pasa por ahí: pinta sus propios botones</sub>
-- **AQUÍ HABÍA UN `data.state || data` — y elegía mal.** <sub>línea 1145</sub>
+- **AQUÍ HABÍA UN `data.state || data` — y elegía mal.** <sub>línea 1148</sub>
   <br><sub>Algunos juegos (mancala) traen un `state` anidado con lo que el visualizador necesita para pintar (`{board, turno}`) Y ADEMÁS los campos de partida arriba del todo. Al quedarse con el anidado, este</sub>
-- **`is_game_over` SE VUELVE A PONER AQUÍ, Y NO SOBRA: hay juegos que lo** <sub>línea 1175</sub>
+- **`is_game_over` SE VUELVE A PONER AQUÍ, Y NO SOBRA: hay juegos que lo** <sub>línea 1178</sub>
   <br><sub>publican dentro de `state` y otros al nivel de arriba —por eso existe `campo()` justo encima—, así que quien reciba esto no debería tener que saber cuál de las dos formas le tocó. Ese «que cada consumidor lo busque»</sub>
-- **ESTO SE VE EN LOS CUATRO JUEGOS DEL MOTOR, Y ESTABA EN INGLÉS.** <sub>línea 1192</sub>
+- **ESTO SE VE EN LOS CUATRO JUEGOS DEL MOTOR, Y ESTABA EN INGLÉS.** <sub>línea 1195</sub>
   <br><sub>«CHECK» es jaque y «CLEAR» es que no lo hay: las dos únicas palabras que avisan de que tu rey está en peligro. En un tablero donde todo lo demás está en español, dejar el aviso sin traducir es lo peor de las</sub>
-- **EL BOTÓN DECÍA «PARAR» Y NADIE SABÍA PARAR QUÉ.** <sub>línea 1279</sub>
+- **EL BOTÓN DECÍA «PARAR» Y NADIE SABÍA PARAR QUÉ.** <sub>línea 1282</sub>
   <br><sub>Aviso de betatester desde mancala: «va solo no? o se juega asi? ni idea tengo de como se juega en realidad XD». Y sí va solo, y está bien que vaya: el asiento negro lo lleva un FSM, y sin reloj el FSM no mueve nunca. El</sub>
-- **ANTES ESTO ERA UNA LISTA APARTE, Y MEDIO FALSA.** <sub>línea 1322</sub>
+- **ANTES ESTO ERA UNA LISTA APARTE, Y MEDIO FALSA.** <sub>línea 1325</sub>
   <br><sub>El desplegable ofrecía `engine / human / alisa / queen / llm`. De esos, `alisa` y `queen` acababan los dos en el mismo `ai_move` —eran decoración— y `llm` mandaba `llm_move` AL HUB DE LA COLONIA. O sea que en el sitio</sub>
-- **El nombre que publican las REGLAS, no el del registro.** <sub>línea 1384</sub>
+- **El nombre que publican las REGLAS, no el del registro.** <sub>línea 1387</sub>
   <br><sub>Dos páginas registran con otro nombre —`ajedrez` se registra como `chess`, `damas` como `checkers`— y ese nombre entra en el texto que lee un modelo. Si aquí dijera «Chess» y el banco de</sub>
-- **SI NO ELIGE, SE PARA Y SE DICE.** <sub>línea 1395</sub>
+- **SI NO ELIGE, SE PARA Y SE DICE.** <sub>línea 1398</sub>
   <br><sub>de pruebas eso se cuenta como jugada «forzada» y se publica el porcentaje. Una mesa que rellenara el hueco en silencio le estaría regalando partidas a un modelo que no supo jugarlas.</sub>
 
 ### `public/arcade/js/SovereignCardEngine.js`
@@ -2174,73 +2156,73 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>`SovereignBoardEngine.js`: el defecto sondeaba `127.0.0.1:8741` —el hub de la colonia, que es otro proyecto— y dejaba un 404 en consola en cada carga, apuntando a una dirección privada nuestra. Desde una página</sub>
 - **CON `?sala=` LA PARTIDA NO OCURRE AQUÍ: OCURRE EN EL ÁRBITRO.** <sub>línea 499</sub>
   <br><sub>Es lo que convierte esta mesa de casino en una mesa para VARIAS personas. Dos que abran la misma dirección —o una persona y el agente de otra— se sientan a la misma partida, con turnos de verdad y el mismo</sub>
-- **`params.action` PRIMERO, y no es un detalle.** <sub>línea 541</sub>
+- **`params.action` PRIMERO, y no es un detalle.** <sub>línea 544</sub>
   <br><sub>`sendMove` envuelve la jugada en `{ action:'move', params:{ action: <jugada> } }`, así que leer `a.action` da la palabra «move» — y el árbitro</sub>
-- **EL REPETIDOR: VER UNA PARTIDA VOLVERSE A JUGAR** <sub>línea 604</sub>
+- **EL REPETIDOR: VER UNA PARTIDA VOLVERSE A JUGAR** <sub>línea 607</sub>
   <br><sub>/arcade/brisca.html?semilla=7&repetir=jugar:O_1,jugar:C_3,…</sub>
-- **VA EN EL MOTOR Y NO EN CADA MESA, Y ESO SON DIEZ JUEGOS DE UNA VEZ.** <sub>línea 615</sub>
+- **VA EN EL MOTOR Y NO EN CADA MESA, Y ESO SON DIEZ JUEGOS DE UNA VEZ.** <sub>línea 618</sub>
   <br><sub>Este motor lo comparten todos los juegos de cartas, con visualizador propio o con la mesa genérica. Puesto aquí, ninguno de ellos escribe una línea. Es la misma decisión que en la mesa de tablero: el repetidor sólo habla con el hub</sub>
-- **El sufijo de copia se quita ANTES de mirar nada.** <sub>línea 805</sub>
+- **El sufijo de copia se quita ANTES de mirar nada.** <sub>línea 808</sub>
   <br><sub>barajas la segunda copia es `S_A#2`, y sin esto el rango salía `A#2`: no existe esa figura, así que la carta se pintaba en blanco. Las dos copias son la misma carta a los ojos: el `#2` sólo sirve para nombrarlas aparte</sub>
-- **UNA FIGURA SIN LÁMINA TIENE QUE PODER LEERSE IGUAL.** <sub>línea 1005</sub>
+- **UNA FIGURA SIN LÁMINA TIENE QUE PODER LEERSE IGUAL.** <sub>línea 1008</sub>
   <br><sub>`_drawCourtCard` dibuja la silueta entera con `globalAlpha` entre 0,08 y 0,2: es un fantasma pensado para ir DEBAJO de una lámina, no para sustituirla. Y sólo hay láminas de la baraja inglesa (`H_J`, `S_Q`…), así que la sota, el</sub>
-- **DOS COLORES EN UNA CARTA SERÍAN DOS COLORES QUE NO SIGNIFICAN LO** <sub>línea 1261</sub>
+- **DOS COLORES EN UNA CARTA SERÍAN DOS COLORES QUE NO SIGNIFICAN LO** <sub>línea 1264</sub>
   <br><sub>MISMO, así que cada uno tiene su sitio y no se mezclan:</sub>
-- **Y HAY JUEGOS DONDE EL COLOR NO ES UN TRAMO: ES LA CARTA.** <sub>línea 1282</sub>
+- **Y HAY JUEGOS DONDE EL COLOR NO ES UN TRAMO: ES LA CARTA.** <sub>línea 1285</sub>
   <br><sub>Todo lo de arriba vale para entropy, donde gana quien menos suma. En UNIT el color decide qué puedes jugar, así que teñir por tramos pintaría un dos rojo de verde y haría que dos cartas del mismo color se vieran distintas.</sub>
-- **LO QUE NO ES UN NÚMERO VA SOBRE FONDO, Y NO POR ADORNO.** <sub>línea 1312</sub>
+- **LO QUE NO ES UN NÚMERO VA SOBRE FONDO, Y NO POR ADORNO.** <sub>línea 1315</sub>
   <br><sub>Un emoji es multicolor y CLARO. Sobre blanco, y visto desde la cámara de la mesa, competía fatal con una cifra negra: la carta del comodín se leía como una carta en blanco aunque el lienzo estuviera perfecto. Es el</sub>
-- **GEORGIA NO TIENE EMOJIS, Y UN COMODÍN SALÍA EN BLANCO.** <sub>línea 1331</sub>
+- **GEORGIA NO TIENE EMOJIS, Y UN COMODÍN SALÍA EN BLANCO.** <sub>línea 1334</sub>
   <br><sub>El canvas no avisa cuando le falta un glifo: dibuja nada y sigue. La carta se veía perfecta, blanca y vacía — que es lo mismo que le pasaba a la sota española por no tener lámina, sólo que por otra causa. Un tipo de</sub>
-- **Y EL GLIFO NO PUEDE IR DEL MISMO COLOR QUE SU PROPIO FONDO.** <sub>línea 1346</sub>
+- **Y EL GLIFO NO PUEDE IR DEL MISMO COLOR QUE SU PROPIO FONDO.** <sub>línea 1349</sub>
   <br><sub>Esto pintaba el panel con `color` y encima el símbolo TAMBIÉN con `color`. Con el comodín 🃏 no se notó nunca porque un emoji es un mapa de bits multicolor e ignora el relleno — así que la trampa quedó armada y</sub>
-- **Y MÁS GRANDE QUE UN NÚMERO, no igual: a la misma altura de fuente el** <sub>línea 1362</sub>
+- **Y MÁS GRANDE QUE UN NÚMERO, no igual: a la misma altura de fuente el** <sub>línea 1365</sub>
   <br><sub>glifo de un emoji ocupa la mitad que una cifra, así que a 120px la carta parecía vacía desde la cámara aunque el canvas estuviera bien. Se comprobó pintando el lienzo en pantalla, que es la única forma de</sub>
-- **HAY JUEGOS DONDE EL PALO NO PINTA NADA, Y ENSEÑARLO ESTORBA.** <sub>línea 1406</sub>
+- **HAY JUEGOS DONDE EL PALO NO PINTA NADA, Y ENSEÑARLO ESTORBA.** <sub>línea 1409</sub>
   <br><sub>Entropy se reparte con la española de 48 porque da doce valores limpios, pero ninguna regla mira el palo: se suma el valor y se anulan dos iguales en la misma columna. Enseñar oros y copas obligaba a</sub>
-- **ESTABAN CALIBRADOS PARA UNA CARTA QUE SE TIENE EN LA MANO, Y ÉSTAS** <sub>línea 1445</sub>
+- **ESTABAN CALIBRADOS PARA UNA CARTA QUE SE TIENE EN LA MANO, Y ÉSTAS** <sub>línea 1448</sub>
   <br><sub>ESTÁN SOBRE UNA MESA.</sub>
-- **HAY IMÁGENES QUE SON LA CARTA ENTERA, NO EL RETRATO.** <sub>línea 1464</sub>
+- **HAY IMÁGENES QUE SON LA CARTA ENTERA, NO EL RETRATO.** <sub>línea 1467</sub>
   <br><sub>Las figuras francesas que teníamos son sólo el dibujo, y por eso van encajadas en el hueco del centro. Las españolas que bajamos de Commons son CARTAS COMPLETAS —traen su marco y sus índices—, así que metidas en ese</sub>
-- **AQUÍ HABÍA UNA REJILLA DE PINTAS, Y ES LA DE UNA CARTA QUE SE SOSTIENE** <sub>línea 1534</sub>
+- **AQUÍ HABÍA UNA REJILLA DE PINTAS, Y ES LA DE UNA CARTA QUE SE SOSTIENE** <sub>línea 1537</sub>
   <br><sub>EN LA MANO.</sub>
-- **CUÁNTA TINTA LLEVA UNA CARA.** <sub>línea 1570</sub>
+- **CUÁNTA TINTA LLEVA UNA CARA.** <sub>línea 1573</sub>
   <br><sub>Este proyecto lleva media docena de cartas invisibles: los comodines sin glifo, las figuras españolas sin lámina, y ahora todas las de número. Ninguna dio nunca un error, porque una textura en blanco es una textura válida — y</sub>
-- **CADA FAMILIA TRAE SU EXTENSIÓN, Y SE DECLARA.** <sub>línea 1644</sub>
+- **CADA FAMILIA TRAE SU EXTENSIÓN, Y SE DECLARA.** <sub>línea 1647</sub>
   <br><sub>Las francesas son `.webp` de 22 KB y las españolas `.png` de 50 KB, tal como vinieron de Commons. Convertirlas a un formato común obligaría a redistribuir una VERSIÓN NUESTRA de una obra CC BY-SA, y eso arrastra la licencia a un</sub>
-- **BORRAR DEL CACHÉ NO REPINTA LA CARTA QUE YA ESTÁ EN LA MESA.** <sub>línea 1694</sub>
+- **BORRAR DEL CACHÉ NO REPINTA LA CARTA QUE YA ESTÁ EN LA MESA.** <sub>línea 1697</sub>
   <br><sub>Aquí había un `delete this.cachedMaterials[key]` con el comentario «invalidate cached material so it re-renders with image». Y no: el reparto ocurre antes de que carguen las imágenes, así que la carta se monta con el material de la figura</sub>
-- **UNA CARTA PUEDE IR TAPADA POR SÍ MISMA, no sólo la zona entera.** <sub>línea 1793</sub>
+- **UNA CARTA PUEDE IR TAPADA POR SÍ MISMA, no sólo la zona entera.** <sub>línea 1796</sub>
   <br><sub>`faceDown` es de la llamada, así que una mano con dos cartas vistas y seis tapadas —lo normal en entropy, y en cualquier juego con robo— obligaba a DOS llamadas. Y dos llamadas es lo que rompía el dibujo:</sub>
-- **EN UNA REJILLA, LA CARTA SE IDENTIFICA POR SU HUECO — NO POR SU CARA.** <sub>línea 1808</sub>
+- **EN UNA REJILLA, LA CARTA SE IDENTIFICA POR SU HUECO — NO POR SU CARA.** <sub>línea 1811</sub>
   <br><sub>Esto era siempre `${zona}_${cara}_${idx}`. En un abanico está bien: las cartas se mueven y conviene seguir a cada una. En una rejilla es al revés — el hueco 3 es el hueco 3 pase lo que pase, y lo que</sub>
-- **De dónde salió esta carta, anotado AQUÍ, que es el único sitio** <sub>línea 1843</sub>
+- **De dónde salió esta carta, anotado AQUÍ, que es el único sitio** <sub>línea 1846</sub>
   <br><sub>donde se sabe. El identificador de pista (`zona_cara_idx`) no se puede volver a partir: la cara puede llevar guiones bajos dentro —`num_7|E6A817|◆`— y cualquier expresión regular se equivoca de</sub>
-- **EL TEMBLOR SE SORTEA UNA VEZ POR CARTA, NO EN CADA DIBUJO.** <sub>línea 1852</sub>
+- **EL TEMBLOR SE SORTEA UNA VEZ POR CARTA, NO EN CADA DIBUJO.** <sub>línea 1855</sub>
   <br><sub>Los montones llevan un desvío mínimo al azar para que no parezcan apilados con escuadra. Estaba con `Math.random()` aquí dentro — y esto corre en CADA sondeo de estado, o sea una vez por segundo. Así que el</sub>
-- **EL GROSOR DE UNA PILA SE SUMA AQUÍ, EN EL DESTINO.** <sub>línea 1881</sub>
+- **EL GROSOR DE UNA PILA SE SUMA AQUÍ, EN EL DESTINO.** <sub>línea 1884</sub>
   <br><sub>Una carta que representa un montón se engorda en su Z local —que tumbada apunta al cielo— y hay que subirla la mitad de lo que crece, o queda medio hundida en el fieltro. Esa subida se hacía FUERA, en</sub>
-- **CON LA PESTAÑA OCULTA NO SE ANIMA: SE COLOCA Y YA.** <sub>línea 1991</sub>
+- **CON LA PESTAÑA OCULTA NO SE ANIMA: SE COLOCA Y YA.** <sub>línea 1994</sub>
   <br><sub>Chrome congela `requestAnimationFrame` en pestañas que no se ven, y el bucle de este motor es quien llama a `TWEEN.update`. O sea que mientras miras otra pestaña nadie avanza las animaciones — pero el</sub>
-- **EN UNA REJILLA NO SE REPARTE DANDO TUMBOS.** <sub>línea 2015</sub>
+- **EN UNA REJILLA NO SE REPARTE DANDO TUMBOS.** <sub>línea 2018</sub>
   <br><sub>La carta nacía con una rotación aleatoria en los tres ejes y viajaba girando hasta su sitio. Repartiendo una mano de póker eso es precisamente la gracia; sobre una rejilla es</sub>
-- **UNA CARTA QUE YA ESTÁ EN SU SITIO NO SE ANIMA HACIA SU SITIO.** <sub>línea 2062</sub>
+- **UNA CARTA QUE YA ESTÁ EN SU SITIO NO SE ANIMA HACIA SU SITIO.** <sub>línea 2065</sub>
   <br><sub>Esto creaba dos animaciones por carta en CADA sondeo de estado —una vez por segundo— aunque no se hubiera movido nada. Con el temblor ya estable (ver arriba), la inmensa mayoría de las</sub>
-- **EL PANEL SE PLIEGA.** <sub>línea 2129</sub>
+- **EL PANEL SE PLIEGA.** <sub>línea 2132</sub>
   <br><sub>`mesa3d.css` tiene desde siempre la regla `.collapsed #hud-content` con su transición, y esta cabecera ya llevaba `id="dockBtnToggle"` — un nombre que sólo tiene sentido si algo lo pulsa. No había botón ni había</sub>
-- **CERO NO ES ESTRECHO: ES «NO LO SÉ».** <sub>línea 2170</sub>
+- **CERO NO ES ESTRECHO: ES «NO LO SÉ».** <sub>línea 2173</sub>
   <br><sub>Esto era `innerWidth < 820` a secas, y `innerWidth` vale 0 en una pestaña que todavía no se ha compuesto. Cero es menor que 820, así que un monitor de 27 pulgadas se llevaba la vista de teléfono — la mesa sin</sub>
-- **`legal_moves` PRIMERO.** <sub>línea 2191</sub>
+- **`legal_moves` PRIMERO.** <sub>línea 2194</sub>
   <br><sub>Los dos campos son el mismo dato con dos nombres —veintiún juegos publican ambos con idéntico valor— y el canónico es `legal_moves`: lo publican los treinta, y `legal_actions` sólo veintiuno.</sub>
-- **BLACKJACK NO OFRECÍA NINGUNA.** <sub>línea 2221</sub>
+- **BLACKJACK NO OFRECÍA NINGUNA.** <sub>línea 2224</sub>
   <br><sub>tres palabras, imposibles de deducir mirando— y su panel no las daba: había que escribirlas. Salió en la pasada de las 35, midiendo cuántos botones `.mesa-jugada` hay en cada juego. Blackjack: cero.</sub>
-- **REPITIENDO VA PRIMERO: aquí no ha terminado TU partida, ha terminado la** <sub>línea 2241</sub>
+- **REPITIENDO VA PRIMERO: aquí no ha terminado TU partida, ha terminado la** <sub>línea 2244</sub>
   <br><sub>que estabas mirando, y la pantalla de fin ofrecería tres botones que `sendMove` rechaza. Lo que hace falta es la salida a jugarla tú.</sub>
-- **AL TERMINAR, LA PANTALLA DE FIN — Y NO ES UN ADORNO.** <sub>línea 2257</sub>
+- **AL TERMINAR, LA PANTALLA DE FIN — Y NO ES UN ADORNO.** <sub>línea 2260</sub>
   <br><sub>Aquí salía el botón «nueva» pelado, sin resultado, sin forma de compartir la partida ni de aportarla. Y es el momento en que alguien decide si juega otra o cierra la pestaña; en un blackjack, que es una mano detrás de otra,</sub>
-- **LOS VERBOS SALEN ABAJO, Y ESTE ES EL SEGUNDO DE TRES CAMINOS DE PANEL.** <sub>línea 2277</sub>
+- **LOS VERBOS SALEN ABAJO, Y ESTE ES EL SEGUNDO DE TRES CAMINOS DE PANEL.** <sub>línea 2280</sub>
   <br><sub>Una carta se juega tocándola en la mesa. Lo que NO está en la mesa —robar, plantarse, pasar— no se puede tocar en ninguna parte, y ésos son los únicos botones que una persona necesita pulsar de verdad.</sub>
-- **AQUÍ HABÍA UN `flip(zona, indice)` VACÍO, Y CONTABA UNA HISTORIA.** <sub>línea 2318</sub>
+- **AQUÍ HABÍA UN `flip(zona, indice)` VACÍO, Y CONTABA UNA HISTORIA.** <sub>línea 2321</sub>
   <br><sub>Su cuerpo entero eran tres comentarios y un `if` sin nada dentro. Empezaba así:</sub>
 
 ### `public/arcade/js/visualizadores.js`
@@ -2631,15 +2613,29 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Vivía ahí dentro, y ahí funcionaba: una mesa de texto que sirve a los treinta juegos, con árbitro, asientos y recibo verificable. El problema es que la mesa de casino en 3D quería exactamente lo mismo, y lo único que tenía a mano era</sub>
 - **QUIÉN ERES EN ESTA SALA, Y QUE SIGAS SIENDO EL MISMO AL RECARGAR.** <sub>línea 46</sub>
   <br><sub>Sin `?yo=` se inventaba un `invitado-xxxx` en cada carga. Eso es lo que permite repartir UN solo enlace —cada navegador coge un nombre distinto y por tanto una silla distinta— pero al recargar salía otro nombre: la mesa te veía como</sub>
-- **EL SECRETO DE TU ASIENTO.** <sub>línea 77</sub>
+- **QUIEN ABRE UN ENLACE COMPARTIDO PUEDE DECIR CÓMO SE LLAMA.** <sub>línea 67</sub>
+  <br><sub>const yo = await nombrePreguntando(sala, params.get('yo'), { juego });</sub>
+- **Y LA SILLA SE PIDE DESPUÉS DE CONTESTAR, QUE ES MEDIO ARREGLO EN SÍ.** <sub>línea 88</sub>
+  <br><sub>Antes, abrir el enlace ocupaba asiento en el acto: quien lo abría para echar un vistazo y se iba dejaba una silla cogida por nadie. Ahora la reserva el gesto de sentarse, no el de mirar.</sub>
+- **EL TÍTULO SALE DEL DE LA PÁGINA, NO DE LA CLAVE DEL JUEGO.** <sub>línea 114</sub>
+  <br><sub>Con la clave se leía «entropy» en minúscula, y «gofish» habría salido así en vez de «Go Fish». El catálogo de títulos vive en `rules/index.js` y traerlo hasta aquí sería importar las reglas enteras para pintar una línea.</sub>
+- **UNA MESA QUE ESPERA TIENE QUE PARECER QUE ESPERA.** <sub>línea 205</sub>
+  <br><sub>Al mandar `jugadores`, la mesa deja de arrancar con una sola persona: se queda quieta hasta que llegue la otra. Eso es lo correcto —así nadie le pierde la silla a nadie— y a la vez es exactamente lo que se lee como «esto está</sub>
+- **EL SECRETO DE TU ASIENTO.** <sub>línea 291</sub>
   <br><sub>La mesa lo entrega UNA vez, al sentarte, y lo exige para mover: sin él `quien` era sólo una etiqueta y cualquiera que supiera el nombre de la sala podía mandar `{quien:'motoko', jugada:…}` y mover sus piezas.</sub>
-- **Y SOBREVIVE A UNA RECARGA, PORQUE SI NO TE QUEDAS FUERA DE TU SILLA.** <sub>línea 95</sub>
+- **Y SOBREVIVE A UNA RECARGA, PORQUE SI NO TE QUEDAS FUERA DE TU SILLA.** <sub>línea 309</sub>
   <br><sub>Vivía sólo en memoria. Al recargar la página, el nombre volvía en la URL pero el secreto no: la mesa contestaba «ya estás sentado» —sin devolverlo, y hace bien, dárselo a quien diga tu nombre sería regalar la identidad— y a</sub>
-- **ABRIR EL ENLACE NO TE SIENTA SI LA MESA YA ESTÁ LLENA.** <sub>línea 129</sub>
+- **ABRIR EL ENLACE NO TE SIENTA SI LA MESA YA ESTÁ LLENA.** <sub>línea 343</sub>
   <br><sub>Antes esto sentaba a cualquiera que abriera la página. Pasó jugando: abrí una partida de ajedrez para otra agente, alguien entró a MIRAR desde el navegador y **se llevó las negras**; la invitada se quedó de pie con las</sub>
-- **EL TOPE DECLARADO MANDA SOBRE EL DESCUBIERTO.** <sub>línea 145</sub>
+- **EL TOPE DECLARADO MANDA SOBRE EL DESCUBIERTO.** <sub>línea 359</sub>
   <br><sub>Esto miraba `asientos_del_juego`, que la mesa DESCUBRE jugando y que vale 1 hasta que el turno cambia de manos por primera vez. Resultado visto jugando: la segunda jugadora de un entropy abrió el enlace</sub>
-- **EN UNA SALA SÓLO MANDAS SOBRE TU SILLA.** <sub>línea 193</sub>
+- **ANTES DE LA PRIMERA JUGADA PASA CUALQUIERA» SÓLO VALE SIN TOPE.** <sub>línea 375</sub>
+  <br><sub>Esto era `yaEstoy || m.moves === 0 || ocupados < sillas`, y el `moves === 0` se tragaba la comprobación entera justo en el momento en que más se usa: dos betatesters sentados y todavía sin mover.</sub>
+- **`jugadores` NO SE MANDABA, Y POR ESO LA CASA SE SENTABA EN TU SITIO.** <sub>línea 402</sub>
+  <br><sub>El árbitro espera a `jugadores` antes de rellenar huecos, y el cliente web no lo decía nunca: la mesa quedaba con `esperaA = 1`, o sea «en cuanto haya uno, adelante». Medido en una sala de entropy con una sola</sub>
+- **Y SI EL «NO» ES «ESTÁ LLENA», SE MIRA.** <sub>línea 428</sub>
+  <br><sub>`mirarPrimero()` decide con lo que la mesa contó hace un instante, y entre esa foto y la petición cabe otra persona: dos pestañas que abren el enlace a la vez ven las dos un hueco, y una de las dos se lo</sub>
+- **EN UNA SALA SÓLO MANDAS SOBRE TU SILLA.** <sub>línea 463</sub>
   <br><sub>Las demás las lleva quien se haya sentado en ellas, en su propia pestaña.</sub>
 
 ### `public/arcade/js/protohub/sustrato.js`
@@ -2810,26 +2806,45 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>El sabotaje toca ficheros del proyecto. Antes se guarda el contenido, se restaura SIEMPRE —pase lo que pase— y al final se verifica que todo quedó como estaba comparando el texto. Si algo no se pudo restaurar, se dice a gritos y se</sub>
 - **EL SABOTAJE TIENE QUE ROMPER LO QUE ESA PRUEBA VIGILA, NO CUALQUIER COSA.** <sub>línea 57</sub>
   <br><sub>Meter un error de sintaxis haría suspender a cualquiera y no demostraría nada: probaría que node sabe leer. Cada sabotaje de aquí es el fallo REAL contra el que se escribió la prueba — quitarle las normas al enlace, dejar que las teclas jueguen</sub>
-- **ÉSTE ES EL PRIMER SABOTAJE DE ENUMERACIÓN, Y ES OTRA COSA QUE LOS DEMÁS.** <sub>línea 123</sub>
+- **ÉSTE ES EL PRIMER SABOTAJE DE ENUMERACIÓN, Y ES OTRA COSA QUE LOS DEMÁS.** <sub>línea 137</sub>
   <br><sub>Los quince de arriba rompen una CONDICIÓN y esperan que la comprobación la eche de menos. Éste rompe el UNIVERSO: le cambia el nombre a un juego del catálogo, de modo que el conjunto medido sigue teniendo treinta y cinco</sub>
-- **DOS SABOTAJES PARA EL MISMO FICHERO, Y HACE FALTA.** <sub>línea 161</sub>
+- **DOS SABOTAJES PARA EL MISMO FICHERO, Y HACE FALTA.** <sub>línea 175</sub>
   <br><sub>`prueba_fichas` vigila ahora dos cosas distintas: que lo declarado coincida con lo que hace el juego, y que las rutas que promete la ficha SE PUEDAN PEDIR. Con un solo sabotaje, la segunda estaría sin cubrir — y es justo la</sub>
-- **ES OTRA PREGUNTA QUE LA DE `biblioteca`, Y POR ESO OTRO SABOTAJE.** <sub>línea 267</sub>
+- **ES OTRA PREGUNTA QUE LA DE `biblioteca`, Y POR ESO OTRO SABOTAJE.** <sub>línea 281</sub>
   <br><sub>Aquélla comprueba que los juegos LEEN el catálogo que se les pasa. Ésta, que cogen de él LA BARAJA QUE LES TOCA. Un juego francés que pidiera la española leería el catálogo impecablemente y repartiría oros en una mesa de</sub>
-- **AQUÍ FALLÉ LA PUNTERÍA DOS VECES, Y ES EL ERROR TÍPICO DE ESTE FICHERO.** <sub>línea 342</sub>
+- **AQUÍ FALLÉ LA PUNTERÍA DOS VECES, Y ES EL ERROR TÍPICO DE ESTE FICHERO.** <sub>línea 356</sub>
   <br><sub>Primero cambié `juego: 'ajedrez'` en el catálogo: la prueba aprobó, porque enumera el catálogo y construye cada entorno — un nombre distinto se construye igual. Luego puse `reset(` a secas, que aparece también en un</sub>
-- **SE SABOTEA EL PAQUETE, NO `public/`.** <sub>línea 378</sub>
+- **SE SABOTEA EL PAQUETE, NO `public/`.** <sub>línea 392</sub>
   <br><sub>medido = PAQUETE if hay_paquete else PUBLIC</sub>
-- **NO SE PUDO DEVOLVER A SU SITIO:')}`);** <sub>línea 473</sub>
+- **NO SE PUDO DEVOLVER A SU SITIO:')}`);** <sub>línea 487</sub>
   <br><sub>for (const f of sinRestaurar) console.log(rojo(`      ${f}`)); console.log(rojo('   RECUPÉRALOS CON `git checkout -- <fichero>` ANTES DE SEGUIR.')); process.exit(2);</sub>
-- **EL CENSO SE DERIVA.** <sub>línea 486</sub>
+- **EL CENSO SE DERIVA.** <sub>línea 500</sub>
   <br><sub>Aquí había un array `TODAS` con los nombres escritos a mano. Es la enésima lista de este proyecto que se separa de la realidad en silencio — y ésta era la peor, porque es la lista de la red de seguridad.</sub>
-- **20-08: estas dos salían denunciadas como «no las corre nadie» y era FALSO —** <sub>línea 528</sub>
+- **20-08: estas dos salían denunciadas como «no las corre nadie» y era FALSO —** <sub>línea 542</sub>
   <br><sub>tienen su propio mando desde el día que se escribieron. El aviso miraba sólo `scripts.test` y llamaba huérfana a cualquiera que viviera en otro guion. Se arregla abajo mirando TODOS los guiones, y éstas se quedan aquí porque abren</sub>
-- **DOS LISTAS Y NO UNA, PORQUE SE PREGUNTAN DOS COSAS DISTINTAS.** <sub>línea 555</sub>
+- **DOS LISTAS Y NO UNA, PORQUE SE PREGUNTAN DOS COSAS DISTINTAS.** <sub>línea 569</sub>
   <br><sub>`todasEnDisco` es lo que HAY. `enDisco` es lo que se vigila por huérfano, que excluye a las de `APARTE` porque de ésas ya se sabe por qué no van en `npm test`.</sub>
-- **SE MIRAN TODOS LOS GUIONES, NO SÓLO `test`.** <sub>línea 569</sub>
+- **SE MIRAN TODOS LOS GUIONES, NO SÓLO `test`.** <sub>línea 583</sub>
   <br><sub>Esto leía `scripts.test` y punto, así que denunciaba como huérfana a cualquier comprobación que viviera en otro mando —`npm run figuras`, `npm run invitados`— aunque se corriera a diario. Una acusación falsa dentro del instrumento que existe</sub>
+
+### `prueba_dos_personas.mjs`
+
+- **LA CUARTA ES LA QUE NO MIRABA NADIE, Y ERA LA ROTA.** <sub>línea 13</sub>
+  <br><sub>El árbitro decide con el estado de la silla 0 y con `ordenAsientos`, así que repartía los turnos bien. Pero cada jugador ve `estado(p, su_silla)`, y ahí `turn` comparaba contra 0 en vez de contra su asiento: el segundo leía «player»</sub>
+- **NO TIENE SABOTAJE DECLARADO EN `npm run pruebas`, Y SE DICE POR QUÉ.** <sub>línea 21</sub>
+  <br><sub>Los sabotajes de la casa cambian un fichero del repositorio y vuelven a correr la comprobación. Esto no mide el repositorio: mide el worker DESPLEGADO, así que un sabotaje de verdad obligaría a desplegar código roto a producción y volver a</sub>
+- **LA CASA NO SE SIENTA EN LA SILLA DE QUIEN VIENE DE CAMINO.** <sub>línea 67</sub>
+  <br><sub>Un enlace se reparte y la gente llega cuando llega. Si el primero empieza a jugar mientras espera, la casa rellenaba el hueco: medido en entropy con una sola persona —ocho jugadas suyas y `played_by_house: 1`—, o sea que el amigo</sub>
+- **SE CUENTAN MIS JUGADAS CONTRA LAS DE LA MESA, NO `played_by_house`.** <sub>línea 90</sub>
+  <br><sub>Mi primer intento miraba ese campo y daba rojo con el arreglo ya puesto. No cuenta jugadas de la casa: es `ordenAsientos.length - asientos.length`, o sea SILLAS SIN DUEÑO. Con una persona en una mesa de dos vale 1 aunque la casa no</sub>
+- **SE MIRA LA PANTALLA DE LOS DOS, NO LA DEL QUE JUEGA.** <sub>línea 110</sub>
+  <br><sub>`player` es un pronombre: significa «tú». Si los dos lo ven a la vez, uno de los dos tiene delante una pantalla que le miente, aunque la mesa reparta bien los turnos. Exactamente una silla puede verlo — y `?quien=` existe</sub>
+- **EN LA MISMA RESPUESTA VIENEN DOS `turn` CON VOCABULARIOS DISTINTOS.** <sub>línea 126</sub>
+  <br><sub>El de arriba es el NOMBRE de quien mueve —lo traduce el árbitro— y ése es el bueno. Dentro de `state` viaja el del juego, que es un pronombre por silla (`player`/`cpu1`). Se miran los dos porque un cliente puede leer</sub>
+- **Y LA MISMA LISTA, POR LA OTRA PUERTA.** <sub>línea 144</sub>
+  <br><sub>`legal_moves` de arriba ya se entregaba sólo a quien mueve. Dentro de `state` iba la misma lista para todo el mundo, y el motor de cartas pinta los botones desde AHÍ. Se mira el estado crudo y no el campo de arriba,</sub>
+- **Y LO QUE MANDA EL CLIENTE, QUE ES DONDE ESTABA EL FALLO DE VERDAD.** <sub>línea 195</sub>
+  <br><sub>Todo lo de arriba se sienta mandando `jugadores: 2`, así que mide el contrato del árbitro y NO puede ver el fallo que se venía a cazar: el árbitro esperaba bien, y quien no lo pedía era la web. Escribí esa comprobación, salió verde con</sub>
 
 ### `prueba_fichas.mjs`
 
@@ -3064,6 +3079,13 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Este número es el que hace que un juego entre o no en la clasificación, así que dejarlo sólo en la terminal es lo mismo que no medirlo. Se guarda para que la tabla lo lea, y con MARGEN: el tope que se publica es el medido por dos.</sub>
 - **Y SÓLO SE ESCRIBE SI SE MIDIERON TODOS LOS QUE HAY EN EL FICHERO.** <sub>línea 150</sub>
   <br><sub>pasada parcial borraría los topes de los que no se midieron esta vez, y la tabla los volvería a cortar sin que nadie tocara nada.</sub>
+
+### `prueba_turno.mjs`
+
+- **EL FALLO QUE SE BUSCA: dos sillas que ven la MISMA palabra de «me toca».** <sub>línea 54</sub>
+  <br><sub>Con el vocabulario `player`/`cpuN`, «player» significa «tú». Si dos sillas lo ven a la vez, una de las dos está mintiendo. Con `white`/`black` no aplica: eso es un color, no un pronombre, y las dos sillas deben verlo igual.</sub>
+- **EL INVARIANTE ES «EXACTAMENTE UNA», NO «LA SILLA `p.turno`».** <sub>línea 66</sub>
+  <br><sub>Mi primera versión comparaba contra `p.turno` y denunciaba al alisápolis en 19 de 40 jugadas. Era falso: en una subasta quien decide es el pujador, no quien tiene el turno de la mesa, así que `p.turno` no es la respuesta a «¿quién mueve</sub>
 
 ### `prueba_variantes.mjs`
 
@@ -3621,17 +3643,19 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 
 - **Y LA DECISIÓN QUE MÁS ME GUSTA DE ESTA PÁGINA** <sub>línea 25</sub>
   <br><sub>Los botones de esta mesa son `legal_moves`: exactamente la misma lista que `/api/gym` le ofrece a un agente de lenguaje. No hay una interfaz para personas y otra para máquinas — **hay una puerta, dibujada**.</sub>
-- **Lo que NO cambia entre los dos modos, que es lo que importa:** <sub>línea 124</sub>
+- **Lo que NO cambia entre los dos modos, que es lo que importa:** <sub>línea 125</sub>
   <br><sub>los botones siguen siendo `legal_moves`, y lo que sale al final sigue siendo el mismo recibo `{juego, semilla, jugadas}` que verifica `/api/verificar`. Jugar acompañado no produce una partida de otra clase.</sub>
-- **ANTES ESTO ERA «TÚ CONTRA LA CASA», Y SE NOTABA EN EL CÓDIGO.** <sub>línea 177</sub>
+- **SÓLO SE PREGUNTA SI HAY SALA.** <sub>línea 134</sub>
+  <br><sub>una partida local no hay nadie con quien confundirte: sacarle un recuadro a quien abrió una mesa para jugar solo sería un peaje por nada. const yo = sala</sub>
+- **ANTES ESTO ERA «TÚ CONTRA LA CASA», Y SE NOTABA EN EL CÓDIGO.** <sub>línea 184</sub>
   <br><sub>La versión anterior tenía un `esMio(st)` que decía «el asiento 0 eres tú» y un bucle que llamaba a `ai_move` para todos los demás. O sea que sólo existían dos papeles: el humano y la máquina. No había forma de poner un modelo de</sub>
-- **`{ move: m }`, no `{ jugada: m }`.** <sub>línea 205</sub>
+- **`{ move: m }`, no `{ jugada: m }`.** <sub>línea 212</sub>
   <br><sub>vez de leer el contrato: `ProtoHub.move()` acepta `params.uci`, `params.action`, `uci` o `move`, y con cualquier otra cosa devuelve «falta la jugada» y NO SE QUEJA. Doscientos clics y cero jugadas</sub>
-- **CON PAUSA, Y NO POR ESTÉTICA.** <sub>línea 305</sub>
+- **CON PAUSA, Y NO POR ESTÉTICA.** <sub>línea 312</sub>
   <br><sub>partida entera entre dos fotogramas y nadie ve nada: la pantalla salta del reparto al marcador final. Una mesa donde no se puede MIRAR jugar no sirve para entender por qué un agente pierde, que es medio propósito de esto.</sub>
-- **Y SI EL CONTROLADOR NO SABE, SE PARA.** <sub>línea 310</sub>
+- **Y SI EL CONTROLADOR NO SABE, SE PARA.** <sub>línea 317</sub>
   <br><sub>devuelve `null`; entonces la mesa se detiene y lo dice, en vez de jugar por él. Regalarle una jugada a un modelo que no supo darla convierte el banco de pruebas en un adorno.</sub>
-- **SONDEO Y NO WEBSOCKETS, A PROPÓSITO.** <sub>línea 366</sub>
+- **SONDEO Y NO WEBSOCKETS, A PROPÓSITO.** <sub>línea 373</sub>
   <br><sub>jugada y jugada pasan segundos, no milisegundos. Un sondeo cada segundo y medio se siente igual y no arrastra reconexiones, latidos ni estados a medias. El día que haya algo en tiempo real esto se cambia; hoy sería complejidad</sub>
 
 ### `public/arcade/oca.html`
@@ -3923,35 +3947,37 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Los juegos de cartas caen a un respaldo interno si no pueden leer `card_library.json`, y lo avisan con `biblioteca: false`. En una partida suelta eso es tolerable; aquí NO: el recibo de esta mesa</sub>
 - **A CUÁNTOS SE ESPERA ANTES DE QUE JUEGUE LA CASA.** <sub>línea 300</sub>
   <br><sub>Sin esto, el primero que se sienta arranca y la casa ocupa el resto — cómodo para una persona sola, y demoledor en cuanto los jugadores son agentes: en la primera prueba con dos procesos, el</sub>
-- **NO CABE UN CUARTO EN UNA MESA DE DOS.** <sub>línea 335</sub>
+- **Y NUNCA A MÁS DE LOS QUE CABEN.** <sub>línea 312</sub>
+  <br><sub>número redondo que no sale de ningún sitio: una mesa de entropy podía quedarse esperando a ocho para siempre en un juego de dos. El número que manda es el que el juego declara, el mismo con el</sub>
+- **NO CABE UN CUARTO EN UNA MESA DE DOS.** <sub>línea 342</sub>
   <br><sub>Antes el número de asientos se averiguaba JUGANDO —se subía cada vez que se veía cambiar el turno— y por eso en una mesa recién abierta entraba todo el mundo. Pasó de verdad: cuatro sentados a un ajedrez,</sub>
-- **UN SECRETO POR ASIENTO — SIN ESTO, EL NOMBRE NO ES UNA IDENTIDAD.** <sub>línea 359</sub>
+- **UN SECRETO POR ASIENTO — SIN ESTO, EL NOMBRE NO ES UNA IDENTIDAD.** <sub>línea 366</sub>
   <br><sub>Hasta aquí `quien` era sólo una etiqueta: cualquiera que supiera el nombre de la sala podía mandar `{quien:'motoko', jugada:...}` y jugar las piezas de otra. Entre nosotros da igual; con el enlace circulando</sub>
-- **HAY QUE DEMOSTRAR QUE ERES TÚ, NO SÓLO DECIRLO.** <sub>línea 389</sub>
+- **HAY QUE DEMOSTRAR QUE ERES TÚ, NO SÓLO DECIRLO.** <sub>línea 396</sub>
   <br><sub>Sin esto, `quien` era una etiqueta: cualquiera con el nombre de la sala podía mandar `{quien:'motoko', jugada:…}` y mover sus piezas. El secreto se entrega al sentarse y se exige aquí.</sub>
-- **CADA UNO VE SU MANO, Y ESTO COSTÓ VERLO.** <sub>línea 464</sub>
+- **CADA UNO VE SU MANO, Y ESTO COSTÓ VERLO.** <sub>línea 471</sub>
   <br><sub>Las reglas de cartas publicaban siempre la perspectiva de la silla 0. Con un humano contra la casa daba igual; en una mesa compartida, el segundo abría su pestaña y leía la mano del primero, carta por carta.</sub>
-- **Y NO SE PREGUNTA SI LAS REGLAS ACEPTAN EL SEGUNDO PARÁMETRO.** <sub>línea 471</sub>
+- **Y NO SE PREGUNTA SI LAS REGLAS ACEPTAN EL SEGUNDO PARÁMETRO.** <sub>línea 478</sub>
   <br><sub>El primer intento lo hacía con `reglas.estado.length > 1`, y esa condición es SIEMPRE falsa: `Function.length` cuenta los parámetros hasta el primero con valor por defecto, y la firma es</sub>
-- **EL OBJETIVO Y EL PATRÓN NO LLEGABAN A LAS SALAS.** <sub>línea 482</sub>
+- **EL OBJETIVO Y EL PATRÓN NO LLEGABAN A LAS SALAS.** <sub>línea 489</sub>
   <br><sub>Los dos los declara el juego una vez —`OBJETIVO`, `PATRON`— y los mete en el estado `ProtoHub.state()`. Este árbitro no pasa por ahí: llama a `reglas.estado(p)` directamente, así que aquí no aparecían.</sub>
-- **LA FUGA DE `legal_moves` SE CERRÓ ARRIBA Y SE REABRÍA AQUÍ DENTRO.** <sub>línea 503</sub>
+- **LA FUGA DE `legal_moves` SE CERRÓ ARRIBA Y SE REABRÍA AQUÍ DENTRO.** <sub>línea 510</sub>
   <br><sub>Abajo, `legal_moves` sólo se entrega a quien mueve, con su motivo escrito: en un juego de cartas esa lista ES la mano del rival. Pero el estado crudo viaja entero en `state`, y ahí volvía a ir la misma lista para todo el</sub>
-- **EL SECRETO NO SALE DE AQUÍ.** <sub>línea 537</sub>
+- **EL SECRETO NO SALE DE AQUÍ.** <sub>línea 544</sub>
   <br><sub>Esto era `{...a}`, que copia el asiento entero — y al añadir el secreto por asiento habría repartido el de todos a todo el mundo en cada respuesta. El arreglo de seguridad abriendo, él solo, un</sub>
-- **Y EL TOPE DECLARADO, QUE ES EL QUE DECIDE SI CABES.** <sub>línea 565</sub>
+- **Y EL TOPE DECLARADO, QUE ES EL QUE DECIDE SI CABES.** <sub>línea 572</sub>
   <br><sub>Este número ya estaba aquí —es el que devuelve el 409 de mesa completa— pero no salía, así que los clientes decidían si sentarse mirando `asientos_del_juego`, que se DESCUBRE jugando y vale 1 hasta</sub>
-- **LA SITUACIÓN, EN TEXTO — Y FALTABA.** <sub>línea 591</sub>
+- **LA SITUACIÓN, EN TEXTO — Y FALTABA.** <sub>línea 598</sub>
   <br><sub>La mesa entregaba `acciones` y nada más, así que un agente sabía qué podía hacer y no qué estaba pasando. Con eso sólo se puede elegir al azar entre lo ofrecido, que es exactamente la línea base</sub>
-- **Y SI EL JUEGO NO TIENE `describir` PROPIO, LO CUENTA EL** <sub>línea 607</sub>
+- **Y SI EL JUEGO NO TIENE `describir` PROPIO, LO CUENTA EL** <sub>línea 614</sub>
   <br><sub>DESCRIPTOR COMPARTIDO. Sin este respaldo, los diecinueve clásicos —ajedrez incluido— entregaban jugadas legales y ningún tablero: un agente recibía «a2a3, a2a4, b2b3…» sin saber qué está pasando, que</sub>
-- **Y EL OBJETIVO SE ANTEPONE TAMBIÉN AQUÍ, PORQUE `describir` PROPIO** <sub>línea 618</sub>
+- **Y EL OBJETIVO SE ANTEPONE TAMBIÉN AQUÍ, PORQUE `describir` PROPIO** <sub>línea 625</sub>
   <br><sub>NO LO DICE.</sub>
-- **LAS JUGADAS LEGALES SÓLO PARA QUIEN LE TOCA.** <sub>línea 646</sub>
+- **LAS JUGADAS LEGALES SÓLO PARA QUIEN LE TOCA.** <sub>línea 653</sub>
   <br><sub>`legal_moves` son las jugadas de quien mueve, y en un juego de cartas **eso es literalmente su mano**. Se enviaban a cualquiera que mirase la mesa, así que un jugador sondeando mientras el rival</sub>
-- **EL BUZÓN DE AVISOS.** <sub>línea 676</sub>
+- **EL BUZÓN DE AVISOS.** <sub>línea 683</sub>
   <br><sub>Un aviso trae el RECIBO de la partida —{juego, semilla, jugadas}—, así que no es una queja: es algo que se puede volver a jugar exactamente igual. Por eso vive aquí y no en un formulario cualquiera; aquí ya está el código que</sub>
-- **Y COMPARTE ALMACÉN CON LAS MESAS, QUE NO ES ELEGANTE Y SE DICE.** <sub>línea 683</sub>
+- **Y COMPARTE ALMACÉN CON LAS MESAS, QUE NO ES ELEGANTE Y SE DICE.** <sub>línea 690</sub>
   <br><sub>Un buzón no es una mesa. Tener su propia clase Durable Object obligaría a una migración del worker, y eso es riesgo de despliegue para guardar una lista. Va a una instancia con nombre fijo y su propia clave de almacén; el</sub>
 
 ### `worker-mesas/prueba_mesa.mjs`

@@ -64,15 +64,229 @@ export function nombreParaSala(sala, pedido) {
 }
 
 /**
+ * ⚠️ QUIEN ABRE UN ENLACE COMPARTIDO PUEDE DECIR CÓMO SE LLAMA.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *     const yo = await nombrePreguntando(sala, params.get('yo'), { juego });
+ *
+ * El enlace de invitar no lleva nombre a propósito —así UNO solo sirve para
+ * todos, cada navegador coge el suyo y se sienta por orden— pero el precio era
+ * que te sentabas llamándote `invitado-4nuq` sin que nadie te preguntara. En una
+ * mesa de dos eso da igual; en una de cuatro, tres `invitado-` son tres
+ * desconocidos y el historial de la partida deja de poder leerse.
+ *
+ * Se pregunta SÓLO cuando no hay nada de donde sacarlo:
+ *
+ *   · con `?yo=` en la dirección     no se pregunta (lo trae quien montó la sala)
+ *   · con un nombre ya guardado      no se pregunta (vuelves tras recargar)
+ *   · sin nada                       se pregunta, con el `invitado-` puesto ya
+ *
+ * Las dos primeras importan tanto como la tercera: preguntar al recargar sería
+ * un estorbo cada vez que se refresca a media partida, y —peor— la respuesta
+ * podría cambiar el nombre y con él la silla. Por eso se guarda en la MISMA
+ * clave que usa `nombreParaSala`, y no en una paralela.
+ *
+ * ⚠️ Y LA SILLA SE PIDE DESPUÉS DE CONTESTAR, QUE ES MEDIO ARREGLO EN SÍ.
+ * Antes, abrir el enlace ocupaba asiento en el acto: quien lo abría para echar
+ * un vistazo y se iba dejaba una silla cogida por nadie. Ahora la reserva el
+ * gesto de sentarse, no el de mirar.
+ *
+ * El recuadro se dibuja aquí, con su estilo dentro, porque esto lo llaman cuatro
+ * páginas que no cargan las mismas hojas. Un `alert()` habría sido una línea, y
+ * también habría sido un cuadro del navegador encima de una mesa 3D.
+ *
+ * @returns {Promise<string>} el nombre, ya limpio y guardado
+ */
+export function nombrePreguntando(sala, pedido, { juego = '', titulo = '' } = {}) {
+    const limpio = limpiar(pedido, 24);
+    if (limpio) return Promise.resolve(limpio);
+    const clave = `alisa:sala:${sala}:yo`;
+    const guardado = leer(clave);
+    if (guardado) return Promise.resolve(guardado);
+    // Sin documento no hay a quién preguntar —pruebas en node, agentes sin
+    // pantalla—: se cae al comportamiento de siempre en vez de fallar.
+    if (typeof document === 'undefined') return Promise.resolve(nombreParaSala(sala, pedido));
+
+    const porDefecto = nombreSuelto();
+    return new Promise((listo) => {
+        const capa = document.createElement('div');
+        capa.className = 'alisa-antesala';
+        /**
+         * ⚠️ EL TÍTULO SALE DEL DE LA PÁGINA, NO DE LA CLAVE DEL JUEGO.
+         *
+         * Con la clave se leía «entropy» en minúscula, y «gofish» habría salido así
+         * en vez de «Go Fish». El catálogo de títulos vive en `rules/index.js` y
+         * traerlo hasta aquí sería importar las reglas enteras para pintar una línea.
+         *
+         * Pero `montarMesa` ya pone `document.title = 'ALISA Arcade — Entropy'` en
+         * todas las mesas, o sea que el nombre bueno ya está escrito y basta con
+         * quitarle el prefijo. Si algún día no lo estuviera, se cae a la clave.
+         */
+        const nombreMesa = titulo
+            || (document.title.split('—').pop() ?? '').trim()
+            || juego || 'Una mesa';
+        capa.innerHTML = `
+            <div class="alisa-antesala-caja">
+                <div class="alisa-antesala-titulo">${esc(nombreMesa)}</div>
+                <div class="alisa-antesala-sub">sala <b>${esc(sala)}</b> · te sientas al abrir</div>
+                <label for="alisa-antesala-n">Tu nombre en la mesa</label>
+                <input id="alisa-antesala-n" type="text" maxlength="24" autocomplete="off"
+                       spellcheck="false" value="${esc(porDefecto)}">
+                <button type="button" id="alisa-antesala-ok">Sentarme</button>
+                <div class="alisa-antesala-nota">Sólo distingue tu silla de las demás.
+                    Si lo dejas así entras como <b>${esc(porDefecto)}</b>.</div>
+            </div>`;
+        const estilo = document.createElement('style');
+        estilo.textContent = ESTILO_ANTESALA;
+        capa.appendChild(estilo);
+        document.body.appendChild(capa);
+
+        const campo = capa.querySelector('#alisa-antesala-n');
+        const cerrar = () => {
+            // Si borra el campo entero se usa el de por defecto: quedarse sin
+            // nombre no es una opción, y no vamos a regañar a nadie por un campo
+            // vacío cuando ya tenemos una respuesta razonable.
+            const elegido = limpiar(campo.value, 24) || porDefecto;
+            guardar(clave, elegido);
+            capa.remove();
+            listo(elegido);
+        };
+        capa.querySelector('#alisa-antesala-ok').addEventListener('click', cerrar);
+        campo.addEventListener('keydown', (e) => { if (e.key === 'Enter') cerrar(); });
+        // Se enfoca y se selecciona: escribir sustituye, y el `invitado-` sigue
+        // ahí para quien no quiera pensarlo.
+        setTimeout(() => { campo.focus(); campo.select(); }, 40);
+    });
+}
+
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+const ESTILO_ANTESALA = `
+.alisa-antesala {
+    position: fixed; inset: 0; z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(8, 6, 16, 0.82); backdrop-filter: blur(3px);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+.alisa-antesala-caja {
+    width: min(420px, calc(100vw - 32px));
+    padding: 22px 22px 18px;
+    background: #14101f; color: #e0e0ec;
+    border: 1px solid rgba(160, 140, 220, 0.35); border-radius: 12px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+}
+.alisa-antesala-titulo { font-size: 19px; font-weight: 700; }
+.alisa-antesala-sub { margin-top: 3px; font-size: 12px; color: rgba(226, 226, 240, 0.5); }
+.alisa-antesala label {
+    display: block; margin: 16px 0 6px;
+    font-size: 10px; letter-spacing: 0.11em; text-transform: uppercase;
+    color: rgba(226, 226, 240, 0.55);
+}
+.alisa-antesala input {
+    width: 100%; box-sizing: border-box; padding: 11px 12px;
+    background: rgba(255, 255, 255, 0.05); color: #e0e0ec;
+    border: 1px solid rgba(160, 140, 220, 0.35); border-radius: 8px;
+    font: inherit; font-size: 15px;
+}
+.alisa-antesala input:focus { outline: none; border-color: #a78bfa; }
+.alisa-antesala button {
+    width: 100%; margin-top: 14px; padding: 12px;
+    background: linear-gradient(90deg, #7c3aed, #a78bfa); color: #fff;
+    border: 0; border-radius: 8px; cursor: pointer;
+    font: inherit; font-size: 15px; font-weight: 700;
+}
+.alisa-antesala-nota {
+    margin-top: 10px; font-size: 11px; line-height: 1.5;
+    color: rgba(226, 226, 240, 0.42);
+}
+`;
+
+/**
+ * ⚠️ UNA MESA QUE ESPERA TIENE QUE PARECER QUE ESPERA.
+ *
+ * Al mandar `jugadores`, la mesa deja de arrancar con una sola persona: se queda
+ * quieta hasta que llegue la otra. Eso es lo correcto —así nadie le pierde la
+ * silla a nadie— y a la vez es exactamente lo que se lee como «esto está
+ * colgado» si la pantalla no lo cuenta: juegas tu turno, pasa el turno a un
+ * asiento vacío y no vuelve a moverse nada.
+ *
+ * El árbitro publicaba `waiting_for` desde el principio y no lo leía NADIE. El
+ * dato estaba, faltaba enseñarlo — que es el mismo patrón que el objetivo que no
+ * llegaba a las salas.
+ *
+ * Va aquí y no en el panel porque hay tres caminos de panel distintos y cuatro
+ * páginas que entran a una sala; puesto en `refrescar()`, ninguna se queda sin
+ * él. Y lleva el enlace: quien está esperando es justo quien necesita mandarlo.
+ */
+function pintarEspera(m, sala) {
+    if (typeof document === 'undefined') return;
+    const faltan = Number(m?.waiting_for) || 0;
+    let caja = document.getElementById('alisa-espera');
+    if (!faltan) { caja?.remove(); return; }
+    if (!caja) {
+        caja = document.createElement('div');
+        caja.id = 'alisa-espera';
+        document.body.appendChild(caja);
+        // El estilo va a la cabecera y una sola vez: dentro de la caja lo borraría
+        // el primer `innerHTML`, y volver a meterlo en cada repintado deja una pila
+        // de hojas idénticas creciendo mientras dure la espera.
+        if (!document.getElementById('alisa-espera-css')) {
+            const estilo = document.createElement('style');
+            estilo.id = 'alisa-espera-css';
+            estilo.textContent = ESTILO_ESPERA;
+            document.head.appendChild(estilo);
+        }
+    }
+    const texto = faltan === 1 ? 'Falta una persona por sentarse'
+                               : `Faltan ${faltan} personas por sentarse`;
+    // Se repinta sólo si cambió: dentro hay un botón, y rehacerlo en cada latido
+    // lo quitaría de debajo del dedo justo cuando alguien va a copiar el enlace.
+    if (caja.dataset.firma === texto) return;
+    caja.dataset.firma = texto;
+    const enlace = `${location.origin}${location.pathname}?sala=${encodeURIComponent(sala)}`;
+    caja.innerHTML = `<span class="alisa-espera-txt">${esc(texto)}</span>
+        <button type="button" class="alisa-espera-btn">copiar enlace</button>`;
+    caja.querySelector('.alisa-espera-btn').addEventListener('click', (e) => {
+        // Sin `clipboard` —o sin permiso— se enseña el enlace para copiarlo a mano
+        // en vez de dejar un botón que no hace nada.
+        navigator.clipboard?.writeText(enlace)
+            .then(() => { e.target.textContent = 'copiado'; })
+            .catch(() => { e.target.textContent = enlace; });
+    });
+}
+
+const ESTILO_ESPERA = `
+#alisa-espera {
+    position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 9998;
+    display: flex; align-items: center; gap: 12px;
+    padding: 9px 14px; border-radius: 999px;
+    background: rgba(20, 16, 31, 0.92); color: #e0e0ec;
+    border: 1px solid rgba(160, 140, 220, 0.4);
+    font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+#alisa-espera .alisa-espera-btn {
+    padding: 5px 10px; border-radius: 999px; cursor: pointer;
+    background: rgba(167, 139, 250, 0.18); color: #cbb6ff;
+    border: 1px solid rgba(167, 139, 250, 0.45);
+    font: inherit; font-size: 11px;
+}
+`;
+
+/**
  * @param {object} cfg
  *   sala, yo, juego, semilla   qué partida y quién eres
  *   mesas       opcional: otro árbitro (para pruebas)
  *   avisar      qué hacer con el motivo de un rechazo; por defecto, nada
  *   puedoJugar  si la silla la lleva una persona o algo automático. `mesa.html`
  *               le pasa su `?asientos=`; una mesa sin esa idea deja el sí.
+ *   esperaA     a cuántas PERSONAS espera la mesa antes de que la casa rellene
+ *               los huecos. Por defecto 2 —el caso del enlace compartido—; el
+ *               árbitro lo recorta a las sillas que el juego declare.
  */
 export function crearSala({ sala, yo, juego, semilla, mesas = MESAS,
-                            avisar = () => {}, puedoJugar = () => true }) {
+                            avisar = () => {}, puedoJugar = () => true,
+                            esperaA = 2 }) {
     /**
      * ⚠️ EL SECRETO DE TU ASIENTO. VIVE AQUÍ Y NO SALE.
      *
@@ -184,7 +398,29 @@ export function crearSala({ sala, yo, juego, semilla, mesas = MESAS,
                 this.espectador = true;
                 return true;                 // se ve la partida, no se juega
             }
-            const r = await this.pedir('/sentarse', { quien: yo, tipo: 'persona', juego, semilla });
+            /**
+             * ⚠️ `jugadores` NO SE MANDABA, Y POR ESO LA CASA SE SENTABA EN TU SITIO.
+             *
+             * El árbitro espera a `jugadores` antes de rellenar huecos, y el cliente
+             * web no lo decía nunca: la mesa quedaba con `esperaA = 1`, o sea «en
+             * cuanto haya uno, adelante». Medido en una sala de entropy con una sola
+             * persona: ocho jugadas suyas y `played_by_house: 1` — la casa ya estaba
+             * jugando la silla del amigo que todavía venía de camino.
+             *
+             * Es exactamente lo que rompe el enlace único: repartes UN enlace, el
+             * primero que llega empieza a jugar mientras espera, y para cuando el
+             * segundo abre, su asiento lleva rato en manos de la casa.
+             *
+             * Se manda 2 y no `max_seats` a propósito. Con `max_seats`, una mesa de
+             * parchís se quedaría parada hasta juntar CUATRO personas, y hoy esas
+             * partidas arrancan con la casa; convertir eso en una espera sería
+             * cambiarle el juego a quien no ha pedido nada. Dos es lo que hace falta
+             * para que un enlace compartido no le robe la silla a nadie, que es el
+             * caso que se está arreglando. Los solitarios no se enteran: el árbitro
+             * lo recorta a las sillas que el juego declara.
+             */
+            const r = await this.pedir('/sentarse',
+                { quien: yo, tipo: 'persona', juego, semilla, jugadores: esperaA });
             // Un «no» con motivo se enseña tal cual. La mesa se toma la molestia de
             // explicar por qué en algunos juegos no cabe un segundo; tragarse esa
             // explicación y dejar la pantalla en blanco sería desperdiciarla.
@@ -216,7 +452,10 @@ export function crearSala({ sala, yo, juego, semilla, mesas = MESAS,
 
         // `?quien=` es lo que hace que la mesa enseñe TU mano y no la del asiento 0.
         // Sin él se recibe la vista canónica, que es la del primero que se sentó.
-        async refrescar() { this.ultimo = await this.pedir(`?quien=${encodeURIComponent(yo)}`); },
+        async refrescar() {
+            this.ultimo = await this.pedir(`?quien=${encodeURIComponent(yo)}`);
+            pintarEspera(this.ultimo, sala);
+        },
 
         estado() { return this.ultimo?.state ?? {}; },
 

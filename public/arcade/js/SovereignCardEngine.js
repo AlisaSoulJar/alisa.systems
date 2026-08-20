@@ -515,19 +515,22 @@ class SovereignCardEngine {
         const sala = new URLSearchParams(location.search).get('sala');
         if (sala && proto && proto.soporta(this.gameId)) {
             try {
-                const { crearSala, limpiar, nombreParaSala } =
+                const { crearSala, limpiar, nombrePreguntando } =
                     await import('/arcade/js/protohub/sala.js');
                 const params = new URLSearchParams(location.search);
                 const salaLimpia = limpiar(sala, 40);
+                // Sin `?yo=` y sin nombre guardado se PREGUNTA, y la silla se pide
+                // después de contestar. Antes se sentaba en el acto a un
+                // `invitado-4nuq` que nadie eligió, y quien abría el enlace sólo
+                // para mirar se llevaba un asiento.
+                const yo = await nombrePreguntando(salaLimpia, params.get('yo'),
+                    { juego: this.gameId, titulo: this.title ?? '' });
                 // Publicada por lo mismo que el pintor y la camara de la otra mesa:
                 // sin esto no hay forma de comprobar desde fuera si dos pestañas
                 // estan en la misma partida.
                 const mesa = window.ALISA_SALA = crearSala({
                     sala: salaLimpia,
-                    // Sin `?yo=` se coge un nombre de invitado y SE RECUERDA: así
-                    // un solo enlace sirve para todos y una recarga te devuelve a
-                    // tu silla en vez de dejarte mirando desde fuera.
-                    yo: nombreParaSala(salaLimpia, params.get('yo')),
+                    yo,
                     juego: this.gameId,
                     semilla: Number(params.get('semilla')) || 1,
                 });

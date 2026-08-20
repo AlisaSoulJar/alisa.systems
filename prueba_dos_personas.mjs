@@ -63,6 +63,44 @@ for (const juego of JUEGOS) {
     }
     if (!ok) { fallos++; continue; }
 
+    /**
+     * ⚠️ LA CASA NO SE SIENTA EN LA SILLA DE QUIEN VIENE DE CAMINO.
+     *
+     * Un enlace se reparte y la gente llega cuando llega. Si el primero empieza a
+     * jugar mientras espera, la casa rellenaba el hueco: medido en entropy con una
+     * sola persona —ocho jugadas suyas y `played_by_house: 1`—, o sea que el amigo
+     * abría el enlace y su asiento llevaba rato en otras manos.
+     *
+     * Se comprueba con UNA persona sentada, jugando de verdad, en una sala aparte:
+     * lo que tiene que pasar es que la mesa se pare, y `waiting_for` lo diga.
+     */
+    const salaSola = `${sala}-sola`;
+    const { datos: sola } = await pedir(`/mesa/${salaSola}/sentarse`,
+        { quien: 'ana', juego, jugadores: 2 });
+    let mias = 0, ultima = sola;
+    while (mias < 12 && ultima.turn === 'ana' && (ultima.legal_moves ?? []).length) {
+        const { datos } = await pedir(`/mesa/${salaSola}/jugar`, {
+            quien: 'ana', secreto: sola.secret ?? sola.secreto,
+            jugada: ultima.legal_moves.filter(m => m !== 'nueva')[0],
+        });
+        ultima = datos;
+        mias++;
+    }
+    /**
+     * ⚠️ SE CUENTAN MIS JUGADAS CONTRA LAS DE LA MESA, NO `played_by_house`.
+     *
+     * Mi primer intento miraba ese campo y daba rojo con el arreglo ya puesto. No
+     * cuenta jugadas de la casa: es `ordenAsientos.length - asientos.length`, o sea
+     * SILLAS SIN DUEÑO. Con una persona en una mesa de dos vale 1 aunque la casa no
+     * haya tocado una carta — y con ese predicado la comprobación no podría pasar
+     * nunca, que es la forma más silenciosa de que una prueba no valga nada.
+     *
+     * Lo que se quiere saber es si en la mesa han ocurrido jugadas que yo no hice.
+     * Eso se cuenta sin ambigüedad: las mías las llevo yo.
+     */
+    const casaColada = Math.max(0, (Number(ultima.moves) || 0) - mias);
+    const dice = Number(ultima.waiting_for) || 0;
+
     const jugadas = { ana: 0, bruno: 0 };
     const pantallaMintio = [], filtraciones = [];
     let vueltas = 0, fin = false, atasco = null;
@@ -142,6 +180,8 @@ for (const juego of JUEGOS) {
     if (!jugaronLosDos) problemas.push(`jugó sólo uno: ana ${jugadas.ana}, bruno ${jugadas.bruno}`);
     if (pantallaMintio.length) problemas.push(`la pantalla mintió en ${pantallaMintio.length} momentos, p.ej. ${pantallaMintio[0]}`);
     if (filtraciones.length) problemas.push(`fuga en ${filtraciones.length} momentos: ${filtraciones[0]}`);
+    if (casaColada) problemas.push(`con una sola persona sentada, en la mesa hay ${casaColada} jugadas que no hizo ella`);
+    if (!dice) problemas.push('con una silla libre, la mesa no dice que falta nadie (waiting_for 0)');
 
     if (problemas.length) {
         fallos++;
@@ -149,6 +189,58 @@ for (const juego of JUEGOS) {
     } else {
         console.log(`  ${verde('✓')} ${gris(`ana ${jugadas.ana} · bruno ${jugadas.bruno} jugadas${fin ? ', partida terminada' : ''}`)}`);
     }
+}
+
+/**
+ * ⚠️ Y LO QUE MANDA EL CLIENTE, QUE ES DONDE ESTABA EL FALLO DE VERDAD.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Todo lo de arriba se sienta mandando `jugadores: 2`, así que mide el contrato
+ * del árbitro y NO puede ver el fallo que se venía a cazar: el árbitro esperaba
+ * bien, y quien no lo pedía era la web. Escribí esa comprobación, salió verde con
+ * el fallo delante, y por poco la doy por buena.
+ *
+ * Una comprobación que no puede suspender es decoración. Así que se mide lo que
+ * `sala.js` manda REALMENTE: se levanta un árbitro de mentira, se le pasa por
+ * `mesas` —el parámetro existe justo para esto— y se mira el cuerpo que llega.
+ * Sin navegador: `crearSala` ya está escrito para sobrevivir sin `document`.
+ */
+const { createServer } = await import('node:http');
+const { pathToFileURL } = await import('node:url');
+const { join, dirname } = await import('node:path');
+const AQUI = dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));
+
+let cuerpoRecibido = null;
+const servidor = createServer((req, res) => {
+    let datos = '';
+    req.on('data', (c) => { datos += c; });
+    req.on('end', () => {
+        if (req.url.includes('/sentarse')) { try { cuerpoRecibido = JSON.parse(datos); } catch {} }
+        res.writeHead(200, { 'content-type': 'application/json' });
+        // Lo mínimo para que `entrar()` llegue hasta el final: una mesa vacía con
+        // su tope declarado, para que `mirarPrimero()` la vea con sitio.
+        res.end(JSON.stringify({ seats: [], max_seats: 2, moves: 0, secret: 'x' }));
+    });
+});
+await new Promise((ok) => servidor.listen(0, '127.0.0.1', ok));
+const puerto = servidor.address().port;
+
+const { crearSala } = await import(pathToFileURL(
+    join(AQUI, 'public/arcade/js/protohub/sala.js')).href);
+await crearSala({
+    sala: 'sonda', yo: 'ana', juego: 'entropy', semilla: 1,
+    mesas: `http://127.0.0.1:${puerto}`,
+}).entrar();
+servidor.close();
+
+const pide = Number(cuerpoRecibido?.jugadores) || 0;
+if (pide >= 2) {
+    console.log(verde(`  ✓ al sentarse, la web pide mesa para ${pide}`));
+} else {
+    fallos++;
+    console.log(rojo(`  ✗ al sentarse, la web no pide compañía (jugadores: ${cuerpoRecibido?.jugadores ?? 'nada'})`));
+    console.log(gris('      sin eso el árbitro deja `esperaA = 1` y la casa ocupa la silla'));
+    console.log(gris('      del que viene de camino en cuanto el primero mueve.'));
 }
 
 console.log(fallos

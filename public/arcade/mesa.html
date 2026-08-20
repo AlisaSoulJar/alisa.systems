@@ -104,7 +104,8 @@ import { JUEGOS, TITULOS, cargarReglas } from './js/protohub/rules/index.js';
 import { puntuacionDe } from './js/protohub/Verificador.js';
 import { CONTROLADORES, crearControlador, esPersona, leerAsientos, pintarPanel }
     from './js/protohub/asientos.js';
-import { crearSala, MESAS, limpiar, nombreParaSala } from './js/protohub/sala.js';
+import { crearSala, MESAS, limpiar, nombreParaSala, nombrePreguntando }
+    from './js/protohub/sala.js';
 
 const params = new URLSearchParams(location.search);
 const juego = JUEGOS.includes(params.get('juego')) ? params.get('juego') : 'brisca';
@@ -129,7 +130,13 @@ const semilla = Number(params.get('semilla')) || Math.floor(Math.random() * 1e6)
 const sala = limpiar(params.get('sala'), 40);
 // Un nombre por defecto para quien no ponga el suyo. No identifica a nadie: sólo
 // distingue un asiento de otro, que es todo lo que la mesa necesita saber.
-const yo = nombreParaSala(sala, params.get('yo'));
+//
+// ⚠️ SÓLO SE PREGUNTA SI HAY SALA. Esta línea se ejecuta en los dos modos, y en
+// una partida local no hay nadie con quien confundirte: sacarle un recuadro a
+// quien abrió una mesa para jugar solo sería un peaje por nada.
+const yo = sala
+    ? await nombrePreguntando(sala, params.get('yo'), { juego })
+    : nombreParaSala(sala, params.get('yo'));
 
 const reglas = await cargarReglas(juego);
 const hub = new ProtoHub().registrar(juego, reglas);

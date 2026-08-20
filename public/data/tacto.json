@@ -38,8 +38,8 @@
   "go": {
    "panel": {
     "dedo": [
-     5,
-     5
+     null,
+     null
     ],
     "raton": [
      5,
@@ -47,19 +47,12 @@
     ]
    },
    "mesa": {
-    "dedo": 296,
-    "raton": 305,
-    "de": 362
+    "dedo": null,
+    "raton": 304,
+    "de": null
    },
    "piezas": null,
-   "casillas": {
-    "rejilla": {
-     "cols": 19,
-     "filas": 19
-    },
-    "tocadas": 310,
-    "ok": 295
-   },
+   "casillas": null,
    "pares": null
   },
   "reversi": {
@@ -110,7 +103,7 @@
    },
    "piezas": {
     "dianas": 2,
-    "sinAsomar": 2
+    "sinAsomar": 0
    },
    "casillas": {
     "rejilla": {
@@ -143,7 +136,7 @@
    },
    "piezas": {
     "dianas": 2,
-    "sinAsomar": 2
+    "sinAsomar": 0
    },
    "casillas": {
     "rejilla": {
@@ -226,7 +219,7 @@
    },
    "piezas": {
     "dianas": 3,
-    "sinAsomar": 2
+    "sinAsomar": 0
    },
    "casillas": {
     "rejilla": {
@@ -250,14 +243,11 @@
     ]
    },
    "mesa": {
-    "dedo": 1,
+    "dedo": 0,
     "raton": 0,
     "de": 5
    },
-   "piezas": {
-    "dianas": 25,
-    "sinAsomar": 12
-   },
+   "piezas": null,
    "casillas": null,
    "pares": null
   },
@@ -509,7 +499,7 @@
    },
    "piezas": {
     "dianas": 2,
-    "sinAsomar": 1
+    "sinAsomar": 0
    },
    "casillas": {
     "rejilla": {
@@ -539,7 +529,7 @@
    },
    "piezas": {
     "dianas": 2,
-    "sinAsomar": 2
+    "sinAsomar": 0
    },
    "casillas": {
     "rejilla": {
@@ -569,7 +559,7 @@
    },
    "piezas": {
     "dianas": 1,
-    "sinAsomar": 1
+    "sinAsomar": 0
    },
    "casillas": {
     "rejilla": {
@@ -599,7 +589,7 @@
    },
    "piezas": {
     "dianas": 2,
-    "sinAsomar": 2
+    "sinAsomar": 0
    },
    "casillas": {
     "rejilla": {
@@ -607,96 +597,6 @@
      "filas": 10
     },
     "tocadas": 83,
-    "ok": 0
-   },
-   "pares": null
-  },
-  "sigilo": {
-   "panel": {
-    "dedo": [
-     0,
-     0
-    ],
-    "raton": [
-     4,
-     4
-    ]
-   },
-   "mesa": {
-    "dedo": 4,
-    "raton": 4,
-    "de": 4
-   },
-   "piezas": {
-    "dianas": 1,
-    "sinAsomar": 1
-   },
-   "casillas": {
-    "rejilla": {
-     "cols": 21,
-     "filas": 15
-    },
-    "tocadas": 14,
-    "ok": 0
-   },
-   "pares": null
-  },
-  "frentes": {
-   "panel": {
-    "dedo": [
-     5,
-     5
-    ],
-    "raton": [
-     5,
-     5
-    ]
-   },
-   "mesa": {
-    "dedo": 5,
-    "raton": 3,
-    "de": 5
-   },
-   "piezas": {
-    "dianas": 2,
-    "sinAsomar": 2
-   },
-   "casillas": {
-    "rejilla": {
-     "cols": 5,
-     "filas": 17
-    },
-    "tocadas": 5,
-    "ok": 0
-   },
-   "pares": null
-  },
-  "relevo": {
-   "panel": {
-    "dedo": [
-     3,
-     3
-    ],
-    "raton": [
-     3,
-     3
-    ]
-   },
-   "mesa": {
-    "dedo": 3,
-    "raton": 3,
-    "de": 3
-   },
-   "piezas": {
-    "dianas": 3,
-    "sinAsomar": 3
-   },
-   "casillas": {
-    "rejilla": {
-     "cols": 19,
-     "filas": 13
-    },
-    "tocadas": 5,
     "ok": 0
    },
    "pares": null
@@ -719,7 +619,7 @@
    },
    "piezas": {
     "dianas": 2,
-    "sinAsomar": 2
+    "sinAsomar": 0
    },
    "casillas": {
     "rejilla": {
@@ -749,7 +649,7 @@
    },
    "piezas": {
     "dianas": 2,
-    "sinAsomar": 1
+    "sinAsomar": 0
    },
    "casillas": {
     "rejilla": {
@@ -773,20 +673,20 @@
     ]
    },
    "mesa": {
-    "dedo": 0,
+    "dedo": 3,
     "raton": 0,
     "de": 4
    },
    "piezas": {
     "dianas": 3,
-    "sinAsomar": 2
+    "sinAsomar": 0
    },
    "casillas": {
     "rejilla": {
      "cols": 20,
      "filas": 14
     },
-    "tocadas": 0,
+    "tocadas": 16,
     "ok": 0
    },
    "pares": null
@@ -809,7 +709,7 @@
    },
    "piezas": {
     "dianas": 2,
-    "sinAsomar": 2
+    "sinAsomar": 0
    },
    "casillas": {
     "rejilla": {
@@ -885,7 +785,7 @@
    },
    "piezas": {
     "dianas": 1,
-    "sinAsomar": 1
+    "sinAsomar": 0
    },
    "casillas": {
     "rejilla": {
@@ -915,7 +815,7 @@
    },
    "piezas": {
     "dianas": 4,
-    "sinAsomar": 4
+    "sinAsomar": 0
    },
    "casillas": {
     "rejilla": {
@@ -968,7 +868,7 @@
    },
    "piezas": {
     "dianas": 4,
-    "sinAsomar": 4
+    "sinAsomar": 0
    },
    "casillas": {
     "rejilla": {
@@ -998,7 +898,7 @@
    },
    "piezas": {
     "dianas": 10,
-    "sinAsomar": 10
+    "sinAsomar": 0
    },
    "casillas": {
     "rejilla": {

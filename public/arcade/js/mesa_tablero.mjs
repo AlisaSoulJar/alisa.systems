@@ -496,14 +496,16 @@ const params = new URLSearchParams(location.search);
 let mesaCompartida = null;
 if (params.get('sala') && hub.soporta?.(juego)) {
     try {
-        const { crearSala, limpiar, nombreParaSala } = await import('./protohub/sala.js');
+        const { crearSala, limpiar, nombrePreguntando } = await import('./protohub/sala.js');
         const salaLimpia = limpiar(params.get('sala'), 40);
+        // Sin `?yo=` y sin nombre guardado se pregunta antes de coger silla.
+        const yo = await nombrePreguntando(salaLimpia, params.get('yo'), { juego });
         // Se publica igual que el pintor y la cámara: sin esto no hay forma de
     // comprobar desde fuera si dos pestañas están en la misma mesa, y la prueba
     // acaba adivinando globales. Van cuatro medidas falsas hoy por eso.
     mesaCompartida = window.ALISA_SALA = crearSala({
             sala: salaLimpia,
-            yo: nombreParaSala(salaLimpia, params.get('yo')),
+            yo,
             juego,
             semilla: Number(params.get('semilla')) || 1,
         });
