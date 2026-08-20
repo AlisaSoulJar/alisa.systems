@@ -630,7 +630,12 @@ if (propio) {
      * buena. Copiarla habría arreglado hoy y roto el día que le añadan algo.
      * Los de vendor ya están puestos arriba, y `cargar` no repite lo que ya está.
      */
-    const { ANDAMIO, cargar } = await import('./js/montarMesa.js');
+    const { ANDAMIO, cargar, montarThree } = await import('./js/montarMesa.js');
+    // ⚠️ Y three ANTES del andamio, que ahora es 0.170 y llega como módulo. Los
+    // scripts clásicos del andamio leen `window.THREE`, así que si esto no va
+    // primero se encuentran el global vacío. Es la misma lección de esta página:
+    // la sala tenía su propia lista más corta y se llevó por delante seis mesas.
+    await montarThree();
     for (const s of ANDAMIO) await cargar(s);
     await import('./js/mesa_tablero.mjs');
 }

@@ -169,7 +169,18 @@ for (const juego of juegos) {
         // la carrera, no el juego.
         await p.waitForTimeout(1400);
 
-        r = await p.evaluate(() => {
+        /**
+         * ⚠️ SE LEE DOS VECES, Y NO ES DESCONFIANZA: ES QUE EL PANEL TIENE RITMO.
+         *
+         * Los visualizadores propios reciben sus filas de un vigía que refresca cada
+         * 400 ms, así que leer una vez mide la CARRERA y no el juego. Entropy pasaba
+         * corriéndolo solo y fallaba dentro de la tanda de 38 — el navegador va más
+         * cargado y llega tarde. Un instrumento que da resultados distintos según lo
+         * ocupada que esté la máquina no sirve para decidir nada.
+         *
+         * La información aparece o no aparece; esperar no la inventa.
+         */
+        const leer = () => p.evaluate(() => {
             const hub = window.ALISA_PROTOHUB;
             const juego = window.ALISA_JUEGO;
             const st = hub?.state?.(juego);
@@ -178,6 +189,12 @@ for (const juego of juegos) {
             const barra = document.querySelector('.jugadas')?.innerText ?? '';
             return { st, visible: `${panel}\n${barra}` };
         });
+        r = await leer();
+        // Si el panel todavía no ha crecido, se le da otra vuelta de reloj.
+        if (r && r.visible.length < 400) {
+            await p.waitForTimeout(1600);
+            r = (await leer()) ?? r;
+        }
     } catch (e) { r = null; }
     await p.close();
 

@@ -73,9 +73,143 @@ const VERSION = 'ac9be0eb';
  * Es la octava lista de este proyecto que se separa de la realidad sin avisar, y la
  * cura es siempre la misma: que haya una sola.
  */
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ THREE 0.170 PARA TODO EL ARCADE, Y SIN TOCAR LOS 27 SCRIPTS CLÁSICOS
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * El arcade corría en r128 y los laboratorios en 0.160/0.170. Esa frontera dejaba al
+ * arcade sin lo que de verdad cambia el aspecto: SSAO, bloom, cielo de Rayleigh y
+ * sombras en cascada viven en `vendor` SÓLO para las versiones modernas. O sea que
+ * `croupier_cinematic_room.html` —que hace todo eso con dos líneas de plugin— estaba
+ * al otro lado de un muro.
+ *
+ * ⚠️ Y LA MIGRACIÓN ERA MUCHO MÁS BARATA DE LO QUE PARECÍA. MEDIDO:
+ *
+ *     99 ficheros del arcade · 72 YA eran módulos · 27 clásicos
+ *     THREE.Geometry 0 · Face3 0 · sRGBEncoding 0 · outputEncoding 0
+ *     physicallyCorrectLights 0 · OrbitControls 4
+ *
+ * Cero incompatibilidades. Lo único que r128 daba y 0.170 no es `THREE.OrbitControls`
+ * como global, y eso son cuatro sitios.
+ *
+ * ⚠️ ASÍ QUE NO SE MIGRAN 27 FICHEROS: SE MIGRA EL CARGADOR.
+ *
+ * Los 27 clásicos leen `window.THREE`. Se importa 0.170 como módulo, se deja en
+ * `window.THREE` con `OrbitControls` colgado, y los 27 siguen funcionando SIN TOCARLOS.
+ * Convertirlos uno a uno habría sido veintisiete oportunidades de romper algo para
+ * conseguir exactamente lo mismo.
+ *
+ * ⚠️ LO QUE SÍ VA A CAMBIAR DE ASPECTO, Y HAY QUE MIRARLO.
+ *
+ * De r155 en adelante las luces son físicamente correctas por defecto: `intensity` ya
+ * no significa lo mismo. Y desde r152 la salida es sRGB, así que los colores salen más
+ * vivos. Las dos cosas son CORRECTAS y las dos cambian lo que se ve — por eso esto no
+ * se da por bueno hasta abrir las capturas.
+ */
+const THREE_MODERNO = '/vendor/three-0.170.0/build/three.module.js';
+const ORBIT_MODERNO = '/vendor/three-0.170.0/arcade/OrbitControls.js';
+
+export async function montarThree() {
+    if (window.THREE && window.THREE.OrbitControls) return window.THREE;
+    const mod = await import(THREE_MODERNO);
+    const { OrbitControls } = await import(ORBIT_MODERNO);
+    /**
+     * ⚠️ SE COPIA, NO SE USA EL MÓDULO TAL CUAL. Y esto lo dijo el primer intento:
+     * «Cannot assign to property 'OrbitControls' of [object Module]». El objeto de
+     * espacio de nombres de un módulo es INMUTABLE, así que colgarle `OrbitControls`
+     * revienta — y con r128, que era un script clásico, se podía.
+     *
+     * La copia lleva las mismas clases (`{...mod}` copia referencias), así que los
+     * `instanceof` de los 27 clásicos siguen valiendo. Los clásicos hablan por
+     * `window` y se les deja lo mismo que tenían, con otra versión debajo: eso es
+     * toda la migración.
+     */
+    const THREE = { ...mod, OrbitControls };
+
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  ⚠️ LAS LUCES: EL ÚNICO PRECIO REAL DE LA MIGRACIÓN, Y SE PAGA AQUÍ
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * De r155 en adelante `useLegacyLights` desapareció y las luces son físicamente
+     * correctas por defecto. La consecuencia: `intensity` NO significa lo mismo, y las
+     * intensidades afinadas contra r128 dan bastante menos luz.
+     *
+     * Se vio en la primera captura tras migrar, y sin ninguna duda: el ajedrez pasó de
+     * un tablero azul y blanco con piezas nítidas a un tablero casi negro con piezas
+     * fantasma. Ningún error en consola — el modo de fallo de siempre.
+     *
+     * ⚠️ Y SE ARREGLA EN EL CONSTRUCTOR, NO EN DIECISÉIS FICHEROS.
+     *
+     * Las luces las crean las dos mesas y los CATORCE visualizadores propios, cada uno
+     * con sus números afinados a ojo contra r128. Retocar dieciséis sitios sería
+     * dieciséis oportunidades de dejarse uno — y el que se quedara oscuro no daría
+     * error, sólo saldría feo, que es justo lo que nadie mira.
+     *
+     * Así que se envuelven las clases de luz y se escala la intensidad al construir.
+     * Son SUBCLASES para que `instanceof` siga valiendo, que es lo que usa medio
+     * `encuadre.js` y toda prueba que recorra la escena.
+     *
+     * El factor es π, que es el que convierte una intensidad del modo antiguo al
+     * nuevo. No es una constante de gusto: es la que estaba metida en el renderizador
+     * de antes.
+     */
+    const LUZ_LEGADO = Math.PI;
+    for (const nombre of ['AmbientLight', 'HemisphereLight', 'DirectionalLight',
+                          'PointLight', 'SpotLight', 'RectAreaLight']) {
+        const Base = mod[nombre];
+        if (!Base) continue;
+        THREE[nombre] = class extends Base {
+            constructor(...args) {
+                super(...args);
+                this.intensity *= LUZ_LEGADO;
+            }
+        };
+    }
+    // Se publica para quien quiera cambiar una intensidad DESPUÉS de crearla y
+    // necesite saber en qué escala está. Lo usa `atmosfera.js`.
+    THREE.LUZ_LEGADO = LUZ_LEGADO;
+
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  ⚠️ Y EL COLOR: UNA MIGRACIÓN TIENE QUE SER NEUTRA A LA VISTA
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * De r152 en adelante three gestiona el color: la salida es sRGB y los colores que
+     * se escriben se interpretan como sRGB, se llevan a lineal para iluminar y se
+     * devuelven. Es lo correcto y es mejor. También cambia TODOS los contrastes.
+     *
+     * Medido justo después de migrar, con `npm run legibilidad`: de **55/58 a 30/58**.
+     * Quince juegos con piezas que se funden con su suelo — ajedrez, damas, fagocito,
+     * sokoban, cripta, flota, defensa, sigilo, frentes, relevo, cabina, rebaño,
+     * pradera... Ninguno daba error. Los 38 seguían jugándose. Sólo se veían mal.
+     *
+     * ⚠️ Y POR ESO ESTO SE QUEDA EN LINEAL, DE MOMENTO.
+     *
+     * Una migración que cambia el motor Y el aspecto a la vez es una migración que no
+     * se puede juzgar: cuando algo se vea raro no habrá forma de saber si es del
+     * cambio de versión o del cambio de color. Se separan las dos cosas — motor hoy,
+     * gestión de color el día que se retoquen las paletas con el instrumento delante.
+     *
+     * No es «lo dejamos como estaba»: es una deuda con fecha y con la medida que la
+     * cierra. Poner `SRGBColorSpace` aquí y volver a correr `legibilidad` dice
+     * exactamente cuánto queda por afinar.
+     */
+    mod.ColorManagement.enabled = false;
+    const RendererBase = mod.WebGLRenderer;
+    THREE.WebGLRenderer = class extends RendererBase {
+        constructor(...args) {
+            super(...args);
+            this.outputColorSpace = mod.LinearSRGBColorSpace;
+        }
+    };
+
+    window.THREE = THREE;
+    return THREE;
+}
+
 export const ANDAMIO = [
-    '/vendor/three-r128/three.min.js',
-    '/vendor/three-r128/OrbitControls.js',
     '/vendor/tween/tween.umd.js',
     'js/Entrada.js',
     // El gesto de deslizar. Va en el andamio porque quien más lo necesita es
@@ -309,6 +443,7 @@ export async function montarMesa(cfg) {
     const semilla = Number(new URLSearchParams(location.search).get('semilla'));
     if (Number.isFinite(semilla) && semilla > 0) hub.reset(idJuego, { semilla, seed: semilla });
 
+    await montarThree();
     for (const s of ANDAMIO) await cargar(s);
 
     // Una partida de muestra basta para saber de qué está hecho el juego.

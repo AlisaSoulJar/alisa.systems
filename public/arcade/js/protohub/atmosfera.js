@@ -259,7 +259,16 @@ export function crearAtmosfera(THREE, escena, nombre, opts = {}) {
     for (const l of luces) {
         if (l.isDirectionalLight) {
             l.color.setHex(a.key);
-            l.intensity = a.fuerza;
+            /**
+             * ⚠️ RELATIVA A LA QUE HABÍA, NO ABSOLUTA.
+             *
+             * Ponía `l.intensity = a.fuerza` con números afinados contra r128, y al
+             * migrar a 0.170 esa escala dejó de significar lo mismo — ver la nota de
+             * las luces en `montarMesa.js`. Multiplicando lo que la mesa ya había
+             * puesto, el ambiente dice «un quince por ciento más» y da igual en qué
+             * escala esté: si mañana cambia otra vez, esto no se entera.
+             */
+            l.intensity = (antes.find(s => s.l === l)?.intensidad ?? l.intensity) * a.fuerza;
         } else {
             // El hemisférico: cielo arriba, `rim` abajo. Es el rebote del suelo, y
             // teñirlo del color frío es lo que separa la silueta sin meter otra luz.

@@ -15,14 +15,14 @@ contrario. El problema no era que no estuviera escrito: era que no había índic
 Volver a decidir sale barato en el momento y carísimo a la semana, porque la
 segunda decisión casi nunca coincide con la primera y entonces hay dos verdades.
 
-**1629 decisiones** en 277 ficheros.
+**1631 decisiones** en 277 ficheros.
 
 ## Índice
 
 - [Herramientas de medida](#herramientas-de-medida) — 324
 - [Reglas de los juegos](#reglas-de-los-juegos) — 304
 - [Las mesas y los visualizadores](#las-mesas-y-los-visualizadores) — 286
-- [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 165
+- [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 167
 - [Las comprobaciones](#las-comprobaciones) — 152
 - [Otros](#otros) — 139
 - [Las páginas de los juegos](#las-páginas-de-los-juegos) — 76
@@ -2236,8 +2236,12 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>`sustrato().rejilla.ambiente = 'pradera'`. Adivinar por el id sería otra lista paralela, y este repositorio lleva ocho arregladas. Quien no declare nada se queda exactamente como está: ningún juego cambia sin pedirlo.</sub>
 - **Y THREE SE PASA, NO SE IMPORTA.** <sub>línea 40</sub>
   <br><sub>páginas cargan tres versiones distintas de three (r128, r160, r170) y un import fijo las obligaría a todas a la misma. Ya nos costó caro una vez con TWEEN.</sub>
-- **EL CIELO ES UNA ESFERA POR DENTRO, NO UN `background` DE COLOR.** <sub>línea 142</sub>
+- **Y ESTO NO ME LO HE INVENTADO: ESTABA ESCRITO EN CASA DESDE ABRIL.** <sub>línea 54</sub>
+  <br><sub>`Data/Lecciones/2026-04-03_low_poly_deep_study.md` y `Data/Contracts/ARIS_LIGHT_ARTDIRECTION_FABLE_20260715.md`. Los encontró Oscar acordándose de que existían, que es la segunda vez hoy que lo que hacía falta ya</sub>
+- **EL CIELO ES UNA ESFERA POR DENTRO, NO UN `background` DE COLOR.** <sub>línea 174</sub>
   <br><sub>Un `scene.background` plano no tiene degradado, y el degradado es justo lo que hace que el horizonte exista. Se pinta en un lienzo de 2×N —dos píxeles de ancho bastan, la textura se estira— y se mete en una esfera vista desde dentro.</sub>
+- **LA LUZ, QUE ES DONDE ESTABA EL SALTO DE VERDAD.** <sub>línea 235</sub>
+  <br><sub>«Geometría barata con iluminación cara» — el estudio de low poly. Nuestros cubos no son el problema; lo era que las quince mesas de tablero comparten dos luces de color fijo, así que una cueva y un prado se iluminan igual.</sub>
 
 ### `public/arcade/js/protohub/dados.js`
 
