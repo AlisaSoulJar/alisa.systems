@@ -511,13 +511,15 @@
     "origen": "Original de esta casa, sobre el modelo depredador-presa de Lotka-Volterra, que es de los años veinte y describe justamente eso: dos poblaciones que se regulan la una a la otra hasta que alguien rompe el ciclo."
   },
   "nave": {
-    "que_es": "Cuatro sillas y una miente. Tres tripulantes reparan la nave; un impostor los elimina de uno en uno. Cuando aparece un cadáver se convoca junta y todos votan a la vez.",
+    "que_es": "Cuatro sillas y una miente. Tres tripulantes reparan la nave; un impostor los elimina de uno en uno. Cuando aparece un cadaver se convoca junta: primero se habla —acusar, respaldar o callar— y despues se vota.",
     "reparto": "La nave con sus tareas, tres tripulantes y un impostor. Nadie sabe quién es quién.",
-    "turno": "Te mueves, haces tu tarea o esperas. El impostor, además, puede eliminar. En una junta todos votan a la vez y el más votado sale por la esclusa, sea culpable o no.",
+    "turno": "Te mueves, haces tu tarea o esperas. El impostor, ademas, puede eliminar. En una junta hay dos rondas de debate y luego el voto: en las dos cosas todos eligen A LA VEZ, asi que nadie ve lo que dijeron los demas hasta que ya no puede cambiar de idea. El mas votado sale por la esclusa, sea culpable o no.",
     "gana": "La tripulación, terminando las reparaciones o expulsando al impostor. El impostor, quedándose a solas.",
     "ojo": [
       "Esperar no es pasividad: es coartada. Es el único juego donde no hacer nada es una jugada que cuenta una historia sobre ti.",
-      "Este juego no inventa ningún mecanismo: junta cuatro que ya estaban. El reloj propio del mundo viene de `pradera` y `rebano`, el esperar de `relevo`, el comprometer la jugada sin ver la de los demás de `frentes`, y la vista por asiento de `cabina` y `flota`. Que se pudieran juntar sin tocar el contrato es lo que demuestra."
+      "Este juego no inventa ningún mecanismo: junta cuatro que ya estaban. El reloj propio del mundo viene de `pradera` y `rebano`, el esperar de `relevo`, el comprometer la jugada sin ver la de los demás de `frentes`, y la vista por asiento de `cabina` y `flota`. Que se pudieran juntar sin tocar el contrato es lo que demuestra.",
+      "Hablar es una jugada, no un chat: acusar y respaldar viajan en el recibo igual que moverse, asi que una junta entera se puede volver a jugar. Es lo que permite que una politica programada, un modelo y una persona jueguen el MISMO juego — la competicion AIWolf lleva una decada separando esas dos cosas en divisiones distintas, y aqui son la misma partida.",
+      "Respaldar a alguien es informacion tanto como acusarlo: solo puedes dar una coartada de quien estaba contigo de verdad."
     ],
     "diferencias": [],
     "origen": "Original de esta casa, de la familia de la deducción social —la del juego de los lobos y del Among Us—, donde la información que importa no está en el tablero sino en lo que los demás dicen y dejan de decir."

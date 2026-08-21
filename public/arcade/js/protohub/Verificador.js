@@ -129,6 +129,9 @@ export function verificar(reglas, partida, opts = {}) {
         return no(`no se pudo montar la partida: ${e.message}`);
     }
 
+    // Cuántas jugadas se aceptaron por patrón declarado en vez de por lista
+    // cerrada. Se publica en el resultado: ver la nota de `legal_patterns`.
+    let porPatron = 0;
     for (let i = 0; i < jugadas.length; i++) {
         const st = reglas.estado(p);
         if (st.is_game_over) {
@@ -138,7 +141,36 @@ export function verificar(reglas, partida, opts = {}) {
         // No se compara el resultado —los flotantes divergen entre máquinas—,
         // se audita cada acción. Es lo mismo que hace la colonia con sus sellos.
         const legales = st.legal_moves ?? [];
-        if (legales.length && !legales.includes(jugadas[i])) {
+        /**
+         * ⚠️ LAS JUGADAS QUE NO SE PUEDEN ENUMERAR, Y POR QUÉ SE CUENTAN APARTE.
+         * ═══════════════════════════════════════════════════════════════════════
+         *
+         * Hasta aquí, toda jugada tenía que estar en `legal_moves`. Eso vale
+         * mientras las jugadas se puedan listar — y deja fuera lo único que hace
+         * interesante un juego de deducción social: **hablar**. «Creo que fue
+         * bruno, estaba solo en el pasillo» no cabe en una lista.
+         *
+         * La salida no es aflojar el audito: es que el juego DECLARE la forma. Si
+         * `estado()` publica `legal_patterns`, una jugada vale si está en la lista
+         * **o** si encaja en uno de esos patrones. La partida se sigue
+         * reproduciendo entera, porque el texto viaja en el recibo como una jugada
+         * más — que es justo lo que la división de lenguaje natural de AIWolf NO
+         * puede hacer: allí la juzga un jurado y no se repite.
+         *
+         * ⚠️ Y SE CUENTA CUÁNTAS PASARON POR AHÍ, QUE ES LA PARTE HONRADA.
+         *
+         * Un patrón es un cheque en blanco del tamaño que el juego quiera: con
+         * `.*` esto dejaría de auditar nada mientras sigue diciendo «verificada».
+         * No se puede impedir sin adivinar lo que el juego quiso decir, así que en
+         * vez de fingir garantía se PUBLICA el número: «120 jugadas auditadas, 6
+         * de ellas por patrón declarado». Quien lea el recibo sabe cuánto de él se
+         * comprobó contra una lista cerrada y cuánto contra una forma.
+         */
+        const patrones = st.legal_patterns ?? [];
+        const encaja = patrones.length
+            && patrones.some((re) => { try { return new RegExp(re).test(jugadas[i]); } catch { return false; } });
+        if (encaja) porPatron++;
+        else if (legales.length && !legales.includes(jugadas[i])) {
             return no(`jugada ${i + 1} ilegal: '${jugadas[i]}'`, p, reglas, i);
         }
         if (!reglas.mover(p, jugadas[i])) {
@@ -168,6 +200,11 @@ export function verificar(reglas, partida, opts = {}) {
     return {
         valida: true,
         motivo: null,
+        // Cuántas de las jugadas se auditaron contra una FORMA declarada en vez de
+        // contra una lista cerrada. Cero en los treinta y siete juegos que enumeran
+        // sus jugadas; sólo sube donde el juego permite hablar libremente, y ahí es
+        // el dato que dice cuánto del recibo se comprobó de verdad.
+        porPatron,
         puntos,
         jugadas: jugadas.length,
         estadoFinal: resumen(fin),

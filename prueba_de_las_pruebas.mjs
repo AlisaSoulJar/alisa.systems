@@ -76,6 +76,19 @@ const SABOTAJES = [
         vigila: 'que el recibo se verifique desde la silla que jugó, y no desde la 0',
     },
     {
+        nombre: 'habla',
+        corre: 'node prueba_habla.mjs',
+        fichero: 'public/arcade/js/protohub/rules/nave.js',
+        // El fallo que puede tener esto: ampliar un patrón «para que quepa todo».
+        // Con `.*`, el verificador aceptaría cualquier cosa mientras sigue diciendo
+        // «válida» — y no sólo en nave: quien lea un recibo no tiene forma de saber
+        // que dejó de auditarse. Por eso la comprobación cuela una jugada inventada
+        // que no empieza por `decir:`: ningún patrón honrado la acepta.
+        de: '`^decir:.{1,${LARGO_FRASE}}$`',
+        a: '`.*`',
+        vigila: 'que declarar una forma no abra la puerta a cualquier jugada',
+    },
+    {
         nombre: 'turno',
         corre: 'node prueba_turno.mjs',
         fichero: 'public/arcade/js/protohub/rules/entropy.js',

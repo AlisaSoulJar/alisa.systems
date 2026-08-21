@@ -58,6 +58,107 @@ const cerca = (a, b) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
 /** Adaptador para `hayLinea`: los muros de este juego, como función. */
 const esMuroDe = (p) => (x, y) => p.muros.has(y * ANCHO + x);
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ HABLAR ES UNA JUGADA, Y ÉSA ES TODA LA IDEA
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * La junta era un voto pelado, y por eso este juego medía tan poco: el banco dice
+ * que en nave el azar recorre el **0,41** del camino entre el suelo y la casa
+ * —casi ruido— mientras que en cabina, que sí metió el habla en las jugadas, el
+ * azar se queda en **0,01**. Lo que un juego de deducción tiene que medir es la
+ * deducción, y aquí no había ni una jugada para expresarla.
+ *
+ * ⚠️ POR QUÉ UN MENÚ Y NO TEXTO LIBRE (todavía).
+ *
+ * La competición AIWolf lleva una década con DOS divisiones separadas: la de
+ * protocolo, donde los agentes hablan con un vocabulario fijo y compiten
+ * programas; y la de lenguaje natural, que juzga un jurado humano. Y AmongAgents
+ * —Among Us en texto para LLMs— hace lo mismo dentro de un solo juego: el espacio
+ * de acciones es un MENÚ y el lenguaje natural vive sólo dentro de la acción de
+ * hablar. Hay un motivo duro: los métodos que no son LLM —CFR, refuerzo—
+ * necesitan un espacio de acciones definido y no funcionan con texto sin acotar.
+ *
+ * Así que el vocabulario va primero, porque es lo que abre el juego a las cinco
+ * puertas. `decir:"…"` con carga libre viene después, y bajo su propia norma.
+ *
+ * ⚠️ Y SE HABLA A LA VEZ, COMO SE MUEVE.
+ *
+ * Nave ya resuelve todo por compromiso oculto: cada uno elige, nadie ve lo del
+ * otro, y al final de la ronda se revela. El debate hereda eso tal cual. Se pierde
+ * el «responder a quien me acaba de acusar» de un debate hablado —Werewolf Arena
+ * lo resuelve con una puja por el turno de palabra— y se gana no inventar un
+ * segundo mecanismo de turnos dentro de un juego que ya tiene el suyo. Con dos
+ * rondas, la segunda ya responde a la primera.
+ */
+export const NORMAS = {
+    // Cuántas rondas se habla antes de votar. Con 0, la junta es el voto pelado
+    // de siempre: así la norma vieja sigue siendo jugable y comparable.
+    rondasDeDebate: 2,
+    /**
+     * ⚠️ LAS DOS DIVISIONES, COMO EN AIWOLF, PERO EN EL MISMO JUEGO.
+     *
+     * Con `hablaLibre` en falso sólo existe el menú: es la división de protocolo,
+     * donde una política programada compite en igualdad. Con `hablaLibre`, además
+     * del menú se acepta `decir:<texto>` — la división de lenguaje natural.
+     *
+     * AIWolf las tiene separadas desde hace una década y con razón: no se miden
+     * con la misma vara. Pero allí son dos competiciones distintas, y la de
+     * lenguaje la juzga un jurado humano, así que no se puede repetir. Aquí son la
+     * MISMA partida con otra norma, y el texto viaja en el recibo — de modo que
+     * una junta hablada se puede volver a jugar letra por letra.
+     *
+     * Que sean dos tablas y no una sigue siendo obligatorio: comparar «gana más»
+     * con «convence más» sería inventar un empate.
+     */
+    hablaLibre: false,
+};
+
+/** Tope de lo que cabe en una frase. No es censura: es que el recibo tiene que
+ *  seguir siendo una lista de jugadas y no un correo. */
+const LARGO_FRASE = 160;
+
+const normasDe = (o = {}) => ({ ...NORMAS, ...o });
+
+/**
+ * Lo que se puede decir. Dos verbos y callar, que es lo mínimo con lo que se
+ * puede mentir: señalar a alguien, respaldar a alguien, o no mojarse.
+ *
+ * ⚠️ SE CALCULA DE LO PÚBLICO, Y ESO NO ES ESTÉTICA.
+ *
+ * La lista sale de quién está vivo y de quién tiene el turno — las dos cosas las
+ * sabe todo el mundo—. Es la misma ley que ya obligó a ofrecer `sabotear` a los
+ * cuatro: el verificador re-simula desde la silla 0, así que si la lista dependiera
+ * de lo que cada uno sabe, una partida honrada dejaría de reproducirse.
+ */
+function jugadasDeDebate(vivos, quienHabla) {
+    const otros = vivos.filter((g) => g.silla !== quienHabla).map((g) => g.silla);
+    return ['callar', ...otros.map((s) => `acuso:${s}`), ...otros.map((s) => `defiendo:${s}`)];
+}
+
+/** Cuántas acusaciones lleva cada uno, de todo lo dicho hasta ahora. */
+function acusacionesPorSilla(dichos) {
+    const c = {};
+    for (const d of dichos) {
+        if (!d.jugada.startsWith('acuso:')) continue;
+        const a = d.jugada.slice(6);
+        c[a] = (c[a] ?? 0) + 1;
+    }
+    return c;
+}
+
+/**
+ * La fábrica, igual que en damas: las normas se guardan DENTRO de la partida, así
+ * que `estado()` las publica y el recibo se las lleva puestas. Sin eso, volver a
+ * jugar una partida hablada exigiría acordarse por fuera de con qué nació — y el
+ * verificador, que compara las normas del recibo contra las de las reglas
+ * cargadas, la rechazaría con razón.
+ */
+export function crearNave(opts = {}) {
+    const n = normasDe(opts.normas ?? opts);
+    return { ...nave, NORMAS: n, nuevaPartida: (o = {}) => nave.nuevaPartida({ ...o, normas: n }) };
+}
+
 export const nave = {
     OBJETIVO: 'Objetivo: según tu papel. Los tripulantes reparan la nave o echan al impostor por votación; el impostor los elimina de uno en uno sin que lo pillen. Se vota a la vez y el más votado sale por la esclusa, sea culpable o no.',
     // CUÁNTAS SILLAS TIENE LA MESA. Sale de `SILLAS`, no de un 4 a mano:
@@ -114,6 +215,13 @@ export const nave = {
             cadaveres: [], oculta: {}, junta: false, votos: {},
             turno: SILLAS[0], ronda: 0, tope: RONDAS,
             expulsado: null, historial: [],
+            normas: normasDe(opts.normas),
+            /**
+             * La junta ya no es un voto pelado: primero se habla. `faseJunta` dice
+             * en cuál de las dos partes estamos, y `dichos` guarda lo dicho —que es
+             * PÚBLICO: son acusaciones a la cara, no información oculta—.
+             */
+            faseJunta: null, rondaDebate: 0, dichos: [],
         };
     },
 
@@ -212,8 +320,26 @@ export const nave = {
             .filter(z => z.t.startsWith('tripulante_')).map(z => z.t.slice(-1)).join(', ');
         return `Nave. Eres ${st.silla}. ${papel}\n`
              + `${st.tareas_hechas}/${TAREAS} tareas · ${st.vivos} vivos · ronda ${st.ronda}/${RONDAS}\n`
-             + (st.junta
-                 ? `⚠ JUNTA: hay un cadáver. Votad a la vez; el más votado sale por la esclusa.\n`
+             /**
+              * ⚠️ EL DEBATE TIENE QUE ESTAR EN EL TEXTO, NO SÓLO EN EL ESTADO.
+              *
+              * Ésta es la puerta por la que juega un agente sin vista. Si lo dicho
+              * viajara sólo como campo, el agente tendría que deducir de un debate
+              * que no puede leer — y estaríamos midiéndolo en un juego distinto del
+              * que juega una persona. Es la misma lección que costó que el objetivo
+              * no llegara a las salas.
+              */
+             + (st.junta && st.fase_junta === 'debate'
+                 ? `⚠ JUNTA — se habla (ronda ${p.rondaDebate + 1} de ${p.normas.rondasDeDebate}).`
+                   + ` Acusa, respalda o calla; todos habláis A LA VEZ.\n`
+                   + (st.dichos.length
+                       ? `Dicho hasta ahora: ${st.dichos.map(d => `${d.quien} ${d.dijo.replace(':', ' a ')}`).join(' · ')}\n`
+                       : 'Nadie ha hablado todavía.\n')
+                 : st.junta
+                 ? `⚠ JUNTA — se vota. El más votado sale por la esclusa.\n`
+                   + (st.dichos.length
+                       ? `Se dijo: ${st.dichos.map(d => `${d.quien} ${d.dijo.replace(':', ' a ')}`).join(' · ')}\n`
+                       : '')
                  : `A la vista: ${vistos || 'nadie'}. Todos decidís A LA VEZ.\n`)
              + (p.historial.length ? `Antes: ${p.historial.slice(-2).join(' · ')}\n` : '')
              + describirSustrato(this.sustrato(p, asiento))
@@ -237,6 +363,9 @@ export const nave = {
 
         let legales;
         if (terminada) legales = ['nueva'];
+        else if (p.junta && p.faseJunta === 'debate') {
+            legales = jugadasDeDebate(vivos, p.turno);
+        }
         else if (p.junta) {
             // En junta se vota, y se puede no votar a nadie: abstenerse también
             // dice algo, y quitarlo obligaría a acusar sin motivo.
@@ -281,6 +410,31 @@ export const nave = {
             vivos: vivos.length,
             tareas_hechas: hechas, tareas_totales: TAREAS,
             junta: p.junta, ronda: p.ronda,
+            // La norma viaja en el estado porque viaja en el recibo: con
+            // `rondasDeDebate` distinto, la misma lista de jugadas es legal o
+            // ilegal, y `{juego, semilla, jugadas}` dejaría de bastar.
+            normas: p.normas,
+            fase_junta: p.faseJunta,
+            /**
+             * ⚠️ LA FORMA DE LO QUE NO SE PUEDE ENUMERAR.
+             *
+             * `legal_moves` lista lo que se puede elegir; esto declara lo que se
+             * puede escribir. El verificador acepta una jugada que encaje aquí y
+             * CUENTA cuántas pasaron por este camino, para que el recibo diga qué
+             * parte se auditó contra una lista y qué parte contra una forma.
+             *
+             * Sólo durante el debate y sólo con la norma puesta: fuera de ahí, una
+             * frase no es una jugada.
+             */
+            ...(p.junta && p.faseJunta === 'debate' && p.normas?.hablaLibre
+                ? { legal_patterns: [`^decir:.{1,${LARGO_FRASE}}$`] } : {}),
+            /**
+             * Lo dicho es PÚBLICO y va entero: son acusaciones a la cara. Sin
+             * esto, un agente sin vista tendría que deducir de un debate que no
+             * puede leer, que es pedirle que juegue a otra cosa.
+             */
+            dichos: p.dichos.map(d => ({ ronda: d.ronda, quien: d.silla, dijo: d.jugada })),
+            acusaciones: acusacionesPorSilla(p.dichos),
             expulsado: p.expulsado,
             /**
              * Asimétrico y de suma opuesta: la tripulación cobra por reparar y
@@ -307,7 +461,17 @@ export const nave = {
     mover(p, jugada) {
         const orden = String(jugada);
         const st = this.estado(p, SILLAS.indexOf(p.turno));
-        if (st.is_game_over || !st.legal_moves.includes(orden)) return false;
+        if (st.is_game_over) return false;
+        /**
+         * ⚠️ UNA JUGADA VALE SI ESTÁ EN LA LISTA **O** SI ENCAJA EN LA FORMA.
+         *
+         * Es la misma regla que aplica el verificador, y tiene que serlo: si aquí
+         * se aceptara algo que allí se rechaza, se podrían jugar partidas que
+         * después no se pueden demostrar. La forma sólo existe durante el debate y
+         * sólo con `hablaLibre`, así que fuera de ahí esto no cambia nada.
+         */
+        const encaja = (st.legal_patterns ?? []).some(re => new RegExp(re).test(orden));
+        if (!encaja && !st.legal_moves.includes(orden)) return false;
 
         // ⚠️ Se GUARDA, no se aplica: nadie ve lo que han elegido los demás hasta
         // que ya no se puede cambiar de idea. Es el mecanismo de `frentes`.
@@ -317,11 +481,30 @@ export const nave = {
         const siguiente = vivos.find(g => !(g.silla in p.oculta));
         if (siguiente) { p.turno = siguiente.silla; return true; }
 
-        p.junta ? this._resolverJunta(p) : this._resolverRonda(p);
+        if (!p.junta) this._resolverRonda(p);
+        else if (p.faseJunta === 'debate') this._resolverDebate(p);
+        else this._resolverJunta(p);
         p.oculta = {};
         p.ronda++;
         p.turno = p.gente.find(g => g.vivo).silla;
         return true;
+    },
+
+    /**
+     * Se apunta lo dicho y se pasa a la ronda siguiente; agotadas, se vota.
+     *
+     * ⚠️ SE REVELA AL CERRAR LA RONDA, NO AL HABLAR. Es lo mismo que hace el resto
+     * del juego con los movimientos: si lo dicho se viera al momento, el último en
+     * hablar tendría toda la información y el primero ninguna, y el orden de las
+     * sillas —que es fijo— repartiría ventaja.
+     */
+    _resolverDebate(p) {
+        for (const [silla, jugada] of Object.entries(p.oculta)) {
+            p.dichos.push({ ronda: p.rondaDebate, silla, jugada });
+            if (jugada !== 'callar') p.historial.push(`${silla} ${jugada.replace(':', ' a ')}`);
+        }
+        p.rondaDebate++;
+        if (p.rondaDebate >= (p.normas?.rondasDeDebate ?? 0)) p.faseJunta = 'voto';
     },
 
     /** Todo el mundo actúa a la vez. El orden de las sillas no da ventaja. */
@@ -347,6 +530,11 @@ export const nave = {
             if (c.avisado) continue;
             if (p.gente.some(g => g.vivo && cerca(punto(c.i), g) <= VISTA && hayLinea(esMuroDe(p), g, punto(c.i)))) {
                 c.avisado = true; p.junta = true;
+                // Cada junta empieza con su debate y con la pizarra limpia: lo que
+                // se dijo en la junta anterior ya se resolvió con una expulsión, y
+                // arrastrarlo haría que las acusaciones viejas siguieran contando.
+                p.faseJunta = (p.normas?.rondasDeDebate ?? 0) > 0 ? 'debate' : 'voto';
+                p.rondaDebate = 0; p.dichos = [];
                 p.historial.push(`ronda ${p.ronda}: cadáver de ${c.silla}`);
             }
         }
@@ -367,7 +555,7 @@ export const nave = {
             if (fuera) { fuera.vivo = false; p.expulsado = fuera.silla; }
             p.historial.push(`expulsado ${ordenados[0][0]}`);
         } else p.historial.push('empate: nadie sale');
-        p.junta = false;
+        p.junta = false; p.faseJunta = null;
     },
 
     /**
@@ -395,15 +583,64 @@ export const nave = {
         const sus = this.sustrato(p, asiento);
         const yo = sus.piezas.find(z => z.t === 'yo');
 
-        if (p.junta) {
-            const cadaver = sus.piezas.find(z => z.t === 'cadaver');
-            if (cadaver) {
-                const sospechoso = sus.piezas
-                    .filter(z => z.t.startsWith('tripulante_'))
-                    .sort((a, b) => cerca(a, cadaver) - cerca(b, cadaver))[0];
-                const voto = sospechoso && `voto:${sospechoso.t.slice(-1)}`;
-                if (voto && legales.includes(voto)) return voto;
+        const cadaver = sus.piezas.find(z => z.t === 'cadaver');
+        const aLaVistaEnJunta = sus.piezas.filter(z => z.t.startsWith('tripulante_'));
+        const masCercaDelCadaver = cadaver && aLaVistaEnJunta
+            .slice().sort((a, b) => cerca(a, cadaver) - cerca(b, cadaver))[0];
+
+        /**
+         * ⚠️ LA CASA HABLA, Y SOBRE TODO VOTA HACIENDO CASO DE LO DICHO.
+         *
+         * Esto último es lo que convierte el debate en juego. Si la casa hablara y
+         * luego votara ignorando el debate, acusar no serviría de nada: sería un
+         * botón bonito que no mueve una sola partida, y el banco lo mediría como
+         * ruido igual que antes.
+         *
+         * Sigue siendo un techo BLANDO a propósito, como el resto de esta casa: no
+         * detecta contradicciones, no recuerda quién mintió en la junta anterior y
+         * se cree la última acusación. Si dedujera bien, la tabla mediría a mi
+         * heurística en vez de al agente.
+         */
+        if (p.junta && p.faseJunta === 'debate') {
+            const acusados = acusacionesPorSilla(p.dichos);
+            const mas = Object.entries(acusados).sort((a, b) => b[1] - a[1])[0];
+
+            if (st.soy_impostor) {
+                // Desviar: si ya hay alguien señalado y no soy yo, arrimarse al
+                // linchamiento —es gratis y funciona—. Si no, señalar al que está
+                // MÁS LEJOS del cadáver, que es el que menos papeletas tiene: una
+                // acusación creíble no vale, porque acabaría cayendo el culpable.
+                if (mas && `acuso:${mas[0]}` !== `acuso:${st.silla}` && legales.includes(`acuso:${mas[0]}`)) {
+                    return `acuso:${mas[0]}`;
+                }
+                const lejos = cadaver && aLaVistaEnJunta
+                    .slice().sort((a, b) => cerca(b, cadaver) - cerca(a, cadaver))[0];
+                const tiro = lejos && `acuso:${lejos.t.slice(-1)}`;
+                if (tiro && legales.includes(tiro)) return tiro;
+                return 'callar';
             }
+            // Tripulante: si vi a alguien junto al cadáver, lo digo. Si no vi nada
+            // pero tengo a alguien delante AHORA, lo respaldo — es lo único que sé
+            // de verdad, y una coartada es información igual que una acusación.
+            const señalo = masCercaDelCadaver && `acuso:${masCercaDelCadaver.t.slice(-1)}`;
+            if (señalo && legales.includes(señalo)) return señalo;
+            if (aLaVistaEnJunta.length === 1) {
+                const aval = `defiendo:${aLaVistaEnJunta[0].t.slice(-1)}`;
+                if (legales.includes(aval)) return aval;
+            }
+            return 'callar';
+        }
+
+        if (p.junta) {
+            // 1) Lo que vi con mis ojos manda sobre lo que me han contado.
+            const voto = masCercaDelCadaver && `voto:${masCercaDelCadaver.t.slice(-1)}`;
+            if (voto && legales.includes(voto)) return voto;
+            // 2) Si no vi nada, me fío del debate: el más acusado, y nunca yo.
+            const acusados = acusacionesPorSilla(p.dichos);
+            const mas = Object.entries(acusados)
+                .filter(([s]) => s !== st.silla)
+                .sort((a, b) => b[1] - a[1])[0];
+            if (mas && legales.includes(`voto:${mas[0]}`)) return `voto:${mas[0]}`;
             return 'voto:nadie';
         }
 

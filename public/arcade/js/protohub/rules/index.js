@@ -122,7 +122,11 @@ export const REGLAS = {
     // vista por asiento de flota. Es la primera vez que hay algo que MENTIR — un
     // agente podía jugar mal, nunca engañar. Lo único que una FSM no puede
     // intentar, y por eso lo que más dice de un modelo de lenguaje.
-    nave: () => import('./nave.js').then(m => m.nave),
+    // ⚠️ Y recibe OPCIONES por lo mismo que damas: tiene normas variables
+    // —`rondasDeDebate` y `hablaLibre`— y con ellas cambia QUÉ ES LEGAL. Son las
+    // que separan la división de protocolo de la de lenguaje natural, que en
+    // AIWolf son dos competiciones distintas y aquí son la misma partida.
+    nave: (o) => import('./nave.js').then(m => m.crearNave(o ?? {})),
     // ⚠️ EL PRIMER JUEGO DE CARTAS QUE PUBLICA SUSTRATO NATIVO, y el que estrena
     // una forma de esconder información que no teníamos: los treinta anteriores
     // revelan al ACTUAR —preguntar en el go fish, apostar en el póker— y aquí se
