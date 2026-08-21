@@ -119,6 +119,12 @@
     "titulo": "Sokoban",
     "sillas": 1
   },
+  "marea": {
+    "pagina": "marea.html",
+    "propia": true,
+    "titulo": "Marea",
+    "sillas": 1
+  },
   "cripta": {
     "pagina": "cripta.html",
     "propia": true,

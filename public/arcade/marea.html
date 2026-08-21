@@ -1,0 +1,30 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA Arcade — Marea</title>
+<!--
+  Inclinas la rejilla y todo se desliza a ese lado. Dos fichas iguales que chocan
+  se funden en una del doble. Después de cada movimiento aparece una ficha nueva
+  donde le da la gana.
+
+  ⚠️ ES EL ENTORNO PUENTE, Y ÉSA ES SU RAZÓN DE ESTAR AQUÍ.
+
+  Nadie de fuera sabe qué significa un 0,38 en canadiense. La familia del 2048
+  lleva años siendo entorno de referencia en aprendizaje por refuerzo, así que su
+  puntuación ya tiene con qué compararse en la cabeza de quien lea la tabla. Por
+  eso las reglas son las canónicas y no una versión de la casa: 4×4, un 2 el 90 %
+  de las veces y un 4 el 10 %, cada ficha se funde una sola vez por movimiento, y
+  la puntuación es la suma de las fusiones. Cambiar cualquiera de esas cuatro
+  cosas rompería justo lo que lo hace útil.
+
+  Y trae algo que ninguno de los otros tenía: azar DESPUÉS de decidir. El parchís
+  tira el dado antes y eliges qué hacer con él; aquí decides, y entonces el mundo
+  mete una ficha donde quiera.
+
+  Esta página no dibuja nada: `mesa_tablero.mjs` lee el sustrato —una rejilla con
+  el exponente en cada celda y el número en su etiqueta— y lo pinta.
+-->
+<script type="module">
+  import { montarMesa } from './js/montarMesa.js';
+  montarMesa({ juego: 'marea' });
+</script>

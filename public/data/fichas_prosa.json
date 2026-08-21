@@ -595,5 +595,21 @@
       "Los dos yokai tienen que senialar a la MISMA persona para llevarsela, y de noche no pueden hablar. Es la desventaja que compensa saber quien es quien."
     ],
     "origen": "Original de esta casa, de la familia folclorica de la deduccion social -la que se juega en campamentos desde hace decadas y que tiene muchas versiones con dueno-. La mecanica es la de siempre; la piel, no: aqui no hay lobos ni aldeas europeas, hay yokai tomando forma humana."
+  },
+  "marea": {
+    "que_es": "Inclinas la rejilla y todo se desliza a ese lado. Dos fichas iguales que chocan se funden en una del doble. Despues de cada movimiento aparece una ficha nueva donde le da la gana.",
+    "reparto": "Una rejilla de cuatro por cuatro y dos fichas para empezar. Nada mas.",
+    "turno": "Inclinas hacia arriba, abajo, izquierda o derecha. Solo se ofrece la direccion que cambia algo: inclinar hacia donde nada se mueve no es jugar. Cada fusion suma su valor.",
+    "gana": "No se gana: se aguanta. La partida acaba cuando ningun movimiento cambia nada, y tu puntuacion es lo que sumaste por el camino.",
+    "ojo": [
+      "Es el entorno PUENTE del banco: el unico cuyo numero se entiende desde fuera sin explicarlo. La familia del 2048 lleva anios siendo referencia en aprendizaje por refuerzo, asi que sirve de ancla para todos los demas, que solo se entienden entre ellos.",
+      "Por eso las reglas son las canonicas y no una version de la casa: cuatro por cuatro, un 2 el 90 por ciento de las veces y un 4 el 10, cada ficha se funde una sola vez por movimiento, y la puntuacion es la suma de las fusiones. Cambiar cualquiera de esas cuatro cosas romperia lo unico que lo hace util.",
+      "Trae algo que ninguno de los otros tenia: azar DESPUES de decidir. El parchis y la generala tiran el dado antes y eliges que hacer con lo que salio; aqui decides y entonces el mundo mete una ficha donde quiera. Planificar contra un futuro que reacciona a lo que acabas de hacer es otro problema.",
+      "La regla que todo el mundo implementa mal la primera vez: con [2,2,4] a la izquierda salen 4 y 4, no un 8. El 4 que sale de fundir los dos doses ya no puede volver a fundirse en el mismo movimiento."
+    ],
+    "diferencias": [
+      "Ninguna: son las reglas canonicas a proposito. Es el unico juego de la casa donde apartarse del original seria un error, porque lo que aporta es precisamente ser comparable."
+    ],
+    "origen": "De la familia del 2048 de Gabriele Cirulli, que a su vez venia de 1024 y de Threes. Es folclore de navegador desde 2014 y entorno de referencia en aprendizaje por refuerzo desde poco despues."
   }
 }

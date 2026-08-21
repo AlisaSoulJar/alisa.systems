@@ -71,6 +71,20 @@ export const REGLAS = {
     // que promete: planificación espacial con estados irreversibles, un género
     // que no estaba cubierto, en doscientas líneas y cero arte.
     sokoban: () => import('./sokoban.js').then(m => m.sokoban),
+    /**
+     * ⚠️ EL ENTORNO PUENTE: EL ÚNICO CUYO NÚMERO SE ENTIENDE DESDE FUERA.
+     *
+     * Nadie de fuera sabe qué significa un 0,38 en canadiense. La familia del 2048
+     * lleva años siendo entorno de referencia en aprendizaje por refuerzo, así que
+     * su puntuación ya tiene con qué compararse en la cabeza de cualquiera que lea
+     * la tabla. Para un banco que se publica, un entorno PUENTE vale más que uno
+     * nuevo: ancla a todos los demás.
+     *
+     * Y trae algo que ninguno de los treinta y nueve tenía: AZAR **DESPUÉS** de
+     * decidir. El parchís y la generala tiran el dado ANTES y eliges qué hacer con
+     * lo que salió; aquí decides y entonces el mundo mete una ficha donde quiera.
+     */
+    marea: () => import('./marea.js').then(m => m.marea),
     // Y el segundo: OBSERVABILIDAD PARCIAL, lo que ninguno de los veintiuno
     // anteriores tenía — aquí no se ve el estado, se descubre. Es el género que
     // separa a un agente con memoria de uno sin ella, y el primero que se apoya
@@ -244,6 +258,8 @@ export const SILLAS = {
     brisca: 4, tute: 4, hearts: 4, spades: 4, unit: 4,
     gofish: 3, entropy: 2,
     sokoban: 1, cripta: 1, rebano: 1, pradera: 1,
+    // Un solitario, y el rival es el azar que rellena la rejilla detrás de ti.
+    marea: 1,
     flota: 2, defensa: 2, sigilo: 2, frentes: 2, relevo: 2, cabina: 2,
     nave: 4,
     /**

@@ -117,6 +117,11 @@ const PROTOHUB = [
     // divisiones -menu cerrado contra habla libre-, que es como el campo lleva una
     // decada separando a las politicas programadas de los modelos de lenguaje.
     { juego: 'yokai', titulo: 'Yokai', crear: 'crearYokai' },
+    // Marea es el ENTORNO PUENTE: la familia del 2048 lleva anios siendo
+    // referencia en aprendizaje por refuerzo, asi que su puntuacion se entiende
+    // desde fuera sin explicarla y ancla a las demas. Y trae azar DESPUES de
+    // decidir -el parchis lo tiene antes-, que hasta ahora no se media.
+    { juego: 'marea', titulo: 'Marea', nombre: 'marea' },
     // Remigio es el primero donde la información se revela AL ELEGIR ENTRE DOS
     // FUENTES. En el go fish revelas preguntando y en el póker apostando: actúas
     // y se sabe. Aquí las dos jugadas son legales, hacen lo mismo —te dan una
