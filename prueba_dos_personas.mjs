@@ -205,6 +205,63 @@ for (const juego of JUEGOS) {
  * `mesas` —el parámetro existe justo para esto— y se mira el cuerpo que llega.
  * Sin navegador: `crearSala` ya está escrito para sobrevivir sin `document`.
  */
+/**
+ * ⚠️ Y QUE ESPERAR NO SEA UNA TRAMPA: «EMPEZAR YA».
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * La mesa espera ahora a TODAS las sillas del juego, que es lo que permite que
+ * cuatro amigos se repartan un enlace de parchís sin que la casa les coja los
+ * sitios. El precio es obvio y hay que medirlo: si sólo aparecen dos, esa espera
+ * deja la mesa parada para siempre.
+ *
+ * Se comprueba en un juego de CUATRO con DOS personas, que es exactamente el
+ * caso que el cambio pone en riesgo. Dos cosas, y las dos importan:
+ *   · antes de pulsar, la mesa está quieta —si avanzara, la espera no serviría—
+ *   · después de pulsar, avanza —si no, el botón es decoración—
+ */
+const CUATRO = 'parchis';
+{
+    const sala = `sonda-empezar-${Math.floor(Math.random() * 1e6)}`;
+    const secretos = {};
+    for (const quien of ['ana', 'bruno']) {
+        const { datos } = await pedir(`/mesa/${sala}/sentarse`,
+            { quien, juego: CUATRO, jugadores: 'todas' });
+        secretos[quien] = datos.secret ?? datos.secreto;
+    }
+    const { datos: antes } = await pedir(`/mesa/${sala}?quien=ana`);
+    // Ana juega su turno entero; después le toca a una silla vacía y la mesa
+    // tiene que quedarse ahí, esperando a los que faltan.
+    let mias = 0, ahora = antes;
+    while (mias < 20 && ahora.turn === 'ana' && (ahora.legal_moves ?? []).length) {
+        const { datos } = await pedir(`/mesa/${sala}/jugar`, {
+            quien: 'ana', secreto: secretos.ana,
+            jugada: ahora.legal_moves.filter(m => m !== 'nueva')[0],
+        });
+        ahora = datos; mias++;
+    }
+    const quietaAntes = (Number(ahora.moves) || 0) === mias;
+    const faltaban = Number(ahora.waiting_for) || 0;
+
+    const { codigo, datos: tras } = await pedir(`/mesa/${sala}/empezar`,
+        { quien: 'ana', secreto: secretos.ana });
+    const avanzo = (Number(tras.moves) || 0) > (Number(ahora.moves) || 0)
+        || tras.turn === 'ana' || tras.turn === 'bruno';
+
+    // Y que no lo pueda pulsar cualquiera: un espectador arrancaría la partida
+    // de otros, y quien mira no decide.
+    const { codigo: deFuera } = await pedir(`/mesa/${sala}/empezar`, { quien: 'curiosa' });
+
+    const mal = [];
+    if (!faltaban) mal.push(`${CUATRO} con 2 de 4 no dice que falte nadie`);
+    if (!quietaAntes) mal.push(`la mesa avanzó sola: ${ahora.moves} jugadas y ana hizo ${mias}`);
+    if (codigo !== 200) mal.push(`«empezar ya» no funcionó (${codigo}: ${tras.error ?? ''})`);
+    if (!avanzo) mal.push('tras «empezar ya» la mesa siguió parada');
+    if (deFuera === 200) mal.push('alguien sin silla pudo arrancar la partida');
+
+    if (mal.length) { fallos++; console.log(`\n${CUATRO} (4 sillas, 2 personas)\n  ${rojo('✗')} ${mal.join('\n      ')}`); }
+    else console.log(`\n${CUATRO} (4 sillas, 2 personas)\n  ${verde('✓')} ${gris(`espera a los que faltan (${faltaban}) y «empezar ya» la arranca`)}`);
+}
+
 const { createServer } = await import('node:http');
 const { pathToFileURL } = await import('node:url');
 const { join, dirname } = await import('node:path');
@@ -233,12 +290,24 @@ await crearSala({
 }).entrar();
 servidor.close();
 
-const pide = Number(cuerpoRecibido?.jugadores) || 0;
-if (pide >= 2) {
-    console.log(verde(`  ✓ al sentarse, la web pide mesa para ${pide}`));
+/**
+ * ⚠️ SE ACEPTA `'todas'` ADEMÁS DE UN NÚMERO, Y NO ES LAXITUD.
+ *
+ * La web pide `jugadores: 'todas'` porque al sentarse todavía no sabe cuántas
+ * sillas tiene el juego —eso viene en la respuesta— y el árbitro sí lo sabe. Mi
+ * predicado era `Number(...) >= 2` y puso en rojo el comportamiento correcto: la
+ * comprobación se había quedado con la forma vieja del dato.
+ *
+ * Lo que se vigila no es «que mande un número»: es que PIDA COMPAÑÍA, o sea
+ * cualquier cosa que deje `esperaA > 1`. Un `1` o un campo ausente es el fallo.
+ */
+const pedido = cuerpoRecibido?.jugadores;
+const pideCompania = pedido === 'todas' || (Number(pedido) || 0) >= 2;
+if (pideCompania) {
+    console.log(verde(`  ✓ al sentarse, la web pide mesa para «${pedido}»`));
 } else {
     fallos++;
-    console.log(rojo(`  ✗ al sentarse, la web no pide compañía (jugadores: ${cuerpoRecibido?.jugadores ?? 'nada'})`));
+    console.log(rojo(`  ✗ al sentarse, la web no pide compañía (jugadores: ${pedido ?? 'nada'})`));
     console.log(gris('      sin eso el árbitro deja `esperaA = 1` y la casa ocupa la silla'));
     console.log(gris('      del que viene de camino en cuanto el primero mueve.'));
 }

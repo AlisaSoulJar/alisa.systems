@@ -218,7 +218,7 @@ const ESTILO_ANTESALA = `
  * páginas que entran a una sala; puesto en `refrescar()`, ninguna se queda sin
  * él. Y lleva el enlace: quien está esperando es justo quien necesita mandarlo.
  */
-function pintarEspera(m, sala) {
+function pintarEspera(m, sala, yo, alEmpezar) {
     if (typeof document === 'undefined') return;
     const faltan = Number(m?.waiting_for) || 0;
     let caja = document.getElementById('alisa-espera');
@@ -239,19 +239,34 @@ function pintarEspera(m, sala) {
     }
     const texto = faltan === 1 ? 'Falta una persona por sentarse'
                                : `Faltan ${faltan} personas por sentarse`;
-    // Se repinta sólo si cambió: dentro hay un botón, y rehacerlo en cada latido
-    // lo quitaría de debajo del dedo justo cuando alguien va a copiar el enlace.
-    if (caja.dataset.firma === texto) return;
-    caja.dataset.firma = texto;
+    /**
+     * ⚠️ «EMPEZAR YA» SÓLO SI ESTÁS SENTADO, Y ESO SE MIRA AQUÍ.
+     *
+     * Quien mira desde fuera no arranca la partida de otros. El árbitro lo
+     * rechaza igualmente —comprueba silla y secreto—, pero ofrecer un botón que
+     * va a rebotar es peor que no ofrecerlo: parece que puedes y no puedes.
+     */
+    const sentado = (m?.seats ?? []).some(a => a.who === yo);
+    const firma = `${texto}·${sentado}`;
+    // Se repinta sólo si cambió: dentro hay botones, y rehacerlos en cada latido
+    // los quitaría de debajo del dedo justo cuando alguien va a pulsar.
+    if (caja.dataset.firma === firma) return;
+    caja.dataset.firma = firma;
     const enlace = `${location.origin}${location.pathname}?sala=${encodeURIComponent(sala)}`;
     caja.innerHTML = `<span class="alisa-espera-txt">${esc(texto)}</span>
-        <button type="button" class="alisa-espera-btn">copiar enlace</button>`;
-    caja.querySelector('.alisa-espera-btn').addEventListener('click', (e) => {
+        <button type="button" class="alisa-espera-btn" data-que="copiar">copiar enlace</button>`
+        + (sentado ? `<button type="button" class="alisa-espera-btn" data-que="empezar">empezar ya</button>` : '');
+    caja.querySelector('[data-que="copiar"]').addEventListener('click', (e) => {
         // Sin `clipboard` —o sin permiso— se enseña el enlace para copiarlo a mano
         // en vez de dejar un botón que no hace nada.
         navigator.clipboard?.writeText(enlace)
             .then(() => { e.target.textContent = 'copiado'; })
             .catch(() => { e.target.textContent = enlace; });
+    });
+    caja.querySelector('[data-que="empezar"]')?.addEventListener('click', (e) => {
+        e.target.disabled = true;
+        e.target.textContent = 'empezando…';
+        alEmpezar?.();
     });
 }
 
@@ -281,12 +296,12 @@ const ESTILO_ESPERA = `
  *   puedoJugar  si la silla la lleva una persona o algo automático. `mesa.html`
  *               le pasa su `?asientos=`; una mesa sin esa idea deja el sí.
  *   esperaA     a cuántas PERSONAS espera la mesa antes de que la casa rellene
- *               los huecos. Por defecto 2 —el caso del enlace compartido—; el
- *               árbitro lo recorta a las sillas que el juego declare.
+ *               los huecos. Por defecto `'todas'` —las sillas que el juego
+ *               declare—; se puede pasar un número para esperar a menos.
  */
 export function crearSala({ sala, yo, juego, semilla, mesas = MESAS,
                             avisar = () => {}, puedoJugar = () => true,
-                            esperaA = 2 }) {
+                            esperaA = 'todas' }) {
     /**
      * ⚠️ EL SECRETO DE TU ASIENTO. VIVE AQUÍ Y NO SALE.
      *
@@ -411,13 +426,19 @@ export function crearSala({ sala, yo, juego, semilla, mesas = MESAS,
              * primero que llega empieza a jugar mientras espera, y para cuando el
              * segundo abre, su asiento lleva rato en manos de la casa.
              *
-             * Se manda 2 y no `max_seats` a propósito. Con `max_seats`, una mesa de
-             * parchís se quedaría parada hasta juntar CUATRO personas, y hoy esas
-             * partidas arrancan con la casa; convertir eso en una espera sería
-             * cambiarle el juego a quien no ha pedido nada. Dos es lo que hace falta
-             * para que un enlace compartido no le robe la silla a nadie, que es el
-             * caso que se está arreglando. Los solitarios no se enteran: el árbitro
-             * lo recorta a las sillas que el juego declara.
+             * ⚠️ SE ESPERA A TODAS LAS SILLAS, Y ANTES ERAN DOS.
+             *
+             * Dos arreglaba el caso de la pareja y dejaba el de cuatro igual de
+             * roto: en un parchís con un enlace repartido, el tercero y el cuarto
+             * llegaban a encontrarse la casa en sus sitios. Se descartó `max_seats`
+             * la primera vez por miedo a dejar mesas paradas para siempre — y ese
+             * miedo era correcto, pero la respuesta no era esperar a menos gente:
+             * era poder decir «ya estamos». Eso es `/empezar`, y con él la espera es
+             * una oferta en vez de una condición.
+             *
+             * Va como palabra y no como número porque el número lo sabe el árbitro:
+             * aquí, al sentarse, todavía no se ha visto la respuesta que trae
+             * `max_seats`. Los solitarios no se enteran: allí `'todas'` es una.
              */
             const r = await this.pedir('/sentarse',
                 { quien: yo, tipo: 'persona', juego, semilla, jugadores: esperaA });
@@ -454,7 +475,19 @@ export function crearSala({ sala, yo, juego, semilla, mesas = MESAS,
         // Sin él se recibe la vista canónica, que es la del primero que se sentó.
         async refrescar() {
             this.ultimo = await this.pedir(`?quien=${encodeURIComponent(yo)}`);
-            pintarEspera(this.ultimo, sala);
+            pintarEspera(this.ultimo, sala, yo, () => this.empezar());
+        },
+
+        /**
+         * «Ya estamos, que juegue la casa el resto.» Ver la nota de `/empezar` en
+         * el árbitro: sin esto, esperar a todas las sillas dejaría una mesa de
+         * cuatro parada para siempre en cuanto sólo aparecieran dos.
+         */
+        async empezar() {
+            const r = await this.pedir('/empezar', { quien: yo, secreto });
+            if (r.codigo === 200) { this.ultimo = r; pintarEspera(r, sala, yo, null); return true; }
+            avisar(r.error ?? 'no se pudo empezar');
+            return false;
         },
 
         estado() { return this.ultimo?.state ?? {}; },

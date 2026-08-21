@@ -259,6 +259,35 @@ const doc = {
                 },
             },
         },
+        '/mesa/{sala}/empezar': {
+            post: {
+                operationId: 'start',
+                summary: 'Start with whoever is already seated; the house fills the empty seats',
+                description: 'A table waits for every seat the game declares before the house '
+                           + 'fills anything, so a shared invite link cannot cost a late arrival '
+                           + 'their seat. This is the way out of that wait: anyone already seated '
+                           + 'can say "we are all here". Without it, a four-seat table with two '
+                           + 'players would stay still forever.',
+                parameters: [{ name: 'sala', in: 'path', required: true, schema: { type: 'string' } }],
+                requestBody: {
+                    required: true,
+                    content: { 'application/json': { schema: {
+                        type: 'object', required: ['quien', 'secreto'],
+                        properties: {
+                            quien: { type: 'string' },
+                            secreto: { type: 'string',
+                                       description: 'The token the table handed you when you sat down.' },
+                        },
+                    } } },
+                },
+                responses: {
+                    200: { description: 'The table now waits for nobody; returns it already advanced',
+                           content: { 'application/json': { schema: mesa } } },
+                    403: { description: 'You are not seated at this table, or the `secreto` is wrong' },
+                    404: { description: 'No such table' },
+                },
+            },
+        },
     },
     'x-games': Object.fromEntries(JUEGOS.map(j => [j, TITULOS[j] ?? j])),
 };
@@ -286,7 +315,9 @@ if ([...reales].some(r => r.startsWith('/api/'))) {
 
 const ruta = process.argv[2] ?? 'public/openapi.json';
 await writeFile(ruta, JSON.stringify(doc, null, 2) + '\n', 'utf-8');
-const sinDescribir = [...reales].filter(r => !DESCRITAS[r] && !r.match(/^\/mesa\/\{sala\}(\/(sentarse|jugar))?$/));
+// Las de `/mesa/` van escritas a mano ahí arriba, con sus esquemas y su prosa:
+// quedan fuera de este aviso porque ya están descritas, sólo que en otro sitio.
+const sinDescribir = [...reales].filter(r => !DESCRITAS[r] && !r.match(/^\/mesa\/\{sala\}(\/(sentarse|jugar|empezar))?$/));
 console.log(`  openapi: ${JUEGOS.length} juegos, ${Object.keys(doc.paths).length} puertas`
           + ` (${añadidas} derivadas del disco) → ${ruta}`);
 if (sinDescribir.length) {

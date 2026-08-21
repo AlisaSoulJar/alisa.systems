@@ -134,8 +134,11 @@ const sala = limpiar(params.get('sala'), 40);
 // ⚠️ SÓLO SE PREGUNTA SI HAY SALA. Esta línea se ejecuta en los dos modos, y en
 // una partida local no hay nadie con quien confundirte: sacarle un recuadro a
 // quien abrió una mesa para jugar solo sería un peaje por nada.
+// El título se le pasa a mano: esta página sirve a los treinta y ocho, así que su
+// `document.title` dice «Mesa» —del que la antesala tira por defecto— y no a qué
+// se va a jugar. Aquí el catálogo está a mano, así que se dice.
 const yo = sala
-    ? await nombrePreguntando(sala, params.get('yo'), { juego })
+    ? await nombrePreguntando(sala, params.get('yo'), { juego, titulo: TITULOS[juego] ?? juego })
     : nombreParaSala(sala, params.get('yo'));
 
 const reglas = await cargarReglas(juego);

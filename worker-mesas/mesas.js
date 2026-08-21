@@ -248,7 +248,56 @@ export class MesaCompartida {
 
         if (accion === 'sentarse') return this.sentarse(d, quien);
         if (accion === 'jugar') return this.jugar(d, quien);
+        if (accion === 'empezar') return this.empezar(d, quien);
         return responder(404, { error: `no sé hacer '${accion}'` });
+    }
+
+    /**
+     * ⚠️ EMPEZAR CON LOS QUE HAYA. SIN ESTO, ESPERAR ES UNA TRAMPA.
+     * ═══════════════════════════════════════════════════════════════════════
+     *     POST /mesa/{sala}/empezar { quien, secreto }
+     *
+     * La mesa espera a las sillas que el juego declare, que es lo que hace que
+     * cuatro amigos puedan repartirse UN enlace de parchís sin que la casa les
+     * coja los sitios. Pero si sólo aparecen dos, esa misma espera deja la mesa
+     * parada para siempre: han venido a jugar y el arreglo se lo impide.
+     *
+     * Con esto, quien esté sentado dice «ya estamos» y la casa rellena el resto.
+     * La espera pasa a ser una oferta —«te guardo el sitio hasta que digáis»— en
+     * vez de una condición que hay que cumplir para poder jugar.
+     *
+     * Lo pide alguien SENTADO y con su secreto: un espectador que pulsara esto
+     * arrancaría la partida de otros, y quien mira no decide.
+     *
+     * Y arranca la mano de la casa aquí mismo. Si sólo se cambiara el número, la
+     * mesa seguiría quieta hasta que alguien jugara —y puede que le toque
+     * justamente a una silla vacía—, o sea que pulsar «empezar» no habría hecho
+     * nada visible. Un botón que no se nota es un botón roto.
+     */
+    async empezar(d, quien) {
+        const mesa = await this.cargar();
+        if (!mesa) return responder(404, { error: 'mesa vacía' });
+        const silla = mesa.asientos.find(a => a.quien === quien);
+        if (!silla) return responder(403, { error: 'sólo empieza quien está sentado' });
+        if (silla.secreto && String(d?.secreto ?? '') !== silla.secreto) {
+            return responder(403, { error: 'ese asiento no es tuyo: falta el `secreto`' });
+        }
+        mesa.esperaA = mesa.asientos.length;
+
+        const { reglas, p } = await this.reconstruir(mesa);
+        let st = reglas.estado(p);
+        this.anotarAsiento(mesa, st);
+        let vueltas = 0;
+        while (!st.is_game_over && reglas.sugerencia && vueltas++ < 64) {
+            if (this.quienTiraAhora(mesa, st)) break;   // hay alguien: le toca a él
+            const j = reglas.sugerencia(p);
+            if (!j || !reglas.mover(p, j)) break;
+            mesa.jugadas.push(j);
+            st = reglas.estado(p);
+            this.anotarAsiento(mesa, st);
+        }
+        await this.estado.storage.put('mesa', mesa);
+        return responder(200, this.retrato(mesa, st, reglas, p, quien));
     }
 
     async sentarse(d, quien) {
@@ -314,8 +363,18 @@ export class MesaCompartida {
                  * podía quedarse esperando a ocho para siempre en un juego de dos.
                  * El número que manda es el que el juego declara, el mismo con el
                  * que se rechaza a quien sobra.
+                 *
+                 * ⚠️ Y `'todas'` SE DICE ASÍ, CON SU PALABRA.
+                 *
+                 * La web quiere «las sillas que tenga este juego» y no las sabe al
+                 * sentarse —las descubre en la respuesta—. La alternativa era
+                 * mandar un número grande y dejar que el recorte hiciera el resto,
+                 * que funciona y no se entiende al leerlo: un `99` en una petición
+                 * es un acertijo para quien lo encuentre dentro de un año.
                  */
-                esperaA: Math.max(1, Math.min(SILLAS[juego] ?? 1, Number(d?.jugadores) || 1)),
+                esperaA: d?.jugadores === 'todas'
+                    ? (SILLAS[juego] ?? 1)
+                    : Math.max(1, Math.min(SILLAS[juego] ?? 1, Number(d?.jugadores) || 1)),
                 // El orden en que los juegos nombran sus asientos. Se descubre
                 // del primer estado en vez de codificarlo: hay dos convenciones
                 // en la casa —'player'/'cpu1' y 'white'/'black'— y adivinar cuál

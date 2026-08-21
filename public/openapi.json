@@ -530,6 +530,164 @@
         }
       }
     },
+    "/mesa/{sala}/empezar": {
+      "post": {
+        "operationId": "start",
+        "summary": "Start with whoever is already seated; the house fills the empty seats",
+        "description": "A table waits for every seat the game declares before the house fills anything, so a shared invite link cannot cost a late arrival their seat. This is the way out of that wait: anyone already seated can say \"we are all here\". Without it, a four-seat table with two players would stay still forever.",
+        "parameters": [
+          {
+            "name": "sala",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "quien",
+                  "secreto"
+                ],
+                "properties": {
+                  "quien": {
+                    "type": "string"
+                  },
+                  "secreto": {
+                    "type": "string",
+                    "description": "The token the table handed you when you sat down."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The table now waits for nobody; returns it already advanced",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "game": {
+                      "type": "string",
+                      "enum": [
+                        "ajedrez",
+                        "go",
+                        "reversi",
+                        "damas",
+                        "xiangqi",
+                        "mancala",
+                        "snake",
+                        "fagocito",
+                        "peaton",
+                        "blackjack",
+                        "poker",
+                        "brisca",
+                        "tute",
+                        "hearts",
+                        "spades",
+                        "guerra",
+                        "gofish",
+                        "unit",
+                        "entropy",
+                        "sokoban",
+                        "cripta",
+                        "flota",
+                        "defensa",
+                        "sigilo",
+                        "frentes",
+                        "relevo",
+                        "cabina",
+                        "rebano",
+                        "pradera",
+                        "nave",
+                        "remigio",
+                        "chinchon",
+                        "alisapolis",
+                        "parchis",
+                        "generala",
+                        "oca",
+                        "canadiense",
+                        "domino"
+                      ]
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "seed": {
+                      "type": "integer",
+                      "description": "With {game, seed, moves} the whole match can be replayed."
+                    },
+                    "turn": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "Whose turn it is. If it is not yours, your legal_moves comes back empty."
+                    },
+                    "legal_moves": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      },
+                      "description": "THE MOVES YOU CAN MAKE RIGHT NOW. Pick one of these; anything else is rejected with 400. Empty when it is not your turn."
+                    },
+                    "text": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "description": "The situation in words, from YOUR seat. This is what a sightless agent reads, and it is the same text a local player gets."
+                    },
+                    "seats": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "waiting_for": {
+                      "type": "integer",
+                      "description": "How many players are still missing before the match starts."
+                    },
+                    "played_by_house": {
+                      "type": "integer",
+                      "description": "Seats covered by the house policy."
+                    },
+                    "is_game_over": {
+                      "type": "boolean"
+                    },
+                    "score": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "moves": {
+                      "type": "integer",
+                      "description": "How many moves have been played so far."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "You are not seated at this table, or the `secreto` is wrong"
+          },
+          "404": {
+            "description": "No such table"
+          }
+        }
+      }
+    },
     "/api/dataset": {
       "get": {
         "operationId": "datasetInfo",
