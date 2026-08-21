@@ -61,6 +61,8 @@ const EJES = {
     simultaneo:   'se decide a la vez: el segundo no ve lo que eligió el primero',
     cooperativo:  'los dos asientos ganan o pierden juntos',
     comunicacion: 'hay jugadas que sólo cambian lo que sabe el otro',
+    busqueda:     'lo que no ves se destapa con lo que haces: encontrar ES el juego',
+    presupuesto:  'hay un recurso que se gasta y no vuelve: encontrar ANTES de quedarte sin',
 };
 
 /** Huella del sustrato: dos estados iguales dan la misma cadena. */
@@ -106,9 +108,14 @@ const jugables = (st) => (st.legal_moves ?? []).filter(m => m !== 'nueva' && m !
 
 async function sondear(juego) {
     const eje = { espacial: false, oculto: false, rival: false, autonomo: false,
-                  irreversible: null, simultaneo: null, cooperativo: null, comunicacion: null };
+                  irreversible: null, simultaneo: null, cooperativo: null, comunicacion: null,
+        busqueda: null, presupuesto: null };
     const puntos = [];
     let jugadas = [], turnos = new Set(), notas = [];
+    // Para los dos ejes nuevos: cuánto había oculto como mucho, cuánto quedaba al
+    // final, y qué números del estado no subieron nunca. Ver la nota de abajo.
+    let ocultoMax = null, ocultoUltimo = null;
+    const recursos = {};
 
     for (const semilla of SEMILLAS) {
         const reglas = await cargarReglas(juego, {});
@@ -129,6 +136,52 @@ async function sondear(juego) {
             if (antes.rejilla?.sinVista?.some(Boolean)) eje.oculto = true;
             if (antes.zonas?.some(z => z.ocultas > 0)) eje.oculto = true;
 
+            /**
+             * ⚠️ DOS EJES NUEVOS, Y NO SON UNA IDEA MÍA: ESTABAN CONSTRUIDOS.
+             * ═══════════════════════════════════════════════════════════════
+             *
+             * La saga Raccoon Scape lleva seis etapas planteando el MISMO problema
+             * a seis escalas: encontrar algo gastando poco. Sus propias cabeceras
+             * lo dicen — el edificio «mide deducción bajo incertidumbre con
+             * presupuesto limitado» y la etapa espacial dedica un párrafo a que
+             * «el presupuesto es el número que decide si esto mide algo».
+             *
+             * Y esta matriz no podía verlo: sus ocho ejes hablan de geometría,
+             * información y turnos, y ninguno de BUSCAR ni de GASTAR. Un
+             * instrumento sólo enseña huecos que su vocabulario sabe nombrar, así
+             * que el hueco no había que inventarlo — había que ponerle palabra.
+             *
+             * Se detectan JUGANDO, como los otros seis. Declararlos sería la
+             * enésima lista paralela.
+             */
+            const cuentaOculto = (s) =>
+                (s?.rejilla?.niebla ?? []).filter(Boolean).length
+                + (s?.rejilla?.sinVista ?? []).filter(Boolean).length
+                + (s?.zonas ?? []).reduce((n, z) => n + (Number(z.ocultas) || 0), 0);
+            const ocultoAhora = cuentaOculto(antes);
+            if (ocultoMax === null || ocultoAhora > ocultoMax) ocultoMax = ocultoAhora;
+            ocultoUltimo = ocultoAhora;
+
+            /**
+             * PRESUPUESTO — un número del estado que sólo BAJA mientras juegas.
+             *
+             * No vale cualquier número que baje: `ronda` y `jugadas` suben, y un
+             * marcador sube y baja. Lo que se busca es un recurso que se gasta —
+             * combustible, energía, intentos, cartas del mazo— porque eso es lo
+             * que convierte «encontrar» en «encontrar antes de quedarte sin».
+             *
+             * Se mira el estado entero y se apunta qué campos numéricos no han
+             * subido NUNCA en toda la partida. Al final se descartan los que se
+             * quedaron clavados: un número constante no es un presupuesto.
+             */
+            for (const [k, v] of Object.entries(st)) {
+                if (typeof v !== 'number' || !Number.isFinite(v)) continue;
+                if (/ronda|jugad|turno|semilla|paso|noche/i.test(k)) continue;
+                if (!(k in recursos)) { recursos[k] = { primero: v, ultimo: v, subio: false }; continue; }
+                if (v > recursos[k].ultimo) recursos[k].subio = true;
+                recursos[k].ultimo = v;
+            }
+
             const m = reglas.sugerencia?.(p) ?? jugables(st)[0];
             if (!m || !reglas.mover(p, m)) break;
             camino.push(m);
@@ -144,6 +197,73 @@ async function sondear(juego) {
     }
 
     eje.rival = turnos.size > 1;
+
+    /**
+     * ⚠️ BÚSQUEDA — no basta con que haya algo oculto: tiene que DESTAPARSE.
+     *
+     * `oculto` ya dice que hay estado que no ves. Buscar es otra cosa: es que lo
+     * que no ves se vuelva conocido POR LO QUE HACES. En una mano de póker el
+     * estado oculto sigue oculto hasta el final, y eso no es una búsqueda; en el
+     * edificio de la saga cada puerta que abres reduce lo desconocido, y eso sí.
+     *
+     * Se mide como todo aquí, jugando: cuánto había oculto como mucho contra
+     * cuánto quedaba al terminar. Si baja más de un tercio, se ha buscado.
+     */
+    /**
+     * ⚠️ Y ESTE DETECTOR NO VALE. QUEDA `null` HASTA QUE VALGA.
+     *
+     * Escrito así —«bajó lo oculto más de un tercio»— marcó ocho juegos y los ocho
+     * eran DE CARTAS: póker, brisca, tute, hearts, gofish, dominó, spades, guerra.
+     * En una mano el estado oculto se reduce porque se juegan las cartas, no
+     * porque nadie encuentre nada. Es un detector que confunde «se destapa» con
+     * «se gasta».
+     *
+     * Y el motivo de fondo es peor que el fallo: construí el eje pensando en la
+     * saga Raccoon Scape, cuyas etapas **no están en esta matriz** —son de familia
+     * `propio`, fuera del catálogo del arcade—. O sea que no tenía ni un solo caso
+     * positivo conocido contra el que calibrar, y lo publiqué igual. Es la regla 5
+     * de `docs/COMO_MEDIR.md`, incumplida una hora después de escribirla.
+     *
+     * El orden correcto es al revés: meter la saga en el catálogo primero, y con
+     * esos seis casos conocidos delante, escribir el detector y comprobar que los
+     * caza a ellos y no a una mano de tute.
+     *
+     * Mientras tanto sale `?`, que en esta matriz significa «no se pudo observar»
+     * — y es la verdad.
+     */
+    eje.busqueda = null;
+    void ocultoMax; void ocultoUltimo;
+
+    /**
+     * ⚠️ PRESUPUESTO — un recurso que sólo baja y que además se GASTA.
+     *
+     * De los números del estado que no subieron nunca, se descartan los que se
+     * quedaron clavados: una constante no es un presupuesto. Lo que queda es lo
+     * que se consume mientras juegas, que es lo que convierte «encontrar» en
+     * «encontrar antes de quedarte sin».
+     */
+    /**
+     * ⚠️ Y ÉSTE TAMPOCO VALE, POR EL MISMO MOTIVO Y CON OTRA CARA.
+     *
+     * «Un número del estado que sólo baja» marcó dos juegos, y en los dos lo que
+     * bajaba no era un presupuesto: sokoban «gasta» `nivel` y `cajas_totales`
+     * —que son el número de nivel y un total— y alisápolis «gasta» `puntos` y
+     * `score`, que es sencillamente el marcador cayendo.
+     *
+     * Un marcador que baja no es un recurso que se agota. Para distinguirlos hace
+     * falta la otra mitad: que llegar a cero TERMINE o inutilice la partida. Eso
+     * se puede medir, pero otra vez hay que calibrarlo contra un positivo conocido
+     * —el combustible de la etapa espacial, la energía del dron— y esos no están
+     * en esta matriz todavía.
+     *
+     * Se deja el cálculo hecho y la nota puesta, porque el trabajo sirve en cuanto
+     * la saga entre. Lo que no se hace es publicar el eje.
+     */
+    const gastados = Object.entries(recursos)
+        .filter(([, r]) => !r.subio && r.ultimo < r.primero)
+        .map(([k]) => k);
+    eje.presupuesto = null;
+    if (gastados.length) notas.push(`baja: ${gastados.slice(0, 4).join(', ')}`);
 
     /**
      * ⚠️ IRREVERSIBILIDAD, POR REJUGADO.
@@ -490,11 +610,28 @@ for (const f of filas) {
 
 console.log('\nCobertura por eje\n');
 const cobertura = {};
+/**
+ * ⚠️ «0 DE 40» Y «SIN MEDIR» NO SON LO MISMO, Y AQUÍ SE DECÍAN IGUAL.
+ *
+ * Un eje que ningún juego cumple es un hueco del catálogo — información útil. Un
+ * eje que no se ha sabido medir es un hueco del INSTRUMENTO, y contarlo como cero
+ * dice «no hay ninguno» cuando la verdad es «no lo sé». Pasó en cuanto se
+ * declararon `busqueda` y `presupuesto` sin un detector que funcionara: los dos
+ * salían `0/40 ← VACÍO`, que es exactamente el default disfrazado de dato contra
+ * el que avisa la regla 3 de `docs/COMO_MEDIR.md`.
+ *
+ * Se separan: `null` en todas las filas es «sin medir» y se dice con esa palabra.
+ */
 for (const k of clavesEje) {
+    const medidos = filas.filter(f => f.eje[k] !== null && f.eje[k] !== undefined).length;
     const n = filas.filter(f => f.eje[k] === true).length;
-    cobertura[k] = n;
+    cobertura[k] = medidos ? n : null;
+    if (!medidos) {
+        console.log(`  ${k.padEnd(14)}  sin medir  ${EJES[k]}  ← declarado y sin detector que valga`);
+        continue;
+    }
     const aviso = n === 0 ? '  ← VACÍO' : n === 1 ? '  ← un solo juego lo sostiene' : '';
-    console.log(`  ${k.padEnd(14)} ${String(n).padStart(2)}/${filas.length}  ${EJES[k]}${aviso}`);
+    console.log(`  ${k.padEnd(14)} ${String(n).padStart(2)}/${medidos}  ${EJES[k]}${aviso}`);
 }
 
 /**

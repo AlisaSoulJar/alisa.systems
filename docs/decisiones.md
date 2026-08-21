@@ -15,15 +15,15 @@ contrario. El problema no era que no estuviera escrito: era que no había índic
 Volver a decidir sale barato en el momento y carísimo a la semana, porque la
 segunda decisión casi nunca coincide con la primera y entonces hay dos verdades.
 
-**1698 decisiones** en 282 ficheros.
+**1715 decisiones** en 283 ficheros.
 
 ## Índice
 
-- [Herramientas de medida](#herramientas-de-medida) — 324
-- [Reglas de los juegos](#reglas-de-los-juegos) — 304
+- [Herramientas de medida](#herramientas-de-medida) — 326
+- [Reglas de los juegos](#reglas-de-los-juegos) — 315
 - [Las mesas y los visualizadores](#las-mesas-y-los-visualizadores) — 302
-- [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 189
-- [Las comprobaciones](#las-comprobaciones) — 169
+- [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 191
+- [Las comprobaciones](#las-comprobaciones) — 171
 - [Otros](#otros) — 139
 - [Las páginas de los juegos](#las-páginas-de-los-juegos) — 78
 - [El servidor y las salas](#el-servidor-y-las-salas) — 53
@@ -298,19 +298,23 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>NÚMERO FALSO.</sub>
 - **LA FICHA PROMETÍA UNA CAPTURA QUE NO SE PUBLICA. 35 DE 35.** <sub>línea 86</sub>
   <br><sub>Esto comprobaba que el fichero existiera en `capturas_laboratorio/` y daba «captura 35/35 derivado y listo». Pero esa carpeta está en `.gitignore` —y con razón: son ficheros de trabajo que el laboratorio rehace en cada pasada— así que no hay ni un</sub>
-- **SI NO SE SABE, SE DICE `null`.** <sub>línea 166</sub>
+- **DOCE JUGADAS CON LA PRIMERA LEGAL NO BASTABA, Y SE VIO EN NAVE.** <sub>línea 148</sub>
+  <br><sub>Nave abre su vocabulario de habla —`acuso`, `defiendo`, `callar`— sólo cuando se convoca una junta, y para eso tiene que aparecer un cadáver. Con doce jugadas eligiendo siempre la primera de la lista, eso no pasa nunca: la ficha</sub>
+- **SI NO SE SABE, SE DICE `null`.** <sub>línea 183</sub>
   <br><sub>La primera versión ponía 1 cuando no encontraba marcador ni manos rivales, y la ficha del AJEDREZ salía anunciando «1 asiento». Un juego de dos. En una ficha que quiere ser la spec del banco, un valor por defecto que parece un</sub>
-- **HAY DOS CLASES DE JUEGO Y CONFUNDIRLAS LLENABA LA FICHA DE BASURA.** <sub>línea 206</sub>
+- **HAY DOS CLASES DE JUEGO Y CONFUNDIRLAS LLENABA LA FICHA DE BASURA.** <sub>línea 223</sub>
   <br><sub>Unos tienen VOCABULARIO cerrado —`arriba`, `abajo`, `robar_mazo`— y ahí la lista es la spec: eso es exactamente lo que acepta el juego, siempre. Otros GENERAN sus jugadas del tablero: el ajedrez salía con `a1a2`, `b1c3`</sub>
-- **CÓMO SE JUEGA CON LA MANO, MEDIDO.** <sub>línea 234</sub>
+- **Y LA MITAD DE ESTA CONDICIÓN NO HABÍA VALIDO NUNCA.** <sub>línea 236</sub>
+  <br><sub>Miraba el separador en `verbos`, y `verbos` son las jugadas YA RECORTADAS por `verbo()` —`acuso:a` entra como `acuso`—, así que ninguna lleva `:` jamás y ese `some` siempre daba falso. La condición era, en la práctica,</sub>
+- **CÓMO SE JUEGA CON LA MANO, MEDIDO.** <sub>línea 264</sub>
   <br><sub>Hasta hoy la ficha decía qué necesita cada puerta pero no si una persona puede JUGAR: mancala llevaba quién sabe cuánto sin un solo escuchador de clic —sólo se puede jugar desde el panel— y ninguna ficha lo decía. Un</sub>
-- **¿SE VE BIEN EN TODAS LAS PANTALLAS? — idea de Oscar, y hacía falta.** <sub>línea 278</sub>
+- **¿SE VE BIEN EN TODAS LAS PANTALLAS? — idea de Oscar, y hacía falta.** <sub>línea 308</sub>
   <br><sub>Hoy aparecieron DOS juegos impecables en escritorio y roluptos en el móvil: mancala con 4 de sus 6 hoyos fuera de cuadro y ajedrez con 26 de sus 64 casillas. Ninguno de mis instrumentos lo buscaba, y los dos se presentaron</sub>
-- **ESTRUCTURADA, NO UN BLOQUE DE TEXTO — Y ESA ES LA DECISIÓN DEL DÍA.** <sub>línea 312</sub>
+- **ESTRUCTURADA, NO UN BLOQUE DE TEXTO — Y ESA ES LA DECISIÓN DEL DÍA.** <sub>línea 342</sub>
   <br><sub>Los dos mundos que documentan esto ya tienen esqueleto fijo: los manuales de cartas (jugadores · reparto · juego · puntuación) y las fichas de entornos de Gymnasium (Description · Action Space · Observation Space · Starting State ·</sub>
-- **Y UNA COLUMNA POR PUERTA: LA FICHA COMO TABLERO DE ESTADO.** <sub>línea 339</sub>
+- **Y UNA COLUMNA POR PUERTA: LA FICHA COMO TABLERO DE ESTADO.** <sub>línea 369</sub>
   <br><sub>Idea de Oscar, y es la que le da a esto un segundo uso: si la ficha reúne lo que cada puerta necesita, entonces también dice **qué funciona y qué no**, juego por juego. No hace falta un panel aparte — sale de lo que ya se ha</sub>
-- **Esto dice si la puerta está MONTADA, no si está BIEN.** <sub>línea 356</sub>
+- **Esto dice si la puerta está MONTADA, no si está BIEN.** <sub>línea 386</sub>
   <br><sub>estar escrito y ser malo, y una leyenda puede nombrar mal las casillas. Lo que se puede comprobar de verdad —que lo declarado coincida con lo que hace el juego— es trabajo de `prueba_fichas.mjs`, no de esta cuenta.</sub>
 
 ### `gen_escaparate.py`
@@ -1266,21 +1270,23 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>nombrar: los veintinueve anteriores castigan en el acto, aquí el castigo llega cuarenta turnos después. La jugada que más puntúa ahora es la que te mata luego. Física de presas: `FoodChainSystem`, otra pieza del motor.</sub>
 - **DEDUCCIÓN SOCIAL, y no inventa ni un mecanismo: junta el reloj propio de** <sub>línea 120</sub>
   <br><sub>pradera, el `esperar` de relevo, el compromiso simultáneo de frentes y la vista por asiento de flota. Es la primera vez que hay algo que MENTIR — un agente podía jugar mal, nunca engañar. Lo único que una FSM no puede</sub>
-- **EL PRIMER JUEGO DE CARTAS QUE PUBLICA SUSTRATO NATIVO, y el que estrena** <sub>línea 126</sub>
+- **Y recibe OPCIONES por lo mismo que damas: tiene normas variables** <sub>línea 125</sub>
+  <br><sub>—`rondasDeDebate` y `hablaLibre`— y con ellas cambia QUÉ ES LEGAL. Son las que separan la división de protocolo de la de lenguaje natural, que en AIWolf son dos competiciones distintas y aquí son la misma partida.</sub>
+- **EL PRIMER JUEGO DE CARTAS QUE PUBLICA SUSTRATO NATIVO, y el que estrena** <sub>línea 130</sub>
   <br><sub>una forma de esconder información que no teníamos: los treinta anteriores revelan al ACTUAR —preguntar en el go fish, apostar en el póker— y aquí se revela al ELEGIR ENTRE DOS FUENTES. Robar del descarte te da la carta que</sub>
-- **EL PRIMERO QUE USA LOS CUATRO MATERIALES A LA VEZ —tablero, dados, cartas y** <sub>línea 137</sub>
+- **EL PRIMERO QUE USA LOS CUATRO MATERIALES A LA VEZ —tablero, dados, cartas y** <sub>línea 141</sub>
   <br><sub>fichas— y el primero que mide VALORAR BAJO COMPETENCIA: cuanto vale esto para mi sabiendo lo que vale para el otro. Ninguna de las ocho columnas de la matriz de generos cubria eso. Su subasta se midio SOLA antes de escribir el juego.</sub>
-- **EL PRIMERO CON DADO, y el que vino a contestar una pregunta de** <sub>línea 142</sub>
+- **EL PRIMERO CON DADO, y el que vino a contestar una pregunta de** <sub>línea 146</sub>
   <br><sub>arquitectura: ¿hace falta un motor de dados como el de cartas y el de tableros? No. Un dado no es una cuarta estructura — la tirada RESTRINGE `legal_moves`, que el contrato ya expresa, y visualmente es un objeto con una</sub>
-- **EL RINCÓN OPUESTO DEL PARCHÍS EN EL CONTRATO: cinco dados y NINGÚN** <sub>línea 149</sub>
+- **EL RINCÓN OPUESTO DEL PARCHÍS EN EL CONTRATO: cinco dados y NINGÚN** <sub>línea 153</sub>
   <br><sub>tablero, o sea sólo zonas. Si los dos extremos entran sin tocar nada, el contrato aguanta lo que hay en medio. Y es el primero cuya decisión no es dónde mover sino QUÉ APARTAR y CUÁNDO PARAR de tirar.</sub>
-- **TABLERO **Y** BARAJA, que era la combinación que faltaba por probar.** <sub>línea 159</sub>
+- **TABLERO **Y** BARAJA, que era la combinación que faltaba por probar.** <sub>línea 163</sub>
   <br><sub>tablero que el parchís a propósito: así los dos se diferencian en UNA sola cosa —dado contra mano de cartas— y comparar un agente en ambos mide justo eso. Con dado no eliges tu tirada; con cartas eliges cuál gastas y cuál</sub>
-- **SE DERIVAN, NO SE ESCRIBEN.** <sub>línea 177</sub>
+- **SE DERIVAN, NO SE ESCRIBEN.** <sub>línea 181</sub>
   <br><sub>tildes, mayúsculas raras, aclaraciones—. El resto se saca de la clave.</sub>
-- **POR QUÉ EXISTE ESTE OBJETO, Y CUÁNTO COSTÓ NO TENERLO** <sub>línea 201</sub>
+- **POR QUÉ EXISTE ESTE OBJETO, Y CUÁNTO COSTÓ NO TENERLO** <sub>línea 205</sub>
   <br><sub>El árbitro de las mesas compartidas averiguaba el número de asientos JUGANDO: empezaba suponiendo uno y lo subía cada vez que veía cambiar el turno. Es ingenioso y está roto en el único momento que importa — **antes de</sub>
-- **DOS JUEGOS TIENEN DOS NOMBRES, Y ESO ROMPÍA LOS AVISOS.** <sub>línea 247</sub>
+- **DOS JUEGOS TIENEN DOS NOMBRES, Y ESO ROMPÍA LOS AVISOS.** <sub>línea 251</sub>
   <br><sub>`chess.html` monta `{ juego: 'ajedrez', idJuego: 'chess' }` y `checkers.html` `{ juego: 'damas', idJuego: 'checkers' }`: el visualizador busca la partida con el nombre inglés y las reglas viven con el español. Viene de antiguo y no se</sub>
 
 ### `public/arcade/js/protohub/rules/nave.js`
@@ -1291,25 +1297,45 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>En los veintinueve anteriores un agente podía jugar mal, nunca ENGAÑAR. El impostor tiene que producir un comportamiento que parezca otro comportamiento, y los tripulantes tienen que leer intenciones a partir de trayectorias</sub>
 - **LA NAVE ES GRANDE Y TIENE MAMPARAS PORQUE EL GÉNERO NECESITA INTIMIDAD.** <sub>línea 35</sub>
   <br><sub>La primera versión era 15×11 con visión de radio 3 y sin línea de visión. Medido: el impostor **pudo matar 69 veces de 90 turnos y mató cero**, porque veía a dos o más tripulantes en 75 de esos 90. Con cuatro personas en un</sub>
-- **LA NAVE LA REPARTE `BSPSystem`, NO UN APAÑO MÍO.** <sub>línea 71</sub>
+- **HABLAR ES UNA JUGADA, Y ÉSA ES TODA LA IDEA** <sub>línea 63</sub>
+  <br><sub>La junta era un voto pelado, y por eso este juego medía tan poco: el banco dice que en nave el azar recorre el **0,41** del camino entre el suelo y la casa —casi ruido— mientras que en cabina, que sí metió el habla en las jugadas, el</sub>
+- **POR QUÉ UN MENÚ Y NO TEXTO LIBRE (todavía).** <sub>línea 72</sub>
+  <br><sub>La competición AIWolf lleva una década con DOS divisiones separadas: la de protocolo, donde los agentes hablan con un vocabulario fijo y compiten programas; y la de lenguaje natural, que juzga un jurado humano. Y AmongAgents</sub>
+- **Y SE HABLA A LA VEZ, COMO SE MUEVE.** <sub>línea 85</sub>
+  <br><sub>Nave ya resuelve todo por compromiso oculto: cada uno elige, nadie ve lo del otro, y al final de la ronda se revela. El debate hereda eso tal cual. Se pierde el «responder a quien me acaba de acusar» de un debate hablado —Werewolf Arena</sub>
+- **LAS DOS DIVISIONES, COMO EN AIWOLF, PERO EN EL MISMO JUEGO.** <sub>línea 99</sub>
+  <br><sub>Con `hablaLibre` en falso sólo existe el menú: es la división de protocolo, donde una política programada compite en igualdad. Con `hablaLibre`, además del menú se acepta `decir:<texto>` — la división de lenguaje natural.</sub>
+- **SE CALCULA DE LO PÚBLICO, Y ESO NO ES ESTÉTICA.** <sub>línea 127</sub>
+  <br><sub>La lista sale de quién está vivo y de quién tiene el turno — las dos cosas las sabe todo el mundo—. Es la misma ley que ya obligó a ofrecer `sabotear` a los cuatro: el verificador re-simula desde la silla 0, así que si la lista dependiera</sub>
+- **LA NAVE LA REPARTE `BSPSystem`, NO UN APAÑO MÍO.** <sub>línea 172</sub>
   <br><sub>La primera versión echaba seis mamparas largas al azar con una puerta cada una. Funcionaba, y era exactamente el tipo de cosa que este proyecto lleva un día quitando: código propio haciendo peor lo que una</sub>
-- **EL SUSTRATO NO DICE QUIÉN ES EL IMPOSTOR — NI SIQUIERA AL IMPOSTOR SE LO** <sub>línea 121</sub>
+- **EL SUSTRATO NO DICE QUIÉN ES EL IMPOSTOR — NI SIQUIERA AL IMPOSTOR SE LO** <sub>línea 229</sub>
   <br><sub>DICE DE LOS DEMÁS.</sub>
-- **`sinVista`, NO `niebla` — Y LA DIFERENCIA NO ES DE NOMBRE.** <sub>línea 134</sub>
+- **`sinVista`, NO `niebla` — Y LA DIFERENCIA NO ES DE NOMBRE.** <sub>línea 242</sub>
   <br><sub>`niebla` significa «no sé qué hay aquí»: terreno incluido, como en cripta. Aquí el plano es público y lo que falta es **quién** anda por cada sala. Usé `niebla` por comodidad y la prueba me pilló al vuelo —</sub>
-- **EL PLANO ES PÚBLICO; LA NIEBLA ES SOBRE LA GENTE.** <sub>línea 150</sub>
+- **EL PLANO ES PÚBLICO; LA NIEBLA ES SOBRE LA GENTE.** <sub>línea 258</sub>
   <br><sub>`celdas` trae la nave entera —un tripulante conoce su propio barco— y `niebla` marca sólo dónde no alcanzas a ver AHORA, o sea de qué salas no puedes decir quién hay dentro.</sub>
-- **LAS TAREAS SE VEN SIEMPRE, TAMBIÉN EN LA NIEBLA.** <sub>línea 173</sub>
+- **LAS TAREAS SE VEN SIEMPRE, TAMBIÉN EN LA NIEBLA.** <sub>línea 281</sub>
   <br><sub>Un tripulante conoce su propia nave: sabe dónde está el reactor aunque no lo tenga delante. Escondérselo convertía el juego en una búsqueda a ciegas — medido, **1 tarea de 6 en noventa rondas** — y desviaba la</sub>
-- **`sabotear` SE LE OFRECE A TODO EL MUNDO, Y NO ES UN DESCUIDO.** <sub>línea 251</sub>
+- **EL DEBATE TIENE QUE ESTAR EN EL TEXTO, NO SÓLO EN EL ESTADO.** <sub>línea 324</sub>
+  <br><sub>Ésta es la puerta por la que juega un agente sin vista. Si lo dicho viajara sólo como campo, el agente tendría que deducir de un debate que no puede leer — y estaríamos midiéndolo en un juego distinto del</sub>
+- **`sabotear` SE LE OFRECE A TODO EL MUNDO, Y NO ES UN DESCUIDO.** <sub>línea 380</sub>
   <br><sub>La primera versión sólo se lo ofrecía al impostor. Parecía lo correcto —cada uno ve sus jugadas— y lo tumbó el verificador: *«jugada 32 ilegal: sabotear»*. Al re-simular desde el asiento 0,</sub>
-- **Se GUARDA, no se aplica: nadie ve lo que han elegido los demás hasta** <sub>línea 312</sub>
+- **LA FORMA DE LO QUE NO SE PUEDE ENUMERAR.** <sub>línea 419</sub>
+  <br><sub>`legal_moves` lista lo que se puede elegir; esto declara lo que se puede escribir. El verificador acepta una jugada que encaje aquí y CUENTA cuántas pasaron por este camino, para que el recibo diga qué</sub>
+- **UNA JUGADA VALE SI ESTÁ EN LA LISTA **O** SI ENCAJA EN LA FORMA.** <sub>línea 466</sub>
+  <br><sub>Es la misma regla que aplica el verificador, y tiene que serlo: si aquí se aceptara algo que allí se rechaza, se podrían jugar partidas que después no se pueden demostrar. La forma sólo existe durante el debate y</sub>
+- **Se GUARDA, no se aplica: nadie ve lo que han elegido los demás hasta** <sub>línea 476</sub>
   <br><sub>que ya no se puede cambiar de idea. Es el mecanismo de `frentes`. p.oculta[p.turno] = orden;</sub>
-- **El empate NO expulsa.** <sub>línea 363</sub>
+- **SE REVELA AL CERRAR LA RONDA, NO AL HABLAR.** <sub>línea 496</sub>
+  <br><sub>del juego con los movimientos: si lo dicho se viera al momento, el último en hablar tendría toda la información y el primero ninguna, y el orden de las sillas —que es fijo— repartiría ventaja.</sub>
+- **El empate NO expulsa.** <sub>línea 551</sub>
   <br><sub>y el juego dejaría de medir deducción para medir suerte. if (ordenados.length && (ordenados.length === 1 || ordenados[0][1] > ordenados[1][1])) { const fuera = p.gente.find(g => g.silla === ordenados[0][0]);</sub>
-- **Los dos leen su sustrato, no el estado.** <sub>línea 385</sub>
+- **Los dos leen su sustrato, no el estado.** <sub>línea 573</sub>
   <br><sub>que mirase `p.gente` sabría siempre si hay alguien mirando, y un tripulante que mirase `p.impostor` votaría perfecto. El techo tiene que ser ciego igual que el jugador, o no es un techo.</sub>
-- **EL IMPOSTOR TIENE QUE CAZAR, Y LA PRIMERA VERSIÓN NO LO HACÍA.** <sub>línea 417</sub>
+- **LA CASA HABLA, Y SOBRE TODO VOTA HACIENDO CASO DE LO DICHO.** <sub>línea 592</sub>
+  <br><sub>Esto último es lo que convierte el debate en juego. Si la casa hablara y luego votara ignorando el debate, acusar no serviría de nada: sería un botón bonito que no mueve una sola partida, y el banco lo mediría como</sub>
+- **EL IMPOSTOR TIENE QUE CAZAR, Y LA PRIMERA VERSIÓN NO LO HACÍA.** <sub>línea 654</sub>
   <br><sub>Le di la misma conducta que a un tripulante —ir a las tareas— pensando que eso era su coartada. Medido: **cero muertes en tres semillas de cuatro**, partidas que se acababan por agotarse el turno de guardia. Un</sub>
 
 ### `public/arcade/js/protohub/rules/oca.js`
@@ -2697,13 +2723,17 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>repositorio conviven las dos convenciones — `fagocito`, `peaton` y `snake` leen `opts.seed`; `blackjack` lee `opts.semilla`. Pasando solo `seed`, las reglas en castellano arrancaban con una semilla AL AZAR y</sub>
 - **NO SE ESPARCE `partida.config`.** <sub>línea 108</sub>
   <br><sub>Esto hacía `...(partida.config ?? {})`: cualquier cosa que viniera en el recibo entraba tal cual en `nuevaPartida`. El ProtoHub no emite ese campo nunca, así que no rompía nada — pero este verificador lo honraba, y</sub>
-- **LA PUNTUACIÓN SE LEE DESDE LA SILLA QUE JUGÓ, NO DESDE LA 0.** <sub>línea 150</sub>
+- **LAS JUGADAS QUE NO SE PUEDEN ENUMERAR, Y POR QUÉ SE CUENTAN APARTE.** <sub>línea 145</sub>
+  <br><sub>Hasta aquí, toda jugada tenía que estar en `legal_moves`. Eso vale mientras las jugadas se puedan listar — y deja fuera lo único que hace interesante un juego de deducción social: **hablar**. «Creo que fue</sub>
+- **Y SE CUENTA CUÁNTAS PASARON POR AHÍ, QUE ES LA PARTE HONRADA.** <sub>línea 160</sub>
+  <br><sub>Un patrón es un cheque en blanco del tamaño que el juego quiera: con `.*` esto dejaría de auditar nada mientras sigue diciendo «verificada». No se puede impedir sin adivinar lo que el juego quiso decir, así que en</sub>
+- **LA PUNTUACIÓN SE LEE DESDE LA SILLA QUE JUGÓ, NO DESDE LA 0.** <sub>línea 182</sub>
   <br><sub>Esto era `reglas.estado(p)` a secas, y el segundo argumento por defecto es la silla 0. Así que una partida jugada desde cualquier otra silla se re-simulaba perfectamente —todas sus jugadas legales, el estado final idéntico— y se</sub>
-- **SE EXPORTA, Y ESO IMPORTA. `ProtoHubEnv` reimplementó esta normalización** <sub>línea 189</sub>
+- **SE EXPORTA, Y ESO IMPORTA. `ProtoHubEnv` reimplementó esta normalización** <sub>línea 226</sub>
   <br><sub>por su cuenta y le salió mal: con `score: {black, white}` hacía `Number(objeto) || 0` y devolvía **0**. Resultado: go, reversi y mancala generaban recibos que decían «0 puntos» mientras el servidor, al re-simular,</sub>
-- **ESTE `puntos` SUBIÓ AQUÍ, Y ARREGLA EL PEOR FALLO DE LA TABLA.** <sub>línea 201</sub>
+- **ESTE `puntos` SUBIÓ AQUÍ, Y ARREGLA EL PEOR FALLO DE LA TABLA.** <sub>línea 238</sub>
   <br><sub>El escalar manda sobre el objeto porque el objeto es ambiguo: hay que saber CUÁL de los dos marcadores es el nuestro, y aquí no se sabe. if (typeof st.puntos === 'number') return st.puntos;</sub>
-- **CAMINO HEREDADO, Y ESTUVO MAL DURANTE TODO EL DÍA.** <sub>línea 206</sub>
+- **CAMINO HEREDADO, Y ESTUVO MAL DURANTE TODO EL DÍA.** <sub>línea 243</sub>
   <br><sub>Decía «el marcador del primer jugador» y preguntaba por `white` primero. En el go y en el reversi **abren las negras**, así que para esos dos juegos devolvía el marcador DEL RIVAL. Una partida de go</sub>
 
 ## Las comprobaciones
@@ -2814,25 +2844,25 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>El sabotaje toca ficheros del proyecto. Antes se guarda el contenido, se restaura SIEMPRE —pase lo que pase— y al final se verifica que todo quedó como estaba comparando el texto. Si algo no se pudo restaurar, se dice a gritos y se</sub>
 - **EL SABOTAJE TIENE QUE ROMPER LO QUE ESA PRUEBA VIGILA, NO CUALQUIER COSA.** <sub>línea 57</sub>
   <br><sub>Meter un error de sintaxis haría suspender a cualquiera y no demostraría nada: probaría que node sabe leer. Cada sabotaje de aquí es el fallo REAL contra el que se escribió la prueba — quitarle las normas al enlace, dejar que las teclas jueguen</sub>
-- **ÉSTE ES EL PRIMER SABOTAJE DE ENUMERACIÓN, Y ES OTRA COSA QUE LOS DEMÁS.** <sub>línea 137</sub>
+- **ÉSTE ES EL PRIMER SABOTAJE DE ENUMERACIÓN, Y ES OTRA COSA QUE LOS DEMÁS.** <sub>línea 150</sub>
   <br><sub>Los quince de arriba rompen una CONDICIÓN y esperan que la comprobación la eche de menos. Éste rompe el UNIVERSO: le cambia el nombre a un juego del catálogo, de modo que el conjunto medido sigue teniendo treinta y cinco</sub>
-- **DOS SABOTAJES PARA EL MISMO FICHERO, Y HACE FALTA.** <sub>línea 175</sub>
+- **DOS SABOTAJES PARA EL MISMO FICHERO, Y HACE FALTA.** <sub>línea 188</sub>
   <br><sub>`prueba_fichas` vigila ahora dos cosas distintas: que lo declarado coincida con lo que hace el juego, y que las rutas que promete la ficha SE PUEDAN PEDIR. Con un solo sabotaje, la segunda estaría sin cubrir — y es justo la</sub>
-- **ES OTRA PREGUNTA QUE LA DE `biblioteca`, Y POR ESO OTRO SABOTAJE.** <sub>línea 281</sub>
+- **ES OTRA PREGUNTA QUE LA DE `biblioteca`, Y POR ESO OTRO SABOTAJE.** <sub>línea 294</sub>
   <br><sub>Aquélla comprueba que los juegos LEEN el catálogo que se les pasa. Ésta, que cogen de él LA BARAJA QUE LES TOCA. Un juego francés que pidiera la española leería el catálogo impecablemente y repartiría oros en una mesa de</sub>
-- **AQUÍ FALLÉ LA PUNTERÍA DOS VECES, Y ES EL ERROR TÍPICO DE ESTE FICHERO.** <sub>línea 356</sub>
+- **AQUÍ FALLÉ LA PUNTERÍA DOS VECES, Y ES EL ERROR TÍPICO DE ESTE FICHERO.** <sub>línea 369</sub>
   <br><sub>Primero cambié `juego: 'ajedrez'` en el catálogo: la prueba aprobó, porque enumera el catálogo y construye cada entorno — un nombre distinto se construye igual. Luego puse `reset(` a secas, que aparece también en un</sub>
-- **SE SABOTEA EL PAQUETE, NO `public/`.** <sub>línea 392</sub>
+- **SE SABOTEA EL PAQUETE, NO `public/`.** <sub>línea 405</sub>
   <br><sub>medido = PAQUETE if hay_paquete else PUBLIC</sub>
-- **NO SE PUDO DEVOLVER A SU SITIO:')}`);** <sub>línea 487</sub>
+- **NO SE PUDO DEVOLVER A SU SITIO:')}`);** <sub>línea 500</sub>
   <br><sub>for (const f of sinRestaurar) console.log(rojo(`      ${f}`)); console.log(rojo('   RECUPÉRALOS CON `git checkout -- <fichero>` ANTES DE SEGUIR.')); process.exit(2);</sub>
-- **EL CENSO SE DERIVA.** <sub>línea 500</sub>
+- **EL CENSO SE DERIVA.** <sub>línea 513</sub>
   <br><sub>Aquí había un array `TODAS` con los nombres escritos a mano. Es la enésima lista de este proyecto que se separa de la realidad en silencio — y ésta era la peor, porque es la lista de la red de seguridad.</sub>
-- **20-08: estas dos salían denunciadas como «no las corre nadie» y era FALSO —** <sub>línea 542</sub>
+- **20-08: estas dos salían denunciadas como «no las corre nadie» y era FALSO —** <sub>línea 555</sub>
   <br><sub>tienen su propio mando desde el día que se escribieron. El aviso miraba sólo `scripts.test` y llamaba huérfana a cualquiera que viviera en otro guion. Se arregla abajo mirando TODOS los guiones, y éstas se quedan aquí porque abren</sub>
-- **DOS LISTAS Y NO UNA, PORQUE SE PREGUNTAN DOS COSAS DISTINTAS.** <sub>línea 569</sub>
+- **DOS LISTAS Y NO UNA, PORQUE SE PREGUNTAN DOS COSAS DISTINTAS.** <sub>línea 582</sub>
   <br><sub>`todasEnDisco` es lo que HAY. `enDisco` es lo que se vigila por huérfano, que excluye a las de `APARTE` porque de ésas ya se sabe por qué no van en `npm test`.</sub>
-- **SE MIRAN TODOS LOS GUIONES, NO SÓLO `test`.** <sub>línea 583</sub>
+- **SE MIRAN TODOS LOS GUIONES, NO SÓLO `test`.** <sub>línea 596</sub>
   <br><sub>Esto leía `scripts.test` y punto, así que denunciaba como huérfana a cualquier comprobación que viviera en otro mando —`npm run figuras`, `npm run invitados`— aunque se corriera a diario. Una acusación falsa dentro del instrumento que existe</sub>
 
 ### `prueba_dos_personas.mjs`
@@ -2899,6 +2929,13 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>La primera versión elegía `movs[i % movs.length]`, y con eso la serpiente de snake se retuerce en el sitio y muere en veintiuna jugadas SIN COMER NADA. El marcador salía 0 en todas las semillas y el guardia lo denunciaba</sub>
 - **NO SE MUEVE» Y «NO LO ENCUENTRO» SON DOS ANOMALÍAS, NO UNA.** <sub>línea 190</sub>
   <br><sub>La primera versión las juntaba: con el marcador ilegible el conjunto quedaba vacío, `size <= 1` se cumplía, y salía «el marcador vale siempre undefined». Eso acusa al juego de un fallo que es del lector. Un instrumento que no</sub>
+
+### `prueba_habla.mjs`
+
+- **ESO ES UNA PUERTA EN LA PIEZA QUE SOSTIENE TODO EL PROYECTO.** <sub>línea 11</sub>
+  <br><sub>El verificador es lo que convierte una partida en algo demostrable. Un patrón es, por construcción, un cheque en blanco del tamaño que el juego quiera: con `.*` dejaría de auditar nada mientras sigue diciendo «válida». Así que esto</sub>
+- **LA QUE PROTEGE DE VERDAD.** <sub>línea 79</sub>
+  <br><sub>Se cuela una jugada inventada donde iba una frase. No empieza por `decir:`, así que ningún patrón honrado la acepta. Si esto pasara, querría decir que algún patrón se ha ampliado hasta tragárselo todo — y entonces «verificada» dejaría</sub>
 
 ### `prueba_invitados.mjs`
 
