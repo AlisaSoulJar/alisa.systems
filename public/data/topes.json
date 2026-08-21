@@ -1,10 +1,11 @@
 {
- "fecha": "2026-08-17",
+ "fecha": "2026-08-21",
  "medido_con_semillas": 120,
- "nota": "tope medido × 2. Lo que no está aquí usa el global de tabla.mjs.",
+ "nota": "tope medido x 2. Lo que no esta aqui usa el global de tabla.mjs. Marea medida el 21-08: las dos referencias terminan con 400, asi que 800.",
  "juegos": {
   "go": 3600,
   "snake": 2400,
-  "fagocito": 2400
+  "fagocito": 2400,
+  "marea": 800
  }
 }

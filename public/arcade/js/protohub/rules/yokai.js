@@ -45,7 +45,34 @@
  * técnica — es la partida.
  */
 
-const SILLAS = ['a', 'b', 'c', 'd', 'e', 'f'];
+/**
+ * ⚠️ OCHO SILLAS, Y EL NÚMERO LO ELIGIÓ UNA MEDIDA CON DOS VARAS.
+ *
+ * Esto nació con seis, y seis funcionaba. Pero un juego de esta casa tiene que ser
+ * jugable para una persona **y** servir de medida, y esas dos cosas piden lo
+ * contrario a ratos. Así que se midieron juntas, sobre ochenta semillas y con el
+ * hueco emparejado silla a silla:
+ *
+ *                equilibrio   días   decisiones   hueco casa−suelo
+ *     6 sillas     35–45       2,7      4,9       27,9 ± 3,8  (señal 7,3×)
+ *     7 sillas     22–58       2,5      5,3       12,1 ± 2,2  (señal 5,6×)
+ *     8 sillas     42–38       3,6      7,3       19,5 ± 2,9  (señal 6,7×)
+ *
+ * Ocho gana en las tres varas humanas —equilibrio casi par, partidas más largas,
+ * más que decidir— y no cuesta nada en la del banco: 6,7 veces su propio error
+ * contra 7,3, cuando por debajo de 2 es donde un hueco deja de distinguirse de
+ * cero. Las dos separan de sobra.
+ *
+ * ⚠️ Y LAS DECISIONES SON EL MOTIVO DE FONDO. La tabla dio un azar de 2,15 en
+ * yokai —un número sin sentido— y la causa no era el juego: con seis sillas y la
+ * casa jugando cinco, al agente le tocaban CINCO decisiones por partida. Con
+ * ±45 por voto y ±200 por ganar, cinco decisiones no separan nada. Ocho sillas
+ * dan 7,3, un cincuenta por ciento más.
+ *
+ * Siete es el peor de los tres en todo, y también eso lo dijo la medida: 22–58 de
+ * equilibrio y la mitad de hueco. No hay una intuición que lo hubiera adivinado.
+ */
+const SILLAS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 const YOKAIS = 2;
 const NOCHES = 12;
 
@@ -472,13 +499,42 @@ export const yokai = {
             if (st.soy_yokai) {
                 /**
                  * Los dos yokai tienen que coincidir sin hablar, así que necesitan
-                 * una regla que los dos puedan calcular igual con lo que ven los
-                 * dos: la víctima es el humano vivo de letra más baja. Es tosco y
-                 * es honesto — coordinarse mejor que eso es trabajo del agente.
+                 * una regla que los dos calculen igual con lo que ven los dos.
+                 *
+                 * ⚠️ ERA «EL DE LETRA MÁS BAJA», Y ESO MATABA SIEMPRE A LA SILLA `a`.
+                 *
+                 * Parecía la regla más tonta y honesta posible. Lo que hacía era
+                 * asesinar a la primera silla la primera noche, todas las partidas —
+                 * y la primera silla es donde el banco sienta al agente.
+                 *
+                 * Consecuencia, y tardé en verla: el arnés del gym devuelve el
+                 * control cuando vuelve a tocarle al agente, y a un muerto no le
+                 * toca nunca. Así que la casa jugaba la partida entera de un tirón y
+                 * el episodio duraba **un paso**. `check_gym_envs` lo llevaba
+                 * imprimiendo desde el principio —`pasos= 1`— y yo lo leí por encima
+                 * tres veces, buscando el fallo en el número de sillas.
+                 *
+                 * Ahora la presa rota con la noche. Sigue siendo una regla tonta que
+                 * los dos calculan igual sin hablarse —que es lo único que hace
+                 * falta— pero no señala siempre al mismo, así que ni el agente ni
+                 * nadie tiene una diana pintada por vivir en la silla `a`.
                  */
-                const presa = vivosDe(p).map((g) => g.silla)
+                const presas = vivosDe(p).map((g) => g.silla)
                     .filter((s) => !st.mis_iguales.includes(s) && s !== yo)
-                    .sort()[0];
+                    .sort();
+                /**
+                 * ⚠️ Y LA ROTACIÓN LLEVA LA SEMILLA, QUE SIN ELLA NO ROTABA NADA.
+                 *
+                 * Mi primer arreglo fue `(noche − 1) % n`, y la primera noche eso da
+                 * el índice 0 — la silla `a` otra vez, en todas las partidas. El
+                 * fallo entero seguía ahí y la sonda seguía diciendo `pasos= 1`.
+                 * Rotar sobre algo que siempre empieza en el mismo sitio no rota.
+                 *
+                 * Con la semilla dentro, cada partida empieza por una silla distinta
+                 * y ninguna tiene una diana pintada. Los dos yokai la calculan igual
+                 * porque la semilla es pública en el estado.
+                 */
+                const presa = presas[(p.semilla + p.noche) % (presas.length || 1)];
                 return elige(`senalar:${presa}`) ?? legales[0];
             }
             if (st.soy_oraculo) {

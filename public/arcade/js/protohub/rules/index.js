@@ -263,13 +263,16 @@ export const SILLAS = {
     flota: 2, defensa: 2, sigilo: 2, frentes: 2, relevo: 2, cabina: 2,
     nave: 4,
     /**
-     * Seis, y el número es una decisión de medida además de de juego. Con cuatro
-     * —como nave— una voz aporta un cuarto de lo que se dice y se diluye; con
-     * diez, la partida se alarga y el banco tarda tres veces más en decir nada.
-     * Seis deja dos yokai contra cuatro, que es el reparto clásico donde la aldea
-     * puede perder por creerse a quien no debe.
+     * Ocho, y el número lo eligió una medida con DOS varas —jugable y medible—
+     * sobre ochenta semillas. Está la tabla entera en la cabecera de `yokai.js`.
+     *
+     * El resumen: con seis, la casa juega cinco sillas y al agente le tocan cinco
+     * decisiones por partida, que con ±45 por voto y ±200 por ganar no separan
+     * nada —la tabla lo cantó con un azar de 2,15, un número sin sentido—. Ocho
+     * dan 7,3 decisiones, equilibran el juego (42–38 contra 35–45) y alargan la
+     * partida a 3,6 días. Y el hueco casa−suelo sigue siendo 6,7 veces su error.
      */
-    yokai: 6,
+    yokai: 8,
     // Dos: con más manos el descarte pasa por tanta gente antes de volver a ti
     // que la señal de «éste está juntando corazones» se diluye, y esa señal es
     // justo lo que el juego mide.
