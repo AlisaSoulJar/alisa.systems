@@ -144,16 +144,33 @@ for (const juego of JUEGOS) {
      * después: hay juegos cuyo vocabulario crece al avanzar —la generala abre con
      * `tirar` y luego tiene quince— y una ficha que sólo mire la primera pantalla
      * prometería menos verbos de los que el juego acepta.
+     *
+     * ⚠️ DOCE JUGADAS CON LA PRIMERA LEGAL NO BASTABA, Y SE VIO EN NAVE.
+     *
+     * Nave abre su vocabulario de habla —`acuso`, `defiendo`, `callar`— sólo cuando
+     * se convoca una junta, y para eso tiene que aparecer un cadáver. Con doce
+     * jugadas eligiendo siempre la primera de la lista, eso no pasa nunca: la ficha
+     * declaraba cinco verbos de moverse y se callaba justo lo que hace interesante
+     * al juego. Y la ficha es la spec de las cinco puertas — un agente que la lea
+     * jugaría sin saber que puede hablar.
+     *
+     * Ahora se juega HONDO y con la sugerencia de la casa cuando existe. La primera
+     * legal no juega a nada: se queda dando vueltas por donde no pasa nada. La casa
+     * sí caza, y cazando aparecen los cadáveres, y con ellos las juntas.
      */
     const verbo = (m) => String(m).split(':')[0];
     const verbos = new Set((st.legal_moves ?? []).map(verbo));
+    // Las jugadas SIN recortar. Hacen falta para distinguir un vocabulario cerrado
+    // de una notación generada: el separador vive aquí, no en el verbo.
+    const crudas = new Set(st.legal_moves ?? []);
     let q = p;
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 300; i++) {
         const e = reglas.estado(q, 0) ?? {};
         const legales = (e.legal_moves ?? []).filter(x => x !== 'nueva' && x !== 'reset');
         if (!legales.length || e.is_game_over) break;
-        for (const m of legales) verbos.add(verbo(m));
-        if (!reglas.mover(q, legales[0])) break;
+        for (const m of legales) { verbos.add(verbo(m)); crudas.add(m); }
+        const j = (reglas.sugerencia && reglas.sugerencia(q)) || legales[0];
+        if (!reglas.mover(q, j)) break;
     }
 
     let leyenda = null, tieneRejilla = false;
@@ -215,8 +232,21 @@ for (const juego of JUEGOS) {
          * Se distinguen por su forma: una jugada generada no lleva separador y son
          * muchas. En ese caso la ficha da el FORMATO y un puñado de ejemplos, que es
          * lo que de verdad necesita quien va a mandar una jugada.
+         *
+         * ⚠️ Y LA MITAD DE ESTA CONDICIÓN NO HABÍA VALIDO NUNCA.
+         *
+         * Miraba el separador en `verbos`, y `verbos` son las jugadas YA RECORTADAS
+         * por `verbo()` —`acuso:a` entra como `acuso`—, así que ninguna lleva `:`
+         * jamás y ese `some` siempre daba falso. La condición era, en la práctica,
+         * «más de ocho» a secas.
+         *
+         * Salió al crecer nave: con el vocabulario de habla pasó de cinco verbos a
+         * once, cruzó el ocho, y su ficha se convirtió en «notación propia del
+         * juego, 5 caracteres» — una spec falsa para un juego cuyo vocabulario es
+         * cerrado y listable. El separador hay que buscarlo en las jugadas CRUDAS,
+         * que es donde está.
          */
-        ...(verbos.size > 8 && ![...verbos].some(v => String(v).includes(':'))
+        ...(verbos.size > 8 && ![...crudas].some(v => String(v).includes(':'))
             ? { verbos: null,
                 formatoJugada: `notación propia del juego, ${[...verbos][0].length} caracteres`,
                 ejemplos: [...verbos].slice(0, 6) }

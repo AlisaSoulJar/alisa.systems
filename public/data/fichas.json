@@ -101,13 +101,13 @@
     "conLaMano": {
       "medido": "2026-08-20",
       "panel": [
-        5,
-        5
+        null,
+        null
       ],
-      "tocandoLaMesa": true,
+      "tocandoLaMesa": false,
       "barraDeVerbos": true,
       "verbos": 1,
-      "resumen": "se juega tocando la mesa"
+      "resumen": "se juega con los botones de abajo"
     },
     "pantallas": {
       "medido": "2026-08-17",
@@ -507,7 +507,8 @@
     "verbos": [
       "abajo",
       "arriba",
-      "derecha"
+      "derecha",
+      "izquierda"
     ],
     "formatoJugada": null,
     "ejemplos": null,
@@ -601,10 +602,10 @@
         5,
         5
       ],
-      "tocandoLaMesa": true,
+      "tocandoLaMesa": false,
       "barraDeVerbos": true,
       "verbos": 5,
-      "resumen": "se juega tocando la mesa"
+      "resumen": "se juega con los botones de abajo"
     },
     "pantallas": {
       "medido": "2026-08-17",
@@ -1233,6 +1234,7 @@
     "asientos": 2,
     "verbos": [
       "cambiar",
+      "descartar",
       "descartar_y_voltear",
       "robar_descarte",
       "robar_mazo"
@@ -1307,8 +1309,8 @@
       "jugador": "tú"
     },
     "clasificacion": {
-      "entra": true,
-      "motivo": null
+      "entra": false,
+      "motivo": "el tope de 200 decisiones corta la partida (sólo termina el 13% de las de referencia)"
     },
     "captura": "/capturas/sokoban.png",
     "conLaMano": {
@@ -1352,7 +1354,7 @@
       "persona": true,
       "llm": true,
       "vision": true,
-      "fsm": true,
+      "fsm": false,
       "openapi": true
     }
   },
@@ -1376,8 +1378,8 @@
       "tesoro": "tesoro"
     },
     "clasificacion": {
-      "entra": true,
-      "motivo": null
+      "entra": false,
+      "motivo": "el tope de 200 decisiones corta la partida (sólo termina el 0% de las de referencia)"
     },
     "captura": "/capturas/cripta.png",
     "conLaMano": {
@@ -1419,7 +1421,7 @@
       "persona": true,
       "llm": true,
       "vision": true,
-      "fsm": true,
+      "fsm": false,
       "openapi": true
     }
   },
@@ -1591,14 +1593,11 @@
     "captura": "/capturas/sigilo.png",
     "conLaMano": {
       "medido": "2026-08-20",
-      "panel": [
-        0,
-        0
-      ],
-      "tocandoLaMesa": true,
+      "panel": null,
+      "tocandoLaMesa": null,
       "barraDeVerbos": true,
       "verbos": 4,
-      "resumen": "se juega tocando la mesa"
+      "resumen": "se juega con los botones de abajo"
     },
     "pantallas": {
       "medido": "2026-08-17",
@@ -1658,14 +1657,11 @@
     "captura": "/capturas/frentes.png",
     "conLaMano": {
       "medido": "2026-08-20",
-      "panel": [
-        5,
-        5
-      ],
-      "tocandoLaMesa": true,
+      "panel": null,
+      "tocandoLaMesa": null,
       "barraDeVerbos": true,
       "verbos": 5,
-      "resumen": "se juega tocando la mesa"
+      "resumen": "se juega con los botones de abajo"
     },
     "pantallas": {
       "medido": "2026-08-17",
@@ -1708,7 +1704,8 @@
       "abajo",
       "arriba",
       "derecha",
-      "esperar"
+      "esperar",
+      "izquierda"
     ],
     "formatoJugada": null,
     "ejemplos": null,
@@ -1728,14 +1725,11 @@
     "captura": "/capturas/relevo.png",
     "conLaMano": {
       "medido": "2026-08-20",
-      "panel": [
-        3,
-        3
-      ],
-      "tocandoLaMesa": true,
+      "panel": null,
+      "tocandoLaMesa": null,
       "barraDeVerbos": true,
       "verbos": 3,
-      "resumen": "se juega tocando la mesa"
+      "resumen": "se juega con los botones de abajo"
     },
     "pantallas": {
       "medido": "2026-08-17",
@@ -1934,10 +1928,10 @@
         4,
         4
       ],
-      "tocandoLaMesa": false,
+      "tocandoLaMesa": true,
       "barraDeVerbos": true,
       "verbos": 4,
-      "resumen": "se juega con los botones de abajo"
+      "resumen": "se juega tocando la mesa"
     },
     "pantallas": {
       "medido": "2026-08-17",
@@ -1978,14 +1972,23 @@
     "asientos": 4,
     "verbos": [
       "abajo",
+      "acuso",
       "arriba",
+      "callar",
+      "defiendo",
       "derecha",
       "esperar",
-      "izquierda"
+      "izquierda",
+      "sabotear",
+      "tarea",
+      "voto"
     ],
     "formatoJugada": null,
     "ejemplos": null,
-    "normas": [],
+    "normas": [
+      "rondasDeDebate",
+      "hablaLibre"
+    ],
     "leyenda": {
       "yo": "tú",
       "cadaver": "cadáver",
@@ -2021,15 +2024,17 @@
       },
       "resumen": "hay que plegar el panel o girar: tumbado"
     },
-    "reglas": "Te mueves, haces tu tarea o esperas. El impostor, además, puede eliminar. En una junta todos votan a la vez y el más votado sale por la esclusa, sea culpable o no.",
+    "reglas": "Te mueves, haces tu tarea o esperas. El impostor, ademas, puede eliminar. En una junta hay dos rondas de debate y luego el voto: en las dos cosas todos eligen A LA VEZ, asi que nadie ve lo que dijeron los demas hasta que ya no puede cambiar de idea. El mas votado sale por la esclusa, sea culpable o no.",
     "prosa": {
-      "que_es": "Cuatro sillas y una miente. Tres tripulantes reparan la nave; un impostor los elimina de uno en uno. Cuando aparece un cadáver se convoca junta y todos votan a la vez.",
+      "que_es": "Cuatro sillas y una miente. Tres tripulantes reparan la nave; un impostor los elimina de uno en uno. Cuando aparece un cadaver se convoca junta: primero se habla —acusar, respaldar o callar— y despues se vota.",
       "reparto": "La nave con sus tareas, tres tripulantes y un impostor. Nadie sabe quién es quién.",
-      "turno": "Te mueves, haces tu tarea o esperas. El impostor, además, puede eliminar. En una junta todos votan a la vez y el más votado sale por la esclusa, sea culpable o no.",
+      "turno": "Te mueves, haces tu tarea o esperas. El impostor, ademas, puede eliminar. En una junta hay dos rondas de debate y luego el voto: en las dos cosas todos eligen A LA VEZ, asi que nadie ve lo que dijeron los demas hasta que ya no puede cambiar de idea. El mas votado sale por la esclusa, sea culpable o no.",
       "gana": "La tripulación, terminando las reparaciones o expulsando al impostor. El impostor, quedándose a solas.",
       "ojo": [
         "Esperar no es pasividad: es coartada. Es el único juego donde no hacer nada es una jugada que cuenta una historia sobre ti.",
-        "Este juego no inventa ningún mecanismo: junta cuatro que ya estaban. El reloj propio del mundo viene de `pradera` y `rebano`, el esperar de `relevo`, el comprometer la jugada sin ver la de los demás de `frentes`, y la vista por asiento de `cabina` y `flota`. Que se pudieran juntar sin tocar el contrato es lo que demuestra."
+        "Este juego no inventa ningún mecanismo: junta cuatro que ya estaban. El reloj propio del mundo viene de `pradera` y `rebano`, el esperar de `relevo`, el comprometer la jugada sin ver la de los demás de `frentes`, y la vista por asiento de `cabina` y `flota`. Que se pudieran juntar sin tocar el contrato es lo que demuestra.",
+        "Hablar es una jugada, no un chat: acusar y respaldar viajan en el recibo igual que moverse, asi que una junta entera se puede volver a jugar. Es lo que permite que una politica programada, un modelo y una persona jueguen el MISMO juego — la competicion AIWolf lleva una decada separando esas dos cosas en divisiones distintas, y aqui son la misma partida.",
+        "Respaldar a alguien es informacion tanto como acusarlo: solo puedes dar una coartada de quien estaba contigo de verdad."
       ],
       "diferencias": []
     },
@@ -2048,6 +2053,7 @@
     "objetivo": "Objetivo: cerrar la mano ligando todas tus cartas en grupos y escaleras.",
     "asientos": 2,
     "verbos": [
+      "cerrar",
       "descartar",
       "robar_descarte",
       "robar_mazo"
@@ -2113,6 +2119,7 @@
     "objetivo": "Objetivo: cerrar ligando tus cartas en grupos y escaleras, con 5 puntos sueltos o menos. Las siete seguidas del mismo palo son chinchón y ganan con premio.",
     "asientos": 2,
     "verbos": [
+      "cerrar",
       "descartar",
       "robar_descarte",
       "robar_mazo"
@@ -2123,7 +2130,7 @@
     "leyenda": null,
     "clasificacion": {
       "entra": false,
-      "motivo": "el hueco (1.5) no supera al ruido de la medida (±2.2)"
+      "motivo": "el hueco (1.2) no supera al ruido de la medida (±1.9)"
     },
     "captura": "/capturas/chinchon.png",
     "conLaMano": {
@@ -2171,6 +2178,7 @@
     "objetivo": "Objetivo: acabar con el patrimonio más alto. Caes en un distrito libre y lo compras al precio de lista o lo mandas a subasta, donde pujáis todos. Completar un distrito dobla el alquiler y deja construir.",
     "asientos": 2,
     "verbos": [
+      "construir",
       "pasar",
       "pujar",
       "tirar"
@@ -2188,8 +2196,8 @@
       "fincas": "lo que tiene cada uno"
     },
     "clasificacion": {
-      "entra": false,
-      "motivo": "no medido en la última pasada"
+      "entra": true,
+      "motivo": null
     },
     "captura": "/capturas/alisapolis.png",
     "conLaMano": {
@@ -2199,9 +2207,9 @@
         1
       ],
       "tocandoLaMesa": false,
-      "barraDeVerbos": null,
-      "verbos": null,
-      "resumen": "en el momento de medir, sólo respondía el panel"
+      "barraDeVerbos": true,
+      "verbos": 1,
+      "resumen": "se juega con los botones de abajo"
     },
     "pantallas": null,
     "reglas": "Tiras dos dados y avanzas. Si caes en algo sin dueño, SALE A SUBASTA: pujáis por turnos de diez en diez y quien queda último se lo lleva al precio al que se cerró. Si caes en finca ajena, pagas alquiler. Con el distrito entero puedes construir.",
@@ -2228,7 +2236,7 @@
       "persona": true,
       "llm": true,
       "vision": true,
-      "fsm": false,
+      "fsm": true,
       "openapi": true
     }
   },
@@ -2238,6 +2246,7 @@
     "objetivo": "Objetivo: llevar tus cuatro fichas a casa antes que nadie; un 5 saca ficha y un 6 repite.",
     "asientos": 4,
     "verbos": [
+      "mover",
       "pasar",
       "sacar",
       "tirar"
@@ -2460,6 +2469,7 @@
     "verbos": [
       "cambiar",
       "descartar",
+      "dividir",
       "jugar",
       "sacar"
     ],
