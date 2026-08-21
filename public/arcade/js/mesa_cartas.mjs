@@ -1479,9 +1479,15 @@ const engine = new SovereignCardEngine({
          * se puede decidir: donde están la partida viva y las reglas. Lo escribí
          * ayer para esto mismo y esta mesa era la única que no lo usaba.
          *
-         * EN UNA SALA COMPARTIDA sigue mandando el derivado, y no es una excepción
-         * caprichosa: allí el estado lo manda el árbitro por la red y aquí no hay
-         * partida viva que preguntar. Derivar de lo publicado es lo único posible.
+         * EN UNA SALA COMPARTIDA mandaba el derivado, y el motivo escrito aquí era
+         * que «derivar de lo publicado es lo único posible»: no hay partida viva que
+         * preguntar. Era cierto mientras el árbitro no publicara el sustrato — y ya
+         * lo publica, por asiento. Así que ahora manda el suyo y derivar es el
+         * respaldo, igual que en la mesa de tablero.
+         *
+         * No es cosmético: los juegos que escriben su sustrato a mano no se pueden
+         * reconstruir derivando. Medido en los veintiuno que lo tienen, 16 salían
+         * distintos en sala.
          */
         // ⚠️ `enSala` se calcula AQUÍ y no se toma prestado. La primera versión
         // usaba el de `pintarJugadas`, que vive en otra función: `ReferenceError`,
@@ -1490,10 +1496,11 @@ const engine = new SovereignCardEngine({
         // porque la escena anterior se queda en pantalla y parece que todo va bien.
         const enPartidaCompartida = this.backend?.tipo === 'sala';
         const hub = window.ALISA_PROTOHUB;
+        const publicado = enPartidaCompartida ? (this.sala?.ultimo?.substrate ?? null) : null;
         const sus = ordenarMano(
             (!enPartidaCompartida && hub?.soporta?.(juego))
                 ? hub.sustrato(juego, 0)
-                : sustratoDe(juego, data),
+                : (publicado ?? sustratoDe(juego, data)),
             data);
 
         /**

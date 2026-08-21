@@ -274,6 +274,10 @@ function cajaReal(raiz) {
 const SIN_NIEBLA = new Set(['niebla']);
 
 let conRejillaAhora = true;
+// Si ya se encuadró con un tablero delante. En una sala el primer encuadre ocurre
+// antes de que conteste el árbitro, o sea sin tablero: hay que repetirlo cuando
+// llegue, y sólo esa vez.
+let encuadradoConTablero = false;
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -991,15 +995,50 @@ async function refrescar() {
     if (volcando()) return;
     if (mesaCompartida) {
         // En una sala el estado llega del árbitro por la red, así que aquí no hay
-        // partida viva que preguntar: el sustrato se DERIVA de lo publicado. Es la
-        // misma excepción, por el mismo motivo, que en la mesa de cartas.
+        // partida viva que preguntar. Es la misma excepción, por el mismo motivo,
+        // que en la mesa de cartas.
         await mesaCompartida.refrescar().catch(() => {});
         const st = mesaCompartida.estado();
         if (st) {
+            /**
+             * ⚠️ EL DEL ÁRBITRO MANDA; DERIVAR ES EL RESPALDO.
+             *
+             * Esto DERIVABA siempre, y los veinte juegos que escriben su sustrato a
+             * mano no se pueden reconstruir así: 16 se veían distintos en sala y 12
+             * de ésos se juegan acompañados. El parchís compartido era un plano
+             * verde sin casillas ni fichas.
+             *
+             * Ahora el árbitro lo publica —por asiento, que en los juegos de
+             * información oculta decide qué se ve— y aquí se usa si viene. La
+             * derivación se queda para los que no tienen sustrato propio y para
+             * mesas servidas por un worker viejo, que es exactamente para lo que
+             * sirve un respaldo.
+             */
+            const publicado = mesaCompartida.ultimo?.substrate ?? null;
             const { sustratoDe } = await import('./protohub/sustrato.js');
-            const sus = sustratoDe(juego, st);
+            const sus = publicado ?? sustratoDe(juego, st);
             pintor.pintar(sus);
+            /**
+             * ⚠️ Y CUANDO APARECE LA REJILLA HAY QUE VOLVER A ENCUADRAR.
+             *
+             * La cámara se encaja UNA vez, al montar la mesa. En una sala, el primer
+             * encuadre ocurre antes de que llegue la primera respuesta del árbitro
+             * —o sea, sin tablero—, así que se queda mirando de cerca a nada. Cuando
+             * el tablero llega, nadie le dice que ha cambiado el mundo.
+             *
+             * Y esto costó un rato de diagnóstico equivocado: con el sustrato ya
+             * llegando bien —324 celdas, medidas envolviendo al pintor— la pantalla
+             * seguía siendo un plano verde, y di por hecho que el dato no llegaba.
+             * Estaba dibujado desde el principio; sólo que fuera de cámara. Llamando
+             * a `encajarCamara()` a mano apareció el tablero entero.
+             *
+             * Se hace UNA vez, la primera que llega un tablero, y no en cada latido:
+             * reencuadrar cada segundo le quitaría la cámara de las manos a quien la
+             * esté moviendo. Y con una bandera propia, no comparando contra
+             * `conRejillaAhora` —que arranca en `true` y nunca daría el cambio—.
+             */
             conRejillaAhora = !!sus?.rejilla;
+            if (conRejillaAhora && !encuadradoConTablero) { encuadradoConTablero = true; encajar(); }
             ponerTapeteSiHaceFalta(conRejillaAhora);
             ponerAmbiente(sus?.rejilla?.ambiente ?? null);
             const txt = document.getElementById('estado-txt');

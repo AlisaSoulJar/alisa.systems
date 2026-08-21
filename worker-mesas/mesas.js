@@ -725,6 +725,33 @@ export class MesaCompartida {
                 ? (st.legal_moves ?? []).filter(m => m !== 'nueva' && m !== 'reset')
                 : [],
             state: mío,
+            /**
+             * ⚠️ EL SUSTRATO, QUE NO SALÍA Y DEJABA DIECISÉIS MESAS VACÍAS.
+             *
+             * En una sala el pintor no tiene partida viva que preguntar, así que
+             * DERIVABA el sustrato de lo publicado —`sustratoDe(juego, estado)`—. Y
+             * veinte juegos escriben el suyo a mano, que es justo lo que la
+             * derivación no puede reconstruir: medido, 16 salían distintos y 12 de
+             * ésos se juegan acompañados. Un parchís en sala era un plano verde sin
+             * casillas ni fichas mientras el mismo parchís sin sala salía entero.
+             *
+             * ⚠️ Y LA LECCIÓN YA ESTABA ESCRITA EN LA CASA. La cabecera de
+             * `ProtoHub.sustrato()` lo cuenta con estas palabras: «la sala nueva
+             * usaba `sustratoDe(...)`, que sólo DERIVA: los once juegos con sustrato
+             * propio salían vacíos». Se arregló el camino local y el de la sala se
+             * quedó igual. Aprendida, escrita, y aplicada a la mitad.
+             *
+             * Va POR ASIENTO, como `state`: en los juegos de información oculta el
+             * sustrato decide qué se ve, así que no es cosmético. Quien mira sin
+             * silla recibe el de la silla 0 — exactamente lo que ya recibe en
+             * `state`, ni un dato más.
+             *
+             * Sólo se publica el propio. Los que derivan ya salen bien por el otro
+             * camino, y mandarlo dos veces sería engordar cada respuesta a cambio de
+             * nada.
+             */
+            ...(typeof reglas.sustrato === 'function'
+                ? { substrate: reglas.sustrato(p, Math.max(0, i)) } : {}),
             // El recibo, en cualquier momento: la mesa no guarda nada que no
             // sea verificable por un tercero.
             receipt: { game: mesa.juego, seed: mesa.semilla, moves: mesa.jugadas },
