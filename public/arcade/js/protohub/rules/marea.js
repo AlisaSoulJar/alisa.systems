@@ -137,7 +137,16 @@ export const marea = {
                 celdas: p.celdas.map((v) => (v ? Math.log2(v) : 0)),
                 nombres: p.celdas.map((v) => (v ? String(v) : null)),
                 etiquetas: true,
-                ambiente: 'arena',
+                /**
+                 * ⚠️ AQUÍ PUSE `ambiente: 'arena'` Y ESTABA MAL. QUEDA ESCRITO.
+                 *
+                 * `ambiente` es el juego diciendo «soy un SITIO»: le pone cielo,
+                 * suelo y niebla. Sólo seis de los cuarenta lo piden, y son los que
+                 * de verdad ocurren en algún lado —la cripta, la nave, la pradera—.
+                 * Esto es una rejilla de cuatro por cuatro con números: no es un
+                 * sitio, es una cuenta. Ponerle arena quedaba bonito y hacía mentir
+                 * al campo que distingue una cosa de la otra.
+                 */
             },
             piezas: [], zonas: [],
             leyenda: { 0: 'hueco', ...Object.fromEntries(
