@@ -50,6 +50,34 @@
  *            jugadas:number, estadoFinal:Object}}
  */
 export function verificar(reglas, partida, opts = {}) {
+    /**
+     * ⚠️ HAY DOS FORMAS DE JUEGO EN ESTA CASA, Y ESTO SÓLO SABÍA REPETIR UNA.
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Los cuarenta del arcade son **módulos de reglas**: `nuevaPartida`, `mover`,
+     * `estado`. Pero el catálogo del gym tiene además seis entornos con **física
+     * propia** —Cucco Swarm, Raccoon Space, Asteroids, Cabinet Escape,
+     * RueDelPercebe, ChopperAquarium—, que son clases con `reset(semilla)` y
+     * `step(verbo)`. Son los juegos bonitos de la casa: GLB, animación, luces.
+     *
+     * Y estaban fuera de la tabla por una línea sin comentar en `tabla.mjs`
+     * —`CATALOGO.filter(e => e.familia !== 'propio')`—. Mirándolos por dentro no
+     * les faltaba nada: semilla, determinismo con `DeterministicScope`, quince
+     * verbos declarados y `affordances()` con los legales de cada instante. Lo que
+     * faltaba estaba AQUÍ: el verificador sólo sabía repetir la primera forma, y
+     * la ley de la tabla es «lo que no verifica, no puntúa».
+     *
+     * No es un rediseño: un recibo de entorno tiene exactamente la misma forma
+     * —`{juego, semilla, jugadas}`— y se repite igual de bien, `reset(semilla)` y
+     * los verbos en orden. Sólo había que enseñarle la segunda puerta.
+     *
+     * Se reparte aquí, en el único sitio por el que pasan todos los llamadores,
+     * para que ninguno tenga que saber con cuál de las dos está hablando.
+     */
+    if (reglas && typeof reglas.nuevaPartida !== 'function'
+        && (typeof reglas.reset === 'function' || typeof reglas === 'function')) {
+        return verificarEntorno(reglas, partida, opts);
+    }
     const tope = opts.maxJugadas ?? 10000;
     const jugadas = partida.jugadas ?? [];
 
@@ -264,6 +292,82 @@ export function puntuacionDe(st) {
         return st.score[claves[0]] ?? 0;      // el primero que declara el juego
     }
     return 0;
+}
+
+/**
+ * La segunda puerta: vuelve a jugar un ENTORNO del gym y dice si cuadra.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Misma promesa que la otra: `{juego, semilla, jugadas}` y nada más. Se crea el
+ * entorno, `reset(semilla)`, se aplican los verbos en orden y se suma la
+ * recompensa. Si la puntuación declarada no sale, la partida no ocurrió así.
+ *
+ * ⚠️ LO QUE ESTO GARANTIZA Y LO QUE NO, DICHO CLARO.
+ *
+ * Garantiza que esa lista de verbos, desde esa semilla, da esa puntuación. El
+ * determinismo lo pone el propio entorno con `DeterministicScope`, que siembra
+ * cada paso con `semilla + paso`.
+ *
+ * NO garantiza una partida jugada a mano en el navegador. Estos motores avanzan
+ * con `step(verbo, dt)` y el arnés del gym usa siempre `dt = 1/60`; un humano
+ * jugando en vivo avanza con el tiempo real de cada fotograma, que no se repite
+ * jamás. O sea que **la puerta de agentes es verificable y la de personas no lo
+ * es todavía** — haría falta que el navegador también avanzara a paso fijo. Se
+ * dice aquí en vez de dejar que alguien lo descubra con un recibo rechazado.
+ *
+ * ⚠️ Y SE AUDITA LA LEGALIDAD IGUAL QUE EN LA OTRA PUERTA, si el entorno la
+ * publica. `affordances()` da los verbos legales de ESTE instante —no la lista
+ * entera—, así que un verbo que no estaba ofrecido es una jugada inventada. Un
+ * entorno que no publique `affordances` se audita sólo por la puntuación, y eso
+ * se cuenta: `porPatron` sube, que es el mismo campo con el que ya se declara
+ * cuánto de un recibo se comprobó contra una forma y no contra una lista.
+ */
+export function verificarEntorno(Clase, partida, opts = {}) {
+    // El `no()` de la otra puerta vive DENTRO de ella y necesita reglas y partida
+    // para sacar el estado final. Aquí no hay ninguna de las dos: un entorno no
+    // publica un estado re-leíble, así que el rechazo es más corto y se dice.
+    const no = (motivo) => ({ valida: false, motivo, puntos: 0, jugadas: 0, estadoFinal: null });
+    const tope = opts.maxJugadas ?? 10000;
+    const jugadas = partida.jugadas ?? [];
+    if (!Array.isArray(jugadas)) return no('la lista de jugadas no es una lista');
+    if (jugadas.length > tope) return no(`demasiadas jugadas (${jugadas.length} > ${tope})`);
+
+    let env;
+    try {
+        env = typeof Clase === 'function' ? new Clase() : Clase;
+        env.reset(Number(partida.semilla) || 0);
+    } catch (e) {
+        return no(`no se pudo montar el entorno: ${e.message}`);
+    }
+
+    let puntos = 0, porPatron = 0, terminado = false;
+    for (let i = 0; i < jugadas.length; i++) {
+        if (terminado) return no(`la jugada ${i + 1} llega con la partida ya terminada`);
+        // Los verbos legales de este instante, si el entorno los publica.
+        let legales = null;
+        try {
+            const a = env.affordances?.();
+            if (Array.isArray(a)) legales = a.map((x) => (typeof x === 'string' ? x : x?.verb)).filter(Boolean);
+        } catch { /* un entorno sin affordances se audita sólo por la puntuación */ }
+        if (legales === null) porPatron++;
+        else if (legales.length && !legales.includes(jugadas[i])) {
+            return no(`jugada ${i + 1} ilegal: '${jugadas[i]}'`);
+        }
+        let r;
+        try { r = env.step(jugadas[i]); }
+        catch (e) { return no(`el entorno rechazó la jugada ${i + 1}: ${e.message}`); }
+        puntos += Number(r?.reward) || 0;
+        terminado = !!r?.done;
+    }
+
+    if (partida.puntos !== undefined && Math.abs(Number(partida.puntos) - puntos) > 1e-6) {
+        return no(`la puntuación no cuadra: dice ${partida.puntos}, sale ${puntos}`);
+    }
+    return {
+        valida: true, motivo: null, porPatron,
+        puntos, jugadas: jugadas.length,
+        estadoFinal: { terminada: terminado, resultado: null, jugadasLegales: 0 },
+    };
 }
 
 function resumen(st) {
