@@ -179,6 +179,12 @@
     "titulo": "Nave",
     "sillas": 4
   },
+  "yokai": {
+    "pagina": "yokai.html",
+    "propia": true,
+    "titulo": "Yokai",
+    "sillas": 6
+  },
   "remigio": {
     "pagina": "remigio.html",
     "propia": true,

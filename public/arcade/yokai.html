@@ -1,0 +1,32 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA Arcade — Yokai</title>
+<!--
+  Seis vecinos y dos que no lo son. De noche los yokai se llevan a alguien y el
+  oráculo lee el alma de uno; de día se habla y se expulsa a uno por votación,
+  sea quien sea.
+
+  ⚠️ EL PRIMER JUEGO DE LA CASA EN EL QUE HABLAR ES TODA LA PARTIDA.
+
+  No hay tablero que recorrer ni tareas que hacer. Un aldeano señala de noche sin
+  que sirva de nada, habla de día y vota. El cien por cien de sus decisiones son
+  palabra — y por eso el sustrato no tiene rejilla: son seis ZONAS, una por
+  vecino, con lo que se ha dicho de cada uno.
+
+  ⚠️ Y LAS AFIRMACIONES LAS PUEDE HACER CUALQUIERA.
+
+  `afirmo_yokai:X` significa «he visto que X es un yokai». Lo dice el oráculo y es
+  verdad; lo dice un yokai y es mentira; nadie puede comprobarlo. Si la lista de
+  jugadas sólo se la ofreciera al oráculo, bastaría mirar quién PUEDE afirmar y el
+  juego se habría acabado. Ofrecérsela a todos no es una precaución técnica: es la
+  partida.
+
+  Esta página no sabe nada de eso. `mesa_cartas.mjs` lee el sustrato y lo pinta,
+  igual que con el remigio: el juego se escribió como reglas y salió dibujado,
+  jugable y descrito para un agente sin tocar la mesa.
+-->
+<script type="module">
+  import { montarMesa } from './js/montarMesa.js';
+  montarMesa({ juego: 'yokai', visualizador: 'mesa_cartas.mjs' });
+</script>

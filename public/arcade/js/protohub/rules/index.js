@@ -127,6 +127,19 @@ export const REGLAS = {
     // que separan la división de protocolo de la de lenguaje natural, que en
     // AIWolf son dos competiciones distintas y aquí son la misma partida.
     nave: (o) => import('./nave.js').then(m => m.crearNave(o ?? {})),
+    /**
+     * ⚠️ EL PRIMER JUEGO EN EL QUE HABLAR NO ES UNA FACETA: ES TODO.
+     *
+     * Nave le dio voz a su junta y el banco no se movió —0.41 → 0.38, dentro del
+     * ruido— porque allí la palabra compite con moverse y hacer tareas: con dos
+     * rondas y cuatro bocas, una voz aporta 2 de 8 intervenciones. Aquí no hay
+     * nada debajo: un aldeano señala de noche sin efecto, habla de día y vota.
+     * Quien habla mal no es flojo en una faceta, es flojo y ya.
+     *
+     * Recibe opciones por lo mismo que nave y damas: sus normas cambian qué es
+     * legal, así que viajan en el recibo.
+     */
+    yokai: (o) => import('./yokai.js').then(m => m.crearYokai(o ?? {})),
     // ⚠️ EL PRIMER JUEGO DE CARTAS QUE PUBLICA SUSTRATO NATIVO, y el que estrena
     // una forma de esconder información que no teníamos: los treinta anteriores
     // revelan al ACTUAR —preguntar en el go fish, apostar en el póker— y aquí se
@@ -233,6 +246,14 @@ export const SILLAS = {
     sokoban: 1, cripta: 1, rebano: 1, pradera: 1,
     flota: 2, defensa: 2, sigilo: 2, frentes: 2, relevo: 2, cabina: 2,
     nave: 4,
+    /**
+     * Seis, y el número es una decisión de medida además de de juego. Con cuatro
+     * —como nave— una voz aporta un cuarto de lo que se dice y se diluye; con
+     * diez, la partida se alarga y el banco tarda tres veces más en decir nada.
+     * Seis deja dos yokai contra cuatro, que es el reparto clásico donde la aldea
+     * puede perder por creerse a quien no debe.
+     */
+    yokai: 6,
     // Dos: con más manos el descarte pasa por tanta gente antes de volver a ti
     // que la señal de «éste está juntando corazones» se diluye, y esa señal es
     // justo lo que el juego mide.
