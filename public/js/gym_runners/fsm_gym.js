@@ -8,7 +8,7 @@
  * -------------
  * Que el comportamiento no está cableado en el juego: está declarado como
  * estados y transiciones sobre el primitivo genérico del motor. El mismo
- * `FSMSystem` mueve a PhantomFSM, CuccoGame, CorporateSeeker o StealthSight.
+ * `FSMSystem` mueve a PhantomFSM, MarabuntaGame, CorporateSeeker o StealthSight.
  * Aquí corre a 2000 ticks sin abrir una ventana — que es lo que lo hace
  * medible.
  *

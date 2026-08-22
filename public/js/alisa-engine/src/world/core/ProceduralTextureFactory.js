@@ -162,7 +162,7 @@ export class ProceduralTextureFactory {
     }
 
     /**
-     * Industrial tile floor with grout lines and grime (Cucco arena).
+     * Industrial tile floor with grout lines and grime (Marabunta arena).
      * @param {number} [size=512]
      * @param {string} [baseColor='#c8cccf']
      * @param {number} [tileCount=8]

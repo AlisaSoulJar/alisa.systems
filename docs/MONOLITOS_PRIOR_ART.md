@@ -11,7 +11,7 @@
 | `index-new` | 50 | **2026-02-13** |
 | `aquarium_v3_legacy` | 62 | 2026-04-16 |
 | `asteroids_v3_legacy` | 41 | 2026-04-16 |
-| `rue_del_percebe_legacy` | 87 | 2026-04-16 |
+| `corp_building_legacy` | 87 | 2026-04-16 |
 | `corporate_building_horror_base` | 117 | 2026-04-17 |
 | **`croupier_corporate_building`** | **133** | 2026-04-17 |
 | `sim_search_rescue_chopper` | 62 | 2026-04-17 |
@@ -37,7 +37,7 @@ BSP/interiores, boids, vehículos/IDM, hooks de gym, dataset/recibos, CSS3D) con
 | croupier_corporate_building | 12 | **100%** |
 | index-new | 3 | **100%** |
 | room_empty_table_games_node | 6 | **100%** |
-| rue_del_percebe_legacy | 11 | **100%** |
+| corp_building_legacy | 11 | **100%** |
 | sim_search_rescue_chopper | 12 | **100%** |
 
 > **Huecos agregados: NINGUNO.** No falta ni un subsistema.
@@ -49,7 +49,7 @@ Script reproducible: `scratchpad/monolith_coverage.py`.
 
 ---
 
-## 3. EL ORO: `croupier_corporate_building` — "13 Rue del Percebe"
+## 3. EL ORO: `croupier_corporate_building` — "13 Corp Building"
 
 2.840 líneas. Edificio procedural por plantas con ascensor donde una **IA acosadora busca a
 un mapache escondido**: `seekerAI`, `raccoonHideSpot`, `stalkerTimer`, `doorChecks`,
@@ -64,7 +64,7 @@ Un flujo de recibos **con verbos semánticos**, que es exactamente el diseño de
 
 **Por qué importa más que la nostalgia:** es un benchmark **mucho mejor para LLM** que Asteroids.
 
-| | Asteroids | Rue del Percebe |
+| | Asteroids | Corp Building |
 |---|---|---|
 | Mide | reflejos | **búsqueda y deducción** |
 | Acciones | vectores continuos | **`check_door`, `check_spot`** |
@@ -83,12 +83,12 @@ GitHub y un entorno del benchmark.
 
 | # | Monolito | Se convierte en | Prioridad |
 |---|---|---|---|
-| 1 | **croupier_corporate_building** | **`alisa/RueDelPercebe-v0`** — el entorno LLM-nativo | ⭐⭐⭐ |
+| 1 | **croupier_corporate_building** | **`alisa/CorpBuilding-v0`** — el entorno LLM-nativo | ⭐⭐⭐ |
 | 2 | sim_search_rescue_chopper | `alisa/SearchRescue-v0` — búsqueda con vehículo | ⭐⭐ |
 | 3 | aquarium_v3_legacy | lab de ecosistema (ya hay `AquariumEnvironmentFactory`) | ⭐ |
 | 4 | room_empty_table_games_node | sala de juegos de mesa (arcade recuperado) | ⭐ |
 | 5 | corporate_building_horror_base | variante de terror del nº1 | — |
-| 6 | rue_del_percebe_legacy | precursor del nº1 (referencia) | — |
+| 6 | corp_building_legacy | precursor del nº1 (referencia) | — |
 | 7 | asteroids_v3_legacy | referencia (ya portado a `AsteroidsEnv`) | — |
 | 8 | index-new | portada histórica | — |
 

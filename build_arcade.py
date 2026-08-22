@@ -55,13 +55,13 @@ new_main += '''        <a href="../games/raccoon_space.html" class="arcade-card"
                 <div class="players"></div>
             </div>
         </a>
-        <a href="../labs/croupier_cucco_swarm.html" class="arcade-card" data-game="swarm">
+        <a href="../labs/croupier_marabunta.html" class="arcade-card" data-game="swarm">
             <div class="card-header">
                 <div class="game-icon">🐔</div>
                 <div class="status-badge" data-state="active"><div class="dot"></div> 3D sim</div>
             </div>
             <div class="card-body">
-                <h2>Cucco Swarm</h2>
+                <h2>Marabunta</h2>
                 <p>Algoritmos de Flocking y Boids (Enjambre).</p>
             </div>
             <div class="card-footer">

@@ -64,9 +64,9 @@ const RAIZ = join(AQUI, 'public/js/alisa-engine/src');
  * → `IDMSystem`.
  *
  * ⚠️ QUEDAN 2 DENTRO DE ALCANCE PERO NO SEMBRADOS A PROPÓSITO:
- *   AsteroidsSystem y CuccoGameSystem (con su base BulletHeavenEngine) NO
+ *   AsteroidsSystem y MarabuntaSystem (con su base BulletHeavenEngine) NO
  *   aceptan `config.rng` cacheado en el constructor porque sus entornos del
- *   gym (`AsteroidsEnv._withSeed`, `CuccoSwarmEnv` + `DeterministicScope`)
+ *   gym (`AsteroidsEnv._withSeed`, `MarabuntaEnv` + `DeterministicScope`)
  *   ya los hacen reproducibles sustituyendo el `Math.random` GLOBAL durante
  *   el episodio, y la construcción del sistema ocurre FUERA de ese tramo
  *   sembrado. Cachear `Math.random` en el constructor capturaría la versión
@@ -82,7 +82,7 @@ const RAIZ = join(AQUI, 'public/js/alisa-engine/src');
  * puede bajar») deja de valer aquí y se invierte:
  *
  *   · si SUBE de 2, alguien metió un sistema nuevo con azar incontrolado;
- *   · si BAJA de 2, alguien sembró Asteroids o Cucco **y rompió su determinismo
+ *   · si BAJA de 2, alguien sembró Asteroids o Marabunta **y rompió su determinismo
  *     en silencio**, que es peor que no haberlos tocado.
  *
  * Se deja escrito porque un trinquete cuyo texto dice «sólo puede bajar» invita a
@@ -192,7 +192,7 @@ if (sinSembrar.length > TECHO_SIN_SEMBRAR) {
 const { CATALOGO } = await import('./public/js/alisa-engine/src/gym/registro.js');
 
 /** Entornos que hoy NO usan la semilla. **Esta lista sólo puede encoger.** */
-const INERTES = ['alisa/RueDelPercebe-v0'];
+const INERTES = ['alisa/CorpBuilding-v0'];
 
 async function huellaDe(Clase, semilla, pasos = 80) {
     const env = new Clase();

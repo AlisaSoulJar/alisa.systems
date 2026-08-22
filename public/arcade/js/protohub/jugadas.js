@@ -338,7 +338,7 @@ export function pintarJugadas(caja, { acciones = [], meToca = true, turnoDe = nu
      * es el caso extremo: 362 jugadas, de las cuales 361 son puntos del goban.
      *
      * Así que los verbos —`tirar`, `robar`, `hit`, `arriba`— salen a una barra
-     * propia, abajo y con tamaño de dedo, como las acciones de Cucco Swarm. Son de
+     * propia, abajo y con tamaño de dedo, como las acciones de Marabunta. Son de
      * uno a seis por juego: hoy salen minúsculos perdidos entre veinte botones.
      *
      * ⚠️ SE AÑADE, NO SE QUITA. El panel sigue teniendo TODAS las jugadas.

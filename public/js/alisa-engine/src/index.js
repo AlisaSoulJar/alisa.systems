@@ -24,12 +24,12 @@ export { GymRecorder } from './gym/GymRecorder.js';
 // benchmark que no se puede importar no existe para quien se descargue el
 // motor, por muy bien hecho que esté.
 //
-// `RueDelPercebeEnv` es el caso más doloroso: 12,5 KB, el juego más trabajado
+// `CorpBuildingEnv` es el caso más doloroso: 12,5 KB, el juego más trabajado
 // que tenemos, y llevaba meses invisible.
 export { AsteroidsEnv }      from './gym/envs/AsteroidsEnv.js';
-export { CuccoSwarmEnv }     from './gym/envs/CuccoSwarmEnv.js';
+export { MarabuntaEnv }     from './gym/envs/MarabuntaEnv.js';
 export { RaccoonSpaceEnv }   from './gym/envs/RaccoonSpaceEnv.js';
-export { RueDelPercebeEnv }  from './gym/envs/RueDelPercebeEnv.js';
+export { CorpBuildingEnv }  from './gym/envs/CorpBuildingEnv.js';
 
 /**
  * El catálogo de entornos, para que se puedan RECORRER y no solo importar por

@@ -3037,7 +3037,7 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **TECHO DE SISTEMAS SIN SEMBRAR.** <sub>línea 34</sub>
   <br><sub>Cada uno que acepte `rng` baja este número. **Nunca sube.**</sub>
 - **QUEDAN 2 DENTRO DE ALCANCE PERO NO SEMBRADOS A PROPÓSITO:** <sub>línea 66</sub>
-  <br><sub>AsteroidsSystem y CuccoGameSystem (con su base BulletHeavenEngine) NO aceptan `config.rng` cacheado en el constructor porque sus entornos del gym (`AsteroidsEnv._withSeed`, `CuccoSwarmEnv` + `DeterministicScope`)</sub>
+  <br><sub>AsteroidsSystem y MarabuntaSystem (con su base BulletHeavenEngine) NO aceptan `config.rng` cacheado en el constructor porque sus entornos del gym (`AsteroidsEnv._withSeed`, `MarabuntaEnv` + `DeterministicScope`)</sub>
 - **Y CON ESO, ESTE TRINQUETE HA TOCADO SUELO: **2 NO ES DEUDA, ES EL FONDO.** <sub>línea 77</sub>
   <br><sub>Empezó en 28 y ha bajado hasta 2, pero esos dos últimos NO hay que sembrarlos —el bloque de arriba explica por qué—, así que la regla de siempre («este número sólo puede bajar») deja de valer aquí y se invierte:</sub>
 - **LOS MIXTOS: ACEPTAN SEMILLA **Y ADEMÁS** LLAMAN A `Math.random(`.** <sub>línea 118</sub>
@@ -3221,7 +3221,7 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **El juego estaba MUDO, y los 24 juegos de `games/` con él: ni una línea** <sub>línea 101</sub>
   <br><sub>de audio en toda la carpeta. Teníamos al lado `js/sfx.js` — 36 KB, 66 efectos sintetizados con Web Audio, sin un solo .wav — y CERO usuarios. No es un script de módulo: publica `window.SFX`, así que va aquí arriba y</sub>
 
-### `public/games/rue_del_percebe.html`
+### `public/games/corp_building.html`
 
 - **Esto pedía three 0.160 con `examples/js/`, y three BORRÓ esa carpeta en** <sub>línea 111</sub>
   <br><sub>r148: solo queda `examples/jsm/` (módulos). Los dos scripts daban 404, así que `THREE.OrbitControls` no existía y la línea 138 abortaba el bloque entero — dejando `let totalFloors` (línea 161) sin inicializar para</sub>
@@ -4196,7 +4196,7 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **La recompensa la pone el entorno, no el motor: `stepSimulation`** <sub>línea 101</sub>
   <br><sub>devuelve 0 siempre. Se premia el PROGRESO de la misión —plantas nuevas— y se premia mucho encontrar al mapache. Sin esto el episodio no distingue a nadie: todo el mundo saca cero.</sub>
 
-### `public/js/alisa-engine/src/gym/envs/CuccoSwarmEnv.js`
+### `public/js/alisa-engine/src/gym/envs/MarabuntaEnv.js`
 
 - **`BulletHeavenEngine` es la clase ABSTRACTA: su tabla de oleadas nace vacía** <sub>línea 2</sub>
   <br><sub>(`config.waves || []`), así que envolviéndola no aparece un solo enemigo — 400 ticks con la arena desierta y la falsa sensación de que el determinismo fallaba, cuando lo que pasaba es que no había nada que diferenciar.</sub>

@@ -61,7 +61,21 @@ comprobar("package.json con descripción", bool(pkg.get("description")), "", blo
 print("\n── marcas registradas ──")
 # OJO: sin \b. El guión bajo ES carácter de palabra, así que `\bpacman\b` NO
 # casa con `pacman_visualizer.js` — ese error nos dio un falso "limpio".
-MARCAS = re.compile(r"(?i)(balatro|mtg|pac-?man|frogger|vgc|pok[eé]mon|pok[eé]ball)")
+# ⚠️ Las cinco primeras salieron del arcade en su dia (ver
+# `_archivo/scripts_de_trabajo/arcade/renombrar_marcas.py`). Las tres ultimas son
+# de los entornos con fisica propia, que nunca pasaron por ese filtro y ahora van
+# a entrar en la tabla — o sea que sus identificadores se publican:
+#
+#   cucco            palabra INVENTADA por Nintendo (la gallina de sus juegos)
+#   rue del percebe  titulo de Francisco Ibaniez
+#   Asteroids-v0     titulo registrado por Atari. Ojo: se vigila el IDENTIFICADOR,
+#                    no la palabra «asteroide», que es comun y no la posee nadie —
+#                    `AsteroidsSystem` describe fisica de asteroides y se queda.
+#
+# Los comentarios se quitan antes de buscar (ver abajo), asi que un aviso puede
+# nombrar la marca y una CITA puede conservarse tal cual se dijo.
+MARCAS = re.compile(r"(?i)(balatro|mtg|pac-?man|frogger|vgc|pok[eé]mon|pok[eé]ball"
+                    r"|cucco|rue.?del.?percebe|Asteroids-v0)")
 IGNORAR = ("node_modules", "renombrar_marcas", "preflight.py", "CUADERNO_", "PAQUETE_PUBLICO")
 
 en_nombres, en_contenido = [], []

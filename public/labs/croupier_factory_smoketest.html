@@ -51,7 +51,7 @@ const TOOLBOX = new Set(['EnvironmentFactory','NeonSignFactory','ProceduralProps
 const FILES = ['AquariumEnvironmentFactory','ArcadeDojoFactory','ArcadeRoomManager','ArcadeTableRoomFactory',
   'ArchetypeEnvironmentFactory','AsteroidsFactory','BiolabEnvironmentFactory','CabinetEnvironmentFactory',
   'CarverEnvironmentFactory','ChopperFlightFactory','ColonialControlRoomFactory','CompizEnvironmentFactory',
-  'CuccoEnvironmentFactory','DojoEnvironmentFactory','EnvironmentFactory','InteractionLabFactory',
+  'MarabuntaEnvironmentFactory','DojoEnvironmentFactory','EnvironmentFactory','InteractionLabFactory',
   'KatamariFactory','LocomotionEnvironmentFactory','NeonSignFactory','ProceduralBuildingFactory',
   'ProceduralPropsFactory','RaccoonEnvironmentFactory','TreadmillEnvironmentFactory','TrafficEnvironmentFactory',
   'VoxelGlitchFactory'];
@@ -85,7 +85,7 @@ for (const name of FILES) {
         CarverEnvironmentFactory: [scene, null],  // se rellena abajo con su propio demoGrid
         ProceduralBuildingFactory: [scene, null],   // 2º arg = AssetManager, opcional
         RaccoonEnvironmentFactory: [],
-        CuccoEnvironmentFactory:   [],
+        MarabuntaEnvironmentFactory:   [],
       };
       let inst;
       // OJO: detectar "es clase" por toString() es frágil. Intentamos `new` y si

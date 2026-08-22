@@ -19,7 +19,7 @@
 export class GymRecorder {
     /**
      * @param {Object} opts
-     * @param {string} opts.envId       - p.ej. 'alisa/Asteroids-v0'
+     * @param {string} opts.envId       - p.ej. 'alisa/Pedrisco-v0'
      * @param {number} opts.seed
      * @param {string} opts.actor       - hash público del jugador
      * @param {string} [opts.agentType] - 'llm' | 'policy' | 'human' | 'fsm'

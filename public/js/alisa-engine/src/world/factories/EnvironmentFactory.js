@@ -248,7 +248,7 @@ export const EnvironmentFactory = {
     // ═══════════════════════════════════════════════════
     createBoidProxy(type = 'default') {
         const mesh = new THREE.Group();
-        if (type === 'cucco') {
+        if (type === 'marabunta') {
             // White body
             const body = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.5, 0.7), new THREE.MeshStandardMaterial({color: 0xffffff, roughness: 0.9}));
             body.position.y = 0.25; body.castShadow = true;

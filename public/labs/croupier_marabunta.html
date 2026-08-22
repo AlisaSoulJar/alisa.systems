@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>🐔 Cucco Swarm — Bullet Heaven | Powered by alisa-engine</title>
+<title>🐔 Marabunta — Bullet Heaven | Powered by alisa-engine</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#060612;overflow:hidden;font-family:'Inter',sans-serif}
@@ -65,12 +65,12 @@ canvas{display:block}
 <script type="importmap">{"imports":{"three":"/vendor/three-0.170.0/build/three.module.min.js","three/addons/":"/vendor/three-0.170.0/examples/jsm/"}}</script>
 <script type="module">
 // ═══════════════════════════════════════════════
-//  CUCCO SWARM CROUPIER — Pure wire, no rendering
+//  MARABUNTA CROUPIER — Pure wire, no rendering
 //  System + Factory + Engine = Game
 // ═══════════════════════════════════════════════
 import { AlisaRenderCore } from '../js/alisa-engine/src/soma/AlisaRenderCore.js';
-import { CuccoGameSystem } from '../js/alisa-engine/src/world/systems/CuccoGameSystem.js';
-import { CuccoEnvironmentFactory } from '../js/alisa-engine/src/world/factories/CuccoEnvironmentFactory.js';
+import { MarabuntaSystem } from '../js/alisa-engine/src/world/systems/MarabuntaSystem.js';
+import { MarabuntaEnvironmentFactory } from '../js/alisa-engine/src/world/factories/MarabuntaEnvironmentFactory.js';
 import { AlisaBloomEngine } from '../js/alisa-engine/src/soma/plugins/AlisaBloomEngine.js';
 import * as THREE from 'three';
 
@@ -88,10 +88,10 @@ try {
 } catch(e) { console.warn('Bloom not available:', e.message); }
 
 // ── Game System (math) ──
-const game = new CuccoGameSystem();
+const game = new MarabuntaSystem();
 
 // ── Visual Factory ──
-const factory = new CuccoEnvironmentFactory();
+const factory = new MarabuntaEnvironmentFactory();
 factory.setCore(core);
 factory.init(core.scene);
 
@@ -120,7 +120,7 @@ function updateHUD(s) {
   for (const wid of p.weapons) { const sl = document.createElement('div'); sl.className = 'ws'; sl.textContent = wIcons[wid] || '⚔️'; wb.appendChild(sl); }
   
   // Boss HUD
-  const boss = s.enemies.find(e => e.type === 'boss' || e.type === 'cucco');
+  const boss = s.enemies.find(e => e.type === 'boss' || e.type === 'marabunta');
   const bHud = document.getElementById('boss-hud');
   if (boss) {
     bHud.style.display = 'block';
@@ -211,7 +211,7 @@ core.startLoop((dt) => {
   if (result.done && !document.getElementById('ge').classList.contains('show')) showEnd(result.state);
 }, bloomRender);
 
-console.log('🐔 Cucco Swarm Bullet Heaven — Powered by alisa-engine');
+console.log('🐔 Marabunta Bullet Heaven — Powered by alisa-engine');
 </script>
 </body>
 </html>

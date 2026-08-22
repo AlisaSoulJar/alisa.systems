@@ -8,7 +8,7 @@
  * Dos familias, un solo contrato (`GymEnv`):
  *
  *   · **propios** — entornos escritos a mano, con su física y su observación
- *     de verdad (Asteroids, Cabinet Escape, Cucco Swarm, Raccoon Space…).
+ *     de verdad (Asteroids, Cabinet Escape, Marabunta, Raccoon Space…).
  *   · **protohub** — los juegos de mesa y cartas del arcade, adaptados por
  *     `ProtoHubEnv`. No hay once entornos escritos: hay once módulos de reglas
  *     que ya existían y un adaptador.
@@ -18,7 +18,7 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 import { crearEnvDeProtoHub } from './ProtoHubEnv.js';
-// La FSM del motor, la misma que mueve al cazador de Rue del Percebe y a los
+// La FSM del motor, la misma que mueve al cazador de Corp Building y a los
 // bichos de `fsm_gym`. Aquí se usa para JUGAR, no para simular.
 import { FSMSystem } from '../psyche/FSMSystem.js';
 
@@ -163,11 +163,11 @@ const PROTOHUB = [
 
 /** Entornos escritos a mano, cada uno con su propio módulo. */
 const PROPIOS = [
-    { id: 'alisa/Asteroids-v0',     titulo: 'Asteroids',      fichero: 'AsteroidsEnv.js' },
+    { id: 'alisa/Pedrisco-v0',     titulo: 'Pedrisco',      fichero: 'AsteroidsEnv.js' },
     { id: 'alisa/CabinetEscape-v0', titulo: 'Cabinet Escape', fichero: 'CabinetEscapeEnv.js' },
-    { id: 'alisa/CuccoSwarm-v0',    titulo: 'Cucco Swarm',    fichero: 'CuccoSwarmEnv.js' },
+    { id: 'alisa/Marabunta-v0',    titulo: 'Marabunta',    fichero: 'MarabuntaEnv.js' },
     { id: 'alisa/RaccoonSpace-v0',  titulo: 'Interestelar',   fichero: 'RaccoonSpaceEnv.js' },
-    { id: 'alisa/RueDelPercebe-v0', titulo: 'Rue del Percebe', fichero: 'RueDelPercebeEnv.js' },
+    { id: 'alisa/CorpBuilding-v0', titulo: 'Corp Building', fichero: 'CorpBuildingEnv.js' },
     // El primero cuyo MUNDO sale de la semilla, no sólo el azar dentro del
     // mundo. Ver la cabecera de su fichero: es la casilla que no ocupa nadie.
     { id: 'alisa/ChopperAquarium-v0', titulo: 'Chopper Terrarium', fichero: 'ChopperAquariumEnv.js' },
@@ -234,7 +234,7 @@ export const politicaTonta = (obs, env) => {
  * políticas numéricas están `politicaTonta` y `politicaAzar`.
  *
  * Faltaba la FSM, que es raro porque el motor lleva `FSMSystem` desde hace
- * meses y hay un cazador FSM dentro de Rue del Percebe. Otra pieza construida
+ * meses y hay un cazador FSM dentro de Corp Building. Otra pieza construida
  * y sin enchufar.
  *
  * Esta no simula un bicho: **juega**. Tres estados sobre lo único que un

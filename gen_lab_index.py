@@ -41,7 +41,7 @@ LEGACY_ROTAS = {"corporate_building_legacy.html", "room_simulator.html"}
 
 # categorias por patron de nombre (orden importa)
 CATS = [
-    ("🏆 Gym y benchmark", ["gym_bench","rue_del_percebe"]),
+    ("🏆 Gym y benchmark", ["gym_bench","corp_building"]),
     # Los arneses de prueba son EVIDENCIA, no sobras. En un banco de pruebas
     # abierto son lo que permite no fiarse de nosotros, asi que suben de
     # «Otros laboratorios» a tener seccion propia.
@@ -52,7 +52,7 @@ CATS = [
     ("🦍 Avatares y rig",           ["rig_avatar", "animator_dojo", "archetype_matrix", "morpholog", "proportional"]),
     ("🛂 Colonia y datos",          ["customs", "aduana", "scumm", "terminal", "digital_twin"]),
     ("🌍 Mundo y escala",           ["world_builder", "katamari", "lod_", "procgen", "matrioshka", "camera_compiz", "holographic"]),
-    ("🐜 Vida y simulación",        ["interaction_lab", "frogger", "cucco", "phantom", "math_boids", "chopper", "asteroids", "alisa_defender", "physics_locomotion", "tfjs", "resonance", "thermodynamics"]),
+    ("🐜 Vida y simulación",        ["interaction_lab", "frogger", "marabunta", "phantom", "math_boids", "chopper", "asteroids", "alisa_defender", "physics_locomotion", "tfjs", "resonance", "thermodynamics"]),
     ("🎲 Juegos y arcade",          ["table_games", "rig_vending", "scanner", "fx_voxel", "volumetric", "ui_item", "rosetta"]),
 ]
 

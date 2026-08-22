@@ -254,7 +254,7 @@ export class WorldBuilderSystem {
             if (agent.type === 'boid_swarm') {
                 const count = agent.count || 20;
                 for (let i = 0; i < count; i++) {
-                    const mesh = EnvironmentFactory.createBoidProxy(agent.model || 'cucco');
+                    const mesh = EnvironmentFactory.createBoidProxy(agent.model || 'marabunta');
                     // Scatter slightly around center point
                     mesh.position.set(
                         startX + (this.rng() - 0.5) * 10,

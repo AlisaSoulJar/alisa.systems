@@ -1,10 +1,10 @@
 /**
- * Headless Cucco Swarm player — runs 600 ticks (~20 seconds of game)
+ * Headless Marabunta player — runs 600 ticks (~20 seconds of game)
  * Demonstrates the gym API: reset → act → observe reward → repeat
  */
-import { CuccoGameSystem } from '../world/systems/CuccoGameSystem.js';
+import { MarabuntaSystem } from '../world/systems/MarabuntaSystem.js';
 
-const game = new CuccoGameSystem();
+const game = new MarabuntaSystem();
 let state = game.reset();
 
 // Simple "always flee from densest sector" strategy

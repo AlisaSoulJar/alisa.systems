@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>ALISA LAB — 13 Rue del Percebe · JUGABLE (la puerta humana)</title>
+<title>ALISA LAB — 13 Corp Building · JUGABLE (la puerta humana)</title>
 <style>
   body{margin:0;overflow:hidden;background:#05070d;font-family:ui-monospace,monospace;color:#fff}
   #hud{position:absolute;top:14px;left:16px;z-index:100;font-size:12px;line-height:1.7;text-shadow:0 0 8px #000;pointer-events:none}
@@ -30,12 +30,12 @@
 <div id="log"><h3>▓ COMPROBACIONES</h3><div id="loglist"></div></div>
 <div id="banner"></div>
 <div id="tip">Haz <b>clic en una puerta</b> para abrirla · <b>rueda</b> para orbitar · el mapache está en una de ellas</div>
-<div id="tag">Powered by <b>@alisa-engine</b> · MISMO <b>RueDelPercebeEnv</b> que juegan la FSM y el LLM — misma métrica, mismos recibos</div>
+<div id="tag">Powered by <b>@alisa-engine</b> · MISMO <b>CorpBuildingEnv</b> que juegan la FSM y el LLM — misma métrica, mismos recibos</div>
 <script type="module">
 import * as THREE from 'three';
 import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
 import { CinematicPipelinePlugin } from '@alisa-engine/src/soma/plugins/CinematicPipelinePlugin.js';
-import { RueDelPercebeEnv } from '@alisa-engine/src/gym/envs/RueDelPercebeEnv.js';
+import { CorpBuildingEnv } from '@alisa-engine/src/gym/envs/CorpBuildingEnv.js';
 // LA FÁBRICA QUE YA EXISTÍA (756 líneas): sótano, planta baja, azotea, ascensor,
 // escaleras, interruptores, luces por planta con parpadeo y las DOOR_COLORS originales.
 import { ProceduralBuildingFactory } from '@alisa-engine/src/world/factories/ProceduralBuildingFactory.js';
@@ -45,8 +45,8 @@ import { GymRecorder } from '@alisa-engine/src/gym/GymRecorder.js';
 window.onload = () => {
   // ── EL MISMO ENTORNO que juegan los agentes ──
   const seed = Math.floor(Math.random() * 10000);
-  const rec = new GymRecorder({ envId: RueDelPercebeEnv.id, seed, actor: 'humano', agentType: 'human' });
-  const env = new RueDelPercebeEnv({ recorder: rec });
+  const rec = new GymRecorder({ envId: CorpBuildingEnv.id, seed, actor: 'humano', agentType: 'human' });
+  const env = new CorpBuildingEnv({ recorder: rec });
   env.reset(seed);
   window.__env = env;
 
@@ -136,7 +136,7 @@ window.onload = () => {
     const last = env.checks[env.checks.length - 1];
     const cls = last ? (last.result === 'CALIENTE' ? 'hot' : last.result === 'TIBIO' ? 'warm' : last.result === 'FRÍO' ? 'cold' : 'ok') : '';
     document.getElementById('hud').innerHTML =
-      `<h2>13 RUE DEL PERCEBE</h2>` +
+      `<h2>13 CORP BUILDING</h2>` +
       `<span class="k">semilla</span> ${seed}<br>` +
       `<span class="k">planta</span> ${env.currentFloor + 1} de ${env.floors}<br>` +
       `<span class="k">intentos</span> <b>${env.budget - env.checks.length}</b> restantes<br>` +

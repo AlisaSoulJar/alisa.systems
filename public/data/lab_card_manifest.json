@@ -2250,12 +2250,12 @@
     },
     {
       "index": 31,
-      "id": "card-cucco",
+      "id": "card-marabunta",
       "section": "Physics & Eco Simulations",
       "dataCat": "sim",
-      "href": "labs/croupier_cucco_swarm.html",
-      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_cucco_swarm.html",
-      "title": "🐔 Cucco Swarm Defense Wanted-level behavioral dynamics. When architectural rules are broken, the Swarm descends. Testing systemic entity-group mechanics, aggro linking, and overwhelming force. Swarm Boids NEW",
+      "href": "labs/croupier_marabunta.html",
+      "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_marabunta.html",
+      "title": "🐔 Marabunta Defense Wanted-level behavioral dynamics. When architectural rules are broken, the Swarm descends. Testing systemic entity-group mechanics, aggro linking, and overwhelming force. Swarm Boids NEW",
       "line": 789,
       "axes": [
         "world_simulation",
@@ -3300,7 +3300,7 @@
       "dataCat": "lab",
       "href": "labs/croupier_world_builder.html",
       "absoluteHref": "http://127.0.0.1:8741/colony/overworld/labs/croupier_world_builder.html",
-      "title": "🌍 Croupier World Builder Master assembly matrix for the Sovereign Colony. Declaratively instantiates environments combining Planets, Katamari Towers, Cucco Swarms, and headless BSP sub-rooms seamlessly. Assembly Three.js Croupier",
+      "title": "🌍 Croupier World Builder Master assembly matrix for the Sovereign Colony. Declaratively instantiates environments combining Planets, Katamari Towers, Marabuntas, and headless BSP sub-rooms seamlessly. Assembly Three.js Croupier",
       "line": 1005,
       "axes": [
         "sovereign_governance",

@@ -25,7 +25,7 @@ páginas:
 | `AssetManager` | 5 | shmup · depredador · isométrico · arcade de cartas · voxel |
 | `AlisaBloomEngine` | 4 | katamari · bandada · shmup · tráfico |
 | `ScummInteractionPlugin` | 3 | aventura · gemelo digital · rosetta |
-| `GymRecorder` | 3 | banco de pruebas · dos versiones de Rue del Percebe |
+| `GymRecorder` | 3 | banco de pruebas · dos versiones de Corp Building |
 | `GLTFModelPool` | 3 | avatar · cine · reparto |
 
 **La misma pieza en géneros distintos.** Eso no se puede fingir con capturas, y
@@ -35,7 +35,7 @@ es exactamente la afirmación que un motor tiene que sostener.
 
 ### 1. El gancho — cinco segundos, sin leer nada
 
-Una sola cosa, jugable al instante. `cucco_swarm` (bullet-heaven con oleadas: se
+Una sola cosa, jugable al instante. `marabunta` (bullet-heaven con oleadas: se
 entiende sin instrucciones) o la `webgpu_anomalia` (WebGPU + TSL a ~52 fps, y se
 explica sola en pantalla).
 
@@ -71,7 +71,7 @@ de piezas escrita a mano se separaría del código en dos semanas.
 |---|---|
 | tablero | 6 juegos 3D + reglas verificables |
 | cartas | 10 juegos, 5 mesas 3D |
-| bullet-heaven | `cucco_swarm` — jugable |
+| bullet-heaven | `marabunta` — jugable |
 | shmup | `math_orbital_shmup` — jugable |
 | supervivencia | `asteroids_survival` |
 | simulación de tráfico | `peaton_m30`, `IDMSystem` |

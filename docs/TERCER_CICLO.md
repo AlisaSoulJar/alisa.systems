@@ -17,7 +17,7 @@ proyecto: sobrevivían en el backup, en `World\Web\Recovered\` y en `OldBackups\
 
 | monolito | tamaño | versión que había viva | |
 |---|---|---|---|
-| `rue_del_percebe_legacy` | 88.698 b | 7.760 b | **×11,4** |
+| `corp_building_legacy` | 88.698 b | 7.760 b | **×11,4** |
 | `corporate_building_legacy` | 136.521 b | 104.796 b | ×1,3 |
 | `aquarium_v3_legacy` | 63.264 b | 15.442 b | **×4,1** |
 | `asteroids_v3_legacy` | 42.284 b | — | solo existe el monolito |
@@ -27,7 +27,7 @@ son la referencia.
 
 ### El fallo que los tenía mudos
 
-`rue_del_percebe` se quedaba en «LOADING…» para siempre con un
+`corp_building` se quedaba en «LOADING…» para siempre con un
 `Cannot access 'totalFloors' before initialization`. La causa no estaba en la
 línea del error: pedía **three 0.160 con `examples/js/`**, y three borró esa
 carpeta en r148 — solo queda `examples/jsm/`. Los dos `<script>` daban 404,
@@ -86,7 +86,7 @@ Ese es el margen del tercer ciclo, y es medible.
 
 El motor trae **25 factories y 51 systems**. Casi todo el mueble está puesto.
 
-### 13, Rue del Percebe / Corporate Building
+### 13, Corp Building / Corporate Building
 Sección de un edificio, plantas de colores, puertas, ascensor con indicadores,
 azotea, linterna, registrar puertas, IA que caza por pisos.
 
@@ -136,7 +136,7 @@ al lado. El criterio de "listo" no es «se parece»: es que **la partida se pued
 volver a simular con la misma semilla y dé el mismo resultado**, que es lo que
 lo convierte en benchmark y no solo en demo.
 
-Orden por cercanía: **Aquarium → Asteroids → Rue del Percebe → Corporate**.
+Orden por cercanía: **Aquarium → Asteroids → Corp Building → Corporate**.
 
 ### Fase B — el salto (lo que ni los monolitos tenían)
 1. **Bloom sobre los emisivos.** El mayor cambio de aspecto por el menor

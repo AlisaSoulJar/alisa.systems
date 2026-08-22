@@ -211,7 +211,7 @@ export function crearAtmosfera(THREE, escena, nombre, opts = {}) {
 
     /**
      * El halo del horizonte: un anillo tumbado que brilla al fondo. Es lo que en el
-     * cucco cierra la escena — sin él, el suelo se pierde en la niebla y la mesa
+     * marabunta cierra la escena — sin él, el suelo se pierde en la niebla y la mesa
      * parece infinita en vez de un sitio con bordes.
      */
     const halo = new THREE.Mesh(

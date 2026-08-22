@@ -36,7 +36,7 @@ const NOMBRES_OBS = [
 ];
 
 export class AsteroidsEnv extends GymEnv {
-    static id = 'alisa/Asteroids-v0';
+    static id = 'alisa/Pedrisco-v0';
     static observationSpace = {
         shape: [NOMBRES_OBS.length],
         names: NOMBRES_OBS,

@@ -11,12 +11,12 @@ import { AssetResolver } from '../AssetResolver.js';
  *   - Shadow setup and material preparation
  *   - Batch preloading from manifest
  *
- * Replaces inline loader code in: Cucco, Aquarium, Raccoon
+ * Replaces inline loader code in: Marabunta, Aquarium, Raccoon
  *
  * Usage:
  *   const pool = new GLTFModelPool();
- *   await pool.load('cucco', '../props/ready/Chicken.glb', 1.5);
- *   const clone = pool.get('cucco'); // normalized, centered clone
+ *   await pool.load('marabunta', '../props/ready/Chicken.glb', 1.5);
+ *   const clone = pool.get('marabunta'); // normalized, centered clone
  *   scene.add(clone);
  */
 export class GLTFModelPool {

@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>ALISA LAB — 13 Rue del Percebe (entorno LLM-nativo)</title>
+<title>ALISA LAB — 13 Corp Building (entorno LLM-nativo)</title>
 <style>
   body{margin:0;background:#070a11;color:#cfe3f5;font-family:ui-monospace,monospace;padding:22px 28px 60px}
   h1{margin:0 0 3px;font-size:19px;color:#7fd0ff;letter-spacing:1px}
@@ -20,11 +20,11 @@
 </script>
 </head>
 <body>
-<h1>▓ 13 RUE DEL PERCEBE · deducción bajo incertidumbre</h1>
+<h1>▓ 13 CORP BUILDING · deducción bajo incertidumbre</h1>
 <div class="sub">Monolito de abr-2026 (133 KB) reconstruido en <b>ECS</b> · acciones en <b>verbos</b> · el entorno donde un <b>LLM</b> compite de verdad.</div>
 <div id="out">buscando al mapache…</div>
 <script type="module">
-import { RueDelPercebeEnv } from '@alisa-engine/src/gym/envs/RueDelPercebeEnv.js';
+import { CorpBuildingEnv } from '@alisa-engine/src/gym/envs/CorpBuildingEnv.js';
 import { GymRecorder } from '@alisa-engine/src/gym/GymRecorder.js';
 
 const out = document.getElementById('out');
@@ -34,7 +34,7 @@ const kv = (k,v,c='v') => P(`  <span class="k">${k.padEnd(26)}</span><span class
 
 window.onload = () => {
   out.innerHTML = '';
-  const spec = RueDelPercebeEnv.spec();
+  const spec = CorpBuildingEnv.spec();
 
   S('1 · EL ENTORNO');
   kv('id', spec.id, 'hl');
@@ -43,7 +43,7 @@ window.onload = () => {
   kv('reconstruido en', 'ECS (entidades + HidingSpotComponent)', 'ok');
 
   S('2 · LO QUE VE UN AGENTE LLM (describe + affordances)');
-  const demo = new RueDelPercebeEnv(); demo.reset(7);
+  const demo = new CorpBuildingEnv(); demo.reset(7);
   demo.step({ verb: 'comprobar_puerta', index: 0 });
   demo.step({ verb: 'ir_a_planta', floor: 4 });
   demo.step({ verb: 'comprobar_puerta', index: 1 });
@@ -105,7 +105,7 @@ window.onload = () => {
   for (const [nombre, pol] of Object.entries(AGENTES)) {
     let hall = 0, comp = 0, punt = 0;
     for (let s = 0; s < 40; s++) {
-      const env = new RueDelPercebeEnv(); env.reset(s);
+      const env = new CorpBuildingEnv(); env.reset(s);
       for (let i = 0; i < 40 && !env.done; i++) env.step(pol(env));
       const sc = env.getScore();
       if (sc.metrics.encontrado) { hall++; comp += sc.metrics.comprobaciones; }
@@ -123,7 +123,7 @@ window.onload = () => {
 
   S('4 · UNA PARTIDA CON RECIBOS FIRMABLES');
   const rec = new GymRecorder({ envId: spec.id, seed: 3, actor: 'demo', agentType: 'fsm' });
-  const env = new RueDelPercebeEnv({ recorder: rec }); env.reset(3);
+  const env = new CorpBuildingEnv({ recorder: rec }); env.reset(3);
   for (let i = 0; i < 40 && !env.done; i++) {
     const act = deductivo(env);
     const r = env.step(act);

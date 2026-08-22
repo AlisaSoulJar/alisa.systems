@@ -10,18 +10,18 @@ import { GeometryBaker } from '../core/GeometryBaker.js';
 import { ProceduralLocomotion } from '../core/ProceduralLocomotion.js';
 
 /**
- * CuccoEnvironmentFactory — Visual layer for Cucco Swarm
+ * MarabuntaEnvironmentFactory — Visual layer for Marabunta
  * ======================================================
  * Powered by alisa-engine
  * 
- * Reads CuccoGameSystem.getState() and renders everything.
+ * Reads MarabuntaSystem.getState() and renders everything.
  * Pure visual — no game logic. The Factory pattern:
  *   init(scene)    → setup arena, player, pools
  *   update(dt)     → called by AlisaRenderCore each frame
  *   setCore(core)  → receive engine reference
  *   syncState(s)   → read game state, sync all visuals
  */
-export class CuccoEnvironmentFactory extends BaseEnvironmentFactory {
+export class MarabuntaEnvironmentFactory extends BaseEnvironmentFactory {
 
   constructor() {
     super(null, null);
@@ -64,7 +64,7 @@ export class CuccoEnvironmentFactory extends BaseEnvironmentFactory {
 
   _loadModels() {
     const assets = [
-      { key: 'cucco', path: '../props/ready/Chicken.glb', size: 1.5 },
+      { key: 'marabunta', path: '../props/ready/Chicken.glb', size: 1.5 },
       { key: 'mouse', path: '../props/models/Mouse.glb', size: 1.5 },
       { key: 'roach', path: '../props/models/Cockroach.glb', size: 1.5 },
       { key: 'pigeon', path: '../props/models/bird.glb', size: 1.5 },
@@ -372,7 +372,7 @@ export class CuccoEnvironmentFactory extends BaseEnvironmentFactory {
     this._ring.rotation.x = -Math.PI / 2; this._ring.position.y = 0.05;
     this.scene.add(this._ring);
 
-    // Lights - Clean, flat, "13 Rue del Percebe" comic style
+    // Lights - Clean, flat, "13 Corp Building" comic style
     this.applyLightingPreset({
         hemi: { skyColor: 0x888888, groundColor: 0x222222, intensity: 0.6 }
     });
@@ -451,7 +451,7 @@ export class CuccoEnvironmentFactory extends BaseEnvironmentFactory {
   _enemyGeo(type) {
     if (!this._eGeos) {
       this._eGeos = {
-        cucco: new THREE.BoxGeometry(.6, .6, .6),
+        marabunta: new THREE.BoxGeometry(.6, .6, .6),
         mouse: new THREE.ConeGeometry(.3, .6, 6),
         roach: new THREE.BoxGeometry(.7, .4, .9),
         pigeon: new THREE.OctahedronGeometry(.5),
@@ -459,7 +459,7 @@ export class CuccoEnvironmentFactory extends BaseEnvironmentFactory {
         boss: new THREE.DodecahedronGeometry(1.5),
       };
     }
-    return this._eGeos[type] || this._eGeos.cucco;
+    return this._eGeos[type] || this._eGeos.marabunta;
   }
 
   _getEntityVisualParams(type) {

@@ -735,7 +735,7 @@ posibles.</b></p>
 <ul class="perf">${perfilesHtml}</ul>
 <h2>De qué NO habla esta tabla</h2>
 <p class="sub">Mide los ${filas.length} juegos por turnos del arcade y <b>no mira los seis
-entornos nativos del gym</b> —Asteroids, Cucco Swarm, Raccoon Space, Cabinet Escape, Rue
+entornos nativos del gym</b> —Asteroids, Marabunta, Raccoon Space, Cabinet Escape, Rue
 del Percebe y Chopper Terrarium—, que son justamente los de <b>tiempo real y acción</b>,
 con física propia. Se dice aquí porque un instrumento que calla de qué no habla invita a
 leer sus silencios como ausencias: de esta tabla sola se concluiría que el motor no hace

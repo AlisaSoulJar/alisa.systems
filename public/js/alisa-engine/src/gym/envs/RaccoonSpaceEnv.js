@@ -17,7 +17,7 @@ import { RaccoonSpaceCore, VERBOS_ESPACIO } from '../../world/systems/RaccoonSpa
  * con ir rápido — hay que decidir a qué planeta ir primero con información
  * incompleta. Los demás entornos premian reflejos; este premia el plan.
  *
- * A diferencia de Cucco, aquí NO hacía falta `DeterministicScope`: el núcleo no
+ * A diferencia de Marabunta, aquí NO hacía falta `DeterministicScope`: el núcleo no
  * llama a `Math.random()` ni una vez. Toda su aleatoriedad sale de `mulberry32`
  * sembrado en `reset(semilla)`. Cuando el system está bien hecho, el enchufe del
  * gym es más pequeño — y esa es justo la señal de que está bien hecho.

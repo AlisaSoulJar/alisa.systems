@@ -18,7 +18,7 @@
 import { DeterministicScope } from '../world/core/DeterministicScope.js';
 
 export class GymEnv {
-    /** Identificador estable, estilo gym: 'alisa/Asteroids-v0' */
+    /** Identificador estable, estilo gym: 'alisa/Pedrisco-v0' */
     static id = 'alisa/Env-v0';
     /** { shape:[n], names:[...], low:[], high:[] } */
     static observationSpace = { shape: [0], names: [] };

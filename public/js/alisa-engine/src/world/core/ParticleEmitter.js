@@ -4,7 +4,7 @@ import * as THREE from 'three';
  * ParticleEmitter — Unified Particle System
  * ==========================================
  * Pooled buffer-geometry particle system with automatic lifecycle
- * management. Replaces inline particle code in Cucco (death/damage FX),
+ * management. Replaces inline particle code in Marabunta (death/damage FX),
  * Aquarium (plankton dust), and Raccoon (star fields).
  *
  * Supports two modes:

@@ -4,8 +4,8 @@
  *     node --import ./resolver_three.mjs prueba_entorno_recibo.mjs
  *
  * La casa tiene dos formas de juego. Los cuarenta del arcade son módulos de
- * reglas —`nuevaPartida`, `mover`, `estado`—. Los seis con física propia —Cucco
- * Swarm, Raccoon Space, Asteroids, Cabinet Escape, RueDelPercebe,
+ * reglas —`nuevaPartida`, `mover`, `estado`—. Los seis con física propia —Marabunta,
+ *  Raccoon Space, Asteroids, Cabinet Escape, CorpBuilding,
  * ChopperAquarium— son clases con `reset(semilla)` y `step(verbo)`: son los
  * bonitos, con GLB, animación y luces.
  *

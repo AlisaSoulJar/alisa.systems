@@ -11,7 +11,7 @@ export class ProceduralLocomotion {
         const seed = hash * 12.345; 
 
         switch(pattern) {
-            case 'hop': // Birds, Frogs, Cuccos
+            case 'hop': // Birds, Frogs, Marabuntas
                 // Fast rectified sine wave for hopping when moving
                 const hopSpeed = 15;
                 const hopHeight = scale * 0.2;

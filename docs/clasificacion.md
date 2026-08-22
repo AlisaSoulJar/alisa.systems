@@ -1,6 +1,6 @@
 # Clasificación
 
-Generada por `tabla.mjs` el 2026-08-21.
+Generada por `tabla.mjs` el 2026-08-22.
 15 semillas por juego, tope 200 decisiones.
 
 **0,00** = tan bueno como elegir siempre la primera opción legal.
@@ -18,18 +18,18 @@ hay un juego mandando. Es por lo que los bancos de Atari publican mediana.
 
 | participante | mediana | media | ± | forzadas | tokens | recibos verificados |
 |---|---|---|---|---|---|---|
-| primera (suelo) | **0.00** | 0.00 | ±0.07 | 0/0 | 0.0k | 4080/4080 |
-| azar | **0.04** | 0.33 | ±0.11 | 0/0 | 0.0k | 4080/4080 |
-| casa (techo blando) | **1.00** | 1.00 | ±0.07 | 0/0 | 0.0k | 4080/4080 |
+| primera (suelo) | **0.00** | 0.00 | ±0.04 | 0/0 | 0.0k | 4080/4080 |
+| azar | **0.04** | 0.27 | ±0.09 | 0/0 | 0.0k | 4080/4080 |
+| casa (techo blando) | **1.00** | 1.00 | ±0.03 | 0/0 | 0.0k | 4080/4080 |
 
-Juegos que puntúan: ajedrez, go, reversi, damas, xiangqi, mancala, snake, fagocito, peaton, blackjack, poker, brisca, tute, hearts, spades, gofish, unit, entropy, flota, defensa, sigilo, frentes, relevo, cabina, rebano, pradera, nave, yokai, remigio, generala, oca, canadiense, domino, alisapolis.
+Juegos que puntúan: ajedrez, go, reversi, damas, xiangqi, mancala, snake, fagocito, peaton, blackjack, poker, brisca, tute, hearts, spades, gofish, unit, entropy, flota, defensa, sigilo, frentes, relevo, cabina, rebano, pradera, nave, marea, remigio, generala, oca, canadiense, domino, alisapolis.
 
 Fuera de la media, y por qué:
 
 - **guerra** — la casa no supera al suelo: la escala se invertiría
 - **sokoban** — el tope de 200 decisiones corta la partida (sólo termina el 13% de las de referencia)
 - **cripta** — el tope de 200 decisiones corta la partida (sólo termina el 0% de las de referencia)
-- **marea** — el tope de 200 decisiones corta la partida (sólo termina el 25% de las de referencia)
+- **yokai** — la casa no supera al suelo: la escala se invertiría
 - **parchis** — la casa no supera al suelo: la escala se invertiría
 - **chinchon** — el hueco (1.2) no supera al ruido de la medida (±1.9)
 

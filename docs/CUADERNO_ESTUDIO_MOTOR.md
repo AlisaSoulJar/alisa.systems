@@ -56,7 +56,7 @@ update(dt)                     // tick del FlickerSystem
 
 ## 1.bis ⭐⭐ EL CICLO DE VIDA REAL (lo mejor que ha salido del estudio)
 
-Las factories "buenas" (Aquarium, InteractionLab, Cucco) **ya comparten un idioma**.
+Las factories "buenas" (Aquarium, InteractionLab, Marabunta) **ya comparten un idioma**.
 No hay que inventar un contrato — hay que **nombrar el que ya existe**:
 
 ```
@@ -80,7 +80,7 @@ No hay que inventar un contrato — hay que **nombrar el que ya existe**:
    Las factories no se enteran. **No hay que rediseñar nada: hay que respetarlo.**
 
 Ejemplos verificados:
-- `CuccoEnvironmentFactory.syncState(state, dt)` — enjambre bullet-heaven
+- `MarabuntaEnvironmentFactory.syncState(state, dt)` — enjambre bullet-heaven
 - `AquariumEnvironmentFactory.syncToEngine(engineState, dt)` + `_syncEcosystemGroup(agents, …)`
 - `InteractionLabFactory.syncAgents(allAgents, dt, t)` — cadena alimentaria
 
@@ -100,8 +100,8 @@ Buscando el ciclo de vida encontré que **dos factories ya implementan la interf
 `reset(seed)`, la observación como vector y la recompensa.
 
 **Inventario de entornos del benchmark, actualizado:**
-1. ✅ `alisa/Asteroids-v0` — hecho
-2. ✅ `alisa/RueDelPercebe-v0` — hecho (3 puertas)
+1. ✅ `alisa/Pedrisco-v0` — hecho
+2. ✅ `alisa/CorpBuilding-v0` — hecho (3 puertas)
 3. 🔜 `alisa/Platformer-v0` — *hooks ya escritos*
 4. 🔜 `alisa/Frogger-v0` — *hooks ya escritos*
 5. 🔜 `alisa/SearchRescue-v0` — desde `ChopperFlightFactory`
@@ -145,7 +145,7 @@ no rompe nada). Probado en 3 → el banco pasó de 1 a 4.
 
 ### ✅ ESTUDIADAS A FONDO
 
-#### `ProceduralBuildingFactory` (869 líneas) ⭐ la del monolito Rue del Percebe
+#### `ProceduralBuildingFactory` (869 líneas) ⭐ la del monolito Corp Building
 - **ctor:** `(scene, AssetManager)`
 - **entrada:** `build(10 args posicionales)` → **añadido `buildAll({floors, doorsPerFloor, lightScale, characters})`**
 - **mundo:** `FL_H=5.0`, `CORRIDOR_W=28`, `CORRIDOR_DEPTH=5.0`, `BUILDING_DEPTH=30.0`,
@@ -185,7 +185,7 @@ no rompe nada). Probado en 3 → el banco pasó de 1 a 4.
 - **⭐ hallazgo:** trae **el mismo juego del mapache**: `placeRaccoon(floorIdx)`,
   `onFloorChecked({floorIdx, success})`, `onStartInspecting`, `resetFloorVisuals`, `getFloorHitMeshes`
   → **es OTRA variante del escondite por plantas**, vista como pecera y con helicóptero.
-  Encaja con `RueDelPercebeEnv` sin tocar la lógica.
+  Encaja con `CorpBuildingEnv` sin tocar la lógica.
 - **sync:** `syncToEngine(engineState, dt)` + `_syncEcosystemGroup(agents, type, modelName, scale, dt)`
   → patrón **estado→visual** (la factory NO simula, solo pinta lo que le pasa el engine) ⭐
 - **estado:** 🟡 implementa el contrato; solo faltaba pasarle una cámara
@@ -207,8 +207,8 @@ no rompe nada). Probado en 3 → el banco pasó de 1 a 4.
   · `removeCheese(id)` · `_updateStaminaBar(bar, stamina, max, exhausted)` · partículas
 - **estado:** 🟡 implementa el contrato; solo faltaba pasarle cámara (mismo caso que Aquarium)
 
-#### `CuccoEnvironmentFactory` (763) — el dialecto DIFERIDO (referencia del patrón)
-- **ctor:** `constructor()` **sin argumentos** → por eso los labs hacen `new CuccoEnvironmentFactory()`
+#### `MarabuntaEnvironmentFactory` (763) — el dialecto DIFERIDO (referencia del patrón)
+- **ctor:** `constructor()` **sin argumentos** → por eso los labs hacen `new MarabuntaEnvironmentFactory()`
 - **inyección:** `setCore(core)` + `init(scene)` — con **buffer `_pendingAdds`**: acumula objetos
   hasta que llega la escena. *Patrón limpio para factories creadas antes que el render.*
 - **entrada:** `_setupArena()` · `_setupPlayer()` · `_setupProceduralWeapons()`
@@ -272,7 +272,7 @@ no rompe nada). Probado en 3 → el banco pasó de 1 a 4.
 | `ArcadeRoomManager` (384) | `(scene, renderCore)` | `loadCabinets` · `_detectScreenMesh` · `_createSyntheticScreen` · `getCabinetFromIntersect` · **`serializeState`/`applyNetworkState`** · `_initMMOSync` | ⭐⭐ **SINCRONIZACIÓN DE RED / MULTIJUGADOR** |
 
 ### 🔜 PENDIENTES (ya ninguna factory)
-3. `CuccoEnvironmentFactory` (763) — `setCore`+`init`, enjambre
+3. `MarabuntaEnvironmentFactory` (763) — `setCore`+`init`, enjambre
 4. `InteractionLabFactory` (493) — food chain, tiene `buildAll`
 5. `EnvironmentFactory` (387) — genérica, planetas/estrellas
 6. `VoxelGlitchFactory` (381) · `LocomotionEnvironmentFactory` (370) · `TrafficEnvironmentFactory` (330)
@@ -287,7 +287,7 @@ Estudiadas **todas**. No son 25 cosas iguales: son **cinco familias distintas**.
 
 | Familia | Cuáles | Qué son |
 |---|---|---|
-| 🏗️ **Constructoras de escena** | ProceduralBuilding, Carver, Aquarium, InteractionLab, Cucco, Biolab, Cabinet, ColonialControlRoom, Dojo, Compiz, Chopper | montan un mundo entero. Necesitan `buildAll` adaptador |
+| 🏗️ **Constructoras de escena** | ProceduralBuilding, Carver, Aquarium, InteractionLab, Marabunta, Biolab, Cabinet, ColonialControlRoom, Dojo, Compiz, Chopper | montan un mundo entero. Necesitan `buildAll` adaptador |
 | 🎨 **Bibliotecas de piezas** | **EnvironmentFactory**, **ProceduralPropsFactory** (estática), NeonSign | catálogos de `createXxx`. **NO necesitan `buildAll`** — no construyen escenas |
 | 📽️ **Espejos estado→visual** | **AsteroidsFactory**, VoxelGlitch, Treadmill, Archetype | solo dibujan lo que el sistema les pasa (`syncGrid`, `syncState`) |
 | 🎮 **Con interfaz de agente** | **Locomotion**, **Traffic** | ya traen `applyAction` + `getState` |
@@ -370,7 +370,7 @@ Ninguno se veía leyendo el código; salieron al ejecutarlo.
 | `engine`/`renderCore` | **BaseEnvironmentFactory (lo documentado)**, ArcadeDojo, ArcadeRoomManager |
 | `AssetManager` | ProceduralBuilding |
 | `carverGrid` (DATOS) | Carver |
-| — sin argumentos — | Raccoon, Cucco |
+| — sin argumentos — | Raccoon, Marabunta |
 
 La clase base declara `(scene, engine)` y **casi ninguna subclase lo cumple**.
 Para el motor público esto hay que unificar: es lo primero con lo que choca

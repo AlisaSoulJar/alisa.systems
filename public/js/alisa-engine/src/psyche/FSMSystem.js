@@ -3,7 +3,7 @@
  * ═══════════════════════════════════════════════════════════════
  * OpenCore state machine with timers, state history, and
  * entry/exit lifecycle hooks. Used by PhantomFSM, ArachneBrain,
- * CuccoGame, CorporateSeeker, RaccoonCity, StealthSight, etc.
+ * MarabuntaGame, CorporateSeeker, RaccoonCity, StealthSight, etc.
  * ═══════════════════════════════════════════════════════════════
  */
 

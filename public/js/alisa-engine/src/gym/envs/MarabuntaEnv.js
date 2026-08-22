@@ -3,14 +3,14 @@ import { GymEnv } from '../GymEnv.js';
 // (`config.waves || []`), así que envolviéndola no aparece un solo enemigo — 400
 // ticks con la arena desierta y la falsa sensación de que el determinismo
 // fallaba, cuando lo que pasaba es que no había nada que diferenciar.
-// El juego concreto es `CuccoGameSystem`, que la extiende y trae las 12 oleadas
+// El juego concreto es `MarabuntaSystem`, que la extiende y trae las 12 oleadas
 // con jefes en la 8 y la 12. Es también el que usa la página del lab, así que
 // agente y persona juegan exactamente la misma partida.
-import { CuccoGameSystem } from '../../world/systems/CuccoGameSystem.js';
+import { MarabuntaSystem } from '../../world/systems/MarabuntaSystem.js';
 import { DeterministicScope } from '../../world/core/DeterministicScope.js';
 
 /**
- * CuccoSwarmEnv — el bullet heaven, con jefes
+ * MarabuntaEnv — el bullet heaven, con jefes
  * ═══════════════════════════════════════════════════════════════════════════
  * `BulletHeavenEngine` ya era headless y ya devolvía `{state, reward, done}`.
  * No le faltaba motor: le faltaban la SEMILLA y las puertas de lenguaje. Esto
@@ -20,7 +20,7 @@ import { DeterministicScope } from '../../world/core/DeterministicScope.js';
  * 🧠 lenguaje : `describe()` cuenta la arena en prosa; `affordances()` da los
  *               verbos legales de ESTE instante (las mejoras solo aparecen
  *               cuando hay una pendiente)
- * 🕹️ humana   : `croupier_cucco_swarm.html` — WASD, Q barrido, ESPACIO golpe,
+ * 🕹️ humana   : `croupier_marabunta.html` — WASD, Q barrido, ESPACIO golpe,
  *               SHIFT esquiva. Los mismos catorce verbos.
  *
  * POR QUÉ IMPORTA ESTE ENTORNO
@@ -49,8 +49,8 @@ const VERBOS = [
     'barrido', 'golpe', 'esquiva',
 ];
 
-export class CuccoSwarmEnv extends GymEnv {
-    static id = 'alisa/CuccoSwarm-v0';
+export class MarabuntaEnv extends GymEnv {
+    static id = 'alisa/Marabunta-v0';
 
     /**
      * La observación es LA DEL MOTOR, no una mía.
@@ -74,7 +74,7 @@ export class CuccoSwarmEnv extends GymEnv {
     static actionSpace = { type: 'discrete', n: VERBOS.length, names: VERBOS };
 
     static meta = {
-        title: 'Enjambre de Cuccos',
+        title: 'Enjambre de Marabuntas',
         summary: 'Sobrevive a oleadas crecientes y a los jefes. Moverse te salva pero no ' +
                  'puntúa; quedarte quieto dispara más pero te rodean. Las mejoras obligan ' +
                  'a decidir con la partida en pausa.',
@@ -84,13 +84,13 @@ export class CuccoSwarmEnv extends GymEnv {
 
     constructor(opts = {}) {
         super(opts);
-        this.sys = new CuccoGameSystem();
+        this.sys = new MarabuntaSystem();
         this.seed = 0;
     }
 
     reset(seed = 0) {
         this.seed = seed >>> 0;
-        this.sys = new CuccoGameSystem();
+        this.sys = new MarabuntaSystem();
         DeterministicScope.run(this.seed, () => this.sys.reset());
         this.steps = 0;
         this.done = false;
@@ -193,4 +193,4 @@ export class CuccoSwarmEnv extends GymEnv {
     }
 }
 
-export default CuccoSwarmEnv;
+export default MarabuntaEnv;

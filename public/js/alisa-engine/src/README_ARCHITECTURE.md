@@ -8,8 +8,8 @@ The ALISA Engine follows a strict **Composition over Inheritance** paradigm. We 
 > "Search for what is repeating and abstract it into a deterministic, parametrizable module."
 
 ### What does this mean?
-- **Bad:** `class CuccoSystem extends MassiveEnemySystem extends BaseGameSystem`
-- **Good:** `CuccoSystem` instantiates `new SteeringSystem()` for physics, and `new InstancedRenderPool()` for GPU rendering.
+- **Bad:** `class MarabuntaSystem extends MassiveEnemySystem extends BaseGameSystem`
+- **Good:** `MarabuntaSystem` instantiates `new SteeringSystem()` for physics, and `new InstancedRenderPool()` for GPU rendering.
 
 ## 2. Separation of Concerns (OpenCore Pattern)
 - **Soma/Factories (`src/world/factories/`):** Exclusively handle THREE.js rendering, materials, lights, and meshes. No game logic allowed.

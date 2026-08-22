@@ -56,8 +56,8 @@ export function verificar(reglas, partida, opts = {}) {
      *
      * Los cuarenta del arcade son **módulos de reglas**: `nuevaPartida`, `mover`,
      * `estado`. Pero el catálogo del gym tiene además seis entornos con **física
-     * propia** —Cucco Swarm, Raccoon Space, Asteroids, Cabinet Escape,
-     * RueDelPercebe, ChopperAquarium—, que son clases con `reset(semilla)` y
+     * propia** —Marabunta, Raccoon Space, Asteroids, Cabinet Escape,
+     * CorpBuilding, ChopperAquarium—, que son clases con `reset(semilla)` y
      * `step(verbo)`. Son los juegos bonitos de la casa: GLB, animación, luces.
      *
      * Y estaban fuera de la tabla por una línea sin comentar en `tabla.mjs`

@@ -31,9 +31,9 @@ atrás, decisión simultánea y recompensa compartida.
 **Y seis entornos nativos que la matriz NO mira**, que es el hallazgo incómodo de
 este censo:
 
-- **Asteroids, Cucco Swarm, Raccoon Space** — tiempo real, acción, física propia
+- **Asteroids, Marabunta, Raccoon Space** — tiempo real, acción, física propia
 - **Cabinet Escape** — sala de escape / aventura de objetos
-- **Rue del Percebe** — espacio de acciones semántico, pensado para agentes de lenguaje
+- **Corp Building** — espacio de acciones semántico, pensado para agentes de lenguaje
 - **Chopper Terrarium** — simulación procedural, el mundo entero sale de la semilla
 
 > ⚠️ **La matriz de géneros mide 26 juegos e ignora estos 6.** Si me hubiera

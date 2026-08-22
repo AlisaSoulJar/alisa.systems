@@ -93,7 +93,7 @@ vacía con un cartel bonito encima.
 ## Estado de las abiertas a mano
 
 ✅ **En el escaparate** (10): mesa, chess, go, reversi, xiangqi, blackjack,
-`webgpu_anomalia` (WebGPU + TSL, ~52 fps), `cucco_swarm` (bullet-heaven jugable),
+`webgpu_anomalia` (WebGPU + TSL, ~52 fps), `marabunta` (bullet-heaven jugable),
 `math_orbital_shmup` (shmup de neón), `math_boids_flock` (400 boids).
 
 ⚠️ **Vistas y descartadas por ahora**

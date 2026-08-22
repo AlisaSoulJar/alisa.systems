@@ -4,10 +4,10 @@ import { HidingSpotComponent } from '../../world/systems/HidingSpotSystem.js';
 import { CorporateSeekerSystem } from '../../world/systems/CorporateSeekerSystem.js';
 
 /**
- * RueDelPercebeEnv — EL ENTORNO NATIVO PARA LLM
+ * CorpBuildingEnv — EL ENTORNO NATIVO PARA LLM
  * ═══════════════════════════════════════════════════════════════
  * Reconstrucción ECS del monolito `croupier_corporate_building.html` (abr-2026,
- * 133 KB, "13 Rue del Percebe"): un edificio de N plantas donde se esconde un
+ * 133 KB, "13 Corp Building"): un edificio de N plantas donde se esconde un
  * mapache y tú lo buscas puerta por puerta con pistas FRÍO/TIBIO/CALIENTE.
  *
  * POR QUÉ IMPORTA: no mide reflejos, mide **deducción bajo incertidumbre con
@@ -23,8 +23,8 @@ import { CorporateSeekerSystem } from '../../world/systems/CorporateSeekerSystem
  * ECS: cada puerta/escondite es una ENTIDAD con `HidingSpotComponent`
  * (el componente original del motor) + `TransformComponent`. Nada de monolito.
  */
-export class RueDelPercebeEnv extends GymEnv {
-    static id = 'alisa/RueDelPercebe-v0';
+export class CorpBuildingEnv extends GymEnv {
+    static id = 'alisa/CorpBuilding-v0';
     static observationSpace = {
         shape: [26],
         names: ['planta_actual', 'intentos_restantes', 'ultimo_resultado',
@@ -38,7 +38,7 @@ export class RueDelPercebeEnv extends GymEnv {
         note: 'Espacio de acciones SEMÁNTICO — pensado para agentes de lenguaje.',
     };
     static meta = {
-        title: '13 Rue del Percebe',
+        title: '13 Corp Building',
         summary: 'Un mapache se esconde en el edificio. Encuéntralo con el menor número de ' +
                  'comprobaciones. Cada intento devuelve FRÍO/TIBIO/CALIENTE según lo cerca que estés.',
         horizon: 40, tags: ['deducción', 'búsqueda', 'incertidumbre', 'llm-nativo', 'verbos'],

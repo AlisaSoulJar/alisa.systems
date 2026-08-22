@@ -308,7 +308,7 @@ let tapetePuesto = false;
  * Diez de los juegos de esta mesa tienen la misma cara —damero azul, cubitos marrones—
  * porque el pintor dibuja sin saber a qué se juega. Eso es la tesis y también su techo.
  * `atmosfera.js` levanta el techo sin tocar la tesis: pone material y aire alrededor,
- * y sigue sin saber a qué se juega. Ver su nota de cabecera y la del cucco swarm, que
+ * y sigue sin saber a qué se juega. Ver su nota de cabecera y la del marabunta, que
  * es de donde salió el listón.
  *
  * Sólo si la rejilla lo declara (`ambiente: 'hierba'`), y sólo de dueña: de invitada,

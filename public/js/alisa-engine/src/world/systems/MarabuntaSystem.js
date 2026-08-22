@@ -32,10 +32,10 @@ const WAVE_TABLE = [
   { wave: 6,  rate: 14, types: ['mouse', 'pigeon', 'swarm'],       boss: false },
   { wave: 7,  rate: 18, types: ['pigeon', 'rat', 'swarm'],         boss: false },
   { wave: 8,  rate: 22, types: ['rat', 'swarm'],                   boss: true  },
-  { wave: 9,  rate: 28, types: ['rat', 'cucco'],                   boss: false },
-  { wave: 10, rate: 35, types: ['rat', 'cucco', 'pigeon'],         boss: false },
-  { wave: 11, rate: 45, types: ['cucco', 'swarm'],                 boss: false },
-  { wave: 12, rate: 60, types: ['cucco'],                          boss: true  },
+  { wave: 9,  rate: 28, types: ['rat', 'marabunta'],                   boss: false },
+  { wave: 10, rate: 35, types: ['rat', 'marabunta', 'pigeon'],         boss: false },
+  { wave: 11, rate: 45, types: ['marabunta', 'swarm'],                 boss: false },
+  { wave: 12, rate: 60, types: ['marabunta'],                          boss: true  },
 ];
 
 // Pests! They don't die — they get SCARED and run away 😱
@@ -44,14 +44,14 @@ const ENEMY_TYPES = {
   mouse:  { hp: 8,   speed: 5.0, dmg: 4,   xp: 2,  size: 1.0, emoji: '🐭' },
   pigeon: { hp: 15,  speed: 3.5, dmg: 8,   xp: 5,  size: 1.4, emoji: '🐦' },
   rat:    { hp: 35,  speed: 2.0, dmg: 12,  xp: 8,  size: 1.8, emoji: '🐀' },
-  cucco:  { hp: 60,  speed: 4.5, dmg: 15,  xp: 15, size: 2.2, emoji: '🐔' },
+  marabunta:  { hp: 60,  speed: 4.5, dmg: 15,  xp: 15, size: 2.2, emoji: '🐔' },
   swarm:  { hp: 2,   speed: 4.0, dmg: 1,   xp: 1,  size: 0.5, emoji: '🐜' },
   boss:   { hp: 400, speed: 1.5, dmg: 25,  xp: 100, size: 3.5, emoji: '👑' },
 };
 
 const XP_PER_LEVEL = [0,10,25,50,80,120,170,230,300,400,520,660,820,1000];
 
-export class CuccoGameSystem extends BulletHeavenEngine {
+export class MarabuntaSystem extends BulletHeavenEngine {
 
   constructor() {
     super({
@@ -122,7 +122,7 @@ export class CuccoGameSystem extends BulletHeavenEngine {
 
   _updateBossLogic(dt) {
     for (const e of this.enemies) {
-      if (e.type !== 'boss' && e.type !== 'cucco') continue;
+      if (e.type !== 'boss' && e.type !== 'marabunta') continue;
       
       // If shield is UP, move slowly
       if (e.guard) {
@@ -217,7 +217,7 @@ export class CuccoGameSystem extends BulletHeavenEngine {
 
   _damageEnemy(e, dmg) {
     // Initialize guard for bosses if not present
-    if (e.type === 'boss' || e.type === 'cucco') {
+    if (e.type === 'boss' || e.type === 'marabunta') {
       if (e.guard === undefined) e.guard = true;
     }
     

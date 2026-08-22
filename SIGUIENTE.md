@@ -125,16 +125,16 @@ sentaron** y saldría ordenada, creíble y falsa.
 
 ### 4. ✅ LOS SISTEMAS SIN SEMBRAR: DE 28 A 2, Y EL TRINQUETE TOCÓ SUELO (16-08)
 
-Quedan dos, y **no hay que sembrarlos**: `AsteroidsSystem` y `CuccoGameSystem`. Sus
+Quedan dos, y **no hay que sembrarlos**: `AsteroidsSystem` y `MarabuntaSystem`. Sus
 entornos del gym ya los hacen reproducibles sustituyendo el azar **global** durante el
-episodio (`AsteroidsEnv._withSeed`, `CuccoSwarmEnv` + `DeterministicScope`), y el
+episodio (`AsteroidsEnv._withSeed`, `MarabuntaEnv` + `DeterministicScope`), y el
 sistema se construye FUERA de ese tramo — así que cachear la fuente en el constructor
 capturaría la versión sin sembrar y rompería el determinismo en silencio.
 
 Por eso la regla del trinquete **se invierte** aquí, y está escrito junto al número:
 
     si SUBE de 2, alguien metió un sistema nuevo con azar incontrolado
-    si BAJA de 2, alguien sembró Asteroids o Cucco y rompió su determinismo
+    si BAJA de 2, alguien sembró Asteroids o Marabunta y rompió su determinismo
 
 Dos gestos que hubo que repetir y conviene recordar: al sembrar un sistema que
 CONSTRUYE otro dentro (TrafficSurvival → IDM, PygmalionTopology → Spark) hay que

@@ -97,7 +97,7 @@ final exacto.
 | `FlickerSystem` | animación de materiales (el parpadeo de la linterna) | **1** |
 
 Los cuatro monolitos hacen esto **a mano y por separado**: 4 texturas de canvas
-en Rue del Percebe, 8 en Corporate. Centralizarlo no es solo limpieza — es lo
+en Corp Building, 8 en Corporate. Centralizarlo no es solo limpieza — es lo
 que permite que un cambio de estilo se aplique a todos los juegos a la vez.
 
 ### Simulación — los motores headless que ya están escritos
@@ -160,8 +160,8 @@ sin nombre: pedía `/api/worlds` y, si no había, se generaba los dominios solo.
 | Chopper Aquarium | `AquariumEnvironmentFactory` | `ChopperAquariumEngine` | 2 runners | ✅ modo Human |
 | Asteroids v3 | `AsteroidsFactory` | `AsteroidsSystem` | `AsteroidsEnv` | ❌ lo pilota `shipAI` |
 | Cabinet Escape | `CabinetEnvironmentFactory` | `CabinetEscapeSystem` | `CabinetEscapeEnv` | ✅ |
-| Rue del Percebe | `ProceduralBuildingFactory` | `CorporateSeekerSystem` | `RueDelPercebeEnv` | ✅ |
-| Cucco Swarm | `CuccoEnvironmentFactory` | `CuccoGameSystem` | ✅ `CuccoSwarmEnv` | ✅ |
+| Corp Building | `ProceduralBuildingFactory` | `CorporateSeekerSystem` | `CorpBuildingEnv` | ✅ |
+| Marabunta | `MarabuntaEnvironmentFactory` | `MarabuntaSystem` | ✅ `MarabuntaEnv` | ✅ |
 | Raccoon Space | `RaccoonEnvironmentFactory` | `RaccoonSpaceCore` | ✅ `RaccoonSpaceEnv` | ✅ |
 | Raccoon city / planet | `RaccoonEnvironmentFactory` | ⚠️ no headless | ❌ | ✅ |
 
@@ -174,7 +174,7 @@ arquitectura: dos Env por escribir y una entrada humana en el Asteroids.
 
 **Fase A — completar la forma** (no hay que inventar nada)
 1. Traer `ObservationRewardResolver` del fork viejo al motor canónico.
-2. Escribir los dos `Env` que faltan: Cucco Swarm y Raccoon.
+2. Escribir los dos `Env` que faltan: Marabunta y Raccoon.
 3. Dar entrada humana al Asteroids — hoy solo lo juega su IA.
 4. Encender las cuatro piezas de aspecto en los juegos que ya existen.
 
@@ -184,7 +184,7 @@ y audio, que se nota más ausente que el bloom. Graduable: si la máquina da, se
 enciende.
 
 > ⚠️ **Corrección — el bloom NO hay que escribirlo.** `soma/plugins/AlisaBloomEngine.js`
-> existe y ya lo usan cinco labs (cucco, katamari, boids, peaton_m30, orbital_shmup).
+> existe y ya lo usan cinco labs (marabunta, katamari, boids, peaton_m30, orbital_shmup).
 > Lo que falta no es la pieza: es aplicarla a los juegos que aún no la encienden.
 >
 > Van tres veces que doy por ausente algo que estaba escrito — instancing,
@@ -245,7 +245,7 @@ El barrido encontró duplicados por todas partes. Esto es lo canónico:
 | familia | canónico | por qué |
 |---|---|---|
 | **el motor** | `public/js/alisa-engine/src` (183 js) | tiene `gym/` y `DeterministicScope`; el hermano `Q:\alisa_project\alisa-engine` (171 js) se paró el 4 de julio |
-| Rue del Percebe | `legacy/corporate_building_legacy.html` (136 KB) | el mayor y el más completo |
+| Corp Building | `legacy/corporate_building_legacy.html` (136 KB) | el mayor y el más completo |
 | Chopper Aquarium | `legacy/aquarium_v3_legacy.html` (63 KB) | 5 copias idénticas repartidas; da igual cuál |
 | Asteroids | `legacy/asteroids_v3_legacy.html` (42 KB) | 3 copias idénticas |
 | Sala del Huevo | `rooms/room_tenshi_no_tamago.html` | las 7 cabinas ya apuntan a sitios reales |

@@ -65,12 +65,12 @@ La joya. No es un loader, es una **fábrica de contenido con ADN**:
 - **Vida emergente:** `EcosystemSystem`, `FoodChainSystem`, `EnergySystem`, `PheromoneGrid`, `HidingSpotSystem`, `BoidsSystem`.
 - **Navegación/IA:** `NavMeshExtractionEngine`, `NavMeshAgentSystem`, `LinearNavAgentSystem`, `SteeringSystem`, `FSMSystem`, `PhantomFSMSystem`, `StealthSightSystem`, `CorporateSeekerSystem`.
 - **Vehículos/tráfico:** `IDMSystem`, `TrafficSystem`, `TrafficSurvivalSystem`, `NeuralDrivingSystem`, `ml_dqn_idm` (DQN), `OrbitalKinematicsSystem`.
-- **Arcade/combate:** `AsteroidsSystem/Engine`, `BulletHeavenEngine`, `CuccoGameSystem`, `TurretCombatSystem`, `SimonSaysSystem`, `RoboticArm`(IK).
+- **Arcade/combate:** `AsteroidsSystem/Engine`, `BulletHeavenEngine`, `MarabuntaSystem`, `TurretCombatSystem`, `SimonSaysSystem`, `RoboticArm`(IK).
 - **Espacio/escala:** `KatamariScaleSystem` (ley base-3, ya portada a Python), `BSPSystem`, `CarverSystem` (gen ciudad), `AABBSystem` (colisión), `SeededRNG`.
 - **Puentes colonia:** `ColonialMetabolismSystem`, `HubCartographerSystem`, `TelemetryBridge`, `ScummInteractionEngine`, `ScummOverworldEngine`.
 
 ### 2.6 Entornos — 37 `factories/`
-Cada uno monta una escena temática completa (luz+props+atmósfera): Aquarium, Biolab, Cabinet, Carver(city), Chopper, Compiz, Cucco, Dojo, Locomotion, Traffic, Treadmill, VoxelGlitch, Raccoon, ColonialControlRoom, **ProceduralBuilding**, ProceduralProps, Archetype, Katamari, Asteroids, ArcadeRoom/Table, NeonSign…
+Cada uno monta una escena temática completa (luz+props+atmósfera): Aquarium, Biolab, Cabinet, Carver(city), Chopper, Compiz, Marabunta, Dojo, Locomotion, Traffic, Treadmill, VoxelGlitch, Raccoon, ColonialControlRoom, **ProceduralBuilding**, ProceduralProps, Archetype, Katamari, Asteroids, ArcadeRoom/Table, NeonSign…
 
 ### 2.7 ECS — `OverworldECS`
 ECS JIT clásico (entity→components, query con caché, systems tick). **Componentes estándar:** `TransformComponent` (x,y,z = lógica) vs **`RenderProxyComponent`** (object3d = render) — *el seam render/lógica ya está en el ADN de la entidad*. + `VelocityComponent`, `P2PAssetStreamingComponent` (streaming JIT).
@@ -102,13 +102,13 @@ ECS JIT clásico (entity→components, query con caché, systems tick). **Compon
 - **`HeadlessGymWorker`** — episodios headless, matemática pura, N ticks → score/telemetría.
 - **`MMOClient.submitTelemetry`** — publica scores a un backend de benchmark (leaderboard).
 - **6 `tests/run_*_headless.js`** — runners headless (boids, asteroids, chopper, idm, phantom, treadmill).
-- **Entornos ya jugables como tareas RL/LLM:** Asteroids, Traffic/Driving, CabinetEscape, Chopper, Phantom(stealth), BulletHeaven, Cucco, FoodChain, RoboticArm(IK), TurretCombat, SimonSays.
+- **Entornos ya jugables como tareas RL/LLM:** Asteroids, Traffic/Driving, CabinetEscape, Chopper, Phantom(stealth), BulletHeaven, Marabunta, FoodChain, RoboticArm(IK), TurretCombat, SimonSays.
 - **Capa SCUMM** (`ScummInteractionEngine`) = espacio de acción **en verbos/lenguaje** → ideal para **agentes LLM** (no solo RL numérico): el LLM razona en verbos-afordancia, no en vectores.
 
 **Qué falta para producto (evaluación):**
 1. **Desacoplar la colonia:** hoy el core auto-registra `ColonialPassportPlugin` y varios sistemas llaman al Hub (`HubClient`, tokenomics, JobBoard, telemetry). Para un tercero → un modo "vanilla" sin dependencias de la colonia (flag `hubUrl:null` que salte el passport plugin).
 2. **Contrato Gym uniforme:** hoy cada engine implementa `getObservationVector/stepSimulation` a su manera. Estandarizar un `GymEnv` base (obs space, action space, reward) que todos hereden.
-3. **Adaptador Python:** un paquete `pip` fino que lance Playwright, cargue un env y exponga `gym.make("alisa/Asteroids-v0")` con `reset()/step()`. La mitad ya está (el bridge en `window`).
+3. **Adaptador Python:** un paquete `pip` fino que lance Playwright, cargue un env y exponga `gym.make("alisa/Pedrisco-v0")` con `reset()/step()`. La mitad ya está (el bridge en `window`).
 4. **Registro de envs + docs + leaderboard público.**
 
 **Veredicto:** el motor es un **llmgym latente muy fuerte** — ligero, corre en navegador, multi-entorno, con interfaz gym ya expuesta y una capa de acción SCUMM perfecta para LLMs. El trabajo de producto es de **empaquetado y desacople**, no de construir el gym desde cero. Encaja con la lane de ingresos [[autofreelance-render-lane]] y ALISA Labs.

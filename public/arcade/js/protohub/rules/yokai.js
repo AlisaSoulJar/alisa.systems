@@ -458,7 +458,32 @@ export const yokai = {
              * expulsado: se juzga TU decisión con lo que había, no el resultado
              * colectivo. Abstenerse no suma ni resta — es cobarde, no incorrecto.
              */
-            if (!a || a === 'nadie') continue;
+            /**
+             * ⚠️ ABSTENERSE NO ES GRATIS, Y LO ERA. TERCERA VEZ CON EL SILENCIO.
+             *
+             * Aquí ponía `continue`: no votar no sumaba ni restaba. Parecía justo
+             * —no te juzgo por lo que no hiciste— y convirtió al juego en
+             * inmedible. La política tonta elige la PRIMERA jugada legal, y la
+             * primera es `callar` en el debate y `voto:nadie` en la votación. O
+             * sea que jugaba a no hacer nada, y sacaba 130,0 contra los 133,8 de
+             * la casa. La tabla lo descartó con el motivo exacto: «la casa no
+             * supera al suelo».
+             *
+             * Y no es sólo un problema de medida: en este juego **el silencio es
+             * una jugada, y beneficia a los yokai**. Si nadie vota no sale nadie,
+             * y esa noche se llevan a otro. Ya lo aprendí con el debate —callar
+             * hacía ganar a los yokai 75 de 80— y lo dejé sin arreglar en el voto.
+             *
+             * Así que la abstención cuenta un TERCIO de lo que cuenta equivocarse,
+             * y con signo opuesto según a quién le convenga que no pase nada: al
+             * humano le resta, al yokai le suma. No es tan malo como votar mal
+             * —dudar es legítimo— pero deja de ser la jugada cómoda que gana sin
+             * jugar.
+             */
+            if (!a || a === 'nadie') {
+                p.aciertos[silla] += esYokai(p, silla) ? 1 / 3 : -1 / 3;
+                continue;
+            }
             // Un humano acierta votando a un yokai; un yokai acierta votando a un
             // humano —y se equivoca votando a su igual—. Escrito así y no con una
             // fórmula: la primera versión era un acertijo de tres negaciones.

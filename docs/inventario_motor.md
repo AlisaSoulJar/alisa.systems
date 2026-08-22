@@ -23,7 +23,7 @@ Reparto de lo no enseñado: `systems` 28 · `core` 9 · `factories` 8 · `plugin
 |---|---|---|
 | `RoboticArmSystem` | 31 | manipulación / puzzle físico — cinemática inversa |
 | `FoodChainSystem` | 30 | simulación de cadena trófica; con `EcosystemSystem` (23) es un god-game |
-| `BulletHeavenEngine` | 21 | el motor genérico del género (cucco usa `CuccoGameSystem`, no éste) |
+| `BulletHeavenEngine` | 21 | el motor genérico del género (marabunta usa `MarabuntaSystem`, no éste) |
 | `TrafficSurvivalSystem` | 20 | supervivencia en tráfico — junto a `IDMSystem` (9,6) |
 | `InteractionLabFactory` | 20 | escenarios de interacción tipo aventura |
 | `RaccoonEnvironmentFactory` | 18 | plataformas / exploración (+ `RaccoonSpaceCore` 12) |

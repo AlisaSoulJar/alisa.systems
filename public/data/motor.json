@@ -223,8 +223,8 @@
    "kb": 7.5
   },
   {
-   "ruta": "gym/envs/CuccoSwarmEnv.js",
-   "nombre": "CuccoSwarmEnv",
+   "ruta": "gym/envs/MarabuntaEnv.js",
+   "nombre": "MarabuntaEnv",
    "familia": "envs",
    "kb": 8.4
   },
@@ -235,8 +235,8 @@
    "kb": 6.3
   },
   {
-   "ruta": "gym/envs/RueDelPercebeEnv.js",
-   "nombre": "RueDelPercebeEnv",
+   "ruta": "gym/envs/CorpBuildingEnv.js",
+   "nombre": "CorpBuildingEnv",
    "familia": "envs",
    "kb": 12.8
   },
@@ -685,8 +685,8 @@
    "kb": 7.7
   },
   {
-   "ruta": "world/factories/CuccoEnvironmentFactory.js",
-   "nombre": "CuccoEnvironmentFactory",
+   "ruta": "world/factories/MarabuntaEnvironmentFactory.js",
+   "nombre": "MarabuntaEnvironmentFactory",
    "familia": "factories",
    "kb": 29.3
   },
@@ -823,8 +823,8 @@
    "kb": 13.8
   },
   {
-   "ruta": "world/systems/CuccoGameSystem.js",
-   "nombre": "CuccoGameSystem",
+   "ruta": "world/systems/MarabuntaSystem.js",
+   "nombre": "MarabuntaSystem",
    "familia": "systems",
    "kb": 10.8
   },

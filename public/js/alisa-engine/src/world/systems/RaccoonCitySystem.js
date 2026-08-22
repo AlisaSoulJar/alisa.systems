@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 /**
  * RaccoonCitySystem
- * Headless ECS engine for Raccoon City Sector drone physics and power drain.
+ * Headless ECS engine for City Sector drone physics and power drain.
  */
 export class RaccoonCitySystem {
     constructor(params = {}) {

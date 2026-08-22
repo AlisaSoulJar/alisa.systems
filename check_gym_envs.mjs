@@ -43,7 +43,7 @@ import { CATALOGO } from './public/js/alisa-engine/src/gym/registro.js';
  *    A 35 DE LOS 41 ENTORNOS DEL BANCO.
  * ═══════════════════════════════════════════════════════════════════════════════
  *
- * El catálogo tiene dos familias: seis `propio` —Asteroids, Cucco, Raccoon…— y los
+ * El catálogo tiene dos familias: seis `propio` —Asteroids, Marabunta, Raccoon…— y los
  * treinta y cinco `protohub`, que son los juegos del arcade envueltos en `GymEnv`.
  * Esta comprobación decía vigilar «que los entornos del banco se puedan enumerar,
  * cargar y jugar» y sólo miraba los seis: justo la parte pequeña, y no la que
