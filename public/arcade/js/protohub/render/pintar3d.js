@@ -231,7 +231,54 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
          * un gris azulado que contrasta con las fichas de los dos bandos —azul
          * marino y rojo— sin competir con ninguna.
          */
-        sueloA: material(0xeceff4, { roughness: 0.9 }),
+        /**
+         * ⚠️ Y EL CLARO ERA DEMASIADO CLARO: «LA LUZ QUEMA EL TABLERO».
+         * ═══════════════════════════════════════════════════════════════════
+         *     — flota, frentes, defensa y damas. Cuatro betatesters, la misma frase.
+         *
+         * Estaba en `0xeceff4`, que es sRGB 0,94: un seis por ciento de margen
+         * antes de reventar. Y las luces de esta mesa llegan fuertes —hemisférico
+         * 2,20 y direccional 3,61 medidos en la escena viva, porque
+         * `montarMesa.js` multiplica toda intensidad por π para compensar la
+         * migración de three—. Con esos dos números, una superficie al 0,94 no se
+         * ilumina: se recorta a blanco.
+         *
+         * ⚠️ Y NO ERA LA LUZ, AUNQUE LO PAREZCA. Medido, mismo día, misma mesa:
+         *
+         *     flota  material más claro  #eceff4  sRGB 0,94   ← se queja
+         *     go     material más claro  #7d6039  sRGB 0,36   ← no se queja
+         *
+         * Las mismas luces exactas en los dos. Bajarlas habría oscurecido a los
+         * nueve juegos que están bien para arreglar los cuatro que no.
+         *
+         * Es el mismo fallo que los edificios de la ciudad —allí a 0,08, aquí a
+         * 0,94— y la misma lección por los dos extremos: cuando algo «se ve mal
+         * de luz», hay que mirar el COLOR DEL MATERIAL antes que las lámparas.
+         *
+         * ⚠️ Y EL NÚMERO SALE DE PROBARLO, NO DE CALCULARLO. LA PRIMERA VEZ NO.
+         *
+         * Bajé a `0xc9d0dc` (sRGB 0,83) razonando que con un 17% de margen ya no
+         * reventaría. Abrí la captura y estaba EXACTAMENTE IGUAL de blanca: plana,
+         * sin degradado en perspectiva, que es la firma del recorte. El material
+         * había cambiado —comprobado en la escena viva y en el fichero servido— y
+         * la imagen no.
+         *
+         * Así que se buscó el punto de corte a mano, cambiando el color en la
+         * escena y mirando si aparecía degradado entre las casillas cercanas y las
+         * lejanas:
+         *
+         *     0,83  plana, recortada
+         *     0,71  plana, recortada
+         *     0,65  degradado leve; las de delante rozan el corte
+         *     0,59  degradado claro, con margen
+         *
+         * `0x949dad` es 0,63, justo debajo de donde empieza a doler. El contraste
+         * con el oscuro queda en 0,27 — menos que antes, pero el damero se lee y
+         * ahora las casillas tienen VOLUMEN en vez de ser papel recortado.
+         *
+         * El oscuro no se toca: lo eligió una captura, según la nota de arriba.
+         */
+        sueloA: material(0x949dad, { roughness: 0.9 }),
         sueloB: material(0x4a5a70, { roughness: 0.9 }),
         /**
          * ⚠️ EL MURO ERA CASI EL MISMO AZUL QUE EL DUEÑO 0, Y ESE FUE EL FALLO.
@@ -720,7 +767,7 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
             const amb = PALETAS[sus.rejilla.ambiente];
             if (amb !== paletaPuesta) {
                 paletaPuesta = amb;
-                mat.sueloA.color.setHex(amb?.claro ?? 0xeceff4);
+                mat.sueloA.color.setHex(amb?.claro ?? 0x949dad);
                 mat.sueloB.color.setHex(amb?.oscuro ?? 0x4a5a70);
                 mat.muro.color.setHex(amb?.muro ?? 0x5c5040);
             }
