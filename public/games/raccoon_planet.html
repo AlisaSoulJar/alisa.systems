@@ -67,7 +67,7 @@
 </div>
 
 <div id="hud">
-    <div class="title">🦝 PLANET — STAGE 6</div>
+    <div class="title">🦝 PLANET — ¡BUSCA! 5</div>
     <span class="stat">SCANNED:</span> <span id="hScanned" class="v-cyan">0/8</span><br>
     <span class="stat">SAT POWER:</span> <span id="hFuel" class="v-green">100</span>%
     <div class="fuel-container"><div class="fuel-fill" id="vFuelBar"></div></div>
@@ -241,7 +241,7 @@ function scanCity(idx) {
             controls.target.lerp(s.pos, 0.03);
             if (camera.position.distanceTo(tgt) < 1) {
                 clearInterval(zoomLoop);
-                msg.innerHTML = `<span style='color:#34c759'>🏆 STAGE 6 CLEAR! SCORE: ${gameState.score}</span>`;
+                msg.innerHTML = `<span style='color:#34c759'>🏆 ¡BUSCA! 5 SUPERADA! SCORE: ${gameState.score}</span>`;
                 setTimeout(() => location.reload(), 4000);
             }
         }, 16);

@@ -112,7 +112,7 @@
     </div>
 
     <div id="hud">
-        <div class="title">🦝 CITY SECTOR — STAGE 5</div>
+        <div class="title">🦝 CITY SECTOR — ¡BUSCA! 4</div>
         <span class="stat">SCANNED:</span> <span id="hScanned" class="v-cyan">0/12</span><br>
         <span class="stat">BATTERY:</span> <span id="hFuel" class="v-green">100</span>%
         <div class="fuel-container"><div class="fuel-fill" id="vFuelBar"></div></div>
@@ -135,25 +135,40 @@ import { RaccoonCitySystem } from '@alisa-engine/src/world/systems/RaccoonCitySy
 import { montarMundo } from '/js/montarMundo.js';
 
 /**
- * `luces:false` porque la ciudad trae las suyas y son la mitad de su aspecto: un
- * hemisférico azulado muy bajo y una luna direccional fría a 0.4. Añadirle encima
- * key+hemi+fill la dejaría plana y de día.
+ * ⚠️ `cielo:true` Y `luces:true`, Y AL PRINCIPIO LOS PUSE LOS DOS EN FALSE.
  *
- * `cielo:false` de momento, no por norma: la escena tiene niebla propia y un
- * fondo casi negro, y encender el cielo de Rayleigh le cambiaría el horizonte
- * entero. Es una decisión de arte, no técnica, y se enciende con una palabra
- * cuando haya alguien mirando la pantalla.
+ * El razonamiento era «la escena trae las suyas, no le añadas encima». Suena
+ * prudente y dejó la ciudad negra: media de luminancia 0,0404 con el 41% de los
+ * píxeles a negro puro. La sala cinematográfica —misma tubería, mismo preset
+ * `night`— se ve azul violeta y legible, y la diferencia era exactamente ésta.
  *
- * `suelo:false` porque el suelo se lo pone ella dos líneas más abajo.
+ *     cielo:false luces:false   media 0,0404 · casi negro 41%
+ *     cielo:true  luces:false   media 0,1429 · casi negro 41%
+ *     cielo:true  luces:true    media 0,1455 · casi negro 36%
+ *
+ * El cielo TRIPLICA la media porque ilumina el fondo, pero fíjate en que el «casi
+ * negro» no se movía: eso no era falta de luz, eran los edificios al 9% de
+ * claridad en `RaccoonEnvironmentFactory`. Arreglado allí, aquí quedan los dos
+ * encendidos y el suelo y la niebla subidos a tono de noche real.
+ *
+ * `suelo:false` porque el suelo se lo pone ella unas líneas más abajo.
  */
 const { app: gfx, arrancar, sonar } = await montarMundo({
     ambiente: 'night',
-    cielo: false,
-    luces: false,
+    cielo: true,
+    luces: true,
     suelo: false,
     nucleo: {
-        clearColor: 0x020408,
-        fogColor: 0x020408,
+        /**
+         * ⚠️ LA NIEBLA TIENE QUE SER DEL COLOR DEL CIELO, Y ERA CASI NEGRA.
+         *
+         * Con `fogColor: 0x020408` sobre el cielo de noche salía una costura dura
+         * en el horizonte: los edificios lejanos se fundían a negro mientras el
+         * cielo detrás seguía azul. Una niebla que no es del color del fondo no
+         * difumina — recorta.
+         */
+        clearColor: 0x0e1526,
+        fogColor: 0x121b33,
         fogDensity: 0.004,
         cameraPosition: new THREE.Vector3(80, 60, 80),
         useShadows: true,
@@ -171,7 +186,7 @@ moonLight.position.set(50, 80, -30);
 moonLight.castShadow = true;
 scene.add(moonLight);
 
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(500, 500), new THREE.MeshStandardMaterial({ color: 0x0a0c12, roughness: 0.9 }));
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(2400, 2400), new THREE.MeshStandardMaterial({ color: 0x1d2438, roughness: 0.85 }));
 ground.rotation.x = -Math.PI / 2;
 ground.receiveShadow = true;
 scene.add(ground);
@@ -313,7 +328,7 @@ function winSequence() {
             clearInterval(winLoop);
             const msg = document.getElementById('messages');
             msg.style.opacity = '1';
-            msg.innerHTML = `<span style='color:#34c759'>🏆 STAGE 5 CLEAR! SCORE: ${gameState.score}</span>`;
+            msg.innerHTML = `<span style='color:#34c759'>🏆 ¡BUSCA! 4 SUPERADA! SCORE: ${gameState.score}</span>`;
             setTimeout(() => location.reload(), 4000);
         }
     }, 16);

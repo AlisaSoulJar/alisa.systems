@@ -151,21 +151,66 @@ export class RaccoonEnvironmentFactory {
         for (let i = 0; i < positions.count; i++) {
             const y = positions.getY(i) / PLANET_RADIUS;
             let r, g, b;
-            if (Math.abs(y) > 0.85) { r = 0.9; g = 0.95; b = 1.0; }
-            else if (Math.abs(y) > 0.6) { r = 0.15; g = 0.35; b = 0.12; }
-            else if (Math.abs(y) < 0.15) { r = 0.1; g = 0.5; b = 0.15; }
-            else { r = 0.2; g = 0.4; b = 0.15; }
-            const nx = positions.getX(i), nz = positions.getZ(i);
-            if (Math.sin(nx * 2.3 + nz * 1.7) > 0.3) { r = 0.05; g = 0.12; b = 0.35; } 
+            /**
+             * ⚠️ COLORES SUBIDOS Y CONTINENTES DE DOS OCTAVAS. LOS DOS POR LO MISMO.
+             * ═══════════════════════════════════════════════════════════════════
+             *
+             * Abierta la imagen, el planeta salía verde oscuro con las costas en
+             * ESCALONES: un damero mal disimulado en vez de continentes. La causa
+             * era `Math.sin(nx*2.3 + nz*1.7) > 0.3` — una sola onda, con su periodo
+             * bien visible sobre una esfera de 64×48. Un patrón regular no parece
+             * un patrón regular hasta que lo miras, y luego ya no se puede dejar
+             * de ver.
+             *
+             * Se arregla sumando una segunda onda de otra frecuencia y desfase: no
+             * es ruido de verdad, pero rompe la periodicidad y a esta escala basta.
+             * Y se mete el eje Y en la cuenta, que antes no entraba y por eso las
+             * costas salían idénticas en los dos hemisferios.
+             *
+             * Los colores suben a la mitad alta del rango por la misma razón que
+             * los edificios de la ciudad: un planeta de consola es VIVO. Verde
+             * oscuro sobre negro no se lee desde órbita, que es justo la distancia
+             * a la que se juega esta etapa.
+             */
+            const nx = positions.getX(i) / PLANET_RADIUS;
+            const nz = positions.getZ(i) / PLANET_RADIUS;
+            const tierra = Math.sin(nx * 4.1 + nz * 2.9 + y * 1.7)
+                         + 0.6 * Math.sin(nx * 9.3 - nz * 7.1 + 2.4);
+
+            /**
+             * ⚠️ EL ORDEN DE ESTAS CUATRO LÍNEAS ES EL DIBUJO.
+             *
+             * Con el umbral de océano en 0,35 y las bandas de latitud muy
+             * separadas entre sí, el planeta salía a RAYAS: se veían los paralelos
+             * y no se veía ni una costa. La latitud mandaba sobre el ruido.
+             *
+             * Ahora el mar decide primero y con umbral 0 —mitad y mitad, que es lo
+             * que hace que haya continentes que reconocer— y las tres tierras se
+             * acercan entre sí para que lean como UNA cosa con matices, no como
+             * tres franjas. La latitud tiñe; el ruido dibuja.
+             */
+            if (Math.abs(y) > 0.86) { r = 0.92; g = 0.96; b = 1.0; }       // casquete
+            else if (tierra > 0.0) { r = 0.10; g = 0.34; b = 0.62; }       // océano
+            else if (Math.abs(y) > 0.62) { r = 0.42; g = 0.56; b = 0.34; } // tundra
+            else if (Math.abs(y) < 0.18) { r = 0.32; g = 0.60; b = 0.28; } // selva
+            else { r = 0.42; g = 0.60; b = 0.30; }                         // llanura
             colors[i * 3] = r; colors[i * 3 + 1] = g; colors[i * 3 + 2] = b;
         }
         planetGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
         const planetMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8 });
         planetGroup.add(new THREE.Mesh(planetGeo, planetMat));
 
-        const atmosGeo = new THREE.SphereGeometry(PLANET_RADIUS * 1.05, 32, 32);
-        const atmosMat = new THREE.MeshBasicMaterial({ color: 0x4488ff, transparent: true, opacity: 0.08, side: THREE.BackSide });
-        planetGroup.add(new THREE.Mesh(atmosGeo, atmosMat));
+        /**
+         * La atmósfera existía y no se veía: `opacity: 0.08` sobre un fondo negro
+         * es invisible. Es el halo que separa el planeta del espacio y le da el
+         * borde — sin él, la esfera se recorta contra el vacío como una pegatina.
+         * Sube a 0.22 y se le añade una segunda capa más ancha y más tenue, que es
+         * como se hace un degradado de atmósfera sin escribir un shader.
+         */
+        const atmosMat = new THREE.MeshBasicMaterial({ color: 0x5599ff, transparent: true, opacity: 0.22, side: THREE.BackSide });
+        planetGroup.add(new THREE.Mesh(new THREE.SphereGeometry(PLANET_RADIUS * 1.04, 32, 32), atmosMat));
+        const haloMat = new THREE.MeshBasicMaterial({ color: 0x88bbff, transparent: true, opacity: 0.09, side: THREE.BackSide });
+        planetGroup.add(new THREE.Mesh(new THREE.SphereGeometry(PLANET_RADIUS * 1.12, 32, 32), haloMat));
 
         // Settlements
         const settlements = [];
@@ -258,8 +303,33 @@ export class RaccoonEnvironmentFactory {
             const width = 5 + this.rng.next() * 6;
             const depth = 5 + this.rng.next() * 6;
             
+            /**
+             * ⚠️ LOS EDIFICIOS ERAN CASI NEGROS POR DISEÑO, NO POR FALTA DE LUZ.
+             * ═══════════════════════════════════════════════════════════════════
+             *
+             * Aquí ponía `setHSL(hue, 0.3, 0.08 + rng * 0.05)`. Medido en la escena
+             * viva: doce edificios con luminancia HSL entre 0,083 y 0,125, mediana
+             * 0,093. Una superficie al NUEVE POR CIENTO de claridad se queda negra
+             * por bien iluminada que esté — y eso mandó media tarde por el camino
+             * equivocado, porque el sintoma («no se ve la ciudad») apunta a la luz.
+             *
+             * La cadena de medidas, sobre la luminancia media del fotograma:
+             *
+             *     cielo:false luces:false   media 0,0404 · casi negro 41%
+             *     cielo:true  luces:false   media 0,1429 · casi negro 41%
+             *     cielo:true  luces:true    media 0,1455 · casi negro 36%
+             *
+             * El cielo triplicó la media —iluminó el FONDO— y las luces del plugin
+             * apenas movieron nada. Con los edificios al 9%, ninguna de las dos
+             * cosas podía funcionar: no había nada que iluminar.
+             *
+             * Ahora 0,22–0,38 de claridad y más saturación. No es realismo: es la
+             * decisión de estilo de un juego de consola, donde de noche se ve. Un
+             * tono medio con color propio se lee de un vistazo; un gris al 9% con
+             * una ventana encendida encima, no.
+             */
             const hue = 0.55 + this.rng.next() * 0.15;
-            const bColor = new THREE.Color().setHSL(hue, 0.3, 0.08 + this.rng.next() * 0.05);
+            const bColor = new THREE.Color().setHSL(hue, 0.45, 0.22 + this.rng.next() * 0.16);
             const bMat = new THREE.MeshStandardMaterial({ color: bColor, roughness: 0.7, metalness: 0.3, emissive: bColor, emissiveIntensity: 0.1 });
             const bMesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), bMat);
             bMesh.position.set(x, height / 2, z);
