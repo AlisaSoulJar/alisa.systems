@@ -8,8 +8,25 @@ se comen**. Son dos habilidades, se miden distinto, y ahora son dos sagas.
 > Objetivo declarado: que cada matrioska acabe siendo **un juego de plataformas**.
 > Paso previo: que las etapas funcionen.
 
-Destinos declarados en `rooms/room_tenshi_no_tamago.html` (la Sala del Huevo),
-que las pinta en **dos arcos**: ¡Busca! delante, ¡Sobrevive! detrás.
+⚠️ **HAY DOS SALAS DEL HUEVO, Y LA QUE SE VE NO ES LA BONITA.**
+
+```
+room_sala_del_huevo.html      la enlazan 15 ficheros  ← portada, 404, comprobador
+room_tenshi_no_tamago.html    la enlazan 4            ← sólo catálogos
+```
+
+Las sagas se montaron primero en `room_tenshi_no_tamago.html`, que las pinta en
+**dos arcos** —¡Busca! delante, ¡Sobrevive! detrás— y a la que **no llega nadie**:
+la portada, la página de error y el verificador de despliegue apuntan todos a la
+otra. Reestructurar la sala equivocada costó una mañana.
+
+`room_sala_del_huevo.html` es la que ve la gente: dieciséis experiencias en una
+lista plana, con las etapas de las dos sagas mezcladas entre Marabunta, Katamari y
+los Boids. Ahora al menos llevan su saga y su número en el rótulo, y la etapa 1 de
+¡Sobrevive! —el Interaction Lab— que no estaba, ya está.
+
+Los dos arcos siguen en la otra sala. Unificarlas es trabajo pendiente, y hasta que
+se haga **el rótulo es lo que hay**.
 
 ## ¡Busca! — encontrar algo que se esconde
 
