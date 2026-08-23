@@ -2829,7 +2829,7 @@
     "syncKatamariConsumption"
    ],
    "objetos": 54,
-   "mallas": 136,
+   "mallas": 133,
    "luces": 4
   },
   {
@@ -3066,7 +3066,7 @@
    "ruta": "world/factories/RaccoonEnvironmentFactory.js",
    "nombre": "RaccoonEnvironmentFactory",
    "familia": "factories",
-   "kb": 23.1,
+   "kb": 23.7,
    "clase": "escena",
    "exporta": [
     "RaccoonEnvironmentFactory"

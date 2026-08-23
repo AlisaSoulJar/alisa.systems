@@ -15,7 +15,7 @@ contrario. El problema no era que no estuviera escrito: era que no había índic
 Volver a decidir sale barato en el momento y carísimo a la semana, porque la
 segunda decisión casi nunca coincide con la primera y entonces hay dos verdades.
 
-**1816 decisiones** en 304 ficheros.
+**1817 decisiones** en 304 ficheros.
 
 ## Índice
 
@@ -28,7 +28,7 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - [Las páginas de los juegos](#las-páginas-de-los-juegos) — 81
 - [Cómo se dibuja (el pintor)](#cómo-se-dibuja-el-pintor-) — 54
 - [El servidor y las salas](#el-servidor-y-las-salas) — 53
-- [El motor](#el-motor) — 33
+- [El motor](#el-motor) — 34
 - [El gym y los entornos](#el-gym-y-los-entornos) — 26
 - [Estilos](#estilos) — 20
 - [Los agentes y las políticas](#los-agentes-y-las-políticas) — 12
@@ -4397,7 +4397,9 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **EL ORDEN DE ESTAS CUATRO LÍNEAS ES EL DIBUJO.** <sub>línea 181</sub>
   <br><sub>Con el umbral de océano en 0,35 y las bandas de latitud muy separadas entre sí, el planeta salía a RAYAS: se veían los paralelos y no se veía ni una costa. La latitud mandaba sobre el ruido.</sub>
 - **LOS EDIFICIOS ERAN CASI NEGROS POR DISEÑO, NO POR FALTA DE LUZ.** <sub>línea 307</sub>
-  <br><sub>Aquí ponía `setHSL(hue, 0.3, 0.08 + rng * 0.05)`. Medido en la escena viva: doce edificios con luminancia HSL entre 0,083 y 0,125, mediana 0,093. Una superficie al NUEVE POR CIENTO de claridad se queda negra</sub>
+  <br><sub>Aquí ponía `setHSL(hue, 0.3, 0.08 + rng * 0.05)`. Medido en la escena viva: doce edificios con claridad HSL entre 0,083 y 0,125.</sub>
+- **Y ESE NÚMERO ES LINEAL, NO PERCEPTUAL.** <sub>línea 313</sub>
+  <br><sub>Escribí «están al nueve por ciento de claridad» tratando la cifra como si fuera brillo percibido, y no lo es: three trabaja en espacio LINEAL, y `setHSL`/`getHSL` usan ese espacio salvo que se les pida</sub>
 
 ### `public/js/alisa-engine/src/world/gym_runners/CabinetEscapeGame.js`
 
