@@ -158,8 +158,26 @@ export async function crearGoFish({ url = RUTA_BIBLIOTECA, jugadores = 3, mano =
                 preguntas: p.preguntas.slice(-24),
                 mazo_restante: p.mazo.length,
                 marcador: [...p.puntos],
-                puntos: p.puntos[0],
-                score: p.puntos[0],
+                /**
+                 * ⚠️ `yo`, NO CERO. Y era cero.
+                 *
+                 * Este `estado` ya recibía el asiento, ya calculaba `yo` en la
+                 * primera línea y ya lo usaba para elegir la mano y el rótulo del
+                 * turno… y luego publicaba la puntuación de la silla 0 pasara lo
+                 * que pasara. O sea que hacía bien la parte difícil y se dejaba la
+                 * fácil, que es el descuido que menos se nota: nada falla, sólo
+                 * que las tres sillas devuelven el mismo número.
+                 *
+                 * Se vio en la tabla de enfrentamiento, y de una forma que parecía
+                 * un fallo de las matemáticas: los tres participantes empataban a
+                 * exactamente 60 victorias de 120, clavado con 7, 13, 20 y 33
+                 * semillas. Al publicar un solo marcador global, comparar «sillas»
+                 * comparaba tres partidas distintas por el mismo número, y eso
+                 * FUERZA el empate exacto. El array `marcador` de arriba llevaba
+                 * el dato bueno desde siempre.
+                 */
+                puntos: p.puntos[yo],
+                score: p.puntos[yo],
                 turn: pid === yo ? 'player' : `cpu${pid}`,
                 semilla: p.semilla,
                 biblioteca: p.biblioteca,

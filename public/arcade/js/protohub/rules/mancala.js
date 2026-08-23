@@ -52,7 +52,7 @@ export const mancala = {
         return { board: tableroInicial(), turno: 0, historial: [] };
     },
 
-    estado(p) {
+    estado(p, asiento = 0) {
         const b = p.board;
         const vacio0 = sumaLado(b, 0) === 0;
         const vacio1 = sumaLado(b, 1) === 0;
@@ -72,8 +72,11 @@ export const mancala = {
             result: fin ? (g0 > g1 ? 'white' : g1 > g0 ? 'black' : 'draw') : null,
             score: { white: g0, black: g1 },
             // Aquí abren las blancas, así que el camino heredado acertaba —por
-            // casualidad, no por diseño. Se hace explícito igual.
-            puntos: g0,
+            // casualidad, no por diseño. Ahora sigue al asiento: silla 0 es el
+            // granero de las blancas (`b[6]`), silla 1 el de las negras (`b[13]`).
+            // Antes las dos devolvían `g0`, o sea que las negras salían puntuadas
+            // por lo que había hecho su rival.
+            puntos: asiento % 2 === 0 ? g0 : g1,
         };
     },
 

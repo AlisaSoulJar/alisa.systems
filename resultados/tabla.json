@@ -1,5 +1,5 @@
 {
-  "fecha": "2026-08-22T16:41:23.545Z",
+  "fecha": "2026-08-23T11:33:58.734Z",
   "semillas": 15,
   "tope": 200,
   "topesPorJuego": {
@@ -41,8 +41,7 @@
     "generala",
     "oca",
     "canadiense",
-    "domino",
-    "alisapolis"
+    "domino"
   ],
   "descartados": {
     "guerra": "la casa no supera al suelo: la escala se invertiría",
@@ -50,7 +49,8 @@
     "cripta": "el tope de 200 decisiones corta la partida (sólo termina el 0% de las de referencia)",
     "yokai": "la casa no supera al suelo: la escala se invertiría",
     "parchis": "la casa no supera al suelo: la escala se invertiría",
-    "chinchon": "el hueco (1.2) no supera al ruido de la medida (±1.9)"
+    "chinchon": "el hueco (1.6) no supera al ruido de la medida (±3.3)",
+    "alisapolis": "el hueco (53.2) no supera al ruido de la medida (±110.5)"
   },
   "resumen": [
     {
@@ -58,13 +58,13 @@
       "tipo": "base",
       "mediana": 0,
       "media": 0,
-      "incertidumbre": 0.03722740414097648,
+      "incertidumbre": 0.04670786775612357,
       "tokens": 0,
       "segundos": 0,
       "forzadas": 0,
       "llamadas": 0,
-      "verificadas": 4080,
-      "esperadas": 4080,
+      "verificadas": 1980,
+      "esperadas": 1980,
       "porJuego": {
         "ajedrez": 0,
         "go": 0,
@@ -73,7 +73,7 @@
         "xiangqi": 0,
         "mancala": 0,
         "snake": 0,
-        "fagocito": null,
+        "fagocito": 0,
         "peaton": 0,
         "blackjack": 0,
         "poker": 0,
@@ -98,22 +98,21 @@
         "generala": 0,
         "oca": 0,
         "canadiense": 0,
-        "domino": 0,
-        "alisapolis": 0
+        "domino": 0
       }
     },
     {
       "participante": "azar",
       "tipo": "base",
-      "mediana": 0.03576278859212322,
-      "media": 0.2697759068831603,
-      "incertidumbre": 0.08957725159726755,
+      "mediana": 0.018546472317876463,
+      "media": -0.05534619571421949,
+      "incertidumbre": 0.126555125058801,
       "tokens": 0,
       "segundos": 0,
       "forzadas": 0,
       "llamadas": 0,
-      "verificadas": 4080,
-      "esperadas": 4080,
+      "verificadas": 1980,
+      "esperadas": 1980,
       "porJuego": {
         "ajedrez": null,
         "go": 0.9490867579908675,
@@ -130,7 +129,7 @@
         "tute": -0.04752475247524735,
         "hearts": 0,
         "spades": 0.03576278859212322,
-        "gofish": 0.5084745762711868,
+        "gofish": 0,
         "unit": -0.25736961451247165,
         "entropy": -0.02956298200514135,
         "flota": -0.795589026358257,
@@ -147,8 +146,7 @@
         "generala": 0.0032800328003280135,
         "oca": 1.4551422319474834,
         "canadiense": -0.1200438670490972,
-        "domino": 0.07692307692307665,
-        "alisapolis": 10.165208613728124
+        "domino": 0.07692307692307665
       }
     },
     {
@@ -156,13 +154,13 @@
       "tipo": "base",
       "mediana": 1,
       "media": 1,
-      "incertidumbre": 0.03370242082282999,
+      "incertidumbre": 0.043558010805606284,
       "tokens": 0,
       "segundos": 0,
       "forzadas": 0,
       "llamadas": 0,
-      "verificadas": 4080,
-      "esperadas": 4080,
+      "verificadas": 1980,
+      "esperadas": 1980,
       "porJuego": {
         "ajedrez": 1,
         "go": 1,
@@ -196,8 +194,7 @@
         "generala": 1,
         "oca": 1,
         "canadiense": 1,
-        "domino": 1,
-        "alisapolis": 1
+        "domino": 1
       }
     }
   ]

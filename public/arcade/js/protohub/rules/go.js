@@ -204,7 +204,7 @@ export const go = {
         };
     },
 
-    estado(p) {
+    estado(p, asiento = 0) {
         const fin = p.pasesSeguidos >= 2;
         const area = puntuar(p.tablero);
         const pn = area.negras;
@@ -219,10 +219,18 @@ export const go = {
             is_game_over: fin,
             result: fin ? (pn > pb ? 'black' : pb > pn ? 'white' : 'draw') : null,
             score: { black: pn, white: pb },
-            // El asiento medido es el que ABRE, y en go abren las negras. Sin
-            // este escalar, el normalizador del verificador cogía `white` y la
-            // tabla publicaba el marcador del rival. Ver `Verificador.js`.
-            puntos: pn,
+            /**
+             * El asiento medido era el que ABRE, y en go abren las negras. Sin
+             * este escalar, el normalizador del verificador cogía `white` y la
+             * tabla publicaba el marcador del rival. Ver `Verificador.js`.
+             *
+             * ⚠️ Y AHORA SIGUE AL ASIENTO. Antes devolvía `pn` se pidiera la silla
+             * que se pidiera, así que las blancas se puntuaban por el territorio
+             * de las negras. Silla 1 se lleva `pb`, que ya incluye el komi — la
+             * compensación por jugar segundo, que es justamente lo que hace que
+             * las dos sillas sean comparables entre sí.
+             */
+            puntos: asiento % 2 === 0 ? pn : pb,
             capturas: { black: p.capturas[NEGRAS], white: p.capturas[BLANCAS] },
             komi: p.komi,
         };

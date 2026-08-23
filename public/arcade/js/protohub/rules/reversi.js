@@ -148,7 +148,7 @@ export const reversi = {
         return { tablero: tableroInicial(), turno: 'B', historial: [], pasesSeguidos: 0 };
     },
 
-    estado(p) {
+    estado(p, asiento = 0) {
         const mias = jugadasDe(p.tablero, p.turno);
         const rival = p.turno === 'B' ? 'W' : 'B';
         const suyas = jugadasDe(p.tablero, rival);
@@ -168,8 +168,21 @@ export const reversi = {
             is_game_over: fin,
             result: fin ? (B > W ? 'black' : W > B ? 'white' : 'draw') : null,
             score: { black: B, white: W },
-            // En reversi abren las negras: ése es el asiento que se mide.
-            puntos: B,
+            /**
+             * ⚠️ LA PUNTUACIÓN SIGUE AL ASIENTO, Y ANTES NO.
+             *
+             * Aquí ponía `puntos: B` a secas, con la nota «en reversi abren las
+             * negras: ése es el asiento que se mide». Y era verdad a medias: se
+             * medía ese asiento **se pidiera el que se pidiera**, así que las dos
+             * sillas devolvían el mismo número y no había forma de saber quién
+             * había jugado mejor. La tabla de enfrentamiento no puede comparar dos
+             * cifras idénticas, y el juego se quedaba fuera sin dar un error.
+             *
+             * Silla 0 son las negras, que abren; silla 1 las blancas. El `% 2` es
+             * porque quien pregunta puede pedir una silla mayor que las que hay
+             * —el entorno la envuelve— y aquí sólo hay dos.
+             */
+            puntos: asiento % 2 === 0 ? B : W,
         };
     },
 

@@ -247,7 +247,7 @@ export const xiangqi = {
         return { grid: tableroInicial(), rojoJuega: true, historial: [], sinCapturas: 0 };
     },
 
-    estado(p) {
+    estado(p, asiento = 0) {
         const movs = legales(p.grid, p.rojoJuega);
         const jaque = enJaque(p.grid, p.rojoJuega);
         const mate = movs.length === 0 && jaque;
@@ -287,7 +287,11 @@ export const xiangqi = {
             ahogado,
             tablas_sin_capturas: tablas,
             score: marcadorRojo(p.grid, fin && !tablas ? (p.rojoJuega ? 'black' : 'white') : null),
-            puntos: marcadorRojo(p.grid, fin && !tablas ? (p.rojoJuega ? 'black' : 'white') : null),
+            // Con signo a favor del rojo, así que la silla 1 —el negro— es la
+            // negación. Antes las dos sillas devolvían el marcador del rojo, y dos
+            // cifras idénticas no se pueden comparar en una tabla de enfrentamiento.
+            puntos: (asiento % 2 === 0 ? 1 : -1)
+                * marcadorRojo(p.grid, fin && !tablas ? (p.rojoJuega ? 'black' : 'white') : null),
         };
     },
 

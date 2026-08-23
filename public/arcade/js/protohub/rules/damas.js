@@ -337,7 +337,7 @@ export const damas = {
         };
     },
 
-    estado(p) {
+    estado(p, asiento = 0) {
         const n = normasDe(p.normas);
         const { movs, sonCapturas } = jugadasConTipo(p.tablero, p.blancasJuegan, n);
         const { w, b } = cuenta(p.tablero);
@@ -374,7 +374,10 @@ export const damas = {
             // sorteo.
             normas: n,
             score: marcadorBlancas(p.tablero, fin ? ganador : null),
-            puntos: marcadorBlancas(p.tablero, fin ? ganador : null),
+            // Con signo a favor de las blancas, así que la silla 1 es la negación.
+            // Antes las dos devolvían lo mismo y las damas no podían entrar en la
+            // tabla de enfrentamiento: no había dos cifras que comparar.
+            puntos: (asiento % 2 === 0 ? 1 : -1) * marcadorBlancas(p.tablero, fin ? ganador : null),
         };
     },
 

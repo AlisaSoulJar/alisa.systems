@@ -89,6 +89,23 @@ const SABOTAJES = [
         vigila: 'que declarar una forma no abra la puerta a cualquier jugada',
     },
     {
+        nombre: 'enfrentamiento',
+        corre: 'node prueba_enfrentamiento.mjs',
+        fichero: 'enfrentar.mjs',
+        // El fallo REAL, y estaba puesto: `contarSillas` no leía `vivos`, que es
+        // lo ÚNICO que publican los de deducción social —ni `marcador` ni nada
+        // más, ni siquiera al acabar—. Con eso yokai salía de la segunda tabla
+        // clasificado como «juego de un jugador», teniendo ocho sillas con
+        // puntuación y roles propios. No daba error: daba un veredicto.
+        //
+        // El sabotaje quita ese candidato, que es un fallo por OMISIÓN — la
+        // familia entera desaparece de la tabla y las otras tres siguen bien, así
+        // que ninguna otra fila lo delata.
+        de: 'Number.isInteger(e?.vivos) ? e.vivos : 0);',
+        a: '0);',
+        vigila: 'que las sillas se cuenten también donde sólo se publica `vivos`',
+    },
+    {
         nombre: 'turno',
         corre: 'node prueba_turno.mjs',
         fichero: 'public/arcade/js/protohub/rules/entropy.js',

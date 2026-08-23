@@ -402,7 +402,7 @@ export const ajedrez = {
         return p;
     },
 
-    estado(p) {
+    estado(p, asiento = 0) {
         const movs = legales(p);
         const jaque = enJaque(p);
         const ahogado = movs.length === 0 && !jaque;
@@ -426,7 +426,21 @@ export const ajedrez = {
             fullmove_number: p.plena,
             // Ver `marcadorBlancas`: sin esto el ajedrez valía 0 en toda partida.
             score: marcadorBlancas(p, resultado),
-            puntos: marcadorBlancas(p, resultado),
+            /**
+             * ⚠️ CON SIGNO, ASÍ QUE LA OTRA SILLA ES LA NEGACIÓN.
+             *
+             * `marcadorBlancas` ya es material + ±1000 al acabar, positivo a favor
+             * de las blancas. Las negras no tienen «su propio marcador»: tienen el
+             * mismo del revés, que es lo que significa juego de suma cero.
+             *
+             * Antes esto devolvía el marcador de las blancas se pidiera la silla
+             * que se pidiera. En una tabla de enfrentamiento eso no da un número
+             * malo: da dos números IDÉNTICOS, y dos cifras iguales no se pueden
+             * comparar — el ajedrez se quedaba fuera sin dar un solo error.
+             *
+             * Es el mismo arreglo que `bazas.js` ya tenía: `MENOR_GANA ? -míos : míos`.
+             */
+            puntos: asiento % 2 === 0 ? marcadorBlancas(p, resultado) : -marcadorBlancas(p, resultado),
         };
     },
 
