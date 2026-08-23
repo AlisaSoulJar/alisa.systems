@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>ALISA — Raccoon Scape: Stage 7 — Space</title>
+    <title>ALISA — ¡Busca! 6 — Space</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #000000; font-family: monospace; color: #fff; user-select: none; }
         #hud {
@@ -54,21 +54,21 @@
         .badge-world { background: #110022; color: #aa33ff; border: 1px solid #aa33ff; }
         #mode-badges { position: fixed; top: 10px; right: 10px; z-index: 20; display: none; }
     </style>
-    <script type="importmap">
-    { 
-        "imports": { 
-            "three": "/vendor/three-0.160.0/build/three.module.js",
-            "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
-            "@alisa-engine/": "../js/alisa-engine/"
-        } 
-    }
-    </script>
+    <!--
+      El importmap común, en vez de la copia que había aquí apuntando a three
+      0.160. Ver `montarMundo.js`: seis etapas, seis declaraciones, y el pipeline
+      cinematográfico copiado en dos de las seis.
+
+      ⚠️ En el <head> y SIN defer: un importmap no se puede añadir una vez que ha
+      empezado a cargar un módulo, y los módulos van diferidos.
+    -->
+    <script src="/js/mundo.js"></script>
 </head>
 <body>
 
 <div id="modal">
     <div class="box">
-        <h1 id="mTitle"><span class="emoji">🦝🌌</span>RACCOON SCAPE — SPACE</h1>
+        <h1 id="mTitle"><span class="emoji">🦝🌌</span>¡BUSCA! 6 — SPACE</h1>
         <p>The raccoon has commandeered an escape pod and hidden on a rogue planet.<br><br>
         Navigate your scout ship through the asteroid field. Use the <b>Radar</b> to find planets, fly close, click them to scan.<br><br>
         Powered by ALISA <b>RaccoonSpaceSystem</b> y <b>RaccoonEnvironmentFactory</b> ECS.</p>
@@ -100,13 +100,24 @@ import * as THREE from 'three';
 import { RaccoonEnvironmentFactory } from '@alisa-engine/src/world/factories/RaccoonEnvironmentFactory.js';
 import { RaccoonSpaceSystem } from '@alisa-engine/src/world/systems/RaccoonSpaceSystem.js';
 
-import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+import { montarMundo } from '/js/montarMundo.js';
 
-// Setup core THREE.js
-const gfx = new AlisaRenderCore({
-    clearColor: 0x000000,
-    fogColor: 0x000000,
-    fogDensity: 0.001
+/**
+ * `cielo:false` y `luces:false` porque esto es el espacio abierto: no hay
+ * horizonte que pintar y la escena trae su ambiente frío y su sol direccional,
+ * que son los que dan el contraste duro de las sombras sin atmósfera. `suelo`
+ * tampoco, obviamente.
+ *
+ * Lo que gana, y no tenía: tono filmico ACES, bloom y SSAO. En una etapa de
+ * naves y estrellas el bloom es literalmente lo que separa «un punto blanco» de
+ * «una luz».
+ */
+const { app: gfx, arrancar, sonar } = await montarMundo({
+    ambiente: 'night',
+    cielo: false,
+    luces: false,
+    suelo: false,
+    nucleo: { clearColor: 0x000000, fogColor: 0x000000, fogDensity: 0.001 },
 });
 const scene = gfx.scene;
 const renderer = gfx.renderer;
@@ -293,7 +304,9 @@ function updateRadar() {
     });
 }
 
-gfx.startLoop((dt) => {
+// `arrancar` y no `startLoop`: aquel pinta con el renderer pelado y dejaría el
+// post-proceso registrado, vivo, y sin llegar a la pantalla. Ver `montarMundo.js`.
+arrancar((dt) => {
     if (gameState.playing) {
         spaceEngine.update(dt);
         if (dustPoints && shipRoot) dustPoints.position.copy(shipRoot.position);

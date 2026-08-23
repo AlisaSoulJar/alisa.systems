@@ -40,7 +40,7 @@ export class RaccoonSpaceEnv extends GymEnv {
     static actionSpace = { type: 'discrete', n: VERBOS_ESPACIO.length, names: VERBOS_ESPACIO };
 
     static meta = {
-        title: 'Raccoon Scape — Espacio',
+        title: '¡Busca! 6 — Espacio',
         summary: 'Encuentra el planeta donde se esconde el mapache antes de quedarte sin ' +
                  'combustible. Moverse cuesta, escanear en balde también, y el soporte ' +
                  'vital gasta aunque estés quieto.',

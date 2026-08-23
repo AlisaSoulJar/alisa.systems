@@ -93,7 +93,7 @@ contenido en toda la unidad Q:) · `mapa_del_sitio.py` (carpetas y huérfanos).
 Y el paso 0 sigue siendo `CUADERNO_ESTUDIO_MOTOR.md`.
 
 
-> **No es una etapa del Raccoon Scape.** Es la **portada entera** de la web.
+> **No es una etapa de ¡Busca!.** Es la **portada entera** de la web.
 > Lo que hay construido hoy es el andamio, no el hall.
 
 Fuentes (apuntes que ya existían, encontrados 2026-08-01):
@@ -354,4 +354,4 @@ El patrón de siempre. Del catálogo del motor:
 4. Las mesas de cartas y tablero con `ArcadeTableRoomFactory`.
 
 ⚠️ Recordar la trampa de siempre: comprobar que lo que devuelven las factories
-**acaba colgado de la escena**. Ver `ESTADO_STAGES_RACCOON.md`.
+**acaba colgado de la escena**. Ver `ESTADO_SAGAS.md`.

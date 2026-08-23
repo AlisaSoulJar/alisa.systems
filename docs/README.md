@@ -34,7 +34,7 @@ Ordenados por para quién son.
 | [`MONOLITOS_PRIOR_ART.md`](MONOLITOS_PRIOR_ART.md) | Trabajo anterior recuperado de los monolitos |
 | [`HALLAZGOS_ATLAS_DESPLIEGUE.md`](HALLAZGOS_ATLAS_DESPLIEGUE.md) | Lo que apareció al leer el atlas por estructura: el despliegue que ya existía, los 739 MB, las licencias |
 | [`TERCER_CICLO.md`](TERCER_CICLO.md) | Lo mejor de lo nuevo cruzado con lo mejor de lo que ya había |
-| [`ESTADO_STAGES_RACCOON.md`](ESTADO_STAGES_RACCOON.md) | Las etapas del Raccoon Scape y el nivel que se sobrescribió |
+| [`ESTADO_SAGAS.md`](ESTADO_SAGAS.md) | Las etapas de ¡Busca! y ¡Sobrevive! y el nivel que se sobrescribió |
 | [`MANIFESTO_IREALWORLD.md`](MANIFESTO_IREALWORLD.md) · [`FEASIBILITY_CLAUDE_OF_DUTY_ON_ALISA.md`](FEASIBILITY_CLAUDE_OF_DUTY_ON_ALISA.md) | Documentos de intención |
 
 ## Imágenes

@@ -1,7 +1,7 @@
 import { mulberry32 } from '../core/DeterministicScope.js';
 
 /**
- * RaccoonSpaceCore — la etapa 7 del Raccoon Scape, SIN PANTALLA
+ * RaccoonSpaceCore — la etapa 6 de ¡Busca!, SIN PANTALLA
  * ═══════════════════════════════════════════════════════════════════════════
  * Pilotas una nave por un campo de asteroides buscando el planeta donde se
  * escondió el mapache, antes de quedarte sin combustible.

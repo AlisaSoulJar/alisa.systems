@@ -147,9 +147,18 @@ def sello(rel, path):
     return "".join(marcas)
 
 
+# Convencion: un fichero que empieza por `_` es un BANCO DE PRUEBAS, no una
+# pagina. Hay comprobaciones que solo se pueden hacer en un navegador de verdad
+# —que un `importmap` inyectado llegue a tiempo, que el composer pinte— y viven
+# como HTML servible porque no hay otra forma. Pero no son juegos, y listarlas
+# aqui las ofrece a quien viene a jugar.
+ES_BANCO = lambda f: f.startswith("_")
+
+
 def tarjetas(carpeta, prefijo, clase="", recorte=0):
     fs = sorted(f for f in os.listdir(carpeta) if f.endswith(".html")
-                and "BACKUP" not in f and f != "index.html") if os.path.isdir(carpeta) else []
+                and "BACKUP" not in f and f != "index.html"
+                and not ES_BANCO(f)) if os.path.isdir(carpeta) else []
     out = []
     for f in fs:
         p = os.path.join(carpeta, f)
@@ -160,7 +169,7 @@ def tarjetas(carpeta, prefijo, clase="", recorte=0):
     return fs, "".join(out)
 
 
-files = sorted(f for f in os.listdir(LABS) if f.endswith(".html"))
+files = sorted(f for f in os.listdir(LABS) if f.endswith(".html") and not ES_BANCO(f))
 used, groups = set(), []
 for cat, pats in CATS:
     items = []

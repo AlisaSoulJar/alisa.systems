@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALISA — Corporate Building (13 Corp Building)</title>
+    <title>ALISA — ¡Busca! 3 — Corp Building</title>
     <link rel="stylesheet" href="corporate_building.css" />
 </head>
 <body>
@@ -629,7 +629,7 @@ window.startSimulation = function() {
         document.getElementById('hudTitle').innerText = 'ðŸ¢ Corporate Building';
         
     window.factory = new ProceduralBuildingFactory(scene, AssetManager);
-    // ⚠️ Antes: actory.build(...) directo. Eso SE SALTA uildAll(), que es
+    // ⚠️ Antes: `factory.build(...)` directo. Eso SE SALTA `buildAll()`, que es
     // quien aplica la corrección de luz — y sin ella la escena sale NEGRA.
     //
     // Está documentado en ESTUDIO_ProceduralBuildingFactory.md §4: las
@@ -784,7 +784,7 @@ function checkDoor(doorIndex, fd) {
                     document.getElementById('valTotalFloors').textContent = totalFloors;
                     
     window.factory = new ProceduralBuildingFactory(scene, AssetManager);
-    // ⚠️ Antes: actory.build(...) directo. Eso SE SALTA uildAll(), que es
+    // ⚠️ Antes: `factory.build(...)` directo. Eso SE SALTA `buildAll()`, que es
     // quien aplica la corrección de luz — y sin ella la escena sale NEGRA.
     //
     // Está documentado en ESTUDIO_ProceduralBuildingFactory.md §4: las
@@ -950,7 +950,7 @@ function checkHidingSpot(spotIndex, fd) {
                     document.getElementById('valTotalFloors').textContent = totalFloors;
                     
     window.factory = new ProceduralBuildingFactory(scene, AssetManager);
-    // ⚠️ Antes: actory.build(...) directo. Eso SE SALTA uildAll(), que es
+    // ⚠️ Antes: `factory.build(...)` directo. Eso SE SALTA `buildAll()`, que es
     // quien aplica la corrección de luz — y sin ella la escena sale NEGRA.
     //
     // Está documentado en ESTUDIO_ProceduralBuildingFactory.md §4: las

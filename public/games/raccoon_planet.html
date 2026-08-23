@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>ALISA — Raccoon Scape: Stage 6 — Planet</title>
+    <title>ALISA — ¡Busca! 5 — Planet</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #000008; font-family: monospace; color: #fff; user-select: none; }
         #hud {
@@ -36,21 +36,24 @@
         .badge-world { background: #002211; color: #22cc88; border: 1px solid #22cc88; }
         #mode-badges { position: fixed; top: 10px; right: 10px; z-index: 20; display: none; }
     </style>
-    <script type="importmap">
-    { 
-        "imports": { 
-            "three": "/vendor/three-0.160.0/build/three.module.js",
-            "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
-            "@alisa-engine/": "../js/alisa-engine/" 
-        } 
-    }
-    </script>
+    <!--
+      El importmap común. Antes iba escrito aquí, apuntando a three 0.160, y lo
+      mismo en las otras cinco etapas: seis declaraciones de dónde está el motor,
+      seis sitios donde cambiar la versión, y —lo que de verdad costaba— seis
+      andamios copiados a mano en los que el pipeline cinematográfico sólo se
+      copió DOS veces. Ver `montarMundo.js`.
+
+      ⚠️ Va en el <head> y SIN defer a propósito: un importmap no se puede añadir
+      después de que empiece a cargar un módulo, y los módulos van diferidos. Un
+      script clásico aquí arriba es lo único que llega a tiempo.
+    -->
+    <script src="/js/mundo.js"></script>
 </head>
 <body>
 
 <div id="modal">
     <div class="box">
-        <h1 id="mTitle"><span class="emoji">🦝🌍</span>RACCOON SCAPE — PLANET</h1>
+        <h1 id="mTitle"><span class="emoji">🦝🌍</span>¡BUSCA! 5 — PLANET</h1>
         <p>The raccoon fled to one of the settlements on this planet.<br><br>
         <b>Rotate the globe</b> and click on cities to scan them. 
         Your orbital scanner shows thermal signatures: 🟢 HOT → 🔴 COLD.<br><br>
@@ -84,14 +87,32 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 window.THREE.OrbitControls = OrbitControls;
 </script>
 <script type="module">
+import * as THREE from 'three';
 import { RaccoonEnvironmentFactory } from '@alisa-engine/src/world/factories/RaccoonEnvironmentFactory.js';
 import { RaccoonPlanetSystem } from '@alisa-engine/src/world/systems/RaccoonPlanetSystem.js';
+import { montarMundo } from '/js/montarMundo.js';
 
-import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
-
-const gfx = new AlisaRenderCore({
-    clearColor: 0x000008,
-    cameraPosition: new THREE.Vector3(0, 20, 55)
+/**
+ * ⚠️ TRES BANDERAS APAGADAS, Y CADA UNA POR UN MOTIVO DISTINTO.
+ *
+ *   `cielo:false`  — esto se mira desde órbita: el fondo es espacio, y el cielo
+ *                    atmosférico de Rayleigh pintaría un horizonte que aquí no
+ *                    existe.
+ *   `luces:false`  — la escena trae las suyas (ambiente frío + sol direccional),
+ *                    y son las que hacen que el terminador del planeta se lea.
+ *                    Añadir key+hemi+fill encima aplanaría justo eso.
+ *   `suelo:false`  — no hay suelo en órbita.
+ *
+ * Lo que SÍ entra, y es lo que esta página no tenía: tono filmico ACES, bloom y
+ * SSAO. El bloom es el que hace que las luces de los asentamientos parezcan
+ * luces y no puntos de color.
+ */
+const { app: gfx, arrancar, sonar } = await montarMundo({
+    ambiente: 'night',
+    cielo: false,
+    luces: false,
+    suelo: false,
+    nucleo: { clearColor: 0x000008, cameraPosition: new THREE.Vector3(0, 20, 55) },
 });
 const scene = gfx.scene;
 const camera = gfx.camera;
@@ -244,7 +265,14 @@ function updateHUD() {
     else document.getElementById('vFuelBar').style.background = 'linear-gradient(90deg, #ff3b30, #ff9500, #34c759)';
 }
 
-gfx.startLoop((dt) => {
+/**
+ * `arrancar`, no `gfx.startLoop`. Y la diferencia no es cosmética: `startLoop`
+ * pinta con el renderer pelado, así que con el pipeline registrado la página se
+ * vería SIN post-proceso —bloom, SSAO y tono filmico funcionando y sin llegar a
+ * la pantalla— y sin un solo error. `arrancar` ya trae puesta la función de
+ * pintado del pipeline.
+ */
+arrancar((dt) => {
     const time = gfx.clock.getElapsedTime() * 1000; // time in ms
     
     if (system.playing) {

@@ -108,6 +108,24 @@ const SABOTAJES = [
         vigila: 'que ningún play() apunte a un sonido que no existe',
     },
     {
+        nombre: 'mundo',
+        corre: 'node prueba_mundo.mjs',
+        fichero: 'public/js/montarMundo.js',
+        // El fallo REAL que `montarMundo` existe para impedir, medido antes de
+        // escribirlo: de las seis etapas de la saga, el pipeline cinematográfico
+        // —tono filmico, bloom, SSAO, cielo— lo importaban DOS. Nadie lo quitó:
+        // nadie lo copió. Cuando el andamio se copia a mano, lo que no es
+        // imprescindible se cae solo.
+        //
+        // El sabotaje lo devuelve a opcional. Es la dirección en que pasa de
+        // verdad —alguien lo hace opcional «para que no moleste al depurar»— y no
+        // rompe nada: las páginas siguen funcionando, sólo que feas. Y la fealdad
+        // no la mira ninguna batería.
+        de: 'if (cfg.cine !== false) {',
+        a: 'if (cfg.cine === true) {',
+        vigila: 'que el pipeline venga puesto de serie y no haya que acordarse',
+    },
+    {
         nombre: 'enfrentamiento',
         corre: 'node prueba_enfrentamiento.mjs',
         fichero: 'enfrentar.mjs',

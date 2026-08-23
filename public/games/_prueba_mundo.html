@@ -1,0 +1,105 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>ALISA — banco de pruebas de montarMundo</title>
+<!--
+  Página mínima para comprobar `montarMundo` EN UN NAVEGADOR DE VERDAD.
+
+  Lo que se comprueba aquí no se puede comprobar en Node: que el `importmap`
+  inyectado por un script clásico del <head> llegue a tiempo para los módulos que
+  vienen después. La regla del navegador es que un importmap añadido tras empezar
+  a cargar un módulo se rechaza — y «llega a tiempo» es justo lo que hay que ver
+  pasar, no razonar.
+
+  Deja el resultado en `window.RESULTADO` y en la consola con el prefijo [prueba].
+-->
+<script src="/js/mundo.js"></script>
+<style>
+  body { margin: 0; background: #05050a; color: #cfd; font: 13px/1.6 ui-monospace, monospace; }
+  #salida { position: fixed; inset: 12px auto auto 12px; z-index: 9; white-space: pre; }
+</style>
+<div id="salida">montando…</div>
+<script type="module">
+    const linea = [];
+    const di = (ok, que, extra = '') => {
+        linea.push(`${ok ? '✓' : '✗'} ${que}${extra ? '  ' + extra : ''}`);
+        console.log(`[prueba] ${ok ? 'OK ' : 'MAL'} ${que} ${extra}`);
+        return ok;
+    };
+    let todo = true;
+    try {
+        // 1 — el mapa común está puesto, y apunta a la versión que toca.
+        const mapa = document.querySelector('script[type="importmap"]');
+        todo &= di(!!mapa, 'hay importmap en la página');
+        todo &= di(!!mapa && mapa.textContent.includes('three-0.170.0'),
+            'el importmap apunta a three 0.170');
+
+        // 2 — montarMundo levanta el mundo entero.
+        const { montarMundo } = await import('/js/montarMundo.js');
+        const { app, THREE, cine, sonar, arrancar } = await montarMundo({ ambiente: 'night' });
+
+        todo &= di(!!THREE?.Scene, 'three resuelto por el mapa común');
+        todo &= di(!!app?.scene && !!app?.camera, 'AlisaRenderCore montado');
+        todo &= di(!!cine, 'el pipeline va PUESTO sin pedirlo');
+        todo &= di(!!cine?.composer, 'el pipeline tiene composer (post-proceso vivo)');
+        todo &= di(typeof arrancar === 'function', 'devuelve `arrancar` con el pintado del pipeline');
+
+        // 3 — el sonido llega, aunque no pueda sonar sin gesto del usuario.
+        todo &= di(!!window.SFX?.play, 'sfx.js cargado y con catálogo');
+        todo &= di(typeof sonar === 'function', 'hay atajo `sonar`');
+
+        /**
+         * 4 — y algo SE DIBUJA.
+         *
+         * ⚠️ NO SE CUENTAN FOTOGRAMAS DEL BUCLE, Y LA PRIMERA VERSIÓN SÍ.
+         *
+         * Contaba vueltas de `arrancar(...)` y daba «0 fotogramas» con el código
+         * perfectamente bien: la pestaña estaba en segundo plano
+         * (`visibilityState: "hidden"`) y ahí el navegador NO llama a
+         * `requestAnimationFrame`. La sonda llegó a colgarse esperando uno.
+         *
+         * O sea que medía el planificador del navegador, no nuestro código. Se
+         * pinta a mano una vez y se mira `renderer.info.render`, que cuenta
+         * DIBUJOS DE VERDAD —llamadas y triángulos— y vale igual con la pestaña
+         * escondida. Un fotograma dibujado a propósito prueba más que muchos
+         * fotogramas que quizá no ocurrieron.
+         */
+        const cubo = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2),
+            new THREE.MeshStandardMaterial({ color: 0xffb347 }));
+        app.add(cubo);
+        arrancar(() => { cubo.rotation.y += 0.01; });
+
+        /**
+         * ⚠️ SE MIDE `frame`, NO `calls`. Y `calls` ENGAÑA JUSTO AQUÍ.
+         *
+         * Medido en la pestaña, las dos rutas dan esto:
+         *
+         *     a pelo        4 llamadas · 26 triángulos · 102 líneas
+         *     con pipeline  1 llamada  ·  1 triángulo
+         *
+         * Leído sin pensar, el pipeline «dibuja menos». Y es al revés: `calls` se
+         * reinicia en cada render interno, así que después de un composer refleja
+         * sólo su ÚLTIMO pase — el rectángulo a pantalla completa del `OutputPass`,
+         * que es un triángulo. Lo que delata el trabajo es `frame`, que sí acumula:
+         * salta de 20 a 39, o sea DIECINUEVE pases internos en una sola llamada.
+         *
+         * Un número que baja cuando el trabajo sube es la peor clase de medida.
+         */
+        const antes = { ...app.renderer.info.render };
+        (cine ? cine.renderFn : () => app.renderer.render(app.scene, app.camera))();
+        const ahora = app.renderer.info.render;
+        const pases = ahora.frame - antes.frame;
+        todo &= di(pases >= (cine ? 2 : 1), 'dibuja de verdad',
+            `${pases} pases internos` + (cine
+                ? ` (${cine.composer.passes.map(p => p.constructor.name).join(' → ')})` : ''));
+        todo &= di(document.visibilityState === 'visible' || true,
+            `visibilidad: ${document.visibilityState}`,
+            document.visibilityState === 'visible' ? '' : '(escondida: por eso no se cuentan fotogramas)');
+    } catch (e) {
+        todo = false;
+        di(false, 'excepción', e.message);
+        console.error(e);
+    }
+    window.RESULTADO = { ok: !!todo, lineas: linea };
+    document.getElementById('salida').textContent =
+        (todo ? 'TODO BIEN\n\n' : 'HAY FALLOS\n\n') + linea.join('\n');
+</script>

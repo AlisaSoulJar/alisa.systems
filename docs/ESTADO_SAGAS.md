@@ -1,46 +1,74 @@
-# Raccoon Scape — estado de las 7 etapas
+# ¡Busca! y ¡Sobrevive! — estado de las dos sagas
 
-> Objetivo declarado: que la matrioska entera acabe siendo **un juego de
-> plataformas**. Paso previo: que las siete etapas funcionen.
+Hasta el 2026-08-23 esto era **una** saga de ocho etapas en fila, «Raccoon
+Scape». Esa fila mezclaba dos verbos que no se parecen: en unas etapas **buscas**
+algo que se esconde, y en las de cadena trófica lo que haces es **no ser lo que
+se comen**. Son dos habilidades, se miden distinto, y ahora son dos sagas.
 
-Destinos declarados en `rooms/room_tenshi_no_tamago.html` (la Sala del Huevo).
+> Objetivo declarado: que cada matrioska acabe siendo **un juego de plataformas**.
+> Paso previo: que las etapas funcionen.
+
+Destinos declarados en `rooms/room_tenshi_no_tamago.html` (la Sala del Huevo),
+que las pinta en **dos arcos**: ¡Busca! delante, ¡Sobrevive! detrás.
+
+## ¡Busca! — encontrar algo que se esconde
 
 | # | etapa | fichero | estado |
 |---|---|---|---|
 | 1 | Cabinet Escape | `games/croupier_cabinet_escape.html` | ✅ **reparado 2026-08-01** |
-| 2 | Interaction Lab | `labs/croupier_interaction_lab.html` | 🔬 **es un LABORATORIO, no una etapa** |
-| 3 | Chopper Aquarium | `labs/croupier_chopper_aquarium.html` | ✅ verificado (modo Human + semilla) |
-| 4 | Corp Building | `games/croupier_corporate_building.html` | ✅ **reparado 2026-08-01** |
-| 5 | City Sector | `games/raccoon_city_sector.html` | ✅ verificado |
-| 6 | Planet | `games/raccoon_planet.html` | ✅ verificado 2026-08-01 |
-| 7 | Space | `games/raccoon_space.html` | ✅ verificado |
+| 2 | Registro de Planta | `games/raccoon_floor_search.html` | ✅ **reconstruida**, tres niveles (con luz · sin luz · sin luz y con predador) |
+| 3 | Corp Building | `games/croupier_corporate_building.html` | ✅ **reparado 2026-08-01** |
+| 4 | City Sector | `games/raccoon_city_sector.html` | ✅ verificado |
+| 5 | Planet | `games/raccoon_planet.html` | ✅ verificado 2026-08-01 |
+| 6 | Space | `games/raccoon_space.html` | ✅ verificado |
 
-**Las 6 etapas jugables funcionan.** La 2 es un laboratorio y se queda como está.
+## ¡Sobrevive! — no ser lo que se comen
 
-Falta la etapa perdida (§ más abajo): buscar al mapache en una planta con
-habitaciones.
+| # | etapa | fichero | motor |
+|---|---|---|---|
+| 1 | Interaction Lab | `labs/croupier_interaction_lab.html` | `FoodChainSystem` — ratones, queso, zorros, raptores |
+| 2 | Chopper Aquarium | `labs/croupier_chopper_aquarium.html` | `EcosystemSystem` — plancton, peces, tiburones |
+
+Las dos estaban de etapas 2 y 3 de la saga de buscar, y **en ninguna se busca
+nada**. Eran las que Oscar señalaba como laboratorios: el sitio donde se
+prototipa comer y ser comido. Eso no es un desvío dentro de otra saga — es la
+saga entera de ¡Sobrevive!, y le faltan etapas por delante y por detrás.
+
+⚠️ `EcosystemSystem` usa `Math.random()` sin semilla, así que **hoy no puede
+entrar en el banco**: sin semilla no hay recibo, y lo que no verifica no puntúa.
+Es el primer arreglo pendiente de esta saga.
 
 **Criterio de "funciona"**: carga sin errores, arranca al pulsar su botón, y
 produce estado observable (marcador, posición, oleada…).
 
 ---
 
-## Laboratorio ≠ etapa
+## Las tres etapas que ¡Busca! aún no tiene
 
-Dos de las salas enlazadas **no son niveles del juego**, son bancos de prueba de
-los motores. Están bien como están, y valen como *prior art*:
+El orden que las ordena de menor a mayor —cada una más difícil que la anterior—
+pide nueve, y hay seis. Faltan, en su sitio:
 
-| sala | qué prueba |
-|---|---|
-| Interaction Lab | `FoodChainSystem` — ratones, queso, zorros, raptores |
-| Chopper Aquarium | `EcosystemSystem` — peces grandes, pequeños, tiburones |
+| iría en | etapa | qué añadiría sobre la anterior |
+|---|---|---|
+| entre 1 y 2 | **habitación** | un solo cuarto: escondites sin navegación |
+| entre 3 y 4 | **edificio (chopper)** | 18 plantas frente a las 6 del Corp Building |
+| entre 3 y 4 | **distrito** | varios edificios: elegir a cuál entrar |
 
-No hay que "arreglarlas" ni convertirlas en niveles: son el sitio donde se
-prototipan las mecánicas antes de que entren en un juego.
+⚠️ Y la dificultad medida **no sube de forma monótona** con el orden actual: el
+edificio es el más duro (24 sitios / 14 registros = **1,71** sitios por registro)
+mientras el distrito da **0,60** y el planeta **0,64**, o sea presupuesto de
+sobra. Antes de añadir etapas hay que recalibrar esos dos presupuestos, o la
+saga tiene su pico en el medio.
 
 ---
 
-## ⚠️ La etapa que FALTA: buscar al mapache en una planta
+## ✅ La etapa que se dio por perdida — y ya está en su sitio
+
+> Este apartado decía **«la etapa que FALTA»** hasta el 2026-08-23, y para
+> entonces llevaba tiempo hecha: es la etapa 2 de ¡Busca!,
+> `games/raccoon_floor_search.html`, con los tres niveles del original. Un doc
+> que dice «falta» cuando ya no falta hace buscar dos veces lo mismo. Se queda
+> lo que pasó —abajo— porque explica **cómo** se perdió, que sigue valiendo.
 
 Existió y se jugó. Está registrada en `lab_heritage.html`:
 
@@ -57,19 +85,20 @@ en las tres copias, así que se perdió antes y H: no lo alcanzó.
 Por eso no salía en ninguna búsqueda de "falta un fichero": el fichero está, con
 otro contenido dentro.
 
-### Se puede rehacer sin programar
+### Se rehízo sin programar casi nada
 
-Todas las piezas sobreviven, y la fábrica está **exactamente** con la forma que
-hace falta:
+Todas las piezas sobrevivían, y la fábrica estaba **exactamente** con la forma
+que hacía falta. Estado a 2026-08-23, ya con la etapa montada:
 
 | lo que necesita | lo que ya existe | estado |
 |---|---|---|
 | planta con habitaciones | `ProceduralBuildingFactory` — construye "Room behind the hole" por puerta | ✅ |
 | escondites buscables | expone `hidingSpots[]` por planta con `hasRaccoon` e `isSearched` | ✅ |
-| tele, ventana, bombilla | `VolumetricsPlugin.createApplianceBeam('tv'\|'window'\|'bulb')` | ⚠️ escritos, **nadie los llama** |
-| nevera | `createApplianceBeam('fridge')` | ✅ usado en el ascensor |
-| el predador | `PhantomFSMSystem` — FSM de emboscada ligada a la luz | ⚠️ 0 importadores |
+| tele, ventana, bombilla | `VolumetricsPlugin.createApplianceBeam('tv'\|'window'\|'bulb')` | ✅ **enchufadas** — la etapa las llama, y tres salas la bombilla |
+| nevera | `createApplianceBeam('fridge')` | ✅ etapa + ascensor |
+| el predador | `PhantomFSMSystem` — FSM de emboscada ligada a la luz | ✅ tiene su lab y su entorno de gym |
 | niveles con/sin luz | `isLightsOut` + `currentStage` | ✅ |
+| el sonido del interruptor | `SFX.play('toggle')` | ✅ **escrito 2026-08-23** — se pedía y el sonido no existía, así que la linterna era muda |
 | mobiliario por habitación | `room_types.json` (9 tipos) + `blueprints.json` + semilla | ⚠️ sin usar |
 | montarlo desde datos | `WorldBuilderSystem` entiende `appliance_beam` en manifiestos JSON | ⚠️ **ningún manifiesto lo declara** |
 
@@ -88,7 +117,7 @@ horas en el edificio corporativo.
 
 ---
 
-## Etapa 4 — Corporate Building: cinco fallos apilados
+## ¡Busca! 3 — Corp Building: cinco fallos apilados
 
 Estaba muerta. No uno: **cinco**, y ninguno daba un error que señalara la causa.
 
@@ -134,7 +163,7 @@ Al reventar se llevaba el resto de `build()`, incluido el `scene.add`.
 
 ---
 
-## Etapa 1 — Cabinet Escape: el `NaN` que no para
+## ¡Busca! 1 — Cabinet Escape: el `NaN` que no para
 
 `randomizeCuts()` calculaba `this.sys.episodes + 1` con `episodes` sin
 inicializar → `NaN`. Ese `NaN` llegaba a `fractalPartition` como profundidad, y

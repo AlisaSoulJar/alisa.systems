@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>ALISA — Raccoon Scape: Stage 5 — City Sector</title>
+    <title>ALISA — ¡Busca! 4 — City Sector</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #010205; font-family: monospace; color: #fff; user-select: none; }
         
@@ -82,21 +82,21 @@
         #mode-badges { position: fixed; top: 10px; right: 10px; z-index: 20; display: none; }
         #ai-data-layer { display: none; }
     </style>
-    <script type="importmap">
-    { 
-        "imports": { 
-            "three": "/vendor/three-0.160.0/build/three.module.js",
-            "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
-            "@alisa-engine/": "../js/alisa-engine/"
-        } 
-    }
-    </script>
+    <!--
+      El importmap común, en vez de la copia que había aquí apuntando a three
+      0.160. Ver `montarMundo.js`: seis etapas, seis declaraciones, y el pipeline
+      cinematográfico copiado en dos de las seis.
+
+      ⚠️ En el <head> y SIN defer: un importmap no se puede añadir una vez que ha
+      empezado a cargar un módulo, y los módulos van diferidos.
+    -->
+    <script src="/js/mundo.js"></script>
 </head>
 <body>
 
     <div id="modal">
         <div class="box">
-            <h1 id="mTitle"><span class="emoji">🦝🏙️</span>RACCOON SCAPE — CITY SECTOR</h1>
+            <h1 id="mTitle"><span class="emoji">🦝🏙️</span>¡BUSCA! 4 — CITY SECTOR</h1>
             <p id="mDesc">The raccoon is hiding in one of the buildings across the city.<br><br>
             Fly your drone over the rooftops and <b>scan each building</b>. The thermal scanner shows: 🟢 HOT → 🔴 COLD.<br><br>
             Powered by ALISA <b>RaccoonCitySystem</b> y <b>RaccoonEnvironmentFactory</b> ECS.</p>
@@ -132,14 +132,32 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RaccoonEnvironmentFactory } from '@alisa-engine/src/world/factories/RaccoonEnvironmentFactory.js';
 import { RaccoonCitySystem } from '@alisa-engine/src/world/systems/RaccoonCitySystem.js';
-import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+import { montarMundo } from '/js/montarMundo.js';
 
-const gfx = new AlisaRenderCore({
-    clearColor: 0x020408,
-    fogColor: 0x020408,
-    fogDensity: 0.004,
-    cameraPosition: new THREE.Vector3(80, 60, 80),
-    useShadows: true
+/**
+ * `luces:false` porque la ciudad trae las suyas y son la mitad de su aspecto: un
+ * hemisférico azulado muy bajo y una luna direccional fría a 0.4. Añadirle encima
+ * key+hemi+fill la dejaría plana y de día.
+ *
+ * `cielo:false` de momento, no por norma: la escena tiene niebla propia y un
+ * fondo casi negro, y encender el cielo de Rayleigh le cambiaría el horizonte
+ * entero. Es una decisión de arte, no técnica, y se enciende con una palabra
+ * cuando haya alguien mirando la pantalla.
+ *
+ * `suelo:false` porque el suelo se lo pone ella dos líneas más abajo.
+ */
+const { app: gfx, arrancar, sonar } = await montarMundo({
+    ambiente: 'night',
+    cielo: false,
+    luces: false,
+    suelo: false,
+    nucleo: {
+        clearColor: 0x020408,
+        fogColor: 0x020408,
+        fogDensity: 0.004,
+        cameraPosition: new THREE.Vector3(80, 60, 80),
+        useShadows: true,
+    },
 });
 const scene = gfx.scene;
 const camera = gfx.camera;
@@ -338,7 +356,9 @@ function drawMinimap() {
     ctx.stroke();
 }
 
-gfx.startLoop((dt) => {
+// `arrancar` y no `startLoop`: aquel pinta con el renderer pelado y dejaria el
+// post-proceso registrado, vivo, y sin llegar a la pantalla. Ver `montarMundo.js`.
+arrancar((dt) => {
     if (system.playing && !gameState.ended) {
         system.update(dt);
         

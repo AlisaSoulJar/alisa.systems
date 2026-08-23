@@ -48,7 +48,8 @@
 
     <div id="overlay">
         <h1>🥚 LA SALA DEL HUEVO</h1>
-        <p>The Nexus of the Raccoon Scape Matrioshka.<br>Select an arcade cabinet to jack into a simulation.</p>
+        <p>Dos sagas salen de aquí: <b>¡Busca!</b> —encontrar algo que se esconde— y
+        <b>¡Sobrevive!</b> —no ser lo que se comen.<br>Elige una recreativa para entrar.</p>
         <div class="instructions">
             <span class="kbd">CLICK + DRAG</span> to look around<br>
             <span class="kbd">MOUSE HOVER</span> to inspect arcades<br>
@@ -67,10 +68,26 @@ import * as THREE from 'three';
 import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
 
 // Stages Data
-const stages = [
-    { id: 1, name: "STAGE 1: Cabinet Escape", icon: "🗄️", color: 0x4488ff, url: "../games/croupier_cabinet_escape.html" },
-    { id: 2, name: "STAGE 2: Interaction Lab", icon: "🦊", color: 0xff6600, url: "../labs/croupier_interaction_lab.html" },
-    { id: 3, name: "STAGE 3: Chopper Aquarium", icon: "🚁", color: 0x1e88e5, url: "../labs/croupier_chopper_aquarium.html" },
+/**
+ * DOS SAGAS, NO UNA LISTA
+ * ─────────────────────────────────────────────────────────────────────────
+ * Hasta hoy esto era «Raccoon Scape», ocho etapas en fila, y esa fila mezclaba
+ * dos verbos distintos: en unas etapas BUSCAS algo que se esconde, y en otras
+ * —las de cadena trófica— lo que haces es no ser lo que se comen. Son dos
+ * habilidades y se miden distinto, así que son dos sagas.
+ *
+ * El número de etapa va DENTRO de su saga. Antes era global, y por eso los
+ * títulos de las páginas se quedaron una atrás en cuanto se insertó la planta:
+ * la sala decía «Stage 6: City Sector» y la propia página decía «Stage 5».
+ * Un número que vive en dos sitios acaba diciendo dos cosas.
+ */
+const SAGAS = {
+    busca:     { titulo: '¡Busca!',     verbo: 'encontrar algo que se esconde', radio: 12 },
+    sobrevive: { titulo: '¡Sobrevive!', verbo: 'no ser lo que se comen',        radio: 18 },
+};
+
+const etapas = [
+    { saga: 'busca', n: 1, titulo: "Cabinet Escape", icon: "🗄️", color: 0x4488ff, url: "../games/croupier_cabinet_escape.html" },
     // ── La etapa recuperada ──────────────────────────────────────────────
     // "Chopper Search (Building Floors)" existió, se jugó, y se perdió: alguien
     // reutilizó el nombre de su fichero para una prueba del plugin BSP y lo
@@ -80,13 +97,24 @@ const stages = [
     //
     // Va ANTES del edificio de seis plantas porque es su versión de una sola:
     // enseña la mecánica de registrar escondites antes de escalarla en altura.
-    { id: 4, name: "STAGE 4: Registro de Planta", icon: "🦝", color: 0xffb347, url: "../games/raccoon_floor_search.html" },
+    { saga: 'busca', n: 2, titulo: "Registro de Planta", icon: "🦝", color: 0xffb347, url: "../games/raccoon_floor_search.html" },
     // Estaba en `../` (la raíz de public). Vive con sus hermanos en games/.
-    { id: 5, name: "STAGE 5: Corp Building", icon: "🏢", color: 0x9933ff, url: "../games/croupier_corporate_building.html" },
-    { id: 6, name: "STAGE 6: City Sector", icon: "🏙️", color: 0xff3344, url: "../games/raccoon_city_sector.html" },
-    { id: 7, name: "STAGE 7: Planet Global", icon: "🌍", color: 0x33ffee, url: "../games/raccoon_planet.html" },
-    { id: 8, name: "STAGE 8: Interstellar", icon: "🌌", color: 0xff33ee, url: "../games/raccoon_space.html" }
+    { saga: 'busca', n: 3, titulo: "Corp Building", icon: "🏢", color: 0x9933ff, url: "../games/croupier_corporate_building.html" },
+    { saga: 'busca', n: 4, titulo: "City Sector", icon: "🏙️", color: 0xff3344, url: "../games/raccoon_city_sector.html" },
+    { saga: 'busca', n: 5, titulo: "Planet Global", icon: "🌍", color: 0x33ffee, url: "../games/raccoon_planet.html" },
+    { saga: 'busca', n: 6, titulo: "Interstellar", icon: "🌌", color: 0xff33ee, url: "../games/raccoon_space.html" },
+
+    // Las dos de cadena trófica. Estaban de etapas 2 y 3 de la saga de buscar, y
+    // nunca lo fueron: en ninguna de las dos se busca nada. Son el banco donde se
+    // prototipa comer y ser comido —`FoodChainSystem` y `EcosystemSystem`— y eso
+    // es la saga entera de ¡Sobrevive!, no un desvío dentro de la otra.
+    { saga: 'sobrevive', n: 1, titulo: "Interaction Lab", icon: "🦊", color: 0xff6600, url: "../labs/croupier_interaction_lab.html" },
+    { saga: 'sobrevive', n: 2, titulo: "Chopper Aquarium", icon: "🚁", color: 0x1e88e5, url: "../labs/croupier_chopper_aquarium.html" },
 ];
+
+// El rótulo se compone, no se escribe: así el número de la sala y el número de
+// la etapa no pueden discrepar nunca más.
+const stages = etapas.map((e) => ({ ...e, name: `${SAGAS[e.saga].titulo} ${e.n} — ${e.titulo}` }));
 
 // Initialize ALISA Render Core
 const app = new AlisaRenderCore({ clearColor: 0x050508, cameraPosition: new THREE.Vector3(0, 5, 15) });
@@ -146,14 +174,32 @@ fetchPulse();
 
 // Create Arcade Cabinets
 const cabinets = [];
-const arcRadius = 12;
-const angleStep = Math.PI / (stages.length - 1);
 
-stages.forEach((stage, i) => {
-    // Semi-circle arrangement (from left to right)
-    const angle = Math.PI + (i * angleStep);
-    const x = Math.cos(angle) * arcRadius;
-    const z = Math.sin(angle) * arcRadius;
+/**
+ * Un arco por saga: ¡Busca! delante, ¡Sobrevive! detrás.
+ *
+ * El abanico se abre EN PROPORCIÓN al número de etapas y se centra. El reparto
+ * de antes —repartir siempre el semicírculo entero— aquí dejaría las dos etapas
+ * de ¡Sobrevive! en las puntas opuestas de la sala, cada una mirando al huevo
+ * desde su esquina, como si no tuvieran nada que ver entre ellas. Y con una sola
+ * etapa, `PI / (n-1)` es una división por cero.
+ */
+const colocar = (lista, radio, cb) => {
+    const abanico = Math.PI * Math.min(1, lista.length / 6);
+    const paso = lista.length > 1 ? abanico / (lista.length - 1) : 0;
+    const inicio = Math.PI + (Math.PI - abanico) / 2;
+    lista.forEach((stage, i) => cb(stage, inicio + i * paso, radio));
+};
+
+const enArco = [];
+for (const clave of Object.keys(SAGAS)) {
+    colocar(stages.filter((s) => s.saga === clave), SAGAS[clave].radio,
+        (stage, angle, radio) => enArco.push({ stage, angle, radio }));
+}
+
+enArco.forEach(({ stage, angle, radio }) => {
+    const x = Math.cos(angle) * radio;
+    const z = Math.sin(angle) * radio;
 
     const group = new THREE.Group();
     group.position.set(x, 0, z);

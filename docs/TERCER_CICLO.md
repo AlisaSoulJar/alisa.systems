@@ -183,7 +183,7 @@ Y recuperados del backup, porque no estaban en el proyecto: `croupier_cabinet_es
 ## 6. El hall
 
 `rooms/room_tenshi_no_tamago.html` — «La Sala del Huevo», *the Nexus of the
-Raccoon Scape Matrioshka*. Una sala con máquinas recreativas: eliges cabina y te
+¡Busca! Matrioshka*. Una sala con máquinas recreativas: eliges cabina y te
 mete en una simulación. Las siete etapas son la matrioska entera —
 
 ```

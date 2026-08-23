@@ -4,7 +4,7 @@ import { ProceduralTextureFactory } from '../core/ProceduralTextureFactory.js';
 
 /**
  * RaccoonEnvironmentFactory
- * Generates planets, asteroids, and space bounds for Raccoon Scape.
+ * Generates planets, asteroids, and space bounds for the ¡Busca! saga.
  */
 export class RaccoonEnvironmentFactory {
     constructor() {

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 /**
  * RaccoonSpaceSystem
- * Headless ECS engine for Raccoon Scape's orbit kinematics, fuel drain, and collisions.
+ * Headless ECS engine for the ¡Busca! saga's orbit kinematics, fuel drain, and collisions.
  */
 export class RaccoonSpaceSystem {
     constructor(params = {}) {
