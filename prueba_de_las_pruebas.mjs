@@ -510,6 +510,21 @@ const SABOTAJES = [
          * pregunta buena —¿cambia lo que yo veo cuando otro elige distinto?— y eso
          * salió de aplicar el sabotaje, no de pensar más.
          */
+        /**
+         * El fallo que esta prueba existe para impedir: que la nota deje de
+         * depender de lo que haces. Congelar la recompensa de `ProtoHubEnv` deja
+         * planos de golpe a los treinta y cinco entornos que pasan por ahí, y todas
+         * las demás comprobaciones del banco siguen en verde — se importan, aceptan
+         * sus verbos y son repetibles. Repetiblemente inútiles.
+         */
+        nombre: 'senal',
+        corre: 'node prueba_senal.mjs',
+        fichero: 'public/js/alisa-engine/src/gym/ProtoHubEnv.js',
+        de: 'reward: ahora - antes,',
+        a: 'reward: 1,',
+        vigila: 'que la nota de un entorno dependa de lo que hace el jugador',
+    },
+    {
         nombre: 'sustrato:secreto',
         corre: 'node prueba_sustrato.mjs',
         fichero: 'public/arcade/js/protohub/rules/shinigami.js',

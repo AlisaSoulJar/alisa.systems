@@ -251,3 +251,56 @@ veces y alguien se olvidará.
 
 **De 40 juegos, cero** en los que ninguna jugada de apertura cambie el dibujo.
 Eran cinco esta mañana y seis contando `guerra`.
+
+
+---
+
+## 2026-08-23 (noche) — Lo que no distingue tampoco puntua
+
+El banco comprobaba que sus entornos son **repetibles**: misma semilla, mismo
+resultado. Esa es la mitad del contrato — *lo que no verifica, no puntua* — y la
+otra mitad no la miraba nadie:
+
+> **Un entorno que le da la misma nota a tres politicas distintas es
+> perfectamente verificable y no sirve para comparar a nadie.**
+
+Sale en verde en todas las comprobaciones que habia, publica su recibo, entra en
+la tabla, y la tabla no significa nada porque la nota no depende de lo que
+hiciste. Verde y sin significar nada, que es el modo de fallo de la casa.
+
+Medido sobre los 46 del catalogo: **siete no separan**.
+
+| entorno | notas | motivo |
+|---|---|---|
+| `RaccoonSpace` | 0, 0, 0 en 150 pasos | cero recompensa con 7 opciones por paso |
+| `ChopperAquarium` | 0, 0, 0 en 150 pasos | cero recompensa con 9 opciones por paso |
+| `snake` | 0, 0, 0 en 21 pasos | solo premia comer, y dando vueltas no se come |
+| `relevo` | -156 las tres | la recompensa es un castigo por paso |
+| `oca` | 250 las tres | los dados mandan, las jugadas son forzadas |
+| `guerra` | 28 las tres | juego de CONTROL: no hay nada que decidir ✅ |
+| `sokoban` | 100 en **un** paso | la semilla 1234 da un nivel trivial |
+
+Los dos ultimos tienen defensa. `sokoban` no: medido sobre 200 semillas, **el
+14% se resuelven de una sola jugada**, y la del banco es una de ellas.
+
+### La prueba tenia trampa propia, y me comio cuatro intentos
+
+«Las tres sacan lo mismo» solo significa algo si de verdad **jugaron distinto**.
+Cuatro veces seguidas no lo hacian, por cuatro motivos, y las cuatro el resultado
+parecia un hallazgo:
+
+1. `ciclo`/`primera`/`ultima` son la misma politica si hay una sola opcion.
+2. Mandar `opcion.verb` a secas junta los ocho cajones de CabinetEscape en uno:
+   lo que los distingue vive en `args.cajon`. **`check_gym_envs.mjs` tiene
+   este mismo fallo en su linea 77.**
+3. ⚠️ Mandar la **opcion entera** es peor: no da error y **no hace nada**. Medido
+   en oca — doce pasos, cero recompensa, el mismo `tirar` una y otra vez,
+   mientras `action` da 220. **La llamada mas natural para quien lee
+   `affordances()` es la que se ignora en silencio.**
+4. Y mi traza guardaba `args`, vacio en muchos entornos: entonces todas las
+   jugadas parecian la misma y salia «no hay eleccion que hacer» para entornos
+   con siete opciones por paso.
+
+Por eso `prueba_senal.mjs` publica cuantas trazas distintas hubo. Si son una,
+el instrumento no puede opinar y lo dice, en vez de acusar.
+

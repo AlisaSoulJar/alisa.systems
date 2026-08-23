@@ -43,7 +43,7 @@
 | flota | ● | ● | ● | · | ● | · | · | · | ? | ? | sí |
 | defensa | ● | · | ● | ● | ● | · | · | · | ? | ? | sí |
 | sigilo | ● | ● | ● | ● | ● | · | · | · | ? | ? | sí |
-| frentes | ● | · | ● | · | ● | ● | ? | · | ? | ? | no |
+| frentes | ● | · | ● | · | ● | · | ? | · | ? | ? | no |
 | relevo | ● | ● | ● | · | ● | · | ● | · | ? | ? | sí |
 | cabina | ● | · | ● | · | ● | · | ● | ● | ? | ? | sí |
 | rebano | ● | · | · | ● | ● | · | · | · | ? | ? | sí |
@@ -66,7 +66,7 @@
 - `rival`: **31/40**
 - `autonomo`: **8/40**
 - `irreversible`: **38/40**
-- `simultaneo`: **3/40**
+- `simultaneo`: **2/40**
 - `cooperativo`: **2/40**
 - `comunicacion`: **3/40**
 - `busqueda`: **null/40**
@@ -75,7 +75,7 @@
 ## Perfiles demostrados
 
 - `oculto+rival+irreversible` — blackjack, poker, brisca, tute, hearts, gofish, unit, entropy, remigio, chinchon, domino
-- `espacial+rival+irreversible` — ajedrez, go, reversi, damas, xiangqi, parchis, oca
+- `espacial+rival+irreversible` — ajedrez, go, reversi, damas, xiangqi, frentes, parchis, oca
 - `espacial+autonomo+irreversible` — fagocito, peaton, rebano, pradera
 - `espacial+irreversible` — snake, sokoban, marea
 - `espacial+oculto+rival+autonomo+irreversible` — sigilo, canadiense
@@ -85,7 +85,6 @@
 - `espacial+oculto+autonomo+irreversible` — cripta
 - `espacial+oculto+rival+irreversible` — flota
 - `espacial+rival+autonomo+irreversible` — defensa
-- `espacial+rival+irreversible+simultaneo` — frentes
 - `espacial+oculto+rival+irreversible+cooperativo` — relevo
 - `espacial+rival+irreversible+cooperativo+comunicacion` — cabina
 - `espacial+oculto+rival+irreversible+simultaneo` — nave
