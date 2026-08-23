@@ -202,7 +202,7 @@
    "ruta": "gym/registro.js",
    "nombre": "registro",
    "familia": "gym",
-   "kb": 17.1
+   "kb": 18.1
   },
   {
    "ruta": "gym/envs/AsteroidsEnv.js",
@@ -223,6 +223,12 @@
    "kb": 7.5
   },
   {
+   "ruta": "gym/envs/CorpBuildingEnv.js",
+   "nombre": "CorpBuildingEnv",
+   "familia": "envs",
+   "kb": 12.8
+  },
+  {
    "ruta": "gym/envs/MarabuntaEnv.js",
    "nombre": "MarabuntaEnv",
    "familia": "envs",
@@ -233,12 +239,6 @@
    "nombre": "RaccoonSpaceEnv",
    "familia": "envs",
    "kb": 6.3
-  },
-  {
-   "ruta": "gym/envs/CorpBuildingEnv.js",
-   "nombre": "CorpBuildingEnv",
-   "familia": "envs",
-   "kb": 12.8
   },
   {
    "ruta": "psyche/FSMSystem.js",
@@ -685,12 +685,6 @@
    "kb": 7.7
   },
   {
-   "ruta": "world/factories/MarabuntaEnvironmentFactory.js",
-   "nombre": "MarabuntaEnvironmentFactory",
-   "familia": "factories",
-   "kb": 29.3
-  },
-  {
    "ruta": "world/factories/DojoEnvironmentFactory.js",
    "nombre": "DojoEnvironmentFactory",
    "familia": "factories",
@@ -719,6 +713,12 @@
    "nombre": "LocomotionEnvironmentFactory",
    "familia": "factories",
    "kb": 14.7
+  },
+  {
+   "ruta": "world/factories/MarabuntaEnvironmentFactory.js",
+   "nombre": "MarabuntaEnvironmentFactory",
+   "familia": "factories",
+   "kb": 29.3
   },
   {
    "ruta": "world/factories/NeonSignFactory.js",
@@ -823,12 +823,6 @@
    "kb": 13.8
   },
   {
-   "ruta": "world/systems/MarabuntaSystem.js",
-   "nombre": "MarabuntaSystem",
-   "familia": "systems",
-   "kb": 10.8
-  },
-  {
    "ruta": "world/systems/EcosystemSystem.js",
    "nombre": "EcosystemSystem",
    "familia": "systems",
@@ -917,6 +911,12 @@
    "nombre": "LinearNavAgentSystem",
    "familia": "systems",
    "kb": 2.4
+  },
+  {
+   "ruta": "world/systems/MarabuntaSystem.js",
+   "nombre": "MarabuntaSystem",
+   "familia": "systems",
+   "kb": 10.8
   },
   {
    "ruta": "world/systems/NavMeshAgentSystem.js",

@@ -253,6 +253,34 @@ def main():
             llevados.append(p)
             continue
 
+        # ⚠️ UN FICHERO QUE EMPIEZA POR `_` ES UN BANCO DE PRUEBAS, NO UNA PAGINA.
+        #
+        # Hay comprobaciones que solo se pueden hacer en un navegador de verdad
+        # —que un `importmap` inyectado llegue a tiempo, que el composer pinte— y
+        # viven como HTML servible porque no hay otra forma. Pero no son el sitio:
+        # `_prueba_mundo.html` viajaba al dominio publico como si fuera un juego.
+        #
+        # La convencion ya estaba puesta en `gen_lab_index.py` para que el catalogo
+        # no las ofreciera, y aqui faltaba — o sea que no salian en el indice y aun
+        # asi estaban servidas. Media convencion es la que se olvida.
+        #
+        # ⚠️ Y SOLO PARA `.html`, QUE LA PRIMERA VERSION ERA `p.name.startswith("_")`
+        # A SECAS Y SE LLEVO POR DELANTE `_routes.json`.
+        #
+        # En Cloudflare la configuracion se llama con barra baja por diseño:
+        # `_headers`, `_redirects`, `_routes.json`. Los dos primeros estaban
+        # exceptuados justo encima —hay medio comentario ahi explicando lo que
+        # costo— y el tercero no, asi que la regla ancha dejaba el sitio sin la
+        # declaracion de rutas de las Functions. Lo caza la comprobacion de que
+        # `_routes.json` viaja, que es por lo que se mira despues de empaquetar y
+        # no se da por bueno el resumen.
+        #
+        # La convencion es de PAGINAS: un `.html` que empieza por `_` es un banco
+        # de pruebas. Los datos y la configuracion no entran en ella.
+        if p.name.startswith("_") and p.suffix.lower() == ".html":
+            dejados["taller"].append((p, "banco de pruebas"))
+            continue
+
         ext = p.suffix.lower()
         if ext in TALLER or (ext not in WEB and ext):
             dejados["taller"].append((p, ext))

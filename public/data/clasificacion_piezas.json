@@ -1,5 +1,5 @@
 {
- "fecha": "2026-08-21",
+ "fecha": "2026-08-23",
  "total": 179,
  "cuenta": {
   "apagada": 120,
@@ -830,7 +830,7 @@
    "ruta": "gym/registro.js",
    "nombre": "registro",
    "familia": "gym",
-   "kb": 17.1,
+   "kb": 18.1,
    "clase": "apagada",
    "exporta": [
     "CATALOGO",
@@ -939,6 +939,37 @@
    ]
   },
   {
+   "ruta": "gym/envs/CorpBuildingEnv.js",
+   "nombre": "CorpBuildingEnv",
+   "familia": "envs",
+   "kb": 12.8,
+   "clase": "gym",
+   "exporta": [
+    "CorpBuildingEnv"
+   ],
+   "arranque": [],
+   "gym": [
+    "reset",
+    "step",
+    "getObservation"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "_rng",
+    "reset",
+    "_hint",
+    "step",
+    "getObservation",
+    "describe",
+    "affordances",
+    "actFromVerb",
+    "getScore",
+    "bayesianBaseline"
+   ]
+  },
+  {
    "ruta": "gym/envs/MarabuntaEnv.js",
    "nombre": "MarabuntaEnv",
    "familia": "envs",
@@ -988,37 +1019,6 @@
     "getObservation",
     "describe",
     "affordances"
-   ]
-  },
-  {
-   "ruta": "gym/envs/CorpBuildingEnv.js",
-   "nombre": "CorpBuildingEnv",
-   "familia": "envs",
-   "kb": 12.8,
-   "clase": "gym",
-   "exporta": [
-    "CorpBuildingEnv"
-   ],
-   "arranque": [],
-   "gym": [
-    "reset",
-    "step",
-    "getObservation"
-   ],
-   "actualiza": false,
-   "usa_three_sin_importar": false,
-   "arranca_al_importar": false,
-   "metodos": [
-    "_rng",
-    "reset",
-    "_hint",
-    "step",
-    "getObservation",
-    "describe",
-    "affordances",
-    "actFromVerb",
-    "getScore",
-    "bayesianBaseline"
    ]
   },
   {
@@ -2803,41 +2803,6 @@
    "luces": 0
   },
   {
-   "ruta": "world/factories/MarabuntaEnvironmentFactory.js",
-   "nombre": "MarabuntaEnvironmentFactory",
-   "familia": "factories",
-   "kb": 29.3,
-   "clase": "escena",
-   "exporta": [
-    "MarabuntaEnvironmentFactory"
-   ],
-   "arranque": [
-    "buildAll",
-    "init"
-   ],
-   "gym": [],
-   "actualiza": true,
-   "usa_three_sin_importar": false,
-   "arranca_al_importar": false,
-   "metodos": [
-    "_loadModels",
-    "buildAll",
-    "setCore",
-    "init",
-    "update",
-    "syncState",
-    "_setupProceduralWeapons",
-    "_setupArena",
-    "_setupPlayer",
-    "_enemyGeo",
-    "_getEntityVisualParams",
-    "_syncCrates"
-   ],
-   "objetos": 0,
-   "mallas": 0,
-   "luces": 0
-  },
-  {
    "ruta": "world/factories/DojoEnvironmentFactory.js",
    "nombre": "DojoEnvironmentFactory",
    "familia": "factories",
@@ -2864,7 +2829,7 @@
     "syncKatamariConsumption"
    ],
    "objetos": 54,
-   "mallas": 135,
+   "mallas": 132,
    "luces": 4
   },
   {
@@ -2988,6 +2953,41 @@
    "objetos": 39,
    "mallas": 105,
    "luces": 20
+  },
+  {
+   "ruta": "world/factories/MarabuntaEnvironmentFactory.js",
+   "nombre": "MarabuntaEnvironmentFactory",
+   "familia": "factories",
+   "kb": 29.3,
+   "clase": "escena",
+   "exporta": [
+    "MarabuntaEnvironmentFactory"
+   ],
+   "arranque": [
+    "buildAll",
+    "init"
+   ],
+   "gym": [],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "_loadModels",
+    "buildAll",
+    "setCore",
+    "init",
+    "update",
+    "syncState",
+    "_setupProceduralWeapons",
+    "_setupArena",
+    "_setupPlayer",
+    "_enemyGeo",
+    "_getEntityVisualParams",
+    "_syncCrates"
+   ],
+   "objetos": 0,
+   "mallas": 0,
+   "luces": 0
   },
   {
    "ruta": "world/factories/NeonSignFactory.js",
@@ -3482,35 +3482,6 @@
    ]
   },
   {
-   "ruta": "world/systems/MarabuntaSystem.js",
-   "nombre": "MarabuntaSystem",
-   "familia": "systems",
-   "kb": 10.8,
-   "clase": "apagada",
-   "exporta": [
-    "MarabuntaSystem"
-   ],
-   "arranque": [],
-   "gym": [
-    "reset"
-   ],
-   "actualiza": true,
-   "usa_three_sin_importar": false,
-   "arranca_al_importar": false,
-   "metodos": [
-    "getState",
-    "reset",
-    "_updateShield",
-    "update",
-    "_updateBossLogic",
-    "_updatePuddles",
-    "_killEnemy",
-    "_damageEnemy",
-    "_fireWeapon",
-    "_updateSpecials"
-   ]
-  },
-  {
    "ruta": "world/systems/EcosystemSystem.js",
    "nombre": "EcosystemSystem",
    "familia": "systems",
@@ -3871,6 +3842,35 @@
    "arranca_al_importar": false,
    "metodos": [
     "update"
+   ]
+  },
+  {
+   "ruta": "world/systems/MarabuntaSystem.js",
+   "nombre": "MarabuntaSystem",
+   "familia": "systems",
+   "kb": 10.8,
+   "clase": "apagada",
+   "exporta": [
+    "MarabuntaSystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "reset"
+   ],
+   "actualiza": true,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "getState",
+    "reset",
+    "_updateShield",
+    "update",
+    "_updateBossLogic",
+    "_updatePuddles",
+    "_killEnemy",
+    "_damageEnemy",
+    "_fireWeapon",
+    "_updateSpecials"
    ]
   },
   {

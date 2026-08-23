@@ -1,6 +1,6 @@
 # Matriz de géneros
 
-> Generado por `matriz_generos.mjs` **jugando** los 38 juegos.
+> Generado por `matriz_generos.mjs` **jugando** los 40 juegos.
 > No hay ninguna etiqueta escrita a mano: `●` medido presente, `·` medido ausente,
 > `?` no observable. Se clasifica por estructura de decisión y no por género de
 > tienda, porque «puzle» o «cartas» no dicen qué hay que saber hacer para jugar bien.
@@ -13,65 +13,71 @@
 - **simultaneo** — se decide a la vez: el segundo no ve lo que eligió el primero
 - **cooperativo** — los dos asientos ganan o pierden juntos
 - **comunicacion** — hay jugadas que sólo cambian lo que sabe el otro
+- **busqueda** — lo que no ves se destapa con lo que haces: encontrar ES el juego
+- **presupuesto** — hay un recurso que se gasta y no vuelve: encontrar ANTES de quedarte sin
 
-| juego | espacial | oculto | rival | autonomo | irreversible | simultaneo | cooperativo | comunicacion | el resultado depende de quién juega |
-|---|---|---|---|---|---|---|---|---|---|
-| ajedrez | ● | · | ● | · | ● | · | ? | · | no |
-| go | ● | · | ● | · | ● | · | ? | · | no |
-| reversi | ● | · | ● | · | ● | · | ? | · | no |
-| damas | ● | · | ● | · | ● | · | ? | · | no |
-| xiangqi | ● | · | ● | · | ● | · | ? | · | no |
-| mancala | ● | · | ● | · | ● | · | ? | · | no |
-| snake | ● | · | · | · | ● | · | · | · | no |
-| fagocito | ● | · | · | ● | ● | · | · | · | no |
-| peaton | ● | · | · | ● | ● | · | · | · | no |
-| blackjack | · | ● | ● | · | ● | · | ? | · | sí |
-| poker | · | ● | ● | · | ● | · | ? | · | sí |
-| brisca | · | ● | ● | · | ● | · | · | · | sí |
-| tute | · | ● | ● | · | ● | · | · | · | sí |
-| hearts | · | ● | ● | · | ● | · | ? | · | sí |
-| spades | · | ● | ● | · | ● | · | ? | ● | no |
-| guerra | · | ● | · | · | ● | · | · | · | sí |
-| gofish | · | ● | ● | · | ● | · | ? | · | sí |
-| unit | · | ● | ● | · | ● | · | · | · | sí |
-| entropy | · | ● | ● | · | ● | · | · | · | sí |
-| sokoban | ● | · | · | · | ● | · | · | · | sí |
-| cripta | ● | ● | · | ● | ● | · | · | · | sí |
-| flota | ● | ● | ● | · | ● | · | · | · | sí |
-| defensa | ● | · | ● | ● | ● | · | · | · | sí |
-| sigilo | ● | ● | ● | ● | ● | · | · | · | sí |
-| frentes | ● | · | ● | · | ● | ● | ? | · | no |
-| relevo | ● | ● | ● | · | ● | · | ● | · | sí |
-| cabina | ● | · | ● | · | ● | · | ● | ● | sí |
-| rebano | ● | · | · | ● | ● | · | · | · | sí |
-| pradera | ● | · | · | ● | ● | · | · | · | sí |
-| nave | ● | ● | ● | · | ● | ● | ? | · | sí |
-| remigio | · | ● | ● | · | ● | · | · | · | sí |
-| chinchon | · | ● | ● | · | ● | · | · | · | sí |
-| alisapolis | ● | ● | ● | · | · | · | ? | · | sí |
-| parchis | ● | · | ● | · | ● | ? | ? | ? | sí |
-| generala | · | · | ● | · | ● | · | · | · | sí |
-| oca | ● | · | ● | · | ● | · | · | · | sí |
-| canadiense | ● | ● | ● | ● | ● | · | · | · | sí |
-| domino | · | ● | ● | · | ● | · | · | · | sí |
+| juego | espacial | oculto | rival | autonomo | irreversible | simultaneo | cooperativo | comunicacion | busqueda | presupuesto | el resultado depende de quién juega |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| ajedrez | ● | · | ● | · | ● | · | · | · | ? | ? | no |
+| go | ● | · | ● | · | ● | · | · | · | ? | ? | no |
+| reversi | ● | · | ● | · | ● | · | · | · | ? | ? | no |
+| damas | ● | · | ● | · | ● | · | ? | · | ? | ? | no |
+| xiangqi | ● | · | ● | · | ● | · | · | · | ? | ? | no |
+| mancala | ● | · | ● | · | ● | · | · | · | ? | ? | no |
+| snake | ● | · | · | · | ● | · | · | · | ? | ? | no |
+| fagocito | ● | · | · | ● | ● | · | · | · | ? | ? | no |
+| peaton | ● | · | · | ● | ● | · | · | · | ? | ? | no |
+| blackjack | · | ● | ● | · | ● | · | ? | · | ? | ? | sí |
+| poker | · | ● | ● | · | ● | · | ? | · | ? | ? | sí |
+| brisca | · | ● | ● | · | ● | · | · | · | ? | ? | sí |
+| tute | · | ● | ● | · | ● | · | · | · | ? | ? | sí |
+| hearts | · | ● | ● | · | ● | · | ? | · | ? | ? | sí |
+| spades | · | ● | ● | · | ● | · | ? | ● | ? | ? | no |
+| guerra | · | ● | · | · | ● | · | · | · | ? | ? | sí |
+| gofish | · | ● | ● | · | ● | · | ? | · | ? | ? | sí |
+| unit | · | ● | ● | · | ● | · | · | · | ? | ? | sí |
+| entropy | · | ● | ● | · | ● | · | · | · | ? | ? | sí |
+| sokoban | ● | · | · | · | ● | · | · | · | ? | ? | sí |
+| marea | ● | · | · | · | ● | · | · | · | ? | ? | sí |
+| cripta | ● | ● | · | ● | ● | · | · | · | ? | ? | sí |
+| flota | ● | ● | ● | · | ● | · | · | · | ? | ? | sí |
+| defensa | ● | · | ● | ● | ● | · | · | · | ? | ? | sí |
+| sigilo | ● | ● | ● | ● | ● | · | · | · | ? | ? | sí |
+| frentes | ● | · | ● | · | ● | ● | ? | · | ? | ? | no |
+| relevo | ● | ● | ● | · | ● | · | ● | · | ? | ? | sí |
+| cabina | ● | · | ● | · | ● | · | ● | ● | ? | ? | sí |
+| rebano | ● | · | · | ● | ● | · | · | · | ? | ? | sí |
+| pradera | ● | · | · | ● | ● | · | · | · | ? | ? | sí |
+| nave | ● | ● | ● | · | ● | ● | ? | · | ? | ? | sí |
+| yokai | · | · | ● | · | ● | ● | ? | · | ? | ? | sí |
+| remigio | · | ● | ● | · | ● | · | · | · | ? | ? | sí |
+| chinchon | · | ● | ● | · | ● | · | · | · | ? | ? | sí |
+| alisapolis | ● | ● | ● | · | · | · | ? | · | ? | ? | sí |
+| parchis | ● | · | ● | · | ● | ? | ? | ? | ? | ? | sí |
+| generala | · | · | ● | · | ● | · | · | · | ? | ? | sí |
+| oca | ● | · | ● | · | ● | · | · | · | ? | ? | sí |
+| canadiense | ● | ● | ● | ● | ● | · | · | · | ? | ? | sí |
+| domino | · | ● | ● | · | ● | · | · | · | ? | ? | sí |
 
 ## Cobertura
 
-- `espacial`: **24/38**
-- `oculto`: **20/38**
-- `rival`: **30/38**
-- `autonomo`: **8/38**
-- `irreversible`: **37/38**
-- `simultaneo`: **2/38**
-- `cooperativo`: **2/38**
-- `comunicacion`: **2/38**
+- `espacial`: **25/40**
+- `oculto`: **20/40**
+- `rival`: **31/40**
+- `autonomo`: **8/40**
+- `irreversible`: **39/40**
+- `simultaneo`: **3/40**
+- `cooperativo`: **2/40**
+- `comunicacion`: **2/40**
+- `busqueda`: **null/40**
+- `presupuesto`: **null/40**
 
 ## Perfiles demostrados
 
 - `oculto+rival+irreversible` — blackjack, poker, brisca, tute, hearts, gofish, unit, entropy, remigio, chinchon, domino
 - `espacial+rival+irreversible` — ajedrez, go, reversi, damas, xiangqi, mancala, parchis, oca
 - `espacial+autonomo+irreversible` — fagocito, peaton, rebano, pradera
-- `espacial+irreversible` — snake, sokoban
+- `espacial+irreversible` — snake, sokoban, marea
 - `espacial+oculto+rival+autonomo+irreversible` — sigilo, canadiense
 - `oculto+rival+irreversible+comunicacion` — spades
 - `oculto+irreversible` — guerra
@@ -82,5 +88,6 @@
 - `espacial+oculto+rival+irreversible+cooperativo` — relevo
 - `espacial+rival+irreversible+cooperativo+comunicacion` — cabina
 - `espacial+oculto+rival+irreversible+simultaneo` — nave
+- `rival+irreversible+simultaneo` — yokai
 - `espacial+oculto+rival` — alisapolis
 - `rival+irreversible` — generala
