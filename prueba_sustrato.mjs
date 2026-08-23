@@ -49,7 +49,7 @@ globalThis.fetch = async (e, i) => {
  * TECHO_DERIVADOS a 17»— y nadie lo hacía, porque salía en verde y un aviso en verde
  * no lo lee nadie. Un trinquete que no se aprieta cuando avanza no aprieta.
  */
-const TECHO_DERIVADOS = 16;
+const TECHO_DERIVADOS = 15;   // 23-08: guerra publica el suyo. Antes 16.
 
 let fallos = 0;
 const mal = (m) => { fallos++; console.log(`  ✗ ${m}`); };
@@ -112,6 +112,34 @@ for (const juego of JUEGOS) {
     }
     for (const pz of sus.piezas) {
         if (!Number.isFinite(pz.x) || !Number.isFinite(pz.y)) mal(`${juego}: pieza sin posición`);
+    }
+
+    /**
+     * 1.ter — LOS MONTONES DEL SUSTRATO SUMAN LO QUE EL JUEGO DICE QUE HAY.
+     *
+     * `guerra` ya vigilaba en `estado()` que no se le evaporasen cartas
+     * (`cartas_en_juego` / `cartas_intactas`), y ese contador estaba impecable
+     * mientras la pantalla no dibujaba absolutamente nada, porque no tenía
+     * sustrato. Al escribírselo, la primera medida dio **54 de 52**: la mesa
+     * enseña las dos cartas del choque, pero al voltear esas cartas YA se han
+     * movido a `bote` y de ahí a `ganadas` en el mismo movimiento. Enseñarlas es
+     * correcto; contarlas otra vez, no.
+     *
+     * De ahí `reflejo: true`: una zona que mira a cartas que viven en otro sitio.
+     * Sin esta comprobación, el error se ve exactamente igual que un juego bueno
+     * — dos cartas de más en un montón boca abajo no las nota nadie a ojo.
+     *
+     * Se aplica a cualquier juego que publique el total: quien dice cuántas
+     * cartas hay, tiene que dibujar esas y no otras.
+     */
+    if (Number.isFinite(st.cartas_en_juego) && sus.zonas.length) {
+        const enMontones = sus.zonas
+            .filter(z => !z.reflejo)
+            .reduce((t, z) => t + z.items.length + z.ocultas, 0);
+        if (enMontones !== st.cartas_en_juego) {
+            mal(`${juego}: el estado dice ${st.cartas_en_juego} cartas en juego y los `
+              + `montones del sustrato suman ${enMontones}`);
+        }
     }
 
     /**

@@ -108,6 +108,20 @@ const SABOTAJES = [
         vigila: 'que ningún play() apunte a un sonido que no existe',
     },
     {
+        /**
+         * El fallo real de la segunda mitad: `movioLaPantalla` elegía la PRIMERA
+         * jugada legal y con eso acusó a seis juegos sanos, porque la primera de
+         * `defensa` es `pasar` y la de `relevo` es `esperar`. Dejarla en una sola
+         * candidata reproduce exactamente ese error, y la prueba tiene que verlo.
+         */
+        nombre: 'veredicto:jugada',
+        corre: 'node prueba_veredicto.mjs',
+        fichero: 'veredicto.mjs',
+        de: 'legales.slice(0, jugadas > 0 ? 24 : 0)',
+        a: 'legales.slice(0, jugadas > 0 ? 1 : 0)',
+        vigila: 'que se prueben todas las jugadas y no sólo la primera, que suele ser «pasar»',
+    },
+    {
         nombre: 'veredicto',
         corre: 'node prueba_veredicto.mjs',
         fichero: 'veredicto.mjs',
@@ -477,6 +491,20 @@ const SABOTAJES = [
         de: '    sustrato',
         a: '    sustrato_QUITADO',
         vigila: 'que el estado sea una matriz plana y no lo pierda ningún juego',
+    },
+    {
+        /**
+         * El fallo real: al escribirle el sustrato a `guerra` salieron 54 cartas de
+         * 52. Las dos de más eran las del choque, que la mesa enseña boca arriba
+         * pero que YA se han movido a `ganadas` en el mismo `mover()`. Se marcaron
+         * con `reflejo: true`; quitárselo devuelve el error exacto.
+         */
+        nombre: 'sustrato:cuenta',
+        corre: 'node prueba_sustrato.mjs',
+        fichero: 'public/arcade/js/protohub/rules/guerra.js',
+        de: ', reflejo: true },',
+        a: ' },',
+        vigila: 'que los montones dibujados sumen las cartas que el juego dice que hay',
     },
     {
         nombre: 'openapi',

@@ -109,3 +109,65 @@ renderizador 2D universal. Con el sustrato encima, el orden se aclara:
 > misma partida, y por eso la partida se puede comprobar sin fiarse de nadie.
 
 Hoy esa frase es una intención. Con el sustrato pasa a ser una descripción.
+
+
+---
+
+## 2026-08-23 — «Le doy a voltear y no pasa nada», y era verdad en la pantalla
+
+`guerra` no tenía sustrato. Medido con la semilla del aviso, cada pulsación
+mueve el estado entero:
+
+```
+mazo_restante   52 → 50 → 48 → 46
+ultima_ronda    ["H_2","D_Q"] → ["C_A","D_2"] → ["H_K","C_8"]
+ganadas         [0,2] → [2,2] → [4,2]
+```
+
+Y el sustrato salía `rejilla: null`, cero piezas, cero zonas. El árbitro
+impecable, la pantalla sin nada que dibujar. Tercera vez en el mismo día con esa
+forma, y segunda con esta causa exacta: `mancala` estaba igual por la mañana.
+
+Ahora publica seis montones —`mazo`, `choque`×2, `bote`, `ganadas`×2— y la deuda
+del adaptador baja de 16 a 15.
+
+### La mesa es un reflejo, no un sitio
+
+Al escribirlo salieron **54 cartas de 52**. Las dos de más eran las del choque:
+`mover()` las manda a `bote` y de ahí a `ganadas` en el mismo movimiento, y
+`ultima` sólo las recuerda para poder enseñarlas. Enseñarlas está bien; contarlas
+otra vez, no. De ahí `reflejo: true`, y una comprobación nueva en
+`prueba_sustrato.mjs`: **quien publique `cartas_en_juego` tiene que dibujar esas
+cartas y no otras**. Dos de más en un montón boca abajo no las nota nadie a ojo.
+
+### El buzón ahora juega la jugada antes de opinar
+
+`veredicto.mjs` sólo sabía dos respuestas para «no pasa nada» —la jugada existía,
+o la partida estaba atascada— y las dos hablan del árbitro. Falta la tercera, que
+es la que más se repite: **la jugada existe, el árbitro mueve, y no se ve.**
+`movioLaPantalla()` la contesta jugando de verdad y comparando el sustrato.
+
+⚠️ Y su primera versión acusó a **seis juegos sanos**, porque probaba la PRIMERA
+jugada legal: la de `defensa` es `pasar`, la de `relevo` es `esperar`, la de
+`shinigami` es `senalar`. Jugadas que por definición no mueven el tablero. Ahora
+prueba todas y pregunta lo que pregunta quien pulsa: *¿hay alguna jugada que se
+vea?* Los dos casos están en `prueba_veredicto.mjs` — sin ellos la comprobación
+aprobaba con el cable cortado, y lo dijo `prueba_de_las_pruebas.mjs`.
+
+### Los cinco que siguen sin acusar recibo
+
+Con el instrumento ya arreglado, quedan cinco juegos donde **ninguna** jugada de
+apertura cambia el dibujo:
+
+| juego | primeras legales | qué pasa |
+|---|---|---|
+| `spades` | `apostar:0…13` | se apuesta y la mesa no lo enseña |
+| `shinigami` | `senalar:b…h` | se señala y no se marca lo señalado |
+| `cabina` | `di:arriba…` | se dice una dirección y no se ve dicha |
+| `frentes` | — | sin comprobar a mano |
+| `nave` | — | sin comprobar a mano |
+
+Los tres primeros comparten forma: **la jugada es una declaración, y el sustrato
+no tiene sitio para declaraciones**. No es el fallo de `guerra` —ahí no había
+nada— pero es el mismo síntoma para quien pulsa. Los dos últimos no se han
+mirado, y se dice.

@@ -84,6 +84,70 @@ export async function crearGuerra({ url = RUTA_BIBLIOTECA, jugadores = 2 } = {})
             };
         },
 
+        /**
+         * ⚠️ GUERRA NO TENÍA SUSTRATO, Y POR ESO «NO PASABA NADA».
+         * ═══════════════════════════════════════════════════════════════════════
+         *     «le doy a voltear y no pasa nada»   — aviso del 23-08-2026
+         *
+         * El árbitro estaba impecable. Medido con la semilla del propio aviso, cada
+         * pulsación mueve TODO:
+         *
+         *     mazo_restante  52 → 50 → 48 → 46
+         *     ultima_ronda   ["H_2","D_Q"] → ["C_A","D_2"] → ["H_K","C_8"]
+         *     ganadas        [0,2] → [2,2] → [4,2]
+         *
+         * Y el sustrato salía `rejilla: null`, cero piezas y cero zonas. O sea que
+         * la persona pulsaba, el estado entero cambiaba, y la pantalla no tenía
+         * absolutamente nada que dibujar. «No pasa nada» era literal y era verdad:
+         * no pasaba nada EN LA PANTALLA.
+         *
+         * Es la tercera vez hoy con la misma forma —árbitro bien, pantalla mintiendo—
+         * y la segunda con esta causa exacta: mancala estaba igual esta mañana.
+         *
+         * Un juego de guerra son cuatro montones y dos cartas boca arriba:
+         *
+         *     mazo    el que queda por repartir, tapado
+         *     mesa    las DOS cartas del choque — lo único que se mira
+         *     bote    lo empatado que espera al siguiente choque
+         *     ganadas cuántas lleva cada uno
+         *
+         * `ocultas` cuenta lo tapado sin decir qué es, que es justo lo que se sabe
+         * de un montón boca abajo. Las dos de la mesa van con su cara porque están
+         * boca arriba: son el juego.
+         */
+        sustrato(p, asiento = 0) {
+            const yo = asiento % 2 === 0 ? 0 : 1;
+            const el = 1 - yo;
+            const ultima = Array.isArray(p.ultima) ? p.ultima : [];
+            return {
+                // Sin rejilla: esto es una mesa de cartas, no un tablero.
+                rejilla: null,
+                piezas: [],
+                zonas: [
+                    { id: 'mazo', de: null, items: [], ocultas: p.mazo.length, apilada: true },
+                    // ⚠️ LA MESA ES UN REFLEJO, NO UN SITIO. Al voltear, las cartas
+                    // pasan a `bote` y de ahí a `ganadas` en el MISMO movimiento;
+                    // `ultima` sólo recuerda cuáles fueron para poder enseñarlas. Al
+                    // sumar los montones salían 54 de 52 — dos de más, exactamente las
+                    // dos de la mesa. Quien cuente cartas tiene que saltarse `reflejo`.
+                    // Se llama `choque` y no `mesa` porque `mesa` es como
+                    // `mesa_cartas.mjs` llama al grupo de las zonas de nadie: dos
+                    // cosas distintas con el mismo nombre en la misma pantalla.
+                    { id: 'choque', de: yo, items: ultima[yo] ? [ultima[yo]] : [], ocultas: 0, reflejo: true },
+                    { id: 'choque', de: el, items: ultima[el] ? [ultima[el]] : [], ocultas: 0, reflejo: true },
+                    { id: 'bote', de: null, items: [], ocultas: p.bote.length, apilada: true },
+                    { id: 'ganadas', de: yo, items: [], ocultas: p.ganadas[yo] ?? 0, apilada: true },
+                    { id: 'ganadas', de: el, items: [], ocultas: p.ganadas[el] ?? 0, apilada: true },
+                ],
+                leyenda: {
+                    mazo: 'el mazo por repartir',
+                    choque: 'las cartas volteadas',
+                    bote: 'lo empatado, en juego',
+                    ganadas: 'tus cartas ganadas',
+                },
+            };
+        },
+
         mover(p, jugada) {
             if (String(jugada) !== 'voltear') return false;
             if (p.mazo.length < p.jugadores) return false;

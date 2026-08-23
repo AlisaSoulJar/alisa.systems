@@ -124,6 +124,53 @@ const fallos = [];
         + gris(`  (go: ${r.detalle})`));
 }
 
+// ── 4.bis «No pasa nada al pulsar» se contesta JUGÁNDOLO ──
+/**
+ * ⚠️ Y LA TRAMPA DE ESTA COMPROBACIÓN ES ELEGIR MAL LA JUGADA.
+ *
+ * `movioLaPantalla` nació porque el aviso de `guerra` —«le doy a voltear y no
+ * pasa nada»— era cierto y no lo era: el árbitro movía las 52 cartas y el juego
+ * no publicaba sustrato, así que la pantalla no tenía nada que dibujar.
+ *
+ * Su primera versión jugaba tres veces la PRIMERA jugada legal y acusó a seis
+ * juegos sanos: la primera legal de `defensa` es `pasar`, la de `relevo` es
+ * `esperar` y la de `shinigami` es `senalar` — jugadas que por definición no
+ * mueven el tablero. Por eso aquí se comprueba con juegos que SÍ mueven algo
+ * evidente: si `damas` o `guerra` dejan de verse, es que la comprobación volvió
+ * a elegir mal, y ese es el fallo que se busca.
+ */
+{
+    const { movioLaPantalla } = await import('./veredicto.mjs');
+    const seVen = [];
+    /**
+     * ⚠️ `defensa` Y `relevo` SON LOS QUE HACEN QUE ESTO SIRVA DE ALGO.
+     *
+     * Con sólo damas/guerra/sokoban/go esta comprobación aprobaba igual con el
+     * cable cortado —lo dijo `prueba_de_las_pruebas.mjs`— porque en los cuatro la
+     * PRIMERA jugada legal ya se ve, y el sabotaje que reduce la búsqueda a una
+     * sola candidata no cambiaba nada. Los dos que lo destapan son justo los dos
+     * que engañaron al instrumento: `defensa` empieza por `pasar` y `relevo` por
+     * `esperar`. Si alguien vuelve a coger sólo la primera, aquí se cae.
+     */
+    for (const j of ['damas', 'guerra', 'sokoban', 'go', 'defensa', 'relevo']) {
+        const reglas = await cargarReglas(j, {});
+        const m = movioLaPantalla(reglas, { juego: j });
+        if (!m.arbitroMueve) fallos.push(`${j}: el árbitro no mueve ni jugando — eso no es de pantalla`);
+        else if (!m.pantallaMueve) fallos.push(`${j}: ninguna jugada cambia el dibujo (${m.detalle})`
+            + ' — o el juego está roto, o esta comprobación elige mal la jugada');
+        else seVen.push(`${j}: ${m.detalle}`);
+    }
+    if (seVen.length === 6) {
+        console.log(`  ${verde('✓')} en los seis, alguna jugada SÍ cambia el dibujo`
+            + gris(`  (${seVen[0]})`));
+    }
+
+    // Y el veredicto usa esa medida: con reglas delante, no dice «sin-datos».
+    const reglas = await cargarReglas('guerra', {});
+    const v = veredicto({ juego: 'guerra', comentario: 'le doy a voltear y no pasa nada' }, { reglas });
+    if (v.familia !== 'pulsar') fallos.push(`«no pasa nada» debería ser de la familia pulsar y es «${v.familia}»`);
+}
+
 // ── 5. Y nunca dice «arreglado» ──
 {
     const posibles = new Set(REALES.map(([, t]) => veredicto({ comentario: t }, { reglas: null }).estado));

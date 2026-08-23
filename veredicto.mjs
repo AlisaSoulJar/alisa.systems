@@ -34,6 +34,8 @@
  */
 
 /** Las familias de queja, por lo que dicen. El orden importa: gana la primera. */
+import { obtenerSustrato } from './public/arcade/js/protohub/sustrato.js';
+
 const FAMILIAS = [
     ['casa', /juego yo solo|juego solo|la casa no|no saca|va solo|no juega/i],
     /**
@@ -99,6 +101,81 @@ export function repartoDeTurnos(reglas, semilla = 7, tope = 300) {
  * la persona vio. Lo más que se afirma es DÓNDE está el problema, que es lo que
  * de verdad ahorra tiempo.
  */
+/**
+ * Se juega una jugada de verdad y se mira si el DIBUJO cambia con el estado.
+ *
+ * Dos preguntas distintas y las dos baratas:
+ *
+ *   arbitroMueve    ¿cambia el estado al mover? (si no, el fallo es de reglas)
+ *   pantallaMueve   ¿cambia el sustrato? (si no, el fallo es de pantalla)
+ *
+ * ⚠️ Y HAY QUE PASAR POR EL ADAPTADOR, O ESTO ACUSA A QUINCE INOCENTES.
+ *
+ * La primera versión miraba sólo `reglas.sustrato` y daba «la pantalla no se
+ * mueve» para el ajedrez, que se dibuja perfectamente: no publica el suyo porque
+ * lo DERIVA el adaptador, como otros catorce. O sea que el instrumento habría
+ * suspendido a quince juegos sanos para cazar a uno enfermo — el fallo que ya
+ * está escrito arriba en `familia`: cuando una comprobación nueva acusa a mucha
+ * gente, la rota suele ser ella.
+ *
+ * Se mide, por tanto, lo que el jugador acabaría viendo: el sustrato EFECTIVO,
+ * nativo o derivado. Es lo único que responde a la pregunta del aviso.
+ */
+export function movioLaPantalla(reglas, { semilla = 4, jugadas = 3, juego = '' } = {}) {
+    const foto = (x) => { try { return JSON.stringify(x); } catch { return null; } };
+    let p;
+    try { p = reglas.nuevaPartida({ semilla, seed: semilla }); }
+    catch { return { arbitroMueve: false, pantallaMueve: false, detalle: 'no arranca partida' }; }
+
+    const nativo = typeof reglas.sustrato === 'function';
+    const sus = (q, st) => {
+        try { return obtenerSustrato(juego, reglas, q, st); } catch { return null; }
+    };
+
+    /**
+     * ⚠️ NO VALE LA PRIMERA JUGADA LEGAL: HAY QUE PROBARLAS TODAS.
+     *
+     * Esto jugaba tres veces seguidas la primera de la lista, y acusó a SEIS
+     * juegos de tener la pantalla congelada. Mirados a mano, la primera legal de
+     * los tres que revisé era `pasar` (defensa), `esperar` (relevo) y
+     * `senalar:b` (shinigami): jugadas que por definición NO mueven el tablero.
+     * El estado cambia —turno, reloj— y el dibujo no debe cambiar. Los juegos
+     * estaban bien; el instrumento elegía mal.
+     *
+     * Segunda vez hoy que una comprobación nueva suspende a mucha gente y la rota
+     * es ella. La pregunta honesta no es «¿mueve la pantalla ESTA jugada?» sino
+     * «¿hay ALGUNA jugada que se vea?» — que es lo que pregunta quien pulsa.
+     *
+     * Se rearranca la partida por cada candidata en vez de copiarla: `nuevaPartida`
+     * es barato y una partida no siempre se puede clonar.
+     */
+    const st0 = reglas.estado(p);
+    const legales = (st0.legal_moves ?? []).filter(x => x !== 'nueva' && x !== 'reset');
+    const dibujo0 = foto(sus(p, st0));
+    const estados = new Set([foto(st0)]);
+    let movidas = 0;
+    let pantallaMueve = false;
+    let laQueSeVe = null;
+
+    for (const m of legales.slice(0, jugadas > 0 ? 24 : 0)) {
+        let q;
+        try { q = reglas.nuevaPartida({ semilla, seed: semilla }); } catch { break; }
+        if (!reglas.mover(q, m)) continue;
+        movidas++;
+        const stn = reglas.estado(q);
+        estados.add(foto(stn));
+        if (foto(sus(q, stn)) !== dibujo0) { pantallaMueve = true; laQueSeVe = m; break; }
+    }
+
+    const arbitroMueve = estados.size > 1;
+    const detalle = !movidas ? 'ninguna jugada se pudo hacer'
+        : pantallaMueve
+            ? `«${laQueSeVe}» sí cambia el dibujo (sustrato ${nativo ? 'propio' : 'derivado'})`
+            : `probadas ${movidas} jugada(s) y NINGUNA cambia el dibujo `
+              + `(sustrato ${nativo ? 'propio' : 'derivado'})`;
+    return { arbitroMueve, pantallaMueve, nativo, movidas, detalle };
+}
+
 export function veredicto(aviso, { reglas = null, cambiosDesde = null } = {}) {
     const f = familia(aviso?.comentario);
     if (!f) return { estado: 'mirar', familia: null, porque: 'no encaja en ninguna familia conocida' };
@@ -123,6 +200,33 @@ export function veredicto(aviso, { reglas = null, cambiosDesde = null } = {}) {
     }
 
     if (f === 'pulsar') {
+        /**
+         * ⚠️ HAY UNA TERCERA RESPUESTA, Y ES LA QUE MÁS SE REPITE.
+         *
+         * Esto sólo sabía decir dos cosas —«la jugada existía» o «estaba
+         * atascada»— y las dos hablan del ÁRBITRO. El 23-08 el aviso de `guerra`
+         * («le doy a voltear y no pasa nada») no era ni una ni otra: la jugada era
+         * legal, el árbitro movía las 52 cartas de sitio a cada pulsación, y el
+         * juego NO TENÍA SUSTRATO. `rejilla: null`, cero piezas, cero zonas. La
+         * persona pulsaba, cambiaba el estado entero, y la pantalla no tenía nada
+         * que dibujar: «no pasa nada» era literal y era verdad, pero en la pantalla.
+         *
+         * Tercera vez en el mismo día con la misma forma —árbitro impecable,
+         * pantalla mintiendo— y segunda con esta causa exacta: mancala estaba igual
+         * por la mañana. Un patrón que sale tres veces en un día merece que lo
+         * pregunte una máquina en vez de descubrirlo a mano cada vez.
+         *
+         * Y va DELANTE del recuento de jugadas legales porque contesta más: el
+         * recuento sólo dice si el clic pudo llegar; esto dice si, habiendo
+         * llegado, se vería.
+         */
+        if (reglas) {
+            const m = movioLaPantalla(reglas, { juego: aviso?.juego ?? '' });
+            if (m.arbitroMueve && !m.pantallaMueve) {
+                return { estado: 'pantalla', familia: f, porque: `el árbitro SÍ mueve y el sustrato no: ${m.detalle}` };
+            }
+        }
+
         const n = Number(aviso?.estado?.legal_moves);
         if (!Number.isFinite(n)) return { estado: 'sin-datos', familia: f, porque: 'el aviso no trae cuántas jugadas había' };
         return n > 0
