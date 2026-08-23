@@ -311,6 +311,80 @@ export const nave = {
         };
     },
 
+    /**
+     * ⚠️ NAVE FUE LA QUINTA CASA QUE SE INVENTÓ LOS «DICHOS» POR SU CUENTA.
+     *
+     * Y la que mejor lo tenía escrito: `p.dichos` guarda `{ronda, silla, jugada}`
+     * desde el principio, y el comentario de arriba ya dice que es PÚBLICO —«son
+     * acusaciones a la cara»—. Lo tenía en el estado, lo tenía en `describir`, y no
+     * lo tenía en el sustrato: o sea que quien mirase la pantalla veía el plano de
+     * la nave y ni una palabra de la junta, que es donde se decide la partida.
+     *
+     * Medido el 23-08: ninguna de las cuatro jugadas de apertura cambiaba el
+     * dibujo. Eso incluye `esperar` —que no debe cambiarlo— pero también moverse,
+     * porque el mapa de esta silla ya la tiene a ella dibujada donde estaba. Con
+     * `dichos` puesto, la junta se ve; el paseo por los pasillos se mira aparte.
+     *
+     * Todo público y sin filtro por asiento, a propósito: aquí se acusa en voz
+     * alta, y la ley de este fichero —la de `jugadasDeDebate`— es que la lista no
+     * puede depender de lo que cada uno sabe, o la partida no se re-simula.
+     */
+    dichos(p, asiento = 0) {
+        const COMO = { acuso: 'acusa a', defiendo: 'defiende a' };
+        const salida = [];
+
+        /**
+         * ⚠️ Y LO PRIMERO ES TU PROPIA ELECCIÓN PENDIENTE, QUE ES LO QUE FALTABA.
+         *
+         * Esta nave es SIMULTÁNEA de punta a punta: `mover()` guarda en `p.oculta`
+         * y no aplica nada hasta que han elegido los cuatro —está escrito ahí mismo,
+         * «se GUARDA, no se aplica»—. Es la decisión correcta: si se viera al
+         * momento, el último en mover tendría toda la información.
+         *
+         * Pero el efecto secundario era que pulsabas «arriba» y no pasaba NADA en tu
+         * pantalla: el mapa no se mueve porque aún no te has movido, y no había
+         * ningún otro sitio donde apareciera que ya habías elegido. Medido: las
+         * cuatro jugadas de apertura dejaban el dibujo idéntico.
+         *
+         * Tu elección es tuya y va marcada `secreto`. Y de los demás sólo el hecho
+         * de haber elegido, que ya lo dice el turno.
+         */
+        const COMO_ORDEN = { esperar: 'quedarte quieto', arriba: 'ir arriba', abajo: 'ir abajo',
+                             izquierda: 'ir a la izquierda', derecha: 'ir a la derecha' };
+        const yo = p.gente[asiento] ?? p.gente[0];
+        const mio = p.oculta?.[yo.silla];
+        if (mio) {
+            const como = COMO_ORDEN[mio] ?? String(mio).replace(':', ' a ');
+            salida.push({
+                de: asiento, a: null, que: p.junta ? 'dice' : 'elige', valor: mio,
+                texto: `has elegido ${como} — falta que elijan los demás`,
+                vigente: true, secreto: true,
+            });
+        }
+        const faltan = p.gente.filter(g => g.vivo && !(g.silla in (p.oculta ?? {}))).length;
+        if (mio && faltan) {
+            salida.push({ de: null, a: null, que: 'espera', valor: faltan,
+                          texto: `faltan ${faltan} por elegir`, vigente: true });
+        }
+
+        for (const d of p.dichos ?? []) {
+            const [verbo, a] = String(d.jugada).split(':');
+            const de = SILLAS.indexOf(d.silla);
+            if (!COMO[verbo] || !a) {
+                if (String(d.jugada) === 'callar') {
+                    salida.push({ de, a: null, que: 'callar', valor: null,
+                                  texto: `${d.silla} calla`, vigente: true, ronda: d.ronda });
+                }
+                continue;
+            }
+            salida.push({
+                de, a: null, que: 'acusacion', valor: verbo, sobre: a,
+                texto: `${d.silla} ${COMO[verbo]} ${a}`, vigente: true, ronda: d.ronda,
+            });
+        }
+        return salida;
+    },
+
     describir(p, asiento = 0) {
         const st = this.estado(p, asiento);
         const papel = st.soy_impostor

@@ -499,6 +499,25 @@ const SABOTAJES = [
          * pero que YA se han movido a `ganadas` en el mismo `mover()`. Se marcaron
          * con `reflejo: true`; quitárselo devuelve el error exacto.
          */
+        /**
+         * El fallo real: enseñarle a todo el mundo la elección nocturna del
+         * primero. En shinigami eso no es un dibujo raro, es el final del juego —
+         * quien lo viera sabría quiénes son los shinigami en la primera noche.
+         *
+         * ⚠️ Y este sabotaje ya sirvió de algo antes de entrar aquí: con él puesto,
+         * la primera versión de la comprobación APROBÓ. Miraba el `de` del dicho, y
+         * el dicho filtrado sigue diciendo ser tuyo. Hubo que cambiarla por la
+         * pregunta buena —¿cambia lo que yo veo cuando otro elige distinto?— y eso
+         * salió de aplicar el sabotaje, no de pensar más.
+         */
+        nombre: 'sustrato:secreto',
+        corre: 'node prueba_sustrato.mjs',
+        fichero: 'public/arcade/js/protohub/rules/shinigami.js',
+        de: 'const mio = p.oculta?.[yo.silla];',
+        a: 'const mio = Object.values(p.oculta ?? {})[0];',
+        vigila: 'que la elección a solas de una silla no se vea desde otra',
+    },
+    {
         nombre: 'sustrato:cuenta',
         corre: 'node prueba_sustrato.mjs',
         fichero: 'public/arcade/js/protohub/rules/guerra.js',

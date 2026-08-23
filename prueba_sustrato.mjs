@@ -143,6 +143,28 @@ for (const juego of JUEGOS) {
     }
 
     /**
+     * 1.quater — LOS `dichos` TIENEN FORMA, Y LA MÁS IMPORTANTE ES `texto`.
+     *
+     * La quinta estructura del contrato: lo que alguien DICE. Un dicho sin `texto`
+     * no lo puede enseñar ninguna de las tres puertas —ni el panel, ni el canvas,
+     * ni el describidor para modelos— así que sería un dato que existe y no llega
+     * a nadie: exactamente el fallo que esta estructura viene a arreglar.
+     *
+     * `de` tiene que ser un asiento de verdad o `null` (lo dice la mesa). Un `de`
+     * apuntando a un asiento que no existe pinta una fila con el nombre de nadie.
+     */
+    for (const d of (sus.dichos ?? [])) {
+        if (!d || typeof d !== 'object') { mal(`${juego}: un dicho que no es objeto`); continue; }
+        if (typeof d.texto !== 'string' || !d.texto) mal(`${juego}: un dicho sin texto que enseñar`);
+        if (d.de !== null && d.de !== undefined && !Number.isInteger(d.de)) {
+            mal(`${juego}: un dicho con de='${d.de}', que no es un asiento`);
+        }
+        if (d.a !== null && d.a !== undefined && !Number.isInteger(d.a)) {
+            mal(`${juego}: un dicho dirigido a '${d.a}', que no es un asiento`);
+        }
+    }
+
+    /**
      * 1.bis — LA NIEBLA NO SE FILTRA.
      *
      * Esta comprobación existe porque en este proyecto la información oculta se
@@ -217,6 +239,121 @@ for (const juego of JUEGOS) {
         sus.zonas.length ? `${sus.zonas.length} zonas` : null,
     ].filter(Boolean).join(' · ') || '(sin sustrato espacial)';
     console.log(`  ${sus.derivado ? '·' : '✓'} ${juego.padEnd(10)} ${resumen}`);
+}
+
+/**
+ * ⚠️ 1.quinquies — UN SECRETO DICHO A SOLAS NO SE VE DESDE OTRA SILLA.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * La quinta estructura trae su propia forma de filtrar información, y en esta
+ * casa la información oculta ya se ha escapado DOS VECES —la mano del rival,
+ * las jugadas legales de otro— las dos en silencio y las dos porque alguien
+ * publicó el estado entero «para poder dibujarlo».
+ *
+ * En shinigami eso no sería un fallo, sería el final del juego: `p.oculta` tiene
+ * la elección nocturna de los ocho, y quien la viera sabría quiénes son los
+ * shinigami en la primera noche. La partida seguiría funcionando, seguiría
+ * puntuando, y la tabla diría que los aldeanos juegan buenísimo.
+ *
+ * La regla es dura y sencilla: un dicho marcado `secreto` sólo lo ve quien lo
+ * dijo. Se comprueba jugando y mirando desde TODAS las sillas, no desde la
+ * primera — mirar sólo desde la 0 es como comprobar una cerradura empujando la
+ * puerta que ya está abierta.
+ */
+{
+    let mirados = 0, sillas = 0;
+    for (const juego of JUEGOS) {
+        const reglas = await cargarReglas(juego, {});
+        if (typeof reglas.dichos !== 'function') continue;
+        const n = Number(reglas.ASIENTOS) || 2;
+        const p = reglas.nuevaPartida({ semilla: 7, seed: 7 });
+        for (let i = 0; i < 6; i++) {
+            const st = reglas.estado(p, 0);
+            if (st.is_game_over) break;
+            const m = (st.legal_moves ?? []).filter(x => x !== 'nueva' && x !== 'reset')[0];
+            if (!m || !reglas.mover(p, m)) break;
+        }
+        mirados++;
+        for (let a = 0; a < n; a++) {
+            sillas++;
+            for (const d of (reglas.dichos(p, a) ?? [])) {
+                if (d?.secreto && d.de !== a) {
+                    mal(`${juego}: desde el asiento ${a} se ve el secreto del ${d.de} («${d.texto}»)`);
+                }
+            }
+        }
+    }
+    if (mirados) {
+        console.log(`  ✓ dichos    ${mirados} juegos hablan · ${sillas} sillas miradas, `
+                  + `ningún secreto ajeno a la vista`);
+    }
+
+    /**
+     * ⚠️ Y LO DE ARRIBA MIRA LA ETIQUETA, NO EL SECRETO. HACE FALTA ESTA.
+     *
+     * Comprobado sabotéandola: cambiar el filtro de shinigami por
+     * `Object.values(p.oculta)[0]` —o sea, enseñarle a TODOS la elección del
+     * primero— y la comprobación de arriba APROBÓ. Normal: el dicho filtrado sigue
+     * saliendo con `de` = quien mira, así que por fuera parece suyo. Lo que se
+     * escapa es el CONTENIDO, y ninguna etiqueta lo delata.
+     *
+     * La pregunta que sí lo caza no es «¿de quién dice ser?» sino **«¿cambia lo que
+     * yo veo cuando otro elige distinto?»**. Si cambia, estoy viendo lo suyo.
+     *
+     * Se juegan dos partidas con la MISMA semilla en las que sólo cambia la primera
+     * elección, y se compara la vista de la segunda silla. En una noche de
+     * shinigami nadie muere hasta que amanece, así que las jugadas legales de la
+     * segunda silla son las mismas en las dos partidas: la única diferencia posible
+     * es la fuga. Es específica de este juego a propósito — la niebla se comprueba
+     * donde hay niebla, y aquí es donde el secreto decide la partida.
+     */
+    const conSecreto = [];
+    for (const juego of JUEGOS) {
+        const reglas = await cargarReglas(juego, {});
+        if (typeof reglas.dichos !== 'function') continue;
+
+        const legales = (q) => (reglas.estado(q, 0).legal_moves ?? [])
+            .filter(x => x !== 'nueva' && x !== 'reset');
+        const vista = (p, a) => JSON.stringify((reglas.dichos(p, a) ?? []).filter(d => d.secreto));
+        /**
+         * ⚠️ SE PARA EN CUANTO HAY SECRETO PENDIENTE, Y ESO NO ES UN DETALLE.
+         *
+         * La primera versión jugaba cuatro veces a lo tonto y sólo cazaba a
+         * shinigami. En `frentes` (dos sillas) y en `nave` (cuatro) la ronda se
+         * RESUELVE cuando han elegido todos, y al resolverse `p.oculta` se vacía:
+         * a los cuatro movimientos no quedaba ningún secreto que mirar, así que
+         * los dos juegos se descartaban solos por «no tiene secretos». Un número
+         * fijo de jugadas mide juegos con ritmos distintos como si fueran el mismo.
+         */
+        const jugarCon = (primera) => {
+            const p = reglas.nuevaPartida({ semilla: 7, seed: 7 });
+            const l0 = legales(p);
+            if (l0.length < 2) return null;
+            reglas.mover(p, l0[primera]);
+            for (let i = 0; i < 4 && vista(p, 0) === '[]'; i++) {
+                const l = legales(p);
+                if (!l[0] || !reglas.mover(p, l[0])) break;
+            }
+            return p;
+        };
+        const conA = jugarCon(0), conB = jugarCon(1);
+        if (!conA || !conB) continue;
+        // Sin secretos no hay nada que filtrar: este juego habla en voz alta.
+        if (vista(conA, 0) === '[]' && vista(conB, 0) === '[]') continue;
+        conSecreto.push(juego);
+
+        if (vista(conA, 0) === vista(conB, 0)) {
+            mal(`${juego}: la primera silla elige distinto y su propia vista no cambia`
+              + ' — o no se publica el secreto propio, o esta comprobación no está jugando');
+        } else if (vista(conA, 1) !== vista(conB, 1)) {
+            mal(`${juego}: la SEGUNDA silla ve algo distinto según lo que eligió la primera`
+              + ` — el secreto se filtra (${vista(conA, 1)} ≠ ${vista(conB, 1)})`);
+        }
+    }
+    if (conSecreto.length) {
+        console.log(`  ✓ dichos    la elección de una silla no cambia lo que ve otra`
+                  + `  (${conSecreto.join(', ')})`);
+    }
 }
 
 /**

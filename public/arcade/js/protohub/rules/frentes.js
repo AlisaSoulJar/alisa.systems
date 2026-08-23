@@ -102,6 +102,57 @@ export const frentes = {
         };
     },
 
+    /**
+     * ⚠️ ELEGÍAS UN FRENTE Y NO SE VEÍA NI DESDE TU PROPIA SILLA.
+     *
+     * El comentario de `sustrato` tiene razón en lo suyo: la elección pendiente no
+     * puede asomar, porque el segundo en mover jugaría otro juego. Pero de ahí no
+     * se sigue que no la vea NADIE — se sigue que no la vea EL OTRO.
+     *
+     * Y lo que pasaba es lo segundo: medido el 23-08, ninguna de las cinco jugadas
+     * de apertura cambiaba el dibujo. Elegías `b`, el estado lo guardaba en
+     * `p.oculta`, y tu pantalla se quedaba exactamente igual que antes de elegir —
+     * indistinguible de que el clic no hubiera llegado. En un juego de cinco
+     * botones donde pulsar uno es la jugada entera.
+     *
+     * Así que se publica tu elección a ti, marcada `secreto`, que es la misma
+     * solución que la noche de shinigami. Y se publica también el HECHO de que el
+     * rival ya haya elegido, sin decir qué: eso no es información nueva —te toca
+     * mover, luego él ya movió— y sin ella la pantalla no distingue «esperando» de
+     * «te toca a ti».
+     */
+    dichos(p, asiento = 0) {
+        const yo = BANDOS[asiento] ?? BANDOS[0], el = otro(yo);
+        const salida = [];
+        const mio = p.oculta?.[yo];
+        if (mio !== null && mio !== undefined) {
+            salida.push({
+                de: asiento, a: null, que: 'elige', valor: letras[mio], sobre: letras[mio],
+                texto: `has elegido el frente ${letras[mio]}`, vigente: true, secreto: true,
+            });
+        }
+        const suyo = p.oculta?.[el];
+        if (suyo !== null && suyo !== undefined) {
+            // El QUÉ no; el QUE YA, sí: es lo mismo que dice el turno.
+            salida.push({
+                de: 1 - asiento, a: null, que: 'elige', valor: null,
+                texto: 'el rival ya ha elegido, sin decir dónde', vigente: true,
+            });
+        }
+        // Y lo resuelto es público: es lo que explica el tablero de ahora.
+        const ultima = (p.historial ?? [])[p.historial.length - 1];
+        if (ultima) {
+            salida.push({
+                de: null, a: null, que: 'resultado', valor: ultima.choque ? 'choque' : 'reparto',
+                texto: ultima.choque
+                    ? `ronda ${ultima.ronda}: los dos fueron a ${letras[ultima.azul]} — choque`
+                    : `ronda ${ultima.ronda}: azul a ${letras[ultima.azul]}, rojo a ${letras[ultima.rojo]}`,
+                vigente: false,
+            });
+        }
+        return salida;
+    },
+
     describir(p, asiento = 0) {
         const st = this.estado(p, asiento);
         const marcador = Array.from({ length: FRENTES }, (_, x) =>

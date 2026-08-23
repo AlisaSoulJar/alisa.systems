@@ -187,6 +187,34 @@ export async function crearGoFish({ url = RUTA_BIBLIOTECA, jugadores = 3, mano =
             };
         },
 
+        /**
+         * ⚠️ ESTE ES EL CUARTO QUE SE INVENTÓ LOS «DICHOS» POR SU CUENTA.
+         *
+         * Y el que mejor lo tenía: `p.preguntas` guarda `{de, a, rango, acierta}`
+         * desde siempre, y el comentario de `estado` ya lo llama «el tablero de
+         * este juego». Tenía razón — en gofish la partida se gana recordando quién
+         * pidió qué: si `b` pidió sietes, `b` tiene un siete.
+         *
+         * Lo único que le faltaba era poder decírselo al motor, porque `preguntas`
+         * era un nombre suyo que ningún pintor conoce. Aquí se traduce al contrato,
+         * sin copiar el dato: la fuente sigue siendo `p.preguntas`.
+         *
+         * Todo es público: en gofish se pide EN VOZ ALTA, y esconderlo cambiaría el
+         * juego. Por eso no hay filtro por asiento — y por eso se dice, para que el
+         * día que alguien añada una variante con petición secreta sepa que aquí hay
+         * que tocarlo.
+         */
+        dichos(p) {
+            return (p.preguntas ?? []).slice(-24).map((q) => (
+                q.a === null
+                    ? { de: q.de, a: null, que: 'pesca', valor: null,
+                        texto: `el ${q.de} pesca del mazo`, vigente: false }
+                    : { de: q.de, a: q.a, que: 'pregunta', valor: q.rango, sobre: q.rango,
+                        texto: `el ${q.de} pide ${q.rango} al ${q.a}` + (q.acierta ? ' y acierta' : ' — a pescar'),
+                        vigente: false, acierta: q.acierta }
+            ));
+        },
+
         mover(p, jugada) {
             const j = String(jugada ?? '');
             if (j === 'nueva' || j === 'reset') return false;

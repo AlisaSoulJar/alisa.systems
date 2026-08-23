@@ -171,3 +171,83 @@ Los tres primeros comparten forma: **la jugada es una declaración, y el sustrat
 no tiene sitio para declaraciones**. No es el fallo de `guerra` —ahí no había
 nada— pero es el mismo síntoma para quien pulsa. Los dos últimos no se han
 mirado, y se dice.
+
+
+---
+
+## 2026-08-23 (tarde) — La quinta estructura: `dichos`
+
+Salió de medir, no de pensar. `veredicto.movioLaPantalla` buscó juegos donde
+**ninguna** jugada de apertura cambia el dibujo, y quedaban cinco. Tres tenían la
+misma forma:
+
+| juego | jugadas de apertura | qué pasaba |
+|---|---|---|
+| `spades` | `apostar:0…13` (las 14) | se apuesta y la mesa no lo enseña |
+| `shinigami` | `senalar:b…h` | señalas y **tu propia** pantalla no lo recuerda |
+| `cabina` | `di:arriba…` | hablar es la ÚNICA jugada de la guía, y no se veía |
+
+Y al mirarlos aparecieron los otros dos, que no eran otra cosa: `frentes` elige
+un frente en secreto y `nave` es simultánea entera —`mover()` guarda en
+`p.oculta` y no aplica nada hasta que eligen todos—. En los dos, pulsabas y la
+pantalla se quedaba idéntica.
+
+### El argumento, que es el mismo que el de `asientos`
+
+No se admite por elegancia. **Cinco juegos la inventaron por separado**, cada uno
+con su nombre, y ninguno podía decírselo al motor:
+
+```
+spades      p.apuestas[]            un número por asiento
+gofish      p.preguntas[]           {de, a, rango, acierta}
+cabina      p.mensaje + p.dichos    la última orden, y un contador
+shinigami   p.dichos[] + p.oculta{} lo dicho en alto, y lo elegido a solas
+nave        p.dichos[] + p.oculta{} igual, y ya lo llamaba «dichos»
+```
+
+Un `dicho` no es ninguna de las otras cuatro: no es terreno, no se mueve, no es
+un montón que alguien tiene, y no es un sitio que contiene. **Las otras cuatro
+contestan DÓNDE; ésta contesta QUIÉN DIJO QUÉ SOBRE QUIÉN.** Tiene origen y
+destinatario y no tiene posición.
+
+```
+{ de, a, que, valor, texto, sobre, vigente }
+```
+
+### La niebla, que aquí no es un detalle
+
+`p.oculta` de shinigami tiene la elección nocturna de los ocho. Publicarla sería
+regalar la partida en la primera noche —y seguiría puntuando, y la tabla diría
+que los aldeanos juegan buenísimo—. Se publica sólo la de quien mira.
+
+⚠️ **Y la primera comprobación de eso aprobó con el cable cortado.** Miraba el
+`de` del dicho, y un dicho filtrado sigue diciendo ser tuyo: lo que se escapa es
+el CONTENIDO. La pregunta buena no es «¿de quién dice ser?» sino **«¿cambia lo
+que yo veo cuando otro elige distinto?»**. Dos partidas con la misma semilla en
+las que sólo cambia la primera elección, y se compara la vista de la segunda
+silla. Eso salió de aplicar el sabotaje, no de pensar más.
+
+### Cuatro caminos para el mismo dato, y el aviso ya estaba escrito
+
+`dichos` hubo que engancharlo en **cuatro** sitios: `obtenerSustrato`,
+`ProtoHub.sustrato`, el worker de salas y las dos mesas. Los cuatro tienen la
+misma bifurcación —sustrato propio contra adaptador— copiada. El comentario del
+worker lo decía de la vez anterior: *«aprendida, escrita, y aplicada a la
+mitad»*. Mientras sean cuatro copias, cada dato nuevo hay que ponerlo cuatro
+veces y alguien se olvidará.
+
+### Dos agujeros que aparecieron de paso
+
+- **El describidor no enseñaba `asientos`.** Mancala publica sus catorce hoyos
+  ahí, y el mapa de texto salía `........` sin una sola semilla: **un modelo
+  sentado en mancala no podía ver el tablero.** Sin error, claro — con un jugador
+  que elige al azar y una tabla que dice que juega mal.
+- **`pintar2d` no tenía color de texto secundario.** Usé el gris de los dorsos de
+  carta y las líneas salían invisibles. Medido: da **1,63:1** sobre el fondo, y
+  hasta `neutro` se queda en 3,21 — los dos por debajo del 4,5:1 que pide un
+  texto. Un color pensado para un rectángulo relleno no sirve para letra pequeña.
+
+### El resultado
+
+**De 40 juegos, cero** en los que ninguna jugada de apertura cambie el dibujo.
+Eran cinco esta mañana y seis contando `guerra`.

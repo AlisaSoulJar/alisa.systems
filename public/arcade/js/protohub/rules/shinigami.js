@@ -245,6 +245,55 @@ export const shinigami = {
         };
     },
 
+    /**
+     * ⚠️ SEÑALABAS Y TU PROPIA PANTALLA NO LO RECORDABA.
+     *
+     * Medido el 23-08: las siete jugadas de apertura son `senalar:…` y ninguna
+     * cambiaba el dibujo de quien las hacía. La elección se guardaba —`p.oculta`
+     * tiene `{a: 'senalar:b'}` en cuanto `a` elige— y no salía por ningún lado.
+     * Elegías a quién te llevas y la pantalla se quedaba igual que antes de
+     * elegir, que es indistinguible de que el clic no hubiera llegado.
+     *
+     * ⚠️ Y AQUÍ LA NIEBLA NO ES UN DETALLE, ES EL JUEGO ENTERO.
+     *
+     * `p.oculta` tiene la elección de TODOS. Publicarla sería regalar la partida:
+     * quien viera esas ocho líneas sabría en la primera noche quiénes son los
+     * shinigami. Así que se publica UNA sola, la de quien mira, y se comprueba en
+     * `prueba_sustrato.mjs` — en esta casa la información oculta ya se ha escapado
+     * dos veces, las dos en silencio.
+     *
+     * El debate, en cambio, es en voz alta por definición: `p.dichos` sale entero
+     * y lo ve todo el mundo, que es exactamente como funciona la mesa de verdad.
+     */
+    dichos(p, asiento = 0) {
+        const yo = p.gente[asiento] ?? p.gente[0];
+        const silla = (s) => SILLAS.indexOf(s);
+        const salida = [];
+
+        // Lo tuyo, y sólo lo tuyo. Lo de los demás es secreto de noche.
+        const mio = p.oculta?.[yo.silla];
+        if (mio) {
+            const [, a] = String(mio).split(':');
+            salida.push({
+                de: silla(yo.silla), a: null, que: 'senala', valor: a, sobre: a,
+                texto: `has señalado a ${a}`, vigente: true, secreto: true,
+            });
+        }
+
+        // Y lo que se dijo delante de todos, que lo oyó hasta el que no estaba.
+        const COMO = { acuso: 'acusa a', defiendo: 'defiende a',
+                       afirmo_shinigami: 'dice que es shinigami', afirmo_humano: 'avala a' };
+        for (const d of p.dichos ?? []) {
+            const [verbo, a] = String(d.jugada).split(':');
+            if (!a || !COMO[verbo]) continue;
+            salida.push({
+                de: silla(d.silla), a: null, que: 'acusacion', valor: verbo, sobre: a,
+                texto: `${d.silla} ${COMO[verbo]} ${a}`, vigente: true, ronda: d.ronda,
+            });
+        }
+        return salida;
+    },
+
     describir(p, asiento = 0) {
         const st = this.estado(p, asiento);
         const yo = p.gente[asiento] ?? p.gente[0];

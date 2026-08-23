@@ -182,15 +182,34 @@ export class ProtoHub {
             ...(reglas.COLORES ? { colores: reglas.COLORES } : {}),
         };
 
+        /**
+         * ⚠️ CUARTA VEZ CON LA MISMA FORMA, Y ESTA VEZ EL AVISO ESTABA AQUÍ ARRIBA.
+         *
+         * `dichos` —lo que un jugador DICE: apuestas, órdenes, acusaciones— se
+         * engancha en `obtenerSustrato()`, que es lo que usan las pruebas y el
+         * veredicto. Este método no llama a `obtenerSustrato`: tiene su propia copia
+         * de la misma bifurcación, así que por el camino de la MESA no llegaba nada.
+         * Los cuatro juegos que hablan se habrían visto en las pruebas y no en la
+         * pantalla, que es el modo de fallo favorito de esta casa.
+         *
+         * Se aplica a los dos retornos, por lo mismo que `patron` y `colores`. Y sí:
+         * lo suyo sería que este método y `obtenerSustrato` fueran uno. Mientras
+         * sean dos, cada dato nuevo hay que ponerlo dos veces, y alguien se olvidará.
+         */
+        const dichos = typeof reglas.dichos === 'function'
+            ? (reglas.dichos(partida, asiento) ?? []) : [];
+
         if (typeof reglas.sustrato === 'function') {
             const propio = reglas.sustrato(partida, asiento);
             if (propio?.rejilla && declarado.patron && !propio.rejilla.patron) {
                 propio.rejilla.patron = declarado.patron;
             }
+            if (dichos.length) return { colores: declarado.colores, ...propio, dichos, derivado: false };
             return { colores: declarado.colores, ...propio, derivado: false };
         }
         const st = reglas.estado(partida, asiento);
-        return sustratoDe(juegoId, { ...st, ...declarado });
+        const derivado = sustratoDe(juegoId, { ...st, ...declarado });
+        return dichos.length ? { ...derivado, dichos } : derivado;
     }
 
     /** Equivalente a GET /arcade/{juego}/state */

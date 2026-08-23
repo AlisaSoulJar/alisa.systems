@@ -534,12 +534,61 @@ export function describirSustrato(sus) {
              + mapa.map(f => f.join('')).join('\n'));
     }
 
+    /**
+     * ⚠️ LOS `asientos` NO SALÍAN, Y ESO DEJABA A MANCALA SIN JUGAR A CIEGAS.
+     *
+     * Esta función sabía contar rejilla y zonas, que eran las dos estructuras que
+     * había cuando se escribió. Al llegar la cuarta nadie la enchufó aquí, y el
+     * síntoma es feo: mancala publica sus catorce hoyos como `asientos` y el mapa
+     * de texto salía `........` y `########` — sin una sola semilla. **Un modelo
+     * sentado en mancala no podía ver el tablero**, y no daba error: daba un
+     * jugador que elige al azar y una tabla que dice que juega mal.
+     *
+     * Es exactamente la avería que este fichero existe para impedir. Una puerta
+     * que no enseña una estructura del contrato no está incompleta: miente, porque
+     * lo que entrega parece el tablero entero.
+     */
+    const asientos = sus.asientos ?? [];
+    if (asientos.length) {
+        const porDueno = new Map();
+        for (const a of asientos) {
+            const k = a.de === null || a.de === undefined ? 'mesa' : `de ${a.de}`;
+            if (!porDueno.has(k)) porDueno.set(k, []);
+            const que = Array.isArray(a.tiene) ? (a.tiene.length ? a.tiene.join('+') : 'vacío')
+                      : Number.isFinite(a.cuantas) ? String(a.cuantas)
+                      : a.visto ? 'mirado' : '?';
+            porDueno.get(k).push(`${a.nombre ?? a.id}:${que}`);
+        }
+        for (const [k, lista] of porDueno) t.push(`sitios ${k}: ${lista.join(' ')}`);
+    }
+
     for (const z of (sus.zonas ?? [])) {
         const quien = z.de === null || z.de === undefined ? z.id : `${z.id} de ${z.de}`;
         const visto = z.items.length ? z.items.join(' ') : '';
         const tapado = z.ocultas ? `${visto ? ' + ' : ''}${z.ocultas} tapadas` : '';
         t.push(`${quien}: ${visto}${tapado}`);
     }
+
+    /**
+     * ⚠️ Y LO QUE SE HA DICHO, QUE EN CUATRO JUEGOS ES EL TABLERO ENTERO.
+     *
+     * En gofish la partida se gana recordando quién pidió qué; en spades se apuesta
+     * antes de jugar una sola carta; en cabina hablar es la única jugada de la
+     * guía. Sin esta línea, un modelo sentado en cualquiera de los tres lee un
+     * estado en el que no ha pasado nada.
+     *
+     * Van al final y en su propia frase porque no son el tablero: son lo que se ha
+     * dicho SOBRE el tablero, y mezclarlos con las cartas confundiría a quien lee.
+     */
+    const dichos = (sus.dichos ?? []).filter(d => d && d.texto);
+    if (dichos.length) {
+        // Los que siguen en pie primero: es lo que hay que tener en cuenta AHORA.
+        const enPie = dichos.filter(d => d.vigente).map(d => d.texto);
+        const pasados = dichos.filter(d => !d.vigente).map(d => d.texto);
+        if (enPie.length) t.push(`se ha dicho: ${enPie.join('; ')}`);
+        if (pasados.length) t.push(`antes se dijo: ${pasados.slice(-8).join('; ')}`);
+    }
+
     return t.join('. ');
 }
 

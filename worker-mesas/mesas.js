@@ -752,6 +752,26 @@ export class MesaCompartida {
              */
             ...(typeof reglas.sustrato === 'function'
                 ? { substrate: reglas.sustrato(p, Math.max(0, i)) } : {}),
+            /**
+             * ⚠️ Y LO DICHO VA APARTE, PORQUE SI NO LA SALA SE QUEDA MUDA.
+             *
+             * Cuarta copia de la misma bifurcación —reglas propias contra
+             * adaptador—, y la cuarta vez que un dato nuevo llega por unos caminos y
+             * por otros no. El comentario de arriba lo dice de la vez anterior:
+             * «aprendida, escrita, y aplicada a la mitad».
+             *
+             * Aquí hacían falta las dos mitades. `spades` no tiene `sustrato()`
+             * propio, así que sin esta línea sus apuestas no salían de la sala; y los
+             * que sí lo tienen publican sus dichos por un gancho aparte, así que
+             * tampoco viajaban. En una mesa compartida eso es peor que en local: en
+             * shinigami o en nave, lo que se dice ES la partida.
+             *
+             * Va por ASIENTO, como el sustrato y como `state`: hay dichos secretos
+             * —tu elección de esta noche— y mandarle a cada uno los de otro sería
+             * repartir la partida por el cable.
+             */
+            ...(typeof reglas.dichos === 'function'
+                ? { dichos: reglas.dichos(p, Math.max(0, i)) ?? [] } : {}),
             // El recibo, en cualquier momento: la mesa no guarda nada que no
             // sea verificable por un tercero.
             receipt: { game: mesa.juego, seed: mesa.semilla, moves: mesa.jugadas },

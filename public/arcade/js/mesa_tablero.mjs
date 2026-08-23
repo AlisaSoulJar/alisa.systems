@@ -40,7 +40,7 @@ import { pintarHistorial } from './protohub/historial.js';
 import { celdasDeJugada } from './protohub/sustrato.js';
 import { volcarMesa, volcando, ponerBoton } from './protohub/render/volcar.js';
 import { crearTapete } from './protohub/tapete.js';
-import { filasDeEstado } from './protohub/panel.js';
+import { filasDeEstado, filasDeDichos } from './protohub/panel.js';
 import { crearAtmosfera } from './protohub/atmosfera.js';
 import { encenderCine, calidadPedida } from './protohub/cine.js';
 
@@ -1016,7 +1016,12 @@ async function refrescar() {
              */
             const publicado = mesaCompartida.ultimo?.substrate ?? null;
             const { sustratoDe } = await import('./protohub/sustrato.js');
-            const sus = publicado ?? sustratoDe(juego, st);
+            // Lo dicho viaja aparte del sustrato —ver la nota de `mesas.js`— porque
+            // hay juegos que hablan sin tener sustrato propio. Aquí se vuelven a
+            // juntar, que es como lo espera todo lo que pinta.
+            const dichosSala = mesaCompartida.ultimo?.dichos;
+            const base = publicado ?? sustratoDe(juego, st);
+            const sus = dichosSala ? { ...base, dichos: dichosSala } : base;
             pintor.pintar(sus);
             /**
              * ⚠️ Y CUANDO APARECE LA REJILLA HAY QUE VOLVER A ENCUADRAR.
@@ -1114,7 +1119,17 @@ async function refrescar() {
             extra.id = 'mesa-extra';
             txt.after(extra);
         }
-        extra.innerHTML = filasDeEstado(st).map(f =>
+        /**
+         * ⚠️ Y LO DICHO VA CON ELLAS, PORQUE NO ESTÁ EN EL ESTADO.
+         *
+         * `filasDeEstado` lee `st`, y lo que se dice vive en el sustrato. En cabina
+         * eso no es un matiz: la guía sólo puede hablar, y hasta hoy hablaba y su
+         * propio panel no acusaba recibo. Se pone delante de las filas de estado
+         * porque es lo que acaba de pasar.
+         */
+        const susAhora = (() => { try { return hub.sustrato(juego); } catch { return null; } })();
+        const filas = [...filasDeDichos(susAhora), ...filasDeEstado(st)];
+        extra.innerHTML = filas.map(f =>
             `<div class="status-row"><span>${f.nombre}</span>`
           + `<span class="val">${f.valor}</span></div>`).join('');
     }

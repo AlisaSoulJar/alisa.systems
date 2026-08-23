@@ -158,6 +158,46 @@ export function filasDeEstado(st, opts = {}) {
  * veces lo mismo y taparle la mesa a quien está jugando — la mano del póker se mira,
  * no se lee.
  */
+/**
+ * LO QUE SE HA DICHO, EN FILAS DE PANEL.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Gemela de `filasDeEstado`, y por el mismo motivo: había que ponerlo en las DOS
+ * mesas —la de cartas y la de tablero— y dos copias de la misma regla acaban
+ * siempre con una de las dos arreglada y la otra no. Ya pasó con las jugadas en
+ * gris y con el suelo en cuñas.
+ *
+ * Los `dichos` no salen del estado sino del SUSTRATO, así que `filasDeEstado` no
+ * los puede ver: el estado publica `apuestas: [3,null,null,null]`, que no dice
+ * quién apostó ni si sigue en pie, y `p.mensaje` de cabina ni siquiera es un
+ * campo con nombre legible.
+ *
+ * Lo vigente primero y sin adorno; lo pasado detrás y contado, no listado —
+ * veinticuatro preguntas de gofish en el panel taparían la mesa entera, que es
+ * el fallo que `filasDeEstado` ya aprendió con su tope.
+ */
+export function filasDeDichos(sus, opts = {}) {
+    const dichos = (sus?.dichos ?? []).filter(d => d && d.texto);
+    if (!dichos.length) return [];
+    const tope = opts.tope ?? 6;
+    const enPie = dichos.filter(d => d.vigente);
+    const pasados = dichos.filter(d => !d.vigente);
+    const out = enPie.slice(0, tope).map(d => ({
+        nombre: d.de === null || d.de === undefined ? 'se dice' : `dice ${d.de}`,
+        valor: d.texto,
+    }));
+    if (enPie.length > tope) {
+        out.push({ nombre: '…', valor: `y ${enPie.length - tope} más en pie` });
+    }
+    // Lo último que pasó sí se enseña: en gofish es la jugada anterior, y sin
+    // ella el panel no dice qué acaba de ocurrir.
+    if (pasados.length) {
+        out.push({ nombre: 'antes', valor: pasados[pasados.length - 1].texto });
+        if (pasados.length > 1) out.push({ nombre: 'y antes', valor: `${pasados.length - 1} más` });
+    }
+    return out;
+}
+
 export const DIBUJADO = new Set([
     'player_hand', 'opponent_hand', 'dealer_hand', 'community_cards',
     'mano', 'mi_mano', 'descarte', 'mazo', 'baza', 'cartas', 'comunes',

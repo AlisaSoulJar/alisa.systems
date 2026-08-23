@@ -28,6 +28,20 @@ const COLOR = {
     celda: '#ffffff', celdaAlt: '#e9eef3',
     jugador0: '#1a2230', jugador1: '#c0392b', neutro: '#7f8c8d',
     texto: '#1a2230', oculto: '#b9c4d0', sinVer: '#dde3ea',
+    /**
+     * ⚠️ TEXTO SECUNDARIO. NO VALE `oculto`, Y ESO SE MIDE, NO SE OPINA.
+     *
+     * Al pintar los dichos ya gastados usé `oculto`, que es el gris de los dorsos
+     * de carta. En la captura de spades las cuatro líneas salían casi invisibles, y
+     * el número lo explica: `oculto` da **1,63:1** contra este fondo, y hasta
+     * `neutro` se queda en 3,21 — los dos por debajo del 4,5:1 que pide un texto.
+     *
+     * Un color pensado para un RECTÁNGULO RELLENO no sirve para letra pequeña: la
+     * misma diferencia de luminancia que basta para ver un bloque de 20×20 no basta
+     * para distinguir un trazo de un píxel. `#5a6b7d` da 5,06:1 y sigue leyéndose
+     * como secundario al lado del 14,7:1 del texto principal.
+     */
+    textoFlojo: '#5a6b7d',
     velo: 'rgba(58,72,92,0.34)',
 };
 
@@ -72,15 +86,47 @@ export function pintar2d(ctx, sus, { ancho, alto } = {}) {
     ctx.fillRect(0, 0, W, H);
     if (!sus) return;
 
+    /**
+     * ⚠️ Y LO DICHO VA ARRIBA, ANTES DE REPARTIR EL SITIO.
+     *
+     * En spades, gofish, cabina y shinigami lo que se ha dicho no es adorno: es la
+     * mitad de la información con la que se decide. Un cuadro que enseña las cartas
+     * y calla la apuesta le está pidiendo al que mira que juegue a ciegas — y a la
+     * puerta de visión eso le pasa literalmente, porque no tiene otra fuente.
+     *
+     * Arriba y no abajo porque abajo ya están las zonas, y porque es lo primero que
+     * mira una persona al sentarse: qué se ha cantado.
+     */
+    const dichos = (sus.dichos ?? []).filter(d => d && d.texto);
+    const cabecera = dichos.length ? Math.min(H * 0.3, 14 * Math.min(dichos.length, 6) + 8) : 0;
+    if (cabecera) pintarDichos(ctx, dichos, W, cabecera);
+
     // Las zonas (cartas) ocupan una franja abajo; el tablero, el resto.
     const franja = sus.zonas?.length ? Math.min(H * 0.42, 26 * sus.zonas.length + 16) : 0;
-    const altoTablero = H - franja;
+    const altoTablero = H - franja - cabecera;
 
-    if (sus.rejilla) pintarRejilla(ctx, sus, W, altoTablero);
+    if (sus.rejilla) pintarRejilla(ctx, sus, W, altoTablero, cabecera);
     if (sus.zonas?.length) pintarZonas(ctx, sus.zonas, W, H - franja, franja);
 }
 
-function pintarRejilla(ctx, sus, W, H) {
+/**
+ * Lo que se ha dicho, una línea cada uno. Lo que sigue en pie va primero y en
+ * el color del texto; lo ya gastado, apagado — la diferencia entre «esto cuenta
+ * ahora» y «esto pasó» es la que hace útil un historial.
+ */
+function pintarDichos(ctx, dichos, W, alto) {
+    const orden = [...dichos.filter(d => d.vigente), ...dichos.filter(d => !d.vigente)];
+    const fila = Math.min(14, alto / Math.max(1, Math.min(orden.length, 6)));
+    ctx.font = '10px ui-monospace, monospace';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    orden.slice(0, 6).forEach((d, i) => {
+        ctx.fillStyle = d.vigente ? COLOR.texto : COLOR.textoFlojo;
+        const quien = d.de === null || d.de === undefined ? '·' : String(d.de);
+        ctx.fillText(`${quien} ${d.texto}`.slice(0, Math.floor(W / 6)), 8, 4 + i * fila + fila / 2);
+    });
+}
+
+function pintarRejilla(ctx, sus, W, H, arriba = 0) {
     const { ancho: cols, alto: filas, celdas, niebla, sinVista } = sus.rejilla;
     if (!(cols > 0 && filas > 0)) return;
 
@@ -88,7 +134,7 @@ function pintarRejilla(ctx, sus, W, H) {
     // engaña sobre la geometría del juego.
     const lado = Math.max(2, Math.floor(Math.min(W / cols, H / filas)));
     const x0 = Math.floor((W - lado * cols) / 2);
-    const y0 = Math.floor((H - lado * filas) / 2);
+    const y0 = arriba + Math.floor((H - lado * filas) / 2);
 
     for (let f = 0; f < filas; f++) {
         for (let c = 0; c < cols; c++) {

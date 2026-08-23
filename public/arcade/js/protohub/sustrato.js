@@ -22,12 +22,13 @@
  * uno con su bug. Cada renderizador se convirtió en un NERVIO en vez de ser un
  * ESPECTADOR — justo lo contrario de la tesis.
  *
- * EL CONTRATO: CUATRO ESTRUCTURAS, Y LA CUARTA COSTÓ ADMITIRLA
+ * EL CONTRATO: CINCO ESTRUCTURAS, Y LAS DOS ÚLTIMAS COSTARON ADMITIRLAS
  *
  *     rejilla   el terreno: lo que no se mueve      (go, sokoban, cripta)
  *     piezas    lo que sí se mueve                  (ajedrez, snake, fagocito)
  *     zonas     montones ordenados FUERA del tablero (manos, mazos, descartes)
  *     asientos  sitios declarados que CONTIENEN     (mancala, escondites)
+ *     dichos    lo que alguien DICE                 (apuestas, órdenes, acusaciones)
  *
  * Un juego de cartas es zonas sin rejilla. Go es rejilla sin zonas. Fagocito es
  * rejilla con piezas. Brisca es zonas más una pieza por carta en la baza.
@@ -82,6 +83,58 @@
  *
  * Un juego de cartas es zonas sin rejilla. Go es rejilla sin zonas. Fagocito es
  * rejilla con piezas. Brisca es zonas más una pieza por carta en la baza.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ LA QUINTA: `dichos`. LO QUE ALGUIEN DICE NO ESTÁ EN NINGÚN SITIO.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Aquí también hubo que argumentarla, y el argumento es el mismo de `asientos`:
+ * no se admite por elegancia, se admite porque CUATRO juegos la inventaron por
+ * separado —cada uno con su nombre— y ninguno podía decírselo al motor:
+ *
+ *     spades      p.apuestas[]            un número por asiento
+ *     gofish      p.preguntas[]           {de, a, rango, acierta}
+ *     cabina      p.mensaje + p.dichos    la última orden, y un contador
+ *     shinigami   p.dichos[] + p.oculta{} lo dicho en voz alta, y lo elegido a solas
+ *
+ * Y se destapó midiendo, no pensando: `veredicto.movioLaPantalla` buscó juegos
+ * donde NINGUNA jugada de apertura cambia el dibujo, y salieron estos tres —
+ * `spades`, `shinigami`, `cabina`. Los tres con la misma forma: **apuestas,
+ * señalas o das una orden, y la pantalla no acusa recibo.** Es el mismo síntoma
+ * que el «le doy a voltear y no pasa nada» de `guerra`, con otra causa: allí no
+ * había sustrato, aquí el sustrato no tiene dónde ponerlo.
+ *
+ * UN `dicho` NO ES NINGUNA DE LAS OTRAS CUATRO:
+ *
+ *   · NO es rejilla — no es terreno, y no está debajo de nadie.
+ *   · NO es pieza — no se mueve porque no está en ningún sitio. Una apuesta no
+ *     tiene x ni y, y ponerle unas inventadas es mentir en la fuente única.
+ *   · NO es zona — una zona es un MONTÓN DE COSAS que alguien tiene. Un dicho no
+ *     se tiene: se emite. No se puede robar, ni barajar, ni contar.
+ *   · NO es asiento — un asiento es un sitio que CONTIENE. Las otras cuatro
+ *     contestan DÓNDE; ésta contesta QUIÉN DIJO QUÉ SOBRE QUIÉN.
+ *
+ * Ésa es la prueba limpia: un dicho tiene ORIGEN y DESTINATARIO y no tiene
+ * posición. Ninguna de las cuatro puede con eso sin inventarse un sitio.
+ *
+ * LA FORMA:
+ *
+ *     { de }        qué asiento lo dijo (número), o null si lo dice la mesa
+ *     { a }         a qué asiento va dirigido, o null si es en voz alta
+ *     { que }       de qué tipo: 'apuesta' · 'pregunta' · 'orden' · 'senala'
+ *     { valor }     el dato para una máquina (el número apostado, la dirección)
+ *     { texto }     la línea corta que lee una persona o un modelo
+ *     { sobre }     opcional: a quién o a qué se refiere (id de asiento o zona)
+ *     { vigente }   si sigue en pie (la última orden de la guía) o ya se gastó
+ *
+ * ⚠️ Y LOS DICHOS PASAN POR LA NIEBLA COMO TODO LO DEMÁS.
+ *
+ * Un dicho se ve si se dijo EN VOZ ALTA, o si lo dijiste TÚ. Lo que otro eligió
+ * a solas no se publica jamás — la elección nocturna de shinigami vive en
+ * `p.oculta` y sólo la ve quien la hizo. Ya se ha escapado información dos veces
+ * en esta casa (la mano del rival, las jugadas legales de otro), las dos en
+ * silencio y las dos porque alguien publicó el estado entero «para dibujarlo».
+ * `prueba_sustrato.mjs` lo comprueba: ningún asiento ve el dicho secreto de otro.
  *
  * ⚠️ UNA PIEZA PUEDE LLEVAR `id`, Y ESO NO AÑADE ESTRUCTURA: AMPLÍA UNA.
  * ───────────────────────────────────────────────────────────────────────────
@@ -497,8 +550,33 @@ const LEYENDAS = {
  */
 export const tieneSustratoPropio = (reglas) => typeof reglas?.sustrato === 'function';
 
-/** Devuelve el sustrato nativo si existe, y si no lo deriva. */
-export function obtenerSustrato(juego, reglas, p, st) {
-    if (tieneSustratoPropio(reglas)) return { ...reglas.sustrato(p), derivado: false };
-    return sustratoDe(juego, st);
+/**
+ * Devuelve el sustrato nativo si existe, y si no lo deriva.
+ *
+ * ⚠️ Y AQUÍ SE PEGAN LOS `dichos`, EN UN SOLO SITIO Y A PROPÓSITO.
+ *
+ * Un juego puede publicar lo que dicen sus jugadores de dos maneras: metiéndolo
+ * en su `sustrato()` nativo, o declarando un `dichos(p, asiento)` aparte. La
+ * segunda existe porque `spades` la necesita: sus apuestas son cuatro números y
+ * su dibujo entero lo deriva el adaptador. Obligarle a escribir un sustrato de
+ * cartas completo para poder enseñar una apuesta sería cobrar carísimo por algo
+ * pequeño, y probablemente no se haría.
+ *
+ * Pegarlo aquí garantiza además que el campo EXISTE siempre —lista vacía si no
+ * hay nada— y eso importa: un campo que a veces no está obliga a todo pintor a
+ * comprobarlo, y el que se olvide no dará error, dará una pantalla incompleta.
+ *
+ * ⚠️ Y SE PASA EL ASIENTO. Esto llamaba `reglas.sustrato(p)` a secas, o sea que
+ * SIEMPRE devolvía la vista del asiento 0 aunque el juego tuviera una por silla.
+ * Con `dichos` eso deja de ser un detalle: la vista equivocada aquí no es un
+ * dibujo raro, es la apuesta de otro en tu pantalla.
+ */
+export function obtenerSustrato(juego, reglas, p, st, asiento = 0) {
+    const base = tieneSustratoPropio(reglas)
+        ? { ...reglas.sustrato(p, asiento), derivado: false }
+        : sustratoDe(juego, st);
+    const propios = typeof reglas?.dichos === 'function'
+        ? reglas.dichos(p, asiento)
+        : base.dichos;
+    return { ...base, dichos: Array.isArray(propios) ? propios : [] };
 }

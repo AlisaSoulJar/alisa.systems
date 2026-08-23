@@ -36,7 +36,7 @@
  * contrario iba con las manos vacías.
  */
 import { sustratoDe } from './protohub/sustrato.js';
-import { filasDeEstado } from './protohub/panel.js';
+import { filasDeEstado, filasDeDichos } from './protohub/panel.js';
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
@@ -1497,11 +1497,15 @@ const engine = new SovereignCardEngine({
         const enPartidaCompartida = this.backend?.tipo === 'sala';
         const hub = window.ALISA_PROTOHUB;
         const publicado = enPartidaCompartida ? (this.sala?.ultimo?.substrate ?? null) : null;
-        const sus = ordenarMano(
+        const susBase = ordenarMano(
             (!enPartidaCompartida && hub?.soporta?.(juego))
                 ? hub.sustrato(juego, 0)
                 : (publicado ?? sustratoDe(juego, data)),
             data);
+        // En sala, lo dicho llega en su propio campo: `spades` no tiene sustrato
+        // propio y sus apuestas no cabrían en él. Ver la nota de `mesas.js`.
+        const dichosSala = enPartidaCompartida ? this.sala?.ultimo?.dichos : null;
+        const sus = dichosSala ? { ...susBase, dichos: dichosSala } : susBase;
 
         /**
          * ⚠️ LA CARA DE LA CARTA LA ELIGE EL JUEGO, NO LA MESA.
@@ -1786,6 +1790,15 @@ const engine = new SovereignCardEngine({
           + zonas.map(z => fila(
                 `${z.id}${z.de === null || z.de === undefined ? '' : ' · ' + z.de}`,
                 `${z.items.length} vistas${z.ocultas ? ` + ${z.ocultas} tapadas` : ''}`)).join('')
+          /**
+           * ⚠️ LO QUE SE HA CANTADO, QUE EN ESTA MESA ES MEDIA PARTIDA.
+           *
+           * Spades se juega apostando antes de tirar una sola carta, y gofish se
+           * gana recordando quién pidió qué. Hasta hoy esta mesa enseñaba las cartas
+           * y callaba las dos cosas: medido con `veredicto.movioLaPantalla`, las
+           * catorce jugadas de apertura de spades no cambiaban el dibujo.
+           */
+          + filasDeDichos(sus).map(f => fila(f.nombre, f.valor)).join('')
           /**
            * ⚠️ Y LO QUE EL JUEGO PUBLICA Y SÓLO LEÍA EL AGENTE.
            *

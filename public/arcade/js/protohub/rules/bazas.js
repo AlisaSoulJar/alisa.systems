@@ -388,6 +388,48 @@ export const crearSpades = (o) => {
         return st;
     };
 
+    /**
+     * ⚠️ SE APOSTABA Y LA MESA NO LO ENSEÑABA.
+     *
+     * Medido el 23-08 con `veredicto.movioLaPantalla`: en la apertura de spades
+     * las CATORCE jugadas legales son `apostar:0…13`, y ninguna cambiaba el
+     * dibujo. O sea que la primera vuelta entera del juego —los cuatro apostando,
+     * que es donde se decide la partida— era invisible en la mesa. El estado sí lo
+     * guardaba (`p.apuestas`), pero el sustrato no tenía dónde ponerlo.
+     *
+     * Se publica como `dichos` y no dentro del sustrato de cartas porque spades
+     * DERIVA su dibujo del adaptador: escribirle un sustrato de cartas entero para
+     * poder enseñar cuatro números habría sido carísimo, y por eso `obtenerSustrato`
+     * admite este gancho aparte.
+     *
+     * Y las apuestas son públicas en spades —se cantan en voz alta— así que van
+     * con `a: null` y las ve todo el mundo. Si alguna vez hay una variante con
+     * apuesta ciega, ésa tendrá que filtrarse por asiento aquí mismo.
+     */
+    base.dichos = function(p, asiento = 0) {
+        const salida = [];
+        for (let i = 0; i < p.jugadores; i++) {
+            const bet = p.apuestas?.[i];
+            if (bet === null || bet === undefined) continue;
+            salida.push({
+                de: i, a: null, que: 'apuesta', valor: bet,
+                texto: bet === 0 ? 'canta Nil (0 bazas)' : `apuesta ${bet} baza${bet === 1 ? '' : 's'}`,
+                // Sigue en pie toda la mano: es contra lo que se puntúa al final.
+                vigente: true,
+            });
+        }
+        // Y quién falta por apostar, que es la información que hace esperar.
+        if (p.fase === 'apuestas') {
+            for (let i = 0; i < p.jugadores; i++) {
+                if (p.apuestas?.[i] === null || p.apuestas?.[i] === undefined) {
+                    salida.push({ de: i, a: null, que: 'apuesta', valor: null,
+                                  texto: 'aún no ha apostado', vigente: false });
+                }
+            }
+        }
+        return salida;
+    };
+
     const _mover = base.mover;
     base.mover = function(p, jugada) {
         const j = String(jugada ?? '');

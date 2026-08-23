@@ -156,6 +156,38 @@ export const cabina = {
         };
     },
 
+    /**
+     * ⚠️ HABLAR ERA LA ÚNICA JUGADA DE LA GUÍA, Y NO SE VEÍA.
+     *
+     * Medido el 23-08: las seis jugadas de apertura de la guía son `di:…` y
+     * NINGUNA cambiaba el dibujo. Su cuadro es el almacén, y el almacén no se
+     * mueve al hablar — el piloto todavía no ha andado. Así que la guía decía algo
+     * y su propia pantalla no acusaba recibo: en un juego donde hablar es
+     * literalmente lo único que puede hacer.
+     *
+     * Se publica el ÚLTIMO dicho, y sólo ése, porque es el único que sigue en pie:
+     * `p.mensaje` guarda uno, no una lista, y aquí no se inventa historial que las
+     * reglas no tienen. `p.dichos` (el contador) dice cuántas van, que es el dato
+     * que ya existía y no se enseñaba en ninguna parte.
+     *
+     * Lo dicho es PÚBLICO —lo oyen los dos, si no el juego no funciona— así que
+     * los dos asientos ven lo mismo. La asimetría de cabina está en el mapa, no en
+     * la voz.
+     */
+    dichos(p) {
+        if (!p.mensaje) return [];
+        return [{
+            de: 0, a: 1, que: 'orden', valor: p.mensaje,
+            texto: p.mensaje === 'peligro' ? '¡peligro!'
+                 : p.mensaje === 'alto' ? 'alto'
+                 : `ve hacia ${p.mensaje}`,
+            // Sigue en pie hasta que la guía diga otra cosa: el piloto se mueve
+            // fiándose de la última, no de todas.
+            vigente: true,
+            orden: p.dichos,
+        }];
+    },
+
     describir(p, asiento = 0) {
         const st = this.estado(p, asiento);
         const cabecera = st.silla === 'guia'
