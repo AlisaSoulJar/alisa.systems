@@ -578,23 +578,23 @@
     ],
     "origen": "El monopoly viene de The Landlord's Game, que Elizabeth Magie patentó en 1904 para ENSEÑAR lo que pasa cuando la tierra se concentra en pocas manos. La versión que se hizo famosa le dio la vuelta a la moraleja. Ésta se juega en los diez distritos del propio repositorio."
   },
-  "yokai": {
-    "que_es": "Seis vecinos de una aldea y dos que no lo son: yokai con forma humana. De noche se llevan a alguien y el oraculo lee el alma de uno. De dia se habla y se expulsa a uno por votacion, sea quien sea.",
-    "reparto": "Seis sillas. Dos yokai, que se conocen entre si; un oraculo, que no lo sabe nadie; tres aldeanos sin nada mas que su criterio.",
-    "turno": "De noche todos senialan a alguien: si eres yokai es a quien os llevais -y los dos teneis que coincidir, sin poder hablar-; si eres el oraculo, a quien lees; si no, no pasa nada. De dia se habla dos rondas -acusar, respaldar, afirmar que alguien es yokai o que es humano, o callar- y despues se vota. Se elige todo A LA VEZ: nadie ve lo que dijeron los demas hasta que ya no puede cambiar de idea.",
-    "gana": "La aldea, expulsando a los dos yokai. Los yokai, cuando quedan tantos como vecinos: a partir de ahi ya no pueden perder una votacion.",
+  "shinigami": {
+    "que_es": "Seis vecinos de una aldea y dos que no lo son: shinigami con forma humana. De noche se llevan a alguien y el oraculo lee el alma de uno. De dia se habla y se expulsa a uno por votacion, sea quien sea.",
+    "reparto": "Seis sillas. Dos shinigami, que se conocen entre si; un oraculo, que no lo sabe nadie; tres aldeanos sin nada mas que su criterio.",
+    "turno": "De noche todos senialan a alguien: si eres shinigami es a quien os llevais -y los dos teneis que coincidir, sin poder hablar-; si eres el oraculo, a quien lees; si no, no pasa nada. De dia se habla dos rondas -acusar, respaldar, afirmar que alguien es shinigami o que es humano, o callar- y despues se vota. Se elige todo A LA VEZ: nadie ve lo que dijeron los demas hasta que ya no puede cambiar de idea.",
+    "gana": "La aldea, expulsando a los dos shinigami. Los shinigami, cuando quedan tantos como vecinos: a partir de ahi ya no pueden perder una votacion.",
     "ojo": [
       "Es el primer juego de la casa donde hablar no ayuda a jugar: ES jugar. Un aldeano seniala de noche sin efecto, habla y vota. Si habla mal no es flojo en una faceta, es flojo y ya.",
-      "Cualquiera puede decir «he visto que X es un yokai». El oraculo dice la verdad y un yokai miente, y nadie puede comprobarlo. Si esa jugada solo se le ofreciera al oraculo, bastaria mirar quien PUEDE afirmar y el juego se habria acabado antes de empezar.",
-      "El silencio no es neutral: es una jugada a favor de los yokai, porque son los unicos que ganan con que no pase nada. Se midio: con los aldeanos callandose cuando no sabian nada, los yokai ganaban 75 de 80; haciendoles sospechar de alguien igualmente, 45 de 80.",
+      "Cualquiera puede decir «he visto que X es un shinigami». El oraculo dice la verdad y un shinigami miente, y nadie puede comprobarlo. Si esa jugada solo se le ofreciera al oraculo, bastaria mirar quien PUEDE afirmar y el juego se habria acabado antes de empezar.",
+      "El silencio no es neutral: es una jugada a favor de los shinigami, porque son los unicos que ganan con que no pase nada. Se midio: con los aldeanos callandose cuando no sabian nada, los shinigami ganaban 75 de 80; haciendoles sospechar de alguien igualmente, 45 de 80.",
       "La mitad de tu puntuacion son TUS votos, no el resultado del equipo. En una mesa de seis, cinco sillas las juega otro, y midiendo solo el resultado la casa sacaba seis puntos mas que jugar al tuntun: ruido. Se puntua acertar el voto aunque la aldea no te haga caso."
     ],
     "diferencias": [
-      "Sin cazador, sin bruja, sin nino salvaje ni ninguno de los papeles que llevan las versiones comerciales: dos yokai, un oraculo y aldeanos. Lo minimo con lo que se puede mentir.",
+      "Sin cazador, sin bruja, sin nino salvaje ni ninguno de los papeles que llevan las versiones comerciales: dos shinigami, un oraculo y aldeanos. Lo minimo con lo que se puede mentir.",
       "El empate no expulsa a nadie. En muchas mesas se desempata a suertes o manda el alcalde; aqui expulsar por azar convertiria un juego de deduccion en uno de suerte.",
-      "Los dos yokai tienen que senialar a la MISMA persona para llevarsela, y de noche no pueden hablar. Es la desventaja que compensa saber quien es quien."
+      "Los dos shinigami tienen que senialar a la MISMA persona para llevarsela, y de noche no pueden hablar. Es la desventaja que compensa saber quien es quien."
     ],
-    "origen": "Original de esta casa, de la familia folclorica de la deduccion social -la que se juega en campamentos desde hace decadas y que tiene muchas versiones con dueno-. La mecanica es la de siempre; la piel, no: aqui no hay lobos ni aldeas europeas, hay yokai tomando forma humana."
+    "origen": "Original de esta casa, de la familia folclorica de la deduccion social -la que se juega en campamentos desde hace decadas y que tiene muchas versiones con dueno-. La mecanica es la de siempre; la piel, no: aqui no hay lobos ni aldeas europeas, hay shinigami tomando forma humana."
   },
   "marea": {
     "que_es": "Inclinas la rejilla y todo se desliza a ese lado. Dos fichas iguales que chocan se funden en una del doble. Despues de cada movimiento aparece una ficha nueva donde le da la gana.",

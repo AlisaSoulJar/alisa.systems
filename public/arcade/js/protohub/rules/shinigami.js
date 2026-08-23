@@ -1,9 +1,9 @@
 /**
- * yokai.js — EL JUEGO DONDE HABLAR NO ES UNA AYUDA: ES TODO EL JUEGO
+ * shinigami.js — EL JUEGO DONDE HABLAR NO ES UNA AYUDA: ES TODO EL JUEGO
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * Seis vecinos de una aldea. Dos no son vecinos: son yokai con forma humana. De
- * noche los yokai se llevan a alguien y el oráculo lee el alma de uno. De día se
+ * Seis vecinos de una aldea. Dos no son vecinos: son shinigami con forma humana. De
+ * noche los shinigami se llevan a alguien y el oráculo lee el alma de uno. De día se
  * habla y se expulsa a uno por votación, sea quien sea.
  *
  * ⚠️ POR QUÉ ESTE JUEGO, Y POR QUÉ AHORA.
@@ -25,7 +25,7 @@
  * La deducción social es folclore —se juega en campamentos desde hace décadas— y
  * de eso hay muchas versiones con dueño. Ésta usa la mecánica de siempre con su
  * propia piel, como nave hizo con la suya: aquí no hay lobos ni aldeas europeas,
- * hay yokai tomando forma humana y un oráculo que les lee el alma.
+ * hay shinigami tomando forma humana y un oráculo que les lee el alma.
  *
  * ⚠️ LO QUE ESTE JUEGO HEREDA, Y ES CASI TODO.
  *
@@ -37,8 +37,8 @@
  *
  * ⚠️ LAS AFIRMACIONES LAS PUEDE HACER CUALQUIERA. ESO ES EL JUEGO ENTERO.
  *
- * `afirmo_yokai:X` significa «he visto que X es un yokai». Lo puede decir el
- * oráculo, y entonces es verdad. Lo puede decir un yokai, y entonces es mentira.
+ * `afirmo_shinigami:X` significa «he visto que X es un shinigami». Lo puede decir el
+ * oráculo, y entonces es verdad. Lo puede decir un shinigami, y entonces es mentira.
  * Nadie puede comprobarlo. Si la lista de jugadas sólo se la ofreciera al oráculo,
  * el juego se acabaría: bastaría mirar quién PUEDE afirmar. Es la misma ley que
  * en nave obliga a ofrecer `sabotear` a los cuatro, y aquí no es una precaución
@@ -64,7 +64,7 @@
  * cero. Las dos separan de sobra.
  *
  * ⚠️ Y LAS DECISIONES SON EL MOTIVO DE FONDO. La tabla dio un azar de 2,15 en
- * yokai —un número sin sentido— y la causa no era el juego: con seis sillas y la
+ * shinigami —un número sin sentido— y la causa no era el juego: con seis sillas y la
  * casa jugando cinco, al agente le tocaban CINCO decisiones por partida. Con
  * ±45 por voto y ±200 por ganar, cinco decisiones no separan nada. Ocho sillas
  * dan 7,3, un cincuenta por ciento más.
@@ -73,11 +73,11 @@
  * equilibrio y la mitad de hueco. No hay una intuición que lo hubiera adivinado.
  */
 const SILLAS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-const YOKAIS = 2;
+const SHINIGAMIS = 2;
 const NOCHES = 12;
 
-export const OBJETIVO = 'Objetivo: si eres humano, expulsar a los dos yokai antes de que'
-                      + ' os igualen; si eres yokai, sobrevivir hasta ser tantos como ellos.';
+export const OBJETIVO = 'Objetivo: si eres humano, expulsar a los dos shinigami antes de que'
+                      + ' os igualen; si eres shinigami, sobrevivir hasta ser tantos como ellos.';
 
 /**
  * Las normas, con la misma forma que en nave y por el mismo motivo: cambian QUÉ ES
@@ -102,7 +102,7 @@ function azarDe(semilla) {
 }
 
 const vivosDe = (p) => p.gente.filter((g) => g.vivo);
-const esYokai = (p, silla) => p.yokai.includes(silla);
+const esShinigami = (p, silla) => p.shinigami.includes(silla);
 
 /**
  * Lo que se puede decir, y a quién. Sale SÓLO de quién está vivo y de quién habla
@@ -114,7 +114,7 @@ function jugadasDeDebate(vivos, quienHabla) {
         'callar',
         ...otros.map((s) => `acuso:${s}`),
         ...otros.map((s) => `defiendo:${s}`),
-        ...otros.map((s) => `afirmo_yokai:${s}`),
+        ...otros.map((s) => `afirmo_shinigami:${s}`),
         ...otros.map((s) => `afirmo_humano:${s}`),
     ];
 }
@@ -127,7 +127,7 @@ function pesoDeLoDicho(dichos) {
         if (!a) continue;
         if (verbo === 'acuso') contra[a] = (contra[a] ?? 0) + 1;
         if (verbo === 'defiendo') favor[a] = (favor[a] ?? 0) + 1;
-        if (verbo === 'afirmo_yokai') señalados[a] = (señalados[a] ?? 0) + 1;
+        if (verbo === 'afirmo_shinigami') señalados[a] = (señalados[a] ?? 0) + 1;
         if (verbo === 'afirmo_humano') limpiados[a] = (limpiados[a] ?? 0) + 1;
     }
     return { contra, favor, señalados, limpiados };
@@ -141,7 +141,7 @@ function pesoDeLoDicho(dichos) {
  * Sin esto, la casa se abstenía en cuanto había dos candidatos igualados — y
  * medido, eso regalaba la partida: los votos empatados no expulsan a nadie, así
  * que la aldea pasaba las noches perdiendo gente sin haber sacado a uno solo. Los
- * yokai ganaban 75 de 80.
+ * shinigami ganaban 75 de 80.
  *
  * Para DECIDIR A QUIÉN CREER, un empate sí es no saber y se devuelve null. Para
  * VOTAR, abstenerse es la peor jugada posible, así que se desempata por letra: no
@@ -157,12 +157,12 @@ function elMasDe(cuenta, excluir = null, desempatar = false) {
     return orden[0][0];
 }
 
-export function crearYokai(opts = {}) {
+export function crearShinigami(opts = {}) {
     const n = normasDe(opts.normas ?? opts);
-    return { ...yokai, NORMAS: n, nuevaPartida: (o = {}) => yokai.nuevaPartida({ ...o, normas: n }) };
+    return { ...shinigami, NORMAS: n, nuevaPartida: (o = {}) => shinigami.nuevaPartida({ ...o, normas: n }) };
 }
 
-export const yokai = {
+export const shinigami = {
     OBJETIVO,
     NORMAS,
     ASIENTOS: SILLAS.length,
@@ -184,14 +184,14 @@ export const yokai = {
             const j = Math.floor(azar() * (i + 1));
             [baraja[i], baraja[j]] = [baraja[j], baraja[i]];
         }
-        const yokaiSillas = baraja.slice(0, YOKAIS);
-        const oraculo = baraja[YOKAIS];
+        const shinigamiSillas = baraja.slice(0, SHINIGAMIS);
+        const oraculo = baraja[SHINIGAMIS];
 
         return {
             semilla, normas: normasDe(opts.normas),
             gente: SILLAS.map((s) => ({ silla: s, vivo: true })),
-            yokai: yokaiSillas, oraculo,
-            /** Lo que el oráculo ha leído: silla → 'yokai' | 'humano'. Privado. */
+            shinigami: shinigamiSillas, oraculo,
+            /** Lo que el oráculo ha leído: silla → 'shinigami' | 'humano'. Privado. */
             visiones: {},
             fase: 'noche', noche: 1, rondaDebate: 0,
             dichos: [], historial: [],
@@ -215,12 +215,12 @@ export const yokai = {
      * Un juego de deducción social dibujado como un tablero sería dibujar lo que no
      * importa.
      *
-     * Y va POR ASIENTO: el oráculo ve sus lecturas, los yokai se ven entre ellos, y
+     * Y va POR ASIENTO: el oráculo ve sus lecturas, los shinigami se ven entre ellos, y
      * un aldeano no ve nada que no se haya dicho en voz alta.
      */
     sustrato(p, asiento = 0) {
         const yo = p.gente[asiento] ?? p.gente[0];
-        const soyYokai = esYokai(p, yo.silla);
+        const soyShinigami = esShinigami(p, yo.silla);
         const soyOraculo = yo.silla === p.oraculo;
         const peso = pesoDeLoDicho(p.dichos);
 
@@ -229,11 +229,11 @@ export const yokai = {
             if (!g.vivo) etiquetas.push('fuera');
             if (g.silla === yo.silla) etiquetas.push('tú');
             // Lo que YO sé de él, que no tiene por qué saberlo nadie más.
-            if (soyYokai && esYokai(p, g.silla) && g.silla !== yo.silla) etiquetas.push('yokai');
+            if (soyShinigami && esShinigami(p, g.silla) && g.silla !== yo.silla) etiquetas.push('shinigami');
             if (soyOraculo && p.visiones[g.silla]) etiquetas.push(`leído: ${p.visiones[g.silla]}`);
             // Y lo que se ha dicho en voz alta, que lo sabe todo el mundo.
             if (peso.contra[g.silla]) etiquetas.push(`acusado ×${peso.contra[g.silla]}`);
-            if (peso.señalados[g.silla]) etiquetas.push(`señalado yokai ×${peso.señalados[g.silla]}`);
+            if (peso.señalados[g.silla]) etiquetas.push(`señalado shinigami ×${peso.señalados[g.silla]}`);
             if (peso.limpiados[g.silla]) etiquetas.push(`avalado ×${peso.limpiados[g.silla]}`);
             return { id: g.silla, items: etiquetas, ocultas: 0 };
         });
@@ -248,12 +248,12 @@ export const yokai = {
     describir(p, asiento = 0) {
         const st = this.estado(p, asiento);
         const yo = p.gente[asiento] ?? p.gente[0];
-        const papel = st.soy_yokai
-            ? `Eres YOKAI. Tu igual es ${p.yokai.filter(s => s !== yo.silla).join(', ') || 'nadie ya'}.`
+        const papel = st.soy_shinigami
+            ? `Eres SHINIGAMI. Tu igual es ${p.shinigami.filter(s => s !== yo.silla).join(', ') || 'nadie ya'}.`
               + ' De noche os lleváis a uno; de día, disimula.'
             : yo.silla === p.oraculo
                 ? 'Eres el ORÁCULO. Cada noche lees el alma de uno. Nadie sabe que lo eres,'
-                  + ' y decirlo te pone en la lista de los yokai.'
+                  + ' y decirlo te pone en la lista de los shinigami.'
                 : 'Eres ALDEANO. No tienes poderes: sólo lo que oyes y a quién crees.';
 
         const vivos = vivosDe(p).map(g => g.silla).join(', ');
@@ -263,7 +263,7 @@ export const yokai = {
 
         let escena;
         if (st.fase === 'noche') {
-            escena = `NOCHE ${p.noche}. Señala a alguien. Si eres yokai, es a quien os lleváis;`
+            escena = `NOCHE ${p.noche}. Señala a alguien. Si eres shinigami, es a quien os lleváis;`
                    + ` si eres el oráculo, a quien lees; si no, no pasa nada.\n`;
         } else if (st.fase === 'debate') {
             escena = `DÍA ${p.noche} — se habla (ronda ${p.rondaDebate + 1} de ${p.normas.rondasDeDebate}).`
@@ -277,7 +277,7 @@ export const yokai = {
             ? `Has leído: ${Object.entries(p.visiones).map(([s, v]) => `${s}=${v}`).join(', ')}\n`
             : '';
 
-        return `Yokai. Eres ${yo.silla}. ${papel}\n`
+        return `Shinigami. Eres ${yo.silla}. ${papel}\n`
              + `${OBJETIVO}\n`
              + `Vivos: ${vivos} (${st.vivos} de ${SILLAS.length}).`
              + (p.ultimaVictima ? ` Anoche se llevaron a ${p.ultimaVictima}.` : '')
@@ -291,14 +291,14 @@ export const yokai = {
     estado(p, asiento = 0) {
         const yo = p.gente[asiento] ?? p.gente[0];
         const vivos = vivosDe(p);
-        const yokaisVivos = vivos.filter((g) => esYokai(p, g.silla)).length;
-        const humanosVivos = vivos.length - yokaisVivos;
+        const shinigamisVivos = vivos.filter((g) => esShinigami(p, g.silla)).length;
+        const humanosVivos = vivos.length - shinigamisVivos;
 
-        const gananHumanos = yokaisVivos === 0;
-        const gananYokai = !gananHumanos && yokaisVivos >= humanosVivos;
-        const terminada = gananHumanos || gananYokai || p.noche > NOCHES;
+        const gananHumanos = shinigamisVivos === 0;
+        const gananShinigami = !gananHumanos && shinigamisVivos >= humanosVivos;
+        const terminada = gananHumanos || gananShinigami || p.noche > NOCHES;
 
-        const soyYokai = esYokai(p, yo.silla);
+        const soyShinigami = esShinigami(p, yo.silla);
 
         let legales;
         if (terminada) legales = ['nueva'];
@@ -306,7 +306,7 @@ export const yokai = {
             /**
              * ⚠️ TODO EL MUNDO SEÑALA, Y SÓLO SURTE EFECTO A QUIEN LE TOCA.
              *
-             * Un yokai señala a su presa, el oráculo a quien va a leer, y un aldeano
+             * Un shinigami señala a su presa, el oráculo a quien va a leer, y un aldeano
              * a nadie que le sirva. Si la lista distinguiera, la propia lista diría
              * el papel — y en un juego cuyo objeto es no saber los papeles, eso lo
              * resolvería sin jugarlo. Es la ley que ya aprendió `sabotear` en nave,
@@ -320,17 +320,17 @@ export const yokai = {
         }
 
         return {
-            juego: 'yokai',
+            juego: 'shinigami',
             silla: yo.silla, turn: p.turno,
             objetivo: OBJETIVO,
             normas: p.normas,
             fase: p.fase, noche: p.noche,
             vivo: yo.vivo, vivos: vivos.length,
             /** Tu papel es tuyo: cada asiento ve el suyo y ninguno más. */
-            soy_yokai: soyYokai,
+            soy_shinigami: soyShinigami,
             soy_oraculo: yo.silla === p.oraculo,
-            /** Los yokai se conocen. Un aldeano recibe la lista vacía. */
-            mis_iguales: soyYokai ? p.yokai.filter((s) => s !== yo.silla) : [],
+            /** Los shinigami se conocen. Un aldeano recibe la lista vacía. */
+            mis_iguales: soyShinigami ? p.shinigami.filter((s) => s !== yo.silla) : [],
             /** Y el oráculo, sus lecturas. Nadie más las ve. */
             mis_lecturas: yo.silla === p.oraculo ? { ...p.visiones } : {},
             /** Lo dicho es público: son afirmaciones a la cara. */
@@ -341,7 +341,7 @@ export const yokai = {
              * ⚠️ LA MITAD DE LA PUNTUACIÓN ES TUYA, Y ESO NO ES UN ADORNO.
              *
              * La primera versión puntuaba sólo el resultado del EQUIPO —ganar,
-             * cuántos yokai cayeron, si sobrevives—. Medido con la metodología del
+             * cuántos shinigami cayeron, si sobrevives—. Medido con la metodología del
              * banco, eso no separaba nada: la casa sacaba 177,7 y la política tonta
              * 170,9. Seis puntos de hueco sobre ciento setenta y cinco, o sea ruido.
              *
@@ -352,23 +352,23 @@ export const yokai = {
              * de partidas para decir algo.
              *
              * Así que se puntúa además lo que decides TÚ: cada voto tuyo contra un
-             * yokai suma y cada voto contra un vecino resta —al revés si eres yokai—.
+             * shinigami suma y cada voto contra un vecino resta —al revés si eres shinigami—.
              * Se juzga la decisión con lo que había, no si salió bien: puedes votar
-             * al yokai correcto y que la aldea no te haga caso, y eso sigue siendo
+             * al shinigami correcto y que la aldea no te haga caso, y eso sigue siendo
              * jugar bien.
              *
              * Sigue habiendo pendiente de equipo, porque ganar tiene que valer más
              * que acertar votos sueltos — si no, el mejor jugador sería el que acierta
              * y pierde.
              */
-            puntos: (soyYokai
-                ? (gananYokai ? 200 : 0) + (SILLAS.length - vivos.length) * 20 + (yo.vivo ? 40 : 0)
-                : (gananHumanos ? 200 : 0) + (YOKAIS - yokaisVivos) * 60 + (yo.vivo ? 30 : 0))
+            puntos: (soyShinigami
+                ? (gananShinigami ? 200 : 0) + (SILLAS.length - vivos.length) * 20 + (yo.vivo ? 40 : 0)
+                : (gananHumanos ? 200 : 0) + (SHINIGAMIS - shinigamisVivos) * 60 + (yo.vivo ? 30 : 0))
                 + (p.aciertos[yo.silla] ?? 0) * 45,
-            gana: soyYokai ? gananYokai : gananHumanos,
+            gana: soyShinigami ? gananShinigami : gananHumanos,
             desenlace: !terminada ? null
-                : gananHumanos ? 'La aldea expulsó a los dos yokai'
-                : gananYokai ? `Los yokai igualaron a la aldea (${p.yokai.join(' y ')})`
+                : gananHumanos ? 'La aldea expulsó a los dos shinigami'
+                : gananShinigami ? `Los shinigami igualaron a la aldea (${p.shinigami.join(' y ')})`
                 : 'Amaneció y nadie resolvió nada',
             semilla: p.semilla,
             legal_moves: legales,
@@ -411,26 +411,26 @@ export const yokai = {
         const eleccionOraculo = p.oculta[p.oraculo];
         if (eleccionOraculo?.startsWith('senalar:')) {
             const a = eleccionOraculo.slice(8);
-            p.visiones[a] = esYokai(p, a) ? 'yokai' : 'humano';
+            p.visiones[a] = esShinigami(p, a) ? 'shinigami' : 'humano';
         }
         /**
-         * Los yokai se llevan a uno. Si señalan a dos distintos no se llevan a
+         * Los shinigami se llevan a uno. Si señalan a dos distintos no se llevan a
          * nadie: cazar exige ponerse de acuerdo, y no tienen forma de hablar de
          * noche — que es exactamente la desventaja que compensa saber quién es quién.
          */
-        const tiros = p.yokai
+        const tiros = p.shinigami
             .filter((s) => p.gente.find((g) => g.silla === s)?.vivo)
             .map((s) => p.oculta[s])
             .filter((o) => o?.startsWith('senalar:'))
             .map((o) => o.slice(8))
-            .filter((a) => !esYokai(p, a));
+            .filter((a) => !esShinigami(p, a));
         const acuerdo = tiros.length && tiros.every((t) => t === tiros[0]) ? tiros[0] : null;
 
         p.ultimaVictima = null;
         if (acuerdo) {
             const v = p.gente.find((g) => g.silla === acuerdo && g.vivo);
             if (v) { v.vivo = false; p.ultimaVictima = v.silla; p.historial.push(`noche ${p.noche}: se llevaron a ${v.silla}`); }
-        } else p.historial.push(`noche ${p.noche}: los yokai no se pusieron de acuerdo`);
+        } else p.historial.push(`noche ${p.noche}: los shinigami no se pusieron de acuerdo`);
 
         p.fase = (p.normas?.rondasDeDebate ?? 0) > 0 ? 'debate' : 'voto';
         p.rondaDebate = 0; p.dichos = [];
@@ -453,8 +453,8 @@ export const yokai = {
             /**
              * ⚠️ SE APUNTA SI TU VOTO ERA BUENO, VOTO A VOTO.
              *
-             * Un humano acierta cuando vota a un yokai y se equivoca cuando vota a
-             * un vecino; a un yokai le vale lo contrario. No depende de que salga
+             * Un humano acierta cuando vota a un shinigami y se equivoca cuando vota a
+             * un vecino; a un shinigami le vale lo contrario. No depende de que salga
              * expulsado: se juzga TU decisión con lo que había, no el resultado
              * colectivo. Abstenerse no suma ni resta — es cobarde, no incorrecto.
              */
@@ -470,24 +470,24 @@ export const yokai = {
              * supera al suelo».
              *
              * Y no es sólo un problema de medida: en este juego **el silencio es
-             * una jugada, y beneficia a los yokai**. Si nadie vota no sale nadie,
+             * una jugada, y beneficia a los shinigami**. Si nadie vota no sale nadie,
              * y esa noche se llevan a otro. Ya lo aprendí con el debate —callar
-             * hacía ganar a los yokai 75 de 80— y lo dejé sin arreglar en el voto.
+             * hacía ganar a los shinigami 75 de 80— y lo dejé sin arreglar en el voto.
              *
              * Así que la abstención cuenta un TERCIO de lo que cuenta equivocarse,
              * y con signo opuesto según a quién le convenga que no pase nada: al
-             * humano le resta, al yokai le suma. No es tan malo como votar mal
+             * humano le resta, al shinigami le suma. No es tan malo como votar mal
              * —dudar es legítimo— pero deja de ser la jugada cómoda que gana sin
              * jugar.
              */
             if (!a || a === 'nadie') {
-                p.aciertos[silla] += esYokai(p, silla) ? 1 / 3 : -1 / 3;
+                p.aciertos[silla] += esShinigami(p, silla) ? 1 / 3 : -1 / 3;
                 continue;
             }
-            // Un humano acierta votando a un yokai; un yokai acierta votando a un
+            // Un humano acierta votando a un shinigami; un shinigami acierta votando a un
             // humano —y se equivoca votando a su igual—. Escrito así y no con una
             // fórmula: la primera versión era un acertijo de tres negaciones.
-            const acierta = esYokai(p, silla) ? !esYokai(p, a) : esYokai(p, a);
+            const acierta = esShinigami(p, silla) ? !esShinigami(p, a) : esShinigami(p, a);
             p.aciertos[silla] += acierta ? 1 : -1;
         }
         // ⚠️ El empate NO expulsa, igual que en nave: si expulsara, la aldea ganaría
@@ -496,7 +496,7 @@ export const yokai = {
         p.ultimoExpulsado = null;
         if (fuera) {
             const g = p.gente.find((x) => x.silla === fuera);
-            if (g) { g.vivo = false; p.ultimoExpulsado = fuera; p.historial.push(`expulsado ${fuera} (${esYokai(p, fuera) ? 'yokai' : 'humano'})`); }
+            if (g) { g.vivo = false; p.ultimoExpulsado = fuera; p.historial.push(`expulsado ${fuera} (${esShinigami(p, fuera) ? 'shinigami' : 'humano'})`); }
         } else p.historial.push('empate: no sale nadie');
 
         p.fase = 'noche'; p.noche++; p.dichos = []; p.rondaDebate = 0;
@@ -508,8 +508,8 @@ export const yokai = {
      * que oye. Si dedujera bien, la tabla mediría a mi heurística y no al agente.
      *
      * ⚠️ Y JUEGA CIEGO: sólo mira lo que `estado(p, asiento)` le entrega a ESA
-     * silla. Un yokai que mirase `p.oraculo` mataría al oráculo la primera noche y
-     * el juego se acabaría; un aldeano que mirase `p.yokai` votaría perfecto.
+     * silla. Un shinigami que mirase `p.oraculo` mataría al oráculo la primera noche y
+     * el juego se acabaría; un aldeano que mirase `p.shinigami` votaría perfecto.
      */
     sugerencia(p) {
         const asiento = SILLAS.indexOf(p.turno);
@@ -521,9 +521,9 @@ export const yokai = {
         const elige = (m) => (legales.includes(m) ? m : null);
 
         if (st.fase === 'noche') {
-            if (st.soy_yokai) {
+            if (st.soy_shinigami) {
                 /**
-                 * Los dos yokai tienen que coincidir sin hablar, así que necesitan
+                 * Los dos shinigami tienen que coincidir sin hablar, así que necesitan
                  * una regla que los dos calculen igual con lo que ven los dos.
                  *
                  * ⚠️ ERA «EL DE LETRA MÁS BAJA», Y ESO MATABA SIEMPRE A LA SILLA `a`.
@@ -556,7 +556,7 @@ export const yokai = {
                  * Rotar sobre algo que siempre empieza en el mismo sitio no rota.
                  *
                  * Con la semilla dentro, cada partida empieza por una silla distinta
-                 * y ninguna tiene una diana pintada. Los dos yokai la calculan igual
+                 * y ninguna tiene una diana pintada. Los dos shinigami la calculan igual
                  * porque la semilla es pública en el estado.
                  */
                 const presa = presas[(p.semilla + p.noche) % (presas.length || 1)];
@@ -575,32 +575,32 @@ export const yokai = {
             if (st.soy_oraculo) {
                 /**
                  * El oráculo dice lo que ha leído. Es la jugada fuerte y también la
-                 * que lo mata: en cuanto habla, los yokai saben a quién llevarse.
+                 * que lo mata: en cuanto habla, los shinigami saben a quién llevarse.
                  * Ese dilema es el corazón del juego y la casa lo resuelve de la
                  * forma más simple —cantar en cuanto tiene algo—, que deja sitio
                  * de sobra para que un agente lo haga mejor.
                  */
-                const malo = Object.entries(st.mis_lecturas).find(([s, v]) => v === 'yokai'
+                const malo = Object.entries(st.mis_lecturas).find(([s, v]) => v === 'shinigami'
                     && vivosDe(p).some((g) => g.silla === s));
-                if (malo) return elige(`afirmo_yokai:${malo[0]}`) ?? 'callar';
+                if (malo) return elige(`afirmo_shinigami:${malo[0]}`) ?? 'callar';
                 const bueno = Object.entries(st.mis_lecturas).find(([s, v]) => v === 'humano'
                     && vivosDe(p).some((g) => g.silla === s));
                 if (bueno) return elige(`afirmo_humano:${bueno[0]}`) ?? 'callar';
                 return 'callar';
             }
-            if (st.soy_yokai) {
+            if (st.soy_shinigami) {
                 /**
                  * ⚠️ EL CONTRA-CANTO, QUE ES LA JUGADA CLÁSICA DE ESTE JUEGO.
                  *
-                 * Si alguien ha afirmado que un yokai lo es, ese alguien es el
+                 * Si alguien ha afirmado que un shinigami lo es, ese alguien es el
                  * oráculo o alguien que acierta: en los dos casos hay que quitarlo
                  * de en medio, y de día sólo se quita hablando. Así que se le
                  * devuelve la acusación — dos versiones contrarias y la aldea
                  * tiene que elegir a quién cree, que es exactamente el juego.
                  */
-                const meSeñala = p.dichos.find((d) => d.jugada === `afirmo_yokai:${yo}`
-                    || (st.mis_iguales.includes(d.jugada.split(':')[1]) && d.jugada.startsWith('afirmo_yokai:')));
-                if (meSeñala) return elige(`afirmo_yokai:${meSeñala.silla}`) ?? elige(`acuso:${meSeñala.silla}`) ?? 'callar';
+                const meSeñala = p.dichos.find((d) => d.jugada === `afirmo_shinigami:${yo}`
+                    || (st.mis_iguales.includes(d.jugada.split(':')[1]) && d.jugada.startsWith('afirmo_shinigami:')));
+                if (meSeñala) return elige(`afirmo_shinigami:${meSeñala.silla}`) ?? elige(`acuso:${meSeñala.silla}`) ?? 'callar';
                 // Si no, arrimarse al linchamiento que ya existe, y nunca al propio.
                 const mas = elMasDe(peso.contra, yo);
                 if (mas && !st.mis_iguales.includes(mas)) return elige(`acuso:${mas}`) ?? 'callar';
@@ -617,13 +617,13 @@ export const yokai = {
              *
              * Aquí ponía `callar`, y parecía lo honrado: si no sé nada, no acuso a
              * nadie. Mirando una partida entera se vio lo que costaba: día 1 el
-             * oráculo canta y la aldea lincha a un yokai de verdad; esa noche los
-             * yokai matan al oráculo; día 2 los tres que quedan no saben nada, se
+             * oráculo canta y la aldea lincha a un shinigami de verdad; esa noche los
+             * shinigami matan al oráculo; día 2 los tres que quedan no saben nada, se
              * callan los tres, no hay a quién votar, empate, y no sale nadie. A
              * partir de ahí es una noche detrás de otra hasta la paridad.
              *
              * En este juego el silencio no es neutral: **es una jugada a favor de
-             * los yokai**, porque son los únicos que ganan con que no pase nada. Es
+             * los shinigami**, porque son los únicos que ganan con que no pase nada. Es
              * la misma lección que la junta de nave, que empataba 113 de 128 veces.
              *
              * Así que sin información se sospecha del primero por orden. Es tosco a
@@ -638,13 +638,13 @@ export const yokai = {
 
         // Voto. Lo que YO sé manda; después, lo que se ha dicho.
         if (st.soy_oraculo) {
-            const malo = Object.entries(st.mis_lecturas).find(([s, v]) => v === 'yokai'
+            const malo = Object.entries(st.mis_lecturas).find(([s, v]) => v === 'shinigami'
                 && vivosDe(p).some((g) => g.silla === s));
             if (malo) return elige(`voto:${malo[0]}`) ?? 'voto:nadie';
         }
-        if (st.soy_yokai) {
+        if (st.soy_shinigami) {
             // Nunca al propio, y preferentemente a quien nos señaló.
-            const contra = p.dichos.filter((d) => d.jugada === `afirmo_yokai:${yo}`).map((d) => d.silla)[0];
+            const contra = p.dichos.filter((d) => d.jugada === `afirmo_shinigami:${yo}`).map((d) => d.silla)[0];
             if (contra) return elige(`voto:${contra}`) ?? 'voto:nadie';
             const mas = elMasDe(peso.contra, yo);
             if (mas && !st.mis_iguales.includes(mas)) return elige(`voto:${mas}`) ?? 'voto:nadie';

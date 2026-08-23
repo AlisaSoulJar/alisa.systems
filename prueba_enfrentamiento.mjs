@@ -12,7 +12,7 @@
  *      la diferencia que la tabla llama «jugar mejor».
  *   2. la mano duplicada — comparar la misma silla de la misma semilla es lo que
  *      quita el papel y las cartas de en medio. Si por una (semilla, silla) no
- *      pasan TODOS, se vuelve a comparar a un yokai con un aldeano.
+ *      pasan TODOS, se vuelve a comparar a un shinigami con un aldeano.
  *   3. Bradley–Terry — si dependiera del orden, la misma tanda daría dos tablas
  *      distintas, y aquí toda cifra tiene que poder repetirse.
  *
@@ -32,7 +32,7 @@ const fallos = [];
 
 // ── 1. Cada participante se sienta en cada silla el mismo número de veces ──
 // Se prueba en varias formas de mesa a propósito: la propiedad tiene que valer
-// cuando hay más sillas que participantes (yokai, 8 contra 3) y cuando hay menos
+// cuando hay más sillas que participantes (shinigami, 8 contra 3) y cuando hay menos
 // (entropy, 2 contra 3), que son los dos casos reales y se rompen distinto.
 {
     let mal = [];
@@ -98,7 +98,7 @@ const fallos = [];
  *
  * Si `contarSillas` se queda corto, el juego no sale mal puntuado: **sale como
  * juego de un jugador y desaparece de la tabla**, sin un error y sin una fila que
- * mirar. Le pasó a yokai —ocho sillas, dos yokai, un oráculo— por no leer `vivos`,
+ * mirar. Le pasó a shinigami —ocho sillas, dos shinigami, un oráculo— por no leer `vivos`,
  * que es lo único que publican los de deducción social.
  *
  * Los cuatro candidatos se prueban por separado porque cada juego usa el suyo, y

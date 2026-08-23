@@ -43,7 +43,7 @@ export function repartoDe(sillas, r, P) {
  *
  * ⚠️ `vivos` MENGUA según cae gente, así que quien llame a esto tiene que
  * quedarse con el máximo visto en la partida y no con el de un instante. Sin ese
- * cuarto candidato, yokai —ocho sillas con puntuación y roles propios— salía
+ * cuarto candidato, shinigami —ocho sillas con puntuación y roles propios— salía
  * clasificado como juego de un jugador, sin dar un solo error.
  */
 export function contarSillas(e) {

@@ -29,7 +29,7 @@ Fuera de la media, y por qué:
 - **guerra** — la casa no supera al suelo: la escala se invertiría
 - **sokoban** — el tope de 200 decisiones corta la partida (sólo termina el 13% de las de referencia)
 - **cripta** — el tope de 200 decisiones corta la partida (sólo termina el 0% de las de referencia)
-- **yokai** — la casa no supera al suelo: la escala se invertiría
+- **shinigami** — la casa no supera al suelo: la escala se invertiría
 - **parchis** — la casa no supera al suelo: la escala se invertiría
 - **chinchon** — el hueco (1.2) no supera al ruido de la medida (±1.9)
 

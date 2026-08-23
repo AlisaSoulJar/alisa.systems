@@ -2,7 +2,7 @@
  * enfrentamiento.mjs — LA SEGUNDA TABLA: unos contra otros, no contra la casa
  * ═══════════════════════════════════════════════════════════════════════════
  *   node enfrentamiento.mjs
- *   node enfrentamiento.mjs --juegos yokai,nave --semillas 40
+ *   node enfrentamiento.mjs --juegos shinigami,nave --semillas 40
  *   node enfrentamiento.mjs --md docs/enfrentamiento.md
  *
  * POR QUÉ HACE FALTA UNA SEGUNDA, HABIENDO UNA
@@ -14,7 +14,7 @@
  *
  * En un juego de deducción social no quiere decir eso. Lo que hay que medir es si
  * convences a los demás, y los demás son los otros participantes. Contra una casa
- * fija, el yokai que engaña bien y el que engaña mal sacan lo mismo — la casa cae
+ * fija, el shinigami que engaña bien y el que engaña mal sacan lo mismo — la casa cae
  * igual en los dos. Por eso la tabla lo descartaba con «la casa no supera al
  * suelo»: no es que el juego no distinga, es que ese metro no puede distinguirlo.
  *
@@ -68,7 +68,7 @@ const gris = (s) => `\x1b[90m${s}\x1b[0m`;
 
 // Acepta las dos formas —`--juegos=a,b` y `--juegos a,b`— porque `tabla.mjs` se
 // invoca con la segunda y dos guiones que se escriben igual tienen que hacer lo
-// mismo. Con sólo la primera, `--juegos yokai` deja `juegos: true` y el guion se
+// mismo. Con sólo la primera, `--juegos shinigami` deja `juegos: true` y el guion se
 // pone a buscar un juego llamado «true», que es lo que pasó al estrenarlo.
 const args = {};
 {
@@ -191,7 +191,7 @@ for (const juego of nombres) {
      * ⚠️ LAS SILLAS SE CUENTAN JUGANDO, NO MIRANDO LA SALIDA.
      *
      * Preguntarle al estado inicial parece lo natural y da mal en los juegos que
-     * más falta hacen aquí: yokai, nave y entropy publican `marcador` sólo cuando
+     * más falta hacen aquí: shinigami, nave y entropy publican `marcador` sólo cuando
      * la partida acaba, así que al empezar no hay nada que contar y salían con
      * «1 silla — es de un jugador». Un juego de OCHO dado por solitario, y sin un
      * solo error: exactamente la clase de fallo que se lee como resultado.
@@ -294,14 +294,14 @@ for (const juego of nombres) {
      *
      * Lo primero que escribí fue comparar las sillas ENTRE SÍ dentro de una
      * partida: si la silla 2 saca más que la 5, gana quien ocupara la 2. Y eso en
-     * yokai no mide nada, porque las sillas no son intercambiables — la semilla
+     * shinigami no mide nada, porque las sillas no son intercambiables — la semilla
      * reparte los roles:
      *
-     *     yokai  puntos por silla  [0, −15, 260, 260, −150, −150, −150, −150]
+     *     shinigami  puntos por silla  [0, −15, 260, 260, −150, −150, −150, −150]
      *                                        ↑    ↑
-     *                                  los dos yokai, que ganaron esa partida
+     *                                  los dos shinigami, que ganaron esa partida
      *
-     * Un aldeano «pierde» contra un yokai por ser aldeano. Comparar eso es medir
+     * Un aldeano «pierde» contra un shinigami por ser aldeano. Comparar eso es medir
      * el reparto de papeles y llamarlo habilidad.
      *
      * El bridge de competición resolvió esto hace un siglo con las manos

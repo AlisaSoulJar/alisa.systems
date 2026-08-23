@@ -23,7 +23,7 @@
  *
  * ⚠️ UNA DIFERENCIA SIN SU ERROR NO ES UNA DIFERENCIA.
  *
- * El 21-08-2026 comparé dos configuraciones de yokai por su hueco crudo —27,9
+ * El 21-08-2026 comparé dos configuraciones de shinigami por su hueco crudo —27,9
  * contra 19,5— y le anuncié a Oscar un conflicto entre «jugable» y «medible» que
  * había que resolver. Dividido por su propio error, era 7,3 veces contra 6,7:
  * las dos separaban de sobra y no había nada que elegir. **El conflicto lo
@@ -33,7 +33,7 @@
  *
  * Las dos políticas tienen que jugar las MISMAS semillas en las MISMAS sillas, y
  * se resta partida a partida. Sin emparejar, la varianza de lo que no se controla
- * —en yokai, si te toca ser yokai o no— entra entera en el error y esconde el
+ * —en shinigami, si te toca ser shinigami o no— entra entera en el error y esconde el
  * hueco. En remigio esa varianza era seis veces la interna de la propia política.
  *
  * @param {number[]} a  puntuación de la política A, partida a partida

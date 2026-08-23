@@ -37,7 +37,7 @@ partida se re-simula antes de contarse.
 | nave | 4 | 120 | 8% | 1000 | 1085 | 1160 | ✅ |
 | unit | 4 | 120 | 1% | 1000 | 990 | 1088 | ✅ |
 | domino | 2 | 120 | 27% | 1000 | 1035 | 1092 | ✅ |
-| yokai | 8 | 120 | 5% | 1000 | 1004 | 1077 | ✅ |
+| shinigami | 8 | 120 | 5% | 1000 | 1004 | 1077 | ✅ |
 
 **27 de 27** separan de verdad (rango ≥ 30 puntos).
 

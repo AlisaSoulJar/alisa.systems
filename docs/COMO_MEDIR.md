@@ -40,7 +40,7 @@ el dato. Un hueco se ve y se rellena; un `1` se publica y se cree.
 
 ## 4. Una diferencia sin su error no es una diferencia
 
-**21-08-2026.** Comparé dos configuraciones de yokai por su hueco crudo —27,9
+**21-08-2026.** Comparé dos configuraciones de shinigami por su hueco crudo —27,9
 contra 19,5— y le anuncié a Oscar un conflicto entre «jugable para una persona» y
 «útil como medida» que había que resolver eligiendo.
 
@@ -50,7 +50,7 @@ conflicto lo inventó la resta.**
 
 Y hay una segunda mitad: el error tiene que ser **emparejado**. Las dos políticas
 juegan las mismas semillas en las mismas sillas y se resta partida a partida. Sin
-eso, la varianza de lo que no controlas —en yokai, si te toca ser yokai— entra
+eso, la varianza de lo que no controlas —en shinigami, si te toca ser shinigami— entra
 entera en el error y esconde el hueco. En remigio esa varianza era seis veces la
 interna de la propia política.
 

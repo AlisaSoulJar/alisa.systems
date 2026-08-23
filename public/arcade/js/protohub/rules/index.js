@@ -153,7 +153,7 @@ export const REGLAS = {
      * Recibe opciones por lo mismo que nave y damas: sus normas cambian qué es
      * legal, así que viajan en el recibo.
      */
-    yokai: (o) => import('./yokai.js').then(m => m.crearYokai(o ?? {})),
+    shinigami: (o) => import('./shinigami.js').then(m => m.crearShinigami(o ?? {})),
     // ⚠️ EL PRIMER JUEGO DE CARTAS QUE PUBLICA SUSTRATO NATIVO, y el que estrena
     // una forma de esconder información que no teníamos: los treinta anteriores
     // revelan al ACTUAR —preguntar en el go fish, apostar en el póker— y aquí se
@@ -264,7 +264,7 @@ export const SILLAS = {
     nave: 4,
     /**
      * Ocho, y el número lo eligió una medida con DOS varas —jugable y medible—
-     * sobre ochenta semillas. Está la tabla entera en la cabecera de `yokai.js`.
+     * sobre ochenta semillas. Está la tabla entera en la cabecera de `shinigami.js`.
      *
      * El resumen: con seis, la casa juega cinco sillas y al agente le tocan cinco
      * decisiones por partida, que con ±45 por voto y ±200 por ganar no separan
@@ -272,7 +272,7 @@ export const SILLAS = {
      * dan 7,3 decisiones, equilibran el juego (42–38 contra 35–45) y alargan la
      * partida a 3,6 días. Y el hueco casa−suelo sigue siendo 6,7 veces su error.
      */
-    yokai: 8,
+    shinigami: 8,
     // Dos: con más manos el descarte pasa por tanta gente antes de volver a ti
     // que la señal de «éste está juntando corazones» se diluye, y esa señal es
     // justo lo que el juego mide.

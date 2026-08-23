@@ -1,7 +1,7 @@
 /**
- * YOKAI VISTO POR EL ARNÉS QUE DECIDE, NO POR EL MÍO
+ * SHINIGAMI VISTO POR EL ARNÉS QUE DECIDE, NO POR EL MÍO
  *
- * La tabla descarta yokai con «la casa no supera al suelo» por tercera vez, y mi
+ * La tabla descarta shinigami con «la casa no supera al suelo» por tercera vez, y mi
  * sonda dice que el hueco es 18,8 ± 3,4. Uno de los dos mide otra cosa, y ya sé
  * cuál tiene razón: el que decide.
  *
@@ -13,9 +13,9 @@ import { CATALOGO } from './public/js/alisa-engine/src/gym/registro.js';
 import { cargarReglas } from './public/arcade/js/protohub/rules/index.js';
 import { huecoEmparejado, diHueco } from './medir.mjs';
 
-const entrada = CATALOGO.find((e) => e.juego === 'yokai');
+const entrada = CATALOGO.find((e) => e.juego === 'shinigami');
 const Clase = await entrada.cargar();
-const R = await cargarReglas('yokai', {});
+const R = await cargarReglas('shinigami', {});
 const N = 60;
 
 /**

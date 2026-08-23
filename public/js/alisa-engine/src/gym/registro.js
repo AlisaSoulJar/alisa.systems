@@ -109,14 +109,14 @@ const PROTOHUB = [
     // Nave es DEDUCCION SOCIAL: roles ocultos, compromiso simultaneo y votacion.
     // El unico entorno donde un agente puede enganar a otro, no solo superarlo.
     { juego: 'nave', titulo: 'Nave', nombre: 'nave' },
-    // Yokai es el primer entorno donde HABLAR ES LA UNICA ACCION QUE IMPORTA. En
+    // Shinigami es el primer entorno donde HABLAR ES LA UNICA ACCION QUE IMPORTA. En
     // nave la palabra compite con moverse y hacer tareas, y por eso darle voz a su
     // junta no movio el banco -0.41 a 0.38, dentro del ruido-. Aqui un aldeano
     // seniala de noche sin efecto, habla y vota: no queda nada debajo cuando
     // quitas la conversacion. Y es el primero con dos NORMAS que son dos
     // divisiones -menu cerrado contra habla libre-, que es como el campo lleva una
     // decada separando a las politicas programadas de los modelos de lenguaje.
-    { juego: 'yokai', titulo: 'Yokai', crear: 'crearYokai' },
+    { juego: 'shinigami', titulo: 'Shinigami', crear: 'crearShinigami' },
     // Marea es el ENTORNO PUENTE: la familia del 2048 lleva anios siendo
     // referencia en aprendizaje por refuerzo, asi que su puntuacion se entiende
     // desde fuera sin explicarla y ancla a las demas. Y trae azar DESPUES de

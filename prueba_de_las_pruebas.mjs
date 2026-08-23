@@ -147,7 +147,7 @@ const SABOTAJES = [
         fichero: 'enfrentar.mjs',
         // El fallo REAL, y estaba puesto: `contarSillas` no leía `vivos`, que es
         // lo ÚNICO que publican los de deducción social —ni `marcador` ni nada
-        // más, ni siquiera al acabar—. Con eso yokai salía de la segunda tabla
+        // más, ni siquiera al acabar—. Con eso shinigami salía de la segunda tabla
         // clasificado como «juego de un jugador», teniendo ocho sillas con
         // puntuación y roles propios. No daba error: daba un veredicto.
         //
