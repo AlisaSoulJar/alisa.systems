@@ -97,12 +97,27 @@ const fuente = await readFile(path.join(AQUI, 'public/arcade/js/protohub/render/
  * tamaño, que es exactamente como se veían antes de hoy, y ninguna prueba de
  * estado lo nota porque el estado está perfecto. Sólo desaparece la información.
  */
+/**
+ * ⚠️ SE BUSCA POR LO QUE HACE, NO POR CÓMO ESTÁ ESCRITO. Y LA PRIMERA VERSIÓN NO.
+ *
+ * Buscaba literalmente `for (const p of g.items) {`, y el día que ese bucle se
+ * sacó a `volcarPiezas` para poder animar las piezas, esta comprobación suspendió
+ * con «no encuentro el bucle: la forma del pintor cambió». Hizo bien en saltar
+ * —algo se movió— pero el mensaje acusaba al pintor de un problema que era del
+ * patrón: `escalaPorVida` seguía llamándose perfectamente.
+ *
+ * Una comprobación atada a la forma exacta del código suspende en cada refactor
+ * honrado, y una que suspende por nada acaba desactivada. Ahora se ancla en lo
+ * único que no puede cambiar sin cambiar el comportamiento: la línea que escribe
+ * la matriz de una instancia —`poner(m,`— y su vecindario.
+ */
 {
-    const bucle = fuente.match(/for \(const p of g\.items\) \{[\s\S]{0,400}?\}/);
-    if (!bucle) fallos.push('no encuentro el bucle de instancias: la forma del pintor cambió');
-    else if (!bucle[0].includes('escalaPorVida')) {
-        fallos.push('el bucle de instancias ya no llama a `escalaPorVida`: las piezas vuelven a salir todas iguales');
-    } else console.log(`  ${verde('✓')} el bucle que coloca las instancias la sigue llamando`);
+    const i = fuente.indexOf('poner(m,');
+    const vecindario = i < 0 ? '' : fuente.slice(Math.max(0, i - 600), i + 300);
+    if (i < 0) fallos.push('no hay ninguna llamada a `poner(m, …)`: el pintor ya no coloca instancias');
+    else if (!vecindario.includes('escalaPorVida')) {
+        fallos.push('donde se colocan las instancias ya no se llama a `escalaPorVida`: las piezas vuelven a salir todas iguales');
+    } else console.log(`  ${verde('✓')} donde se colocan las instancias se sigue llamando a la escala`);
 }
 
 if (fallos.length) {

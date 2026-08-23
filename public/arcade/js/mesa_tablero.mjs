@@ -1236,6 +1236,15 @@ if (!anfitrion) {
     (function tick(t) {
         requestAnimationFrame(tick);
         if (typeof TWEEN !== 'undefined' && !document.hidden) TWEEN.update(t);
+        /**
+         * Y las piezas, que hasta hoy se teletransportaban.
+         *
+         * Va aquí y con la misma guarda que TWEEN: con la pestaña escondida no
+         * hay fotogramas, así que acercar la ficha un poco en cada uno no
+         * avanzaría nada — y al volver daría el salto entero de golpe. Ver la
+         * cabecera de `volcarPiezas` en `pintar3d.js`.
+         */
+        if (!document.hidden) pintor.animar();
         encajar();
         controles.update();
         // ⚠️ Con el modo deluxe encendido, pinta el compositor: cuatro pasadas en vez

@@ -106,6 +106,9 @@ import { crearDado, esDado, valorDeDado, LADO as LADO_DADO } from '../dados.js';
 import { crearFicha, esFicha, disponerCadena } from '../fichas.js';
 // Los props en GLB: geometria de verdad para los muros, sin perder el instanciado.
 import { geometriasDeProp } from '../props.js';
+// El emparejamiento de piezas entre fotogramas, suelto para poder probarlo sin
+// navegador. Ver la cabecera de cercar.js.
+import { acercar } from './acercar.js';
 
 /**
  * Una etiqueta de casilla: el texto pintado en un lienzo y pegado a un plano tumbado.
@@ -325,6 +328,84 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
     const etiquetas = new Map();
     const M = new THREE.Matrix4(), Q = new THREE.Quaternion();
     const POS = new THREE.Vector3(), ESC = new THREE.Vector3();
+
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  ⚠️ LAS PIEZAS SE MUEVEN, NO SE TELETRANSPORTAN
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Cuatro betatesters escribieron lo mismo en cuatro juegos distintos —go,
+     * dominó, alisapolis, mancala—: «parece que juego yo solo». Comprobado por el
+     * árbitro, la casa SÍ juega: go reparte 150/150, alisapolis 122/123, parchís
+     * entre cuatro. Lo que fallaba es que no se VE mover a nadie.
+     *
+     * Y la causa estaba en el andamio: `TWEEN` va cargado en las cuarenta mesas
+     * —32 KB— y `mesa_tablero.mjs` ya llama a `TWEEN.update()` en cada fotograma,
+     * con su guarda de `document.hidden` y todo. Lo usa el motor de cartas (22
+     * llamadas) y NO lo usa este fichero. Las mesas de cartas animan; las de
+     * tablero teletransportan. Un motor girando en vacío.
+     *
+     * ⚠️ Y NO SE PUEDE USAR TWEEN AQUÍ, AUNQUE ESTÉ CARGADO.
+     * TWEEN anima PROPIEDADES DE UN OBJETO. Una carta es una malla suya y se le
+     * tira un tween a `.position`. Estas piezas van en `InstancedMesh` —treinta y
+     * dos piezas de ajedrez son dos llamadas de dibujo, no treinta y dos objetos—
+     * y no hay objeto al que animar: hay matrices que escribir. Así que se
+     * interpolan números y se vuelcan las matrices, que es lo mismo un piso más
+     * abajo.
+     *
+     * ⚠️ EL EMPAREJAMIENTO ES LO DIFÍCIL, NO LA INTERPOLACIÓN.
+     * El sustrato manda una FOTO: dónde está todo ahora. Para animar hay que saber
+     * qué pieza de la foto nueva es cuál de la vieja, y eso el sustrato no lo dice
+     * salvo que el juego publique `id` —lo que hoy hace uno—. Sin `id` se empareja
+     * por cercanía dentro del grupo: cuando una ficha se mueve, todas las demás
+     * casan consigo mismas a distancia cero y la que sobra es la que viajó.
+     *
+     * Lo que NO se interpola: una pieza que aparece de la nada. Se pone en su
+     * sitio directamente. Deslizarla desde el sitio de otra sería inventarse un
+     * movimiento que nadie hizo — y en un juego con recibo eso es peor que un
+     * salto.
+     */
+    const mostradas = new Map();          // clave de grupo → posiciones en pantalla
+    let grupos = new Map();               // el último reparto por aspecto
+    let ultimo = null;                    // { sus, dx, dz }, para repetir por fotograma
+
+    function volcarPiezas(sus, dx, dz) {
+        ultimo = { sus, dx, dz };
+        grupos = new Map();
+        for (const p of (sus.piezas ?? [])) {
+            const alto = ALTO[p.t] ?? 0.25;
+            const forma = (p.t === 'bolita' || p.t === 'comida') ? 'punto'
+                        : alto >= 0.4 ? 'cubo' : 'disco';
+            const clave = `p:${forma}:${p.de}`;
+            if (!grupos.has(clave)) grupos.set(clave, { forma, de: p.de, alto, items: [] });
+            grupos.get(clave).items.push(p);
+        }
+
+        for (const [clave, g] of grupos) {
+            // El emparejamiento vive en `acercar.js`, suelto y sin THREE, porque
+            // es la parte que se equivoca en silencio y hay que poder probarla
+            // sin navegador. Ver su cabecera.
+            const objetivos = g.items.map((p) => ({ x: p.x + dx, z: p.y + dz, id: p.id }));
+            const ahora = acercar(mostradas.get(clave) ?? [], objetivos);
+            for (let i = 0; i < ahora.length; i++) ahora[i].p = g.items[i];
+            mostradas.set(clave, ahora);
+
+            // La forma del disco depende del dueño: es lo que hace que los
+            // bandos se distingan sin depender del color.
+            const forma = g.forma === 'disco' ? discoDe(g.de) : geo[g.forma];
+            const m = monton(clave, forma, materialDe(g.de, sus.colores), ahora.length);
+            for (const o of ahora) {
+                const f = escalaPorVida(o.p);
+                poner(m, o.x, (g.alto * f) / 2 + 0.08, o.z,
+                      (g.forma === 'cubo' ? g.alto : 1) * f, 0, f);
+            }
+            m.instanceMatrix.needsUpdate = true;
+        }
+        // Los grupos que ya no tienen piezas dejan de recordar dónde estaban: si
+        // no, al volver a aparecer una pieza vendría deslizándose desde donde
+        // estuvo hace tres jugadas.
+        for (const clave of [...mostradas.keys()]) if (!grupos.has(clave)) mostradas.delete(clave);
+    }
 
     function monton(clave, geometria, materialUsado, cuantas) {
         let m = montones.get(clave);
@@ -808,30 +889,11 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
             }
 
             // ── Las piezas, agrupadas por aspecto ───────────────────────
-            // La clave es (forma + dueño), que es lo que decide cómo se ve. Así
-            // treinta y dos piezas de ajedrez son dos llamadas, no treinta y dos.
-            const grupos = new Map();
-            for (const p of (sus.piezas ?? [])) {
-                const alto = ALTO[p.t] ?? 0.25;
-                const forma = (p.t === 'bolita' || p.t === 'comida') ? 'punto'
-                            : alto >= 0.4 ? 'cubo' : 'disco';
-                const clave = `p:${forma}:${p.de}`;
-                if (!grupos.has(clave)) grupos.set(clave, { forma, de: p.de, alto, items: [] });
-                grupos.get(clave).items.push(p);
-            }
-            for (const [clave, g] of grupos) {
-                // La forma del disco depende del dueño: es lo que hace que los
-                // bandos se distingan sin depender del color.
-                const forma = g.forma === 'disco' ? discoDe(g.de) : geo[g.forma];
-                const m = monton(clave, forma, materialDe(g.de, sus.colores), g.items.length);
-                for (const p of g.items) {
-                    const f = escalaPorVida(p);
-                    poner(m, p.x + dx, (g.alto * f) / 2 + 0.08, p.y + dz,
-                          (g.forma === 'cubo' ? g.alto : 1) * f, 0, f);
-                }
-                m.instanceMatrix.needsUpdate = true;
-                usados.add(clave);
-            }
+            // Se saca a `volcarPiezas` porque hay que poder repetirlo POR
+            // FOTOGRAMA sin repintar el resto de la mesa: es lo que convierte un
+            // salto en un movimiento. Ver su cabecera.
+            volcarPiezas(sus, dx, dz);
+            for (const clave of grupos.keys()) usados.add(clave);
 
             /**
              * ═══════════════════════════════════════════════════════════════
@@ -1109,6 +1171,31 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
     return {
         pintar,
         raiz,
+        /**
+         * Acerca las piezas a donde deberían estar. Se llama POR FOTOGRAMA, al
+         * lado del `TWEEN.update()` que la mesa ya tiene.
+         *
+         * ⚠️ NO REPINTA LA MESA: sólo vuelca las matrices de las piezas, que es
+         * barato porque `monton` reutiliza las mallas del fondo común. Repintar
+         * todo a sesenta por segundo sería rehacer el tapete, los rótulos y las
+         * zonas para mover una ficha.
+         *
+         * Y no hace nada antes del primer `pintar()`: sin sustrato no hay a dónde
+         * ir. Devuelve si ha movido algo, para que se pueda medir sin adivinar.
+         */
+        animar() {
+            if (!ultimo) return false;
+            volcarPiezas(ultimo.sus, ultimo.dx, ultimo.dz);
+            return true;
+        },
+        /** Dónde se está dibujando cada pieza AHORA. Para poder medir el viaje. */
+        get posicionesEnPantalla() {
+            const fuera = [];
+            for (const [clave, lista] of mostradas) {
+                for (const o of lista) fuera.push({ clave, id: o.id, x: +o.x.toFixed(4), z: +o.z.toFixed(4) });
+            }
+            return fuera;
+        },
         /** Cuántas llamadas de dibujo cuesta el cuadro. Para poder vigilarlo. */
         get llamadas() { return [...montones.values()].filter(m => m.visible).length; },
         soltar() {

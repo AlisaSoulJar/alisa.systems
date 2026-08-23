@@ -108,6 +108,21 @@ const SABOTAJES = [
         vigila: 'que ningún play() apunte a un sonido que no existe',
     },
     {
+        nombre: 'acercar',
+        corre: 'node prueba_acercar.mjs',
+        fichero: 'public/arcade/js/protohub/render/acercar.js',
+        // El fallo REAL: que se deje de emparejar. Y es el peor de todos porque
+        // NO PARECE UN FALLO — todo vuelve a teletransportarse, que es
+        // exactamente el aspecto que tenían las mesas de tablero hasta hoy. El
+        // que lo vea pensará «esto todavía no está hecho», no «esto se rompió».
+        //
+        // Se sabotea la condición y no la fórmula: perder el emparejamiento en un
+        // refactor es mucho más probable que equivocarse en una interpolación.
+        de: 'if (mejor >= 0 && dist <= salto * salto) venia = libres.splice(mejor, 1)[0];',
+        a: 'if (false) venia = libres.splice(mejor, 1)[0];',
+        vigila: 'que una ficha que se mueve VIAJE y no aparezca',
+    },
+    {
         nombre: 'asientos',
         corre: 'node prueba_asientos.mjs',
         fichero: 'public/arcade/js/protohub/rules/mancala.js',
@@ -152,7 +167,10 @@ const SABOTAJES = [
         //
         // Se sabotea la LLAMADA y no la función, porque perder la llamada en un
         // refactor del bucle es mucho más probable que borrar la función entera.
-        de: 'const f = escalaPorVida(p);',
+        // La línea se movió al sacar el bucle a `volcarPiezas` para poder animar
+        // las piezas, y el sabotaje se quedó apuntando a la vieja: el arnés lo
+        // dijo con «1 no saben fallar», que es exactamente para lo que existe.
+        de: 'const f = escalaPorVida(o.p);',
         a: 'const f = 1;',
         vigila: 'que una pieza tocada se siga viendo más pequeña',
     },
