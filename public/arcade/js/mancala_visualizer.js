@@ -220,37 +220,57 @@ function syncMancalaState(state) {
         piecesGroup.remove(piecesGroup.children[0]); 
     }
 
-    // const board = state.board; // removed to fix syntax error
-    // Helper to add random seeds in a radius
-    function spawnSeeds(cx, cz, count, radius) {
-                for(let j=0; j<count; j++) {
-            const colors = [0xffffff, 0xf5f5f5, 0xeaeaea];
+    /**
+     * ⚠️ LAS SEMILLAS SALTABAN EN CADA FOTOGRAMA, Y LO CONTÓ UN BETATESTER.
+     * ═══════════════════════════════════════════════════════════════════════
+     *     «las piedras se mueven antes de tocarlas, cada frame tiene una
+     *      posición diferente»            — aviso del 23-08-2026
+     *
+     * Y era exactamente eso. Este grupo se vacía y se reconstruye en CADA
+     * refresco, y dentro había tres `Math.random()`: el ángulo, el radio y hasta
+     * el color de cada piedra. Así que un tablero que no ha cambiado se redibuja
+     * distinto sesenta veces por segundo — el hoyo hierve.
+     *
+     * No es un fallo de la mecánica y por eso ninguna prueba lo veía: el estado
+     * es correcto, las jugadas son correctas, y lo único roto es que la vista no
+     * se está quieta. Sólo se detecta jugando, y por eso el buzón vale lo que
+     * vale.
+     *
+     * La dispersión se conserva —un hoyo con las piedras en fila sería peor— pero
+     * ahora sale de QUIÉN es la piedra: el hoyo y su índice dentro del hoyo. Dos
+     * senos desfasados bastan para que no se vea la retícula, y como es una
+     * función pura, la misma partida da siempre la misma imagen. Que es además lo
+     * que esta casa pide de todo lo demás.
+     */
+    function spawnSeeds(cx, cz, count, radius, hoyo) {
+        const COLORES = [0xffffff, 0xf5f5f5, 0xeaeaea];
+        for (let j = 0; j < count; j++) {
             // `clearcoat` es de MeshPhysicalMaterial, no de Standard: three.js
             // avisaba por cada semilla y llenaba la consola de ~200 líneas en
             // cada refresco. Con Physical el brillo se queda y la consola calla.
             const mat = new THREE.MeshPhysicalMaterial({
-                color: colors[Math.floor(Math.random()*colors.length)],
+                color: COLORES[(hoyo * 7 + j * 3) % COLORES.length],
                 roughness: 0.05, metalness: 0.1, clearcoat: 1.0, clearcoatRoughness: 0.0
             });
             const seed = new THREE.Mesh(seedGeo, mat);
-            const angle = Math.random() * Math.PI * 2;
-            const r = Math.random() * (radius - 0.15) * 0.8;
-            seed.position.set(cx + Math.cos(angle)*r, -0.05 - (j*0.005), cz + Math.sin(angle)*r);
+            const angle = (hoyo * 2.399 + j * 2.399) % (Math.PI * 2);   // ángulo áureo
+            const r = (0.35 + 0.55 * Math.abs(Math.sin(hoyo * 1.7 + j * 2.3))) * (radius - 0.15) * 0.8;
+            seed.position.set(cx + Math.cos(angle) * r, -0.05 - (j * 0.005), cz + Math.sin(angle) * r);
             piecesGroup.add(seed);
         }
     }
 
     // P1 Pits
     for (let i = 0; i < 6; i++) {
-        spawnSeeds(-3.25 + i * X_SPACING, 1.0, board[i], PIT_RADIUS);
+        spawnSeeds(-3.25 + i * X_SPACING, 1.0, board[i], PIT_RADIUS, i);
     }
     // P2 Pits
     for (let i = 0; i < 6; i++) {
-        spawnSeeds(3.25 - i * X_SPACING, -1.0, board[i+7], PIT_RADIUS);
+        spawnSeeds(3.25 - i * X_SPACING, -1.0, board[i+7], PIT_RADIUS, i + 7);
     }
     // Stores
-    spawnSeeds(4.3, 0, board[6], STORE_WIDTH/2);
-    spawnSeeds(-4.3, 0, board[13], STORE_WIDTH/2);
+    spawnSeeds(4.3, 0, board[6], STORE_WIDTH/2, 6);
+    spawnSeeds(-4.3, 0, board[13], STORE_WIDTH/2, 13);
     
     // Update HUD
     const hudContainer = document.getElementById('custom-hud-status');
