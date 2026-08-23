@@ -17,6 +17,32 @@ const SITIO = 'https://alisa.systems';
 
 const { cargarReglas } = await import('./public/arcade/js/protohub/rules/index.js');
 const { verificar } = await import('./public/arcade/js/protohub/Verificador.js');
+const { veredicto } = await import('./veredicto.mjs');
+const { execFileSync } = await import('node:child_process');
+const gris = (s) => `\x1b[90m${s}\x1b[0m`;
+const resumen = new Map();
+
+/**
+ * Cuántos commits han tocado el fichero de reglas de ese juego DESPUÉS del aviso.
+ *
+ * Es el dato más barato y más objetivo que hay: si nadie lo ha tocado, la queja
+ * sigue viva pase lo que pase con las comprobaciones. Y si lo han tocado mucho,
+ * merece una segunda mirada antes de ponerse.
+ *
+ * Devuelve `null` —y no cero— cuando no se puede saber: sin git, sin fecha o sin
+ * juego. Cero significa «he mirado y no hay», que es una afirmación distinta.
+ */
+function cambiosDesde(juego, cuando) {
+    if (!juego || !cuando) return null;
+    const fecha = String(cuando).slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return null;
+    try {
+        const salida = execFileSync('git', ['log', '--oneline', `--since=${fecha}`, '--',
+            `public/arcade/js/protohub/rules/${juego}.js`], { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'ignore'] });
+        return salida.split('\n').filter((l) => l.trim()).length;
+    } catch { return null; }
+}
+
 const { enlaceRepetidor } = await import('./public/arcade/js/protohub/enlace_repetidor.js');
 
 const r = await fetch(BUZON).catch(() => null);
@@ -92,5 +118,50 @@ for (const a of avisos) {
     } else {
         console.log('     partida  (sin recibo: llegó antes de empezar, o el juego no lo publica)');
     }
+
+    /**
+     * ⚠️ Y EL VEREDICTO, QUE ES LO QUE FALTABA.
+     *
+     * «SE PUEDE REPETIR» sólo dice que las reglas no han cambiado bajo el recibo,
+     * y eso engaña: entropy tenía SEIS avisos que repetían perfectamente y cuyas
+     * dos quejas —robar del mazo, coger del descarte— funcionan hoy. Media hora
+     * en confirmar que algo ya iba bien, mientras los de mancala y alisapolis, que
+     * sí estaban vivos, se leían igual de urgentes.
+     *
+     * Ver `veredicto.mjs`: lo primero que hace es admitir qué NO puede juzgar.
+     */
+    let reglasDelJuego = null;
+    try { reglasDelJuego = await cargarReglas(a.juego ?? a.recibo?.juego, {}); } catch { /* se dirá */ }
+    const v = veredicto(a, { reglas: reglasDelJuego });
+    resumen.set(v.estado, (resumen.get(v.estado) ?? 0) + 1);
+    const SELLO = {
+        vivo:       ['🔴', 'SIGUE VIVO'],
+        pantalla:   ['🟡', 'ES DE LA PANTALLA'],
+        mirar:      ['👁 ', 'HAY QUE MIRARLO'],
+        'sin-datos':['··', 'SIN DATOS'],
+    }[v.estado] ?? ['··', v.estado];
+    console.log(`     veredicto ${SELLO[0]} ${SELLO[1]}`
+        + (v.familia ? gris(`  [${v.familia}]`) : '') + `  ${v.porque}`);
+
+    // Y un dato objetivo y barato: si nadie ha tocado ese juego desde el aviso,
+    // la queja casi seguro sigue viva pase lo que pase con lo de arriba.
+    const cambios = cambiosDesde(a.juego ?? a.recibo?.juego, a.cuando);
+    if (cambios !== null) {
+        console.log(`     desde     ${cambios === 0
+            ? 'NADIE ha tocado ese juego desde el aviso'
+            : `${cambios} commit(s) tocaron ese juego después`}`);
+    }
     console.log('');
 }
+
+/**
+ * Resumen, que con cuarenta avisos la lista sola no se lee. Ordena por lo que
+ * hay que hacer, no por fecha.
+ */
+console.log('  ── qué hacer con todo esto ──────────────────────────────');
+for (const [estado, texto] of [['vivo', '🔴 arreglar'], ['pantalla', '🟡 mirar la pantalla, no las reglas'],
+                               ['mirar', '👁  necesita ojos'], ['sin-datos', '·· sin datos']]) {
+    const n = resumen.get(estado) ?? 0;
+    if (n) console.log(`     ${texto.padEnd(36)} ${n}`);
+}
+console.log('');

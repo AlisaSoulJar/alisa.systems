@@ -108,6 +108,24 @@ const SABOTAJES = [
         vigila: 'que ningún play() apunte a un sonido que no existe',
     },
     {
+        nombre: 'veredicto',
+        corre: 'node prueba_veredicto.mjs',
+        fichero: 'veredicto.mjs',
+        // El fallo que puede tener esto: pasarse de listo. El día que «gráficamente
+        // muy pobre» reciba un veredicto automático, el buzón empezará a dar por
+        // resuelto lo que nadie ha mirado — y eso no da error: da una lista más
+        // corta, que parece progreso.
+        //
+        // El sabotaje quita `aspecto` de las familias que necesitan ojos. La
+        // primera versión de la comprobación NO suspendía con esto, porque había
+        // un camino por defecto que devolvía «mirar» igualmente: pasaba por el
+        // motivo equivocado. Lo dijo este arnés, y por eso ahora se vigila la
+        // DECLARACIÓN y no sólo el resultado.
+        de: "export const NECESITAN_OJOS = new Set(['movimiento', 'aspecto', 'reglas']);",
+        a: "export const NECESITAN_OJOS = new Set(['movimiento', 'reglas']);",
+        vigila: 'que el buzón no dé por juzgado lo que nadie ha mirado',
+    },
+    {
         nombre: 'acercar',
         corre: 'node prueba_acercar.mjs',
         fichero: 'public/arcade/js/protohub/render/acercar.js',
