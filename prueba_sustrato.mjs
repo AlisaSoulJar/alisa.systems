@@ -49,7 +49,7 @@ globalThis.fetch = async (e, i) => {
  * TECHO_DERIVADOS a 17»— y nadie lo hacía, porque salía en verde y un aviso en verde
  * no lo lee nadie. Un trinquete que no se aprieta cuando avanza no aprieta.
  */
-const TECHO_DERIVADOS = 17;
+const TECHO_DERIVADOS = 16;
 
 let fallos = 0;
 const mal = (m) => { fallos++; console.log(`  ✗ ${m}`); };

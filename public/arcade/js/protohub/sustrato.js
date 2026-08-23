@@ -22,16 +22,68 @@
  * uno con su bug. Cada renderizador se convirtió en un NERVIO en vez de ser un
  * ESPECTADOR — justo lo contrario de la tesis.
  *
- * EL CONTRATO: TRES ESTRUCTURAS, PORQUE HAY TRES COSAS Y NO MÁS
+ * EL CONTRATO: CUATRO ESTRUCTURAS, Y LA CUARTA COSTÓ ADMITIRLA
  *
- *     rejilla  el terreno: lo que no se mueve      (go, sokoban, mancala)
- *     piezas   lo que sí se mueve                  (ajedrez, snake, fagocito)
- *     zonas    montones ordenados fuera del tablero (manos, mazos, descartes)
+ *     rejilla   el terreno: lo que no se mueve      (go, sokoban, cripta)
+ *     piezas    lo que sí se mueve                  (ajedrez, snake, fagocito)
+ *     zonas     montones ordenados FUERA del tablero (manos, mazos, descartes)
+ *     asientos  sitios declarados que CONTIENEN     (mancala, escondites)
  *
  * Un juego de cartas es zonas sin rejilla. Go es rejilla sin zonas. Fagocito es
  * rejilla con piezas. Brisca es zonas más una pieza por carta en la baza.
  *
- * ⚠️ UNA PIEZA PUEDE LLEVAR `id`, Y NO ES UNA CUARTA ESTRUCTURA.
+ * ⚠️ AQUÍ PONÍA «TRES ESTRUCTURAS, PORQUE HAY TRES COSAS Y NO MÁS», Y ERA VERDAD
+ *    HASTA QUE DEJÓ DE SERLO. ASÍ QUE HAY QUE ARGUMENTAR LA CUARTA.
+ * ───────────────────────────────────────────────────────────────────────────
+ *
+ * Un `asiento` no es ninguna de las otras tres:
+ *
+ *   · NO es rejilla — una celda es lo que hay DEBAJO de ti; un asiento es un
+ *     sitio que CONTIENE. Y muchos no caen en cuadrícula: los catorce hoyos de
+ *     mancala están en óvalo, y un escondite en un edificio de seis plantas no
+ *     tiene fila ni columna.
+ *   · NO es pieza — no se mueve. Es donde las piezas están.
+ *   · NO es zona — una zona es el montón de un jugador, fuera del tablero. Un
+ *     asiento está EN el sitio y puede no ser de nadie.
+ *
+ * Y no se admite por elegancia: se admite porque CINCO sistemas de esta casa lo
+ * inventaron por separado, cada uno con su nombre, sin poder decírselo al motor:
+ *
+ *     mancala                    14 hoyos con N semillas → y por eso necesita
+ *                                visualizador propio: el adaptador le saca
+ *                                `rejilla: null` y cero piezas. No tiene sustrato.
+ *     ProceduralBuildingFactory  hidingSpots[] con hasRaccoon e isSearched
+ *     ScummInteractionEngine     partition.leaves + targetId + snakeIds + tried[]
+ *     raccoon_floor_search       escondites[] + registrados + conMapache
+ *     alisapolis                 40 casillas con nombre y dueño
+ *
+ * Los cinco son lo mismo: un sitio declarado que puede contener algo y que
+ * puedes haber mirado ya. Por eso ¡Busca! es una saga coherente — cada etapa es
+ * esta abstracción a otra escala: un cajón, una habitación, una planta, un
+ * edificio, un planeta.
+ *
+ * ⚠️ Y EL NOMBRE VIENE DEL CANON, NO DE AQUÍ.
+ * `Data/Lecciones/RPG_CODEBASE_FEDERATION_CONVERGENCE_20260729.md` ya define
+ * `Seat = situated Role in a Facade` y `Appointment = Being bound to a Seat`, con
+ * `Reality.Seats` y `Reality.Appointments` de almacenes primarios. Inventar
+ * `huecos` habría sido el sexto dialecto de la misma cosa.
+ *
+ * LA FORMA:
+ *
+ *     { id, x, y }              quién es y dónde está
+ *     { de }                    de quién es, si es de alguien
+ *     { nombre }                cómo se llama para una persona («Data-1», «nevera»)
+ *     { cuantas }               cuánto contiene, si el contenido es FUNGIBLE
+ *     { tiene: [id] }           qué contiene, si el contenido tiene identidad
+ *     { visto }                 si ya se miró — la mecánica entera de ¡Busca!
+ *
+ * `cuantas` y `tiene` son las dos caras: doce semillas de mancala son
+ * intercambiables y se cuentan; el mapache no, y se nombra.
+ *
+ * Un juego de cartas es zonas sin rejilla. Go es rejilla sin zonas. Fagocito es
+ * rejilla con piezas. Brisca es zonas más una pieza por carta en la baza.
+ *
+ * ⚠️ UNA PIEZA PUEDE LLEVAR `id`, Y ESO NO AÑADE ESTRUCTURA: AMPLÍA UNA.
  * ───────────────────────────────────────────────────────────────────────────
  *
  *     { x, y, t, de }          lo mínimo: dónde, qué, de quién

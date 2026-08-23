@@ -108,6 +108,23 @@ const SABOTAJES = [
         vigila: 'que ningún play() apunte a un sonido que no existe',
     },
     {
+        nombre: 'asientos',
+        corre: 'node prueba_asientos.mjs',
+        fichero: 'public/arcade/js/protohub/rules/mancala.js',
+        // El fallo que puede tener un asiento: decir que contiene lo que no
+        // contiene. La pantalla enseña un número y el árbitro juega con otro, y
+        // gana el árbitro sin que nadie se entere.
+        //
+        // El sabotaje deja el granero a cero. No rompe el juego —la partida se
+        // juega igual de bien— y sólo miente la vista, que es exactamente el modo
+        // de fallo del que va esta comprobación. Lo caza la ley de las 48
+        // semillas, que es del JUEGO y no de la estructura de datos: una
+        // implementación rota no puede cumplirla por casualidad.
+        de: "cuantas: b[GRANERO[0]], nombre: 'granero'",
+        a: "cuantas: 0, nombre: 'granero'",
+        vigila: 'que un asiento no mienta sobre lo que contiene',
+    },
+    {
         nombre: 'identidad',
         corre: 'node prueba_identidad.mjs',
         fichero: 'public/arcade/js/protohub/rules/alisapolis.js',

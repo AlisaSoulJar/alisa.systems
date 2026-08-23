@@ -80,6 +80,84 @@ export const mancala = {
         };
     },
 
+    /**
+     * ⚠️ MANCALA NO TENÍA SUSTRATO. NINGUNO. Y POR ESO NECESITA UN VISUALIZADOR.
+     * ═══════════════════════════════════════════════════════════════════════════
+     *
+     * Medido pasándolo por el adaptador: `rejilla: null` y CERO piezas. El motor
+     * universal no tenía absolutamente nada que dibujar, así que hubo que
+     * escribirle `mancala_visualizer.js` entero a mano — con los tres
+     * `Math.random()` que hacían saltar las semillas en cada refresco.
+     *
+     * Y no era un descuido: es que el vocabulario no podía decir lo que mancala
+     * es. Un hoyo no es una celda —no estás encima, estás mirando dentro— ni una
+     * pieza —no se mueve— ni una zona —no es el montón de un jugador fuera del
+     * tablero—. Es un ASIENTO, la cuarta estructura, y su existencia se argumenta
+     * en la cabecera de `sustrato.js` con los cinco sistemas que la inventaron por
+     * separado.
+     *
+     * Fíjate en que el estado de mancala YA ERA una lista de asientos y nadie lo
+     * había visto:
+     *
+     *     board: [4,4,4,4,4,4,0, 4,4,4,4,4,4,0]
+     *            └── seis hoyos ─┘ granero
+     *
+     * Catorce números que son catorce sitios con su contenido. Lo único que
+     * faltaba era poder decirlo.
+     *
+     * ⚠️ `cuantas` Y NO `tiene`, PORQUE LAS SEMILLAS SON INTERCAMBIABLES.
+     * Doce semillas en un hoyo son doce semillas: no hay una que sea «la tercera»
+     * ni tiene sentido seguirla. Cuando el contenido SÍ tiene identidad —el
+     * mapache de un escondite, un peón en una casilla— se usa `tiene: [id]`. Son
+     * las dos caras del mismo campo y confundirlas obligaría a inventar ids falsos
+     * para cosas que no los necesitan.
+     *
+     * La disposición es la del tablero de verdad: dos filas de seis con un granero
+     * en cada punta. Ocho de ancho por tres de alto, en coordenadas del sustrato y
+     * no del visualizador — quien pinte decide cuánto mide una unidad.
+     */
+    sustrato(p, asiento = 0) {
+        const yo = asiento % 2 === 0 ? 0 : 1;
+        const b = p.board;
+        const asientos = [];
+
+        // Fila de arriba: los seis del rival, leídos de derecha a izquierda,
+        // que es el sentido en que la siembra recorre el tablero.
+        for (let i = 0; i < 6; i++) {
+            asientos.push({
+                id: `hoyo${HUECOS[1][i]}`, x: 6 - i, y: 0,
+                de: 1, cuantas: b[HUECOS[1][i]], nombre: String(HUECOS[1][i]),
+            });
+        }
+        // Fila de abajo: los seis del jugador 0, de izquierda a derecha.
+        for (let i = 0; i < 6; i++) {
+            asientos.push({
+                id: `hoyo${HUECOS[0][i]}`, x: i + 1, y: 2,
+                de: 0, cuantas: b[HUECOS[0][i]], nombre: String(HUECOS[0][i]),
+            });
+        }
+        asientos.push({ id: 'granero1', x: 0, y: 1, de: 1, cuantas: b[GRANERO[1]], nombre: 'granero' });
+        asientos.push({ id: 'granero0', x: 7, y: 1, de: 0, cuantas: b[GRANERO[0]], nombre: 'granero' });
+
+        return {
+            // La rejilla es el tablero de madera: sólo el borde donde se apoyan
+            // los asientos. `2` marca la fila de quien mira, que es la única
+            // información espacial que cambia con el asiento.
+            rejilla: {
+                ambiente: 'metal', ancho: 8, alto: 3,
+                celdas: Array.from({ length: 24 }, (_, k) => {
+                    const y = Math.floor(k / 8);
+                    if (y === 1) return 1;                       // el eje del tablero
+                    return (y === 2) === (yo === 0) ? 2 : 0;     // 2 = tu fila
+                }),
+            },
+            piezas: [],
+            zonas: [],
+            asientos,
+            leyenda: { asiento: 'hoyo con semillas' },
+        };
+    },
+
     mover(p, jugada) {
         const i = parseInt(jugada, 10);
         if (!HUECOS[p.turno].includes(i)) return false;
