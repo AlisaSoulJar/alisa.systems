@@ -23,7 +23,7 @@
 | reversi | ● | · | ● | · | ● | · | · | · | ? | ? | no |
 | damas | ● | · | ● | · | ● | · | ? | · | ? | ? | no |
 | xiangqi | ● | · | ● | · | ● | · | · | · | ? | ? | no |
-| mancala | ● | · | ● | · | ● | · | · | · | ? | ? | no |
+| mancala | ● | · | ● | · | · | · | · | ● | ? | ? | no |
 | snake | ● | · | · | · | ● | · | · | · | ? | ? | no |
 | fagocito | ● | · | · | ● | ● | · | · | · | ? | ? | no |
 | peaton | ● | · | · | ● | ● | · | · | · | ? | ? | no |
@@ -49,7 +49,7 @@
 | rebano | ● | · | · | ● | ● | · | · | · | ? | ? | sí |
 | pradera | ● | · | · | ● | ● | · | · | · | ? | ? | sí |
 | nave | ● | ● | ● | · | ● | ● | ? | · | ? | ? | sí |
-| yokai | · | · | ● | · | ● | ● | ? | · | ? | ? | sí |
+| shinigami | · | · | ● | · | ● | ● | ? | · | ? | ? | sí |
 | remigio | · | ● | ● | · | ● | · | · | · | ? | ? | sí |
 | chinchon | · | ● | ● | · | ● | · | · | · | ? | ? | sí |
 | alisapolis | ● | ● | ● | · | · | · | ? | · | ? | ? | sí |
@@ -65,20 +65,21 @@
 - `oculto`: **20/40**
 - `rival`: **31/40**
 - `autonomo`: **8/40**
-- `irreversible`: **39/40**
+- `irreversible`: **38/40**
 - `simultaneo`: **3/40**
 - `cooperativo`: **2/40**
-- `comunicacion`: **2/40**
+- `comunicacion`: **3/40**
 - `busqueda`: **null/40**
 - `presupuesto`: **null/40**
 
 ## Perfiles demostrados
 
 - `oculto+rival+irreversible` — blackjack, poker, brisca, tute, hearts, gofish, unit, entropy, remigio, chinchon, domino
-- `espacial+rival+irreversible` — ajedrez, go, reversi, damas, xiangqi, mancala, parchis, oca
+- `espacial+rival+irreversible` — ajedrez, go, reversi, damas, xiangqi, parchis, oca
 - `espacial+autonomo+irreversible` — fagocito, peaton, rebano, pradera
 - `espacial+irreversible` — snake, sokoban, marea
 - `espacial+oculto+rival+autonomo+irreversible` — sigilo, canadiense
+- `espacial+rival+comunicacion` — mancala
 - `oculto+rival+irreversible+comunicacion` — spades
 - `oculto+irreversible` — guerra
 - `espacial+oculto+autonomo+irreversible` — cripta
@@ -88,6 +89,6 @@
 - `espacial+oculto+rival+irreversible+cooperativo` — relevo
 - `espacial+rival+irreversible+cooperativo+comunicacion` — cabina
 - `espacial+oculto+rival+irreversible+simultaneo` — nave
-- `rival+irreversible+simultaneo` — yokai
+- `rival+irreversible+simultaneo` — shinigami
 - `espacial+oculto+rival` — alisapolis
 - `rival+irreversible` — generala
