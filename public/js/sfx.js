@@ -240,6 +240,15 @@ const SFX = (() => {
             osc('square', 152, 0.3, 0.08); // Beat frequency for hum
         },
 
+        // Lo pide `countdown()` en el «GO!», y nunca existio: la cuenta atras
+        // entera —tres numeros y la salida, a 150px— corria muda. Es el disparo
+        // gordo del jefe, asi que `laser_heavy` con mas cuerpo y mas cola.
+        boss_laser() {
+            sweep(600, 60, 0.35, 'sawtooth', 0.22);
+            sweep(400, 40, 0.4, 'square', 0.12);
+            noise(0.2, 0.1, 'lowpass', 400);
+        },
+
         armor_open() {
             // Mechanical panels opening — hydraulic hiss
             noise(0.3, 0.12, 'highpass', 3000);
@@ -420,6 +429,37 @@ const SFX = (() => {
 
         // ═══ INTERACTION / OVERWORLD ═══
 
+        /**
+         * ── MESA: cartas, fichas y dados ──────────────────────────────────
+         *
+         * La familia que le faltaba al catálogo. Estaban el shmup, el acuático,
+         * las plataformas y la interfaz, y no estaba el género del que el
+         * proyecto tiene CUARENTA juegos. Se nota en que los de mesa eran los
+         * únicos que no tenían a qué sonar.
+         *
+         * Cuál de los tres suena no hace falta declararlo por juego: el motor de
+         * cartas pone `carta` y el de tablero `ficha`, y quién es cada uno ya lo
+         * decide el sustrato (zonas sin rejilla = cartas). El dato ya existía.
+         */
+        carta() {
+            // El roce del papel al salir de la mano: aire, no tono.
+            noise(0.05, 0.09, 'highpass', 2600);
+            osc('triangle', 520, 0.02, 0.03);
+        },
+
+        ficha() {
+            // Madera sobre madera: golpe corto y grave, sin cola.
+            osc('triangle', 190, 0.045, 0.11);
+            noise(0.025, 0.05, 'lowpass', 1400);
+        },
+
+        dado() {
+            // Tres golpes desiguales: un dado que rueda no hace un solo ruido.
+            noise(0.03, 0.07, 'bandpass', 1800);
+            setTimeout(() => noise(0.025, 0.05, 'bandpass', 2300), 70);
+            setTimeout(() => noise(0.04, 0.06, 'bandpass', 1500), 150);
+        },
+
         click() {
             osc('sine', 1000, 0.03, 0.1);
         },
@@ -436,9 +476,31 @@ const SFX = (() => {
             sweep(800, 400, 0.08, 'sine', 0.08);
         },
 
+        // Lo pide `autoWireUI` en cada mousedown y nunca existio: `play` comprueba
+        // `if (sounds[name])` y se va callando, asi que el sonido de pulsar llevaba
+        // mudo desde siempre sin dar un solo error. Mas seco que `click`, que es
+        // confirmacion; esto es el golpe de tecla.
+        menu_select() {
+            osc('square', 660, 0.04, 0.07);
+        },
+
         footstep() {
             noise(0.04, 0.06, 'lowpass', 500);
             osc('sine', 80, 0.03, 0.05);
+        },
+
+        // Los otros dos que se pedian sin existir. `radar` lo llama `countdown()`
+        // en cada numero y la camara FPS al fijar blanco: un ping seco y agudo.
+        // `toggle` es el interruptor —lo pide la linterna de la busqueda por la
+        // planta— y suena a chasquido, no a confirmacion.
+        radar() {
+            osc('sine', 1400, 0.14, 0.16);
+            osc('sine', 2100, 0.06, 0.05);
+        },
+
+        toggle() {
+            noise(0.02, 0.08, 'highpass', 4000);
+            osc('square', 320, 0.03, 0.06);
         },
 
         door_open() {

@@ -124,6 +124,17 @@ class SovereignCardEngine {
         // Se elige backend ANTES de sondear; si no, el primer poll salía sin
         // backend y pintaba "DISCONNECTED" aunque hubiera reglas locales.
         this._iniciarBackend().then(() => {
+            /**
+             * Que suene. Se envuelve AQUÍ y no dentro de `_iniciarBackend` porque
+             * ese método asigna `this.backend` en cuatro ramas —mesa compartida,
+             * local, sin reglas— y una de ellas sale con un `return` temprano:
+             * envolver en el llamador es un punto en vez de cuatro, y no se puede
+             * olvidar el día que se añada una quinta.
+             *
+             * `carta` porque esto es el motor de cartas. No hay lista por juego:
+             * quién usa qué motor ya lo decide el sustrato en `montarMesa.js`.
+             */
+            this.backend = window.conSonidoDeMesa?.(this.backend, 'carta') ?? this.backend;
             this.pollHub();
             setInterval(this.pollHub, 1000);
             this._montarRepetidor();

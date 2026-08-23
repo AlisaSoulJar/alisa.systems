@@ -51,7 +51,7 @@ import { JUEGOS, TITULOS, cargarReglas } from './protohub/rules/index.js';
  * `prueba_version.mjs` comprueba que corresponde a lo que hay en disco y, si no,
  * dice el valor que toca. No hay que acordarse: hay que hacer caso a la prueba.
  */
-const VERSION = '45f29bdc';
+const VERSION = '5d3461d6';
 
 /**
  * Lo que toda página de tablero necesitaba y repetía. En orden.
@@ -226,6 +226,18 @@ export const ANDAMIO = [
     // de los dos lo hace desaparecer, y un botón que se esconde a sí mismo deja
     // sin salida a quien no tiene teclado.
     'js/mandos.js',
+    /**
+     * El sonido. `sfx.js` llevaba meses escrito —37 KB, sesenta sonidos, cuatro
+     * temas y radio— y lo usaban DOS páginas de ciento once: no estaba roto ni
+     * perdido, estaba desenchufado. Va en el andamio porque quien lo usa son los
+     * dos motores, que son scripts clásicos y no pueden importarlo.
+     *
+     * `sfx.js` va con ruta absoluta porque vive en `/js/`, fuera del arcade, y lo
+     * comparten también los juegos propios. `sonido_mesa.js` es de aquí y va
+     * detrás, que es quien lo enchufa.
+     */
+    '/js/sfx.js',
+    'js/sonido_mesa.js',
 ];
 
 /**

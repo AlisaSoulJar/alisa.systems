@@ -61,11 +61,25 @@ async function ficherosSellados() {
      * Es la lista paralela otra vez, y esta vez en la herramienta que existe para
      * cazar desajustes. Ahora se sacan las rutas del propio `montarMesa.js`, así que
      * el día que alguien añada algo al andamio entra solo.
+     *
+     * ⚠️ «ENTRA SOLO» ERA MENTIRA A MEDIAS: SÓLO SI SE ESCRIBÍA SIN BARRA.
+     *
+     * El patrón cazaba `'js/…'` y nada más. `montarMesa.js` sella TODO lo que no
+     * empiece por `/vendor/`, así que una entrada absoluta —`'/js/sfx.js'`, que es
+     * como hay que escribir lo que vive fuera del arcade— salía con `?v=` y NO
+     * contaba para el resumen. O sea: editar el motor de sonido no subía la
+     * versión, y quien ya hubiera abierto una mesa se quedaba con el sonido
+     * anterior emparejado con código nuevo. Es exactamente el fallo que este
+     * fichero existe para cazar, escondido en el propio cazador.
+     *
+     * La misma lección que ya está escrita dos veces aquí arriba, un piso más
+     * abajo: no basta con leer la lista, hay que leerla ENTERA.
      */
     const fuente = await readFile(new URL('./montarMesa.js', JS), 'utf-8');
-    const delAndamio = [...fuente.matchAll(/'js\/([\w./-]+\.m?js)'/g)]
+    const delAndamio = [...fuente.matchAll(/'(\/?)js\/([\w./-]+\.m?js)'/g)]
         // `protohub/` se sella igual que el resto: si va con `?v=`, cuenta.
-        .map(m => m[1]);
+        // Las absolutas viven en `public/js/`, dos pisos por encima de éste.
+        .map(m => (m[1] ? `../../js/${m[2]}` : m[2]));
     // Los visualizadores no son una lista: son lo que hay. Una lista escrita aquí
     // se separaría del directorio el día que alguien añada uno.
     const hay = await readdir(JS, { withFileTypes: true });

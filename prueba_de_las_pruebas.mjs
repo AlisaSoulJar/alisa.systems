@@ -89,6 +89,25 @@ const SABOTAJES = [
         vigila: 'que declarar una forma no abra la puerta a cualquier jugada',
     },
     {
+        nombre: 'sonido',
+        corre: 'node prueba_sonido.mjs',
+        fichero: 'public/js/sfx.js',
+        // El fallo REAL, y estaba puesto: `autoWireUI` pedía `menu_select` en cada
+        // mousedown y ese sonido no existía. `play` empieza por `if (sounds[name])`,
+        // así que se iba callando — sin error, sin aviso, sin nada. Un sonido que
+        // falta suena igual que un sonido flojo, y eso lo hace invisible para
+        // siempre. Con la comprobación puesta salieron tres más a la primera:
+        // `radar` y `boss_laser` dejaban MUDA la cuenta atrás entera, y `toggle`
+        // era la linterna de la búsqueda por la planta.
+        //
+        // El sabotaje quita el sonido, no la llamada: es la dirección en que pasa
+        // de verdad —se renombra o se borra una entrada del catálogo y las páginas
+        // que la pedían enmudecen— y es la que ningún error de consola delata.
+        de: '        menu_select() {',
+        a: '        menu_select_renombrado() {',
+        vigila: 'que ningún play() apunte a un sonido que no existe',
+    },
+    {
         nombre: 'enfrentamiento',
         corre: 'node prueba_enfrentamiento.mjs',
         fichero: 'enfrentar.mjs',

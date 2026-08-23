@@ -133,6 +133,10 @@ class SovereignBoardEngine {
         // Primero se decide el backend (hub o local) y SOLO después se sondea.
         // Si no, el primer poll salía sin backend y pintaba "DISCONNECTED".
         this._iniciarBackend().then(() => {
+            // Que suene. En el llamador y no dentro, que allí `this.backend` se
+            // asigna en cuatro ramas y una sale con un `return` temprano. `ficha`
+            // porque esto es el motor de tablero — ver `sonido_mesa.js`.
+            this.backend = window.conSonidoDeMesa?.(this.backend, 'ficha') ?? this.backend;
             this.pollHub();
             setInterval(this.pollHub, 1000);
             // Si alguna silla no es de una persona, el automático se enciende
