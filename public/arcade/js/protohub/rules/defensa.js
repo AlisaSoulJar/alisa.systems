@@ -150,16 +150,53 @@ export const defensa = {
         // Izquierda: el carril del rival (donde tú atacas). Derecha: el tuyo.
         const volcar = (lado, dx, mio) => {
             for (const t of lado.torres) piezas.push({ x: t.x + dx, y: t.y, t: 'torre', de: mio ? 0 : 1 });
-            // Los bichos son de NADIE: los paga un jugador pero luego andan
-            // solos. Marcarlos como suyos diría que alguien los está moviendo, y
-            // no es cierto — es justo la diferencia que mide el eje `autonomo`.
-            for (const b of lado.bichos) piezas.push({ x: b.x + dx, y: b.y, t: 'bicho', de: 2 });
+            /**
+             * Los bichos son de NADIE: los paga un jugador pero luego andan
+             * solos. Marcarlos como suyos diría que alguien los está moviendo, y
+             * no es cierto — es justo la diferencia que mide el eje `autonomo`.
+             *
+             * ⚠️ Y AHORA LLEVAN SU VIDA, QUE NO SE PUBLICABA EN NINGÚN SITIO.
+             *
+             * Un bicho aguanta cuatro y una torre le quita uno por ronda, así que
+             * «¿le queda uno o le quedan cuatro?» decide si hace falta otra torre
+             * o si el que viene ya está muerto. Ese número existía dentro de las
+             * reglas y no salía ni en `estado()` ni aquí: se jugaba a ciegas.
+             *
+             * No es adorno: es un dato que cambia la jugada.
+             *
+             * ⚠️ Y NO MUEVE LA TABLA, QUE ES LO QUE YO ESPERABA. MEDIDO:
+             *
+             *     antes    primera 1000,0 · azar 1589,4 · casa 1937,3
+             *     después  primera 1000,0 · azar 1589,4 · casa 1937,3
+             *
+             * Clavado, y tiene sentido: publicar un dato no obliga a nadie a
+             * usarlo, y ninguna de las tres políticas lo mira todavía. O sea que
+             * esto no es una mejora de la casa — es una PALANCA que queda puesta
+             * para quien sepa cogerla. Una política que mire la vida del bicho
+             * puede dejar pasar al que ya está muerto y gastar el oro en otra
+             * cosa, y eso hoy no se podía ni intentar.
+             */
+            for (const b of lado.bichos) {
+                piezas.push({ x: b.x + dx, y: b.y, t: 'bicho', de: 2, vida: b.vida, vida_max: VIDA_BICHO });
+            }
         };
         volcar(p.lados[el], 0, false);
         volcar(p.lados[yo], ANCHO + 1, true);
 
         return {
-            rejilla: { ancho, alto: ALTO, celdas },
+            /**
+             * ⚠️ `ambiente: 'hierba'` — Y ESTE JUEGO ES UN SITIO, NO UN TABLERO.
+             *
+             * Se pintaba en el tablero neutro por no declarar ninguno, teniendo
+             * cinco escritos y funcionando (`hierba`, `piedra`, `metal`, `arena`,
+             * `noche`). Una línea, y `mesa_tablero.mjs` le pone cielo, suelo y
+             * niebla sin saber a qué se juega.
+             *
+             * Hierba y no piedra porque esto es un jardín con dos parcelas y un
+             * muro: se plantan torres a un lado y llegan bichos por el otro. Es
+             * literalmente el césped del género, y la referencia que Oscar pedía.
+             */
+            rejilla: { ambiente: 'hierba', prop: 'roca_musgo', ancho, alto: ALTO, celdas },
             piezas, zonas: [],
             leyenda: { torre: 'torre', bicho: 'bicho en marcha' },
             simbolos: { torre: 'T', bicho: 'b' },

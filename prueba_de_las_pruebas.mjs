@@ -108,6 +108,22 @@ const SABOTAJES = [
         vigila: 'que ningún play() apunte a un sonido que no existe',
     },
     {
+        nombre: 'vida',
+        corre: 'node prueba_vida.mjs',
+        fichero: 'public/arcade/js/protohub/render/pintar3d.js',
+        // El fallo REAL que esto vigila: que el bucle de instancias deje de mirar
+        // la vida. No rompe nada — las piezas salen todas del mismo tamaño, que
+        // es como se veían hasta hoy— y el estado sigue perfecto, así que ninguna
+        // otra comprobación lo nota. Sólo desaparece la información: en `defensa`
+        // se vuelve a jugar a ciegas si el bicho que viene está a punto de caer.
+        //
+        // Se sabotea la LLAMADA y no la función, porque perder la llamada en un
+        // refactor del bucle es mucho más probable que borrar la función entera.
+        de: 'const f = escalaPorVida(p);',
+        a: 'const f = 1;',
+        vigila: 'que una pieza tocada se siga viendo más pequeña',
+    },
+    {
         nombre: 'mundo',
         corre: 'node prueba_mundo.mjs',
         fichero: 'public/js/montarMundo.js',

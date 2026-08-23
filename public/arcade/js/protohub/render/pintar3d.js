@@ -59,6 +59,38 @@ const ALTO = {
 const COLOR_DE = { 0: 0x2a3550, 1: 0xc0392b, 2: 0x2e8b57, 3: 0xd68910, null: 0x7f8c8d };
 
 /**
+ * ⚠️ UNA PIEZA TOCADA ES UNA PIEZA MÁS PEQUEÑA.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Si el sustrato dice `vida` y `vida_max`, la pieza se encoge en proporción. Y
+ * el motivo por el que se hace con la ESCALA y no con el color es la propia
+ * arquitectura de este fichero: las piezas van en mallas instanciadas agrupadas
+ * por (forma + dueño), y una malla instanciada comparte material. Colorear una
+ * sola instancia obliga a un `instanceColor` y a tocar los materiales de todos.
+ * La escala, en cambio, ya viaja por instancia — `poner` lleva `escY` y `escXZ`
+ * desde el principio. Es gratis y no rompe el agrupado.
+ *
+ * ⚠️ Y ESTO NO ES DE UN JUEGO: ES DEL VOCABULARIO.
+ *
+ * Nació con `defensa`, donde un bicho aguanta cuatro golpes y una torre le quita
+ * uno por ronda, así que «¿le queda uno o cuatro?» decide si hace falta otra
+ * torre. Ese número existía dentro de las reglas y no se publicaba: se jugaba a
+ * ciegas. Pero la regla no dice «defensa»: dice «si publicas vida, se ve». Los
+ * once juegos que se pintan con esta mesa la tienen desde hoy sin tocar nada, y
+ * el que la quiera sólo tiene que publicarla.
+ *
+ * El suelo de 0,45 no es estética: una pieza a punto de morir tiene que SEGUIR
+ * VIÉNDOSE. Encogerla hasta desaparecer la escondería justo en el momento en que
+ * más importa mirarla — el mismo fallo del jugador camuflado de fagocito, que no
+ * estaba oculto sino indistinguible.
+ */
+function escalaPorVida(p) {
+    const v = Number(p?.vida), max = Number(p?.vida_max);
+    if (!Number.isFinite(v) || !Number.isFinite(max) || max <= 0) return 1;
+    return 0.45 + 0.55 * Math.max(0, Math.min(1, v / max));
+}
+
+/**
  * Desde qué silla se está mirando. El sustrato lo dice cuando importa —una mesa
  * de invitada, una sala compartida— y cuando no lo dice es que sólo hay una.
  *
@@ -793,8 +825,9 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
                 const forma = g.forma === 'disco' ? discoDe(g.de) : geo[g.forma];
                 const m = monton(clave, forma, materialDe(g.de, sus.colores), g.items.length);
                 for (const p of g.items) {
-                    poner(m, p.x + dx, g.alto / 2 + 0.08, p.y + dz,
-                          g.forma === 'cubo' ? g.alto : 1);
+                    const f = escalaPorVida(p);
+                    poner(m, p.x + dx, (g.alto * f) / 2 + 0.08, p.y + dz,
+                          (g.forma === 'cubo' ? g.alto : 1) * f, 0, f);
                 }
                 m.instanceMatrix.needsUpdate = true;
                 usados.add(clave);
