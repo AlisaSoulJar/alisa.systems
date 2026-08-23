@@ -742,7 +742,7 @@
    "ruta": "world/factories/RaccoonEnvironmentFactory.js",
    "nombre": "RaccoonEnvironmentFactory",
    "familia": "factories",
-   "kb": 18.4
+   "kb": 23.1
   },
   {
    "ruta": "world/factories/TrafficEnvironmentFactory.js",

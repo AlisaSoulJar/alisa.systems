@@ -15,20 +15,20 @@ contrario. El problema no era que no estuviera escrito: era que no había índic
 Volver a decidir sale barato en el momento y carísimo a la semana, porque la
 segunda decisión casi nunca coincide con la primera y entonces hay dos verdades.
 
-**1809 decisiones** en 303 ficheros.
+**1816 decisiones** en 304 ficheros.
 
 ## Índice
 
-- [Herramientas de medida](#herramientas-de-medida) — 360
+- [Herramientas de medida](#herramientas-de-medida) — 362
 - [Reglas de los juegos](#reglas-de-los-juegos) — 349
 - [Las mesas y los visualizadores](#las-mesas-y-los-visualizadores) — 305
 - [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 194
 - [Las comprobaciones](#las-comprobaciones) — 180
-- [Otros](#otros) — 145
+- [Otros](#otros) — 147
 - [Las páginas de los juegos](#las-páginas-de-los-juegos) — 81
 - [Cómo se dibuja (el pintor)](#cómo-se-dibuja-el-pintor-) — 54
 - [El servidor y las salas](#el-servidor-y-las-salas) — 53
-- [El motor](#el-motor) — 30
+- [El motor](#el-motor) — 33
 - [El gym y los entornos](#el-gym-y-los-entornos) — 26
 - [Estilos](#estilos) — 20
 - [Los agentes y las políticas](#los-agentes-y-las-políticas) — 12
@@ -273,6 +273,10 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>fichero, construí el paquete, lo serví… y el póker salió con doce 404: las figuras se piden como `` `${palo}_${valor}.webp` ``, así que el nombre `S_J.webp` **no aparece en ningún sitio del código**. Ninguna regla basada</sub>
 - **LA CONFIGURACIÓN DE CLOUDFLARE NO TIENE EXTENSIÓN, Y AQUÍ TODO SE** <sub>línea 243</sub>
   <br><sub>DECIDE POR EXTENSIÓN.</sub>
+- **UN FICHERO QUE EMPIEZA POR `_` ES UN BANCO DE PRUEBAS, NO UNA PAGINA.** <sub>línea 256</sub>
+  <br><sub>Hay comprobaciones que solo se pueden hacer en un navegador de verdad —que un `importmap` inyectado llegue a tiempo, que el composer pinte— y viven como HTML servible porque no hay otra forma. Pero no son el sitio:</sub>
+- **Y SOLO PARA `.html`, QUE LA PRIMERA VERSION ERA `p.name.startswith("_")`** <sub>línea 267</sub>
+  <br><sub>A SECAS Y SE LLEVO POR DELANTE `_routes.json`.</sub>
 
 ### `enfrentamiento.mjs`
 
@@ -3440,6 +3444,10 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 
 - **En el <head> y SIN defer: un importmap no se puede añadir una vez que ha** <sub>línea 90</sub>
   <br><sub>empezado a cargar un módulo, y los módulos van diferidos. --> <script src="/js/mundo.js"></script></sub>
+- **`cielo:true` Y `luces:true`, Y AL PRINCIPIO LOS PUSE LOS DOS EN FALSE.** <sub>línea 138</sub>
+  <br><sub>El razonamiento era «la escena trae las suyas, no le añadas encima». Suena prudente y dejó la ciudad negra: media de luminancia 0,0404 con el 41% de los píxeles a negro puro. La sala cinematográfica —misma tubería, mismo preset</sub>
+- **LA NIEBLA TIENE QUE SER DEL COLOR DEL CIELO, Y ERA CASI NEGRA.** <sub>línea 163</sub>
+  <br><sub>Con `fogColor: 0x020408` sobre el cielo de noche salía una costura dura en el horizonte: los edificios lejanos se fundían a negro mientras el cielo detrás seguía azul. Una niebla que no es del color del fondo no</sub>
 
 ### `public/games/raccoon_floor_search.html`
 
@@ -4381,6 +4389,15 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>`this.scene.add(this.buildingGroup)` está mucho más abajo, después de crear los personajes, así que por este camino nunca se ejecutaba: la fábrica construía el edificio entero — 183 mallas y 26 luces, todo</sub>
 - **Aquí ponía `window.flashDust = new THREE.Points(...)`, pero arriba (l.73)** <sub>línea 805</sub>
   <br><sub>hay un `let flashDust` LOCAL. Son dos variables distintas: la global se rellenaba y la local seguía a null, así que la línea siguiente reventaba con «Cannot read properties of null (reading 'position')» — y con ella se</sub>
+
+### `public/js/alisa-engine/src/world/factories/RaccoonEnvironmentFactory.js`
+
+- **COLORES SUBIDOS Y CONTINENTES DE DOS OCTAVAS.** <sub>línea 155</sub>
+  <br><sub>Abierta la imagen, el planeta salía verde oscuro con las costas en ESCALONES: un damero mal disimulado en vez de continentes. La causa era `Math.sin(nx*2.3 + nz*1.7) > 0.3` — una sola onda, con su periodo</sub>
+- **EL ORDEN DE ESTAS CUATRO LÍNEAS ES EL DIBUJO.** <sub>línea 181</sub>
+  <br><sub>Con el umbral de océano en 0,35 y las bandas de latitud muy separadas entre sí, el planeta salía a RAYAS: se veían los paralelos y no se veía ni una costa. La latitud mandaba sobre el ruido.</sub>
+- **LOS EDIFICIOS ERAN CASI NEGROS POR DISEÑO, NO POR FALTA DE LUZ.** <sub>línea 307</sub>
+  <br><sub>Aquí ponía `setHSL(hue, 0.3, 0.08 + rng * 0.05)`. Medido en la escena viva: doce edificios con luminancia HSL entre 0,083 y 0,125, mediana 0,093. Una superficie al NUEVE POR CIENTO de claridad se queda negra</sub>
 
 ### `public/js/alisa-engine/src/world/gym_runners/CabinetEscapeGame.js`
 
