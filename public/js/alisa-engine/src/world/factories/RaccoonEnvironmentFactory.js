@@ -308,10 +308,22 @@ export class RaccoonEnvironmentFactory {
              * ═══════════════════════════════════════════════════════════════════
              *
              * Aquí ponía `setHSL(hue, 0.3, 0.08 + rng * 0.05)`. Medido en la escena
-             * viva: doce edificios con luminancia HSL entre 0,083 y 0,125, mediana
-             * 0,093. Una superficie al NUEVE POR CIENTO de claridad se queda negra
-             * por bien iluminada que esté — y eso mandó media tarde por el camino
-             * equivocado, porque el sintoma («no se ve la ciudad») apunta a la luz.
+             * viva: doce edificios con claridad HSL entre 0,083 y 0,125.
+             *
+             * ⚠️ Y ESE NÚMERO ES LINEAL, NO PERCEPTUAL. LO CONTÉ MAL UNA VEZ.
+             *
+             * Escribí «están al nueve por ciento de claridad» tratando la cifra
+             * como si fuera brillo percibido, y no lo es: three trabaja en espacio
+             * LINEAL, y `setHSL`/`getHSL` usan ese espacio salvo que se les pida
+             * otro. Leído en los dos, el mismo material dice cosas distintas:
+             *
+             *     antes    lineal 0,08   ·  sRGB ~0,31
+             *     ahora    lineal 0,229  ·  sRGB  0,50
+             *
+             * O sea que no era un 9% de brillo: era un gris medio-oscuro que, con
+             * luz de noche y tono filmico encima, acaba leyéndose como negro. El
+             * arreglo es el mismo y la mejora está medida —el porcentaje de píxeles
+             * casi negros baja del 41% al 28%—, pero el motivo se cuenta bien.
              *
              * La cadena de medidas, sobre la luminancia media del fotograma:
              *
