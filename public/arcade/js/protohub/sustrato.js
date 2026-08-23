@@ -31,6 +31,43 @@
  * Un juego de cartas es zonas sin rejilla. Go es rejilla sin zonas. Fagocito es
  * rejilla con piezas. Brisca es zonas más una pieza por carta en la baza.
  *
+ * ⚠️ UNA PIEZA PUEDE LLEVAR `id`, Y NO ES UNA CUARTA ESTRUCTURA.
+ * ───────────────────────────────────────────────────────────────────────────
+ *
+ *     { x, y, t, de }          lo mínimo: dónde, qué, de quién
+ *     { …, id }                QUIÉN es, cuando el juego necesita distinguirla
+ *
+ * No es invento: las `zonas` llevan `id` desde el principio —`{id:'dados'}`,
+ * `{id:'fincas', de:2}`— y nadie lo discutió. Lo raro era que una mano tuviera
+ * identidad y una ficha no.
+ *
+ * Y hacía falta de verdad. Alisapolis se lo inventó por su cuenta cuando el
+ * contrato no lo tenía, y de paso escribió los otros dos campos con otros
+ * nombres: `{id, x, y, dueno, tipo}`. El pintor lee `de` y `t`, así que sus
+ * cuatro peones salían como DISCOS GRISES IDÉNTICOS — y un betatester escribió
+ * «parece que juego yo solo», que yo había leído como un problema de turnos.
+ * Un dialecto no se queda en feo: rompe, y rompe callando.
+ *
+ * QUÉ TIENE QUE CUMPLIR UN `id`, Y POR QUÉ IMPORTA:
+ *
+ *   · ÚNICO dentro de la partida — dos piezas con el mismo `id` son una sola
+ *     para quien las siga;
+ *   · ESTABLE entre turnos — si cambia, la pieza deja de ser la misma y todo lo
+ *     que dependa de seguirla se rompe.
+ *
+ * Quién lo necesita, y no es sólo el dibujo:
+ *
+ *   · el pintor, para animar un movimiento en vez de teletransportar (hoy
+ *     tendría que adivinar por cercanía cuál se movió);
+ *   · el juego, cuando hay varias piezas iguales del mismo dueño —parchís tiene
+ *     cuatro— y hay que decir cuál;
+ *   · un agente, para hablar de «la que saqué el turno pasado»;
+ *   · `descripcion.js`, que hoy no puede nombrar una pieza concreta;
+ *   · y el canon de rol, donde un `Appointment` es *a Being bound to a Seat* —
+ *     sin identidad no hay a quién vincular.
+ *
+ * Es OPCIONAL: un peón de ajedrez no necesita nombre propio y no lo lleva.
+ *
  * ⚠️ ESTE FICHERO ES UN ADAPTADOR, Y ES TEMPORAL A PROPÓSITO.
  * Deriva el sustrato de lo que cada juego YA publica, para tener renderizadores
  * universales hoy sin reescribir diecinueve módulos de reglas. Lo bueno es que

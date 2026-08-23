@@ -108,6 +108,22 @@ const SABOTAJES = [
         vigila: 'que ningún play() apunte a un sonido que no existe',
     },
     {
+        nombre: 'identidad',
+        corre: 'node prueba_identidad.mjs',
+        fichero: 'public/arcade/js/protohub/rules/alisapolis.js',
+        // El fallo REAL, y estaba puesto hasta hoy: alisapolis publicaba sus
+        // peones como `{id, x, y, dueno, tipo}` cuando el contrato dice `de` y
+        // `t`. El pintor leía `undefined` en los dos, así que los cuatro peones
+        // salían como discos grises idénticos — y el betatester escribió «parece
+        // que juego yo solo», que yo clasifiqué como problema de turnos.
+        //
+        // Un campo mal llamado no da error: dibuja otra cosa. Por eso el sabotaje
+        // devuelve el dialecto en vez de romper la sintaxis.
+        de: "t: 'peon', de: i });",
+        a: "tipo: 'peon', dueno: i });",
+        vigila: 'que ninguna pieza hable un dialecto en vez del contrato',
+    },
+    {
         nombre: 'vida',
         corre: 'node prueba_vida.mjs',
         fichero: 'public/arcade/js/protohub/render/pintar3d.js',

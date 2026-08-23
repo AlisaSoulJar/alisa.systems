@@ -662,7 +662,33 @@ export async function crearAlisapolis({ jugadores = 2, vueltas = 12 } = {}) {
             for (let i = 0; i < p.jugadores; i++) {
                 if (p.quebrados.includes(i)) continue;
                 const { x, y } = anillo(p.pos[i]);
-                piezas.push({ id: `peon${i}`, x, y, dueno: i, tipo: 'peon' });
+                /**
+                 * ⚠️ ESTO DECÍA `dueno` Y `tipo`, Y EL PINTOR LEE `de` Y `t`.
+                 * ═══════════════════════════════════════════════════════════
+                 *
+                 * Alisapolis necesitó identificar sus peones —cuatro fichas que
+                 * dan vueltas al mismo tablero— cuando el vocabulario no tenía
+                 * `id`, y de paso escribió los otros dos campos en castellano
+                 * largo. El resultado, medido en el sustrato vivo:
+                 *
+                 *     {"id":"peon0","x":4,"y":0,"dueno":0,"tipo":"peon"}
+                 *     lo que el pintor leía:  t=undefined  de=undefined
+                 *
+                 * O sea que los cuatro peones salían como DISCOS GRISES
+                 * IDÉNTICOS. Y eso explica un aviso del buzón que yo había
+                 * clasificado como «no se ve jugar a la casa»:
+                 *
+                 *     «parece que juego yo solo»   — aviso de alisapolis
+                 *
+                 * No era de los turnos. Es que no puedes distinguir tu peón del
+                 * de nadie. El dialecto, el fallo de dibujo y la queja eran la
+                 * misma cosa con tres caras.
+                 *
+                 * `id` se queda —es lo que hacía falta y ahora está en el
+                 * contrato, igual que lo estaba ya para las zonas— y los otros
+                 * dos vuelven a los nombres de la casa.
+                 */
+                piezas.push({ id: `peon${i}`, x, y, t: 'peon', de: i });
             }
 
             const zonas = [
