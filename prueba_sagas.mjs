@@ -70,8 +70,20 @@ const EN_EL_BANCO = [
  * segundo motor para una etapa y la comparación de esa etapa dejó de valer.
  */
 const PARTIDAS = {
-    '¡Busca! 1 Cabinet Escape':
-        'persona CabinetEscapeGame (59 KB, con THREE) · banco ScummInteractionEngine',
+    /**
+     * ⚠️ `¡Busca! 1 Cabinet` TAMBIÉN SE HA IDO. UNIFICADO EL 24-08, Y AL REVÉS.
+     *
+     * Entró como «persona CabinetEscapeGame (59 KB, con THREE) · banco
+     * ScummInteractionEngine». Y aquí ganó el motor de la PERSONA, no el del
+     * banco: `CabinetEscapeSystem` (11 KB) es headless, va sembrado y tiene el
+     * juego entero —eficiencia, Monty Hall, destape en cadena, pilas—, mientras
+     * `ScummInteractionEngine` (3 KB) era la copia reducida.
+     *
+     * Medir la copia mientras se juega el original es exactamente lo que este
+     * banco existe para no hacer. Las notas de `alisa/CabinetEscape-v0` cambiaron
+     * —de 97 / 99 / -100 a 2,8 / 9,2 / -0,05— y tenían que cambiar: las viejas
+     * medían el juego equivocado.
+     */
     /**
      * ⚠️ `¡Busca! 6 Espacio` ESTUVO AQUÍ Y SE HA IDO. UNIFICADO EL 24-08.
      *
@@ -158,6 +170,23 @@ const rojo = (s) => `\x1b[31m${s}\x1b[0m`;
 const verde = (s) => `\x1b[32m${s}\x1b[0m`;
 const gris = (s) => `\x1b[90m${s}\x1b[0m`;
 
+/**
+ * Los envoltorios que una página puede montar en vez del motor directamente:
+ * ficheros de `world/` que a su vez importan motores. Se recogen una sola vez.
+ */
+const envoltorios = [];
+{
+    const { readdirSync, statSync } = await import('node:fs');
+    const raizMundo = path.join(AQUI, 'public/js/alisa-engine/src/world');
+    (function rec(d) {
+        for (const n of readdirSync(d)) {
+            const p = path.join(d, n);
+            if (statSync(p).isDirectory()) { rec(p); continue; }
+            if (n.endsWith('.js')) envoltorios.push([p, n.replace('.js', '')]);
+        }
+    })(raizMundo);
+}
+
 console.log('\n¿Juegan la persona y el agente al mismo juego, en las sagas?\n');
 
 const fallos = [];
@@ -168,7 +197,26 @@ for (const { etapa, pagina, env } of EN_EL_BANCO) {
     if (!existsSync(path.join(AQUI, pagina))) { fallos.push(`${etapa}: no existe ${pagina}`); continue; }
     if (!existsSync(path.join(AQUI, env))) { fallos.push(`${etapa}: no existe ${env}`); continue; }
 
-    const dePagina = motoresDe(await readFile(path.join(AQUI, pagina), 'utf-8'));
+    /**
+     * ⚠️ SE SIGUE UN SALTO: LA PÁGINA PUEDE MONTAR EL JUEGO A TRAVÉS DE UN ENVOLTORIO.
+     *
+     * `croupier_cabinet_escape.html` importa `CabinetEscapeGame`, y es ÉSE quien
+     * usa `CabinetEscapeSystem`. Mirando sólo lo que la página importa a la cara,
+     * la etapa salía partida cuando ya estaba unida.
+     *
+     * Es la TERCERA vez hoy que este proyecto tropieza con lo mismo: un subagente
+     * me lo destapó en `motores.mjs`, lo arreglé allí, volví a caer en el patrón
+     * dorado del mismo fichero, y aquí estaba otra vez. Cuando un fallo aparece
+     * tres veces en un día ya no es un descuido: es que la forma «mira quién
+     * importa a quién» necesita seguir la cadena, siempre, en todas partes.
+     */
+    const textoPagina = await readFile(path.join(AQUI, pagina), 'utf-8');
+    const dePagina = motoresDe(textoPagina);
+    for (const [ruta, nombre] of envoltorios) {
+        if (new RegExp(`import[^;]*['"\`][^'"\`]*${nombre}\\.js(\\?[^'"\`]*)?['"\`]`).test(textoPagina)) {
+            for (const m of motoresDe(await readFile(ruta, 'utf-8'))) dePagina.add(m);
+        }
+    }
     const deBanco = motoresDe(await readFile(path.join(AQUI, env), 'utf-8'));
     const comun = [...deBanco].filter(x => dePagina.has(x));
 

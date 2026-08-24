@@ -247,9 +247,23 @@ for (const f of filas) {
      * Una lección aplicada a medias es la manera favorita que tiene este proyecto
      * de repetir un fallo.
      */
+    /**
+     * ⚠️ Y EL ENVOLTORIO PUEDE ESTAR EN CUALQUIER SITIO DE `world/`, NO SÓLO EN
+     * `world/systems`.
+     *
+     * Lo restringí a `systems` y con eso `CabinetEscapeSystem` perdió su puerta
+     * humana: su envoltorio, `CabinetEscapeGame`, vive en `world/gym_runners/`.
+     *
+     * Es la CUARTA vez hoy que tropiezo con el mismo salto —un subagente me lo
+     * enseñó en la clasificación de dormidos, volví a caer en el patrón dorado,
+     * otra vez en `prueba_sagas.mjs`, y aquí de nuevo con la carpeta mal—. Cuando
+     * un fallo aparece cuatro veces en un día no es descuido: es que «quién
+     * importa a quién» hay que seguirlo entero y en todas partes, y cada vez que
+     * lo acoto por comodidad me deja fuera justo el caso que buscaba.
+     */
     const puertaHumana = f.paginas > 0 || [...textos].some(([fi, ti]) =>
         fi.endsWith('.html') && [...textos].some(([fj, tj]) =>
-            /world[\\/]systems/.test(fj)
+            /[\\/]world[\\/]/.test(fj) && fj.endsWith('.js')
             && new RegExp(`import[^;]*['"\`][^'"\`]*${path.basename(fj, '.js')}\\.js(\\?[^'"\`]*)?['"\`]`).test(ti)
             && new RegExp(`import[^;]*['"\`][^'"\`]*${f.nombre}\\.js(\\?[^'"\`]*)?['"\`]`).test(tj)));
 
@@ -275,7 +289,7 @@ console.log(`\n  con las CUATRO piezas: ${completos.length ? completos.join(', '
  * instrumento dejó de mentir. Vale la pena distinguirlo.
  */
 // 24-08 (tarde): cinco. Entro RaccoonSpaceCore al unificar ¡Busca! 6.
-const SUELO_COMPLETOS = 5;
+const SUELO_COMPLETOS = 6;
 if (completos.length < SUELO_COMPLETOS) {
     console.log(`\n  ✗ eran ${SUELO_COMPLETOS} juegos completos y ahora hay ${completos.length}.`);
     console.log('    A alguno le falta una pieza que tenía: se podrá jugar y no medir,');

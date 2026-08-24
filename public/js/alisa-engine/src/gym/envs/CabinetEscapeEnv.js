@@ -3,9 +3,9 @@
  * ═══════════════════════════════════════════════════════════════════════════
  * `alisa/CabinetEscape-v0`
  *
- * NO simula nada por su cuenta: envuelve `ScummInteractionEngine`, que ya
- * estaba escrito en el motor y ya era un entorno completo (episodios
- * semillados, reward shaping, partición BSP). Solo le pone las tres puertas.
+ * NO simula nada por su cuenta: envuelve `CabinetEscapeSystem`, que es **el mismo
+ * motor que juega la persona** en `games/croupier_cabinet_escape.html`. Sólo le
+ * pone las tres puertas de agente.
  *
  * Es la prueba de fuego del contrato: si `GymEnv` solo encajara con entornos
  * escritos a medida para él, no valdría como producto. Aquí encaja sobre
@@ -14,9 +14,14 @@
  * EL JUEGO
  * --------
  * Un archivador partido por BSP en N cajones. En uno está el conejo (la salida),
- * en otros hay serpientes. Abres cajones de uno en uno. Serpiente = muerte.
- * En modo `minesweeper` cada cajón vacío te dice cuántas serpientes y cuántos
- * conejos toca — de ahí que sea un problema de inferencia, no de reflejos.
+ * en otros hay serpientes. Abres cajones de uno en uno. Una serpiente **cuesta
+ * dos puntos y sigues jugando**: el susto no te echa, te obliga a seguir
+ * deduciendo con menos margen. Encontrar al conejo puntúa según lo EFICIENTE que
+ * hayas sido —cuántos cajones te sobraron— así que dar con él tarde vale poco.
+ *
+ * En modo `minesweeper` cada cajón vacío te dice cuántas serpientes toca y a qué
+ * distancia BSP está el conejo — de ahí que sea un problema de inferencia, no de
+ * reflejos.
  *
  * Por qué es un buen banco de pruebas: separa razonar de reaccionar. Un LLM
  * puede jugarlo perfecto sin ver un solo píxel ni tener buenos reflejos, cosa
@@ -24,7 +29,48 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 import { GymEnv } from '../GymEnv.js';
-import { ScummInteractionEngine } from '../../world/systems/ScummInteractionEngine.js';
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ ESTE ENTORNO MEDÍA UN JUEGO QUE NO JUEGA NADIE. 24-08.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Usaba `ScummInteractionEngine` (3 KB) y la página de la persona usa
+ * `CabinetEscapeSystem` (11 KB). Los dos envuelven el MISMO `CabinetBSPEngine`,
+ * así que el mueble era el mismo — y las reglas, no:
+ *
+ *                      banco (Scumm)          persona (CabinetEscapeSystem)
+ *     serpiente        -100 y MUERES          -2 y sigues jugando
+ *     encontrarlo      +100 fijo              0-10 según lo EFICIENTE que fuiste
+ *     cada paso        -1                     nada
+ *     pistas           vecindad               vecindad + distancia BSP + Monty
+ *                                             Hall + destape en cadena
+ *     pilas            no existen             recargan la linterna
+ *
+ * No es un ajuste de puntuación: son dos juegos. Con la semilla 99 el banco
+ * mataba al agente **en el primer cajón** mientras una persona con esa misma
+ * semilla perdía dos puntos y seguía.
+ *
+ * ⚠️ Y AQUÍ SE UNIFICA AL REVÉS QUE EN ¡BUSCA! 6.
+ *
+ * Allí mandaba el núcleo del banco porque era el bueno: headless, sembrado y
+ * completo. Aquí el bueno es el de la persona — también headless, también
+ * sembrado, y con el juego entero dentro. `ScummInteractionEngine` es la copia
+ * reducida, y medir la copia mientras se juega el original es exactamente lo que
+ * este banco existe para no hacer.
+ *
+ * ⚠️ LAS NOTAS DE `alisa/CabinetEscape-v0` CAMBIAN, Y TIENEN QUE CAMBIAR.
+ * Antes: 1234 → 97,0 · 7 → 99,0 · 99 → -100,0. Esas cifras medían el juego
+ * equivocado, así que conservarlas habría sido conservar el error.
+ */
+import { CabinetBSPEngine } from '../../world/CabinetBSPEngine.js';
+import { CabinetEscapeSystem } from '../../world/systems/CabinetEscapeSystem.js';
+/**
+ * `ScummInteractionEngine` ya no se importa aquí. Se queda en el motor porque
+ * tiene su propio runner sin cabeza, pero deja de ser lo que mide el banco: era
+ * la copia reducida del juego de verdad, y `npm run motores` lo dirá en cuanto
+ * pase — «medio: runner suelto» en vez de «EN EL BANCO». Que lo diga es la
+ * gracia: la deuda que se ve, se paga; la que no, se hereda.
+ */
 
 export class CabinetEscapeEnv extends GymEnv {
     static id = 'alisa/CabinetEscape-v0';
@@ -52,10 +98,17 @@ export class CabinetEscapeEnv extends GymEnv {
 
     constructor(opts = {}) {
         super(opts);
-        this.sys = new ScummInteractionEngine();
+        this.bsp = new CabinetBSPEngine();
+        this.sys = new CabinetEscapeSystem({ bspEngine: this.bsp });
         this.cuts = opts.cuts ?? 3;          // 3 cortes BSP ⇒ 8 hojas
         this.numSnakes = opts.numSnakes ?? 2;
         this.mode = opts.mode ?? 'minesweeper';
+        /**
+         * La etapa decide si hay serpientes: `CabinetEscapeSystem` sólo las pone
+         * de la 2 en adelante. Se usa la 2 para que el entorno tenga el peligro
+         * que la persona encuentra, en vez de un mueble sin nada dentro.
+         */
+        this.etapa = opts.etapa ?? 2;
         this.maxDrawers = 8;
         this._pistas = new Map();            // índice → {snakes, rabbit} ya revelado
     }
@@ -66,10 +119,16 @@ export class CabinetEscapeEnv extends GymEnv {
         this.seed = seed;
         this.t = 0; this.steps = 0; this.done = false; this._lastScore = 0;
         this._pistas.clear();
-        // initEpisode(seed, cuts, stage, numSnakes, bats, mode) — ya es determinista:
-        // usa SeededRNG internamente, no Math.random.
-        this.st = this.sys.initEpisode(seed, this.cuts, 1, this.numSnakes, 0, this.mode);
-        this.maxDrawers = this.st.partition.leaves.length;
+        /**
+         * El mueble se parte primero y el juego lo recibe: es el mismo orden que
+         * sigue la página de la persona, y es lo que hace que el mundo sea el
+         * mismo por las dos puertas. `fractalPartition` va sembrado con
+         * `SeededRNG` y `initEpisode` con `mulberry32(seed + 77777)`.
+         */
+        const partition = this.bsp.fractalPartition(this.cuts, seed);
+        this.sys.initEpisode(partition, seed, this.etapa, this.mode, 'on');
+        this.st = this.sys;
+        this.maxDrawers = partition.leaves.length;
         return this.getObservation();
     }
 
@@ -90,15 +149,30 @@ export class CabinetEscapeEnv extends GymEnv {
 
         const r = this.sys.selectDrawer(idx);
         this.steps++; this.t += dt;
-        this._pistas.set(idx, r.adjacent ?? { snakes: 0, rabbit: 0 });
-        this.done = this.st.done;
+        this._pistas.set(idx, { snakes: this.sys.minesweeperCounts?.[idx] ?? 0, rabbit: 0 });
         this._lastScore += r.reward;
+
+        /**
+         * ⚠️ AQUÍ UNA SERPIENTE YA NO MATA, ASÍ QUE EL FINAL LO PONE OTRA COSA.
+         *
+         * En el motor del banco viejo abrir una serpiente terminaba la partida, y
+         * eso hacía de tope natural. En el de la persona cuesta 2 puntos y sigues,
+         * que es un juego mejor —te obliga a seguir deduciendo con el susto
+         * encima— pero deja el episodio sin final si no encuentras al mapache.
+         *
+         * El final honesto es quedarse sin cajones: cuando están todos abiertos ya
+         * no hay nada que decidir. «Una partida sin final es veneno para el banco»
+         * está escrito en `blackjack.js` desde hace tiempo.
+         */
+        const quedan = this.sys.tried.some((t, i) => !t);
+        this.done = !!this.sys.done || !quedan;
 
         return {
             obs: this.getObservation(),
             reward: r.reward,
             done: this.done,
-            info: { cajon: idx, conejo: r.found, serpiente: r.snake, pistas: r.adjacent }
+            info: { cajon: idx, conejo: !!r.foundRaccoon, serpiente: !!r.triggeredSnakeLunge,
+                    distancia: r.bspDist, pistas: this._pistas.get(idx) }
         };
     }
 
@@ -130,22 +204,37 @@ export class CabinetEscapeEnv extends GymEnv {
 
     describe() {
         if (!this.st) return 'El archivador aún no está montado. Llama a reset(semilla).';
-        if (this.st.dead) return `Abriste el cajón equivocado. Una serpiente. Fin de la partida tras ${this.steps} intentos.`;
+        /**
+         * ⚠️ AQUÍ UNA SERPIENTE YA NO ACABA LA PARTIDA. Este mensaje se queda para
+         * el día que alguien vuelva a poner un modo mortal, pero con el motor de la
+         * persona `dead` no se enciende: cuesta dos puntos y sigues.
+         */
+        if (this.st.dead) return `Abriste el cajón equivocado. Una serpiente. Fin de lapartida tras ${this.steps} intentos.`;
         if (this.st.found) return `¡El conejo! Escapaste en ${this.steps} intentos.`;
 
         const abiertos = [];
         for (let i = 0; i < this.maxDrawers; i++) {
             if (!this.st.tried[i]) continue;
+            /**
+             * ⚠️ `-1` NO ES UNA CUENTA: ES «AQUÍ NO HAY CUENTA».
+             *
+             * `minesweeperCounts` arranca a -1 y sólo se rellena en los cajones
+             * vacíos. En uno con serpiente el motor sale antes, así que se queda
+             * en -1 — y esta puerta decía literalmente «el 0 (-1 serpiente(s) al
+             * lado)». Un modelo leyendo eso está leyendo un número imposible y no
+             * tiene forma de saber que significa otra cosa.
+             */
             const p = this._pistas.get(i);
-            abiertos.push(p
-                ? `el ${i} (${p.snakes} serpiente(s) y ${p.rabbit} conejo(s) al lado)`
-                : `el ${i}`);
+            const mordio = this.sys.snakeIds?.includes(i);
+            abiertos.push(mordio ? `el ${i} (¡había una serpiente!)`
+                : (p && p.snakes >= 0) ? `el ${i} (${p.snakes} serpiente(s) al lado)`
+                : `el ${i} (vacío, sin pista)`);
         }
 
         const cerrados = [];
         for (let i = 0; i < this.maxDrawers; i++) if (!this.st.tried[i]) cerrados.push(i);
 
-        return `Archivador de ${this.maxDrawers} cajones con ${this.numSnakes} serpiente(s) escondida(s). ` +
+        return `Archivador de ${this.maxDrawers} cajones con ${this.sys.snakeIds?.length ?? 0} serpiente(s) escondida(s). ` +
                (abiertos.length
                    ? `Ya has abierto ${abiertos.join(', ')}. `
                    : 'No has abierto ninguno todavía. ') +
@@ -187,7 +276,7 @@ export class CabinetEscapeEnv extends GymEnv {
      * de lo que es. La adyacencia buena ya estaba escrita: `getBspNeighbors`.
      */
     _vecinos(idx) {
-        const bsp = this.sys.bsp;
+        const bsp = this.bsp;   // el motor de la persona lo llama spEngine; el env tiene el suyo
         if (typeof bsp.getBspNeighbors === 'function') return bsp.getBspNeighbors(idx) ?? [];
         return [];
     }
