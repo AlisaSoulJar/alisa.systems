@@ -55,9 +55,9 @@
     <div class="box">
         <h1 id="mTitle"><span class="emoji">🦝🌍</span>¡BUSCA! 5 — PLANET</h1>
         <p>The raccoon fled to one of the settlements on this planet.<br><br>
-        <b>Rotate the globe</b> and click on cities to scan them. 
-        Your orbital scanner shows thermal signatures: 🟢 HOT → 🔴 COLD.<br><br>
-        Powered by ALISA <b>RaccoonPlanetSystem</b> y <b>RaccoonEnvironmentFactory</b> ECS.</p>
+        <b>Fly your satellite</b> over each settlement and lower your orbit until it is in
+        scanner range. The scanner shows thermal signatures: 🟢 HOT → 🔴 COLD.<br><br>
+        Powered by ALISA <b>RaccoonSpaceCore</b> — el mismo motor que juega el banco.</p>
         <div class="modal-config">
             <div><label>SETTLEMENTS</label><input type="number" id="mCities" value="8" min="3" max="20"></div>
             <div><label>SEED</label><input type="number" id="mSeed" value="42" min="1"></div>
@@ -78,7 +78,7 @@
 
 <div id="messages"></div>
 <div id="mode-badges"><span class="mode-badge badge-world">🌍 ECS Powered</span></div>
-<div id="hintBox">🌍 <b>Drag</b> to rotate planet · <b>Scroll</b> to zoom · <b>Click city</b> to scan</div>
+<div id="hintBox">🛰️ <b>WASD</b> mueve el satélite (N/S/E/O) · <b>Q/E</b> sube/baja la órbita · <b>Click</b> escanea la ciudad que tengas a tiro</div>
 
 <script type="module">
 import * as THREE from 'three';
@@ -90,6 +90,7 @@ window.THREE.OrbitControls = OrbitControls;
 import * as THREE from 'three';
 import { RaccoonEnvironmentFactory } from '@alisa-engine/src/world/factories/RaccoonEnvironmentFactory.js';
 import { RaccoonPlanetSystem } from '@alisa-engine/src/world/systems/RaccoonPlanetSystem.js';
+import { RaccoonSpaceCore } from '@alisa-engine/src/world/systems/RaccoonSpaceCore.js';
 import { montarMundo } from '/js/montarMundo.js';
 
 /**
@@ -127,10 +128,26 @@ const sunLight = new THREE.DirectionalLight(0xffeedd, 1.2);
 sunLight.position.set(50, 30, 40);
 scene.add(sunLight);
 
-// ECS Setup
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ AQUÍ MANDA `RaccoonSpaceCore`, Y ANTES NO
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Hasta el 24-08 el juego estaba escrito en este HTML —escaneo, caliente/frío,
+ * victoria— y la batería la llevaba `RaccoonPlanetSystem`, mientras el banco
+ * medía `RaccoonSpaceCore` con otros números. Dos juegos con el mismo nombre.
+ *
+ * Lo más gordo: se podía escanear cualquier ciudad desde donde estuvieras, así
+ * que la ÓRBITA NO SERVÍA PARA NADA — se ganaba sin mover el satélite. Ahora el
+ * núcleo sólo escanea lo que tiene a tiro, y bajar la órbita para acercarse es
+ * la decisión cara de la etapa.
+ *
+ * El clic sigue apuntando, pero ya no escanea él. Ver `scanCity`.
+ */
 const factory = new RaccoonEnvironmentFactory();
 const system = new RaccoonPlanetSystem({ radius: 15 });
 
+let nucleo = null;
 let settlements = [];
 let targetSettlementIdx = -1;
 let totalCities = 8;
@@ -138,86 +155,131 @@ let scannedCount = 0;
 let gameState = { ended: false, score: 0 };
 let planetRig = null;
 
+const keys = {};
+window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+/**
+ * Traduce dedos a UN verbo del núcleo, uno por tick, igual que los agentes.
+ *
+ * Y son los verbos de un SATÉLITE, no los de una nave: sobre una esfera no se
+ * empuja hacia delante, se cambia de latitud y de longitud. Q/E suben y bajan la
+ * órbita, que es lo que decide si llegas a escanear.
+ */
+function verboDeLasTeclas() {
+    if (keys['w'] || keys['arrowup'])    return 'norte';
+    if (keys['s'] || keys['arrowdown'])  return 'sur';
+    if (keys['a'] || keys['arrowleft'])  return 'oeste';
+    if (keys['d'] || keys['arrowright']) return 'este';
+    if (keys['q']) return 'subir_orbita';
+    if (keys['e']) return 'bajar_orbita';
+    return 'nada';
+}
+
 // Replace old window functions
 window.initGame = function() {
     let seed = parseInt(document.getElementById('mSeed').value) || 42;
     factory.seedRandom(seed);
     totalCities = parseInt(document.getElementById('mCities').value) || 8;
-    
+
     // Clear old
     while(scene.children.length > 0) scene.remove(scene.children[0]);
     scene.add(new THREE.AmbientLight(0x223344, 0.3));
     scene.add(sunLight);
     factory.createDecoration(scene, 400); // reuse stars
 
+    // Los mismos ajustes que `RaccoonPlanetEnv`: si se tocan, se tocan los dos.
+    nucleo = new RaccoonSpaceCore({
+        seed, planets: totalCities, asteroids: 0, tankSize: 260,
+        fuel: 11, tope: 3600, forma: 'esfera', mando: 'orbita', scanCost: 0.08,
+    });
+
     // Generate
-    planetRig = factory.generatePlanet(scene, 15, totalCities);
+    planetRig = factory.generatePlanet(scene, 15, totalCities, {
+        planetas: nucleo.planetas,
+        asteroides: nucleo.asteroides,
+        objetivo: nucleo.planetaDelMapache,
+    });
     settlements = planetRig.settlements;
     targetSettlementIdx = planetRig.targetSettlementIdx;
-    
+    totalCities = nucleo.planetas.length;
+
     const sat = factory.createSatellite(scene, 15);
-    
     system.init(sat, planetRig.planetGroup);
-    system.onPowerDrain = () => {
-        gameState.ended = true;
-        const msg = document.getElementById('messages');
-        msg.style.opacity = '1';
-        msg.innerHTML = "<span style='color:#ff3b30'>⚡ SATELLITE POWER DEPLETED!</span>";
-        setTimeout(() => location.reload(), 3000);
-    };
+    system.pintar(0, nucleo.nave, nucleo);
 
     gameState = { ended: false, score: 0 };
     scannedCount = 0;
-    
+
     document.getElementById('modal').style.display = 'none';
     document.getElementById('hud').style.display = 'block';
     document.getElementById('mode-badges').style.display = 'flex';
     document.getElementById('hintBox').style.display = 'block';
 };
 
+function powerDepleted() {
+    if (gameState.ended) return;
+    gameState.ended = true;
+    const msg = document.getElementById('messages');
+    msg.style.opacity = '1';
+    msg.innerHTML = "<span style='color:#ff3b30'>⚡ SATELLITE POWER DEPLETED!</span>";
+    setTimeout(() => location.reload(), 3000);
+}
+
+/**
+ * ⚠️ LAS BANDAS SALEN DEL NÚCLEO, NO DE UNOS UMBRALES ESCRITOS AQUÍ.
+ *
+ * Esta página medía el ángulo entre ciudades sobre la esfera y lo cortaba con
+ * sus propios umbrales; el núcleo mide la distancia en línea recta con otros. La
+ * misma ciudad podía salir «WARM» para la persona y «fresco» para el modelo. El
+ * dato es uno: lo único que cambia es cómo lo cuenta cada puerta.
+ */
+const BANDA_A_HUD = {
+    caliente: { color: 0x34c759, cssColor: '#34c759', label: '🟢 HOT' },
+    templado: { color: 0xaacc00, cssColor: '#aacc00', label: '🟡 WARM' },
+    fresco:   { color: 0xffcc00, cssColor: '#ffcc00', label: '🟠 COOL' },
+    'frío':   { color: 0xff8800, cssColor: '#ff8800', label: '🟠 CHILLY' },
+    helado:   { color: 0xff2200, cssColor: '#ff2200', label: '🔴 COLD' },
+};
+
 function getCityTemperature(cityIdx) {
-    if (cityIdx === targetSettlementIdx) return { level: 'FOUND', color: 0x34c759, cssColor: '#34c759', label: '🎯 FOUND', dist: 0 };
-    const p1 = settlements[cityIdx].pos;
-    const p2 = settlements[targetSettlementIdx].pos;
-    const angle = p1.angleTo(p2); 
-    const maxAngle = Math.PI;
-    const normDist = angle / maxAngle;
-    
-    if (normDist < 0.15) return { level: 'HOT', color: 0x34c759, cssColor: '#34c759', label: '🟢 HOT', dist: angle };
-    if (normDist < 0.3) return { level: 'WARM', color: 0xaacc00, cssColor: '#aacc00', label: '🟡 WARM', dist: angle };
-    if (normDist < 0.5) return { level: 'COOL', color: 0xffcc00, cssColor: '#ffcc00', label: '🟠 COOL', dist: angle };
-    if (normDist < 0.7) return { level: 'CHILLY', color: 0xff8800, cssColor: '#ff8800', label: '🟠 CHILLY', dist: angle };
-    return { level: 'COLD', color: 0xff2200, cssColor: '#ff2200', label: '🔴 COLD', dist: angle };
+    if (cityIdx === targetSettlementIdx) {
+        return { level: 'FOUND', color: 0x34c759, cssColor: '#34c759', label: '🎯 FOUND', dist: 0 };
+    }
+    const banda = nucleo?.bandaDe(nucleo.planetas[cityIdx]);
+    const info = BANDA_A_HUD[banda] ?? BANDA_A_HUD.helado;
+    return { level: banda ?? 'helado', ...info, dist: Math.round(nucleo?.planetas[cityIdx]?.pista ?? 0) };
 }
 
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
 window.addEventListener('pointerdown', (e) => {
-    if (!system.playing || gameState.ended) return;
+    if (!nucleo || gameState.ended) return;
     mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
-    
+
     const hitObjects = settlements.map(s => s.hit);
     const intersects = raycaster.intersectObjects(hitObjects, false);
-    
+
     if (intersects.length > 0) {
         scanCity(intersects[0].object.userData.cityIndex);
     }
 });
 
-function scanCity(idx) {
-    if (gameState.ended || settlements[idx].scanned) return;
-    settlements[idx].scanned = true;
-    scannedCount++;
-    
-    const temp = getCityTemperature(idx);
-    const s = settlements[idx];
+function aviso(html, ms = 1500) {
     const msg = document.getElementById('messages');
     msg.style.opacity = '1';
-    
-    // Visual feedback
+    msg.innerHTML = html;
+    setTimeout(() => { msg.style.opacity = '0'; }, ms);
+}
+
+/** Pinta una ciudad ya escaneada con el color de su banda. */
+function pintarCiudad(idx) {
+    const s = settlements[idx];
+    if (!s) return;
+    const temp = getCityTemperature(idx);
     s.ring.material.color.setHex(temp.color);
     s.ring.material.opacity = 0.9;
     s.label.material.color.setHex(temp.color);
@@ -228,38 +290,75 @@ function scanCity(idx) {
             c.material.emissiveIntensity = 0.5;
         }
     });
-    
-    if (idx === targetSettlementIdx) {
-        gameState.score += Math.floor(system.fuel) + (totalCities - scannedCount) * 15;
-        msg.innerHTML = "<span style='color:#34c759'>🎯🦝 RACCOON FOUND ON THIS SETTLEMENT!</span>";
-        system.playing = false;
-        gameState.ended = true;
-        
-        const tgt = s.pos.clone().normalize().multiplyScalar(15 + 10);
-        const zoomLoop = setInterval(() => {
-            camera.position.lerp(tgt, 0.03);
-            controls.target.lerp(s.pos, 0.03);
-            if (camera.position.distanceTo(tgt) < 1) {
-                clearInterval(zoomLoop);
-                msg.innerHTML = `<span style='color:#34c759'>🏆 ¡BUSCA! 5 SUPERADA! SCORE: ${gameState.score}</span>`;
-                setTimeout(() => location.reload(), 4000);
-            }
-        }, 16);
-    } else {
-        system.fuel -= 8;
-        msg.innerHTML = `${temp.label} <span style='color:${temp.cssColor}'>(${(temp.dist * 180 / Math.PI).toFixed(0)}° away)</span>`;
+    return temp;
+}
+
+function winSequence(idx) {
+    gameState.ended = true;
+    const s = settlements[idx];
+    const tgt = s.pos.clone().normalize().multiplyScalar(15 + 10);
+    const zoomLoop = setInterval(() => {
+        camera.position.lerp(tgt, 0.03);
+        controls.target.lerp(s.pos, 0.03);
+        if (camera.position.distanceTo(tgt) < 1) {
+            clearInterval(zoomLoop);
+            aviso(`<span style='color:#34c759'>🏆 ¡BUSCA! 5 SUPERADA! SCORE: ${gameState.score}</span>`, 4000);
+            setTimeout(() => location.reload(), 4000);
+        }
+    }, 16);
+}
+
+/**
+ * ⚠️ EL CLIC APUNTA; QUIEN ESCANEA ES EL NÚCLEO.
+ *
+ * Antes esta función escaneaba cualquier ciudad de la pantalla, y eso hacía la
+ * órbita decorativa: se ganaba sin mover el satélite. Ahora sólo pide, y el
+ * núcleo escanea únicamente lo que tiene a tiro — que en una esfera significa
+ * estar encima Y lo bastante bajo.
+ */
+function scanCity(idx) {
+    if (gameState.ended || !nucleo || nucleo.planetas[idx].escaneado) return;
+
+    const aTiro = nucleo.planetaCerca();
+    if (aTiro !== nucleo.planetas[idx]) {
+        aviso("<span style='color:#ff9500'>📡 OUT OF RANGE — lower your orbit over it</span>", 1200);
+        return;
     }
-    
-    setTimeout(() => { msg.style.opacity = '0'; }, 1500);
+
+    nucleo.step('escanear');
+    if (!nucleo.planetas[idx].escaneado) return;   // el núcleo dijo que no
+    settlements[idx].scanned = true;
+    scannedCount++;
+
+    const temp = pintarCiudad(idx);
+    gameState.score = nucleo.puntos;
+
+    if (nucleo.encontrado) {
+        aviso("<span style='color:#34c759'>🎯🦝 RACCOON FOUND ON THIS SETTLEMENT!</span>", 4000);
+        winSequence(idx);
+    } else {
+        aviso(`${temp.label} <span style='color:${temp.cssColor}'>(${temp.dist} from the raccoon)</span>`);
+        if (nucleo.muerto) powerDepleted();
+    }
+
     updateHUD();
 }
 
 function updateHUD() {
+    if (!nucleo) return;
+    /**
+     * ⚠️ EL PORCENTAJE SE CALCULA; NO ES EL NÚMERO DE LA BATERÍA.
+     *
+     * `width = fuel + '%'` sólo funcionaba porque el depósito viejo empezaba en
+     * 100. Con el del núcleo —doce— la barra saldría al 12% con el depósito
+     * lleno: la pantalla mintiendo sin dar un error.
+     */
+    const pct = 100 * nucleo.combustible / (nucleo.combustibleInicial || 1);
     document.getElementById('hScanned').textContent = `${scannedCount}/${totalCities}`;
-    document.getElementById('hFuel').textContent = Math.floor(system.fuel);
-    document.getElementById('vFuelBar').style.width = system.fuel + '%';
+    document.getElementById('hFuel').textContent = Math.round(pct);
+    document.getElementById('vFuelBar').style.width = pct + '%';
     document.getElementById('hScore').textContent = gameState.score;
-    const p = system.fuel;
+    const p = pct;
     if (p < 20) document.getElementById('vFuelBar').style.background = '#ff3b30';
     else if (p < 50) document.getElementById('vFuelBar').style.background = '#ff9500';
     else document.getElementById('vFuelBar').style.background = 'linear-gradient(90deg, #ff3b30, #ff9500, #34c759)';
@@ -274,18 +373,67 @@ function updateHUD() {
  */
 arrancar((dt) => {
     const time = gfx.clock.getElapsedTime() * 1000; // time in ms
-    
-    if (system.playing) {
-        system.update(dt, time);
+
+    if (nucleo && !gameState.ended) {
+        // Un tick = un verbo. El núcleo mueve; esta página sólo copia.
+        nucleo.step(verboDeLasTeclas(), dt);
+        system.pintar(dt, nucleo.nave, nucleo);
         updateHUD();
+        if (nucleo.muerto) powerDepleted();
     }
-    
+
+    /**
+     * ⚠️ EL INDICADOR DE ALCANCE, QUE ANTES NO EXISTÍA.
+     *
+     * Con el escaneo a distancia libre no hacía falta; ahora bajar la órbita es
+     * LA decisión de la etapa, y sin un indicador la persona no sabe si ya está
+     * lo bastante cerca — pincharía a ciegas hasta quedarse sin batería.
+     */
+    if (nucleo) {
+        const aTiro = nucleo.planetaCerca();
+        const el = document.getElementById('hCity');
+        if (el) el.textContent = aTiro ? `C-${nucleo.planetas.indexOf(aTiro)} ✅` : '— (baja la órbita)';
+    }
+
     settlements.forEach(s => {
         if (!s.scanned) {
             s.label.material.opacity = 0.5 + Math.sin(time * 0.003 + s.index) * 0.2;
         }
     });
 });
+
+/**
+ * PUENTE RL — el mismo núcleo que el banco, no un tercer juego.
+ * Esta página no lo tenía; se añade para que las tres puertas de ¡Busca! 5
+ * lleven al mismo sitio.
+ */
+window.getObservationVector = function() {
+    if (!nucleo) return { obs: [], meta: {} };
+    return {
+        obs: nucleo.observacion(),
+        meta: { fuel: nucleo.combustible, scanned: scannedCount, target: nucleo.planetaDelMapache },
+    };
+};
+
+window.stepSimulation = function(actionIdx, dt) {
+    if (!nucleo || gameState.ended) {
+        return { obs: window.getObservationVector().obs, reward: 0, done: true };
+    }
+    const r = nucleo.step(actionIdx, dt ?? 1 / 60);
+    nucleo.planetas.forEach((p, i) => {
+        if (p.escaneado && settlements[i] && !settlements[i].scanned) {
+            settlements[i].scanned = true;
+            pintarCiudad(i);
+        }
+    });
+    scannedCount = nucleo.planetas.filter(p => p.escaneado).length;
+    gameState.score = nucleo.puntos;
+    system.pintar(1 / 60, nucleo.nave, nucleo);
+    updateHUD();
+    if (nucleo.encontrado && !gameState.ended) winSequence(nucleo.planetaDelMapache);
+    else if (nucleo.muerto) powerDepleted();
+    return r;
+};
 </script>
 </body>
 </html>

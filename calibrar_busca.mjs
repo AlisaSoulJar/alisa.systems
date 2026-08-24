@@ -52,10 +52,48 @@ const SEMILLAS = Number(process.argv[2]) || 40;
  *
  * Antes de esto, 70% y 67% se daban por dos escalones distintos y con 60
  * semillas eso está DENTRO DEL RUIDO: no eran dos, era uno contado dos veces.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ 24-08: LOS NÚMEROS DE ARRIBA SON DE ANTES DE LOS MANDOS
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Al unir las páginas 4 y 5 con este núcleo aparecieron TRES reglas que la
+ * persona tenía y el banco no, y las tres cambian la dificultad:
+ *
+ *   · cada etapa lleva un vehículo distinto — dron, satélite, nave — y hasta
+ *     hoy las tres se medían con los verbos de la nave;
+ *   · escanear en falso cuesta batería (5% en la ciudad, 8% en el planeta),
+ *     y aquí era gratis, así que sobraba pensar antes de escanear;
+ *   · ni la ciudad ni el planeta dibujan asteroides, y el banco les ponía 8 y
+ *     14 — obstáculos invisibles que sólo sufría el agente.
+ *
+ * Con las tres puestas, el planeta pasó a ganarse el 100% —pilotado en órbita
+ * de verdad, llegar es barato— y hubo que bajarlo de 26 a 12.
+ *
+ * ⚠️ Y LA CIUDAD NO SE ARREGLA CON COMBUSTIBLE, PORQUE NO ES SU LÍMITE.
+ * Barrido de 30 a 46: 75, 75, 75. Ni un punto. El dron nunca se queda sin
+ * batería — pierde cuando el piloto ELIGE MAL, y eso no lo compra el depósito.
+ * Lo que sí mueve la aguja es cuántos edificios hay que descartar:
+ *
+ *     8 edificios → 100%    9 → 100%    10 → 80%    11 → 73%    12 → 75%
+ *
+ * Con diez queda arriba del todo, que es lo que le toca a la etapa 4. Y deja
+ * dicho algo del juego que el número solo no cuenta: en la ciudad el presupuesto
+ * casi no aprieta; lo que se mide es si sabes leer las pistas.
+ *
+ * ⚠️ Y LA SALIDA SEMBRADA VOLVIÓ A MOVERLO TODO. Hasta esa misma tarde el dron y
+ * el satélite salían siempre del mismo sitio, así que dos semillas empezaban con
+ * observaciones idénticas —`prueba_semillas` lo cazó— y de paso había una
+ * apertura mecánica que valía siempre. Al sembrarla, las dos etapas se hicieron
+ * más fáciles (a veces sales cerca) y el planeta bajó de 12 a 11.
+ *
+ *     ciudad   tanque 180 · 10 objetivos · dron    · combustible 30  →  87%
+ *     planeta  tanque 260 ·  8 objetivos · órbita  · combustible 11  →  72%
+ *     espacio  tanque 400 ·  6 objetivos · nave    · combustible 24  →  52%
  */
 const ESCALAS = [
-    ['¡Busca! 4 ciudad',  { tankSize: 180, planets: 12, asteroids: 8,  fuel: 30, tope: 3000 }],
-    ['¡Busca! 5 planeta', { tankSize: 320, planets: 8,  asteroids: 14, fuel: 22, tope: 3600 }],
+    ['¡Busca! 4 ciudad',  { tankSize: 180, planets: 10, asteroids: 0, fuel: 30, tope: 3000, forma: 'rejilla', mando: 'dron', scanCost: 0.05 }],
+    ['¡Busca! 5 planeta', { tankSize: 260, planets: 8,  asteroids: 0, fuel: 11, tope: 3600, forma: 'esfera',  mando: 'orbita', scanCost: 0.08 }],
     ['¡Busca! 6 espacio', { tankSize: 400, planets: 6,  asteroids: 30, fuel: 24, tope: 5400 }],
 ];
 
@@ -91,6 +129,53 @@ function candidatoMasCoherente(core, sinEscanear) {
     return mejor;
 }
 
+/**
+ * ⚠️ Y EL PILOTO TIENE QUE SABER PILOTAR LAS TRES COSAS.
+ *
+ * Cada etapa lleva un vehículo distinto —dron, satélite, nave— y quien calibra
+ * no puede medirlas todas con los verbos de la nave: `girar_izq` en un satélite
+ * no existe, así que `step` lo ignoraría en silencio y las tres etapas saldrían
+ * imposibles por un fallo del instrumento, no del juego.
+ *
+ * Es literalmente el fallo que medí esta semana en la oca —`step(entero)` sin
+ * hacer nada, doce pasos y cero recompensa— con otra ropa.
+ */
+function ir(core, objetivo) {
+    const n = core.nave;
+    const dx = objetivo.x - n.x, dy = objetivo.y - n.y, dz = objetivo.z - n.z;
+
+    if (core.mando === 'dron') {
+        // El dron se mueve en los ejes: se corrige el que más lejos esté, y se
+        // frena a base de empujar al otro lado cuando ya se pasa de largo.
+        const ejes = [
+            [Math.abs(dx), dx > 0 ? 'derecha' : 'izquierda'],
+            [Math.abs(dy), dy > 0 ? 'subir' : 'bajar'],
+            [Math.abs(dz), dz > 0 ? 'atras' : 'adelante'],
+        ].sort((a, b) => b[0] - a[0]);
+        return ejes[0][1];
+    }
+
+    if (core.mando === 'orbita') {
+        // Primero se pone encima —latitud y longitud— y sólo entonces baja. Bajar
+        // antes de estar encima gasta batería para nada.
+        const lat = Math.atan2(objetivo.y, Math.hypot(objetivo.x, objetivo.z));
+        const lon = Math.atan2(objetivo.z, objetivo.x);
+        const dLat = lat - n.lat;
+        const dLon = Math.atan2(Math.sin(lon - n.lon), Math.cos(lon - n.lon));
+        if (Math.abs(dLat) > 0.04) return dLat > 0 ? 'norte' : 'sur';
+        if (Math.abs(dLon) > 0.04) return dLon > 0 ? 'este' : 'oeste';
+        return n.alt > core.altMin + 0.5 ? 'bajar_orbita' : 'nada';
+    }
+
+    const rumbo = Math.atan2(-dx, -dz);
+    const alto = Math.atan2(dy, Math.hypot(dx, dz));
+    const dg = Math.atan2(Math.sin(rumbo - n.guinada), Math.cos(rumbo - n.guinada));
+    const dc = alto - n.cabeceo;
+    if (Math.abs(dg) > 0.05) return dg > 0 ? 'girar_izq' : 'girar_der';
+    if (Math.abs(dc) > 0.05) return dc > 0 ? 'morro_arriba' : 'morro_abajo';
+    return 'empujar';
+}
+
 /** El piloto: escanea lo que tiene a tiro y, si no, va al candidato más coherente. */
 function pilotar(core) {
     let pasos = 0;
@@ -107,14 +192,7 @@ function pilotar(core) {
                 ?? sinEscanear.sort((a, b) => Math.hypot(a.x - n.x, a.y - n.y, a.z - n.z)
                                             - Math.hypot(b.x - n.x, b.y - n.y, b.z - n.z))[0];
             if (!objetivo) break;
-            const dx = objetivo.x - n.x, dy = objetivo.y - n.y, dz = objetivo.z - n.z;
-            const rumbo = Math.atan2(-dx, -dz);
-            const alto = Math.atan2(dy, Math.hypot(dx, dz));
-            const dg = Math.atan2(Math.sin(rumbo - n.guinada), Math.cos(rumbo - n.guinada));
-            const dc = alto - n.cabeceo;
-            if (Math.abs(dg) > 0.05) verbo = dg > 0 ? 'girar_izq' : 'girar_der';
-            else if (Math.abs(dc) > 0.05) verbo = dc > 0 ? 'morro_arriba' : 'morro_abajo';
-            else verbo = 'empujar';
+            verbo = ir(core, objetivo);
         }
         core.step(verbo);
         pasos++;
@@ -156,13 +234,29 @@ for (const [nombre, opts] of ESCALAS) {
  * Cada etapa tiene que ganarse MENOS que la anterior. Si no, el orden es una
  * opinión: la saga dice «5 es más difícil que 4» y el jugador nota lo contrario.
  */
+/**
+ * ⚠️ Y UN EMPATE TAMPOCO ES UN ESCALÓN.
+ *
+ * Esta comprobación sólo miraba `>`, así que 75% y 75% le parecían bien. Con eso
+ * pasé por buena una escalera de dos peldaños disfrazada de tres — exactamente el
+ * error que este mismo fichero avisa arriba («70 y 67 no eran dos, era uno contado
+ * dos veces») y que aquí volví a cometer porque el instrumento lo dejaba pasar.
+ *
+ * Con 60 semillas, el error típico de una proporción cerca del 70% ronda los 6
+ * puntos, así que dos etapas separadas por menos de 10 no están separadas: están
+ * dentro del ruido. Se exige esa distancia y se dice cuál es.
+ */
+const SEPARACION_MINIMA = 10;
 console.log('');
 let monotona = true;
 for (let i = 1; i < filas.length; i++) {
-    if (filas[i].pct > filas[i - 1].pct) {
+    const gap = filas[i - 1].pct - filas[i].pct;
+    if (gap < SEPARACION_MINIMA) {
         monotona = false;
-        console.log(`  ✗ ${filas[i].nombre} se gana MÁS (${filas[i].pct.toFixed(0)}%) que `
-                  + `${filas[i - 1].nombre} (${filas[i - 1].pct.toFixed(0)}%): la escalera baja`);
+        const como = gap < 0 ? 'se gana MÁS' : 'se gana casi igual';
+        console.log(`  ✗ ${filas[i].nombre} ${como} (${filas[i].pct.toFixed(0)}%) que `
+                  + `${filas[i - 1].nombre} (${filas[i - 1].pct.toFixed(0)}%): `
+                  + `${gap.toFixed(0)} puntos de separación, hacen falta ${SEPARACION_MINIMA}`);
     }
 }
 const conRegalo = filas.filter(f => f.regalados > 0);

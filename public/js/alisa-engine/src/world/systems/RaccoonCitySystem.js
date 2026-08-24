@@ -1,84 +1,62 @@
 import * as THREE from 'three';
 
 /**
- * RaccoonCitySystem
- * Headless ECS engine for City Sector drone physics and power drain.
+ * RaccoonCitySystem — EL DIBUJANTE DEL DRON, YA NO SU FÍSICA
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Hasta el 24-08 esta clase movía el dron: leía teclas, integraba velocidad,
+ * gastaba batería y avisaba cuando se acababa. O sea que la persona jugaba a
+ * ESTO y el banco medía `RaccoonSpaceCore`, con otra batería, otro alcance de
+ * escáner y otro coste por escaneo fallido. Mismo nombre de etapa, dos juegos —
+ * y comparar sus notas no significaba nada, que es justo lo que este banco
+ * existe para no hacer.
+ *
+ * Ahora manda el núcleo y aquí sólo queda lo que el núcleo no sabe ni tiene por
+ * qué saber: cómo se INCLINA un dron al acelerar, a qué velocidad giran sus
+ * hélices y cuánto se abre su haz de luz según lo alto que vuele. Nada de eso
+ * cambia el resultado de una partida, y por eso puede vivir del lado del dibujo.
+ *
+ * Es la regla del patrón dorado: *«el estado manda, el 3D lo pinta»*.
  */
 export class RaccoonCitySystem {
     constructor(params = {}) {
-        this.maxSpeed = params.maxSpeed || 60;
-        this.fuel = 100;
-        this.playing = false;
-        
         this.droneRoot = null;
         this.droneInner = null;
-        this.droneVelocity = new THREE.Vector3();
         this.propellers = [];
         this.volBeam = null;
-
-        this.keys = {};
-        this.onPowerDrain = null; // Callback
     }
-    
+
     init(droneRoot, droneInner, propellers, volBeam) {
         this.droneRoot = droneRoot;
         this.droneInner = droneInner;
         this.propellers = propellers;
         this.volBeam = volBeam;
-        this.droneVelocity.set(0, 0, 0);
-        this.fuel = 100;
-        this.playing = true;
     }
 
-    setKeys(keysObj) {
-        this.keys = keysObj;
-    }
+    /**
+     * Copia el estado del núcleo al 3D. `nave` es `nucleo.nave` tal cual.
+     *
+     * ⚠️ La inclinación se saca de la VELOCIDAD del núcleo, no de las teclas.
+     * Si la leyera de las teclas, el dron se inclinaría aunque el núcleo hubiera
+     * ignorado la orden —por ejemplo con la partida terminada— y la pantalla
+     * estaría contando algo que no ha pasado.
+     */
+    pintar(dt, nave) {
+        if (!this.droneRoot || !nave) return;
 
-    update(dt) {
-        if (!this.playing || !this.droneRoot) return;
-        
-        // Input → velocity
-        const thrust = new THREE.Vector3();
-        if (this.keys['w'] || this.keys['arrowup']) thrust.z = -1;
-        if (this.keys['s'] || this.keys['arrowdown']) thrust.z = 1;
-        if (this.keys['a'] || this.keys['arrowleft']) thrust.x = -1;
-        if (this.keys['d'] || this.keys['arrowright']) thrust.x = 1;
-        if (this.keys['q']) thrust.y = 1;
-        if (this.keys['e']) thrust.y = -1;
-        
-        if (thrust.lengthSq() > 0) {
-            this.droneVelocity.add(thrust.normalize().multiplyScalar(35 * dt));
-        }
-        
-        // Damping
-        this.droneVelocity.multiplyScalar(0.97);
-        if (this.droneVelocity.length() > this.maxSpeed * dt) {
-            this.droneVelocity.setLength(this.maxSpeed * dt);
-        }
-        
-        this.droneRoot.position.add(this.droneVelocity);
-        this.droneRoot.position.y = Math.max(5, this.droneRoot.position.y); // Floor collision
-        
-        // Tilt animation
-        this.droneInner.rotation.z = THREE.MathUtils.lerp(this.droneInner.rotation.z, -this.droneVelocity.x * 2, 5 * dt);
-        this.droneInner.rotation.x = THREE.MathUtils.lerp(this.droneInner.rotation.x, this.droneVelocity.z * 2, 5 * dt);
-        
-        // Battery drain
-        this.fuel -= dt * 1.5;
-        if (this.fuel <= 0) {
-            this.fuel = 0;
-            this.playing = false;
-            if (this.onPowerDrain) this.onPowerDrain();
-        }
-        
-        // Beam scale
-        const beamDist = this.droneRoot.position.y;
-        const beamRadius = beamDist * Math.tan(Math.PI / 8);
-        this.volBeam.scale.set(beamRadius, beamDist, beamRadius);
+        this.droneRoot.position.set(nave.x, nave.y, nave.z);
 
-        // Propeller spin (visual)
-        this.propellers.forEach((p, i) => { 
-            p.rotation.y += (20) * dt; 
-        });
+        if (this.droneInner) {
+            this.droneInner.rotation.z = THREE.MathUtils.lerp(this.droneInner.rotation.z, -nave.vx * 0.04, 5 * dt);
+            this.droneInner.rotation.x = THREE.MathUtils.lerp(this.droneInner.rotation.x,  nave.vz * 0.04, 5 * dt);
+        }
+
+        if (this.volBeam) {
+            const beamDist = Math.max(1, nave.y);
+            const beamRadius = beamDist * Math.tan(Math.PI / 8);
+            this.volBeam.scale.set(beamRadius, beamDist, beamRadius);
+        }
+
+        this.propellers.forEach(p => { p.rotation.y += 20 * dt; });
     }
 }

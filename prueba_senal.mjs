@@ -94,6 +94,28 @@ const NO_SEPARAN = {
         'la recompensa está detrás de NAVEGAR y ninguna política ciega llega a escanear. '
       + 'Con el piloto de `calibrar_busca.mjs` gana el 52% de las partidas',
     /**
+     * ⚠️ Y EL PLANETA HA VUELTO A ENTRAR AQUÍ. TERCERA VEZ, Y CON MOTIVO NUEVO.
+     *
+     * Estuvo declarado, se quitó porque separaba de verdad, y vuelve. Lo que
+     * cambió en medio: hasta el 24-08 esta etapa se pilotaba como una NAVE
+     * —empuje cartesiano sobre una esfera— porque el banco le daba los verbos de
+     * la etapa 6. La página, mientras, dejaba escanear desde cualquier sitio. Al
+     * unirlas quedó lo que de verdad es: un satélite que se mueve en latitud,
+     * longitud y altura, y que tiene que ponerse ENCIMA y BAJAR para escanear.
+     *
+     * Con eso, una política ciega no llega nunca — igual que en el espacio. No es
+     * que la etapa se haya roto: es que antes se estaba midiendo otra cosa.
+     *
+     * ⚠️ Y NO SE ARREGLA CON EL ALCANCE DEL ESCÁNER. Lo probé: de 25 a 70, que
+     * además tiene sentido físico —un escáner orbital no es la cámara de un
+     * dron—. Las siete políticas siguieron sacando -100 clavado. Subir un número
+     * hasta que el instrumento calle es lo contrario de medir, así que se
+     * revirtió y se declara.
+     */
+    'alisa/RaccoonPlanet-v0':
+        'el satélite tiene que ponerse encima Y bajar la órbita para escanear, y ninguna '
+      + 'política ciega lo consigue. Con el piloto de `calibrar_busca.mjs` gana el 72%',
+    /**
      * ⚠️ Y AQUÍ DECLARÉ DE MÁS: metí también a `RaccoonCity` y `RaccoonPlanet`
      * dando por hecho que si el hermano grande no separa, los pequeños tampoco.
      * La prueba lo cantó en la pasada siguiente —«ya separan y siguen

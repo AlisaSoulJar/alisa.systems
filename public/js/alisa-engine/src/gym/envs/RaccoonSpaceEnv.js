@@ -1,5 +1,6 @@
 import { GymEnv } from '../GymEnv.js';
-import { RaccoonSpaceCore, VERBOS_ESPACIO } from '../../world/systems/RaccoonSpaceCore.js';
+import { RaccoonSpaceCore, VERBOS_ESPACIO, VERBOS_DRON, VERBOS_ORBITA }
+    from '../../world/systems/RaccoonSpaceCore.js';
 
 /**
  * RaccoonSpaceEnv — etapa 7 de la matrioska
@@ -228,7 +229,28 @@ export class RaccoonSpaceEnv extends GymEnv {
 export class RaccoonCityEnv extends RaccoonSpaceEnv {
     static id = 'alisa/RaccoonCity-v0';
     static objetivo = { uno: 'edificio', varios: 'edificios', el: 'El', un: 'un', ningun: 'ningún' };
-    static ajustes = { tankSize: 180, planets: 12, asteroids: 8, fuel: 30, tope: 3000 };
+    /**
+     * ⚠️ SIN ASTEROIDES, Y NO ES UN DESCUIDO.
+     *
+     * Cuando metí esta etapa al banco le puse ocho por inercia, copiando la
+     * configuración del espacio. La página no dibuja ninguno: el dron vuela sobre
+     * una ciudad. Ocho rocas invisibles empujando al agente y quitándole batería
+     * son ocho cosas que el modelo sufre y la persona no — la misma grieta que
+     * este trabajo existe para cerrar, sólo que del lado contrario.
+     */
+    /**
+     * ⚠️ DOCE EDIFICIOS → DIEZ, Y NO ES POR HACERLO MÁS FÁCIL.
+     *
+     * Con doce, esta etapa y la del planeta se ganaban el 75% y el 67%: ocho
+     * puntos de separación, que con 60 semillas está dentro del ruido. Dos
+     * escalones que en realidad eran uno. El depósito no lo arreglaba —de 30 a 46
+     * la etapa no se movía ni un punto, porque el dron nunca se queda sin
+     * batería— así que el que manda es el número de edificios que descartar.
+     * Medido en `calibrar_busca.mjs`.
+     */
+    static ajustes = { tankSize: 180, planets: 10, asteroids: 0, fuel: 30, tope: 3000,
+                       forma: 'rejilla', mando: 'dron', scanCost: 0.05 };
+    static actionSpace = { type: 'discrete', n: VERBOS_DRON.length, names: VERBOS_DRON };
     static meta = {
         title: '¡Busca! 4 — Sector de ciudad',
         summary: 'Encuentra el edificio donde se esconde el mapache antes de quedarte sin '
@@ -241,7 +263,19 @@ export class RaccoonCityEnv extends RaccoonSpaceEnv {
 export class RaccoonPlanetEnv extends RaccoonSpaceEnv {
     static id = 'alisa/RaccoonPlanet-v0';
     static objetivo = { uno: 'ciudad', varios: 'ciudades', el: 'La', un: 'una', ningun: 'ninguna' };
-    static ajustes = { tankSize: 320, planets: 8, asteroids: 14, fuel: 22, tope: 3600 };
+    /** Sin asteroides por el mismo motivo que la ciudad: la página no los dibuja. */
+    /**
+     * ⚠️ 26 → 12, Y OTRA VEZ NO ES AFINAR: ES QUE CAMBIÓ EL JUEGO.
+     *
+     * Con 26 el satélite ganaba el 100% de las partidas. No porque el planeta sea
+     * fácil, sino porque hasta hoy lo pilotaba como una nave —empuje cartesiano
+     * sobre una esfera— y le sobraba de todo. Con mando de órbita y el coste de
+     * escaneo que la página sí cobraba, 11 lo deja en el 72%: entre el 87% de la
+     * ciudad y el 52% del espacio. Medido en `calibrar_busca.mjs`.
+     */
+    static ajustes = { tankSize: 260, planets: 8, asteroids: 0, fuel: 11, tope: 3600,
+                       forma: 'esfera', mando: 'orbita', scanCost: 0.08 };
+    static actionSpace = { type: 'discrete', n: VERBOS_ORBITA.length, names: VERBOS_ORBITA };
     static meta = {
         title: '¡Busca! 5 — Planeta',
         summary: 'Encuentra la ciudad donde se esconde el mapache antes de quedarte sin '

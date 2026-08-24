@@ -534,6 +534,19 @@ const SABOTAJES = [
         vigila: 'que la persona y el agente corran el mismo motor en cada etapa de saga',
     },
     {
+        /**
+         * El mismo motor con otros números sigue siendo otro juego, y `sagas` no
+         * lo ve: ella comprueba QUÉ se importa, no CÓMO se configura. El sabotaje
+         * deja el motor en su sitio y sólo cambia el depósito del banco.
+         */
+        nombre: 'puertas-busca',
+        corre: 'node prueba_puertas_busca.mjs',
+        fichero: 'public/js/alisa-engine/src/gym/envs/RaccoonSpaceEnv.js',
+        de: 'asteroids: 0, fuel: 11, tope: 3600',
+        a: 'asteroids: 0, fuel: 99, tope: 3600',
+        vigila: 'que la página y el banco monten el núcleo de ¡Busca! con los mismos ajustes',
+    },
+    {
         nombre: 'senal',
         corre: 'node prueba_senal.mjs',
         fichero: 'public/js/alisa-engine/src/gym/ProtoHubEnv.js',

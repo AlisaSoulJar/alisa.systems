@@ -107,24 +107,21 @@ const PARTIDAS = {
      * depósito al 84%.
      */
     /**
-     * ⚠️ ESTAS DOS ENTRARON AL BANCO EL 24-08 Y ENTRARON PARTIDAS, A SABIENDAS.
+     * ⚠️ AQUÍ ESTABAN ¡BUSCA! 4 Y 5, Y YA NO. NO SE BORRA LA HISTORIA.
      *
-     * Antes ni siquiera se medían: una persona las jugaba y el banco no podía
-     * puntuar a nadie en ellas, así que la escalera de ¡Busca! era una afirmación.
-     * Ahora se miden con `RaccoonSpaceCore` —el mismo juego a otra escala,
-     * calibrado— y sus páginas siguen con `RaccoonCitySystem` y
-     * `RaccoonPlanetSystem`, que son cascarones de 3 KB y 1 KB con la lógica
-     * repartida por el HTML.
+     * Entraron al banco el 24-08 declaradas como partidas, a sabiendas: se medían
+     * con `RaccoonSpaceCore` mientras sus páginas corrían `RaccoonCitySystem` y
+     * `RaccoonPlanetSystem`. Ese mismo día se unieron, y al unirlas salieron TRES
+     * reglas que la persona tenía y el banco no —el vehículo de cada etapa, el
+     * coste de escanear en falso y unos asteroides invisibles que sólo sufría el
+     * agente— más una que se lo comía todo: en las páginas se escaneaba desde
+     * donde estuvieras, o sea que el dron y el satélite eran DECORATIVOS.
      *
-     * Se declara en vez de esconderse: **medir mal a alguien es peor que no
-     * medirlo**, y decir que ¡Busca! 4 está en el banco sin decir que la persona
-     * juega otra implementación sería exactamente eso. Unir las páginas al núcleo
-     * es el trabajo siguiente, y hasta que se haga estas dos líneas son la verdad.
+     * Se deja escrito porque la lección no es «ya está»: es que «mismo motor» no
+     * basta. `prueba_puertas_busca.mjs` nació de aquí — compara los AJUSTES con
+     * los que cada puerta monta el núcleo, que es la grieta que esta prueba, la
+     * que estás leyendo, no puede ver.
      */
-    '¡Busca! 4 City Sector':
-        'persona RaccoonCitySystem (3 KB, la lógica en el HTML) · banco RaccoonSpaceCore a escala ciudad',
-    '¡Busca! 5 Planeta':
-        'persona RaccoonPlanetSystem (1 KB, la lógica en el HTML) · banco RaccoonSpaceCore a escala planeta',
 };
 
 /** Las etapas que una persona puede jugar y el banco no puede medir. */
@@ -284,7 +281,16 @@ for (const [etapa, nota] of Object.entries(SIN_ENTORNO)) {
         for (let k = 0; k < 2; k++) {
             const p = env.sys.planetas.filter(x => !x.escaneado && env.sys.planetas.indexOf(x) !== env.sys.planetaDelMapache)[0];
             if (!p) break;
-            env.sys.nave.x = p.x; env.sys.nave.y = p.y; env.sys.nave.z = p.z;
+            /**
+             * ⚠️ `colocarJunto`, y NO escribir `nave.x/y/z` a mano.
+             *
+             * Eso último es lo que hacía esta prueba, y con el satélite del planeta
+             * dejó de funcionar sin decir por qué: su posición sale de latitud,
+             * longitud y altura, y el primer `step` la recalcula y borra el
+             * teletransporte. La prueba acusaba al planeta de no dar pistas cuando
+             * las daba — el fallo era de aquí.
+             */
+            env.sys.colocarJunto(p);
             env.step('escanear');
         }
         const pistas = env.sys.pistas();

@@ -185,7 +185,7 @@ export class RaccoonEnvironmentFactory {
         return dustPoints;
     }
 
-    generatePlanet(scene, PLANET_RADIUS = 15, count = 8) {
+    generatePlanet(scene, PLANET_RADIUS = 15, count = 8, mundo = null) {
         const planetGroup = new THREE.Group();
         scene.add(planetGroup);
 
@@ -258,7 +258,8 @@ export class RaccoonEnvironmentFactory {
 
         // Settlements
         const settlements = [];
-        const targetSettlementIdx = Math.floor(this.rng.next() * count);
+        const targetSettlementIdx = mundo ? mundo.objetivo : Math.floor(this.rng.next() * count);
+        if (mundo) count = mundo.planetas.length;
         
         for (let i = 0; i < count; i++) {
             const phi = Math.acos(1 - 2 * (i + 0.5) / count);
@@ -266,9 +267,21 @@ export class RaccoonEnvironmentFactory {
             const jPhi = phi + (this.rng.next() - 0.5) * 0.3;
             const jTheta = theta + (this.rng.next() - 0.5) * 0.3;
             
-            const x = PLANET_RADIUS * Math.sin(jPhi) * Math.cos(jTheta);
-            const y = PLANET_RADIUS * Math.cos(jPhi);
-            const z = PLANET_RADIUS * Math.sin(jPhi) * Math.sin(jTheta);
+            /**
+             * ⚠️ CON `mundo`, LAS CIUDADES VAN DONDE DICE EL NÚCLEO.
+             *
+             * El núcleo las reparte por la esfera con una espiral de Fibonacci
+             * —la misma idea que la de aquí arriba— pero a la escala de SU tanque,
+             * no a la del radio de este planeta. Se normaliza y se vuelve a
+             * multiplicar por el radio de dibujo: así la geometría del juego y la
+             * del modelo son la misma, aunque el planeta se pinte más grande o más
+             * pequeño.
+             */
+            const dado = mundo ? mundo.planetas[i] : null;
+            const dn = dado ? Math.hypot(dado.x, dado.y, dado.z) || 1 : 1;
+            const x = dado ? PLANET_RADIUS * dado.x / dn : PLANET_RADIUS * Math.sin(jPhi) * Math.cos(jTheta);
+            const y = dado ? PLANET_RADIUS * dado.y / dn : PLANET_RADIUS * Math.cos(jPhi);
+            const z = dado ? PLANET_RADIUS * dado.z / dn : PLANET_RADIUS * Math.sin(jPhi) * Math.sin(jTheta);
             
             const cityGroup = new THREE.Group();
             cityGroup.position.set(x, y, z);
@@ -329,9 +342,10 @@ export class RaccoonEnvironmentFactory {
         return satellite;
     }
 
-    generateCity(scene, CITY_RADIUS = 80, count = 12) {
+    generateCity(scene, CITY_RADIUS = 80, count = 12, mundo = null) {
         const buildings = [];
-        const targetBuildingIdx = Math.floor(this.rng.next() * count);
+        const targetBuildingIdx = mundo ? mundo.objetivo : Math.floor(this.rng.next() * count);
+        if (mundo) count = mundo.planetas.length;
         let targetMarker = null;
 
         const cols = Math.ceil(Math.sqrt(count));
@@ -341,8 +355,19 @@ export class RaccoonEnvironmentFactory {
             const col = i % cols;
             const row = Math.floor(i / cols);
             
-            const x = -CITY_RADIUS + spacing * (col + 1) + (this.rng.next() - 0.5) * spacing * 0.3;
-            const z = -CITY_RADIUS + spacing * (row + 1) + (this.rng.next() - 0.5) * spacing * 0.3;
+            /**
+             * ⚠️ CON `mundo`, LAS POSICIONES LAS PONE EL NÚCLEO.
+             *
+             * Igual que en `generateSpace`: esta factoría deja de decidir dónde
+             * están las cosas y sólo las dibuja. El núcleo coloca los objetivos en
+             * REJILLA —que es la forma de una ciudad, y por eso `forma: 'rejilla'`
+             * existe— y aquí se pintan donde él dice. Sin `mundo`, como siempre.
+             */
+            const dado = mundo ? mundo.planetas[i] : null;
+            const x = dado ? dado.x
+                : -CITY_RADIUS + spacing * (col + 1) + (this.rng.next() - 0.5) * spacing * 0.3;
+            const z = dado ? dado.z
+                : -CITY_RADIUS + spacing * (row + 1) + (this.rng.next() - 0.5) * spacing * 0.3;
             const height = 8 + this.rng.next() * 30;
             const width = 5 + this.rng.next() * 6;
             const depth = 5 + this.rng.next() * 6;
