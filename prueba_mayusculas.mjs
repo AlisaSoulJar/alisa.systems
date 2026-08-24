@@ -132,22 +132,23 @@ for (const f of ficheros(RAIZ)) {
  * pasaron de `*Engine.js` a `*System.js` y sus importadores se quedaron atrás—
  * y se arreglaron apuntándolos al sitio real.
  *
- * ⚠️ EL SEXTO ES UNA PREGUNTA DE FRONTERA, NO UN FALLO.
+ * ⚠️ EL SEXTO ERA UNA PREGUNTA DE FRONTERA, Y SE RESOLVIÓ ABSORBIÉNDOLO.
  *
- * `public/js/psyche.js` importa `AlisaAgentBridge.js`, que existe en
- * `colonia_privada/` y NO viaja al paquete. La cadena entera —`alisa.js` →
- * `psyche.js` → el puente que falta— no la carga ninguna página, así que hoy no
- * rompe nada; pero es código de la colonia privada publicado en el paquete
- * abierto. Decidir si se borra o se completa es de quien lleva la frontera, no
- * de esta prueba.
+ * `public/js/psyche.js` importaba `AlisaAgentBridge.js`, que vive en
+ * `colonia_privada/` y hace `fetch` a `localhost:8741` — la reina de una colonia
+ * que quien se descargue esto no tiene. Con eso, **la cadena entera del Ser no
+ * cargaba**: `alisa.js` → `psyche.js` → un módulo que no está. `SovereignBeing`
+ * —el cerebro triúnico— estaba publicado y roto, y no se notaba porque ninguna
+ * página lo carga.
  *
- * Se declara con nombre y motivo. Lo que no vale es que crezca en silencio.
+ * No se copió el puente al paquete abierto: se INVIRTIÓ la dependencia. El
+ * Neocórtex recibe su `puente` como el resto de la casa recibe `config.rng`. La
+ * colonia privada le pasa el suyo; el paquete abierto funciona en T0 sin puente.
+ *
+ * Ya no hay nada declarado, y ése es el estado bueno: una lista de excepciones
+ * vacía es lo que hay que perseguir, no una lista bien escrita.
  */
-const DECLARADOS = {
-    'public\\js\\psyche.js':
-        'importa AlisaAgentBridge.js, que vive en colonia_privada y no viaja al '
-      + 'paquete. Cadena muerta: ninguna página la carga. Es una decisión de frontera.',
-};
+const DECLARADOS = {};
 const TECHO_PUBLICO = Object.keys(DECLARADOS).length;
 
 console.log('');
