@@ -217,3 +217,63 @@ Y todos comparten la misma trampa de diagnóstico: **una excepción temprana se
 come el resto de la función, y el síntoma aparece lejos de la causa.** Por eso
 "0 errores en consola" no basta — hay que comprobar también que el resultado
 esté donde debe (¿tiene padre el grupo? ¿hay mallas en la escena?).
+
+---
+
+## 2026-08-24 — La escalera de ¡Busca!, medida por fin
+
+De las seis etapas de ¡Busca!, **sólo tres estaban en el banco** (Cabinet, Corp y
+Espacio). Las otras se jugaban y no se medían, así que el orden de dificultad era
+una afirmación y no una medida.
+
+### Las tres etapas del mapache son el MISMO juego a tres escalas
+
+Medido comparando las tres páginas: mismo marcador —`fuel + restantes × bonus`—
+y misma mecánica —moverse con presupuesto, escanear, encontrar—.
+
+```
+ciudad   RaccoonCitySystem   (3 KB) · 12 edificios · escanear -5 · bonus x10
+planeta  RaccoonPlanetSystem (1 KB) ·  8 ciudades  · escanear -8 · bonus x15
+espacio  RaccoonSpaceSystem  (4 KB) ·  6 planetas  ·              · bonus x20
+```
+
+Los dos primeros son **cascarones de dibujo**: la lógica del juego vive en el
+HTML. `RaccoonSpaceCore` (12 KB), en cambio, tiene el juego entero, es headless y
+va sembrado. Así que las dos etapas que faltaban no son dos entornos nuevos: son
+**ése con otros números y otro sustantivo**.
+
+### La escalera bajaba en el medio, y ahora sube
+
+Este documento sospechaba una inversión contando escondites (1,71 / 0,60 / 0,64).
+Se ha medido lo que de verdad define una escalera: **cuántas veces gana un piloto
+competente**, con 60 semillas por escala (`calibrar_busca.mjs`).
+
+| etapa | antes | ahora |
+|---|---|---|
+| ¡Busca! 4 ciudad | 70 % | **82 %** |
+| ¡Busca! 5 planeta | 83 % ← más fácil que la 4 | **60 %** |
+| ¡Busca! 6 espacio | 45 % | **43 %** |
+
+Y fíjate en lo que enseña el barrido: **menos objetivos es más difícil**. Lo que
+cuesta no es escanear, es *llegar*. La dificultad de esta saga es de presupuesto y
+de distancia, no de cuántas cosas hay que mirar.
+
+⚠️ **Y ninguna partida empieza ya resuelta.** La nave arrancaba siempre en el
+(0,0,0), así que en la escala pequeña **22 de cada 40 partidas** tenían un
+objetivo dentro del alcance del escáner antes de tocar nada: el primer escaneo
+salía gratis. Es la trampa de sokoban con otra ropa —allí la semilla del banco
+caía en el nivel tutorial—. Ahora la nave busca un sitio despejado con el mismo
+azar sembrado, y son **0 de 60** en las tres escalas.
+
+### Lo que sigue sin estar
+
+`prueba_sagas.mjs` lo vigila y lo dice en cada pasada:
+
+- **Cuatro etapas corren dos motores**: una implementación para la persona y otra
+  para el banco. En Espacio no es un matiz de nombres —combustible 100 contra 32,
+  y marcadores distintos—, así que la nota de una persona y la de un agente **no
+  miden la misma partida**. Unir las páginas al núcleo es el trabajo siguiente, y
+  hasta que se haga está declarado en vez de escondido: medir mal a alguien es
+  peor que no medirlo.
+- **Dos etapas se juegan y no se miden**: ¡Busca! 2 (Registro de Planta) y
+  ¡Sobrevive! 1 (Interaction Lab).

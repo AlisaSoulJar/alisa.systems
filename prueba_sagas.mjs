@@ -54,6 +54,10 @@ const EN_EL_BANCO = [
       env: 'public/js/alisa-engine/src/gym/envs/CabinetEscapeEnv.js' },
     { etapa: '¡Busca! 3 Corp Building', pagina: 'public/games/croupier_corporate_building.html',
       env: 'public/js/alisa-engine/src/gym/envs/CorpBuildingEnv.js' },
+    { etapa: '¡Busca! 4 City Sector', pagina: 'public/games/raccoon_city_sector.html',
+      env: 'public/js/alisa-engine/src/gym/envs/RaccoonSpaceEnv.js' },
+    { etapa: '¡Busca! 5 Planeta', pagina: 'public/games/raccoon_planet.html',
+      env: 'public/js/alisa-engine/src/gym/envs/RaccoonSpaceEnv.js' },
     { etapa: '¡Busca! 6 Espacio', pagina: 'public/games/raccoon_space.html',
       env: 'public/js/alisa-engine/src/gym/envs/RaccoonSpaceEnv.js' },
     { etapa: '¡Sobrevive! 2 Acuario', pagina: 'public/labs/croupier_chopper_aquarium.html',
@@ -71,13 +75,30 @@ const PARTIDAS = {
     '¡Busca! 6 Espacio':
         'persona RaccoonSpaceSystem (combustible 100, escanear -10, nota fuel+restantes×20) · '
       + 'banco RaccoonSpaceCore (combustible 32, +500 encontrar, +20 descartar)',
+    /**
+     * ⚠️ ESTAS DOS ENTRARON AL BANCO EL 24-08 Y ENTRARON PARTIDAS, A SABIENDAS.
+     *
+     * Antes ni siquiera se medían: una persona las jugaba y el banco no podía
+     * puntuar a nadie en ellas, así que la escalera de ¡Busca! era una afirmación.
+     * Ahora se miden con `RaccoonSpaceCore` —el mismo juego a otra escala,
+     * calibrado— y sus páginas siguen con `RaccoonCitySystem` y
+     * `RaccoonPlanetSystem`, que son cascarones de 3 KB y 1 KB con la lógica
+     * repartida por el HTML.
+     *
+     * Se declara en vez de esconderse: **medir mal a alguien es peor que no
+     * medirlo**, y decir que ¡Busca! 4 está en el banco sin decir que la persona
+     * juega otra implementación sería exactamente eso. Unir las páginas al núcleo
+     * es el trabajo siguiente, y hasta que se haga estas dos líneas son la verdad.
+     */
+    '¡Busca! 4 City Sector':
+        'persona RaccoonCitySystem (3 KB, la lógica en el HTML) · banco RaccoonSpaceCore a escala ciudad',
+    '¡Busca! 5 Planeta':
+        'persona RaccoonPlanetSystem (1 KB, la lógica en el HTML) · banco RaccoonSpaceCore a escala planeta',
 };
 
 /** Las etapas que una persona puede jugar y el banco no puede medir. */
 const SIN_ENTORNO = {
     '¡Busca! 2 Registro de Planta': 'games/raccoon_floor_search.html — sin entorno de gym',
-    '¡Busca! 4 City Sector':        'games/raccoon_city_sector.html — sin entorno de gym',
-    '¡Busca! 5 Planeta':            'games/raccoon_planet.html — sin entorno de gym',
     '¡Sobrevive! 1 Interaction Lab':'labs/croupier_interaction_lab.html — sin entorno de gym',
 };
 

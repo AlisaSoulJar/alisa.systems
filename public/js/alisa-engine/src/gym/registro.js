@@ -167,6 +167,15 @@ const PROPIOS = [
     { id: 'alisa/CabinetEscape-v0', titulo: 'Cabinet Escape', fichero: 'CabinetEscapeEnv.js' },
     { id: 'alisa/Marabunta-v0',    titulo: 'Marabunta',    fichero: 'MarabuntaEnv.js' },
     { id: 'alisa/RaccoonSpace-v0',  titulo: 'Interestelar',   fichero: 'RaccoonSpaceEnv.js' },
+    /**
+     * Las dos etapas de ¡Busca! que se jugaban y no se medían. Viven en el mismo
+     * fichero que la sexta porque son el MISMO juego a otra escala —mismo
+     * marcador, misma mecánica, otros números y otro sustantivo— y no dos
+     * entornos nuevos. La escalera que forman está medida en `calibrar_busca.mjs`:
+     * 82% · 60% · 43% de victorias con un piloto competente, en ese orden.
+     */
+    { id: 'alisa/RaccoonCity-v0',   titulo: 'Sector de ciudad', fichero: 'RaccoonSpaceEnv.js' },
+    { id: 'alisa/RaccoonPlanet-v0', titulo: 'Planeta',        fichero: 'RaccoonSpaceEnv.js' },
     { id: 'alisa/CorpBuilding-v0', titulo: 'Corp Building', fichero: 'CorpBuildingEnv.js' },
     // El primero cuyo MUNDO sale de la semilla, no sólo el azar dentro del
     // mundo. Ver la cabecera de su fichero: es la casilla que no ocupa nadie.
@@ -181,9 +190,21 @@ export const CATALOGO = [
         familia: 'propio',
         async cargar() {
             const mod = await import(`./envs/${e.fichero}`);
-            // Los entornos propios exportan una clase; su nombre no siempre
-            // coincide con el fichero, así que se coge la primera que lo sea.
-            return Object.values(mod).find(v => typeof v === 'function' && v.id);
+            const clases = Object.values(mod).filter(v => typeof v === 'function' && v.id);
+            /**
+             * ⚠️ LA QUE COINCIDE, NO LA PRIMERA. Y ANTES ERA LA PRIMERA.
+             *
+             * Valía mientras cada fichero tuviera UN entorno. Desde que ¡Busca! 4
+             * y 5 viven en `RaccoonSpaceEnv.js` —son el mismo juego a otra escala,
+             * y copiarlo tres veces habría creado tres verdades— ese fichero
+             * exporta tres clases con `id`. Con «la primera», pedir la ciudad
+             * devolvía el espacio: el catálogo diría un nombre y jugarías otro,
+             * sin un solo error.
+             *
+             * Se deja el respaldo a la primera para los que exportan una sola con
+             * el nombre cambiado, que es de donde venía la regla.
+             */
+            return clases.find(v => v.id === e.id) ?? clases[0];
         },
     })),
     ...PROTOHUB.map(g => ({

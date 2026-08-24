@@ -110,6 +110,43 @@ export class RaccoonSpaceCore {
 
         // El mapache está en uno, y solo lo sabe el mundo.
         this.planetaDelMapache = Math.floor(rnd() * this.nPlanetas);
+
+        /**
+         * ═══════════════════════════════════════════════════════════════════
+         *  ⚠️ NINGUNA PARTIDA EMPIEZA RESUELTA. Y MUCHAS EMPEZABAN ASÍ.
+         * ═══════════════════════════════════════════════════════════════════
+         *
+         * La nave arrancaba SIEMPRE en el (0,0,0) y los objetivos se reparten al
+         * azar por el cubo. En un sitio pequeño eso significa que a menudo hay uno
+         * ya dentro del alcance del escáner —`r + 25`— antes de tocar nada: el
+         * primer `escanear` sale gratis y la etapa se juega sin moverse.
+         *
+         * Medido el 24-08 al calibrar la escalera de ¡Busca!, con 40 semillas:
+         *
+         *     ciudad  (tanque 160)   22 de 40 partidas empezaban con uno a tiro
+         *     planeta (tanque 260)    3 de 40
+         *     espacio (tanque 400)    0 de 40
+         *
+         * O sea que la etapa más pequeña regalaba la primera jugada en más de la
+         * mitad de sus instancias. Es exactamente la trampa de sokoban con otra
+         * ropa: allí la semilla del banco caía en el nivel tutorial de una jugada,
+         * y aquí el tamaño del sitio hace que el tutorial salga solo.
+         *
+         * Se arregla moviendo la NAVE, no los objetivos: mover objetivos cambiaría
+         * el reparto del mundo y con él la dificultad. Se prueban sitios de salida
+         * hasta encontrar uno despejado, con el mismo `rnd()` sembrado, así que la
+         * partida sigue siendo la misma para la misma semilla.
+         *
+         * ⚠️ Y SI NO ENCUENTRA SITIO, SE QUEDA DONDE ESTÉ Y NO MIENTE. Un mundo
+         * tan lleno que no tenga un hueco despejado es un mundo mal configurado, y
+         * es mejor que se note jugando que taparlo con un bucle infinito.
+         */
+        for (let intento = 0; intento < 40 && this.planetaCerca(); intento++) {
+            this.nave.x = enRango();
+            this.nave.y = enRango();
+            this.nave.z = enRango();
+        }
+
         return this.observacion();
     }
 

@@ -48,10 +48,48 @@ export class RaccoonSpaceEnv extends GymEnv {
         tags: ['busqueda', 'presupuesto', 'exploracion', '3d', 'discreto'],
     };
 
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  ⚠️ ¡BUSCA! 4, 5 Y 6 SON EL MISMO JUEGO A TRES ESCALAS. MEDIDO.
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Las tres páginas tienen el MISMO marcador —`fuel + (restantes) × bonus`— y
+     * la misma mecánica: moverse con un presupuesto, escanear, encontrar. Sólo
+     * cambia el tamaño del sitio, cuántos objetivos hay y cómo se llaman:
+     *
+     *     ciudad   RaccoonCitySystem   · 12 edificios · escanear -5  · bonus ×10
+     *     planeta  RaccoonPlanetSystem ·  8 ciudades  · escanear -8  · bonus ×15
+     *     espacio  RaccoonSpaceSystem  ·  6 planetas  ·              · bonus ×20
+     *
+     * Y `RaccoonCitySystem` pesa 3 KB y `RaccoonPlanetSystem` 1 KB: son cascarones
+     * de dibujo, la lógica del juego vive en las páginas. Este núcleo, en cambio,
+     * tiene el juego entero, es headless y va sembrado.
+     *
+     * Así que las dos etapas que faltaban en el banco NO son dos entornos nuevos:
+     * son ESTE con otros números y otro sustantivo. Escribir dos copias de 138
+     * líneas habría creado dos verdades más sobre el mismo juego, que es la avería
+     * que este proyecto lleva toda la semana pagando.
+     *
+     * `ajustes` son los números de la escala; `objetivo` es cómo se llama lo que
+     * buscas, que importa porque la puerta de lenguaje se lee en voz alta y
+     * «escanea el planeta» en una ciudad es una descripción falsa.
+     */
+    /**
+     * ⚠️ Y EL GÉNERO ESTÁ AQUÍ PORQUE LA PUERTA DE LENGUAJE SE LEE.
+     *
+     * La primera versión sólo tenía singular y plural, y el planeta salía con
+     * «No hay **ningún ciudad** al alcance. **El ciudad** sin escanear más
+     * cercano…». Un modelo leyendo eso está leyendo un texto mal escrito, y este
+     * banco compara justamente lo que cada puerta entrega: si la de lenguaje
+     * entrega castellano roto, la comparación tiene un sesgo que no es del juego.
+     */
+    static ajustes = {};
+    static objetivo = { uno: 'planeta', varios: 'planetas', el: 'El', un: 'un', ningun: 'ningún' };
+
     constructor(opts = {}) {
         super(opts);
-        this.opts = opts;
-        this.sys = new RaccoonSpaceCore(opts);
+        this.opts = { ...new.target.ajustes, ...opts };
+        this.sys = new RaccoonSpaceCore(this.opts);
     }
 
     reset(seed = 0) {
@@ -73,19 +111,20 @@ export class RaccoonSpaceEnv extends GymEnv {
 
     describe() {
         const s = this.sys;
+        const { uno, varios, el, un, ningun } = this.constructor.objetivo;
         const i = s.info();
         const pct = Math.round(100 * s.combustible / (s.combustibleInicial || 1));
         const partes = [
             `Combustible al ${pct}% (${Math.round(s.combustible)} de ${s.combustibleInicial}).`,
-            `Has escaneado ${i.escaneados} de ${i.total} planetas.`,
+            `Has escaneado ${i.escaneados} de ${i.total} ${varios}.`,
         ];
 
         const p = s.planetaCerca();
         partes.push(p
             ? (p.escaneado
-                ? 'Tienes un planeta al alcance, pero ya lo escaneaste.'
-                : 'Tienes un planeta SIN ESCANEAR al alcance del escáner.')
-            : 'No hay ningún planeta al alcance.');
+                ? `Tienes ${un} ${uno} al alcance, pero ya lo escaneaste.`
+                : `Tienes ${un} ${uno} SIN ESCANEAR al alcance del escáner.`)
+            : `No hay ${ningun} ${uno} al alcance.`);
 
         // Al piloto se le dice hacia dónde queda el más próximo, no dónde está
         // el mapache: la gracia del entorno es que esa parte no se sabe.
@@ -98,7 +137,17 @@ export class RaccoonSpaceEnv extends GymEnv {
             const dir = [];
             if (Math.abs(cerca.o.x - n.x) > 20) dir.push(cerca.o.x > n.x ? 'a estribor' : 'a babor');
             if (Math.abs(cerca.o.y - n.y) > 20) dir.push(cerca.o.y > n.y ? 'arriba' : 'abajo');
-            partes.push(`El planeta sin escanear más cercano está a ${Math.round(cerca.d)} unidades${dir.length ? ', ' + dir.join(' y ') : ''}.`);
+            /**
+             * ⚠️ SIN ADJETIVO, PARA NO ARRASTRAR MÁS GRAMÁTICA.
+             * Con «${el} ${uno} más cercano» salía «La ciudad más CERCANO»: el
+             * artículo ya concordaba y el adjetivo no. Cada palabra que concuerde
+             * es un campo más que mantener en tres sitios, así que la frase se
+             * escribe de forma que no dependa del género. Un texto que un modelo
+             * lee en voz alta tiene que estar bien escrito, y la manera barata de
+             * conseguirlo es no escribir la parte difícil.
+             */
+            partes.push(`Lo más cerca que tienes sin escanear está a ${Math.round(cerca.d)} unidades`
+                      + `${dir.length ? ', ' + dir.join(' y ') : ''}.`);
         }
 
         const astCerca = s.asteroides
@@ -129,10 +178,62 @@ export class RaccoonSpaceEnv extends GymEnv {
         // enseñaría al agente a malgastar, y penalizarlo después sería tramposo.
         const p = s.planetaCerca();
         if (p && !p.escaneado) {
-            lista.unshift({ verb: 'escanear', args: {}, desc: 'Escanear el planeta que tienes al alcance' });
+            lista.unshift({ verb: 'escanear', args: {},
+                            desc: `Escanear el ${this.constructor.objetivo.uno} que tienes al alcance` });
         }
         return lista;
     }
+}
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ¡BUSCA! 4 Y 5 — LAS DOS ETAPAS QUE SE JUGABAN Y NO SE MEDÍAN
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Hasta el 24-08 la saga estaba medida a la mitad: de sus seis etapas, sólo tres
+ * tenían entorno —Cabinet, Corp y Espacio—. Una persona podía jugar el sector de
+ * ciudad y el planeta, y el banco no podía puntuar a nadie en ellos, así que la
+ * escalera de dificultad era una afirmación y no una medida.
+ *
+ * ⚠️ Y LOS NÚMEROS SALEN DE UN BARRIDO, CON UN JUGADOR COMPETENTE.
+ *
+ * `calibrar_busca.mjs` mide lo único que define una escalera: cuántas veces gana
+ * un piloto que sabe jugar. Antes de calibrar, la escalera BAJABA en el medio —el
+ * planeta se ganaba más que la ciudad—, que es justo lo que `ESTADO_SAGAS.md`
+ * sospechaba contando escondites. Con estos números, medido sobre 60 semillas:
+ *
+ *     ¡Busca! 4 ciudad     82% de victorias
+ *     ¡Busca! 5 planeta    60%
+ *     ¡Busca! 6 espacio    43%
+ *
+ * Y cero partidas que empiecen con un objetivo ya al alcance, que era el otro
+ * fallo: en la escala pequeña, 22 de cada 40 se resolvían sin moverse.
+ */
+export class RaccoonCityEnv extends RaccoonSpaceEnv {
+    static id = 'alisa/RaccoonCity-v0';
+    static objetivo = { uno: 'edificio', varios: 'edificios', el: 'El', un: 'un', ningun: 'ningún' };
+    static ajustes = { tankSize: 180, planets: 12, asteroids: 8, fuel: 42, tope: 3000 };
+    static meta = {
+        title: '¡Busca! 4 — Sector de ciudad',
+        summary: 'Encuentra el edificio donde se esconde el mapache antes de quedarte sin '
+               + 'combustible. Doce edificios juntos: llegar es barato, pero hay muchos que mirar.',
+        horizon: 3000,
+        tags: ['busqueda', 'presupuesto', 'exploracion', '3d', 'discreto'],
+    };
+}
+
+export class RaccoonPlanetEnv extends RaccoonSpaceEnv {
+    static id = 'alisa/RaccoonPlanet-v0';
+    static objetivo = { uno: 'ciudad', varios: 'ciudades', el: 'La', un: 'una', ningun: 'ninguna' };
+    static ajustes = { tankSize: 260, planets: 8, asteroids: 14, fuel: 28, tope: 3600 };
+    static meta = {
+        title: '¡Busca! 5 — Planeta',
+        summary: 'Encuentra la ciudad donde se esconde el mapache antes de quedarte sin '
+               + 'combustible. Menos sitios que mirar que en el sector, y mucho más lejos '
+               + 'unos de otros: aquí lo que cuesta es llegar.',
+        horizon: 3600,
+        tags: ['busqueda', 'presupuesto', 'exploracion', '3d', 'discreto'],
+    };
 }
 
 export default RaccoonSpaceEnv;
