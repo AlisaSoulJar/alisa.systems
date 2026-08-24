@@ -33,29 +33,65 @@ const SEMILLAS = Number(process.argv[2]) || 40;
 /**
  * ⚠️ ESTOS NÚMEROS SALEN DE UN BARRIDO, NO DE LA INTUICIÓN.
  *
- * Se midió tanque × combustible con el piloto de abajo, y la relación es limpia y
- * monótona: sitio más grande = más difícil, más combustible = más fácil. Con eso
- * se eligieron los dos escalones nuevos para que la escalera SUBA:
+ * Se midió tanque × combustible con el piloto de abajo. La relación es limpia:
+ * más combustible = más fácil, y con pocos objetivos el tamaño del sitio manda.
  *
- *     ciudad   tanque 180 · 12 objetivos · combustible 42   →  ~82% de victorias
- *     planeta  tanque 260 ·  8 objetivos · combustible 28   →  ~60%
- *     espacio  tanque 400 ·  6 objetivos · combustible 32   →  ~45%
+ *     ciudad   tanque 180 · 12 objetivos · combustible 30   →  ~91% de victorias
+ *     planeta  tanque 320 ·  8 objetivos · combustible 22   →  ~70%
+ *     espacio  tanque 400 ·  6 objetivos · combustible 24   →  ~52%
  *
- * El espacio NO se toca: es la configuración que ya está en el banco como
- * `alisa/RaccoonSpace-v0`, y cambiarla invalidaría lo medido con ella.
+ * ⚠️ Y LA CIUDAD SATURA: con doce objetivos gana el 91-95% haga lo que haga el
+ * tanque. No es un fallo — es el escalón fácil, y para la etapa 4 está bien que
+ * lo sea. Lo que no vale es fingir que se puede afinar.
  *
- * Fíjate en que MENOS objetivos es más difícil aquí, al revés de lo que parece:
- * lo que cuesta no es escanear, es LLEGAR, y con seis planetas repartidos por un
- * cubo de 400 cada viaje es largo. La dificultad de esta saga es de presupuesto y
- * de distancia, no de cuántas cosas hay que mirar.
+ * ⚠️ EL ESPACIO SÍ SE RETOCA, Y HAY QUE DECIR POR QUÉ. Su configuración estaba
+ * en el banco con combustible 32, pero al meter la PISTA en el núcleo —que la
+ * persona tenía y el agente no— la etapa pasó de ganarse el 43% a ganarse el
+ * 71%. No es la misma dificultad con otro número: es que antes se medía otro
+ * juego. Con 24 vuelve al 52%, que deja los tres escalones separados de verdad.
+ *
+ * Antes de esto, 70% y 67% se daban por dos escalones distintos y con 60
+ * semillas eso está DENTRO DEL RUIDO: no eran dos, era uno contado dos veces.
  */
 const ESCALAS = [
-    ['¡Busca! 4 ciudad',  { tankSize: 180, planets: 12, asteroids: 8,  fuel: 42, tope: 3000 }],
-    ['¡Busca! 5 planeta', { tankSize: 260, planets: 8,  asteroids: 14, fuel: 28, tope: 3600 }],
-    ['¡Busca! 6 espacio', { tankSize: 400, planets: 6,  asteroids: 30, fuel: 32, tope: 5400 }],
+    ['¡Busca! 4 ciudad',  { tankSize: 180, planets: 12, asteroids: 8,  fuel: 30, tope: 3000 }],
+    ['¡Busca! 5 planeta', { tankSize: 320, planets: 8,  asteroids: 14, fuel: 22, tope: 3600 }],
+    ['¡Busca! 6 espacio', { tankSize: 400, planets: 6,  asteroids: 30, fuel: 24, tope: 5400 }],
 ];
 
-/** El piloto: apunta al objetivo sin escanear más cercano, empuja, y escanea. */
+/**
+ * ⚠️ Y EL PILOTO USA LAS PISTAS, PORQUE SI NO CALIBRA OTRO JUEGO.
+ *
+ * Al escanear un objetivo equivocado, el escáner dice cómo de cerca estaba del
+ * bueno —caliente, templado, fresco, frío, helado—. Eso no es adorno: es la
+ * estrategia entera. Un piloto que va siempre al más cercano y no mira las
+ * pistas está jugando a un recorrido a ciegas, y calibrar la escalera con él
+ * daría los números de un juego que nadie juega.
+ *
+ * Este piloto puntúa cada objetivo sin escanear por lo bien que encaja con TODO
+ * lo que ha dicho el escáner: si el 3 salió «caliente», los candidatos lejos del
+ * 3 son malos. No es óptimo —no hace la intersección exacta de las bandas— pero
+ * usa la información, que es lo que separa este juego del anterior.
+ */
+const CENTROS = { caliente: 0.30, templado: 0.50, fresco: 0.65, frío: 0.79, helado: 0.94 };
+
+function candidatoMasCoherente(core, sinEscanear) {
+    const pistas = core.pistas();
+    if (!pistas.length) return null;
+    let mejor = null, mejorError = Infinity;
+    for (const c of sinEscanear) {
+        let error = 0;
+        for (const { i, banda } of pistas) {
+            const p = core.planetas[i];
+            const d = Math.hypot(c.x - p.x, c.y - p.y, c.z - p.z) / core.tanque;
+            error += Math.abs(d - (CENTROS[banda] ?? 0.7));
+        }
+        if (error < mejorError) { mejorError = error; mejor = c; }
+    }
+    return mejor;
+}
+
+/** El piloto: escanea lo que tiene a tiro y, si no, va al candidato más coherente. */
 function pilotar(core) {
     let pasos = 0;
     for (let i = 0; i < core.tope; i++) {
@@ -66,9 +102,10 @@ function pilotar(core) {
         if (cerca && !cerca.escaneado) {
             verbo = 'escanear';
         } else {
-            const objetivo = core.planetas.filter(p => !p.escaneado)
-                .sort((a, b) => Math.hypot(a.x - n.x, a.y - n.y, a.z - n.z)
-                              - Math.hypot(b.x - n.x, b.y - n.y, b.z - n.z))[0];
+            const sinEscanear = core.planetas.filter(p => !p.escaneado);
+            const objetivo = candidatoMasCoherente(core, sinEscanear)
+                ?? sinEscanear.sort((a, b) => Math.hypot(a.x - n.x, a.y - n.y, a.z - n.z)
+                                            - Math.hypot(b.x - n.x, b.y - n.y, b.z - n.z))[0];
             if (!objetivo) break;
             const dx = objetivo.x - n.x, dy = objetivo.y - n.y, dz = objetivo.z - n.z;
             const rumbo = Math.atan2(-dx, -dz);

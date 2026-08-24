@@ -58,6 +58,51 @@ import { CATALOGO } from './public/js/alisa-engine/src/gym/registro.js';
 const NO_SEPARAN = {
     'alisa/guerra-protohub-v0':
         'juego de CONTROL: la única jugada es voltear. No hay nada que decidir, y eso es su razón de ser',
+    /**
+     * ⚠️ LAS TRES DEL MAPACHE: TIENEN SEÑAL POR ENCIMA DE UN UMBRAL, Y DEBAJO NO.
+     *
+     * `RaccoonSpace` entró aquí el 23-08, salió el 24-08 por la mañana y ha
+     * vuelto por la tarde, y las tres veces por un motivo distinto. Vale la pena
+     * contarlo porque es el mejor ejemplo de lo fácil que es confundir «este
+     * entorno no mide» con «mi sonda no sabe jugar»:
+     *
+     *   1. Entró con tres sondas tontas y 150 pasos: no separaba.
+     *   2. Salió al medirlo con su horizonte real y un bandido: separaba.
+     *   3. Ha vuelto, y esta vez de verdad.
+     *
+     * Lo que pasó en medio: se metió la PISTA en el núcleo —la que la persona
+     * tenía en la página y el agente no— y con ella la etapa se ganaba el 71% en
+     * vez del 43%. Al recalibrar el combustible para que la escalera de ¡Busca!
+     * subiera de verdad, el margen se estrechó y las siete políticas pasaron a
+     * morir todas sin escanear.
+     *
+     * ⚠️ Y AQUÍ EL BANDIDO NO APRENDE: APRENDE AL REVÉS. Medido, da la MISMA nota
+     * con cualquier semilla y con cualquier número de objetivos —-42 con
+     * combustible 32, -142 con 28— porque descubre que `escanear` cuesta -1
+     * cuando no hay nada a tiro y deja de intentarlo para siempre. Su nota
+     * depende sólo de cuánto tarda en morir.
+     *
+     * Se podría «arreglar» dando recompensa por acercarse. Sería cambiar el juego
+     * para contentar al instrumento: la persona tampoco cobra por acercarse, y
+     * las dos puertas volverían a jugar a cosas distintas, que es justo lo que se
+     * acaba de arreglar. Así que se declara y no se toca.
+     *
+     * Lo que sí se dice, porque es verdad y es medible: con un piloto competente
+     * los tres separan perfectamente. No están rotos: son difíciles.
+     */
+    'alisa/RaccoonSpace-v0':
+        'la recompensa está detrás de NAVEGAR y ninguna política ciega llega a escanear. '
+      + 'Con el piloto de `calibrar_busca.mjs` gana el 52% de las partidas',
+    /**
+     * ⚠️ Y AQUÍ DECLARÉ DE MÁS: metí también a `RaccoonCity` y `RaccoonPlanet`
+     * dando por hecho que si el hermano grande no separa, los pequeños tampoco.
+     * La prueba lo cantó en la pasada siguiente —«ya separan y siguen
+     * declarados»— y tenía razón: en un sitio pequeño y con doce objetivos, una
+     * política ciega SÍ tropieza con algo que escanear de vez en cuando.
+     *
+     * Declarar de más es tan malo como declarar de menos: una lista de
+     * excepciones con nombres que no hacen falta deja de leerse.
+     */
 };
 /**
  * ⚠️ `sokoban` TAMBIÉN ESTUVO AQUÍ, Y TAMBIÉN ERA MENTIRA MÍA.

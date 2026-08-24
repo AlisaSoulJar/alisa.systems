@@ -192,6 +192,56 @@ for (const [etapa, nota] of Object.entries(SIN_ENTORNO)) {
     if (!hay) fallos.push(`${etapa}: la página ${fichero} tampoco existe`);
 }
 
+/**
+ * ⚠️ Y LA PISTA TIENE QUE LLEGAR A LAS TRES PUERTAS, NO A UNA.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * El fallo que esto vigila es el que se encontró el 24-08 al ir a unir Espacio:
+ * `raccoon_space.html` le decía a la persona «🟢 HOT (37 LY away)» al descartar
+ * un objetivo, y el núcleo del banco no le decía nada al agente. Con eso, la
+ * persona jugaba a una DEDUCCIÓN y el agente a un recorrido a ciegas.
+ *
+ * Y no basta con que el dato exista: tiene que salir por cada puerta. Si sólo
+ * llega al texto, la política numérica sigue jugando al juego de antes; si sólo
+ * llega a los números, el modelo de lenguaje sigue a ciegas. Una puerta que se
+ * queda sin una parte del estado es una comparación con trampa.
+ */
+{
+    const { CATALOGO } = await import('./public/js/alisa-engine/src/gym/registro.js');
+    const cargar = Object.fromEntries(CATALOGO.map(e => [e.id, e.cargar]));
+    for (const id of ['alisa/RaccoonCity-v0', 'alisa/RaccoonPlanet-v0', 'alisa/RaccoonSpace-v0']) {
+        const Clase = await cargar[id]();
+        const env = new Clase();
+        env.reset(1234);
+        // Se descartan dos objetivos a mano, que es lo que genera pistas.
+        for (let k = 0; k < 2; k++) {
+            const p = env.sys.planetas.filter(x => !x.escaneado && env.sys.planetas.indexOf(x) !== env.sys.planetaDelMapache)[0];
+            if (!p) break;
+            env.sys.nave.x = p.x; env.sys.nave.y = p.y; env.sys.nave.z = p.z;
+            env.step('escanear');
+        }
+        const pistas = env.sys.pistas();
+        const texto = env.describe();
+        const obs = env.getObservation();
+        const enTexto = /escáner|escaner/.test(texto) && pistas.some(p => texto.includes(p.banda));
+        const enNumeros = obs.slice(22).some(v => v > 0);
+
+        if (!pistas.length) {
+            fallos.push(`${id}: descartar dos objetivos no genera ninguna pista`);
+        } else if (!enTexto) {
+            fallos.push(`${id}: la pista existe y NO sale por la puerta de lenguaje `
+                      + '— el modelo juega a ciegas mientras la persona deduce');
+        } else if (!enNumeros) {
+            fallos.push(`${id}: la pista existe y NO sale por la puerta numérica `
+                      + '— la política juega a ciegas mientras la persona deduce');
+        }
+    }
+    if (!fallos.length) {
+        console.log('\n  ✓ la pista del escáner llega a las tres puertas del mapache'
+                  + gris('  (estado, texto y números)'));
+    }
+}
+
 if (fallos.length) {
     console.log(rojo(`\n✗ ${fallos.length} fallo(s):`));
     fallos.forEach(f => console.log(rojo(`    · ${f}`)));

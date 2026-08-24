@@ -27,12 +27,12 @@ export class RaccoonSpaceEnv extends GymEnv {
     static id = 'alisa/RaccoonSpace-v0';
 
     static observationSpace = {
-        shape: [22],
+        shape: [24],
         names: [
             'x', 'y', 'z', 'vx', 'vy', 'vz', 'guinada', 'cabeceo', 'combustible',
             'ast0_dx', 'ast0_dy', 'ast0_dz', 'ast1_dx', 'ast1_dy', 'ast1_dz',
             'pla0_dx', 'pla0_dy', 'pla0_dz', 'pla1_dx', 'pla1_dy', 'pla1_dz',
-            'escaner_listo',
+            'escaner_listo', 'cand0_coherencia', 'cand1_coherencia',
         ],
         low: -1, high: 1,
     };
@@ -150,6 +150,22 @@ export class RaccoonSpaceEnv extends GymEnv {
                       + `${dir.length ? ', ' + dir.join(' y ') : ''}.`);
         }
 
+        /**
+         * ⚠️ LAS PISTAS, QUE SON EL JUEGO Y NO LLEGABAN A ESTA PUERTA.
+         *
+         * La página le decía a la persona «🟢 HOT (37 LY away)» al descartar un
+         * objetivo, y aquí no se contaba nada: el agente hacía un recorrido a
+         * ciegas mientras la persona deducía. Dos juegos con el mismo nombre.
+         *
+         * Se dan en bandas y con el número del objetivo, que es exactamente lo
+         * que ve una persona en su radar: qué descartaste y cómo de cerca estaba.
+         */
+        const pistas = s.pistas();
+        if (pistas.length) {
+            partes.push('Lo que ha dicho el escáner: '
+                + pistas.map(p => `el ${p.i} estaba ${p.banda}`).join(', ') + '.');
+        }
+
         const astCerca = s.asteroides
             .map(a => Math.hypot(a.x - s.nave.x, a.y - s.nave.y, a.z - s.nave.z))
             .filter(d => d < 40).length;
@@ -212,7 +228,7 @@ export class RaccoonSpaceEnv extends GymEnv {
 export class RaccoonCityEnv extends RaccoonSpaceEnv {
     static id = 'alisa/RaccoonCity-v0';
     static objetivo = { uno: 'edificio', varios: 'edificios', el: 'El', un: 'un', ningun: 'ningún' };
-    static ajustes = { tankSize: 180, planets: 12, asteroids: 8, fuel: 42, tope: 3000 };
+    static ajustes = { tankSize: 180, planets: 12, asteroids: 8, fuel: 30, tope: 3000 };
     static meta = {
         title: '¡Busca! 4 — Sector de ciudad',
         summary: 'Encuentra el edificio donde se esconde el mapache antes de quedarte sin '
@@ -225,7 +241,7 @@ export class RaccoonCityEnv extends RaccoonSpaceEnv {
 export class RaccoonPlanetEnv extends RaccoonSpaceEnv {
     static id = 'alisa/RaccoonPlanet-v0';
     static objetivo = { uno: 'ciudad', varios: 'ciudades', el: 'La', un: 'una', ningun: 'ninguna' };
-    static ajustes = { tankSize: 260, planets: 8, asteroids: 14, fuel: 28, tope: 3600 };
+    static ajustes = { tankSize: 320, planets: 8, asteroids: 14, fuel: 22, tope: 3600 };
     static meta = {
         title: '¡Busca! 5 — Planeta',
         summary: 'Encuentra la ciudad donde se esconde el mapache antes de quedarte sin '

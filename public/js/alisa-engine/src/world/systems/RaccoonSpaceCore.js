@@ -71,14 +71,25 @@ export class RaccoonSpaceCore {
          *             26     45%          2,1
          *             20     35%          1,9
          *
-         * Con 32 solo alcanzas a escanear 2,5 de 6, así que **el orden en que
-         * los visitas decide la partida** — que es el problema interesante. Y
-         * al ganar el simple solo la mitad de las veces, una política mejor
-         * tiene dónde destacar.
+         * Con poco combustible solo alcanzas a escanear 2 de 6, así que **el
+         * orden en que los visitas decide la partida** — que es el problema
+         * interesante. Y al ganar el piloto simple solo la mitad de las veces,
+         * una política mejor tiene dónde destacar.
          *
-         * Súbelo para practicar, bájalo para apretar. Para PUNTUAR, 32.
+         * ⚠️ ERA 32 Y AHORA ES 24, Y EL MOTIVO NO ES AFINAR: ES QUE CAMBIÓ EL
+         * JUEGO. Al meter la PISTA en este núcleo —la que la persona tenía en la
+         * página y el agente no— la etapa pasó de ganarse el 43% a ganarse el
+         * 71% con el mismo 32. No es la misma dificultad con otro número: antes
+         * se estaba midiendo otro juego. Con 24 vuelve al 52%.
+         *
+         * ⚠️ Y LA TABLA DE ARRIBA ES DE ANTES DE LA PISTA. Se deja porque explica
+         * la FORMA de la relación —más combustible, más victorias— que sigue
+         * siendo cierta; sus números concretos, no. Los de hoy están medidos en
+         * `calibrar_busca.mjs` con un piloto que sí usa las pistas.
+         *
+         * Súbelo para practicar, bájalo para apretar. Para PUNTUAR, 24.
          */
-        this.combustibleInicial = opts.fuel ?? 32;
+        this.combustibleInicial = opts.fuel ?? 24;
 
         this.reset(opts.seed ?? 42);
     }
@@ -232,6 +243,30 @@ export class RaccoonSpaceCore {
                 } else {
                     this.puntos += 20;      // descartar también informa
                     recompensa += 20;
+                    /**
+                     * ═══════════════════════════════════════════════════════
+                     *  ⚠️ LA PISTA. LA PERSONA LA TENÍA Y EL AGENTE NO.
+                     * ═══════════════════════════════════════════════════════
+                     *
+                     * `games/raccoon_space.html` daba caliente/frío al escanear
+                     * un objetivo equivocado —«🟢 HOT (37 LY away)»— y este
+                     * núcleo no. Medido el 24-08 al ir a unir las dos puertas:
+                     * eran dos juegos distintos con el mismo nombre.
+                     *
+                     * Y no es un adorno del HUD: **la pista ES la estrategia**.
+                     * Con ella el juego es una deducción —escaneas dos, cruzas
+                     * las distancias y sabes por dónde ir—; sin ella es un
+                     * recorrido a ciegas. Que la persona jugara al primero y el
+                     * agente al segundo hace que sus notas no se puedan comparar,
+                     * y comparar es lo único que hace este banco.
+                     *
+                     * Se guarda la distancia REAL desde el objetivo descartado
+                     * hasta el que esconde al mapache. Cada puerta la presenta a
+                     * su manera —la persona en colores, el modelo en texto, la
+                     * política en un número— pero el dato es uno.
+                     */
+                    const objetivo = this.planetas[this.planetaDelMapache];
+                    p.pista = Math.hypot(objetivo.x - p.x, objetivo.y - p.y, objetivo.z - p.z);
                 }
             } else {
                 recompensa -= 1;            // escanear al vacío cuesta
@@ -258,6 +293,50 @@ export class RaccoonSpaceCore {
         return this.muerto || this.encontrado || this.t * 60 >= this.tope;
     }
 
+    /**
+     * Los cinco escalones de la pista. Se dan en BANDAS y no en el número crudo
+     * porque un número exacto convertiría el juego en trigonometría: con tres
+     * distancias exactas se triangula el punto y se acabó. Las bandas dejan la
+     * deducción donde estaba, que es lo que hace interesante a esta saga.
+     *
+     * ⚠️ Y LOS UMBRALES SON LOS QUINTILES MEDIDOS, NO LOS DE LA PÁGINA.
+     *
+     * `raccoon_space.html` usaba 0,15 / 0,30 / 0,50 / 0,70 sobre `dist/400`.
+     * Medido el 24-08 con 9.200 distancias reales de las tres escalas, ese
+     * reparto daba:
+     *
+     *     helado 42-46%  ·  frío 27-30%  ·  fresco 20-22%
+     *     templado 7%    ·  caliente 1%
+     *
+     * O sea que casi la mitad de los escaneos decían lo mismo y «caliente» no
+     * salía casi nunca. Una pista que repite la misma palabra no informa: la
+     * persona la ha estado recibiendo así todo este tiempo, creyendo que le
+     * decía algo.
+     *
+     * Dos puntos al azar en un cubo están típicamente a media diagonal, así que
+     * la distribución se amontona arriba. Los quintiles reales son 0,424 /
+     * 0,583 / 0,720 / 0,872 — con ellos cada banda sale ~20% y cada escaneo
+     * reparte la misma cantidad de información, que es el máximo que puede dar.
+     */
+    static BANDAS = [
+        [0.424, 'caliente'], [0.583, 'templado'], [0.720, 'fresco'],
+        [0.872, 'frío'], [Infinity, 'helado'],
+    ];
+
+    /** La banda de un objetivo ya descartado, o `null` si no se ha escaneado. */
+    bandaDe(p) {
+        if (p.pista === undefined) return null;
+        const norm = p.pista / this.tanque;
+        return RaccoonSpaceCore.BANDAS.find(([tope]) => norm < tope)[1];
+    }
+
+    /** Lo dicho por el escáner hasta ahora: qué se descartó y cómo de cerca estaba. */
+    pistas() {
+        return this.planetas
+            .map((p, i) => ({ i, banda: this.bandaDe(p) }))
+            .filter(x => x.banda !== null);
+    }
+
     info() {
         return {
             combustible: Math.round(this.combustible * 10) / 10,
@@ -265,11 +344,38 @@ export class RaccoonSpaceCore {
             escaneados: this.planetas.filter(p => p.escaneado).length,
             total: this.planetas.length,
             encontrado: this.encontrado,
+            pistas: this.pistas(),
         };
     }
 
     /**
-     * 22 números, todos normalizados a [-1, 1].
+     * Lo bien que un candidato encaja con TODO lo que ha dicho el escáner.
+     *
+     * Cada banda tiene un centro —la distancia típica que representa— y la
+     * coherencia es cuánto se aleja el candidato de esos centros. Se devuelve en
+     * [0,1], donde 1 es «encaja perfectamente con todas las pistas».
+     *
+     * Esto es lo que convierte el juego en deducción: si el 3 salió «caliente»,
+     * un candidato lejos del 3 no puede ser. La persona lo hace a ojo mirando
+     * los colores del radar; aquí se le da el mismo dato a una política numérica,
+     * porque si no la puerta de números juega a otra cosa.
+     */
+    static CENTROS = { caliente: 0.30, templado: 0.50, fresco: 0.65, 'frío': 0.79, helado: 0.94 };
+
+    coherencia(c) {
+        const pistas = this.pistas();
+        if (!pistas.length) return 0;
+        let error = 0;
+        for (const { i, banda } of pistas) {
+            const p = this.planetas[i];
+            const d = Math.hypot(c.x - p.x, c.y - p.y, c.z - p.z) / this.tanque;
+            error += Math.abs(d - (RaccoonSpaceCore.CENTROS[banda] ?? 0.7));
+        }
+        return Math.max(0, 1 - error / pistas.length);
+    }
+
+    /**
+     * 24 números, todos normalizados a [-1, 1].
      *   0- 2  posición de la nave
      *   3- 5  velocidad
      *   6- 7  guiñada y cabeceo
@@ -277,6 +383,21 @@ export class RaccoonSpaceCore {
      *   9-14  los 2 asteroides más cercanos (dx, dy, dz)
      *  15-20  los 2 planetas sin escanear más cercanos (dx, dy, dz)
      *  21     hay un planeta al alcance del escáner
+     *  22-23  ⚠️ NUEVO — lo bien que encaja cada uno de esos 2 candidatos con
+     *         las pistas dadas hasta ahora
+     *
+     * ⚠️ ERAN 22 Y AHORA SON 24, Y NO ES UN CAPRICHO.
+     *
+     * La página le daba a la persona una pista al descartar un objetivo —«🟢 HOT
+     * (37 LY away)»— y ni el texto ni los números se la daban al agente. Con eso,
+     * la persona jugaba a una deducción y el agente a un recorrido a ciegas: dos
+     * juegos con el mismo nombre, y sus notas no se podían comparar.
+     *
+     * Las pistas son una lista de largo variable —una por objetivo descartado— y
+     * la observación tiene forma fija, así que no caben tal cual. Lo que sí cabe
+     * es la CONSECUENCIA: para los dos candidatos que el agente ya está mirando,
+     * cuánto encajan con lo que se ha averiguado. Eso es exactamente la decisión
+     * que hay que tomar, y es lo que la persona lee de un vistazo en su radar.
      */
     observacion() {
         const n = this.nave;
@@ -300,12 +421,17 @@ export class RaccoonSpaceCore {
         }
         while (obs.length < 15) obs.push(0);
 
-        for (const { o } of cerca(this.planetas.filter(p => !p.escaneado)).slice(0, 2)) {
+        const candidatos = cerca(this.planetas.filter(p => !p.escaneado)).slice(0, 2);
+        for (const { o } of candidatos) {
             obs.push((o.x - n.x) / R, (o.y - n.y) / R, (o.z - n.z) / R);
         }
         while (obs.length < 21) obs.push(0);
 
         obs.push(this.planetaCerca() ? 1 : 0);
+
+        // La coherencia de esos mismos dos candidatos con las pistas dadas.
+        for (const { o } of candidatos) obs.push(this.coherencia(o));
+        while (obs.length < 24) obs.push(0);
         return obs;
     }
 }
