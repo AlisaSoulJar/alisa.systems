@@ -94,4 +94,73 @@ for (const f of filas) {
         + `  paginas:${f.paginas} runners:${f.runners} envs:${f.envs} otros:${f.otros}`);
 }
 const dormidos = filas.filter(f => estado(f) === 'DORMIDO');
-console.log(`\n  DORMIDOS: ${dormidos.length} motores · ${dormidos.reduce((a, b) => a + b.kb, 0).toFixed(0)} KB sin usar\n`);
+console.log(`\n  DORMIDOS: ${dormidos.length} motores · ${dormidos.reduce((a, b) => a + b.kb, 0).toFixed(0)} KB sin usar`);
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  EL PATRÓN DORADO: ¿CUÁNTOS JUEGOS TIENEN LAS CUATRO PIEZAS?
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * `docs/PATRON_DORADO.md` define la forma de un juego ALISA en cuatro piezas:
+ *
+ *     Factory        construye el mundo. Sólo geometría, materiales y luces.
+ *     System         las reglas, SIN PANTALLA. Corre en node y en un worker.
+ *     Env            las tres puertas de agente: números, lenguaje y verbos.
+ *     Visualizador   la puerta humana. Traduce dedos a verbos legales.
+ *
+ * Y la regla que lo sostiene, con sus palabras: *«el System no sabe que existe
+ * una pantalla. Si para saber qué pasa hay que renderizar, no es un benchmark —
+ * es una demo»*. O sea: **un System que importa THREE no es un System.**
+ *
+ * Eso último se puede comprobar, y hasta hoy nadie lo comprobaba. Es la
+ * diferencia entre tener el patrón escrito y tenerlo aplicado.
+ */
+/**
+ * ⚠️ SIN COMENTARIOS, O LA FRASE QUE NIEGA LA DEPENDENCIA LA CONFIRMA.
+ *
+ * La primera versión buscaba `THREE.` en el texto entero y acusó a
+ * `FoodChainSystem` y a `ChopperAquariumEngine` de no ser headless. Fui a
+ * comprobarlo porque contradecía a `PATRON_DORADO.md`, que nombra a
+ * FoodChainSystem entre los headless de verdad — y el doc tenía razón: lo que
+ * había en esas dos líneas era
+ *
+ *     FoodChainSystem       «No THREE.js or DOM dependencies.»
+ *     ChopperAquariumEngine «Math utilities to avoid THREE.js dependency»
+ *
+ * Comentarios que dicen justo lo contrario de lo que yo estaba leyendo. Un
+ * detector que lee comentarios mide lo que el fichero DICE, no lo que HACE.
+ */
+const sinComentarios = (t) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+const traeTHREE = (t) => {
+    const c = sinComentarios(t);
+    return /import\s[^;]*from\s*['"`]three['"`]/.test(c) || /\bnew\s+THREE\./.test(c);
+};
+const factories = new Set();
+for (const [f] of textos) {
+    const m = /([A-Za-z]+)Factory\.js$/.exec(f.replace(/\\/g, '/'));
+    if (m) factories.add(m[1].toLowerCase());
+}
+
+console.log('\n  ── el patrón dorado, pieza a pieza ──');
+console.log('    (F)actory · (S)ystem headless · (E)nv · (V)isualizador o página\n');
+const completos = [];
+const sucios = [];
+for (const f of filas) {
+    if (estado(f) === 'DORMIDO') continue;
+    const t = await readFile(path.join(dirSistemas, `${f.nombre}.js`), 'utf-8');
+    const limpio = !traeTHREE(t);
+    // La factory se busca por raíz del nombre: RaccoonSpaceCore → raccoonspace…
+    const raiz = f.nombre.toLowerCase().replace(/(system|engine|core)$/, '');
+    const tieneF = [...factories].some(x => x.includes(raiz) || raiz.includes(x));
+    const piezas = (tieneF ? 'F' : '·') + (limpio ? 'S' : '·') + (f.envs ? 'E' : '·') + (f.paginas ? 'V' : '·');
+    if (piezas === 'FSEV') completos.push(f.nombre);
+    if (!limpio && f.envs) sucios.push(f.nombre);
+    console.log(`    ${piezas}  ${f.nombre.padEnd(28)} ${f.kb.toFixed(1).padStart(6)} KB`
+        + (limpio ? '' : '   ⚠ importa THREE: no es headless'));
+}
+console.log(`\n  con las CUATRO piezas: ${completos.length ? completos.join(', ') : 'NINGUNO'}`);
+if (sucios.length) {
+    console.log(`  ⚠ en el banco y con THREE dentro: ${sucios.join(', ')}`);
+    console.log('    Su entorno no puede correr en un worker sin montar una escena.');
+}
+console.log('');
