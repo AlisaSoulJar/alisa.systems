@@ -744,6 +744,75 @@ export class RaccoonSpaceCore {
      * cuánto encajan con lo que se ha averiguado. Eso es exactamente la decisión
      * que hay que tomar, y es lo que la persona lee de un vistazo en su radar.
      */
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  EL SUSTRATO — Y AQUÍ EL CONTRATO TIENE QUE CRECER UNA DIMENSIÓN
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * El sustrato del arcade es PLANO: `rejilla` con casillas y `piezas` con
+     * `{x, y}`. Vale para un tablero porque un tablero es plano. Un mundo no lo
+     * es: aquí hay objetivos flotando en un cubo, repartidos en una esfera o
+     * puestos en rejilla, y la nave sube y baja.
+     *
+     * Se podría aplastar a dos ejes —sería el radar de la página, que ya existe—
+     * pero eso es una VISTA, no el estado: dos objetivos en la misma vertical
+     * caerían en el mismo sitio y el dibujante no podría separarlos.
+     *
+     * Así que la pieza gana `alto`, opcional. Y se llama `alto` y no `z` a
+     * propósito: dentro del motor `z` es el segundo eje del SUELO, y en el
+     * sustrato ese eje se llama `y`. Meter una `z` que significa otra cosa que la
+     * `z` de al lado es la forma más barata de que alguien la lea al revés dentro
+     * de un mes.
+     *
+     * `rejilla` sólo se publica cuando la hay de verdad —la escala de ciudad la
+     * tiene; el cubo y la esfera, no—. El contrato ya lo permite: la prueba mira
+     * la rejilla `if (sus.rejilla)`. Un mundo sin casillas es un sustrato de
+     * piezas sueltas, y eso es una descripción legítima.
+     *
+     * ⚠️ Y ESTE SUSTRATO SIRVE PARA LAS TRES ETAPAS DE ¡BUSCA! DE UNA VEZ,
+     * porque esta mañana se unificaron sobre este núcleo. Antes habrían sido
+     * tres implementaciones y tres sitios donde separarse.
+     */
+    sustrato() {
+        const piezas = this.planetas.map((p, i) => ({
+            x: p.x, y: p.z, alto: p.y,
+            t: i === this.planetaDelMapache && p.escaneado ? 'encontrado'
+             : p.escaneado ? (this.bandaDe(p) ?? 'escaneado') : 'sin_escanear',
+            de: 0, r: p.r,
+        }));
+        for (const a of this.asteroides) {
+            piezas.push({ x: a.x, y: a.z, alto: a.y, t: 'asteroide', de: 2, r: a.r });
+        }
+        const n = this.nave;
+        piezas.push({ x: n.x, y: n.z, alto: n.y, t: 'nave', de: 1 });
+
+        const sus = {
+            piezas,
+            zonas: [],
+            leyenda: {
+                sin_escanear: 'sin escanear', encontrado: '¡el mapache!',
+                caliente: 'muy cerca del mapache', templado: 'cerca',
+                fresco: 'ni frío ni caliente', 'frío': 'lejos', helado: 'lejísimos',
+                asteroide: 'roca', nave: 'tú',
+            },
+            simbolos: {
+                sin_escanear: '?', encontrado: '*', caliente: '1', templado: '2',
+                fresco: '3', 'frío': '4', helado: '5', asteroide: 'o', nave: '@',
+            },
+        };
+
+        /**
+         * Sólo la escala de ciudad tiene casillas de verdad: `forma: 'rejilla'`
+         * reparte los objetivos en una cuadrícula. El cubo y la esfera no las
+         * tienen, y publicar una rejilla falsa sería peor que no publicar ninguna.
+         */
+        if (this.forma === 'rejilla') {
+            const cols = Math.ceil(Math.sqrt(this.planetas.length));
+            sus.rejilla = { ancho: cols, alto: cols, celdas: new Array(cols * cols).fill(0) };
+        }
+        return sus;
+    }
+
     observacion() {
         const n = this.nave;
         const R = this.tanque / 2;

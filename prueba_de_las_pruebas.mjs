@@ -585,6 +585,20 @@ const SABOTAJES = [
         vigila: 'que los montones dibujados sumen las cartas que el juego dice que hay',
     },
     {
+        /**
+         * La mitad nueva de esa prueba: los MUNDOS. Hasta el 24-08 publicaban
+         * sustrato 24 juegos del arcade y CERO mundos, y por eso el arcade tiene
+         * mesa compartida y cada página de mundo se escribe su propio pintado.
+         * El sabotaje descuadra la rejilla de ¡Defiende! con su número de celdas.
+         */
+        nombre: 'sustrato:mundos',
+        corre: 'node prueba_sustrato.mjs',
+        fichero: 'public/js/alisa-engine/src/world/systems/DefiendeSystem.js',
+        de: 'rejilla: { ancho: L, alto: L, celdas },',
+        a: 'rejilla: { ancho: L, alto: L + 1, celdas },',
+        vigila: 'que el sustrato de un mundo describa de verdad lo que el juego tiene',
+    },
+    {
         nombre: 'openapi',
         corre: 'node prueba_openapi.mjs',
         fichero: 'public/openapi.json',

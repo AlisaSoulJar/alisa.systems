@@ -710,6 +710,66 @@ if (derivados > TECHO_DERIVADOS) {
     console.log(`  ↓ la deuda bajó. Actualiza TECHO_DERIVADOS a ${derivados} para que no vuelva a subir.`);
 }
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  4. LOS MUNDOS. HASTA HOY ESTA PRUEBA NO MIRABA NI UNO.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Medido el 24-08: **24 juegos del arcade publican sustrato y 0 mundos**. Y eso
+ * no es una diferencia de estilo — es la razón de que el arcade tenga una mesa
+ * compartida (`mesa_tablero.mjs` pide `hub.sustrato(juego)` y dibuja) mientras
+ * cada página de mundo se escribe su propio pintado. Los mundos tienen
+ * `montarMundo` —la sala— pero les faltaba el CONTRATO DE ESTADO, que es la
+ * mitad que permite compartir dibujante.
+ *
+ * Lo pagué esa misma mañana: las tres páginas de ¡Busca! comparten seis piezas
+ * casi idénticas que escribí tres veces.
+ *
+ * Así que esta prueba, que ya sabía comprobar sustratos, pasa a mirar también
+ * los del gimnasio. Mismas comprobaciones de forma: una rejilla que cuadre con
+ * su tamaño y piezas con posición. No hace falta que TODOS lo publiquen —se
+ * cuentan y se dice cuántos van— pero el que lo publique, lo publica bien.
+ */
+{
+    const { CATALOGO } = await import('./public/js/alisa-engine/src/gym/registro.js');
+    let conSustrato = 0, revisados = 0;
+    for (const entrada of CATALOGO) {
+        if (entrada.familia !== 'propio') continue;
+        let sys;
+        try {
+            const Clase = await entrada.cargar();
+            const env = new Clase();
+            env.reset(4);
+            sys = env.sys ?? env.core ?? env.nucleo;
+        } catch { continue; }
+        revisados++;
+        if (!sys || typeof sys.sustrato !== 'function') continue;
+        conSustrato++;
+
+        const sus = sys.sustrato();
+        const id = entrada.id;
+        if (!sus || typeof sus !== 'object') { mal(`${id}: sustrato() no devuelve un objeto`); continue; }
+        if (sus.rejilla) {
+            const { ancho, alto, celdas } = sus.rejilla;
+            if (!(ancho > 0 && alto > 0)) mal(`${id}: rejilla con tamaño ${ancho}x${alto}`);
+            else if (!Array.isArray(celdas) || celdas.length !== ancho * alto) {
+                mal(`${id}: la rejilla dice ${ancho}x${alto} y trae ${celdas?.length} celdas`);
+            }
+        }
+        if (!Array.isArray(sus.piezas)) mal(`${id}: sustrato sin \`piezas\``);
+        else for (const pz of sus.piezas) {
+            if (!Number.isFinite(pz.x) || !Number.isFinite(pz.y)) {
+                mal(`${id}: pieza '${pz.t}' sin posición (x=${pz.x}, y=${pz.y})`);
+            }
+        }
+        if (!Array.isArray(sus.zonas)) mal(`${id}: sustrato sin \`zonas\` (vale un array vacío)`);
+    }
+    console.log(`\n  mundos del gimnasio con sustrato: ${conSustrato} de ${revisados}`
+              + (conSustrato < revisados
+                  ? '  — los que faltan no pueden compartir dibujante'
+                  : '  — todos'));
+}
+
 console.log(fallos === 0
     ? `\n✓ los ${JUEGOS.length} tienen sustrato válido\n`
     : `\n✗ ${fallos} fallo(s) de sustrato\n`);

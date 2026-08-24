@@ -420,6 +420,81 @@ export class DefiendeSystem {
 
     /**
      * ═══════════════════════════════════════════════════════════════════════
+     *  EL SUSTRATO — LO QUE HAY, EN EL IDIOMA QUE HABLAN LOS DIBUJANTES
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Mismo contrato que publican los 24 juegos del arcade: `rejilla` (el
+     * terreno), `piezas` (lo que se mueve encima) y `zonas` (montones fuera del
+     * tablero, aquí ninguna). Con esto, cualquier dibujante que sepa leer un
+     * sustrato puede pintar este juego **sin saber a qué se juega**.
+     *
+     * ⚠️ Y ES EL PRIMERO DE UN MUNDO QUE LO PUBLICA. MEDIDO: 24 A 0.
+     *
+     * En el arcade esto lleva meses funcionando: `mesa_tablero.mjs` pide
+     * `hub.sustrato(juego)` y dibuja rejilla y piezas, y por eso 24 juegos
+     * comparten una sola mesa. Los mundos tienen `montarMundo` —la sala: escena,
+     * luces, pipeline— pero NO tenían el contrato de estado, así que cada página
+     * se escribía su propio pintado.
+     *
+     * Lo pagué yo esta misma mañana: las tres páginas de ¡Busca! comparten
+     * `verboDeLasTeclas`, `getObservationVector`, `stepSimulation`, `updateHUD`,
+     * `BANDA_A_HUD` y `aviso` — casi idénticas, escritas tres veces. 741 líneas
+     * en cuatro páginas, y la mayoría estructura repetida.
+     *
+     * Con el sustrato publicado, un estado y tres puertas: la mesa plana lo
+     * dibuja en 2D, una mesa de mundo lo dibujará en 3D, y el agente lo lee como
+     * números. Es la tesis del proyecto aplicada al DIBUJO, no sólo a las reglas.
+     *
+     * Y de propina: `prueba_sustrato.mjs` ya comprueba que lo dibujado cuadre con
+     * lo que el juego dice que hay. Hoy vigila 24 juegos de arcade; en cuanto los
+     * mundos publiquen sustrato, los vigila también.
+     */
+    sustrato() {
+        const L = this.lado;
+        const celdas = new Array(L * L);
+        for (let z = 0; z < L; z++) {
+            for (let x = 0; x < L; x++) celdas[z * L + x] = this.rejilla[z][x];
+        }
+
+        /**
+         * ⚠️ EL SUSTRATO ES 2D Y USA `y`, NO `z`.
+         *
+         * Dentro del motor la matriz es (x, z) porque el suelo de un mundo 3D es
+         * el plano XZ. El sustrato es una descripción PLANA —la misma que lee un
+         * tablero de ajedrez— y allí el segundo eje se llama `y`. Traducirlo aquí
+         * y no en cada dibujante es lo que permite que un mismo pintor sirva para
+         * un tablero y para un mundo.
+         */
+        const piezas = [];
+        const w = this.mundo;
+        for (const id of w.query(['Celda', 'Torreta'])) {
+            const c = w.getComponent(id, 'Celda'), t = w.getComponent(id, 'Torreta');
+            piezas.push({ x: c.x, y: c.z, t: t.id, de: 0 });
+        }
+        for (const id of w.query(['Celda', 'Atacante'])) {
+            const c = w.getComponent(id, 'Celda'), a = w.getComponent(id, 'Atacante');
+            piezas.push({ x: c.x, y: c.z, t: a.tipo, de: 1, vida: a.hp / a.hpMax });
+        }
+
+        return {
+            rejilla: { ancho: L, alto: L, celdas },
+            piezas,
+            zonas: [],
+            leyenda: {
+                camino: 'el sendero', nucleo: 'tu núcleo', entrada: 'por donde entran',
+                guijarro: 'torreta corta', pertiga: 'torreta larga', yunque: 'torreta lenta y fuerte',
+                peon: 'bicho normal', rapido: 'bicho veloz', gordo: 'bicho duro',
+            },
+            simbolos: {
+                camino: '·', nucleo: '#', entrada: 'o',
+                guijarro: 'g', pertiga: 'p', yunque: 'y',
+                peon: 'a', rapido: 'r', gordo: 'G',
+            },
+        };
+    }
+
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
      *  LA OBSERVACIÓN ES LA MATRIZ. NO UNA DESCRIPCIÓN DE ELLA.
      * ═══════════════════════════════════════════════════════════════════════
      *
