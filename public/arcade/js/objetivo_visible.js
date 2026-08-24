@@ -62,7 +62,33 @@
          * sitio donde no puede quedarse a medias. Separándolo, el recorte cuenta líneas
          * de objetivo y el rótulo no le roba ninguna.
          */
+        /**
+         * ⚠️ Y EL CAMINO A LAS REGLAS, QUE ESTABAN ESCRITAS Y NO SE ALCANZABAN.
+         *
+         * `fichas_prosa.json` tiene las CUARENTA fichas completas —qué es,
+         * reparto, turno, cómo se gana, lo que pilla a todo el mundo la primera
+         * vez, y en qué se aparta del juego de la calle— y `ficha.html` las pinta
+         * bien. Medido el 24-08: **2 de 55 páginas de arcade enlazaban allí.**
+         * El trabajo hecho, bien hecho, y sin llegar a la pantalla.
+         *
+         * El objetivo dice A QUÉ juegas en una línea; esto dice CÓMO. Van juntos
+         * porque es la misma pregunta y porque la hace la misma persona, en el
+         * mismo momento: la primera vez que abre el juego.
+         *
+         * ⚠️ Y VA AQUÍ Y NO EN UNA ESQUINA. Lo puse primero flotando abajo a la
+         * izquierda desde `montarMesa`, y la captura lo enseñó DEBAJO de la fila
+         * de botones —tapado en 1280 y en 390, las dos—. La esquina parecía libre
+         * mirando el código y no lo estaba. Se vio abriendo la imagen, como casi
+         * todo lo de esta semana.
+         */
+        const juego = window.ALISA_JUEGO;
+        const reglas = juego
+            ? `<a class="hud-objetivo-reglas" target="_blank" rel="noopener"`
+            + ` href="/arcade/ficha.html?juego=${encodeURIComponent(juego)}"`
+            + ` title="Reparto, turno, cómo se gana, y en qué se aparta del juego de la calle"`
+            + `>cómo se juega →</a>`
+            : '';
         return `<div class="hud-objetivo"><b>A qué se juega</b>`
-             + `<span class="hud-objetivo-txt">${esc(cuerpo)}</span></div>`;
+             + `<span class="hud-objetivo-txt">${esc(cuerpo)}</span>${reglas}</div>`;
     };
 })();

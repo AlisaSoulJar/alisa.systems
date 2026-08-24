@@ -1,6 +1,6 @@
 # Lo que ya decidimos
 
-> Generado por `npm run decisiones` el 2026-08-23. **No se escribe a mano.**
+> Generado por `npm run decisiones` el 2026-08-24. **No se escribe a mano.**
 > Recoge los bloques `⚠️` con título que hay repartidos por el código: cada uno
 > es una decisión que alguien se paró a justificar donde vive.
 
@@ -15,7 +15,7 @@ contrario. El problema no era que no estuviera escrito: era que no había índic
 Volver a decidir sale barato en el momento y carísimo a la semana, porque la
 segunda decisión casi nunca coincide con la primera y entonces hay dos verdades.
 
-**1885 decisiones** en 314 ficheros.
+**1889 decisiones** en 314 ficheros.
 
 ## Índice
 
@@ -23,7 +23,7 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - [Reglas de los juegos](#reglas-de-los-juegos) — 362
 - [Las mesas y los visualizadores](#las-mesas-y-los-visualizadores) — 308
 - [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 204
-- [Las comprobaciones](#las-comprobaciones) — 198
+- [Las comprobaciones](#las-comprobaciones) — 202
 - [Otros](#otros) — 147
 - [Las páginas de los juegos](#las-páginas-de-los-juegos) — 81
 - [Cómo se dibuja (el pintor)](#cómo-se-dibuja-el-pintor-) — 64
@@ -3358,10 +3358,18 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 
 ### `prueba_senal.mjs`
 
-- **Y ESTA PRUEBA TIENE UNA TRAMPA PROPIA, QUE ME COMIÓ CUATRO INTENTOS.** <sub>línea 22</sub>
-  <br><sub>«Las tres políticas sacan lo mismo» sólo significa algo si de verdad JUGARON distinto. En los cuatro primeros intentos no lo hacían, por cuatro motivos distintos, y las cuatro veces el resultado parecía un hallazgo:</sub>
-- **TRINQUETE. Los entornos que hoy no separan, con su motivo. **Sólo puede** <sub>línea 46</sub>
-  <br><sub>bajar.** Si sube, es que se ha añadido al banco un entorno que no puede puntuar a nadie, y eso es justo lo que no queremos que pase callando.</sub>
+- **LA PRIMERA VERSIÓN DE ESTA PRUEBA ACUSÓ A SIETE ENTORNOS SANOS.** <sub>línea 18</sub>
+  <br><sub>Se escribió el 23-08 con tres políticas —recorrer en ciclo, coger siempre la primera, coger siempre la última— y **150 pasos**. Dio siete «no separan», con su lista, su trinquete y su sabotaje. Y estaba mal, por dos motivos que se</sub>
+- **TRINQUETE. Entornos a los que NO SE LES HA CONSEGUIDO sacar dos notas, con** <sub>línea 54</sub>
+  <br><sub>lo medido en cada uno. **Sólo puede subir de tamaño con explicación.** Si aparece uno nuevo, es que se ha añadido al banco algo que no distingue.</sub>
+- **`sokoban` TAMBIÉN ESTUVO AQUÍ, Y TAMBIÉN ERA MENTIRA MÍA.** <sub>línea 63</sub>
+  <br><sub>Entró como «el generador reparte instancias triviales». No hay generador: hay ocho niveles escritos a mano, de fácil a difícil, y el primero es `#@$.#` —un tutorial de una jugada— que la semilla 1234 escoge. Uno de ocho es 12,5%, y</sub>
+- **`RaccoonSpace` ESTUVO AQUÍ Y SE HA IDO, QUE ES LO QUE TIENE QUE PASAR.** <sub>línea 75</sub>
+  <br><sub>Entró con la nota «la recompensa está detrás de NAVEGAR: `escanear` sólo se ofrece con un planeta al alcance, y ninguna política ciega llega». Era verdad con las tres sondas tontas. Con el bandido —que aprende qué verbo paga— y con</sub>
+- **EL HORIZONTE LO DICE EL ENTORNO, NO YO.** <sub>línea 87</sub>
+  <br><sub>`meta.horizon` lo escribió quien hizo el entorno y va de 150 a 5400. Medir a todos con el mismo número es preguntarle a un maratón cómo va a los cien metros. El tope existe sólo para que la prueba no tarde una eternidad, y</sub>
+- **UNA SOLA SEMILLA NO JUZGA A UN ENTORNO CUYA PARTIDA DEPENDE DE ELLA.** <sub>línea 202</sub>
+  <br><sub>`sokoban` tiene ocho niveles y la semilla elige cuál. El primero es `#@$.#` — jugador, caja y destino en fila: un TUTORIAL que se resuelve de una jugada. La semilla 1234 cae justo en él, así que la prueba medía a</sub>
 
 ### `prueba_sonido.mjs`
 

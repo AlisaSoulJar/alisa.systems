@@ -51,7 +51,7 @@ import { JUEGOS, TITULOS, cargarReglas } from './protohub/rules/index.js';
  * `prueba_version.mjs` comprueba que corresponde a lo que hay en disco y, si no,
  * dice el valor que toca. No hay que acordarse: hay que hacer caso a la prueba.
  */
-const VERSION = 'c12540cc';
+const VERSION = '0e708681';
 
 /**
  * Lo que toda página de tablero necesitaba y repetía. En orden.
@@ -437,6 +437,35 @@ export async function montarMesa(cfg) {
      * no aparece.
      */
     window.ALISA_OBJETIVO = reglas?.OBJETIVO ?? null;
+
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  ⚠️ LAS REGLAS ESTABAN ESCRITAS Y NO HABÍA CÓMO LLEGAR A ELLAS
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * `public/data/fichas_prosa.json` tiene las CUARENTA fichas completas —qué
+     * es, reparto, turno, cómo se gana, lo que pilla a todo el mundo la primera
+     * vez, y en qué se aparta del juego de la calle— y `arcade/ficha.html` las
+     * pinta bien. Medido el 24-08: **2 de 55 páginas de arcade enlazaban a la
+     * ficha**. O sea que quien entra a jugar ve el objetivo en una línea, ve los
+     * botones de las jugadas legales, y no tiene ningún camino a las reglas que
+     * ya estaban escritas.
+     *
+     * Es el mismo fallo de forma que llevamos toda la semana: **el dato bien
+     * hecho y sin llegar a la pantalla.** Y aquí duele el doble, porque la mitad
+     * humana de este banco depende de que una persona pueda aprender a jugar; un
+     * juego cuyas reglas no se alcanzan no lo juega nadie, y entonces la columna
+     * de humanos se queda vacía por una razón que no tiene nada que ver con el
+     * juego.
+     *
+     * ⚠️ EL ENLACE LO PONE `objetivo_visible.js`, NO ESTO. Y LA PRIMERA VERSIÓN
+     * ESTUVO AQUÍ, FLOTANDO EN LA ESQUINA DE ABAJO A LA IZQUIERDA.
+     *
+     * La esquina parecía libre mirando el código y no lo estaba: la captura lo
+     * enseñó DEBAJO de la fila de botones, tapado en 1280 y en 390. Va pegado al
+     * recuadro de «A qué se juega», que es la misma pregunta —uno dice a qué y el
+     * otro cómo— y la hace la misma persona en el mismo momento.
+     */
 
     /**
      * ⚠️ `?semilla=` NO SE APLICABA, Y LAS PÁGINAS PROMETÍAN QUE SÍ.

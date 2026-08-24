@@ -55,7 +55,8 @@ const { JUEGOS, cargarReglas, SILLAS } = await impo('public/arcade/js/protohub/r
  * de bazas (brisca, tute, hearts, spades) y llegó a 35 revisando uno a uno
  * los 31 que faltaban.
  */
-const SUELO_ASIENTOS = 35;
+const SUELO_ASIENTOS = 40;   // 24-08: los 40 declaran asientos. Antes 35, y la
+                             // prueba llevaba pasadas pidiendo que se apretara.
 
 const declaran = [], mudos = [], cruzados = [], mentiras = [], sinCruzar = [];
 const cruzadosSillas = [], discrepan = [];
@@ -162,6 +163,66 @@ if (mudos.length) {
         for (const r of rotas.slice(0, 8)) console.log(`      ${r}`);
         console.log('    Existir en tu disco no es estar en el sitio. Mira si la carpeta');
         console.log('    está en .gitignore antes de mirar la ficha.');
+    }
+}
+
+/**
+ * ⚠️ Y QUE SE PUEDA LLEGAR A ELLAS DESDE EL JUEGO. ESO NO LO MIRABA NADIE.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Todo lo de arriba comprueba que la ficha no MIENTA. Faltaba lo anterior a
+ * mentir: que alguien la lea. Medido el 24-08: las cuarenta fichas en prosa
+ * están completas —qué es, reparto, turno, cómo se gana, lo que pilla la primera
+ * vez, en qué se aparta del juego de la calle— y **2 de 55 páginas de arcade
+ * enlazaban a la ficha**.
+ *
+ * O sea: el trabajo hecho, bien hecho, y sin llegar a la pantalla. Quien entra a
+ * jugar veía el objetivo en una línea y los botones de las jugadas legales, y no
+ * tenía camino a las reglas. La mitad humana de este banco depende de que una
+ * persona pueda aprender a jugar.
+ *
+ * El enlace lo pone `objetivo_visible.js`, pegado al recuadro de «A qué se
+ * juega»: uno dice a QUÉ juegas y el otro CÓMO, y los busca la misma persona en
+ * el mismo momento. Ese fichero lo cargan los cuarenta, también los catorce con
+ * visualizador propio que no pasan por ninguna de las dos mesas.
+ *
+ * ⚠️ ESTA COMPROBACIÓN MIRABA `montarMesa.js`, QUE ES DONDE ESTUVO PRIMERO.
+ * El enlace se movió —flotando en la esquina quedaba TAPADO por la fila de
+ * botones, y eso se vio en la captura, no en el código— y el guardia se quedó
+ * vigilando el sitio de antes. Lo cazó él mismo en la pasada siguiente, que es
+ * exactamente para lo que sirve; pero un guardia apuntando a la puerta que ya no
+ * existe habría dado verde para siempre si el enlace se hubiera ido del todo.
+ */
+{
+    const { existsSync, readFileSync } = await import('node:fs');
+    const objetivo = readFileSync(path.join(AQUI, 'public/arcade/js/objetivo_visible.js'), 'utf-8');
+    const css = readFileSync(path.join(AQUI, 'public/arcade/css/jugables.css'), 'utf-8');
+    const tieneEnlace = /hud-objetivo-reglas/.test(objetivo)
+                     && /ficha\.html\?juego=/.test(objetivo);
+    /**
+     * Y que se pueda PULSAR. `.hud-objetivo` lleva `pointer-events: none` para no
+     * robarle el ratón a la mesa; un enlace heredando eso se pinta perfecto y no
+     * hace nada. Sin esta línea, la comprobación aprobaría una pantalla en la que
+     * las reglas se ven y no se abren — el fallo de siempre, sin error y en verde.
+     */
+    const sePuedePulsar = /\.hud-objetivo-reglas\s*\{[^}]*pointer-events:\s*auto/.test(css);
+
+    if (!tieneEnlace) {
+        fallos++;
+        console.log('\n  ✗ `objetivo_visible.js` ya no pone el enlace a la ficha.');
+        console.log('    Las reglas de los 40 vuelven a estar escritas y sin camino:');
+        console.log('    quien entre a jugar verá el objetivo y los botones, y nada más.');
+    } else if (!existsSync(path.join(AQUI, 'public/arcade/ficha.html'))) {
+        fallos++;
+        console.log('\n  ✗ el enlace apunta a `/arcade/ficha.html` y ese fichero no se publica');
+    } else if (!sePuedePulsar) {
+        fallos++;
+        console.log('\n  ✗ el enlace a las reglas está, y NO se puede pulsar.');
+        console.log('    `.hud-objetivo` tiene `pointer-events: none` y el enlace lo hereda:');
+        console.log('    se pinta perfecto y no abre nada. Le falta `pointer-events: auto`.');
+    } else {
+        console.log(`  ✓ los ${JUEGOS.length} juegos llevan a sus reglas, y se puede pulsar`
+                  + `  (junto al objetivo → /arcade/ficha.html?juego=…)`);
     }
 }
 
