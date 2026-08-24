@@ -68,13 +68,27 @@ if (ids.length < 2) {
     process.exit(2);
 }
 
-/** Un episodio corto usando solo verbos que el propio entorno declara legales. */
+/**
+ * Un episodio corto usando solo verbos que el propio entorno declara legales.
+ *
+ * ⚠️ SE MANDA `action` SI EXISTE, NO EL VERBO A SECAS. Y ANTES ERA EL VERBO.
+ *
+ * En `CabinetEscape` las ocho opciones comparten verbo —`abrir_cajon`— y lo que
+ * las distingue vive en `args.cajon` / `action`. Con `.verb` a secas, este
+ * recorrido abría OCHO VECES EL MISMO CAJÓN creyendo que probaba ocho. El
+ * entorno contestaba, no daba error, y la comprobación pasaba: lo único que se
+ * perdía era la mitad del espacio de acciones, en silencio.
+ *
+ * Lo destapó `prueba_senal.mjs` el 24-08 al medir si los entornos distinguen a
+ * un jugador de otro — con este mismo fallo dentro, que se copió de aquí.
+ */
 function jugar(env, pasos = 150) {
     let recompensa = 0, dados = 0;
     for (let i = 0; i < pasos; i++) {
         const verbos = env.affordances();
         if (!verbos.length) break;
-        const r = env.step(verbos[i % verbos.length].verb);
+        const o = verbos[i % verbos.length];
+        const r = env.step(o.action !== undefined ? o.action : o.verb);
         recompensa += (r.reward ?? 0);
         dados++;
         if (r.done) break;
