@@ -27,6 +27,9 @@ export class SimonSaysSystem {
         this.cooldownAfterHit = config.cooldownAfterHit || 0.8; // seconds before next target
         this.cooldownAfterMiss = config.cooldownAfterMiss || 1.2;
         this.gridSize = config.gridSize || 5;                   // NxN tile grid
+        // Lo que cuesta un paso en la matriz. Ver submitAction: sin esto, un
+        // agente cruza la rejilla sin gastar reloj y la persona no.
+        this.stepTime = config.stepTime ?? 0.35;
 
         // Available action targets (can be customized per game)
         this.actionPool = config.actionPool || [
@@ -51,6 +54,31 @@ export class SimonSaysSystem {
             misses: 0,
             cooldown: 0,               // post-result delay before next target
             lastResult: null,           // 'hit' | 'miss' | null
+            /**
+             * ═══════════════════════════════════════════════════════════════
+             *  ⚠️ DÓNDE ESTÁ EL JUGADOR EN LA MATRIZ. ANTES NO EXISTÍA.
+             * ═══════════════════════════════════════════════════════════════
+             *
+             * Los objetivos de casilla se resolvían con `submitTileArrival(x, z)`:
+             * el motor no sabía dónde estabas, sólo comprobaba que dijeras haber
+             * llegado. Para una persona la dificultad era CORRER hasta allí; para
+             * un agente era un botón que se pulsa una vez y acierta siempre.
+             *
+             * Dos puertas, dos juegos: el mismo fallo de siempre, y encima en la
+             * mitad del juego que más se parece a lo que este proyecto defiende.
+             *
+             * Porque la tesis del banco es justo ésta: **a los modelos se les da
+             * el mundo YA en forma de matriz plana, y aprenden a MOVERSE en ella**
+             * —en vez de la vía de la industria, que es que un modelo de visión
+             * convierta un mundo 3D en matriz para poder operarlo—. Traducir el
+             * mundo a matriz es trabajo de nuestro motor. Que la casilla se
+             * resolviera con un botón se saltaba exactamente la parte que
+             * queremos medir.
+             *
+             * Ahora hay posición, y llegar cuesta pasos.
+             */
+            x: 0, z: 0,
+            pasos: 0,                  // pasos dados desde que se fijó el objetivo
             events: []                 // ['target_set', 'hit', 'miss', 'timeout', 'cooldown_end']
         };
     }
@@ -68,8 +96,15 @@ export class SimonSaysSystem {
         state.lastResult = null;
         state.cooldown = 0;
         state.events = [];
+        // En el centro de la matriz: ninguna casilla queda regalada de salida.
+        state.x = Math.floor(this.gridSize / 2);
+        state.z = Math.floor(this.gridSize / 2);
+        state.pasos = 0;
         return this._setNextTarget(state, rng);
     }
+
+    /** Los cuatro pasos de la matriz. `submitAction` los acepta tal cual. */
+    static PASOS = { norte: [0, -1], sur: [0, 1], oeste: [-1, 0], este: [1, 0] };
 
     /**
      * Stops the game.
@@ -138,6 +173,94 @@ export class SimonSaysSystem {
             return { matched: false, state };
         }
 
+        /**
+         * ⚠️ UN PASO NO ES UNA RESPUESTA, ASÍ QUE NO PUEDE SER UN FALLO.
+         *
+         * Moverse es cómo se juega el objetivo de casilla, no un intento de
+         * acertarlo. Si contara como fallo, ir andando hasta la casilla que te
+         * han pedido restaría cinco puntos por cada paso del camino — y la única
+         * forma de puntuar sería no moverse, que es el juego contrario.
+         *
+         * El paso se da SIEMPRE, también con un objetivo de acción: el mundo es
+         * el mismo, estés respondiendo a lo que estés respondiendo.
+         */
+        const paso = SimonSaysSystem.PASOS[action];
+        if (paso) {
+            const nx = state.x + paso[0];
+            const nz = state.z + paso[1];
+            // La matriz tiene bordes: fuera no se va, y el paso se gasta igual.
+            if (nx >= 0 && nx < this.gridSize && nz >= 0 && nz < this.gridSize) {
+                state.x = nx; state.z = nz;
+            }
+            state.pasos++;
+            state.events.push('paso');
+
+            /**
+             * ═══════════════════════════════════════════════════════════════
+             *  ⚠️ UN PASO GASTA RELOJ, Y SIN ESTO NO SE MIDE NADA
+             * ═══════════════════════════════════════════════════════════════
+             *
+             * Quitar el botón de teletransporte no basta. El reloj lo descuenta
+             * `tick(dt)`, así que una persona andando gasta segundos de verdad
+             * mientras un agente puede dar sus cuatro pasos en cuatro llamadas
+             * seguidas —0,067 s de reloj— y llegar siempre. Seguirían siendo dos
+             * juegos: uno con prisa y otro sin ella.
+             *
+             * Con `stepTime`, moverse cuesta lo mismo por las cinco puertas y el
+             * objetivo de casilla se convierte en lo que tiene que ser: un
+             * PRESUPUESTO. `pasosMinimos × stepTime` contra el tiempo que queda,
+             * y equivocarse de dirección se paga.
+             *
+             * Y si el reloj se acaba a mitad de camino, es un fallo aquí mismo:
+             * esperar al `tick` siguiente dejaría dar pasos con el tiempo ya
+             * agotado.
+             */
+            state.timer -= this.stepTime;
+            if (state.timer <= 0 && state.currentTarget) {
+                state.misses++;
+                state.lastResult = 'miss';
+                state.currentTarget = null;
+                state.targetType = null;
+                state.cooldown = this.cooldownAfterMiss;
+                state.events.push('timeout');
+                return { matched: false, state };
+            }
+            // ¿Ha llegado? Llegar ES acertar; no hace falta anunciarlo aparte.
+            if (state.targetType === 'tile' && state.currentTarget === `tile_${state.x}_${state.z}`) {
+                state.hits++;
+                state.lastResult = 'hit';
+                state.currentTarget = null;
+                state.targetType = null;
+                state.cooldown = this.cooldownAfterHit;
+                state.events.push('hit');
+                return { matched: true, state };
+            }
+            return { matched: false, state };
+        }
+
+        /**
+         * ═══════════════════════════════════════════════════════════════════
+         *  ⚠️ A UNA CASILLA SE LLEGA ANDANDO. DECIR SU NOMBRE NO VALE.
+         * ═══════════════════════════════════════════════════════════════════
+         *
+         * Quité `move_to_target` del menú y di el trabajo por hecho. No lo estaba:
+         * `submitAction(state, 'tile_2_3')` seguía cayendo en la comparación de
+         * abajo y contando como acierto **sin dar un solo paso**. Medido con el
+         * sondeo viejo, que estaba escrito para el mundo del botón: 45 aciertos,
+         * 0 fallos, 450 puntos, quieto en el sitio.
+         *
+         * O sea que había cerrado la puerta y dejado la ventana. Quitar una
+         * opción de un menú no quita la capacidad — hay que quitarla donde se
+         * ejecuta, que es aquí.
+         *
+         * Llegar se detecta arriba, en el paso que te deja encima. Aquí sólo se
+         * dice que no.
+         */
+        if (state.targetType === 'tile' && /^tile_\d+_\d+$/.test(action)) {
+            state.events.push('hay_que_ir_andando');
+            return { matched: false, state };
+        }
+
         if (action === state.currentTarget) {
             // HIT!
             state.hits++;
@@ -169,19 +292,52 @@ export class SimonSaysSystem {
      * @param {number} tolerance - Distance tolerance for match
      * @returns {Object} { matched: boolean, state }
      */
-    submitTileArrival(state, tileX, tileZ) {
-        const tileId = `tile_${tileX}_${tileZ}`;
-        return this.submitAction(state, tileId);
+    /**
+     * ⚠️ ERA EL BOTÓN DE TELETRANSPORTE, Y SE QUEDA COMO LÁPIDA.
+     *
+     * Decía «estoy en la casilla X,Z» y el motor se lo creía, porque no sabía
+     * dónde estabas. Ahora lo sabe: se llega andando y llegar se detecta solo.
+     *
+     * No se borra la función en silencio — quien la llamara se quedaría con un
+     * `undefined is not a function` sin saber por qué. Se deja diciendo qué
+     * hacer en su lugar.
+     */
+    submitTileArrival(state) {
+        throw new Error(
+            'submitTileArrival ya no existe: a una casilla se llega andando. '
+          + "Usa submitAction(state, 'norte'|'sur'|'este'|'oeste') — el motor "
+          + 'detecta la llegada. Ver el comentario de `submitAction`.');
     }
 
     /**
      * Get the RL observation space.
      */
+    /**
+     * ⚠️ Y LA OBSERVACIÓN ENTREGA LA MATRIZ, NO UNA DESCRIPCIÓN DE ELLA.
+     *
+     * Es la tesis del proyecto puesta en una función: al modelo se le da el mundo
+     * ya en forma de rejilla plana —dónde está él, dónde hay que llegar— en vez
+     * de obligarle a reconstruirla desde una imagen. Traducir el mundo a matriz
+     * es trabajo del motor; operar sobre ella, del que juega.
+     *
+     * `gridSize`, `x`, `z` y la casilla objetivo son suficientes para reconstruir
+     * la rejilla entera, así que no se manda un array de NxN que sólo tendría un
+     * 1 dentro: se manda lo que la describe sin ruido.
+     */
     getObservation(state) {
+        const m = state.targetType === 'tile' && state.currentTarget
+            ? /^tile_(\d+)_(\d+)$/.exec(state.currentTarget) : null;
         return {
             mode: state.active ? 'simon_says' : 'inactive',
             target: state.currentTarget || 'none',
             targetType: state.targetType || 'none',
+            gridSize: this.gridSize,
+            x: state.x, z: state.z,
+            targetX: m ? Number(m[1]) : null,
+            targetZ: m ? Number(m[2]) : null,
+            /** Distancia en pasos: cuántos movimientos hacen falta como mínimo. */
+            pasosMinimos: m ? Math.abs(Number(m[1]) - state.x) + Math.abs(Number(m[2]) - state.z) : null,
+            pasosDados: state.pasos,
             timeRemaining: Math.max(0, state.timer),
             timeLimit: state.timeLimit,
             timerRatio: state.timeLimit > 0 ? Math.max(0, state.timer / state.timeLimit) : 0,
@@ -226,10 +382,20 @@ export class SimonSaysSystem {
          * las veinticinco sería un menú honrado pero inútil: la gracia del juego
          * es que ya te han dicho a cuál ir.
          */
+        /**
+         * ⚠️ CON UN OBJETIVO DE CASILLA SE OFRECEN LOS PASOS, NO LA CASILLA.
+         *
+         * Antes esto ofrecía `move_to_target` —un botón que resolvía el problema—
+         * y luego, tras el primer arreglo, la casilla entera, que es lo mismo con
+         * otro nombre: decir `tile_2_3` y aparecer allí. Llegar tiene que costar
+         * pasos, porque moverse en la matriz es lo que este banco mide.
+         */
         if (state.targetType === 'tile') {
-            return ['wait', state.currentTarget];
+            return ['wait', ...Object.keys(SimonSaysSystem.PASOS)];
         }
-        return ['wait', ...this.actionPool];
+        // Los pasos siguen estando: el mundo no se congela por haber una acción
+        // que responder, y a veces conviene colocarse mientras se piensa.
+        return ['wait', ...this.actionPool, ...Object.keys(SimonSaysSystem.PASOS)];
     }
 
     // ─── INTERNAL ──────────────────────────────────────
