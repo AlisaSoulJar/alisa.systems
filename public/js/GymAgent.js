@@ -1,4 +1,4 @@
-import { BoidsEngine } from './engines/BoidsEngine.js';
+import { BoidsSystem as BoidsEngine } from './alisa-engine/src/world/systems/BoidsSystem.js';
 import * as os from 'os';
 
 /**

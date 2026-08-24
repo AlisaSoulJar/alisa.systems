@@ -50,6 +50,7 @@ function nombresDe(dir) {
 }
 
 let revisados = 0, malos = 0;
+const rotos = [];   // rutas relativas que no resuelven, para contarlas por carpeta
 console.log('\n¿Aguantarían los import en un disco que distingue mayúsculas?\n');
 
 for (const f of ficheros(RAIZ)) {
@@ -70,9 +71,29 @@ for (const f of ficheros(RAIZ)) {
      * de verdad.
      */
     const codigo = src.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1');
-    // Sólo rutas relativas: los paquetes y los alias los resuelve otro.
-    const rutas = [...codigo.matchAll(/^\s*(?:import[^'"\n]*from|import|export[^'"\n]*from)\s*\(?\s*['"](\.[^'"]+)['"]/gm)]
-        .map(m => m[1]);
+    /**
+     * ⚠️ Y EL `import` PUEDE OCUPAR DOS LÍNEAS. NO LOS VEÍA.
+     *
+     * El patrón exigía que la ruta estuviera en la MISMA línea que el `import`, y
+     * una lista larga de símbolos se parte:
+     *
+     *     import { DefiendeSystem, TORRETAS, TIPOS, CELDA, OLEADAS }
+     *         from '../../world/systems/DefiendeSystem.js';
+     *
+     * La primera línea no tiene comillas y la segunda empieza por `from`, que no
+     * era ninguna de las alternativas. Resultado: esos imports **no existían**
+     * para esta prueba.
+     *
+     * Lo destapó el arnés de sabotajes: le rompí a propósito esa misma ruta y la
+     * prueba aprobó con el cable cortado. Es exactamente para lo que existe ese
+     * arnés — una comprobación que no puede fallar no es una comprobación.
+     */
+    const rutas = [
+        // `import … from '…'` y `export … from '…'`, aunque se partan en varias líneas.
+        ...[...codigo.matchAll(/(?:^|\n)\s*(?:import|export)\b[\s\S]{0,400}?\bfrom\s*['"](\.[^'"]+)['"]/g)],
+        // `import '…'` a secas (por efecto) y `import('…')` dinámico.
+        ...[...codigo.matchAll(/(?:^|\n)\s*import\s*\(?\s*['"](\.[^'"]+)['"]/g)],
+    ].map(m => m[1]);
     for (const r of rutas) {
         if (!/\.(mjs|js|json)$/.test(r)) continue;      // sin extensión: lo resuelve node, otro problema
         const abs = resolve(dirname(f), r);
@@ -82,6 +103,7 @@ for (const f of ficheros(RAIZ)) {
         revisados++;
         if (reales === null) {
             malos++;
+            rotos.push(f.replace(RAIZ + sep, ''));
             console.log(`  ✗ ${f.replace(RAIZ + sep, '')}`);
             console.log(`      importa "${r}" y esa carpeta no existe`);
             continue;
@@ -89,6 +111,7 @@ for (const f of ficheros(RAIZ)) {
         if (reales.includes(pedido)) continue;          // coincide exacto: bien
         const casi = reales.find(n => n.toLowerCase() === pedido.toLowerCase());
         malos++;
+        rotos.push(f.replace(RAIZ + sep, ''));
         console.log(`  ✗ ${f.replace(RAIZ + sep, '')}`);
         console.log(casi
             ? `      importa "${pedido}" y el fichero se llama "${casi}" — aquí va, en Linux no`
@@ -96,9 +119,50 @@ for (const f of ficheros(RAIZ)) {
     }
 }
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  LA DEUDA, CON TECHO — Y SÓLO LA QUE SE PUBLICA
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Los rotos de `_archivo/` y `colonia_privada/` no viajan al paquete, así que no
+ * pueden romperle nada a nadie: se cuentan aparte. Lo que sí importa es lo que
+ * hay bajo `public/`, porque eso se publica.
+ *
+ * Medido el 24-08: seis rotos en `public/`. Cinco eran renombrados —los ficheros
+ * pasaron de `*Engine.js` a `*System.js` y sus importadores se quedaron atrás—
+ * y se arreglaron apuntándolos al sitio real.
+ *
+ * ⚠️ EL SEXTO ES UNA PREGUNTA DE FRONTERA, NO UN FALLO.
+ *
+ * `public/js/psyche.js` importa `AlisaAgentBridge.js`, que existe en
+ * `colonia_privada/` y NO viaja al paquete. La cadena entera —`alisa.js` →
+ * `psyche.js` → el puente que falta— no la carga ninguna página, así que hoy no
+ * rompe nada; pero es código de la colonia privada publicado en el paquete
+ * abierto. Decidir si se borra o se completa es de quien lleva la frontera, no
+ * de esta prueba.
+ *
+ * Se declara con nombre y motivo. Lo que no vale es que crezca en silencio.
+ */
+const DECLARADOS = {
+    'public\\js\\psyche.js':
+        'importa AlisaAgentBridge.js, que vive en colonia_privada y no viaja al '
+      + 'paquete. Cadena muerta: ninguna página la carga. Es una decisión de frontera.',
+};
+const TECHO_PUBLICO = Object.keys(DECLARADOS).length;
+
 console.log('');
-if (malos) {
-    console.log(`  ${malos} de ${revisados} rutas relativas no sobrevivirían a Linux\n`);
+const enPublico = rotos.filter(r => r.startsWith(`public${sep}`));
+const sinDeclarar = enPublico.filter(r => !DECLARADOS[r]);
+console.log(`  ${rotos.length} de ${revisados} rutas relativas están rotas`);
+console.log(`  de ellas, ${enPublico.length} bajo public/ (o sea, publicadas) · declaradas: ${TECHO_PUBLICO}`);
+for (const [f, motivo] of Object.entries(DECLARADOS)) console.log(`      · ${f} — ${motivo}`);
+
+if (sinDeclarar.length) {
+    console.log('');
+    for (const r of sinDeclarar) console.log(`  ✗ ${r}: import roto sin declarar`);
+    console.log(`\n  ${sinDeclarar.length} ruta(s) rotas nuevas bajo public/. `
+              + 'Apúntalas al fichero real o decláralas con su motivo.\n');
     process.exit(1);
 }
-console.log(`  ✓ las ${revisados} rutas relativas coinciden letra a letra con el disco\n`);
+console.log(`\n  ✓ nada roto sin declarar bajo public/`
+          + `  ·  ${rotos.length - enPublico.length} en carpetas que no se publican\n`);

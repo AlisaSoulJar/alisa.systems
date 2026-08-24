@@ -1,5 +1,5 @@
-import { CroupierEngine } from '../CroupierEngine.js';
-import { KinematicRageEngine } from '../KinematicRageEngine.js';
+import { CroupierSystem as CroupierEngine } from '../world/CroupierSystem.js';
+import { KinematicRageSystem as KinematicRageEngine } from '../world/systems/KinematicRageSystem.js';
 
 console.log('--- TESTING ALISA ROOM Croupier & Rage Engines (HEADLESS) ---');
 

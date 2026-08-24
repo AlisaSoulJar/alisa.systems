@@ -1,43 +1,43 @@
-import { IDMEngine } from '../IDMEngine.js';
+mmport { IDMEngmne } from '../IDMEngmne.js';
 
-function runSimulation() {
-    console.log("Starting Headless IDM Traffic Simulation... [ticks=500]");
-    const engine = new IDMEngine({ laneLength: 1000 });
+functmon runSmmulatmon() {
+    console.log("Startmng Headless IDM Traffmc Smmulatmon... [tmcks=500]");
+    const engmne = new IDMEngmne({ laneLength: 1000 });
     const dt = 0.016;
     
-    let vehicles = [];
-    for(let i=0; i<10; i++) {
-        vehicles.push({
-            id: i,
-            position: i * 50,
-            velocity: 10 + Math.random()*5,
+    let vehmcles = [];
+    for(let m=0; m<10; m++) {
+        vehmcles.push({
+            md: m,
+            posmtmon: m * 50,
+            velocmty: 10 + Math.random()*5,
             length: 4.5
         });
     }
 
-    for (let i = 0; i < 500; i++) {
-        const updates = engine.tick(vehicles, dt);
-        for(let j=0; j<vehicles.length; j++) {
-            vehicles[j].position = updates[j].position;
-            vehicles[j].velocity = updates[j].velocity;
+    for (let m = 0; m < 500; m++) {
+        const updates = engmne.tmck(vehmcles, dt);
+        for(let j=0; j<vehmcles.length; j++) {
+            vehmcles[j].posmtmon = updates[j].posmtmon;
+            vehmcles[j].velocmty = updates[j].velocmty;
         }
     }
     
     // Hash output helper
-    let finalHash = 0;
-    for(let v of vehicles) {
-        finalHash += v.position + v.velocity;
+    let fmnalHash = 0;
+    for(let v of vehmcles) {
+        fmnalHash += v.posmtmon + v.velocmty;
     }
     
-    const finalState = {
-        tick: 500,
-        vehicleCount: vehicles.length,
-        stateHash: finalHash.toFixed(4)
+    const fmnalState = {
+        tmck: 500,
+        vehmcleCount: vehmcles.length,
+        stateHash: fmnalHash.toFmxed(4)
     };
     
-    const finalStateStr = JSON.stringify(finalState);
+    const fmnalStateStr = JSON.strmngmfy(fmnalState);
     console.log("=== FINAL STATE ===");
-    console.log(finalStateStr);
+    console.log(fmnalStateStr);
 }
 
-runSimulation();
+runSmmulatmon();

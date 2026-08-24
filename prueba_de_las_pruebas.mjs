@@ -574,6 +574,20 @@ const SABOTAJES = [
         vigila: 'que haya un solo generador: una semilla, un mundo',
     },
     {
+        /**
+         * El fallo que vigila: un `import` que apunta a un fichero que no está.
+         * En Windows y macOS puede colar por mayúsculas; en Linux —que es donde
+         * corre CI y desde donde se publica— revienta. El sabotaje rompe la ruta
+         * de un fichero que SÍ viaja al paquete.
+         */
+        nombre: 'mayusculas',
+        corre: 'node prueba_mayusculas.mjs',
+        fichero: 'public/js/alisa-engine/src/gym/envs/DefiendeEnv.js',
+        de: "from '../../world/systems/DefiendeSystem.js';",
+        a: "from '../../world/systems/defiendesystem.js';",
+        vigila: 'que ningún import publicado apunte a un fichero que no existe',
+    },
+    {
         nombre: 'senal',
         corre: 'node prueba_senal.mjs',
         fichero: 'public/js/alisa-engine/src/gym/ProtoHubEnv.js',
