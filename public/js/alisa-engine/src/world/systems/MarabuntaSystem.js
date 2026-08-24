@@ -53,7 +53,26 @@ const XP_PER_LEVEL = [0,10,25,50,80,120,170,230,300,400,520,660,820,1000];
 
 export class MarabuntaSystem extends BulletHeavenEngine {
 
-  constructor() {
+  /**
+   * ⚠️ ANTES ERA `constructor()`, SIN ARGUMENTOS, Y SE TRAGABA LO QUE LE DIERAS.
+   *
+   * `new MarabuntaSystem({ rng: mulberry32(1234) })` no fallaba: aceptaba el
+   * objeto, lo tiraba, y jugaba con el azar del sistema. Dos partidas con la
+   * misma semilla salían distintas —20 muertes, luego 23— y el motivo no estaba
+   * en ningún sitio donde mirar: **el parámetro no llegaba a existir.**
+   *
+   * Lo cazó poner una trampa en `Math.random` para que contase quién lo llamaba.
+   * El culpable era el respaldo del propio motor, o sea que el `rng` inyectado
+   * nunca había entrado. Buscar la fuga en las reglas habría sido buscar en el
+   * sitio equivocado indefinidamente.
+   *
+   * Un constructor que ignora sus argumentos en silencio es peor que uno que
+   * falla: el que falla te lo dice.
+   *
+   * `config` va DESPUÉS de los valores propios para que se pueda ajustar la
+   * arena en un experimento; `rng` es lo que hace falta para puntuar.
+   */
+  constructor(config = {}) {
     super({
       weapons: WEAPONS_DB,
       enemies: ENEMY_TYPES,
@@ -65,7 +84,8 @@ export class MarabuntaSystem extends BulletHeavenEngine {
       maxProjectiles: 100,
       maxPickups: 80,
       waveDuration: 30,
-      pickupRangeBase: 1.5
+      pickupRangeBase: 1.5,
+      ...config,
     });
   }
   
@@ -85,8 +105,8 @@ export class MarabuntaSystem extends BulletHeavenEngine {
     this.puddles = []; // Charcos de baba
     // 15 destructible crates for the player to build bunkers
     for(let i=0; i<15; i++) {
-       const ang = Math.random() * Math.PI * 2;
-       const rad = Math.random() * 25 + 5;
+       const ang = this.rng() * Math.PI * 2;
+       const rad = this.rng() * 25 + 5;
        this.obstacles.push({ 
          id: 'crate_' + i,
          x: Math.cos(ang) * rad, 
@@ -136,7 +156,7 @@ export class MarabuntaSystem extends BulletHeavenEngine {
          
          if (e.attackCd <= 0) {
             // Dash attack or Minion summon
-            if (Math.random() > 0.5) {
+            if (this.rng() > 0.5) {
                 // Dash
                 e.attackCd = 3.0; // Dash cooldown
                 const targetAngle = Math.atan2(this.player.x - e.x, this.player.z - e.z);
@@ -146,10 +166,10 @@ export class MarabuntaSystem extends BulletHeavenEngine {
                 // Summon minions
                 e.attackCd = 5.0; // Summon cooldown
                 for (let i = 0; i < 4; i++) {
-                   const offsetAngle = Math.random() * Math.PI * 2;
+                   const offsetAngle = this.rng() * Math.PI * 2;
                    const dist = e.size + 1.0;
                    this.enemies.push({
-                      id: 'spawn_' + Math.random().toString(36).substr(2, 9),
+                      id: 'spawn_' + this.rng().toString(36).substr(2, 9),
                       type: 'swarm',
                       hp: ENEMY_TYPES['swarm'].hp,
                       maxHp: ENEMY_TYPES['swarm'].hp,
@@ -204,9 +224,9 @@ export class MarabuntaSystem extends BulletHeavenEngine {
   _killEnemy(e) {
     super._killEnemy(e);
     // 25% chance to drop a slime puddle on death
-    if (Math.random() < 0.25) {
+    if (this.rng() < 0.25) {
       this.puddles.push({
-        id: 'puddle_' + Math.random().toString(36).substr(2, 9),
+        id: 'puddle_' + this.rng().toString(36).substr(2, 9),
         x: e.x,
         z: e.z,
         r: e.size * 1.5,

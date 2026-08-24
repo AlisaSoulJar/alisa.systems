@@ -31,6 +31,52 @@ export class BulletHeavenEngine {
     this.WAVE_DURATION = config.waveDuration || 30;
     this.PICKUP_RANGE_BASE = config.pickupRangeBase || 1.5;
 
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  ⚠️ LA SEMILLA. ERA LO ÚNICO QUE LE FALTABA A ESTE MOTOR PARA PUNTUAR.
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Este motor es un juego entero y honrado: arena, oleadas, armas con
+     * enfriamiento, XP, subidas de nivel, y fin por los dos lados —derrota con
+     * `hp <= 0` y victoria a los 1200 s—. Corre sin THREE y sin DOM. Le faltaba
+     * una sola cosa para entrar en el banco: que dos partidas con la misma
+     * semilla fueran la misma partida.
+     *
+     * Tenía cinco `Math.random()` sueltos, y el que más duele es el de la baraja
+     * de mejoras: **la decisión más cara de la partida —qué tres opciones te
+     * ofrece al subir de nivel— era irreproducible**. Con eso, dos agentes con
+     * la misma política sacan notas distintas y la comparación no significa nada.
+     *
+     * ⚠️ Y POR DEFECTO SIGUE SIENDO `Math.random`, A PROPÓSITO.
+     *
+     * `MarabuntaSystem` extiende esta clase y ya está en el banco; consigue su
+     * determinismo con `DeterministicScope`, que parchea el `Math.random` GLOBAL.
+     * Si aquí se pusiera un generador propio por defecto, Marabunta dejaría de
+     * pasar por ese parche y **cambiarían sus puntuaciones publicadas** sin que
+     * nadie lo hubiera pedido. Comprobado antes y después de este cambio: mismas
+     * semillas, mismas notas (1234 → 3,0000 · 7 → 2,5000).
+     *
+     * Quien quiera reproducibilidad sin parchear el mundo entero pasa su `rng`, y
+     * entonces puede correr dos episodios a la vez en el mismo hilo — que es
+     * justo lo que el scope global prohíbe.
+     *
+     * ⚠️ Y EL RESPALDO ES UNA LLAMADA, NO UNA REFERENCIA. ESTO ROMPIÓ MARABUNTA.
+     *
+     * La primera versión decía `config.rng || Math.random`, que **captura la
+     * función global en el momento de construir**. `DeterministicScope` parchea
+     * `Math.random` DESPUÉS, al hacer `reset(semilla)`, así que el motor se
+     * quedaba con la función de antes del parche y jugaba sin semilla.
+     *
+     * Medido: las notas de Marabunta pasaron de 3,0000 y 2,5000 a 6,0000 y
+     * 5,0000 con las mismas semillas. Un entorno publicado, en el banco, con las
+     * puntuaciones cambiadas por un `||` — y sin un solo error.
+     *
+     * `() => Math.random()` lee el global EN CADA LLAMADA, así que el parche
+     * llega. Es la diferencia entre guardarse el teléfono de alguien y llamar a
+     * información cada vez: sólo la segunda se entera de que se ha mudado.
+     */
+    this.rng = config.rng || (() => Math.random());
+
     this.reset();
   }
 
@@ -177,7 +223,7 @@ export class BulletHeavenEngine {
 
     while (this.spawnAccum >= 1 && this.enemies.length < this.MAX_ENEMIES) {
       this.spawnAccum -= 1;
-      const typeKey = waveData.types[Math.floor(Math.random() * waveData.types.length)];
+      const typeKey = waveData.types[Math.floor(this.rng() * waveData.types.length)];
       this._spawnEnemy(typeKey);
     }
 
@@ -189,7 +235,7 @@ export class BulletHeavenEngine {
   _spawnEnemy(typeKey) {
     const tmpl = this.enemiesDB[typeKey];
     if (!tmpl) return;
-    const angle = Math.random() * Math.PI * 2;
+    const angle = this.rng() * Math.PI * 2;
     const spawnDist = this.arenaRadius + 5;
     
     const enemy = {
@@ -198,7 +244,7 @@ export class BulletHeavenEngine {
       z: Math.sin(angle) * spawnDist,
       vx: 0, vz: 0,
       hp: tmpl.hp, maxHp: tmpl.hp,
-      speed: tmpl.speed * (0.9 + Math.random() * 0.2),
+      speed: tmpl.speed * (0.9 + this.rng() * 0.2),
       dmg: tmpl.dmg, xp: tmpl.xp, size: tmpl.size,
       type: typeKey,
     };
@@ -323,7 +369,7 @@ export class BulletHeavenEngine {
     this.projectiles.push({
       x: p.x, z: p.z,
       vx: (dx / dist) * w.speed, vz: (dz / dist) * w.speed,
-      dmg: w.dmg * (Math.random() < p.critChance ? 2 : 1),
+      dmg: w.dmg * (this.rng() < p.critChance ? 2 : 1),
       life: 2.0, aoe: w.aoe,
     });
   }
@@ -518,7 +564,7 @@ export class BulletHeavenEngine {
     }
 
     for (let i = 0; i < 3 && pool.length > 0; i++) {
-      const idx = Math.floor(Math.random() * pool.length);
+      const idx = Math.floor(this.rng() * pool.length);   // la baraja de mejoras
       options.push(pool.splice(idx, 1)[0]);
     }
 
