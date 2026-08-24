@@ -193,15 +193,43 @@ export class SimonSaysSystem {
     }
 
     /**
-     * Get available actions for RL agent.
+     * ═══════════════════════════════════════════════════════════════════════
+     *  ⚠️ EL MENÚ OFRECÍA VERBOS QUE `submitAction` NO ACEPTA. TODOS.
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Decía `act_jump` cuando el objetivo es `jump`, y `move_to_target` cuando el
+     * objetivo es `tile_2_3`. `submitAction` compara con `===`, así que **ninguno
+     * de los verbos ofrecidos podía acertar jamás**.
+     *
+     * Medido el 24-08 antes de tocar nada, 400 pasos con semilla fija:
+     *
+     *     jugando lo que ofrece el menú     0 aciertos · 31 fallos · marcador -155
+     *     jugando el objetivo literal      45 aciertos ·  0 fallos · marcador +450
+     *
+     * O sea que un agente que se fía del menú no sólo no puntúa: **es castigado
+     * por obedecer**, porque un verbo que no coincide cuenta como fallo. Y desde
+     * fuera parecería que el agente es malo, no que el menú miente.
+     *
+     * Es el mismo fallo que esta misma mañana tenía la puerta de lenguaje de
+     * ¡Busca! —ofrecer los mandos de una nave para pilotar un dron— pero llevado
+     * al extremo. Dos veces en un día: **un menú se escribe leyendo lo que acepta
+     * quien lo va a recibir, no lo que suena bien.**
+     *
+     * Este motor no está en el banco todavía, así que no ha falseado ninguna nota
+     * publicada. Se arregla antes de montarle el entorno, no después.
      */
     getAvailableActions(state) {
         if (!state.active || !state.currentTarget) return ['wait'];
 
+        /**
+         * Con un objetivo de casilla, lo único que vale es ESA casilla. Ofrecer
+         * las veinticinco sería un menú honrado pero inútil: la gracia del juego
+         * es que ya te han dicho a cuál ir.
+         */
         if (state.targetType === 'tile') {
-            return ['wait', 'move_to_target'];
+            return ['wait', state.currentTarget];
         }
-        return ['wait', ...this.actionPool.map(a => `act_${a}`)];
+        return ['wait', ...this.actionPool];
     }
 
     // ─── INTERNAL ──────────────────────────────────────
