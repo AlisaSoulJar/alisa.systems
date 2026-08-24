@@ -517,6 +517,23 @@ const SABOTAJES = [
          * las demás comprobaciones del banco siguen en verde — se importan, aceptan
          * sus verbos y son repetibles. Repetiblemente inútiles.
          */
+        /**
+         * El fallo que esto impide: que una etapa de saga acabe con un motor para
+         * la persona y otro para el banco, y que las notas de las dos puertas dejen
+         * de medir la misma partida sin que nadie se entere. Ya pasó dos veces
+         * —Cabinet y Espacio—, y las dos se descubrieron mirando a mano.
+         *
+         * Se le cambia el nombre al motor que Corp Building comparte hoy: la etapa
+         * pasa a tener dos motores sin estar declarada, y tiene que saltar.
+         */
+        nombre: 'sagas',
+        corre: 'node prueba_sagas.mjs',
+        fichero: 'public/js/alisa-engine/src/gym/envs/CorpBuildingEnv.js',
+        de: 'import { CorporateSeekerSystem }',
+        a: 'import { OtroSeekerSystem }',
+        vigila: 'que la persona y el agente corran el mismo motor en cada etapa de saga',
+    },
+    {
         nombre: 'senal',
         corre: 'node prueba_senal.mjs',
         fichero: 'public/js/alisa-engine/src/gym/ProtoHubEnv.js',
