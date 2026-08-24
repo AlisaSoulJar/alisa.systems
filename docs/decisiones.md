@@ -15,7 +15,7 @@ contrario. El problema no era que no estuviera escrito: era que no había índic
 Volver a decidir sale barato en el momento y carísimo a la semana, porque la
 segunda decisión casi nunca coincide con la primera y entonces hay dos verdades.
 
-**1883 decisiones** en 313 ficheros.
+**1885 decisiones** en 314 ficheros.
 
 ## Índice
 
@@ -23,7 +23,7 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - [Reglas de los juegos](#reglas-de-los-juegos) — 362
 - [Las mesas y los visualizadores](#las-mesas-y-los-visualizadores) — 308
 - [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 204
-- [Las comprobaciones](#las-comprobaciones) — 196
+- [Las comprobaciones](#las-comprobaciones) — 198
 - [Otros](#otros) — 147
 - [Las páginas de los juegos](#las-páginas-de-los-juegos) — 81
 - [Cómo se dibuja (el pintor)](#cómo-se-dibuja-el-pintor-) — 64
@@ -3131,19 +3131,19 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Aquélla comprueba que los juegos LEEN el catálogo que se les pasa. Ésta, que cogen de él LA BARAJA QUE LES TOCA. Un juego francés que pidiera la española leería el catálogo impecablemente y repartiría oros en una mesa de</sub>
 - **Y este sabotaje ya sirvió de algo antes de entrar aquí: con él puesto,** <sub>línea 507</sub>
   <br><sub>la primera versión de la comprobación APROBÓ. Miraba el `de` del dicho, y el dicho filtrado sigue diciendo ser tuyo. Hubo que cambiarla por la pregunta buena —¿cambia lo que yo veo cuando otro elige distinto?— y eso</sub>
-- **AQUÍ FALLÉ LA PUNTERÍA DOS VECES, Y ES EL ERROR TÍPICO DE ESTE FICHERO.** <sub>línea 555</sub>
+- **AQUÍ FALLÉ LA PUNTERÍA DOS VECES, Y ES EL ERROR TÍPICO DE ESTE FICHERO.** <sub>línea 570</sub>
   <br><sub>Primero cambié `juego: 'ajedrez'` en el catálogo: la prueba aprobó, porque enumera el catálogo y construye cada entorno — un nombre distinto se construye igual. Luego puse `reset(` a secas, que aparece también en un</sub>
-- **SE SABOTEA EL PAQUETE, NO `public/`.** <sub>línea 591</sub>
+- **SE SABOTEA EL PAQUETE, NO `public/`.** <sub>línea 606</sub>
   <br><sub>medido = PAQUETE if hay_paquete else PUBLIC</sub>
-- **NO SE PUDO DEVOLVER A SU SITIO:')}`);** <sub>línea 686</sub>
+- **NO SE PUDO DEVOLVER A SU SITIO:')}`);** <sub>línea 701</sub>
   <br><sub>for (const f of sinRestaurar) console.log(rojo(`      ${f}`)); console.log(rojo('   RECUPÉRALOS CON `git checkout -- <fichero>` ANTES DE SEGUIR.')); process.exit(2);</sub>
-- **EL CENSO SE DERIVA.** <sub>línea 699</sub>
+- **EL CENSO SE DERIVA.** <sub>línea 714</sub>
   <br><sub>Aquí había un array `TODAS` con los nombres escritos a mano. Es la enésima lista de este proyecto que se separa de la realidad en silencio — y ésta era la peor, porque es la lista de la red de seguridad.</sub>
-- **20-08: estas dos salían denunciadas como «no las corre nadie» y era FALSO —** <sub>línea 741</sub>
+- **20-08: estas dos salían denunciadas como «no las corre nadie» y era FALSO —** <sub>línea 756</sub>
   <br><sub>tienen su propio mando desde el día que se escribieron. El aviso miraba sólo `scripts.test` y llamaba huérfana a cualquiera que viviera en otro guion. Se arregla abajo mirando TODOS los guiones, y éstas se quedan aquí porque abren</sub>
-- **DOS LISTAS Y NO UNA, PORQUE SE PREGUNTAN DOS COSAS DISTINTAS.** <sub>línea 768</sub>
+- **DOS LISTAS Y NO UNA, PORQUE SE PREGUNTAN DOS COSAS DISTINTAS.** <sub>línea 783</sub>
   <br><sub>`todasEnDisco` es lo que HAY. `enDisco` es lo que se vigila por huérfano, que excluye a las de `APARTE` porque de ésas ya se sabe por qué no van en `npm test`.</sub>
-- **SE MIRAN TODOS LOS GUIONES, NO SÓLO `test`.** <sub>línea 782</sub>
+- **SE MIRAN TODOS LOS GUIONES, NO SÓLO `test`.** <sub>línea 797</sub>
   <br><sub>Esto leía `scripts.test` y punto, así que denunciaba como huérfana a cualquier comprobación que viviera en otro mando —`npm run figuras`, `npm run invitados`— aunque se corriera a diario. Una acusación falsa dentro del instrumento que existe</sub>
 
 ### `prueba_dos_personas.mjs`
@@ -3355,6 +3355,13 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Costó tres intentos llegar aquí. Mirar sólo el estado inicial da un falso positivo en cuanto el entorno esconde algo —el mapache de Chopper se coloca con la semilla y precisamente NO se ve al empezar, que es el juego—. Y mirar</sub>
 - **TECHO DE COPIAS DE «MARCAR DÓNDE PUEDES JUGAR», Y SÓLO PUEDE BAJAR.** <sub>línea 284</sub>
   <br><sub>Esto ya vive en dos sitios legítimos: `Entrada.js` lo hace para los tableros (y de paso resuelve el clic entero), y `protohub/marcas.js` para los visualizadores que son MÓDULOS, que no pueden llamar a un script clásico.</sub>
+
+### `prueba_senal.mjs`
+
+- **Y ESTA PRUEBA TIENE UNA TRAMPA PROPIA, QUE ME COMIÓ CUATRO INTENTOS.** <sub>línea 22</sub>
+  <br><sub>«Las tres políticas sacan lo mismo» sólo significa algo si de verdad JUGARON distinto. En los cuatro primeros intentos no lo hacían, por cuatro motivos distintos, y las cuatro veces el resultado parecía un hallazgo:</sub>
+- **TRINQUETE. Los entornos que hoy no separan, con su motivo. **Sólo puede** <sub>línea 46</sub>
+  <br><sub>bajar.** Si sube, es que se ha añadido al banco un entorno que no puede puntuar a nadie, y eso es justo lo que no queremos que pase callando.</sub>
 
 ### `prueba_sonido.mjs`
 

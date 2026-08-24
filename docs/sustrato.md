@@ -304,3 +304,52 @@ parecia un hallazgo:
 Por eso `prueba_senal.mjs` publica cuantas trazas distintas hubo. Si son una,
 el instrumento no puede opinar y lo dice, en vez de acusar.
 
+
+
+---
+
+## 2026-08-24 — Correccion: los siete entornos acusados estaban sanos
+
+La seccion de arriba decia que siete entornos no podian puntuar a nadie. **Seis
+de los siete si podian**, y el septimo -`guerra`- no separa porque no tiene nada
+que decidir, que es su razon de ser.
+
+Fuimos a arreglarlos y lo primero fue medir de que estaba hecha su recompensa.
+Aparecio esto:
+
+| entorno | mis tres sondas | con politica competente |
+|---|---|---|
+| `snake` | 0 | **100** |
+| `relevo` | -156 | **287** |
+| `oca` | 250 | **1520** |
+
+Las tres sondas -recorrer en ciclo, siempre la primera, siempre la ultima- son
+**tres formas de jugar igual de mal**. Que tres jugadores pesimos empaten no dice
+nada del examen.
+
+Y los otros tres cayeron por dos causas mas, cada una mia:
+
+- **`ChopperAquarium`**: declara `horizon: 3000` y yo lo medi en 150 pasos. En
+  el suyo separa (15 contra 40). El horizonte estaba escrito en `meta.horizon`
+  por quien hizo el entorno, y la prueba lo ignoraba.
+- **`RaccoonSpace`**: toda su recompensa esta detras de NAVEGAR hasta un planeta
+  -`escanear` solo se ofrece con uno al alcance- y ninguna politica ciega llega.
+  Un piloto que apunta saca **-40** contra los -100 de las ciegas. Problema
+  dificil, no entorno roto, y la diferencia importa.
+- **`sokoban`**: no hay generador que reparta basura. Hay **ocho niveles escritos
+  a mano** y el primero es `#@$.#`, un tutorial de una jugada. La semilla 1234 cae
+  en el. Uno de ocho es 12,5%; las 200 semillas que medi daban 14%. **Cuadraba, y
+  lei el numero como un defecto en vez de como la lista de niveles funcionando.**
+
+### Lo que quedo en su sitio
+
+`prueba_senal.mjs` mide ahora con el **horizonte que declara cada entorno**, con
+**siete politicas** -tres estructurales, tres de azar sembrado y un bandido que
+aprende que verbo paga- y, si sale plano, **con cuatro semillas** en vez de una.
+
+**45 de 46 separan.** La lista de excepciones tiene un solo nombre.
+
+> Sexta y septima vez en dos dias que el instrumento era el sospechoso. La
+> version anterior de esta prueba habria hecho que se "arreglaran" cinco
+> entornos que funcionaban — y eso es peor que no tener prueba.
+
