@@ -134,9 +134,37 @@ for (const fichero of sistemas) {
  * etiqueta contradecía al número que estaba en la misma línea. Un regex malo se
  * entiende; poner «DORMIDO» al lado de un importador que acabas de contar, no.
  */
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ QUIÉN HEREDA DE QUIÉN, PORQUE UNA CLASE MADRE NO ES UN MOTOR PARADO
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * `BulletHeavenEngine` sale con `pag:0 run:0 env:0` y con eso aterrizaba entre
+ * los motores sin puertas propias. Es cierto y es engañoso: `MarabuntaSystem`
+ * **extiende** esa clase, y Marabunta tiene el patrón dorado completo. O sea que
+ * el motor no está esperando un juego — su juego existe y se llama de otra
+ * manera.
+ *
+ * Yo mismo lo leí mal el 24-08 y llegué a proponer «montarle un juego encima»,
+ * que habría sido un reskin de Marabunta vendido como medida nueva. El censo
+ * tenía el dato —`motor:2`— y la etiqueta invitaba a ignorarlo.
+ *
+ * Se busca `class X extends Y` en todo el árbol y se dice el nombre del hijo.
+ * Decir «pieza de otro motor» no basta: hay que decir DE CUÁL, porque lo único
+ * que responde la pregunta «¿le falta un juego?» es mirar a ese hijo.
+ */
+const hijos = new Map();
+for (const [, t] of textos) {
+    for (const m of t.matchAll(/class\s+([A-Za-z_$][\w$]*)\s+extends\s+([A-Za-z_$][\w$]*)/g)) {
+        if (!hijos.has(m[2])) hijos.set(m[2], new Set());
+        hijos.get(m[2]).add(m[1]);
+    }
+}
+
 const importadores = (f) => f.envs + f.paginas + f.runners + f.motores + f.otros;
 const estado = (f) => f.envs ? 'EN EL BANCO'
                     : f.paginas ? 'jugable, sin medir'
+                    : hijos.has(f.nombre) ? `clase madre de ${[...hijos.get(f.nombre)].join(', ')}`
                     : f.runners ? 'medio: runner suelto'
                     : importadores(f) ? 'pieza de otro motor'
                     : 'DORMIDO';
