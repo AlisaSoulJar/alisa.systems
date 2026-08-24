@@ -437,10 +437,42 @@ function separaDeVerdad(fila) {
     return { hueco, se, ok: hueco > 2 * se };
 }
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ RE-PINTAR NO ES RE-JUGAR: `--desde resultados/tabla.json`
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * La primera clasificación con modelos costó dos horas de máquina y 7,8 M de
+ * tokens. Se lanzó sin `--html`, así que la página del sitio se quedó con la
+ * tabla vieja —la de sólo líneas base— y para arreglarlo había que **volver a
+ * jugarlo todo**: dos horas más para cambiar un fichero de texto.
+ *
+ * Eso es absurdo y además peligroso: invita a re-medir por motivos de maquetación
+ * y a que la página publicada nunca coincida con la última tanda buena. La
+ * clasificación es una MEDIDA; la página es una VISTA de esa medida. Volver a
+ * medir para redibujar es confundir las dos cosas.
+ *
+ * El JSON guarda todo lo que la vista necesita: `resumen` trae por participante
+ * su `porJuego` con los valores ya normalizados, y `juegos` y `descartados`
+ * traen el resto. Así que se reconstruyen las cuatro estructuras y se salta la
+ * tanda entera.
+ *
+ * ⚠️ Y NO SE TOCA LA FECHA. La página dirá cuándo se MIDIÓ, no cuándo se pintó:
+ * si al redibujar se pusiera la fecha de hoy, una tabla de la semana pasada
+ * parecería recién medida, que es la mentira exacta que este proyecto persigue.
+ */
+const DESDE = args.desde ? String(args.desde) : null;
+let guardado = null;
+if (DESDE) {
+    guardado = JSON.parse(await readFile(path.join(AQUI, DESDE), 'utf-8'));
+    console.log(gris(`\n  re-pintando desde ${DESDE} — medido el ${guardado.fecha}`));
+    console.log(gris('  (no se juega nada: esto es la VISTA de una medida ya hecha)\n'));
+}
+
 // ── la tanda ─────────────────────────────────────────────────────
 const datos = new Map();          // juego → { participante → resultado }
 const descartes = new Map();      // juego → motivo por el que no puntúa, o null
-for (const e of entornos) {
+for (const e of (DESDE ? [] : entornos)) {
     const Clase = await e.cargar();
     const reglas = await cargarReglas(e.juego);
     const fila = {};
@@ -657,12 +689,49 @@ for (const [juego, fila] of datos) {
     normalizados.set(juego, n);
 }
 
+/**
+ * Con `--desde`, las cuatro estructuras que la VISTA necesita se reconstruyen
+ * del JSON en vez de medirse. Se mutan en su sitio porque son `const`: lo que
+ * importa es que a partir de aquí el resto del fichero no sepa —ni le haga
+ * falta saber— si los números vienen de jugar o de leer.
+ */
+if (DESDE) {
+    participantes.length = 0;
+    participantes.push(...guardado.resumen.map(r => ({ nombre: r.participante, tipo: r.tipo })));
+    juegosUtiles.push(...guardado.juegos);
+    for (const j of guardado.juegos) {
+        normalizados.set(j, Object.fromEntries(
+            guardado.resumen.map(r => [r.participante, r.porJuego?.[j] ?? null])));
+    }
+    for (const [j, motivo] of Object.entries(guardado.descartados ?? {})) descartes.set(j, motivo);
+}
+
 // ── la tabla ─────────────────────────────────────────────────────
-console.log(`\n  ${verde('CLASIFICACIÓN')}  ${gris(`0 = elegir la primera · 1 = rival de casa · ${juegosUtiles.length}/${entornos.length} juegos con hueco`)}\n`);
+console.log(`\n  ${verde('CLASIFICACIÓN')}  ${gris(`0 = elegir la primera · 1 = rival de casa · ${juegosUtiles.length}/${DESDE ? juegosUtiles.length + Object.keys(guardado.descartados ?? {}).length : entornos.length} juegos con hueco`)}\n`);
 console.log(gris('  participante          mediana   media      ±   peor   mejor   forzadas    tokens      s   recibos'));
 
-const resumen = [];
-for (const part of participantes) {
+const resumen = DESDE ? [...guardado.resumen] : [];
+/**
+ * ⚠️ Y RE-PINTANDO TAMBIÉN SE IMPRIME LA TABLA EN LA CONSOLA.
+ *
+ * La primera versión saltaba el bucle de abajo, que es quien imprime las filas —
+ * así que salía la cabecera, ninguna fila, y el fichero bien escrito. Una salida
+ * que enseña el encabezado de una tabla vacía hace pensar que no hay datos
+ * cuando los hay: el error contrario al de siempre, pero error igual.
+ */
+if (DESDE) {
+    for (const r of resumen) {
+        const vals = juegosUtiles.map(j => r.porJuego?.[j]).filter(v => v !== null && v !== undefined);
+        console.log(`  ${r.verificadas === r.esperadas ? verde('✓') : rojo('✗')} ${r.participante.padEnd(22)}`
+            + `${r.mediana.toFixed(2).padStart(7)}${r.media.toFixed(2).padStart(8)}`
+            + `${('±' + r.incertidumbre.toFixed(2)).padStart(7)}`
+            + `${(vals.length ? Math.min(...vals) : 0).toFixed(2).padStart(7)}`
+            + `${(vals.length ? Math.max(...vals) : 0).toFixed(2).padStart(8)}`
+            + `${String(r.forzadas).padStart(11)}${(r.tokens / 1000).toFixed(1).padStart(10)}k`
+            + `${String(Math.round(r.segundos)).padStart(7)}   ${r.verificadas}/${r.esperadas}`);
+    }
+}
+for (const part of (DESDE ? [] : participantes)) {
     const vals = juegosUtiles.map(j => normalizados.get(j)[part.nombre]).filter(v => v !== null);
     if (!vals.length) { console.log(`  ${rojo('✗')} ${part.nombre.padEnd(22)} sin datos`); continue; }
     const media = vals.reduce((a, b) => a + b, 0) / vals.length;
@@ -802,7 +871,12 @@ const salidaJson = parcial ? 'tabla_ensayo.json' : 'tabla.json';
 if (parcial) {
     console.log(gris('\n  ⚠ tanda PARCIAL (--juegos): no se toca la clasificación publicada.'));
 }
-await writeFile(path.join(dir, salidaJson), JSON.stringify(
+/**
+ * ⚠️ RE-PINTANDO NO SE REESCRIBE LA MEDIDA. Con `--desde` la única salida son
+ * el HTML y el markdown: tocar el JSON sólo serviría para cambiarle la fecha a
+ * una medida que no se ha vuelto a hacer.
+ */
+if (!DESDE) await writeFile(path.join(dir, salidaJson), JSON.stringify(
     { fecha: new Date().toISOString(), semillas: SEMILLAS, tope: TOPE,
       // Los topes propios van en el resultado porque cambian lo que significa el
       // número: una puntuación de go a 1800 decisiones y otra a 400 no son la misma
@@ -948,4 +1022,4 @@ if (args.md) {
     await writeFile(path.join(AQUI, String(args.md)), md);
     console.log(gris(`\n  markdown en ${args.md}`));
 }
-console.log(gris(`  json en resultados/${salidaJson}`) + '\n');
+console.log(gris(DESDE ? '  (re-pintado: la medida no se ha tocado)' : `  json en resultados/${salidaJson}`) + '\n');
