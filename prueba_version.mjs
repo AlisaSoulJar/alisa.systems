@@ -107,16 +107,45 @@ async function hojasSelladas() {
     return hay.filter(e => e.isFile() && e.name.endsWith('.css')).map(e => e.name).sort();
 }
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ SE NORMALIZAN LOS FINALES DE LÍNEA, Y ESO NOS TUVO OCHO DÍAS SIN PUBLICAR
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * El resumen se hacía sobre los BYTES del fichero. En Windows, git deja CRLF en
+ * el árbol de trabajo (`core.autocrlf = true`) y guarda LF en el repositorio;
+ * en Linux el árbol es LF. O sea que **el mismo código daba dos sellos
+ * distintos según en qué máquina se calculara**, y el sello se escribe a mano
+ * desde la máquina de casa.
+ *
+ * Consecuencia, medida el 24-08: CI llevaba EN ROJO DESDE EL 16 DE AGOSTO,
+ * ciento veintiún commits, y el despliegue depende de CI. El sitio publicado
+ * llevaba ocho días congelado mientras el repositorio avanzaba — exactamente lo
+ * que `wrangler.toml` cuenta que ya pasó una vez por otra causa.
+ *
+ * Y no daba ningún error legible: decía «alguien cambió un motor sin subir la
+ * versión», que es una acusación falsa pero verosímil. Lo peor que puede decir
+ * una prueba es una mentira creíble.
+ *
+ * Cómo se encontró: reproduciendo CI en un clon limpio. En el árbol de trabajo
+ * pasaba y en el clon no, con TRES hashes distintos — el del taller (CRLF), el
+ * de un clon con conversión, y el de un clon con LF, que es el que ve Linux.
+ *
+ * Resumiendo sobre el texto normalizado a LF, el sello es una propiedad del
+ * CÓDIGO y no del sistema operativo de quien lo calculó.
+ */
+const aLF = (buf) => Buffer.from(buf.toString('utf-8').replace(/\r\n/g, '\n'), 'utf-8');
+
 const nombres = await ficherosSellados();
 const hojas = await hojasSelladas();
 const resumen = createHash('sha256');
 const faltan = [];
 for (const n of nombres) {
-    try { resumen.update(n).update(await readFile(new URL(n, JS))); }
+    try { resumen.update(n).update(aLF(await readFile(new URL(n, JS)))); }
     catch { faltan.push(n); }
 }
 for (const n of hojas) {
-    try { resumen.update(n).update(await readFile(new URL(n, CSS))); }
+    try { resumen.update(n).update(aLF(await readFile(new URL(n, CSS)))); }
     catch { faltan.push(n); }
 }
 const esperado = resumen.digest('hex').slice(0, 8);

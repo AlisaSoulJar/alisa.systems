@@ -57,6 +57,7 @@
     "desplegar:mesas": "node worker-mesas/desplegar.mjs",
     "//generos": "La tabla de estructuras de decision, MEDIDA jugando los 21. No hay etiquetas a mano: se clasifica por lo que hay que saber hacer para jugar bien, no por genero de tienda. Destapo que poker era el unico que publicaba `turno` y no `turn` (asi que el arbitro de mesas no sabia a quien le tocaba) y que su mano rival desaparecia del sustrato — el dibujo decia que el contrario no tiene cartas.",
     "generos": "node matriz_generos.mjs --md docs/matriz_generos.md --html public/generos.html",
+    "mayusculas": "node prueba_mayusculas.mjs",
     "calibrar": "node calibrar.mjs 120",
     "//tabla": "La clasificacion. Las lineas base juegan MUCHAS mas semillas que los modelos porque no cuestan tokens: el metro se mide con mas partidas que lo que se mide con el. Cada partida se re-simula antes de contarse, y los juegos cuyo hueco no supera al ruido salen de la media con el motivo puesto.",
     "tabla": "node tabla.mjs --semillas 15 --semillas-base 120 --tope 200 --md docs/clasificacion.md --html public/clasificacion.html",
