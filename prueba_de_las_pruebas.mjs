@@ -608,6 +608,23 @@ const SABOTAJES = [
         vigila: 'que la puerta de lenguaje lleve el problema entero, no la mitad',
     },
     {
+        /**
+         * El fallo REAL que tuvo esto en su primera versión: los tipos de pieza
+         * salían de las piezas PRESENTES al empezar, así que un tipo que aparece
+         * después —un cajón que se abre y resulta ser el mapache— caía a cero, el
+         * mismo número que «cerrado». En Cabinet eso borra el juego entero y el
+         * vector no cambiaba nunca.
+         *
+         * El sabotaje devuelve esa derivación.
+         */
+        nombre: 'observacion',
+        corre: 'node --import ./resolver_three.mjs prueba_observacion.mjs',
+        fichero: 'public/js/alisa-engine/src/gym/ObservacionDeSustrato.js',
+        de: '?? (sus.leyenda ? Object.keys(sus.leyenda).sort()',
+        a: '?? (false ? Object.keys(sus.leyenda).sort()',
+        vigila: 'que del sustrato salga un vector que de verdad lleve el juego dentro',
+    },
+    {
         nombre: 'senal',
         corre: 'node prueba_senal.mjs',
         fichero: 'public/js/alisa-engine/src/gym/ProtoHubEnv.js',
