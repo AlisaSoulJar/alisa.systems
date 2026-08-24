@@ -89,7 +89,8 @@ const RAIZ = join(AQUI, 'public/js/alisa-engine/src');
  * bajarlo, y la siguiente persona que lo lea con ganas de dejarlo en cero haría
  * exactamente el daño que esta comprobación existe para evitar.
  */
-const TECHO_SIN_SEMBRAR = 2;
+// 24-08: cero. Los 54 sistemas del motor aceptan o no necesitan semilla. Antes 2.
+const TECHO_SIN_SEMBRAR = 0;
 
 const sistemas = [];
 (function recorrer(dir) {
@@ -97,7 +98,25 @@ const sistemas = [];
         const p = join(dir, f.name);
         if (f.isDirectory()) { recorrer(p); continue; }
         if (!f.name.endsWith('System.js')) continue;
-        const texto = readFileSync(p, 'utf-8');
+        const bruto = readFileSync(p, 'utf-8');
+        /**
+         * ⚠️ SIN COMENTARIOS, O ESTA PRUEBA ACUSA A QUIEN CUENTA CÓMO SE ARREGLÓ.
+         *
+         * Leía el fichero entero, comentarios incluidos. El 24-08, al sembrar
+         * `AsteroidsSystem`, la prueba lo siguió marcando cuando ya no le quedaba
+         * un solo `Math.random(` ejecutable: lo que encontraba eran las cuatro
+         * menciones del comentario que explica **por qué** se le quitaron.
+         *
+         * O sea que documentar bien el arreglo hacía fallar la prueba del
+         * arreglo. Eso empuja a escribir comentarios pobres para que el guardia
+         * calle, que es justo lo contrario de lo que quiere esta casa.
+         *
+         * Es la tercera vez el mismo día que un detector lee prosa y la toma por
+         * código —`motores.mjs` acusó a dos motores de no ser headless leyendo el
+         * comentario «No THREE.js dependencies»—. Un detector que lee comentarios
+         * mide lo que el fichero DICE, no lo que HACE.
+         */
+        const texto = bruto.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
         sistemas.push({
             nombre: f.name.replace('.js', ''),
             /**

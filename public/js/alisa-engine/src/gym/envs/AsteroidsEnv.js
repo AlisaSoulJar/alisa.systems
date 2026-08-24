@@ -62,14 +62,31 @@ export class AsteroidsEnv extends GymEnv {
             return ((t ^ t >>> 14) >>> 0) / 4294967296;
         };
     }
-    _withSeed(fn) {                    // ejecuta con Math.random sembrado
-        const real = Math.random; Math.random = this._rng;
-        try { return fn(); } finally { Math.random = real; }
-    }
+    /**
+     * ⚠️ EL PUENTE ESTÁ CRUZADO: LA SEMILLA VIVE EN EL SYSTEM.
+     *
+     * Esto parcheaba `Math.random` GLOBAL mientras corría el episodio, y la
+     * cabecera de este fichero lo llamaba «un puente honesto hasta que los
+     * systems usen DeterministicMath de serie». Desde hoy `AsteroidsSystem`
+     * acepta su propio `rng`, así que el parche sobra.
+     *
+     * Lo que se gana no es elegancia: **el System pasa a ser reproducible por sí
+     * mismo**. Antes sólo puntuaba desde este entorno, porque era este entorno
+     * quien le parcheaba el mundo; ahora se puede medir en node, en un worker o
+     * desde otra puerta sin que nadie se acuerde de envolverlo. Y se pueden
+     * correr dos episodios a la vez en el mismo hilo, que un parche global
+     * prohíbe por construcción.
+     *
+     * Se deja como identidad —llama y ya— en vez de borrarlo de los tres sitios:
+     * si mañana hiciera falta volver a envolver algo, el gancho está donde
+     * estaba y con su historia al lado.
+     */
+    _withSeed(fn) { return fn(); }
 
     reset(seed = 0) {
         this.seed = seed; this._rng = this._mulberry32(seed >>> 0);
-        this.sys = new AsteroidsSystem();
+        // La semilla entra por la puerta del System, no parcheando el mundo.
+        this.sys = new AsteroidsSystem({ rng: this._rng });
         this.sys.externalControl = true;   // ← el AGENTE conduce, no el piloto automático
         this._withSeed(() => this.sys.start({ stage: 1, shipClass: 'VIPER', asteroidDensity: 12, scrollSpeed: 22 }));
         this.t = 0; this.steps = 0; this.done = false; this._lastScore = 0; this._prevScore = 0;

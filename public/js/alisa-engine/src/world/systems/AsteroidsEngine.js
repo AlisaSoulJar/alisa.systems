@@ -14,7 +14,16 @@ export class AsteroidsEngine {
         this.telemetryEnabled = options.telemetryEnabled === true;
         this.telemetryClient = options.telemetryClient || MMOClient;
         
-        this.system = new AsteroidsSystem();
+        /**
+         * ⚠️ LA VARIEDAD LA PONE LA PUERTA HUMANA, NO EL MOTOR.
+         *
+         * `AsteroidsSystem` es determinista por construcción: sin semilla juega
+         * siempre la misma partida. Eso es lo correcto para medir, y sería
+         * horrible para quien se sienta a jugar. Así que la entropía la aporta
+         * quien la necesita —aquí, del reloj— y el motor sigue sin conocer ni el
+         * reloj ni el azar del sistema.
+         */
+        this.system = new AsteroidsSystem({ seed: (Date.now() & 0x7fffffff) >>> 0 });
         this.factory = new AsteroidsFactory(this.scene, this.camera);
         
         // Proxy metrics up so HTML UI doesn't break

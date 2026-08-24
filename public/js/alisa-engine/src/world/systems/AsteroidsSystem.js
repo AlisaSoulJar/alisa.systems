@@ -1,3 +1,5 @@
+import { mulberry32 } from '../core/DeterministicScope.js';
+
 export const SHIP_GAUGES = {
     'VIPER': [
         { id:'SPEED', label:'SPEED' },
@@ -41,10 +43,48 @@ function dist3(p1, p2) {
     let dx = p1.x - p2.x, dy = p1.y - p2.y, dz = p1.z - p2.z;
     return Math.sqrt(dx*dx + dy*dy + dz*dz);
 }
-function uuid() { return Math.random().toString(36).substring(2, 9); }
+/**
+ * ⚠️ RECIBE EL AZAR, NO LO BUSCA. Es una función SUELTA, no un método: al
+ * enrutar los `Math.random()` de golpe, ésta quedó con un `this.rng()` que en un
+ * módulo no existe — `this` es `undefined` y revienta a la primera llamada.
+ *
+ * Un reemplazo masivo no distingue entre un método y una función de arriba del
+ * fichero. Se arregla pasándole el generador, que además es lo correcto: un
+ * identificador de una partida sembrada tiene que salir de la misma semilla.
+ */
+function uuid(rng) { return rng().toString(36).substring(2, 9); }
 
 export class AsteroidsSystem {
-    constructor() {
+    /**
+     * ⚠️ LA SEMILLA VIVE AQUÍ, NO EN EL ENTORNO. ÉSA ES LA PALANCA.
+     *
+     * `AsteroidsEnv` conseguía su determinismo parcheando `Math.random` GLOBAL
+     * mientras corría el episodio, y su propio comentario lo llamaba «un puente
+     * honesto hasta que los systems usen DeterministicMath de serie». Esto es
+     * cruzar ese puente.
+     *
+     * El parche global funciona y tiene dos precios: no se pueden correr dos
+     * episodios a la vez en el mismo hilo, y el System **no es reproducible por
+     * sí mismo** — sólo puntúa desde el entorno que lo parchea. Con la semilla
+     * dentro, el System se puede medir en un worker, en node y desde otra puerta
+     * sin que nadie tenga que acordarse de envolverlo.
+     *
+     * ⚠️ Y AQUÍ NO HAY RESPALDO A `Math.random`: EL SYSTEM ES DETERMINISTA SIEMPRE.
+     *
+     * El primer intento dejaba `() => Math.random()` de reserva, y `prueba_semillas.mjs`
+     * —que ya existía— lo cazó con la frase exacta: *«un sistema medio sembrado no
+     * es reproducible, y encima lo parece: misma semilla, distinto mundo»*.
+     * Tenía razón. Un motor que a veces se siembra y a veces no es peor que uno
+     * que nunca se siembra, porque el segundo al menos no engaña.
+     *
+     * Así que la variedad la pone QUIEN LA QUIERE, no el motor: sin `rng` ni
+     * `seed` esto juega siempre la misma partida, y eso es una propiedad, no una
+     * carencia. `AsteroidsEngine` —el que monta la página para una persona— pasa
+     * una semilla del reloj; el entorno del banco pasa la suya. El System no
+     * conoce ni el reloj ni el azar del sistema.
+     */
+    constructor(config = {}) {
+        this.rng = config.rng || mulberry32((config.seed ?? 42) >>> 0);
         this.ARENA_W = 40;
         this.ARENA_H = 25;
         this.VISIBLE_Z = 130;
@@ -86,17 +126,17 @@ export class AsteroidsSystem {
 
         this.spawnShip();
         for(let i=0; i<300; i++) this.spawnStar();
-        for(let i=0; i<this.targetAsteroidDensity; i++) this.spawnAsteroid(this.globalZ + Math.random()*this.VISIBLE_Z, false);
+        for(let i=0; i<this.targetAsteroidDensity; i++) this.spawnAsteroid(this.globalZ + this.rng()*this.VISIBLE_Z, false);
     }
     
     spawnStar() {
         this.decorStars.push({
-            id: uuid(),
-            x: (Math.random()-0.5)*this.ARENA_W*3,
-            y: (Math.random()-0.5)*this.ARENA_H*3,
-            z: this.globalZ + Math.random()*this.VISIBLE_Z*2,
-            size: Math.random()*0.3+0.1,
-            opacity: Math.random()*0.8+0.2
+            id: uuid(this.rng),
+            x: (this.rng()-0.5)*this.ARENA_W*3,
+            y: (this.rng()-0.5)*this.ARENA_H*3,
+            z: this.globalZ + this.rng()*this.VISIBLE_Z*2,
+            size: this.rng()*0.3+0.1,
+            opacity: this.rng()*0.8+0.2
         });
     }
 
@@ -105,9 +145,9 @@ export class AsteroidsSystem {
         for(let i=this.decorStars.length-1; i>=0; i--) {
             let s = this.decorStars[i];
             if(s.z < this.globalZ - 20) {
-                s.z = this.globalZ + this.VISIBLE_Z*1.5 + Math.random()*20;
-                s.x = (Math.random()-0.5)*this.ARENA_W*3;
-                s.y = (Math.random()-0.5)*this.ARENA_H*3;
+                s.z = this.globalZ + this.VISIBLE_Z*1.5 + this.rng()*20;
+                s.x = (this.rng()-0.5)*this.ARENA_W*3;
+                s.y = (this.rng()-0.5)*this.ARENA_H*3;
             }
         }
     }
@@ -263,12 +303,12 @@ export class AsteroidsSystem {
     spawnAsteroid(z, isSplit=false, p=null, vx=0, vy=0, sz=0) {
         let type = 'BASIC';
         if(!isSplit) {
-            let r = Math.random();
+            let r = this.rng();
             let prob = this.currentWave.typeP;
             if(r < prob.mono && (z - this.lastWallZ) > 60) type = 'MONO'; 
             else if(r < prob.mono + prob.gold) type = 'GOLD';
             else if(r < prob.mono + prob.gold + prob.fast) type = 'FAST';
-            sz = type === 'MONO' ? 5 : type === 'GOLD' ? 2 : type === 'FAST' ? 1 : (Math.random()>0.7?3:2);
+            sz = type === 'MONO' ? 5 : type === 'GOLD' ? 2 : type === 'FAST' ? 1 : (this.rng()>0.7?3:2);
         } else {
             type = 'BASIC';
         }
@@ -277,12 +317,12 @@ export class AsteroidsSystem {
             this.lastWallZ = z;
             const cols = [-16, -8, 0, 8, 16];
             let available = [...cols];
-            let numGaps = Math.random() > 0.5 ? 2 : 1;
-            for(let g=0; g<numGaps; g++) available.splice(Math.floor(Math.random() * available.length), 1);
+            let numGaps = this.rng() > 0.5 ? 2 : 1;
+            for(let g=0; g<numGaps; g++) available.splice(Math.floor(this.rng() * available.length), 1);
             
             for (let px of available) {
                 this.asteroids.push({
-                    id: uuid(), x: px, y: 0, z: z,
+                    id: uuid(this.rng), x: px, y: 0, z: z,
                     rotX: 0, rotY: 0, rotZ: 0,
                     isMono: true, type, tier: sz, hp: 999999, radius: 4, 
                     vx: 0, vy: 0, vz: 0, rv: {x:0,y:0,z:0}, grazed: false
@@ -293,17 +333,17 @@ export class AsteroidsSystem {
 
         let scale = sz === 3 ? 4.5 : sz === 2 ? 2.5 : 1.2;
         let radius = scale * 0.5;
-        let px = p ? p.x : (Math.random()-0.5)*this.ARENA_W;
-        let py = p ? p.y : (Math.random()-0.5)*this.ARENA_H;
+        let px = p ? p.x : (this.rng()-0.5)*this.ARENA_W;
+        let py = p ? p.y : (this.rng()-0.5)*this.ARENA_H;
         let baseVz = type==='FAST'?35 : type==='MONO'?0 : 15;
         
         this.asteroids.push({
-            id: uuid(), x: px, y: py, z: z,
-            rotX: Math.random()*6, rotY: Math.random()*6, rotZ: Math.random()*6,
+            id: uuid(this.rng), x: px, y: py, z: z,
+            rotX: this.rng()*6, rotY: this.rng()*6, rotZ: this.rng()*6,
             type, tier: sz, hp: AST_TYPES[type].hp*sz, radius, 
-            vx: vx + (isSplit?0:(Math.random()-0.5)*4), vy: vy + (isSplit?0:(Math.random()-0.5)*4), 
-            vz: isSplit ? (Math.random()-0.5)*5 : (baseVz + Math.random()*10),
-            rv: {x:Math.random()-0.5, y:Math.random()-0.5, z:Math.random()-0.5}, grazed: false
+            vx: vx + (isSplit?0:(this.rng()-0.5)*4), vy: vy + (isSplit?0:(this.rng()-0.5)*4), 
+            vz: isSplit ? (this.rng()-0.5)*5 : (baseVz + this.rng()*10),
+            rv: {x:this.rng()-0.5, y:this.rng()-0.5, z:this.rng()-0.5}, grazed: false
         });
     }
 
@@ -317,7 +357,7 @@ export class AsteroidsSystem {
             let ct = a.tier - 1;
             this.spawnAsteroid(a.z, true, a, 15, 5, ct);
             this.spawnAsteroid(a.z, true, a, -15, -5, ct);
-        } else if (a.tier === 1 && Math.random() < 0.25) {
+        } else if (a.tier === 1 && this.rng() < 0.25) {
             this.spawnItem(a, 'CAPSULE');
         }
         
@@ -326,7 +366,7 @@ export class AsteroidsSystem {
 
     spawnItem(pos, type) {
         this.items.push({
-            id: uuid(), x: pos.x, y: pos.y, z: pos.z,
+            id: uuid(this.rng), x: pos.x, y: pos.y, z: pos.z,
             rotX: 0, rotY: 0, rotZ: 0,
             iType: type, radius: 1.5, bColor: 0, dead: false
         });
@@ -354,7 +394,7 @@ export class AsteroidsSystem {
 
     spawnProj(pos, vx, vy, vz, type, col) {
         this.projectiles.push({
-            id: uuid(), x: pos.x, y: pos.y, z: pos.z,
+            id: uuid(this.rng), x: pos.x, y: pos.y, z: pos.z,
             isPlayer: true, vx, vy, vz, type, life: 10, radius: type==='rocket'?1.2:0.5, color: col, dead: false
         });
     }
@@ -362,10 +402,10 @@ export class AsteroidsSystem {
     spawnDrone() {
         if(this.globalZ < 100) return;
         const defs = [{c:0xff1111, hp:30, sp:15, t:'LINER'}, {c:0xffff11, hp:40, sp:12, t:'TRACKER'}, {c:0x11ff11, hp:30, sp:10, t:'SNIPER'}];
-        let d = defs[Math.floor(Math.random()*defs.length)];
+        let d = defs[Math.floor(this.rng()*defs.length)];
         
         this.enemies.push({
-            ...d, id: uuid(), x: (Math.random()-0.5)*this.ARENA_W, y: this.ARENA_H/2, z: this.globalZ + this.VISIBLE_Z,
+            ...d, id: uuid(this.rng), x: (this.rng()-0.5)*this.ARENA_W, y: this.ARENA_H/2, z: this.globalZ + this.VISIBLE_Z,
             radius: 2.0, fireT: 3, tx: 0, ty: 0, dead: false
         });
     }
@@ -449,7 +489,7 @@ export class AsteroidsSystem {
         this.updateStars();
 
         if(this.asteroids.length < this.targetAsteroidDensity * this.currentWave.d * (1+this.rank/100)) this.spawnAsteroid(this.globalZ + this.VISIBLE_Z);
-        if(this.currentStage===2 && this.enemies.length < this.maxEnemies && Math.random()<0.01*(1+this.rank/100)) this.spawnDrone();
+        if(this.currentStage===2 && this.enemies.length < this.maxEnemies && this.rng()<0.01*(1+this.rank/100)) this.spawnDrone();
 
         if(this.ship) {
             if(this.ship.dead) {
@@ -477,7 +517,7 @@ export class AsteroidsSystem {
 
         for(let i=this.enemies.length-1; i>=0; i--) {
             let e = this.enemies[i]; 
-            if(e.hp<=0) { this.spawnParticles(e, e.c, 40); if(Math.random()<0.5) this.spawnItem(e, 'CAPSULE'); e.dead=true; this.stats.score+=300; }
+            if(e.hp<=0) { this.spawnParticles(e, e.c, 40); if(this.rng()<0.5) this.spawnItem(e, 'CAPSULE'); e.dead=true; this.stats.score+=300; }
             else {
                 if(e.t==='LINER') e.z -= e.sp*dt;
                 if(e.t==='TRACKER' && this.ship) { e.x += (this.ship.x-e.x)*e.sp*dt*0.1; e.y += (this.ship.y-e.y)*e.sp*dt*0.1; e.z -= e.sp*dt*0.5;}
