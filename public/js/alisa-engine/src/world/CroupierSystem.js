@@ -18,7 +18,7 @@ export class CroupierSystem {
         // Semilla inyectable. Sin ella el layout 'messy' desordena las cartas de
         // forma distinta cada vez, y una mesa no se puede volver a repartir
         // igual. Ver `prueba_semillas.mjs`.
-        this.rng = config.rng || Math.random;
+        this.rng = config.rng || (() => Math.random());
     }
 
     /**

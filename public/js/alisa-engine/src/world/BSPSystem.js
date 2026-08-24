@@ -37,7 +37,7 @@ export class BSPSystem {
          * source of randomness costs one line and is backwards compatible: every
          * existing caller keeps the exact behaviour it had.
          */
-        this.rng = config.rng || Math.random;
+        this.rng = config.rng || (() => Math.random());
     }
 
     /**

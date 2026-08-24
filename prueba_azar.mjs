@@ -208,6 +208,43 @@ if (copias.length > TECHO_COPIAS) {
     if (!inventados) console.log('  ✓ una sola escala de caliente/frío en todo el banco');
 }
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  5. EL RESPALDO ES UNA LLAMADA, NO UNA REFERENCIA
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * `config.rng || Math.random` captura la función global EN EL MOMENTO DE
+ * CONSTRUIR. `GymEnv.runEpisode` crea el entorno y DESPUÉS `DeterministicScope`
+ * parchea `Math.random`, así que el motor se queda con la función de antes del
+ * parche y juega sin semilla — sin dar un solo error.
+ *
+ * Medido el 24-08, con el global parcheado a `() => 0.5`:
+ *
+ *     captura la referencia   ->  0,2308   (azar de verdad: el parche no llegó)
+ *     llama cada vez          ->  0,5000   (el parche mandó)
+ *
+ * Ese `||` ya cambió una vez las notas publicadas de Marabunta: pasaron de
+ * 3,0000 y 2,5000 a 6,0000 y 5,0000 con las mismas semillas.
+ *
+ * Estaba en **27 motores**. Envolverlo no cambia nada cuando nadie parchea —los
+ * mismos valores— y lo cambia todo cuando alguien parchea, que es justo cuando
+ * importa.
+ */
+{
+    const REFERENCIA = /rng\s*\|\|\s*Math\.random\s*[;,)]/;
+    let capturas = 0;
+    for (const f of await ficheros(path.join(RAIZ, 'public/js/alisa-engine/src'))) {
+        const bruto = await readFile(f, 'utf-8');
+        const codigo = bruto.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+        if (REFERENCIA.test(codigo)) {
+            capturas++;
+            mal(`${path.relative(RAIZ, f)}: \`rng || Math.random\` captura la referencia — `
+              + 'envuélvelo: `|| (() => Math.random())`, o el parche del scope no llega');
+        }
+    }
+    if (!capturas) console.log('  ✓ ningún motor captura la referencia de `Math.random`');
+}
+
 console.log('');
 if (fallos) { console.log(`  ${fallos} fallo(s) de azar\n`); process.exit(1); }
-console.log('  ✓ un solo azar y una sola escala\n');
+console.log('  ✓ un solo azar, una sola escala, y el respaldo llama en vez de capturar\n');

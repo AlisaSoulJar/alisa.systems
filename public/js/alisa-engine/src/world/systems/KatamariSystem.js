@@ -15,7 +15,7 @@ export class KatamariSystem {
         // Semilla inyectable. Sin ella `init()` esparce los dos mil chunks de
         // presa en posiciones distintas cada vez y la misma partida no se puede
         // volver a jugar. Ver `prueba_semillas.mjs`.
-        this.rng = config.rng || Math.random;
+        this.rng = config.rng || (() => Math.random());
 
         // Effects state
         this.screenShake = 0.0;

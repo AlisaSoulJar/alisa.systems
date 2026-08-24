@@ -9,7 +9,7 @@ export class SparkSystem {
      *        burst and noise-hiss timbre. See `prueba_semillas.mjs`.
      */
     constructor(scene, config = {}) {
-        this.rng = config.rng || Math.random;
+        this.rng = config.rng || (() => Math.random());
         this.count = 400;
         this.geometry = new THREE.BufferGeometry();
         this.positions = new Float32Array(this.count * 3);

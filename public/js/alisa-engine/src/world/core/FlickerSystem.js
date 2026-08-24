@@ -23,7 +23,7 @@ export class FlickerSystem {
      *        phase and 'random' flicker pattern.
      */
     constructor(config = {}) {
-        this.rng = config.rng || Math.random;
+        this.rng = config.rng || (() => Math.random());
         /** @type {Array<{material: THREE.Material, config: FlickerConfig}>} */
         this._entries = [];
         /** @type {Array<{mesh: THREE.Mesh, tex: THREE.Texture, speed: number}>} */

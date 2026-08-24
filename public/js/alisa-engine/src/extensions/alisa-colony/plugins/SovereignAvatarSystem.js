@@ -16,7 +16,7 @@ export class SovereignAvatarSystem {
         this.scene = app.scene;
         this.camera = app.camera;
         this.clock = app.clock;
-        this.rng = options.rng || Math.random;
+        this.rng = options.rng || (() => Math.random());
 
         this.activeAvatars = {};
         this.systemicEvents = [];

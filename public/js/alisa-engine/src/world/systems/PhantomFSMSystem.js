@@ -31,7 +31,7 @@ export class PhantomFSMSystem {
      *        `Math.random`. Pass a seeded generator to get reproducible relocations.
      */
     constructor(config = {}) {
-        this.rng = config.rng || Math.random;
+        this.rng = config.rng || (() => Math.random());
     }
 
     update(ecs, entities, dt) {

@@ -31,7 +31,7 @@ export class TrafficSystem {
         // Semilla inyectable. Sin ella la velocidad inicial de cada agente y su
         // elección de calle en cada cruce cambian de partida en partida. Ver
         // `prueba_semillas.mjs`.
-        this.rng = options.rng || Math.random;
+        this.rng = options.rng || (() => Math.random());
 
         this.agents = [];
         this.matBase = new THREE.MeshBasicMaterial({ color: 0x111111, transparent: true, opacity: 0.8 });

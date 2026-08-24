@@ -3,7 +3,7 @@ export class CorporateSeekerSystem {
         // Semilla inyectable: un perseguidor que elige planta al azar sin semilla
         // convierte cada partida en irrepetible, y con ella el recibo. Por
         // defecto se comporta igual que siempre. Ver `prueba_semillas.mjs`.
-        this.rng = config.rng || Math.random;
+        this.rng = config.rng || (() => Math.random());
         this.phase = 'PICK_FLOOR';
         this.aiTargetFloor = -1;
         this.exploredFloors = new Set();

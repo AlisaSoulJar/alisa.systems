@@ -34,7 +34,7 @@ export class FoodChainSystem {
          * partida da dos ecosistemas distintos y el recibo no verifica.
          * Ver `prueba_semillas.mjs`: es el defecto que comparten 24 de los 54.
          */
-        this.rng = config.rng || Math.random;
+        this.rng = config.rng || (() => Math.random());
         this.arenaSize = config.arenaSize || 18;
 
         // Prey defaults

@@ -17,7 +17,7 @@ export class NeuralDrivingSystem {
         // Semilla inyectable. Sin ella los 500 ejemplos sintéticos de entrenamiento
         // cambian en cada tirada y el modelo entrenado ya no es reproducible. Ver
         // `prueba_semillas.mjs`.
-        this.rng = config.rng || Math.random;
+        this.rng = config.rng || (() => Math.random());
 
         // Agent Mathematical States
         this.leadSpeed = config.initialLeadSpeed || 10;

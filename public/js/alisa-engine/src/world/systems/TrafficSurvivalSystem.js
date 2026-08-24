@@ -13,7 +13,7 @@ export class TrafficSurvivalSystem {
         this.ROAD_LENGTH = config.roadLength || 100;
         this.SPAWN_X = this.ROAD_LENGTH / 2 + 5;
         this.LANES = config.lanes || [];
-        this.rng = config.rng || Math.random;
+        this.rng = config.rng || (() => Math.random());
 
         this.idmEngine = new IDMSystem({ laneTolerance: 2.5, lookAhead: 20, laneGapCheck: 10, rng: this.rng });
 

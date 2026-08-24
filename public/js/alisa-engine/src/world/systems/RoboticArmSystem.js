@@ -140,7 +140,7 @@ export class RoboticArm {
         // Semilla inyectable. Sólo se usa para el tono del zumbido del servo,
         // pero una sola llamada de azar sin sembrar ya basta para que este
         // sistema no cuente como sembrado. Ver `prueba_semillas.mjs`.
-        this.rng = config.rng || Math.random;
+        this.rng = config.rng || (() => Math.random());
 
         this.L1 = upperArmLen;
         this.L2 = forearmLen;

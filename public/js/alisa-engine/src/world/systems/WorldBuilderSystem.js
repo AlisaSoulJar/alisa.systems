@@ -22,7 +22,7 @@ export class WorldBuilderSystem {
     constructor(scene, options = {}) {
         this.scene = scene;
         this.options = options;
-        this.rng = options.rng || Math.random;
+        this.rng = options.rng || (() => Math.random());
 
         // Logical storage for physics/RL layers
         this.state = {

@@ -32,7 +32,7 @@ export class GeppettoChoreographySystem {
         this.env = envFactory;
         this.kinematics = kinematicsSys;
         this.ui = uiConfig;
-        this.rng = uiConfig.rng || Math.random;
+        this.rng = uiConfig.rng || (() => Math.random());
 
         this.dropQueue = [];
         this.brain = new GeppettoBrain(uiConfig);

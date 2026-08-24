@@ -1,7 +1,7 @@
 export class CarverEntitySystem {
     constructor(config = {}) {
         // Semilla inyectable, como en el resto del lote. Ver `prueba_semillas.mjs`.
-        this.rng = config.rng || Math.random;
+        this.rng = config.rng || (() => Math.random());
         this.entities = [];
         this.w = config.w || 40;
         this.h = config.h || 40;

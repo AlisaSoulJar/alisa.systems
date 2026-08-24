@@ -31,7 +31,7 @@ export class IDMSystem {
         this.lookAhead     = config.lookAhead     || 20.0;   // Forward scan distance
         this.laneGapCheck  = config.laneGapCheck  || 10.0;   // Min gap for safe lane change
 
-        this.rng = config.rng || Math.random;
+        this.rng = config.rng || (() => Math.random());
     }
 
     /**

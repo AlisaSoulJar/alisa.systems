@@ -31,7 +31,7 @@ export class EcosystemSystem {
      * defecto es exactamente el comportamiento de antes.
      */
     constructor(config = {}) {
-        this.rng = config.rng || Math.random;
+        this.rng = config.rng || (() => Math.random());
     }
 
     // --- HELPER MATH ---

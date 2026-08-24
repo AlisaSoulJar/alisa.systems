@@ -18,7 +18,7 @@ export class OrbitalKinematicsSystem {
         // Semilla inyectable. Sin ella los temporizadores de mina y de generación
         // de enjambre dan una partida distinta con la misma semilla. Ver
         // `prueba_semillas.mjs`.
-        this.rng = config.rng || Math.random;
+        this.rng = config.rng || (() => Math.random());
     }
 
     /**

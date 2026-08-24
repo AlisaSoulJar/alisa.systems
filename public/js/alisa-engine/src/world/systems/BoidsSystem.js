@@ -32,7 +32,7 @@ export class BoidsSystem {
         // Semilla inyectable: sin ella una bandada no se puede volver a volar
         // igual, y un entorno que no se repite no se puede verificar. Por
         // defecto, el comportamiento de siempre. Ver `prueba_semillas.mjs`.
-        this.rng = config.rng || Math.random;
+        this.rng = config.rng || (() => Math.random());
         this.separationRadius = config.separationRadius || 1.5;
         this.alignmentRadius = config.alignmentRadius || 4.0;
         this.cohesionRadius = config.cohesionRadius || 4.0;

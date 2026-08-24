@@ -28,7 +28,7 @@ export class TurretCombatSystem {
         // Semilla inyectable. Sin ella el desfase inicial y la cadencia de las
         // torretas cambian en cada partida y un combate no se puede volver a
         // jugar igual. Ver `prueba_semillas.mjs`.
-        this.rng = config.rng || Math.random;
+        this.rng = config.rng || (() => Math.random());
     }
 
     addTurret(id, x, y, z) {

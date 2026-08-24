@@ -157,8 +157,25 @@ const sistemas = [];
              * Se busca la LLAMADA `Math.random(` y no la palabra suelta, para no
              * marcar a quien la deja como valor por defecto de un parámetro
              * inyectable —que es exactamente lo que hace un sistema ya arreglado.
+             *
+             * ⚠️ Y SE PERDONA EL RESPALDO ENVUELTO, QUE ES EL PATRÓN CORRECTO.
+             *
+             * `config.rng || (() => Math.random())` ES una llamada, así que esta
+             * prueba lo marcaba — y marcaba justo la forma BUENA. La referencia
+             * pelada (`|| Math.random`) captura la función global al construir, de
+             * modo que un parche posterior de `DeterministicScope` no llega nunca;
+             * envolverla en una llamada es lo único que hace que el parche mande.
+             *
+             * Medido el 24-08 con el global parcheado a `() => 0.5`: el que
+             * captura devolvió 0,2308 —azar de verdad— y el envuelto 0,5000. Ese
+             * `||` ya cambió una vez las notas publicadas de Marabunta.
+             *
+             * O sea que aquí la prueba suspendía a 27 motores por hacer lo
+             * correcto. Se quita el respaldo envuelto ANTES de contar: lo que
+             * queda es azar de verdad sin sembrar.
              */
-            azar: texto.includes('Math.random('),
+            azar: texto.replace(/\|\|\s*\(\(\)\s*=>\s*Math\.random\(\)\)/g, '')
+                       .includes('Math.random('),
             sembrado: /config\.rng|opts\.rng|this\.rng/.test(texto),
         });
     }

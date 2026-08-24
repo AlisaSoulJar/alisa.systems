@@ -94,7 +94,7 @@ export const FileSystemDioramaSystem = {
      *        `Math.random`. Pass a seeded generator to get a reproducible diorama.
      */
     init: function(config = {}) {
-        this.rng = config.rng || Math.random;
+        this.rng = config.rng || (() => Math.random());
         this.canvas = document.getElementById('viewport');
         
         // 1. WebGL Renderer Structure

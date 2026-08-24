@@ -32,7 +32,7 @@ export class KinematicRageSystem {
      */
     constructor(config = {}) {
         this.gravity = config.gravity || -60.0;
-        this.rng = config.rng || config.azar || Math.random;
+        this.rng = config.rng || config.azar || (() => Math.random());
     }
 
     /**

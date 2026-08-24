@@ -238,7 +238,7 @@ export class PygmalionTopologySystem {
         this.log = log || (() => {});
         this.flashImpact = flashImpact || (() => {});
         this.setProgress = setProgress || (() => {});
-        this.rng = config.rng || Math.random;
+        this.rng = config.rng || (() => Math.random());
 
         this.sparks = new SparkSystem(this.scene, { rng: this.rng });
         this.armLeft = null;

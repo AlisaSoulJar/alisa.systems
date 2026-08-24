@@ -6,7 +6,7 @@ export class CabinetJumpscareSystem {
      *        del susto se repita igual con la misma partida. Ver `prueba_semillas.mjs`.
      */
     constructor(config = {}) {
-        this.rng = config.rng || Math.random;
+        this.rng = config.rng || (() => Math.random());
         this.resetState();
     }
     

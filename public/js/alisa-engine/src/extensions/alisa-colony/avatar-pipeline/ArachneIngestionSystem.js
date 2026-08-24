@@ -17,7 +17,7 @@ export class ArachneIngestionSystem extends BaseSimulationSystem {
     constructor(engine, environment, physics, uiConfig = {}) {
         super(engine, environment, uiConfig);
         this.physics = physics;
-        this.rng = uiConfig.rng || Math.random;
+        this.rng = uiConfig.rng || (() => Math.random());
 
         this.ANIM = {
             IDLE: 'HumanArmature|Spider_Idle',

@@ -16,7 +16,7 @@ export class CabinetEscapeSystem {
      */
     constructor(config = {}) {
         this.bspEngine = config.bspEngine || null;
-        this.rng = config.rng || Math.random;
+        this.rng = config.rng || (() => Math.random());
         this.resetState();
     }
 
