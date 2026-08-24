@@ -28,6 +28,22 @@ export class CabinetBSPEngine {
        const maxCortes = Math.min(Math.floor(profundidad), 8);   // 2^8 hojas ya es de sobra
 
        const rng = new SeededRNG(seed);
+       /**
+        * ⚠️ Y SE GUARDA, PORQUE LA POLÍTICA DEL AZAR TAMBIÉN SE SIEMBRA.
+        *
+        * El MUNDO de este motor ya iba sembrado desde el principio. Lo que
+        * quedaba suelto era `selectRandom()`: el jugador que abre un cajón al
+        * azar, o sea **el SUELO de la clasificación**.
+        *
+        * Un banco cuya línea base no se repite tiene la referencia moviéndose
+        * bajo los pies: dos tandas del mismo día miden contra suelos distintos y
+        * las notas dejan de ser comparables entre sí. La política de referencia
+        * es parte del instrumento, no del jugador.
+        *
+        * Se reutiliza esta misma fuente en vez de crear otra: dos generadores en
+        * el mismo objeto son dos verdades sobre la misma partida.
+        */
+       this.rng = rng;
        const leaves = [];
        const planks = [];
 
@@ -101,7 +117,17 @@ export class CabinetBSPEngine {
            if (!this.tried[i] && !this.montyRevealed.includes(i)) available.push(i);
        }
        if (available.length === 0) return -1;
-       return available[Math.floor(Math.random() * available.length)];
+       /**
+        * ⚠️ Con la semilla de la partida, no con el azar del sistema. Si el motor
+        * no se ha particionado todavía no hay semilla, y entonces se DICE en vez
+        * de tirar de `Math.random` a escondidas: un suelo que no se repite
+        * convierte la clasificación en una comparación contra nada.
+        */
+       if (!this.rng) throw new Error(
+           'CabinetBSPEngine.selectRandom: no hay semilla. Llama antes a '
+         + 'fractalPartition(cuts, seed) — el azar de la referencia tiene que ser '
+         + 'reproducible o el suelo de la tabla se mueve entre tandas.');
+       return available[Math.floor(this.rng.next() * available.length)];
    }
    
    selectAreaGreedy() {

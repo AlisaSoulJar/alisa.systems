@@ -1,5 +1,6 @@
 import { SteeringSystem } from '../../psyche/SteeringSystem.js';
 import { FSMSystem } from '../../psyche/FSMSystem.js';
+import { mulberry32 } from '../core/DeterministicScope.js';
 
 /**
  * BulletHeavenEngine.js
@@ -71,11 +72,18 @@ export class BulletHeavenEngine {
      * 5,0000 con las mismas semillas. Un entorno publicado, en el banco, con las
      * puntuaciones cambiadas por un `||` — y sin un solo error.
      *
-     * `() => Math.random()` lee el global EN CADA LLAMADA, así que el parche
-     * llega. Es la diferencia entre guardarse el teléfono de alguien y llamar a
-     * información cada vez: sólo la segunda se entera de que se ha mudado.
+     * Una llamada envuelta —`() => …`— lee el global EN CADA llamada, así que el
+     * parche sí llega. Es la diferencia entre guardarse el teléfono de alguien y
+     * llamar a información cada vez: sólo la segunda se entera de que se ha
+     * mudado.
+     *
+     * ⚠️ Y AUN ASÍ, AQUÍ YA NO HAY RESPALDO AL AZAR DEL SISTEMA.
+     *
+     * La clase madre es PURA: sin semilla juega siempre la misma partida. Quien
+     * dependa del parche global lo declara en su propio fichero — ver
+     * `MarabuntaSystem`, que es quien lo necesita y quien lo dice.
      */
-    this.rng = config.rng || (() => Math.random());
+    this.rng = config.rng || mulberry32((config.seed ?? 42) >>> 0);
 
     this.reset();
   }

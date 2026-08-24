@@ -2,16 +2,39 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { InteractionLabFactory } from '../factories/InteractionLabFactory.js';
 import { FoodChainSystem } from './FoodChainSystem.js';
+import { mulberry32 } from '../core/DeterministicScope.js';
 
 export class InteractionLabEngine {
-    constructor(engineCore = {}, basePath = '../') { // default was '/colony/overworld/' (pre-reorg absolute path → 404 on every asset)
+    /**
+     * ⚠️ LA SEMILLA, QUE FALTABA Y NADIE LO DECÍA.
+     *
+     * Este es el motor de ¡Sobrevive! 1 —el Interaction Lab— y llevaba OCHO
+     * llamadas al azar del sistema colocando las cajas, el queso, los ratones y
+     * los zorros. O sea: **el reparto inicial de la cadena trófica era distinto
+     * cada vez**, y con eso la etapa no puede puntuar a nadie.
+     *
+     * (Y este párrafo dice «llamadas al azar del sistema» en vez de nombrarlas
+     * porque el reemplazo masivo que las enrutó se comió también su propio
+     * comentario. Segunda vez hoy.)
+     *
+     * Y no lo decía ninguna prueba porque `prueba_semillas.mjs` sólo miraba los
+     * ficheros acabados en `System.js`. Esta casa nombra sus motores de tres
+     * maneras y el guardia conocía una: la mitad del motor no tenía vigilancia.
+     *
+     * La receta es la misma que en `AsteroidsSystem`: el motor es determinista
+     * por construcción —sin semilla juega siempre lo mismo— y quien quiera
+     * variedad la aporta. `FoodChainSystem` ya aceptaba `rng`, así que se le
+     * pasa el mismo: una sola semilla para el reparto y para la simulación.
+     */
+    constructor(engineCore = {}, basePath = '../', config = {}) { // default was '/colony/overworld/' (pre-reorg absolute path → 404 on every asset)
         this.engineCore = engineCore;
         this.scene = engineCore.scene;
         this.camera = engineCore.camera;
         this.basePath = basePath;
-        
+        this.rng = config.rng || mulberry32((config.seed ?? 42) >>> 0);
+
         this.gltfLoader = this.scene ? new GLTFLoader() : null;
-        this.system = new FoodChainSystem({ arenaSize: 18 });
+        this.system = new FoodChainSystem({ arenaSize: 18, rng: this.rng });
         if (this.scene) this.factory = new InteractionLabFactory(this.scene, this.camera, this.gltfLoader, this.basePath);
         
         this.allPrey = [];
@@ -43,14 +66,14 @@ export class InteractionLabEngine {
         // Generate crate positions
         const cratePositions = [];
         for (let i = 0; i < numCrates; i++) {
-            cratePositions.push({ x: (Math.random()-0.5)*S*2, z: (Math.random()-0.5)*S*2 });
+            cratePositions.push({ x: (this.rng()-0.5)*S*2, z: (this.rng()-0.5)*S*2 });
         }
         this.crates = cratePositions.map((p, i) => ({ id: `crate_${i}`, position: p }));
 
         // Generate cheese positions
         const cheesePositions = [];
         for (let i = 0; i < numCheese; i++) {
-            cheesePositions.push({ x: (Math.random()-0.5)*S*2, z: (Math.random()-0.5)*S*2 });
+            cheesePositions.push({ x: (this.rng()-0.5)*S*2, z: (this.rng()-0.5)*S*2 });
         }
         this.cheeses = cheesePositions.map((p, i) => ({ id: `cheese_${i}`, position: p }));
 
@@ -66,14 +89,14 @@ export class InteractionLabEngine {
         }
 
         for (let i = 0; i < numMice; i++) {
-            const pos = { x: (Math.random()-0.5)*S*1.5, z: (Math.random()-0.5)*S*1.5 };
+            const pos = { x: (this.rng()-0.5)*S*1.5, z: (this.rng()-0.5)*S*1.5 };
             const prey = this.system.createPreyState(`mouse_${i}`, pos);
             this.allPrey.push(prey);
             if (this.factory) this.factory.spawnEntity(prey);
         }
 
         for (let i = 0; i < numFoxes; i++) {
-            const pos = { x: (Math.random()-0.5)*S, z: S * 0.8 };
+            const pos = { x: (this.rng()-0.5)*S, z: S * 0.8 };
             const pred = this.system.createPredatorState(`fox_${i}`, 'mid', pos);
             this.allPredators.push(pred);
             if (this.factory) this.factory.spawnEntity(pred);

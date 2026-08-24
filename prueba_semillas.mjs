@@ -77,27 +77,61 @@ const RAIZ = join(AQUI, 'public/js/alisa-engine/src');
  * ⚠️ Y CON ESO, ESTE TRINQUETE HA TOCADO SUELO: **2 NO ES DEUDA, ES EL FONDO.**
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * Empezó en 28 y ha bajado hasta 2, pero esos dos últimos NO hay que sembrarlos —el
- * bloque de arriba explica por qué—, así que la regla de siempre («este número sólo
- * puede bajar») deja de valer aquí y se invierte:
+ * Empezó en 28 y bajó hasta 2. Aquí decía que esos dos últimos —Asteroids y
+ * Marabunta— NO había que sembrarlos, y avisaba: *«si BAJA de 2, alguien los sembró
+ * y rompió su determinismo en silencio»*.
  *
- *   · si SUBE de 2, alguien metió un sistema nuevo con azar incontrolado;
- *   · si BAJA de 2, alguien sembró Asteroids o Marabunta **y rompió su determinismo
- *     en silencio**, que es peor que no haberlos tocado.
+ * ⚠️ EL AVISO ERA BUENO Y LA CONCLUSIÓN ERA FALSA, Y SE HA COMPROBADO SEMBRANDO.
  *
- * Se deja escrito porque un trinquete cuyo texto dice «sólo puede bajar» invita a
- * bajarlo, y la siguiente persona que lo lea con ganas de dejarlo en cero haría
- * exactamente el daño que esta comprobación existe para evitar.
+ * El 24-08 se sembró `AsteroidsSystem` —32 llamadas al azar enrutadas a su `rng`— y
+ * su determinismo NO se rompió: las tres notas publicadas de Pedrisco salieron
+ * idénticas antes y después (1234 → 30,5000 · 7 → 50,4850 · 99 → 0,2333), medidas
+ * a propósito ANTES de tocar nada. Lo que no se podía era sembrarlo *a ciegas*; con
+ * la medida delante, sí.
+ *
+ * Se deja escrito el aviso viejo porque su instinto era correcto —un trinquete cuyo
+ * texto dice «sólo puede bajar» invita a bajarlo sin mirar— y lo que cambia es el
+ * método, no la prudencia: **se baja midiendo las notas antes y después, o no se
+ * baja**.
+ *
+ * ⚠️ Y LOS DOS QUE QUEDAN NO SON DEUDA: SON DECISIONES, Y VAN CON SU MOTIVO.
  */
-// 24-08: cero. Los 54 sistemas del motor aceptan o no necesitan semilla. Antes 2.
-const TECHO_SIN_SEMBRAR = 0;
+const NO_SE_SIEMBRAN = {
+    TerminalUIEngine:
+        'no es un motor de juego: es la interfaz del terminal de la colonia, en '
+      + '`extensions/alisa-colony/`. Su azar no decide ninguna partida',
+};
+const MEDIO_SEMBRADOS = {
+    MarabuntaSystem:
+        'depende del parche global A PROPÓSITO: `MarabuntaEnv` llama a '
+      + '`DeterministicScope.run(seed + steps, …)` en CADA paso, o sea que re-siembra '
+      + 'el mundo a cada tick. Ése es su modelo de determinismo y sus notas publicadas '
+      + '(1234 → 3,0000 · 7 → 2,5000) salen de ahí. Darle un generador propio las '
+      + 'cambiaría — comprobado: de 3,0000 a 6,0000',
+};
+
+// 24-08: uno, y declarado. Antes 2, y por otro motivo.
+const TECHO_SIN_SEMBRAR = Object.keys(NO_SE_SIEMBRAN).length;
 
 const sistemas = [];
 (function recorrer(dir) {
     for (const f of readdirSync(dir, { withFileTypes: true })) {
         const p = join(dir, f.name);
         if (f.isDirectory()) { recorrer(p); continue; }
-        if (!f.name.endsWith('System.js')) continue;
+        /**
+         * ⚠️ TAMBIÉN LOS `…Engine.js` Y LOS `…Core.js`. ANTES SÓLO `…System.js`.
+         *
+         * Esta casa nombra sus motores de tres maneras —`System`, `Engine`,
+         * `Core`— y esta prueba sólo miraba una. Con eso, la mitad del motor no
+         * tenía guardia: `InteractionLabEngine` llevaba SIETE `Math.random()` sin
+         * sembrar y ninguna pasada lo dijo nunca. Y es el motor de ¡Sobrevive! 1.
+         *
+         * El fallo es el de siempre en este proyecto —un universo recortado que
+         * suspende perfectamente dentro de su recorte— y el sabotaje es ciego a
+         * él: se puede romper un `System.js` y la prueba lo caza, mientras un
+         * `Engine.js` roto pasa de largo sin que nadie note el hueco.
+         */
+        if (!/(System|Engine|Core)\.js$/.test(f.name)) continue;
         const bruto = readFileSync(p, 'utf-8');
         /**
          * ⚠️ SIN COMENTARIOS, O ESTA PRUEBA ACUSA A QUIEN CUENTA CÓMO SE ARREGLÓ.
@@ -167,13 +201,29 @@ console.log(`  ${sistemas.length} sistemas · ${sembrados.length} aceptan semill
 if (sembrados.length) console.log(`  ✓ sembrados: ${sembrados.map(s => s.nombre).join(', ')}`);
 
 console.log(`\n${sinSembrar.length}/${sistemas.length} sistemas sin sembrar (techo: ${TECHO_SIN_SEMBRAR})`);
-for (const s of sinSembrar) console.log(`  · ${s.nombre}`);
+for (const s of sinSembrar) {
+    const razon = NO_SE_SIEMBRAN[s.nombre];
+    console.log(`  ${razon ? '·' : '✗'} ${s.nombre}${razon ? '' : '  ← sin declarar'}`);
+    if (razon) console.log(`      ${razon}`);
+}
 
 let fallos = 0;
-if (mixtos.length) {
+/**
+ * ⚠️ LOS DECLARADOS NO CUENTAN COMO FALLO, PERO SE IMPRIMEN IGUAL.
+ *
+ * Una excepción silenciosa se convierte en costumbre. Ésta se ve en cada pasada,
+ * con su motivo al lado, para que quien la lea pueda discutirla — que es lo que
+ * distingue una decisión de un descuido con antigüedad.
+ */
+const mixtosSinDeclarar = mixtos.filter(s => !MEDIO_SEMBRADOS[s.nombre]);
+for (const s of mixtos.filter(s => MEDIO_SEMBRADOS[s.nombre])) {
+    console.log(`\n  · ${s.nombre} acepta semilla y llama al azar global, DECLARADO:`);
+    console.log(`      ${MEDIO_SEMBRADOS[s.nombre]}`);
+}
+if (mixtosSinDeclarar.length) {
     fallos++;
-    console.log(`\n  ✗ ${mixtos.length} sistema(s) aceptan semilla Y llaman a \`Math.random(\`:`);
-    for (const s of mixtos) console.log(`      · ${s.nombre}`);
+    console.log(`\n  ✗ ${mixtosSinDeclarar.length} sistema(s) aceptan semilla Y llaman a \`Math.random(\`:`);
+    for (const s of mixtosSinDeclarar) console.log(`      · ${s.nombre}`);
     console.log('    Un sistema medio sembrado no es reproducible, y encima lo parece:');
     console.log('    misma semilla, distinto mundo. Quita el `Math.random(` o pásale el `rng`.');
 }

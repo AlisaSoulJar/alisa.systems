@@ -74,6 +74,24 @@ export class MarabuntaSystem extends BulletHeavenEngine {
    */
   constructor(config = {}) {
     super({
+      /**
+       * ⚠️ ESTE ES EL QUE DEPENDE DEL PARCHE GLOBAL, Y LO DICE AQUÍ.
+       *
+       * `MarabuntaEnv` no parchea una vez: llama a `DeterministicScope.run` en
+       * CADA paso con `seed + steps`, o sea que re-siembra el mundo a cada tick.
+       * Ese es su modelo de determinismo y funciona — sus notas publicadas
+       * (1234 → 3,0000 · 7 → 2,5000) salen de ahí.
+       *
+       * Si esta clase heredara el respaldo puro de la madre —un `mulberry32`
+       * propio— dejaría de pasar por ese parche y **las notas cambiarían**. Se
+       * comprobó: de 3,0000 a 6,0000.
+       *
+       * Así que la dependencia del azar global vive donde de verdad está, con su
+       * motivo al lado, en vez de contaminar a la clase madre. Quien pase su
+       * propio `rng` lo sustituye —el `...config` de abajo manda— y entonces no
+       * hace falta parchear nada.
+       */
+      rng: () => Math.random(),
       weapons: WEAPONS_DB,
       enemies: ENEMY_TYPES,
       waves: WAVE_TABLE,
