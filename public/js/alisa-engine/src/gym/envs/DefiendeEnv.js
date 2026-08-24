@@ -172,10 +172,32 @@ export class DefiendeEnv extends GymEnv {
     describe() {
         const o = this.sys.observacion();
         const i = this.sys.info();
+        /**
+         * ⚠️ EL CAMINO ENTERO, CELDA A CELDA. ANTES SÓLO DECÍA LOS EXTREMOS.
+         *
+         * Decía «entra por (0,0) y llega a (6,6) pasando por 27 celdas» — o sea
+         * cuántas, no cuáles. Y esta etapa se apoya en un principio que yo mismo
+         * escribí en la factoría: *«el jugador ve el camino entero desde el
+         * principio; aquí no se mide adivinar por dónde vienen, se mide DÓNDE
+         * PONES lo que tienes»*.
+         *
+         * La puerta numérica lo cumple —manda las 144 celdas del terreno— y la
+         * humana también, porque el sendero está pintado. La de lenguaje no: le
+         * daba los extremos y a callar. Con eso, un modelo no podía colocar bien
+         * ni queriendo, y su mala nota habría hablado de la puerta, no de él.
+         *
+         * Lo encontré al enchufar el `PuenteDeGimnasio`: un Ser jugó 900 pasos y
+         * puso dos torretas donde no pasaba nadie. Culpé al agente y era la
+         * descripción.
+         *
+         * Son 27 pares de números y queda largo. Da igual: esto lo lee un modelo,
+         * y la alternativa es esconderle la mitad del problema.
+         */
+        const ruta = o.camino.map(p => `(${p.x},${p.z})`).join(' → ');
         const partes = [
             `Matriz de ${o.lado}×${o.lado}. El camino entra por (${this.sys.entrada.x}, `
           + `${this.sys.entrada.z}) y llega a tu núcleo en (${o.nucleo.x}, ${o.nucleo.z}) `
-          + `pasando por ${o.camino.length} celdas.`,
+          + `pasando por ${o.camino.length} celdas, en este orden: ${ruta}.`,
             `Te quedan ${o.vidas} vidas y ${o.presupuesto} de presupuesto.`,
             `Oleada ${o.oleada} de ${o.oleadas}.`,
         ];

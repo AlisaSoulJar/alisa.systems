@@ -588,6 +588,26 @@ const SABOTAJES = [
         vigila: 'que ningún import publicado apunte a un fichero que no existe',
     },
     {
+        /**
+         * El fallo REAL, y estaba puesto hasta el 25-08: `describe()` decía por
+         * dónde ENTRA el camino y cuántas celdas tiene, pero no CUÁLES. La puerta
+         * numérica mandaba las 144 casillas del terreno y la humana lo pintaba;
+         * la de lenguaje daba los extremos y a callar.
+         *
+         * Con eso un modelo no podía colocar bien ni queriendo, y su mala nota
+         * habría hablado de la puerta y no de él — la peor forma de mentir que
+         * tiene un banco. Medido: 55 puntos antes, 525 después.
+         *
+         * El sabotaje le quita la ruta a la descripción y deja el resto igual.
+         */
+        nombre: 'puente',
+        corre: 'node --import ./resolver_three.mjs prueba_puente.mjs',
+        fichero: 'public/js/alisa-engine/src/gym/envs/DefiendeEnv.js',
+        de: '`pasando por ${o.camino.length} celdas, en este orden: ${ruta}.`,',
+        a: '`pasando por ${o.camino.length} celdas.`,',
+        vigila: 'que la puerta de lenguaje lleve el problema entero, no la mitad',
+    },
+    {
         nombre: 'senal',
         corre: 'node prueba_senal.mjs',
         fichero: 'public/js/alisa-engine/src/gym/ProtoHubEnv.js',
