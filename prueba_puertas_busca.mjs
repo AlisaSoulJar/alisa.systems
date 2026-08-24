@@ -186,7 +186,41 @@ for (const [nombre, ruta, Env] of ETAPAS) {
          * traducirse. Un verbo sin acción es un botón que no hace nada.
          */
         revisados++;
-        if (espacio?.type === 'discrete' && espacio.names?.length) {
+        /**
+         * ⚠️ Y HAY DISCRETOS CUYO `names` ES UNA LEYENDA, NO UNA ENUMERACIÓN.
+         *
+         * `alisa/Defiende-v0` tiene 433 acciones —una por torreta y celda— y
+         * cuatro nombres, porque enumerar «construir guijarro en (7,3)» 432 veces
+         * no ayuda a nadie. Comparar sus verbos contra esa lista de cuatro lo
+         * suspendía sin que hubiera nada roto.
+         *
+         * Es el mismo error que ya cometí con `Pedrisco`: dar por hecho que
+         * `names` significa lo mismo en todos los entornos. Cuando `names.length`
+         * no coincide con `n`, la pregunta correcta no es «¿está el verbo en la
+         * lista?» sino **«¿sabe el entorno traducir ese verbo a una acción
+         * válida?»** — que además es la pregunta que de verdad importa siempre.
+         */
+        /**
+         * ⚠️ Y SON TRES CASOS, NO DOS. Me costó suspender a 715 verbos sanos.
+         *
+         * Al añadir el segundo caso di por hecho que todo `type: 'discrete'` tiene
+         * un `n` numérico. Medido: los entornos del ProtoHub —ajedrez, chinchón,
+         * alisápolis…— declaran `discrete` con `n` y `names` **sin definir**, y sus
+         * acciones son los propios verbos con argumentos, no enteros. Exigirles un
+         * entero los suspendía a todos.
+         *
+         *   1. enumerada  `names.length === n`  → el verbo tiene que estar en names
+         *   2. leyenda    `n` numérico, names corto → traducir y que dé un entero válido
+         *   3. por verbos `n` sin definir  → traducir y que dé ALGO
+         *
+         * Tercera vez esta semana que asumo que un campo significa lo mismo en
+         * todos los entornos. La regla: cuando una comprobación nueva suspende a
+         * mucha gente sana, la rota es ella.
+         */
+        const enumerada = espacio?.type === 'discrete'
+            && Number.isFinite(espacio.n) && espacio.names?.length === espacio.n;
+        const porEnteros = espacio?.type === 'discrete' && Number.isFinite(espacio.n);
+        if (enumerada) {
             const legales = new Set(espacio.names);
             const inventados = [...new Set(ofrecidos.map(a => a.verb).filter(v => !legales.has(v)))];
             if (inventados.length) {
@@ -194,6 +228,19 @@ for (const [nombre, ruta, Env] of ETAPAS) {
                 fallos += inventados.length;
                 console.log(`  ✗ ${entrada.id}: la puerta de lenguaje ofrece ${inventados.length} verbo(s) `
                           + `que la acción discreta no admite — ${inventados.join(', ')}`);
+            }
+        } else if (porEnteros) {
+            // Leyenda: se comprueba traduciendo, que es más fuerte que comparar.
+            const rotos = [...new Set(ofrecidos.filter(a => {
+                const accion = env.actFromVerb(a.verb, a.args ?? {});
+                return accion === null || !Number.isInteger(accion)
+                    || accion < 0 || accion >= espacio.n;
+            }).map(a => a.verb))];
+            if (rotos.length) {
+                conMenuRoto++;
+                fallos += rotos.length;
+                console.log(`  ✗ ${entrada.id}: ${rotos.length} verbo(s) del menú no se traducen `
+                          + `a una acción válida — ${rotos.join(', ')}`);
             }
         } else {
             const mudos = ofrecidos.filter(a => a.action === undefined && a.args === undefined)

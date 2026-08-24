@@ -177,6 +177,13 @@ const PROPIOS = [
     { id: 'alisa/RaccoonCity-v0',   titulo: 'Sector de ciudad', fichero: 'RaccoonSpaceEnv.js' },
     { id: 'alisa/RaccoonPlanet-v0', titulo: 'Planeta',        fichero: 'RaccoonSpaceEnv.js' },
     { id: 'alisa/CorpBuilding-v0', titulo: 'Corp Building', fichero: 'CorpBuildingEnv.js' },
+    /**
+     * El primero que NACE en ECS, y el primero cuya observación es literalmente
+     * la matriz —dos capas de 12×12— en vez de un vector escrito a mano. Sirve de
+     * piloto de la arquitectura: lo que se aprenda aquí decide si se migran los
+     * cinco motores completos que llevan su estado a mano.
+     */
+    { id: 'alisa/Defiende-v0', titulo: 'Sendero', fichero: 'DefiendeEnv.js' },
     // El primero cuyo MUNDO sale de la semilla, no sólo el azar dentro del
     // mundo. Ver la cabecera de su fichero: es la casilla que no ocupa nadie.
     { id: 'alisa/ChopperAquarium-v0', titulo: 'Chopper Terrarium', fichero: 'ChopperAquariumEnv.js' },
