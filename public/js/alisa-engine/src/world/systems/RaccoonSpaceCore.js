@@ -1,4 +1,5 @@
 import { mulberry32 } from '../core/DeterministicScope.js';
+import { crearBandas } from '../core/Bandas.js';
 
 /**
  * RaccoonSpaceCore — la etapa 6 de ¡Busca!, SIN PANTALLA
@@ -668,12 +669,20 @@ export class RaccoonSpaceCore {
         [0.872, 'frío'], [Infinity, 'helado'],
     ];
 
-    /** La banda de un objetivo ya descartado, o `null` si no se ha escaneado. */
+    /**
+     * La banda de un objetivo ya descartado, o `null` si no se ha escaneado.
+     *
+     * Los CORTES son de este juego —salen de medir dónde caen sus distancias— y
+     * las PALABRAS son las del banco entero (`Bandas.js`). Antes cada juego se
+     * inventaba las suyas y «caliente» quería decir cosas distintas en dos
+     * etapas del mismo sitio.
+     */
     bandaDe(p) {
         if (p.pista === undefined) return null;
-        const norm = p.pista / this.tanque;
-        return RaccoonSpaceCore.BANDAS.find(([tope]) => norm < tope)[1];
+        return RaccoonSpaceCore._banda(p.pista / this.tanque);
     }
+
+    static _banda = crearBandas(RaccoonSpaceCore.BANDAS);
 
     /** Lo dicho por el escáner hasta ahora: qué se descartó y cómo de cerca estaba. */
     pistas() {

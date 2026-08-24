@@ -1,4 +1,5 @@
 import { GymEnv } from '../GymEnv.js';
+import { crearBandas, calorDe } from '../../world/core/Bandas.js';
 import { ECSWorld, TransformComponent } from '../../world/OverworldECS.js';
 import { HidingSpotComponent } from '../../world/systems/HidingSpotSystem.js';
 import { CorporateSeekerSystem } from '../../world/systems/CorporateSeekerSystem.js';
@@ -96,11 +97,33 @@ export class CorpBuildingEnv extends GymEnv {
         return this.getObservation();
     }
 
-    /** FRÍO/TIBIO/CALIENTE según la distancia en plantas al mapache. */
+    /**
+     * Cómo de cerca está una planta del mapache, en la escala común del banco.
+     *
+     * ⚠️ ANTES DECÍA `CALIENTE`/`TIBIO`/`FRÍO` Y ERA UN IDIOMA PROPIO.
+     *
+     * `RaccoonSpaceCore` usa cinco peldaños —caliente · templado · fresco · frío
+     * · helado— calibrados a quintiles medidos, y aquí había tres puestos a
+     * mano y en mayúsculas. O sea que **«caliente» quería decir cosas distintas
+     * en dos juegos del mismo banco**, y «TIBIO» no existía en el otro.
+     *
+     * Un agente que aprende a leer una escala se equivoca con la otra, y eso no
+     * es dificultad del juego: es ruido de vocabulario que el banco le mete
+     * encima.
+     *
+     * Los CORTES siguen siendo de aquí —cuentan plantas enteras, no distancias
+     * normalizadas— y sólo se comparten las palabras. Igualar los cortes sería
+     * inventarse una calibración que nadie ha medido.
+     *
+     * Tres peldaños de la escala de cinco, no tres palabras nuevas: este juego
+     * da una pista más gruesa, y decirlo con menos peldaños de la MISMA escala
+     * es exactamente lo que hay que decir.
+     */
     _hint(floor) {
-        const d = Math.abs(floor - this.raccoon.floor);
-        return d === 0 ? 'CALIENTE' : d <= 2 ? 'TIBIO' : 'FRÍO';
+        return CorpBuildingEnv._banda(Math.abs(floor - this.raccoon.floor));
     }
+
+    static _banda = crearBandas([[1, 'caliente'], [3, 'fresco'], [Infinity, 'helado']]);
 
     /** Acción semántica: {verb, floor, index} */
     step(action, dt = 1) {
@@ -129,7 +152,7 @@ export class CorpBuildingEnv extends GymEnv {
                         this.found = true; this.done = true;
                         reward = 100 - this.checks.length * 3;   // premia encontrarlo PRONTO
                     } else {
-                        reward = result === 'CALIENTE' ? 1 : result === 'TIBIO' ? 0.3 : -0.2;
+                        reward = result === 'caliente' ? 1 : result === 'fresco' ? 0.3 : -0.2;
                     }
                     info = { resultado: result, comprobaciones: this.checks.length };
                 }
@@ -204,15 +227,15 @@ export class CorpBuildingEnv extends GymEnv {
     getObservation() {
         const o = [this.currentFloor / this.floors,
                    (this.budget - this.checks.length) / this.budget,
-                   this.lastResult === '¡ENCONTRADO!' ? 1 : this.lastResult === 'CALIENTE' ? 0.66
-                     : this.lastResult === 'TIBIO' ? 0.33 : this.lastResult === 'FRÍO' ? -0.33 : 0];
+                   this.lastResult === '¡ENCONTRADO!' ? 1 : this.lastResult === 'caliente' ? 0.66
+                     : this.lastResult === 'fresco' ? 0.33 : this.lastResult === 'helado' ? -0.33 : 0];
         for (let f = 0; f < 8; f++) {
             const en = this.spots.filter(s => s.floor === f);
             const done = en.filter(s => this.ecs.getComponent(s.id, 'HidingSpotComponent').isSearched).length;
             o.push(en.length ? done / en.length : 1);
             const hints = this.checks.filter(c => c.floor === f);
-            o.push(hints.length ? (hints[hints.length - 1].result === 'CALIENTE' ? 1
-                                 : hints[hints.length - 1].result === 'TIBIO' ? 0.4 : -0.6) : 0);
+            o.push(hints.length ? (hints[hints.length - 1].result === 'caliente' ? 1
+                                 : hints[hints.length - 1].result === 'fresco' ? 0.4 : -0.6) : 0);
         }
         this.checks.slice(-7).forEach(c => o.push(c.floor / this.floors));
         while (o.length < 26) o.push(0);
@@ -285,7 +308,7 @@ export class CorpBuildingEnv extends GymEnv {
             const act = { verb: libre.kind === 'puerta' ? 'comprobar_puerta' : 'comprobar_escondite',
                           floor: env.currentFloor, index: libre.index };
             act.__after = r => seeker.updateBeliefs(env.currentFloor,
-                r === 'CALIENTE' ? 'HOT' : r === 'TIBIO' ? 'WARM' : 'COLD', env.floors);
+                r === 'caliente' ? 'HOT' : r === 'fresco' ? 'WARM' : 'COLD', env.floors);
             return act;
         };
     }

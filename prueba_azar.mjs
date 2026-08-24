@@ -136,6 +136,78 @@ if (copias.length > TECHO_COPIAS) {
     console.log(`  ↓ bajó. Actualiza TECHO_COPIAS a ${copias.length} para que no vuelva a subir.`);
 }
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  4. ¿HAY UNA SOLA ESCALA DE «CALIENTE / FRÍO»?
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Mismo problema que el generador, en otro sitio. Medido el 24-08:
+ *
+ *     RaccoonSpaceCore   caliente · templado · fresco · frío · helado
+ *     CorpBuildingEnv    CALIENTE · TIBIO · FRÍO
+ *
+ * **«Caliente» quería decir cosas distintas en dos juegos del mismo banco**, y
+ * «TIBIO» no existía en el otro. Un agente que aprende a leer una escala se
+ * equivoca con la otra, y eso no es dificultad del juego: es ruido de
+ * vocabulario que el banco le mete encima.
+ *
+ * Los CORTES siguen siendo de cada juego —los de Raccoon salen de medir dónde
+ * caen sus distancias, los del edificio cuentan plantas— y eso está bien: lo que
+ * se comparte es cómo se llaman los peldaños.
+ */
+{
+    const { ESCALA } = await import('./public/js/alisa-engine/src/world/core/Bandas.js');
+    const VIEJAS = /'(CALIENTE|TIBIO|FR[IÍ]O|HOT|WARM|COOL|CHILLY|COLD)'/;
+
+    /**
+     * ⚠️ TRADUCIR EN LA FRONTERA NO ES INVENTARSE UN IDIOMA, Y ESTA PRUEBA
+     * ACUSÓ A DOS SITIOS SANOS ANTES DE QUE LO DISTINGUIERA.
+     *
+     * `CorporateSeekerSystem` es el agente de referencia del edificio y habla
+     * `HOT/WARM/COLD` por su cuenta; `CorpBuildingEnv` le traduce al llamarlo.
+     * Eso está bien: es un adaptador hacia una interfaz ajena, que es justo para
+     * lo que existen los adaptadores. Lo que NO vale es que el ESTADO del juego
+     * viaje con nombres propios — y eso es lo que se arregló.
+     *
+     * Cambiarle el idioma al agente sería tocar cinco ficheros —dos páginas, una
+     * de ellas legacy— para que una prueba se calle. Se declara con su motivo,
+     * que es lo que hace el resto de la casa cuando una excepción es legítima.
+     */
+    const permitidos = [
+        'Bandas.js',
+        // El agente de referencia: interfaz propia, anterior a la escala común.
+        'CorporateSeekerSystem.js',
+    ];
+    let inventados = 0;
+    for (const f of await ficheros(path.join(RAIZ, 'public/js/alisa-engine/src'))) {
+        if (permitidos.some(p => f.endsWith(p))) continue;
+        const bruto = await readFile(f, 'utf-8');
+        const codigo = bruto.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+        /**
+         * ⚠️ SÓLO LO QUE SE COMPARA O SE DEVUELVE, Y ESA PRECISIÓN ES EL ARREGLO.
+         *
+         * La primera versión miraba `(===|!==|return|:)` y con el `:` acusaba al
+         * traductor de `CorpBuildingEnv` —`r === 'caliente' ? 'HOT' : 'COLD'`—,
+         * que es un adaptador correcto hacia un agente ajeno.
+         *
+         * Lo que de verdad importa es si el ESTADO viaja con nombres propios: eso
+         * se ve en lo que una función DEVUELVE y en contra de qué se COMPARA. Un
+         * `'HOT'` pasado como argumento a otra cosa es una traducción en la
+         * frontera, y traducir en la frontera es lo correcto.
+         *
+         * Y así el sabotaje sigue mordiendo: volver a poner `result === 'CALIENTE'`
+         * es exactamente una comparación de estado.
+         */
+        const m = codigo.match(new RegExp(`(===|!==|return)\\s*${VIEJAS.source}`));
+        if (m) {
+            inventados++;
+            mal(`${path.relative(RAIZ, f)}: usa ${m[2]} como banda — la escala común es `
+              + `(${ESCALA.join(' · ')}), ver \`Bandas.js\``);
+        }
+    }
+    if (!inventados) console.log('  ✓ una sola escala de caliente/frío en todo el banco');
+}
+
 console.log('');
 if (fallos) { console.log(`  ${fallos} fallo(s) de azar\n`); process.exit(1); }
-console.log('  ✓ un solo azar: una semilla, un mundo\n');
+console.log('  ✓ un solo azar y una sola escala\n');
