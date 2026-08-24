@@ -208,16 +208,81 @@ for (const f of filas) {
     if (estado(f) === 'DORMIDO') continue;
     const t = await readFile(path.join(dirSistemas, `${f.nombre}.js`), 'utf-8');
     const limpio = !traeTHREE(t);
-    // La factory se busca por raíz del nombre: RaccoonSpaceCore → raccoonspace…
-    const raiz = f.nombre.toLowerCase().replace(/(system|engine|core)$/, '');
-    const tieneF = [...factories].some(x => x.includes(raiz) || raiz.includes(x));
-    const piezas = (tieneF ? 'F' : '·') + (limpio ? 'S' : '·') + (f.envs ? 'E' : '·') + (f.paginas ? 'V' : '·');
+    /**
+     * ⚠️ LA FACTORY SE BUSCA POR QUIÉN LA USA, NO POR CÓMO SE LLAMA.
+     *
+     * Antes se emparejaba por raíz del nombre —`ChopperAquariumEngine` →
+     * «chopperaquarium»— y eso falla en cuanto alguien nombra bien sus ficheros:
+     * la factory de ese motor se llama `AquariumEnvironmentFactory`, que no
+     * contiene «chopper» ni al revés. El motor tenía su Factory y salía sin ella.
+     *
+     * La señal buena es de uso: **si un fichero importa este motor y además
+     * importa una Factory, ese juego tiene su Factory.** Es lo que significa la
+     * pieza —alguien construye el mundo de este motor— y no depende de que dos
+     * personas eligieran nombres parecidos.
+     */
+    const reMotor = new RegExp(`import[^;]*['"\`][^'"\`]*${f.nombre}\\.js(\\?[^'"\`]*)?['"\`]`);
+    /**
+     * ⚠️ Y SE EXCLUYE SÓLO EL FICHERO DEL PROPIO MOTOR, NO LA CARPETA ENTERA.
+     *
+     * El primer intento saltaba todo `world/systems`, y con eso `AsteroidsSystem`
+     * perdía su Factory: quien importa el motor y la Factory a la vez es
+     * `AsteroidsEngine` —el renderizador—, que vive en esa misma carpeta. Excluir
+     * una carpeta para no contarse a uno mismo se lleva por delante a los vecinos.
+     */
+    const tieneF = [...textos].some(([fi, ti]) =>
+        !fi.endsWith(`${f.nombre}.js`) && reMotor.test(ti)
+        && /import[^;]*['"`][^'"`]*Factory\.js(\?[^'"`]*)?['"`]/.test(ti));
+    /**
+     * ⚠️ LA PUERTA HUMANA PUEDE IR POR UN RENDERIZADOR, Y ANTES NO CONTABA.
+     *
+     * Esto exigía que una PÁGINA importara el System directamente. Pero un juego
+     * bien hecho separa reglas de dibujo: `croupier_asteroids_survival.html`
+     * importa `AsteroidsEngine` —el renderizador— y es ÉSE quien usa
+     * `AsteroidsSystem`. O sea que la arquitectura correcta hacía perder la «V».
+     *
+     * Es el mismo fallo de segundo salto que un subagente me destapó esta tarde
+     * en la otra mitad de este fichero, y lo tenía aquí sin corregir: arreglé la
+     * clasificación de dormidos y dejé el patrón dorado mirando sólo un paso.
+     * Una lección aplicada a medias es la manera favorita que tiene este proyecto
+     * de repetir un fallo.
+     */
+    const puertaHumana = f.paginas > 0 || [...textos].some(([fi, ti]) =>
+        fi.endsWith('.html') && [...textos].some(([fj, tj]) =>
+            /world[\\/]systems/.test(fj)
+            && new RegExp(`import[^;]*['"\`][^'"\`]*${path.basename(fj, '.js')}\\.js(\\?[^'"\`]*)?['"\`]`).test(ti)
+            && new RegExp(`import[^;]*['"\`][^'"\`]*${f.nombre}\\.js(\\?[^'"\`]*)?['"\`]`).test(tj)));
+
+    const piezas = (tieneF ? 'F' : '·') + (limpio ? 'S' : '·') + (f.envs ? 'E' : '·') + (puertaHumana ? 'V' : '·');
     if (piezas === 'FSEV') completos.push(f.nombre);
     if (!limpio && f.envs) sucios.push(f.nombre);
     console.log(`    ${piezas}  ${f.nombre.padEnd(28)} ${f.kb.toFixed(1).padStart(6)} KB`
         + (limpio ? '' : '   ⚠ importa THREE: no es headless'));
 }
 console.log(`\n  con las CUATRO piezas: ${completos.length ? completos.join(', ') : 'NINGUNO'}`);
+
+/**
+ * ⚠️ TRINQUETE AL REVÉS: ESTE NÚMERO SÓLO PUEDE SUBIR.
+ *
+ * Los demás trinquetes de la casa cuentan deuda y sólo bajan. Éste cuenta juegos
+ * COMPLETOS —Factory, System headless, Env y puerta humana— y sólo sube. Si baja,
+ * alguien le ha quitado una pieza a un juego que la tenía, y eso no da error: da
+ * un juego que se sigue pudiendo jugar y ya no se puede medir, o al revés.
+ *
+ * Medido el 24-08: cuatro. Y llegó a decir UNO por dos cegueras mías —la puerta
+ * humana a través de un renderizador, y la Factory emparejada por nombre en vez
+ * de por uso—. El número no subió porque se trabajara: subió porque el
+ * instrumento dejó de mentir. Vale la pena distinguirlo.
+ */
+const SUELO_COMPLETOS = 4;
+if (completos.length < SUELO_COMPLETOS) {
+    console.log(`\n  ✗ eran ${SUELO_COMPLETOS} juegos completos y ahora hay ${completos.length}.`);
+    console.log('    A alguno le falta una pieza que tenía: se podrá jugar y no medir,');
+    console.log('    o medir y no jugar. Mira cuál y por qué antes de bajar este suelo.');
+    process.exitCode = 1;
+} else if (completos.length > SUELO_COMPLETOS) {
+    console.log(`  ↑ sube a ${completos.length}. Actualiza SUELO_COMPLETOS.`);
+}
 if (sucios.length) {
     console.log(`  ⚠ en el banco y con THREE dentro: ${sucios.join(', ')}`);
     console.log('    Su entorno no puede correr en un worker sin montar una escena.');
