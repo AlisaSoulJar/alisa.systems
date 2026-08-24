@@ -787,6 +787,48 @@
           }
         }
       }
+    },
+    "/api/mundos": {
+      "get": {
+        "operationId": "catalogoDeMundos",
+        "summary": "The worlds a machine can play, and how",
+        "description": "The machine door for the WORLDS of the bench — the 3D/matrix games (¡Busca!, ¡Defiende!, Marabunta, Asteroids, Cabinet, Chopper, CorpBuilding). `/api/gym` already served the 40 board and card games; the worlds had no HTTP door at all, so the only way to play them was to clone the repository. Same engines a person plays in the browser and the gym measures locally.",
+        "responses": {
+          "200": {
+            "description": "Catalogue and manual: what each world is, how many verbs it offers at the start, and the rules of fair play.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "jugarUnMundo",
+        "summary": "Send the whole match; it is replayed from the seed",
+        "description": "Stateless, like its sibling `/api/gym`: you send `{mundo, semilla, jugadas}` and the world is re-simulated from scratch. No session to lose, every step is reproducible by anyone, and the agent cannot cheat by construction — its score is not accepted, it is recomputed.\n\nTHE UNIT IS THE DECISION, NOT THE TICK. These worlds run at 60 Hz, so a full match of ¡Defiende! is 7200 ticks and nobody is going to make 7200 requests. Each entry in `jugadas` is worth one decision interval (`ticksPorJugada`, 30 by default = half a second), which is the same rate the human door decides at. Deciding more often than a person would be an invisible advantage.\n\nA verb that was not legal at that moment stops the replay and says which one and what was legal instead: carrying on would leave the agent believing its plan worked while the world did something else.",
+        "responses": {
+          "200": {
+            "description": "State in prose (`descripcion`), the legal verbs right now, the numeric observation, and the recomputed score.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed body, or more plays than the cap allows."
+          },
+          "404": {
+            "description": "Unknown world. GET /api/mundos brings the catalogue."
+          }
+        }
+      }
     }
   },
   "x-games": {
