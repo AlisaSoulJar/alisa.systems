@@ -711,6 +711,53 @@ for (const part of participantes) {
         + `${(tot('ms') / 1000).toFixed(0).padStart(7)}   ${verif}/${esperadas}`);
 }
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  EL ANCLA — LO ÚNICO DE ESTA TABLA QUE SE ENTIENDE SIN LEER EL PROYECTO
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * `marea.js` existe explícitamente para esto, y lo dice en su cabecera: *«nadie
+ * de fuera sabe qué significa un 0,38 en canadiense»*. Es el 2048 canónico —4×4,
+ * 90/10, una fusión por ficha, puntuación = suma de fusiones— y lleva años
+ * siendo entorno de referencia, así que su número ya tiene con qué compararse en
+ * la cabeza de quien lea la tabla.
+ *
+ * ⚠️ Y LA TABLA LO ESTABA TIRANDO A LA BASURA.
+ *
+ * Medido el 24-08 sobre la primera clasificación con modelos: `porJuego` sólo
+ * guardaba el valor NORMALIZADO. Para marea eso da `0.35`, que no significa nada
+ * fuera de aquí. El puente estaba construido y la tabla cruzaba por debajo.
+ *
+ * Se publican los dos números que cualquiera reconoce: la puntuación y la ficha
+ * más alta. Y de paso sirven de comprobación externa de que nuestro juego es el
+ * que decimos que es — medido con 200 semillas, el azar saca 1058 y llega a la
+ * ficha 128, que es justo lo que da la literatura para una política aleatoria.
+ * Es la única validación de este banco que no depende de nosotros.
+ */
+const PUENTE = 'marea';
+if (datos.has(PUENTE)) {
+    const crudos = datos.get(PUENTE);
+    console.log(`\n  ${verde('ANCLA')}  ${gris('marea = 2048 canónico · lo que estos números valen fuera de aquí')}\n`);
+    console.log('  ' + 'participante'.padEnd(22) + 'puntuación'.padStart(11) + '   semillas');
+    for (const part of participantes) {
+        const d = crudos[part.nombre];
+        if (!d) continue;
+        /**
+         * ⚠️ Y SE DICE CON CUÁNTAS SEMILLAS, PORQUE EN EL 2048 ESO LO ES TODO.
+         *
+         * Desviación medida por partida: 519 con la política del azar y **1702**
+         * con la de la casa. Con tres semillas el error de la media es de ±300 a
+         * ±983 — más grande que la distancia entre el suelo (814) y el azar
+         * (1058). Publicar un número de tres semillas aquí es publicar ruido con
+         * cara de medida, así que la cuenta va al lado y quien lea decide.
+         */
+        const n = d.semillas ?? 0;
+        const aviso = n < 20 ? gris(`  ⚠ pocas: ±${Math.round(1702 / Math.sqrt(Math.max(1, n)))} de error`) : '';
+        console.log('  ' + part.nombre.padEnd(22)
+            + (d.puntos ?? 0).toFixed(0).padStart(11) + String(n).padStart(11) + aviso);
+    }
+}
+
 if (techosFlojos.length) {
     console.log(`\n  ${rojo('⚠ techo flojo')} — el azar supera al rival de la casa en: `
         + techosFlojos.map(t => `${t.juego} (${t.azar.toFixed(2)})`).join(', '));
@@ -728,10 +775,34 @@ for (const juego of juegosUtiles) {
         + participantes.map((p, i) => (n[p.nombre] === null ? '—' : n[p.nombre].toFixed(2)).padStart(anchos[i])).join(''));
 }
 
-// ── salida a fichero ─────────────────────────────────────────────
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ UNA TANDA PARCIAL NO PISA LA CLASIFICACIÓN PUBLICADA
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Esto escribía `resultados/tabla.json` SIEMPRE, y ese fichero es la
+ * clasificación que se publica. El 24-08 me lo cargué dos veces en una tarde:
+ * una probando tres juegos con dos semillas, y otra comprobando que el bloque
+ * del ancla se pintaba. La segunda vez la tabla buena —tres modelos, 32 juegos,
+ * 96 recibos verificados por modelo, dos horas de máquina— quedó sustituida por
+ * un ensayo de tres juegos.
+ *
+ * Se salvó por casualidad: el `.md` de la tanda buena seguía ahí porque la
+ * prueba no llevaba `--md`. Depender de la casualidad para no perder dos horas
+ * de medida no es un plan.
+ *
+ * Con `--juegos` la tanda es por definición un ensayo, así que se escribe a un
+ * fichero aparte y se dice. Sobrescribir lo publicado tiene que costar
+ * escribirlo entero, que es exactamente cuando se quiere sobrescribir.
+ */
 const dir = path.join(AQUI, 'resultados');
 await mkdir(dir, { recursive: true });
-await writeFile(path.join(dir, 'tabla.json'), JSON.stringify(
+const parcial = !!pedidos;
+const salidaJson = parcial ? 'tabla_ensayo.json' : 'tabla.json';
+if (parcial) {
+    console.log(gris('\n  ⚠ tanda PARCIAL (--juegos): no se toca la clasificación publicada.'));
+}
+await writeFile(path.join(dir, salidaJson), JSON.stringify(
     { fecha: new Date().toISOString(), semillas: SEMILLAS, tope: TOPE,
       // Los topes propios van en el resultado porque cambian lo que significa el
       // número: una puntuación de go a 1800 decisiones y otra a 400 no son la misma
@@ -877,4 +948,4 @@ if (args.md) {
     await writeFile(path.join(AQUI, String(args.md)), md);
     console.log(gris(`\n  markdown en ${args.md}`));
 }
-console.log(gris(`  json en resultados/tabla.json`) + '\n');
+console.log(gris(`  json en resultados/${salidaJson}`) + '\n');
