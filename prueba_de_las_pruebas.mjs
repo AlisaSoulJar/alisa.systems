@@ -561,6 +561,19 @@ const SABOTAJES = [
         vigila: 'que el menú de lenguaje sólo ofrezca verbos que la acción admite',
     },
     {
+        /**
+         * El fallo que vigila es el que había hasta el 24-08: dos generadores
+         * sembrados, y «semilla 42» significando dos mundos distintos sin que
+         * nada diera error. El sabotaje devuelve a `SeededRNG` su viejo LCG.
+         */
+        nombre: 'azar',
+        corre: 'node prueba_azar.mjs',
+        fichero: 'public/js/alisa-engine/src/world/core/SeededRNG.js',
+        de: '        return this._siguiente();',
+        a: '        this._seed = (this._seed * 9301 + 49297) % 233280;\n        return this._seed / 233280;',
+        vigila: 'que haya un solo generador: una semilla, un mundo',
+    },
+    {
         nombre: 'senal',
         corre: 'node prueba_senal.mjs',
         fichero: 'public/js/alisa-engine/src/gym/ProtoHubEnv.js',
