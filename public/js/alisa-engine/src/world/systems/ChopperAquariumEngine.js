@@ -93,6 +93,50 @@ export class ChopperAquariumEngine {
     }
 
     // Math utilities to avoid THREE.js dependency
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  EL SUSTRATO — UN TANQUE ES UN MUNDO SIN CASILLAS
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Mismo contrato que publican los 24 juegos del arcade, para que un
+     * dibujante pueda pintar esto sin saber a qué se juega.
+     *
+     * Sin `rejilla`: el acuario es un volumen continuo de 120×112×120. Las
+     * «plantas» son alturas por las que se pasa, no casillas donde se está.
+     * Publicar una rejilla que el juego no tiene sería peor que no publicar
+     * ninguna — el dibujante pintaría una cuadrícula falsa y quien la viera
+     * jugaría creyendo en ella.
+     *
+     * `y` del sustrato es la profundidad y `alto` la altura, igual que en
+     * ¡Busca! y en Pedrisco: el sustrato es plano por contrato y `alto` es la
+     * dimensión que un mundo añade.
+     *
+     * ⚠️ EL PLANCTON NO ENTRA. Son cientos de puntos que no cambian ninguna
+     * partida; el sustrato describe el estado, no el decorado.
+     */
+    sustrato() {
+        const piezas = [];
+        const c = this.chopper;
+        if (c) piezas.push({ x: c.x, y: c.z, alto: c.y, t: 'helicoptero', de: 0 });
+        const meter = (lista, t, de) => {
+            for (const b of (lista ?? [])) piezas.push({ x: b.x, y: b.z, alto: b.y, t, de });
+        };
+        meter(this.fishes, 'pez', 1);
+        meter(this.hunters, 'cazador', 2);
+        meter(this.sharks, 'tiburon', 3);
+
+        return {
+            piezas,
+            zonas: [],
+            limite: { forma: 'caja', ancho: this.TANK_SIZE, largo: this.TANK_SIZE,
+                      alto: this.TANK_HEIGHT, plantas: this.totalFloors },
+            leyenda: {
+                helicoptero: 'tú', pez: 'un pez', cazador: 'un cazador', tiburon: 'un tiburón',
+            },
+            simbolos: { helicoptero: '@', pez: '.', cazador: 'c', tiburon: 'T' },
+        };
+    }
+
     vecLength(v) { return Math.sqrt(v.x*v.x + v.y*v.y + v.z*v.z); }
     vecNormalize(v) { 
         let l = this.vecLength(v); 

@@ -140,6 +140,67 @@ export class CorpBuildingEnv extends GymEnv {
         return { obs: this.getObservation(), reward, done: this.done, info };
     }
 
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  EL SUSTRATO — Y AQUÍ SÍ HAY REJILLA DE VERDAD
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Mismo contrato que publican los 24 juegos del arcade, para que un
+     * dibujante pueda pintar esto sin saber a qué se juega.
+     *
+     * Este edificio es una cuadrícula honrada: **plantas × escondites**. Cada
+     * escondite tiene su planta y su índice dentro de ella, así que la rejilla no
+     * hay que inventarla — ya está en los datos. Es lo contrario del acuario o
+     * del espacio, que son volúmenes continuos y no publican ninguna.
+     *
+     * ⚠️ VA EN EL ENTORNO Y NO EN UN MOTOR, PORQUE EL ESTADO ESTÁ AQUÍ.
+     * Éste es el otro juego de la casa que ya era ECS, y su mundo vive en
+     * `this.ecs`, no en un `System` aparte. El sustrato se publica donde está el
+     * estado; ponerlo en otro sitio obligaría a copiarlo, y una copia es un sitio
+     * donde separarse.
+     *
+     * ⚠️ Y SÓLO SE DIBUJA LO QUE EL JUGADOR SABE.
+     * Un escondite sin registrar sale como `sin_mirar`. Publicar dónde está el
+     * mapache pondría la solución en el sustrato, y cualquiera que lo lea —un
+     * dibujante o un agente— la vería. Misma regla que vigila `sustrato:secreto`.
+     */
+    sustrato() {
+        const porPlanta = new Map();
+        for (const s of this.spots) {
+            if (!porPlanta.has(s.floor)) porPlanta.set(s.floor, 0);
+            porPlanta.set(s.floor, Math.max(porPlanta.get(s.floor), s.index + 1));
+        }
+        const ancho = Math.max(1, ...porPlanta.values());
+        const alto = this.floors;
+
+        const celdas = new Array(ancho * alto).fill(0);
+        const piezas = [];
+        for (const s of this.spots) {
+            const c = this.ecs.getComponent(s.id, 'HidingSpotComponent');
+            const visto = !!c?.isSearched;
+            const esElBueno = visto && this.raccoon && s.id === this.raccoon.id;
+            celdas[s.floor * ancho + s.index] = 1;          // aquí hay escondite
+            piezas.push({
+                x: s.index, y: s.floor, de: 0,
+                t: esElBueno ? 'mapache' : visto ? 'mirado' : 'sin_mirar',
+                clase: s.kind,
+            });
+        }
+        // Dónde está el jugador, que es una planta entera y no una celda.
+        piezas.push({ x: 0, y: this.currentFloor, t: 'tu_planta', de: 1 });
+
+        return {
+            rejilla: { ancho, alto, celdas },
+            piezas,
+            zonas: [],
+            leyenda: {
+                sin_mirar: 'escondite sin registrar', mirado: 'ya registrado',
+                mapache: '¡el mapache!', tu_planta: 'la planta donde estás',
+            },
+            simbolos: { sin_mirar: '?', mirado: '.', mapache: '*', tu_planta: '@' },
+        };
+    }
+
     getObservation() {
         const o = [this.currentFloor / this.floors,
                    (this.budget - this.checks.length) / this.budget,

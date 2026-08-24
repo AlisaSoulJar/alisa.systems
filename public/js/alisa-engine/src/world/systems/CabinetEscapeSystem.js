@@ -225,6 +225,60 @@ export class CabinetEscapeSystem {
         this.hudEnergy = Math.min(100, this.hudEnergy + 25);
     }
     
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  EL SUSTRATO — Y ÉSTE YA ERA PLANO DESDE EL PRINCIPIO
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * De los mundos de la casa, éste es el que menos tiene que traducir: un
+     * mueble ES una superficie con cajones, y el BSP ya los guarda como
+     * rectángulos `{x, y, w, h}` en un cuadrado de 0 a 1. O sea que el sustrato
+     * aquí no aplasta nada — sólo lo dice en el idioma común.
+     *
+     * ⚠️ CADA CAJÓN SE PUBLICA CON LO QUE EL JUGADOR SABE, NO CON LO QUE HAY.
+     *
+     * Un cajón cerrado sale como `cerrado`, y sólo al abrirlo aparece qué tenía.
+     * Publicar la serpiente antes de tiempo pondría la solución en el sustrato, y
+     * cualquier dibujante que lo lea —o cualquier agente— la vería. Es la misma
+     * regla que vigila `sustrato:secreto` en las cartas: lo que una silla no
+     * sabe, no se dibuja.
+     *
+     * `minesweeperCounts` sí va, porque ésa es información que el juego DA: el
+     * número de serpientes vecinas de un cajón ya abierto.
+     */
+    sustrato() {
+        const hojas = this.partition?.leaves ?? [];
+        const piezas = hojas.map((h, i) => {
+            const abierto = this.tried[i];
+            let t = 'cerrado';
+            if (abierto) {
+                t = i === this.targetId ? 'mapache'
+                  : this.snakeIds.includes(i) ? 'serpiente'
+                  : this.batteryIds?.includes(i) ? 'pila'
+                  : 'vacio';
+            }
+            const pz = {
+                x: h.x + h.w / 2, y: h.y + h.h / 2,
+                t, de: 0, ancho: h.w, largo: h.h, cajon: i,
+            };
+            // El número de vecinas sólo existe en los cajones vacíos ya abiertos.
+            const n = this.minesweeperCounts?.[i];
+            if (abierto && Number.isFinite(n) && n >= 0) pz.vecinas = n;
+            return pz;
+        });
+
+        return {
+            piezas,
+            zonas: [],
+            limite: { forma: 'rectangulo', ancho: 1, alto: 1 },
+            leyenda: {
+                cerrado: 'cajón sin abrir', vacio: 'vacío',
+                serpiente: '¡una serpiente!', mapache: '¡el mapache!', pila: 'una pila',
+            },
+            simbolos: { cerrado: '?', vacio: '.', serpiente: 's', mapache: '*', pila: 'p' },
+        };
+    }
+
     getObservationVector() {
         const drawers = [];
         const n = this.partition ? this.partition.leaves.length : 0;

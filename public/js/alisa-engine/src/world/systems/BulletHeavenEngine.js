@@ -609,6 +609,64 @@ export class BulletHeavenEngine {
   }
 
   // === STATE (API) ===
+  /**
+   * ═══════════════════════════════════════════════════════════════════════════
+   *  EL SUSTRATO — LO QUE HAY, EN EL IDIOMA COMÚN DE LOS DIBUJANTES
+   * ═══════════════════════════════════════════════════════════════════════════
+   *
+   * Mismo contrato que publican los 24 juegos del arcade: `rejilla` (terreno),
+   * `piezas` (lo que se mueve) y `zonas` (montones fuera del tablero). Con esto
+   * un dibujante puede pintar este juego **sin saber a qué se juega**, que es lo
+   * que permite que 24 juegos compartan una sola mesa.
+   *
+   * Va en la clase MADRE y no en `MarabuntaSystem` a propósito: Marabunta lo
+   * hereda y cualquier bullet-heaven futuro nace con él. Es el mismo dividendo
+   * que dio unificar ¡Busca! — un solo `sustrato()` en el núcleo cubrió sus tres
+   * etapas.
+   *
+   * ⚠️ AQUÍ NO HAY `rejilla`, Y ESO ES UNA RESPUESTA, NO UN OLVIDO.
+   *
+   * La arena es un círculo continuo de radio `arenaRadius`: no hay casillas. El
+   * contrato lo permite —quien lee mira `if (sus.rejilla)`— y publicar una
+   * rejilla inventada sería peor que no publicar ninguna: el dibujante pintaría
+   * una cuadrícula que el juego no tiene y la persona jugaría creyendo en ella.
+   *
+   * ⚠️ Y NO SE PUBLICAN LAS BALAS.
+   *
+   * `projectiles` llega a 100 y se renueva cada pocos ticks. El sustrato describe
+   * el ESTADO del juego, no cada chispa: meter cien piezas efímeras haría el
+   * sustrato ilegible por el sitio donde menos información hay. Las balas son
+   * decoración de un disparo que ya está resuelto en las vidas del enemigo.
+   */
+  sustrato() {
+    const piezas = [];
+    const p = this.player;
+    piezas.push({ x: p.x, y: p.z, t: 'jugador', de: 0, vida: p.hp / p.maxHp, nivel: p.level });
+    for (const e of this.enemies) {
+      piezas.push({ x: e.x, y: e.z, t: e.type ?? 'enemigo', de: 1,
+                    vida: e.maxHp ? e.hp / e.maxHp : 1, r: e.size });
+    }
+    for (const o of (this.obstacles ?? [])) {
+      piezas.push({ x: o.x, y: o.z, t: 'obstaculo', de: 2, r: o.r,
+                    vida: o.maxHp ? o.hp / o.maxHp : 1 });
+    }
+    for (const k of this.pickups) {
+      piezas.push({ x: k.x, y: k.z, t: k.type ?? 'suelo', de: 3 });
+    }
+
+    return {
+      piezas,
+      zonas: [],
+      /**
+       * El radio de la arena no es una pieza ni una casilla, pero sin él un
+       * dibujante no sabe dónde acaba el mundo. Va aparte y con nombre.
+       */
+      limite: { forma: 'circulo', radio: this.arenaRadius },
+      leyenda: { jugador: 'tú', obstaculo: 'algo en medio', suelo: 'algo que recoger' },
+      simbolos: { jugador: '@', obstaculo: '#', suelo: '+' },
+    };
+  }
+
   getState() {
     return {
       tick: this.tick,

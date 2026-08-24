@@ -129,6 +129,58 @@ export class AsteroidsSystem {
         for(let i=0; i<this.targetAsteroidDensity; i++) this.spawnAsteroid(this.globalZ + this.rng()*this.VISIBLE_Z, false);
     }
     
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  EL SUSTRATO — Y AQUÍ EL SEGUNDO EJE DEL SUELO ES LA PROFUNDIDAD
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Mismo contrato que publican los 24 juegos del arcade, para que un
+     * dibujante pueda pintar esto sin saber a qué se juega.
+     *
+     * ⚠️ LO QUE CAMBIA AQUÍ ES QUÉ ES «EL SUELO».
+     *
+     * Esto no es una arena vista desde arriba: es un TÚNEL por el que se avanza.
+     * El plano interesante es «a lo ancho × a lo hondo» —x y z—, y la altura es
+     * el eje que la nave usa para esquivar. Así que `y` del sustrato es la
+     * profundidad y `alto` es la altura, igual que en ¡Busca!.
+     *
+     * Se dice porque leerlo al revés no daría ningún error: pintaría un juego
+     * plano donde hay un túnel, y nadie lo notaría hasta jugarlo.
+     *
+     * ⚠️ Y NO ENTRAN NI LAS ESTRELLAS NI LAS PARTÍCULAS.
+     * `decorStars` son 300 y `particles` nacen y mueren cada tick. Son decorado:
+     * no cambian ninguna partida. El sustrato describe el estado del juego, y
+     * meter 300 puntos de adorno lo haría ilegible justo donde hay que mirar.
+     */
+    sustrato() {
+        const piezas = [];
+        const s = this.ship;
+        if (s) piezas.push({ x: s.x, y: s.z, alto: s.y, t: s.dead ? 'nave_rota' : 'nave', de: 0 });
+        for (const a of this.asteroids) {
+            piezas.push({ x: a.x, y: a.z, alto: a.y, t: (a.type ?? 'roca').toLowerCase(),
+                          de: 1, r: a.radius, tier: a.tier });
+        }
+        for (const e of (this.enemies ?? [])) {
+            piezas.push({ x: e.x, y: e.z, alto: e.y, t: 'dron', de: 2 });
+        }
+        for (const i of (this.items ?? [])) {
+            piezas.push({ x: i.x, y: i.z, alto: i.y, t: (i.kind ?? i.type ?? 'suelo').toLowerCase(), de: 3 });
+        }
+        return {
+            piezas,
+            zonas: [],
+            leyenda: {
+                nave: 'tú', nave_rota: 'tú, reventado', dron: 'un dron',
+                basic: 'roca normal', fast: 'roca rápida', gold: 'roca de oro',
+                mono: 'monolito: no se rompe', suelo: 'algo que recoger',
+            },
+            simbolos: {
+                nave: '@', nave_rota: 'x', dron: 'd',
+                basic: 'o', fast: '>', gold: '$', mono: '#', suelo: '+',
+            },
+        };
+    }
+
     spawnStar() {
         this.decorStars.push({
             id: uuid(this.rng),

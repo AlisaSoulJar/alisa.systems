@@ -740,10 +740,24 @@ if (derivados > TECHO_DERIVADOS) {
             const Clase = await entrada.cargar();
             const env = new Clase();
             env.reset(4);
-            sys = env.sys ?? env.core ?? env.nucleo;
+            /**
+             * ⚠️ EL MOTOR NO SE LLAMA IGUAL EN TODOS, Y EL ESTADO NO SIEMPRE ESTÁ
+             * EN UN MOTOR.
+             *
+             * `sys` en la mayoría, `motor` en el acuario, y en `CorpBuilding` no
+             * hay ninguno: es de los dos juegos que ya eran ECS y su mundo vive en
+             * el propio entorno (`this.ecs`). Buscar sólo `sys` daba dos mundos por
+             * «sin sustrato» teniéndolo — y eso es la clase de falso negativo que
+             * hace pensar que queda trabajo hecho.
+             *
+             * El sustrato se publica DONDE ESTÁ EL ESTADO. Aquí se busca en los
+             * dos sitios donde puede estar.
+             */
+            sys = [env.sys, env.core, env.nucleo, env.motor, env]
+                .find(o => o && typeof o.sustrato === 'function');
         } catch { continue; }
         revisados++;
-        if (!sys || typeof sys.sustrato !== 'function') continue;
+        if (!sys) continue;
         conSustrato++;
 
         const sus = sys.sustrato();
@@ -768,6 +782,24 @@ if (derivados > TECHO_DERIVADOS) {
               + (conSustrato < revisados
                   ? '  — los que faltan no pueden compartir dibujante'
                   : '  — todos'));
+
+    /**
+     * ⚠️ Y ESTO ES UN TRINQUETE, NO UN INFORME.
+     *
+     * Empezó siendo 0 de 9 esta misma tarde. Un contador que sólo informa vuelve
+     * a bajar en cuanto alguien añada un mundo con prisa, y entonces el juego
+     * nuevo no puede compartir dibujante y nadie se entera hasta que toca
+     * escribirle su propia página — que es exactamente cómo se llegó a las 741
+     * líneas repetidas de ¡Busca!.
+     *
+     * Se exige que TODOS lo publiquen. Si algún día hubiera un mundo que de
+     * verdad no puede, se declara aquí con su motivo, como se hace en el resto de
+     * la casa. Lo que no vale es que baje en silencio.
+     */
+    if (conSustrato < revisados) {
+        mal(`${revisados - conSustrato} mundo(s) del gimnasio sin \`sustrato()\`. `
+          + 'Sin él no pueden compartir dibujante y acaban con su propia página escrita a mano.');
+    }
 }
 
 console.log(fallos === 0
