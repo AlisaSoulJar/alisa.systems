@@ -258,9 +258,23 @@ for (const f of filas) {
      * `AsteroidsEngine` —el renderizador—, que vive en esa misma carpeta. Excluir
      * una carpeta para no contarse a uno mismo se lleva por delante a los vecinos.
      */
-    const tieneF = [...textos].some(([fi, ti]) =>
-        !fi.endsWith(`${f.nombre}.js`) && reMotor.test(ti)
-        && /import[^;]*['"`][^'"`]*Factory\.js(\?[^'"`]*)?['"`]/.test(ti));
+    const reFactory = /import[^;]*['"`][^'"`]*Factory\.js(\?[^'"`]*)?['"`]/;
+    /**
+     * ⚠️ Y EL MOTOR PUEDE IMPORTAR SU PROPIA FACTORÍA. ANTES NO CONTABA.
+     *
+     * Esto buscaba un TERCERO que importara motor y factoría a la vez, porque en
+     * los juegos 3D la factoría monta la escena y quien las junta es la página.
+     * En `DefiendeSystem` no hay escena: la factoría genera el TERRENO —la matriz
+     * y el sendero—, así que es el propio motor quien la usa, y salía sin «F»
+     * teniendo una factoría de libro.
+     *
+     * Excluir el fichero del motor tenía sentido para no contarse a sí mismo como
+     * IMPORTADOR; se coló también para la factoría, que es otra pregunta. Es la
+     * quinta vez esta semana que un filtro puesto por comodidad me deja fuera
+     * justo el caso que buscaba.
+     */
+    const tieneF = reFactory.test(t) || [...textos].some(([fi, ti]) =>
+        !fi.endsWith(`${f.nombre}.js`) && reMotor.test(ti) && reFactory.test(ti));
     /**
      * ⚠️ LA PUERTA HUMANA PUEDE IR POR UN RENDERIZADOR, Y ANTES NO CONTABA.
      *
@@ -317,7 +331,7 @@ console.log(`\n  con las CUATRO piezas: ${completos.length ? completos.join(', '
  * instrumento dejó de mentir. Vale la pena distinguirlo.
  */
 // 24-08 (tarde): cinco. Entro RaccoonSpaceCore al unificar ¡Busca! 6.
-const SUELO_COMPLETOS = 6;
+const SUELO_COMPLETOS = 7;
 if (completos.length < SUELO_COMPLETOS) {
     console.log(`\n  ✗ eran ${SUELO_COMPLETOS} juegos completos y ahora hay ${completos.length}.`);
     console.log('    A alguno le falta una pieza que tenía: se podrá jugar y no medir,');

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>ALISA — ¡Defiende! 1 — Sendero</title>
+    <style>
+        body { margin: 0; background: #070b12; font-family: monospace; color: #cfe; user-select: none;
+               display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        #todo { display: flex; gap: 22px; align-items: flex-start; flex-wrap: wrap; justify-content: center; padding: 20px; }
+
+        canvas { background: #0a1018; border: 2px solid #2a6; border-radius: 10px;
+                 box-shadow: 0 0 30px rgba(34,204,136,0.15); cursor: crosshair; image-rendering: pixelated; }
+
+        #panel { width: 260px; }
+        .caja { background: rgba(8,16,24,0.9); border: 1px solid #2a6; border-radius: 10px;
+                padding: 14px 16px; margin-bottom: 12px; font-size: 13px; line-height: 1.7; }
+        .caja h2 { margin: 0 0 8px; font-size: 14px; color: #4eb; letter-spacing: 1px; text-transform: uppercase; }
+        .et { color: #8db; }
+        .v { color: #efe; font-weight: bold; }
+        .v-oro { color: #fc4; font-weight: bold; }
+        .v-mal { color: #f65; font-weight: bold; }
+
+        .torreta { display: block; width: 100%; text-align: left; margin: 5px 0; padding: 8px 10px;
+                   background: #0e1a26; color: #cfe; border: 1px solid #2a4; border-radius: 6px;
+                   font-family: inherit; font-size: 12px; cursor: pointer; line-height: 1.5; }
+        .torreta:hover:not(:disabled) { background: #16303f; }
+        .torreta.sel { border-color: #4eb; background: #14303c; box-shadow: 0 0 10px rgba(78,235,187,0.25); }
+        .torreta:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        #aviso { min-height: 20px; color: #fc4; font-size: 12px; margin-top: 6px; }
+
+        #modal { position: fixed; inset: 0; background: rgba(0,0,0,0.93); display: flex;
+                 align-items: center; justify-content: center; z-index: 100; }
+        #modal .box { background: #0a141c; border: 2px solid #2a6; padding: 34px; border-radius: 12px;
+                      max-width: 560px; width: 90%; }
+        #modal h1 { color: #4eb; text-align: center; margin: 0 0 14px; font-size: 25px; letter-spacing: 2px; }
+        #modal p { color: #8aa; font-size: 13px; line-height: 1.65; text-align: center; }
+        #modal .cfg { display: flex; gap: 14px; justify-content: center; margin: 18px 0 0; }
+        #modal label { font-size: 11px; color: #8aa; display: block; }
+        #modal input { background: #071019; color: #4eb; border: 1px solid #2a4; padding: 6px 10px;
+                       border-radius: 4px; font-family: inherit; width: 90px; }
+        #btn { display: block; width: 100%; margin-top: 20px; padding: 12px; font-size: 17px; font-weight: bold;
+               background: linear-gradient(135deg, #22cc88, #44eebb); color: #041; border: none;
+               border-radius: 8px; cursor: pointer; font-family: inherit; }
+        #fin { position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+               background: rgba(0,0,0,0.85); z-index: 90; font-size: 26px; font-weight: bold; }
+    </style>
+    <!--
+      El importmap común, en <head> y sin defer. Ver `mundo.js`: un importmap no
+      se puede añadir una vez que ha empezado a cargar un módulo.
+    -->
+    <script src="/js/mundo.js"></script>
+</head>
+<body>
+
+<div id="modal">
+    <div class="box">
+        <h1>🏰 ¡DEFIENDE! 1 — SENDERO</h1>
+        <p>Los bichos entran por un borde y caminan hasta tu núcleo. <b>Coloca torretas
+        junto al camino</b> antes de que lleguen.<br><br>
+        Sólo ganas presupuesto matando, y lo que construyes se queda donde lo pusiste:
+        aquí no se mide reflejo, se mide <b>dónde</b>.<br><br>
+        Powered by ALISA <b>DefiendeSystem</b> — el mismo motor que juega el banco.</p>
+        <div class="cfg">
+            <div><label>SEMILLA</label><input type="number" id="mSemilla" value="42" min="1"></div>
+            <div><label>LADO</label><input type="number" id="mLado" value="12" min="8" max="20"></div>
+        </div>
+        <button id="btn" onclick="empezar()">EMPEZAR</button>
+    </div>
+</div>
+
+<div id="fin"></div>
+
+<div id="todo">
+    <canvas id="lienzo" width="600" height="600"></canvas>
+    <div id="panel">
+        <div class="caja">
+            <h2>Núcleo</h2>
+            <span class="et">VIDAS:</span> <span id="hVidas" class="v">10</span><br>
+            <span class="et">PRESUPUESTO:</span> <span id="hPres" class="v-oro">40</span><br>
+            <span class="et">OLEADA:</span> <span id="hOla" class="v">1 / 5</span><br>
+            <span class="et">BAJAS:</span> <span id="hBajas" class="v">0</span><br>
+            <span class="et">PUNTOS:</span> <span id="hPuntos" class="v-oro">0</span>
+        </div>
+        <div class="caja">
+            <h2>Construir</h2>
+            <div id="paleta"></div>
+            <div id="aviso"></div>
+        </div>
+        <div class="caja" style="font-size:11px;color:#7a9">
+            Elige una torreta y haz clic en una celda libre.<br>
+            El camino y el núcleo no se pueden ocupar.
+        </div>
+    </div>
+</div>
+
+<script type="module">
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  LA PUERTA HUMANA DE ¡DEFIENDE! — Y AQUÍ NO HAY NADA DEL JUEGO
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Esta página no sabe las reglas. No sabe cuánto cuesta una torreta, ni cuánto
+ * daño hace, ni cuándo se acaba la partida. Lo único que hace es DIBUJAR lo que
+ * `DefiendeSystem` dice y traducir clics a `construir(...)`.
+ *
+ * Se escribe así a propósito, porque hoy mismo he pagado lo contrario tres veces:
+ * `raccoon_city_sector.html` y `raccoon_planet.html` llevaban la lógica del juego
+ * escrita en el HTML mientras el banco medía otro motor, y `SimonSaysSystem`
+ * ofrecía un menú que su propio `submitAction` rechazaba. Tres juegos con un
+ * nombre y dos reglas.
+ *
+ * ⚠️ Y SE DIBUJA EN 2D A PROPÓSITO, NO POR AHORRAR.
+ *
+ * El juego ES una matriz de 12×12. Pintarlo en 3D isométrico quedaría más
+ * bonito y escondería justo lo que este banco defiende: que al modelo se le
+ * entrega el mundo YA en forma de rejilla plana, en vez de que un modelo de
+ * visión tenga que reconstruirla desde una imagen. Aquí la persona ve
+ * EXACTAMENTE la misma matriz que recibe el agente — 144 celdas, cada una con
+ * lo que hay dentro. Esa igualdad es el argumento del proyecto, dibujado.
+ */
+import { DefiendeSystem, TORRETAS, TIPOS, CELDA }
+    from '@alisa-engine/src/world/systems/DefiendeSystem.js';
+
+const lienzo = document.getElementById('lienzo');
+const ctx = lienzo.getContext('2d');
+let nucleo = null, celda = 32, elegida = TORRETAS[0].id, ultimo = 0;
+
+const COLOR_CELDA = {
+    [CELDA.LIBRE]:   '#0e1620',
+    [CELDA.CAMINO]:  '#2b2417',
+    [CELDA.NUCLEO]:  '#1d4030',
+    [CELDA.ENTRADA]: '#3a2020',
+    [CELDA.TORRETA]: '#14303c',
+};
+const COLOR_BICHO = { peon: '#8ad', rapido: '#fd6', gordo: '#f76' };
+const ICONO_TORRETA = { guijarro: '🪨', pertiga: '🎣', yunque: '🔨' };
+
+function pintarPaleta() {
+    const p = document.getElementById('paleta');
+    p.innerHTML = '';
+    for (const t of TORRETAS) {
+        const b = document.createElement('button');
+        b.className = 'torreta' + (t.id === elegida ? ' sel' : '');
+        b.disabled = !nucleo || nucleo.presupuesto < t.coste;
+        b.innerHTML = `${t.nombre} — <b>${t.coste}</b><br>`
+                    + `<span style="color:#7a9">alcance ${t.alcance} · ${t.dmg} de daño cada ${t.cadencia}s</span>`;
+        b.onclick = () => { elegida = t.id; pintarPaleta(); };
+        p.appendChild(b);
+    }
+}
+
+function aviso(txt) {
+    const a = document.getElementById('aviso');
+    a.textContent = txt;
+    clearTimeout(aviso._t);
+    aviso._t = setTimeout(() => { a.textContent = ''; }, 2200);
+}
+
+window.empezar = function () {
+    const semilla = parseInt(document.getElementById('mSemilla').value) || 42;
+    const lado = parseInt(document.getElementById('mLado').value) || 12;
+    nucleo = new DefiendeSystem({ seed: semilla, lado });
+    celda = Math.floor(lienzo.width / nucleo.lado);
+    lienzo.width = lienzo.height = celda * nucleo.lado;
+    document.getElementById('modal').style.display = 'none';
+    document.getElementById('fin').style.display = 'none';
+    pintarPaleta();
+    ultimo = performance.now();
+    requestAnimationFrame(bucle);
+};
+
+lienzo.addEventListener('pointerdown', (e) => {
+    if (!nucleo || nucleo.terminado()) return;
+    const r = lienzo.getBoundingClientRect();
+    const x = Math.floor((e.clientX - r.left) / (r.width / nucleo.lado));
+    const z = Math.floor((e.clientY - r.top) / (r.height / nucleo.lado));
+    /**
+     * ⚠️ EL MOTOR DICE POR QUÉ NO, Y AQUÍ SE ENSEÑA TAL CUAL.
+     *
+     * `construir` devuelve el motivo en vez de fallar en silencio. Un clic que no
+     * hace nada y no explica por qué es la clase de silencio que en este proyecto
+     * siempre acaba siendo un fallo que nadie ve — hoy me ha pasado con un enlace
+     * que se dibujaba y no se podía pulsar.
+     */
+    const r2 = nucleo.construir(elegida, x, z);
+    if (!r2.ok) aviso('✗ ' + r2.motivo);
+    pintarPaleta();
+});
+
+function bucle(ahora) {
+    if (!nucleo) return;
+    const dt = Math.min(0.05, (ahora - ultimo) / 1000);
+    ultimo = ahora;
+    if (!nucleo.terminado()) nucleo.step(dt);
+    dibujar();
+    actualizarHUD();
+    if (nucleo.terminado()) return acabar();
+    requestAnimationFrame(bucle);
+}
+
+/** Dibuja la matriz. Nada de esto decide nada: todo sale de `observacion()`. */
+function dibujar() {
+    const o = nucleo.observacion();
+    const L = o.lado, c = celda;
+    ctx.clearRect(0, 0, lienzo.width, lienzo.height);
+
+    for (let z = 0; z < L; z++) {
+        for (let x = 0; x < L; x++) {
+            ctx.fillStyle = COLOR_CELDA[o.rejilla[z][x]] ?? '#0e1620';
+            ctx.fillRect(x * c, z * c, c - 1, c - 1);
+        }
+    }
+
+    // El núcleo y la entrada, con su marca: son los dos extremos del problema.
+    ctx.font = `${Math.floor(c * 0.62)}px serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('🏰', (o.nucleo.x + 0.5) * c, (o.nucleo.z + 0.5) * c);
+    ctx.fillText('🕳️', (nucleo.entrada.x + 0.5) * c, (nucleo.entrada.z + 0.5) * c);
+
+    for (const e of o.entidades) {
+        if (e.que !== 'torreta') continue;
+        // El alcance se ve: es la información con la que se decide dónde poner la
+        // siguiente, y esconderla haría el juego de adivinar en vez de de colocar.
+        ctx.beginPath();
+        ctx.arc((e.x + 0.5) * c, (e.z + 0.5) * c, e.alcance * c, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(78,235,187,0.05)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(78,235,187,0.22)';
+        ctx.stroke();
+        ctx.fillText(ICONO_TORRETA[e.tipo] ?? '🔧', (e.x + 0.5) * c, (e.z + 0.5) * c);
+    }
+
+    for (const e of o.entidades) {
+        if (e.que !== 'atacante') continue;
+        const px = (e.x + 0.5) * c, pz = (e.z + 0.5) * c;
+        ctx.beginPath();
+        ctx.arc(px, pz, c * 0.26, 0, Math.PI * 2);
+        ctx.fillStyle = COLOR_BICHO[e.tipo] ?? '#aaa';
+        ctx.fill();
+        // Barra de vida: sin ella no se puede saber si merece la pena otra torreta.
+        const w = c * 0.6, h = 3;
+        ctx.fillStyle = '#300';
+        ctx.fillRect(px - w / 2, pz - c * 0.4, w, h);
+        ctx.fillStyle = '#4e6';
+        ctx.fillRect(px - w / 2, pz - c * 0.4, w * (e.hp / e.hpMax), h);
+    }
+}
+
+function actualizarHUD() {
+    const i = nucleo.info();
+    document.getElementById('hVidas').textContent = i.vidas;
+    document.getElementById('hVidas').className = i.vidas <= 3 ? 'v-mal' : 'v';
+    document.getElementById('hPres').textContent = i.presupuesto;
+    document.getElementById('hOla').textContent = `${i.oleada} / ${i.oleadas}`;
+    document.getElementById('hBajas').textContent = i.bajas;
+    document.getElementById('hPuntos').textContent = i.puntos;
+    pintarPaleta();
+}
+
+function acabar() {
+    const i = nucleo.info();
+    const f = document.getElementById('fin');
+    f.style.display = 'flex';
+    f.style.color = i.ganada ? '#4e6' : '#f65';
+    f.innerHTML = i.ganada
+        ? `🏆 NÚCLEO A SALVO · ${i.puntos} puntos, ${i.vidas} vidas`
+        : `💀 EL NÚCLEO HA CAÍDO · ${i.puntos} puntos, ${i.bajas} bajas`;
+    setTimeout(() => location.reload(), 5000);
+}
+
+/**
+ * PUENTE RL — el mismo motor que el banco, no un tercer juego.
+ * Mismo criterio que en ¡Busca!: si esta página ofrece un puente, tiene que
+ * llevar al mismo sitio que el gimnasio, o serían tres juegos con un nombre.
+ */
+window.getObservationVector = () => nucleo ? nucleo.observacion() : null;
+window.stepSimulation = (accion, dt) => {
+    if (!nucleo || nucleo.terminado()) return { done: true };
+    if (accion && accion.torreta) nucleo.construir(accion.torreta, accion.x, accion.z);
+    return nucleo.step(dt ?? 1 / 60);
+};
+</script>
+</body>
+</html>

@@ -1,5 +1,6 @@
 import { ECSWorld } from '../OverworldECS.js';
 import { mulberry32 } from '../core/DeterministicScope.js';
+import { DefiendeMapaFactory, CELDA } from '../factories/DefiendeMapaFactory.js';
 
 /**
  * ¡DEFIENDE! — TOWER DEFENSE SOBRE MATRIZ PLANA, EN ECS
@@ -37,8 +38,13 @@ import { mulberry32 } from '../core/DeterministicScope.js';
  * completa — el eje que le falta al banco.
  */
 
-/** Lo que puede haber en una celda de la matriz. Es el alfabeto del mundo. */
-export const CELDA = { LIBRE: 0, CAMINO: 1, NUCLEO: 2, ENTRADA: 3, TORRETA: 4 };
+/**
+ * El alfabeto del mundo vive en la factoría, que es quien lo escribe. Se
+ * re-exporta para que quien use el motor no tenga que saber de dónde sale — pero
+ * hay UNA definición, no dos. Dos alfabetos que se creen el mismo es la forma
+ * favorita que tiene este proyecto de separarse por la mitad sin dar un error.
+ */
+export { CELDA };
 
 /**
  * Los tres tiers de torreta. La decisión de la partida es cuál pones y dónde,
@@ -122,6 +128,13 @@ export class DefiendeSystem {
         this.tope = opts.tope ?? 7200;            // 120 s a 60 Hz
 
         /**
+         * El terreno lo hace la factoría, no las reglas. Se puede cambiar por otra
+         * —así será cada etapa de la saga: otro trazado, mismo juego— sin tocar
+         * nada de esto.
+         */
+        this.fabrica = opts.fabrica ?? new DefiendeMapaFactory();
+
+        /**
          * ⚠️ EL RESPALDO ES UNA LLAMADA, NO UNA REFERENCIA.
          * `config.rng || Math.random` captura la función global al construir, así
          * que un parche posterior no llega. Ese `||` ya cambió las notas
@@ -154,7 +167,11 @@ export class DefiendeSystem {
         this.eventos = [];
         this._idBala = 0;
 
-        this.rejilla = this._trazarCamino(rnd);
+        const mapa = this.fabrica.trazar(this.lado, rnd);
+        this.rejilla = mapa.rejilla;
+        this.camino = mapa.camino;
+        this.entrada = mapa.entrada;
+        this.nucleo = mapa.nucleo;
         this._registrarSistemas();
         return this.observacion();
     }
@@ -172,68 +189,6 @@ export class DefiendeSystem {
      *      adivinar por dónde vienen: se mide DÓNDE PONES lo que tienes. Esconder
      *      la ruta convertiría el juego en otra cosa.
      */
-    _trazarCamino(rnd) {
-        const L = this.lado;
-        const g = Array.from({ length: L }, () => new Array(L).fill(CELDA.LIBRE));
-        const cz = Math.floor(L / 2), cx = Math.floor(L / 2);
-
-        /**
-         * ⚠️ LA PRIMERA VERSIÓN HACÍA UN PASILLO, NO UN SENDERO.
-         *
-         * Iba del borde al núcleo sin volver nunca atrás, con «desvíos laterales».
-         * Los desvíos no desviaban nada: al ser monótono, cada paso acercaba, así
-         * que el camino medía siempre la distancia Manhattan y punto. Medido en 40
-         * semillas: **de 7 a 13 celdas, mediana 9**, sobre un mínimo teórico de 7.
-         *
-         * Y eso no es un detalle estético: con nueve celdas un bicho cruza en
-         * cinco segundos, las torretas apenas disparan, y la partida se gana
-         * llenando el mapa en vez de eligiendo bien. O sea que el juego medía
-         * «¿tienes presupuesto?» en vez de «¿dónde lo pones?», que es lo único
-         * que esta etapa existe para medir.
-         *
-         * Ahora se sortean PUNTOS DE PASO y se unen con tramos en L. Cada tramo
-         * sigue siendo monótono —así que siempre hay camino y nunca se atasca—
-         * pero entre punto y punto el sendero puede alejarse del núcleo, que es
-         * de donde sale el largo.
-         */
-        const jalones = [];
-        const borde = Math.floor(rnd() * 4);
-        const r = () => Math.floor(rnd() * L);
-        jalones.push(borde === 0 ? { x: 0, z: r() }
-                   : borde === 1 ? { x: L - 1, z: r() }
-                   : borde === 2 ? { x: r(), z: 0 }
-                   :               { x: r(), z: L - 1 });
-        const nJalones = 2 + Math.floor(rnd() * 2);   // 2 o 3 puntos intermedios
-        for (let i = 0; i < nJalones; i++) jalones.push({ x: r(), z: r() });
-        jalones.push({ x: cx, z: cz });
-
-        this.entrada = { ...jalones[0] };
-        this.camino = [{ ...jalones[0] }];
-
-        for (let i = 1; i < jalones.length; i++) {
-            const a = this.camino[this.camino.length - 1], b = jalones[i];
-            // El orden del tramo en L también se sortea: si fuera siempre
-            // «primero en horizontal», todos los mapas tendrían la misma forma.
-            const primeroX = rnd() < 0.5;
-            const ejes = primeroX ? ['x', 'z'] : ['z', 'x'];
-            let cur = { ...a };
-            for (const eje of ejes) {
-                while (cur[eje] !== b[eje]) {
-                    cur = { ...cur, [eje]: cur[eje] + Math.sign(b[eje] - cur[eje]) };
-                    this.camino.push({ ...cur });
-                }
-            }
-        }
-
-        for (const p of this.camino) {
-            if (g[p.z][p.x] === CELDA.LIBRE) g[p.z][p.x] = CELDA.CAMINO;
-        }
-        g[this.entrada.z][this.entrada.x] = CELDA.ENTRADA;
-        g[cz][cx] = CELDA.NUCLEO;
-        this.nucleo = { x: cx, z: cz };
-        return g;
-    }
-
     // ─── LA JUGADA ────────────────────────────────────────────────────────
 
     /**
