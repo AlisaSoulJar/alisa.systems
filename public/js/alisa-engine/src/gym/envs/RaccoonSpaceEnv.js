@@ -181,15 +181,50 @@ export class RaccoonSpaceEnv extends GymEnv {
         const s = this.sys;
         if (s.terminado()) return [];
 
-        const lista = [
-            { verb: 'empujar',      args: {}, desc: 'Acelerar hacia donde apunta el morro (gasta combustible)' },
-            { verb: 'frenar',       args: {}, desc: 'Empujar hacia atrás (gasta igual)' },
-            { verb: 'girar_izq',    args: {}, desc: 'Timón a babor' },
-            { verb: 'girar_der',    args: {}, desc: 'Timón a estribor' },
-            { verb: 'morro_arriba', args: {}, desc: 'Levantar el morro' },
-            { verb: 'morro_abajo',  args: {}, desc: 'Bajar el morro' },
-            { verb: 'nada',         args: {}, desc: 'Dejarse llevar por la inercia (solo gasta el soporte vital)' },
-        ];
+        /**
+         * ═══════════════════════════════════════════════════════════════════
+         *  ⚠️ EL MENÚ SALE DE LOS VERBOS DE ESTA ETAPA, NO DE UNA LISTA FIJA
+         * ═══════════════════════════════════════════════════════════════════
+         *
+         * Esta lista estaba escrita a mano con los verbos de la NAVE, y las tres
+         * etapas la heredaban. Medido el 24-08 en el navegador: a un modelo que
+         * jugara al sector de ciudad se le ofrecían `empujar`, `girar_izq`,
+         * `morro_arriba`… — los mandos de una nave espacial para pilotar un dron.
+         * Seis de siete verbos que no existen en esa etapa.
+         *
+         * Y no era sólo un menú equivocado: el núcleo ACEPTABA `empujar` en el
+         * dron —lo movía 6,31 unidades— porque el bloque de empuje no miraba el
+         * mando. Así que la puerta de lenguaje tenía verbos que la numérica no,
+         * las dos jugaban con mandos distintos, y ninguna prueba lo veía.
+         *
+         * Ahora el menú se deriva de `actionSpace.names`, que es la misma lista
+         * que ve la puerta numérica. Si mañana se añade un mando, las dos puertas
+         * se enteran a la vez o ninguna.
+         */
+        const DESC = {
+            nada:         'Dejarse llevar por la inercia (solo gasta el soporte vital)',
+            empujar:      'Acelerar hacia donde apunta el morro (gasta combustible)',
+            frenar:       'Empujar hacia atrás (gasta igual)',
+            girar_izq:    'Timón a babor',
+            girar_der:    'Timón a estribor',
+            morro_arriba: 'Levantar el morro',
+            morro_abajo:  'Bajar el morro',
+            adelante:     'Desplazar el dron hacia delante (gasta batería)',
+            atras:        'Desplazar el dron hacia atrás',
+            izquierda:    'Desplazar el dron a la izquierda',
+            derecha:      'Desplazar el dron a la derecha',
+            subir:        'Ganar altura',
+            bajar:        'Perder altura',
+            norte:        'Subir en latitud (hacia el polo norte)',
+            sur:          'Bajar en latitud (hacia el polo sur)',
+            este:         'Avanzar en longitud hacia el este',
+            oeste:        'Avanzar en longitud hacia el oeste',
+            bajar_orbita: 'Acercar el satélite a la superficie — es lo que pone las ciudades a tiro',
+            subir_orbita: 'Alejar el satélite de la superficie',
+        };
+        const lista = this.constructor.actionSpace.names
+            .filter(v => v !== 'escanear')
+            .map(v => ({ verb: v, args: {}, desc: DESC[v] ?? v }));
 
         // `escanear` solo se ofrece si sirve de algo. Ofrecerlo siempre
         // enseñaría al agente a malgastar, y penalizarlo después sería tramposo.

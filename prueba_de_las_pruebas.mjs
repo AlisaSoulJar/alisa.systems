@@ -547,6 +547,20 @@ const SABOTAJES = [
         vigila: 'que la página y el banco monten el núcleo de ¡Busca! con los mismos ajustes',
     },
     {
+        /**
+         * La otra mitad de esa prueba: que el menú de la puerta de lenguaje no
+         * ofrezca jugadas que la acción no admite. El sabotaje devuelve el menú a
+         * la lista fija de verbos de NAVE que tenía hasta el 24-08 — con eso, las
+         * etapas de dron y satélite volvían a ofrecer los mandos de una nave.
+         */
+        nombre: 'puertas-menu',
+        corre: 'node prueba_puertas_busca.mjs',
+        fichero: 'public/js/alisa-engine/src/gym/envs/RaccoonSpaceEnv.js',
+        de: "const lista = this.constructor.actionSpace.names",
+        a: "const lista = VERBOS_ESPACIO",
+        vigila: 'que el menú de lenguaje sólo ofrezca verbos que la acción admite',
+    },
+    {
         nombre: 'senal',
         corre: 'node prueba_senal.mjs',
         fichero: 'public/js/alisa-engine/src/gym/ProtoHubEnv.js',

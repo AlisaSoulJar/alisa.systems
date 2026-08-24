@@ -337,6 +337,44 @@ export class RaccoonEnvironmentFactory {
         const panelGeo = new THREE.BoxGeometry(2.5, 0.02, 0.8);
         const panelMat = new THREE.MeshStandardMaterial({ color: 0x1a3355, metalness: 0.5 });
         satellite.add(new THREE.Mesh(panelGeo, panelMat));
+
+        /**
+         * ═══════════════════════════════════════════════════════════════════
+         *  ⚠️ UNA BALIZA, PORQUE EL SATÉLITE NO SE VEÍA
+         * ═══════════════════════════════════════════════════════════════════
+         *
+         * Visto en pantalla el 24-08: paneles azul oscuro y cuerpo gris sobre
+         * fondo negro, midiendo 2,5 unidades al lado de un planeta de 15. En la
+         * cara de noche desaparece del todo.
+         *
+         * Antes daba igual: la página dejaba escanear desde cualquier sitio y el
+         * satélite era un adorno. Ahora hay que PILOTARLO —ponerse encima y bajar
+         * la órbita— así que no verlo no es un defecto de acabado: es que el juego
+         * no se puede jugar. La baliza es emisiva, o sea que se ve también donde no
+         * da el sol, que es justo donde se perdía.
+         *
+         * No toca ninguna regla: es el mismo vehículo, en el mismo sitio, visible.
+         */
+        /**
+         * ⚠️ Y LA BALIZA NO PUEDE TAPAR LO QUE SEÑALA.
+         * La primera versión era una bola de 0,45 con un halo de 1,1 y en pantalla
+         * salía un borrón verde: se veía perfectamente y ya no parecía un satélite.
+         * Señalar algo escondiéndolo es no señalarlo. Baliza pequeña, halo tenue y
+         * el cuerpo con sus paneles a la vista.
+         */
+        const baliza = new THREE.Mesh(
+            new THREE.SphereGeometry(0.22, 10, 10),
+            new THREE.MeshBasicMaterial({ color: 0x66ffcc }),
+        );
+        baliza.position.set(0, 0.35, 0);
+        satellite.add(baliza);
+        const halo = new THREE.Mesh(
+            new THREE.SphereGeometry(0.75, 12, 12),
+            new THREE.MeshBasicMaterial({ color: 0x44eebb, transparent: true, opacity: 0.13 }),
+        );
+        satellite.add(halo);
+        satellite.scale.setScalar(1.9);
+
         satellite.position.set(0, PLANET_RADIUS + 8, 0);
         scene.add(satellite);
         return satellite;

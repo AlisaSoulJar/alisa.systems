@@ -134,6 +134,83 @@ for (const [nombre, ruta, Env] of ETAPAS) {
     }
 }
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ SEGUNDA PARTE: ¿OFRECEN LO MISMO LA PUERTA DE LENGUAJE Y LA NUMÉRICA?
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Esto no es de ¡Busca!: es de TODOS los entornos, y se barre entero.
+ *
+ * El fallo, medido en el navegador el 24-08: a un modelo que jugara al sector de
+ * ciudad, `affordances()` le ofrecía `empujar`, `girar_izq`, `morro_arriba`… —
+ * los mandos de una nave espacial para pilotar un dron. Seis de siete verbos que
+ * esa etapa no tiene. Y el núcleo ACEPTABA algunos, así que el modelo podía hacer
+ * cosas que la política numérica ni siquiera podía nombrar.
+ *
+ * Un menú que ofrece jugadas que no existen no da un error: da un agente que
+ * gasta turnos en nada y una comparación con sesgo a favor de la otra puerta.
+ * Es la misma familia que todo lo de hoy — dos puertas jugando a cosas distintas
+ * — sólo que aquí la grieta está en el MENÚ y no en los ajustes.
+ */
+{
+    const { CATALOGO } = await import('./public/js/alisa-engine/src/gym/registro.js');
+    let revisados = 0, conMenuRoto = 0;
+    for (const entrada of CATALOGO) {
+        let env;
+        try {
+            const Clase = await entrada.cargar();
+            env = new Clase();
+            env.reset(7);
+            if (typeof env.affordances !== 'function') continue;
+        } catch { continue; }          // los que no cargan ya los caza check_gym_envs
+
+        const espacio = env.constructor.actionSpace;
+        const ofrecidos = env.affordances();
+
+        /**
+         * ⚠️ Y SÓLO VALE PARA LAS ACCIONES DISCRETAS. LO APRENDÍ SUSPENDIENDO A
+         * UN ENTORNO SANO.
+         *
+         * La primera versión de esto acusó a `alisa/Pedrisco-v0` de ofrecer ocho
+         * verbos inventados. No inventaba nada: su acción es CONTINUA
+         * —`['tx','ty','fire']`— y ahí `names` son las DIMENSIONES del vector, no
+         * un menú. Sus verbos (`esquivar_izquierda`…) son una capa de traducción
+         * que lleva cada uno su `action: [...]`, que es justo para lo que existe
+         * `actFromVerb`.
+         *
+         * O sea: comparé peras con manzanas y el resultado fue una acusación
+         * convincente contra código correcto. Van varias esta semana — cuando una
+         * prueba nueva suspende a alguien sano, el roto suele ser ella.
+         *
+         * En continuo la pregunta correcta es otra: que cada verbo del menú SEPA
+         * traducirse. Un verbo sin acción es un botón que no hace nada.
+         */
+        revisados++;
+        if (espacio?.type === 'discrete' && espacio.names?.length) {
+            const legales = new Set(espacio.names);
+            const inventados = [...new Set(ofrecidos.map(a => a.verb).filter(v => !legales.has(v)))];
+            if (inventados.length) {
+                conMenuRoto++;
+                fallos += inventados.length;
+                console.log(`  ✗ ${entrada.id}: la puerta de lenguaje ofrece ${inventados.length} verbo(s) `
+                          + `que la acción discreta no admite — ${inventados.join(', ')}`);
+            }
+        } else {
+            const mudos = ofrecidos.filter(a => a.action === undefined && a.args === undefined)
+                                   .map(a => a.verb);
+            if (mudos.length) {
+                conMenuRoto++;
+                fallos += mudos.length;
+                console.log(`  ✗ ${entrada.id}: ${mudos.length} verbo(s) del menú no se traducen `
+                          + `a ninguna acción — ${mudos.join(', ')}`);
+            }
+        }
+    }
+    if (!conMenuRoto) {
+        console.log(`\n  ✓ los ${revisados} entornos con menú ofrecen sólo verbos que su acción admite`);
+    }
+}
+
 console.log('');
 if (fallos) {
     console.log(`  ${fallos} diferencia(s): lo que juega la persona y lo que mide el banco NO es lo mismo\n`);

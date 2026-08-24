@@ -373,18 +373,33 @@ export class RaccoonSpaceCore {
         if (this.mando === 'dron')   this._pilotarDron(verbo, dt);
         if (this.mando === 'orbita') this._pilotarOrbita(verbo, dt);
 
+        /**
+         * ⚠️ Y UN DRON NO OBEDECE LOS VERBOS DE UNA NAVE.
+         *
+         * Estos dos bloques no miraban el mando, así que el dron aceptaba
+         * `empujar` —medido: 6,31 unidades— y `girar_izq` le cambiaba la guiñada.
+         * Verbos que no están en su `actionSpace`, o sea que la puerta numérica no
+         * los tenía y la de lenguaje sí: dos puertas, dos mandos, cero errores.
+         *
+         * `escanear` y el gasto de soporte vital son de todos y siguen abajo, sin
+         * guardia: eso sí es el mismo juego en las tres etapas.
+         */
+        const pilotaNave = this.mando === 'nave';
+
         // ── Orientación ──────────────────────────────────────────
-        if (verbo === 'girar_izq')     n.guinada += this.velGiro * dt;
-        if (verbo === 'girar_der')     n.guinada -= this.velGiro * dt;
-        if (verbo === 'morro_arriba')  n.cabeceo += this.velGiro * dt;
-        if (verbo === 'morro_abajo')   n.cabeceo -= this.velGiro * dt;
-        // El cabeceo se limita: sin esto la nave se pone del revés y los
-        // controles se invierten sin avisar.
-        const LIM = Math.PI / 2 - 0.05;
-        n.cabeceo = Math.max(-LIM, Math.min(LIM, n.cabeceo));
+        if (pilotaNave) {
+            if (verbo === 'girar_izq')     n.guinada += this.velGiro * dt;
+            if (verbo === 'girar_der')     n.guinada -= this.velGiro * dt;
+            if (verbo === 'morro_arriba')  n.cabeceo += this.velGiro * dt;
+            if (verbo === 'morro_abajo')   n.cabeceo -= this.velGiro * dt;
+            // El cabeceo se limita: sin esto la nave se pone del revés y los
+            // controles se invierten sin avisar.
+            const LIM = Math.PI / 2 - 0.05;
+            n.cabeceo = Math.max(-LIM, Math.min(LIM, n.cabeceo));
+        }
 
         // ── Empuje ───────────────────────────────────────────────
-        if (verbo === 'empujar' || verbo === 'frenar') {
+        if (pilotaNave && (verbo === 'empujar' || verbo === 'frenar')) {
             const signo = verbo === 'empujar' ? 1 : -1;
             const cp = Math.cos(n.cabeceo);
             const fx = -Math.sin(n.guinada) * cp;
@@ -757,7 +772,28 @@ export class RaccoonSpaceCore {
         }
         while (obs.length < 21) obs.push(0);
 
-        obs.push(this.planetaCerca() ? 1 : 0);
+        /**
+         * ═══════════════════════════════════════════════════════════════════
+         *  ⚠️ `escaner_listo` LE MENTÍA A LA PUERTA NUMÉRICA. DESDE SIEMPRE.
+         * ═══════════════════════════════════════════════════════════════════
+         *
+         * Era `planetaCerca() ? 1 : 0`, y `planetaCerca` devuelve cualquier
+         * objetivo al alcance — escaneado o no. O sea que se le decía «escáner
+         * listo» a un agente que, si escaneaba, cobraba -1 y no sacaba nada.
+         *
+         * La puerta de lenguaje NUNCA tuvo ese problema: `describe()` dice «lo
+         * tienes al alcance, pero ya lo escaneaste» y `affordances()` directamente
+         * no ofrece `escanear`. Así que el modelo sabía lo que la política no.
+         *
+         * Lo encontré por accidente: un piloto tonto que se fiaba de este número
+         * gastó 2.923 pasos escaneando al vacío hasta morir. No es de las etapas
+         * nuevas — llevaba ahí desde antes, sesgando también ¡Busca! 6.
+         *
+         * Ahora las tres puertas dicen lo mismo: hay algo QUE MERECE LA PENA
+         * escanear al alcance.
+         */
+        const aTiro = this.planetaCerca();
+        obs.push(aTiro && !aTiro.escaneado ? 1 : 0);
 
         // La coherencia de esos mismos dos candidatos con las pistas dadas.
         for (const { o } of candidatos) obs.push(this.coherencia(o));
