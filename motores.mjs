@@ -274,7 +274,8 @@ console.log(`\n  con las CUATRO piezas: ${completos.length ? completos.join(', '
  * de por uso—. El número no subió porque se trabajara: subió porque el
  * instrumento dejó de mentir. Vale la pena distinguirlo.
  */
-const SUELO_COMPLETOS = 4;
+// 24-08 (tarde): cinco. Entro RaccoonSpaceCore al unificar ¡Busca! 6.
+const SUELO_COMPLETOS = 5;
 if (completos.length < SUELO_COMPLETOS) {
     console.log(`\n  ✗ eran ${SUELO_COMPLETOS} juegos completos y ahora hay ${completos.length}.`);
     console.log('    A alguno le falta una pieza que tenía: se podrá jugar y no medir,');

@@ -98,7 +98,25 @@
 <script type="module">
 import * as THREE from 'three';
 import { RaccoonEnvironmentFactory } from '@alisa-engine/src/world/factories/RaccoonEnvironmentFactory.js';
-import { RaccoonSpaceSystem } from '@alisa-engine/src/world/systems/RaccoonSpaceSystem.js';
+/**
+ * ⚠️ EL NÚCLEO DEL BANCO, NO UN SEGUNDO MOTOR.
+ *
+ * Esta página usaba `RaccoonSpaceSystem` —4,5 KB de cinemática con THREE dentro—
+ * mientras el banco medía con `RaccoonSpaceCore`. Mismo nombre de etapa, dos
+ * juegos distintos:
+ *
+ *     combustible   página 100 (pintado como %)   ·   núcleo 32
+ *     escanear      costaba 10                     ·   -1 sólo si es en balde
+ *     marcador      fuel + restantes × 20          ·   +500 encontrar
+ *     pista         caliente/frío al descartar     ·   no existía
+ *
+ * O sea que la nota de una persona en ¡Busca! 6 y la que el banco le pone a un
+ * agente NO medían la misma partida. Comparar es lo único que hace este proyecto,
+ * así que eso no era un detalle de implementación: era el proyecto.
+ *
+ * Ahora manda el núcleo y esta página sólo pinta lo que él dice.
+ */
+import { RaccoonSpaceCore } from '@alisa-engine/src/world/systems/RaccoonSpaceCore.js';
 
 import { montarMundo } from '/js/montarMundo.js';
 
@@ -134,10 +152,16 @@ scene.add(dirLight);
 
 // Setup Engine 
 const factory = new RaccoonEnvironmentFactory();
-const spaceEngine = new RaccoonSpaceSystem({ tankSize: 400 });
+/**
+ * El núcleo se crea al empezar la partida, con la semilla que elija quien juega.
+ * `nucleo.combustible` es lo que se pinta en la barra, `nucleo.planetas` lo que
+ * dibuja la factoría, y `nucleo.step(verbo)` lo único que mueve el mundo.
+ */
+let nucleo = null;
 
 // Map globals
 let planets = [];
+let asteroidMeshes = [];
 let targetPlanetIdx = -1;
 let totalPlanets = 6;
 let scannedCount = 0;
@@ -149,7 +173,28 @@ let shipRoot = null;
 const keys = {};
 window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
 window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
-spaceEngine.setKeys(keys);
+
+/**
+ * ⚠️ LOS DEDOS SE TRADUCEN A LOS VERBOS DEL NÚCLEO, Y A NINGÚN OTRO SITIO.
+ *
+ * Es la regla del patrón dorado para la puerta humana: *«traduce dedos a verbos.
+ * Nunca inventa una jugada»*. Antes esta página movía la nave por su cuenta con
+ * su propia cinemática; ahora sólo dice cuál de los ocho verbos legales quiere, y
+ * el resto lo decide el mismo motor que juzga a los agentes.
+ *
+ * Sólo un verbo por tick, como los agentes: si una persona pudiera girar y
+ * empujar a la vez y un agente no, la comparación tendría trampa a favor de la
+ * persona y encima invisible.
+ */
+function verboDeLasTeclas() {
+    if (keys['w'] || keys['arrowup'])    return 'empujar';
+    if (keys['s'] || keys['arrowdown'])  return 'frenar';
+    if (keys['a'] || keys['arrowleft'])  return 'girar_izq';
+    if (keys['d'] || keys['arrowright']) return 'girar_der';
+    if (keys['q']) return 'morro_arriba';
+    if (keys['e']) return 'morro_abajo';
+    return 'nada';
+}
 
 window.initGame = function() {
     let seed = parseInt(document.getElementById('mSeed').value) || 42;
@@ -165,23 +210,31 @@ window.initGame = function() {
     // Decorate
     dustPoints = factory.createDecoration(scene, 400);
 
-    // Generate Space System
-    const generation = factory.generateSpace(scene, pCount, aCount, 400);
+    /**
+     * ⚠️ EL NÚCLEO PRIMERO, Y LA FACTORÍA DIBUJA LO SUYO.
+     *
+     * El orden importa: antes la factoría inventaba el mundo y el motor lo
+     * seguía. Ahora el mundo lo decide el núcleo —con la misma semilla que
+     * usaría el banco— y la factoría recibe sus posiciones. Una sola verdad.
+     */
+    nucleo = new RaccoonSpaceCore({ seed, planets: pCount, asteroids: aCount, tankSize: 400 });
+    const generation = factory.generateSpace(scene, pCount, aCount, 400, {
+        planetas: nucleo.planetas,
+        asteroides: nucleo.asteroides,
+        objetivo: nucleo.planetaDelMapache,
+    });
     planets = generation.planets;
+    asteroidMeshes = generation.asteroids.map(a => a.mesh);
     targetPlanetIdx = generation.targetPlanetIdx;
-    totalPlanets = pCount;
+    totalPlanets = nucleo.planetas.length;
 
     // Ship setup
     const shipRig = factory.createShip();
     scene.add(shipRig.root);
-    camera.position.set(0, 5, 20); 
+    camera.position.set(0, 5, 20);
     shipRig.root.add(camera);
     shipRoot = shipRig.root;
 
-    spaceEngine.init(shipRig.root, shipRig.glow, generation.asteroids);
-    spaceEngine.onCollision = () => showMessage("💥 ASTEROID COLLISION! -5 FUEL", "#ff3b30");
-    spaceEngine.onFuelDrain = () => endGameFail();
-    
     // UI Reset
     gameState = { playing: true, ended: false, score: 0 };
     scannedCount = 0;
@@ -193,19 +246,31 @@ window.initGame = function() {
 };
 
 // Radar & UI logic
+/**
+ * ⚠️ LA PISTA SALE DEL NÚCLEO, Y SUS UMBRALES SON LOS QUE REPARTEN INFORMACIÓN.
+ *
+ * Esta función tenía su propia tabla —0,15 / 0,30 / 0,50 / 0,70 sobre `dist/400`—
+ * y medida sobre 9.200 distancias reales daba un reparto malísimo: **42-46% de
+ * los escaneos decían «helado» y «caliente» salía el 1% de las veces**. Una
+ * pista que casi siempre repite la misma palabra no informa, y la persona lleva
+ * todo este tiempo jugando con ella creyendo que le decía algo.
+ *
+ * El núcleo usa los QUINTILES medidos, así que cada banda sale al 20% y cada
+ * escaneo reparte lo máximo que puede dar. Aquí sólo se le pone color.
+ */
+const COLOR_BANDA = {
+    caliente: { color: 0x34c759, cssColor: '#34c759', label: '🟢 CALIENTE' },
+    templado: { color: 0xaacc00, cssColor: '#aacc00', label: '🟡 TEMPLADO' },
+    fresco:   { color: 0xffcc00, cssColor: '#ffcc00', label: '🟠 FRESCO' },
+    'frío':   { color: 0xff8800, cssColor: '#ff8800', label: '🟠 FRÍO' },
+    helado:   { color: 0xff2200, cssColor: '#ff2200', label: '🔴 HELADO' },
+};
+
 function getPlanetTemperature(idx) {
-    if (idx === targetPlanetIdx) return { level: 'FOUND', color: 0x34c759, cssColor: '#34c759', label: '🎯 FOUND', dist: 0 };
-    const p1 = planets[idx].pos;
-    const p2 = planets[targetPlanetIdx].pos;
-    const dist = p1.distanceTo(p2);
-    const maxDist = 400;
-    const normDist = dist / maxDist;
-    
-    if (normDist < 0.15) return { level: 'HOT', color: 0x34c759, cssColor: '#34c759', label: '🟢 HOT', dist };
-    if (normDist < 0.3) return { level: 'WARM', color: 0xaacc00, cssColor: '#aacc00', label: '🟡 WARM', dist };
-    if (normDist < 0.5) return { level: 'COOL', color: 0xffcc00, cssColor: '#ffcc00', label: '🟠 COOL', dist };
-    if (normDist < 0.7) return { level: 'CHILLY', color: 0xff8800, cssColor: '#ff8800', label: '🟠 CHILLY', dist };
-    return { level: 'COLD', color: 0xff2200, cssColor: '#ff2200', label: '🔴 COLD', dist };
+    if (idx === targetPlanetIdx) return { level: 'FOUND', color: 0x34c759, cssColor: '#34c759', label: '🎯 ENCONTRADO', dist: 0 };
+    const banda = nucleo?.bandaDe(nucleo.planetas[idx]);
+    const info = COLOR_BANDA[banda] ?? COLOR_BANDA.helado;
+    return { level: banda ?? 'helado', ...info, dist: Math.round(nucleo?.planetas[idx]?.pista ?? 0) };
 }
 
 const raycaster = new THREE.Raycaster();
@@ -221,35 +286,61 @@ window.addEventListener('pointerdown', (e) => {
     const intersects = raycaster.intersectObjects(hitBoxes, false);
     
     if (intersects.length > 0) {
-        if (intersects[0].distance > 100) { showMessage("TOO FAR TO SCAN", "#ff8800"); return; }
-        scanPlanet(intersects[0].object.userData.index);
+        /**
+         * ⚠️ EL ALCANCE LO DECIDE EL NÚCLEO, NO LA DISTANCIA AL RATÓN.
+         *
+         * Aquí ponía `intersects[0].distance > 100`: o sea, podías escanear
+         * cualquier cosa a menos de 100 de la CÁMARA, apuntando con el ratón. El
+         * núcleo tiene otra regla —el objetivo tiene que estar a `r + 25` de la
+         * NAVE— y con eso una persona escaneaba desde donde un agente no podía.
+         * Esa diferencia no se ve jugando y hace la comparación falsa.
+         */
+        const p = nucleo.planetaCerca();
+        if (!p) { showMessage("DEMASIADO LEJOS PARA ESCANEAR", "#ff8800"); return; }
+        scanPlanet(nucleo.planetas.indexOf(p));
     }
 });
 
+/**
+ * ⚠️ ESCANEAR ES UNA JUGADA DEL NÚCLEO, NO UNA CUENTA DE ESTA PÁGINA.
+ *
+ * Antes esto llevaba su propia contabilidad —restaba 10 de combustible, sumaba
+ * su marcador, decidía si habías ganado— en paralelo a la del banco. Dos
+ * marcadores para el mismo juego es la definición de dos juegos.
+ *
+ * Ahora se pide la jugada y se pinta lo que conteste. El marcador, el
+ * combustible y el final salen todos del mismo sitio que juzga a los agentes.
+ */
 function scanPlanet(idx) {
     if (gameState.ended || planets[idx].scanned) return;
+
+    const antes = nucleo.puntos;
+    nucleo.step('escanear');
+    if (nucleo.planetas[idx].escaneado !== true) return;   // no llegaba: el núcleo mandó
+
     planets[idx].scanned = true;
     scannedCount++;
-    
+
     const temp = getPlanetTemperature(idx);
     const p = planets[idx];
-    
+
     p.mesh.material = p.mesh.material.clone();
     p.mesh.material.emissive = new THREE.Color(temp.color);
     p.mesh.material.emissiveIntensity = 0.5;
     p.ring.material.color.setHex(temp.color);
     p.ring.material.opacity = 0.8;
-    
-    if (idx === targetPlanetIdx) {
-        gameState.score += Math.floor(spaceEngine.fuel) + (totalPlanets - scannedCount) * 20;
-        showMessage("🎯🦝 RACCOON FOUND IN THIS SYSTEM!", "#34c759");
+
+    gameState.score = nucleo.puntos;
+
+    if (nucleo.encontrado) {
+        showMessage("🎯🦝 ¡EL MAPACHE ESTABA AQUÍ!", "#34c759");
         gameState.playing = false;
         gameState.ended = true;
         setTimeout(() => location.reload(), 4000);
     } else {
-        spaceEngine.fuel -= 10;
-        showMessage(`${temp.label} <span style='color:${temp.cssColor}'>(${Math.floor(temp.dist)} LY away)</span>`, temp.cssColor);
-        if (spaceEngine.fuel <= 0) endGameFail();
+        showMessage(`${temp.label} <span style='color:${temp.cssColor}'>`
+                  + `(a ${temp.dist} del bueno)</span>  +${nucleo.puntos - antes}`, temp.cssColor);
+        if (nucleo.muerto) endGameFail();
     }
     updateHUD();
 }
@@ -269,11 +360,35 @@ function endGameFail() {
 }
 
 function updateHUD() {
+    /**
+     * ⚠️ EL COMBUSTIBLE VA EN PORCENTAJE DEL DEPÓSITO, NO EN CRUDO.
+     *
+     * La barra hacía `style.width = fuel + '%'` y funcionaba de casualidad:
+     * el motor viejo arrancaba con 100, así que el número y el porcentaje
+     * coincidían. El núcleo arranca con 24, y con la línea vieja la barra habría
+     * salido al 24% con el depósito lleno — un jugador viendo «casi vacío» desde
+     * el primer segundo.
+     *
+     * Es la clase de detalle que hace que unificar dos motores «no funcione» y
+     * parezca culpa del motor.
+     */
+    const pct = 100 * nucleo.combustible / (nucleo.combustibleInicial || 1);
     document.getElementById('hScanned').textContent = `${scannedCount}/${totalPlanets}`;
-    document.getElementById('hFuel').textContent = Math.floor(spaceEngine.fuel);
-    document.getElementById('vFuelBar').style.width = spaceEngine.fuel + '%';
+    /**
+     * ⚠️ EL RÓTULO LLEVA UN `%` PEGADO EN EL HTML, Y HAY QUE RESPETARLO.
+     *
+     * La plantilla pone `<span id="hFuel">100</span>%` — funcionaba porque el
+     * motor viejo arrancaba justo en 100. Al pasar al núcleo puse aquí el
+     * combustible en crudo y la pantalla decía **«FUSION FUEL: 20%»** con el
+     * depósito al 84%. Sin error, sin aviso, y mintiendo al jugador sobre lo
+     * único que le importa.
+     *
+     * Lo cazó abrir la captura. Otra vez.
+     */
+    document.getElementById('hFuel').textContent = Math.round(pct);
+    document.getElementById('vFuelBar').style.width = pct + '%';
     document.getElementById('hScore').textContent = gameState.score;
-    const p = spaceEngine.fuel;
+    const p = pct;
     if (p < 20) document.getElementById('vFuelBar').style.background = '#ff3b30';
     else if (p < 50) document.getElementById('vFuelBar').style.background = '#ff9500';
     else document.getElementById('vFuelBar').style.background = 'linear-gradient(90deg, #ff3b30, #ff9500, #34c759)';
@@ -306,14 +421,43 @@ function updateRadar() {
 
 // `arrancar` y no `startLoop`: aquel pinta con el renderer pelado y dejaría el
 // post-proceso registrado, vivo, y sin llegar a la pantalla. Ver `montarMundo.js`.
+/**
+ * ⚠️ EL BUCLE: PEDIR UNA JUGADA Y PINTAR LO QUE SALGA. NADA MÁS.
+ *
+ * Antes esta función movía la nave con su propia cinemática. Ahora manda un
+ * verbo al núcleo y copia el resultado a la escena — que es exactamente lo que
+ * dice el patrón dorado de la puerta humana: *«traduce dedos a verbos; nunca
+ * inventa una jugada»*.
+ *
+ * Y el `dt` se le pasa tal cual: el núcleo gasta soporte vital por tiempo, así
+ * que inventarse un paso fijo aquí haría que una persona con el portátil a 30
+ * fps gastara la mitad de combustible que una a 60. Otra desigualdad invisible.
+ */
+let contadorRadar = 0;
 arrancar((dt) => {
-    if (gameState.playing) {
-        spaceEngine.update(dt);
+    if (gameState.playing && nucleo) {
+        nucleo.step(verboDeLasTeclas(), dt);
+
+        // La escena copia al núcleo, nunca al revés.
+        if (shipRoot) {
+            shipRoot.position.set(nucleo.nave.x, nucleo.nave.y, nucleo.nave.z);
+            shipRoot.rotation.set(nucleo.nave.cabeceo, nucleo.nave.guinada, 0, 'YXZ');
+        }
+        // Los asteroides del núcleo SÍ se mueven, así que se copian cada fotograma.
+        for (let i = 0; i < asteroidMeshes.length; i++) {
+            const a = nucleo.asteroides[i];
+            if (a) asteroidMeshes[i].position.set(a.x, a.y, a.z);
+        }
+
         if (dustPoints && shipRoot) dustPoints.position.copy(shipRoot.position);
         updateHUD();
-        if(Math.random() < 0.1) updateRadar();
+        // Sin `Math.random`: el radar se refresca cada 10 fotogramas, y así el
+        // dibujo tampoco depende del azar del sistema.
+        if ((contadorRadar++ % 10) === 0) updateRadar();
+
+        if (nucleo.muerto && !gameState.ended) endGameFail();
     }
-    
+
     planets.forEach(p => {
         p.ring.rotation.z += dt * 0.5;
         p.mesh.rotation.y += dt * 0.1;

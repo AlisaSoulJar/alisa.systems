@@ -72,9 +72,28 @@ const EN_EL_BANCO = [
 const PARTIDAS = {
     '¡Busca! 1 Cabinet Escape':
         'persona CabinetEscapeGame (59 KB, con THREE) · banco ScummInteractionEngine',
-    '¡Busca! 6 Espacio':
-        'persona RaccoonSpaceSystem (combustible 100, escanear -10, nota fuel+restantes×20) · '
-      + 'banco RaccoonSpaceCore (combustible 32, +500 encontrar, +20 descartar)',
+    /**
+     * ⚠️ `¡Busca! 6 Espacio` ESTUVO AQUÍ Y SE HA IDO. UNIFICADO EL 24-08.
+     *
+     * Entró con esto: «persona RaccoonSpaceSystem (combustible 100, escanear -10,
+     * nota fuel+restantes×20) · banco RaccoonSpaceCore (combustible 32, +500
+     * encontrar)». Ya no: la página juega el mismo núcleo que el banco.
+     *
+     * Lo que hizo falta, por si sirve para la que queda:
+     *
+     *   · la factoría admite un `mundo` y pinta las posiciones del núcleo en vez
+     *     de inventarse las suyas;
+     *   · las teclas se traducen a UN verbo del núcleo por tick, como un agente;
+     *   · escanear es `nucleo.step('escanear')`, y el alcance lo decide él —antes
+     *     valía cualquier planeta a menos de 100 de la CÁMARA, apuntando con el
+     *     ratón, o sea que una persona escaneaba desde donde un agente no podía;
+     *   · el marcador, el combustible y el final salen del núcleo.
+     *
+     * Y dos mentiras de pantalla que sólo se vieron abriendo la captura: la barra
+     * de combustible hacía `width = fuel + '%'` —que funcionaba de casualidad
+     * porque el motor viejo arrancaba en 100— y el rótulo decía «20%» con el
+     * depósito al 84%.
+     */
     /**
      * ⚠️ ESTAS DOS ENTRARON AL BANCO EL 24-08 Y ENTRARON PARTIDAS, A SABIENDAS.
      *

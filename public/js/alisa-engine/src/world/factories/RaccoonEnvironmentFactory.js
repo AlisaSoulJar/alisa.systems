@@ -43,24 +43,55 @@ export class RaccoonEnvironmentFactory {
         this.rng.reseed(s); 
     }
 
-    generateSpace(scene, pCount, aCount, TANK_SIZE) {
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  ⚠️ PUEDE DIBUJAR UN MUNDO DADO EN VEZ DE INVENTARSE EL SUYO
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Hasta hoy esta factoría se inventaba las posiciones y elegía ella el
+     * planeta del mapache. Eso está bien para una demo y es fatal para un banco:
+     * la persona jugaba el mundo de la FACTORÍA y el agente el de
+     * `RaccoonSpaceCore`. Mismo nombre, dos partidas — y comparar sus notas no
+     * significaba nada.
+     *
+     * Con `mundo` la factoría deja de decidir y sólo pinta: recibe las posiciones
+     * y el objetivo del núcleo y los dibuja tal cual. Es la tesis del proyecto
+     * aplicada aquí: **el estado manda, el 3D lo pinta.**
+     *
+     * Sin `mundo` se comporta como siempre, así que los demás que la llaman no se
+     * enteran.
+     *
+     * @param {{planetas:Array, asteroides:Array, objetivo:number}} [mundo]
+     */
+    generateSpace(scene, pCount, aCount, TANK_SIZE, mundo = null) {
         const planets = [];
         const asteroids = [];
-        const targetPlanetIdx = Math.floor(this.rng.next() * pCount);
+        const nPlanetas = mundo ? mundo.planetas.length : pCount;
+        const nAsteroides = mundo ? mundo.asteroides.length : aCount;
+        const targetPlanetIdx = mundo ? mundo.objetivo : Math.floor(this.rng.next() * pCount);
+        pCount = nPlanetas;
+        aCount = nAsteroides;
         
         // Planets
         for (let i = 0; i < pCount; i++) {
-            const radius = 8 + this.rng.next() * 12;
+            // Con `mundo`, el radio y el sitio los pone el núcleo; el color sigue
+            // siendo cosa de la factoría, que para eso es la que dibuja.
+            const radius = mundo ? mundo.planetas[i].r : 8 + this.rng.next() * 12;
             const geo = new THREE.SphereGeometry(radius, 32, 16);
             const col = new THREE.Color().setHSL(this.rng.next(), 0.6, 0.4);
             const mat = new THREE.MeshStandardMaterial({ color: col, roughness: 0.7 });
             const mesh = new THREE.Mesh(geo, mat);
-            
-            let valid = false;
+
             let pPos = new THREE.Vector3();
-            while(!valid) {
-                pPos.set((this.rng.next()-0.5)*TANK_SIZE*0.8, (this.rng.next()-0.5)*TANK_SIZE*0.8, (this.rng.next()-0.5)*TANK_SIZE*0.8);
-                if (pPos.length() > 50) valid = true; // Not too close to start
+            if (mundo) {
+                const p = mundo.planetas[i];
+                pPos.set(p.x, p.y, p.z);
+            } else {
+                let valid = false;
+                while(!valid) {
+                    pPos.set((this.rng.next()-0.5)*TANK_SIZE*0.8, (this.rng.next()-0.5)*TANK_SIZE*0.8, (this.rng.next()-0.5)*TANK_SIZE*0.8);
+                    if (pPos.length() > 50) valid = true; // Not too close to start
+                }
             }
             mesh.position.copy(pPos);
             
@@ -80,6 +111,19 @@ export class RaccoonEnvironmentFactory {
         for(let i = 0; i < aCount; i++) {
             const mat = new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 0.9 });
             const mesh = new THREE.Mesh(astGeo, mat);
+            if (mundo) {
+                // El asteroide del núcleo trae radio: la roca base mide 3, así que
+                // la escala es su radio partido por tres.
+                const a = mundo.asteroides[i];
+                const k = (a.r ?? 3) / 3;
+                mesh.scale.set(k, k, k);
+                mesh.position.set(a.x, a.y, a.z);
+                mesh.rotation.set(0, 0, 0);
+                scene.add(mesh);
+                asteroids.push({ mesh, vel: new THREE.Vector3(a.vx ?? 0, a.vy ?? 0, a.vz ?? 0),
+                                 rotVel: new THREE.Vector3(0, 0, 0) });
+                continue;
+            }
             mesh.scale.set(1+this.rng.next(), 1+this.rng.next(), 1+this.rng.next());
             mesh.position.set((this.rng.next()-0.5)*TANK_SIZE*0.9, (this.rng.next()-0.5)*TANK_SIZE*0.9, (this.rng.next()-0.5)*TANK_SIZE*0.9);
             mesh.rotation.set(this.rng.next()*Math.PI, this.rng.next()*Math.PI, this.rng.next()*Math.PI);
