@@ -157,6 +157,37 @@ export function huellaDeMundo(Clase) {
              * numérica sí los lleva, así que entra en la huella.
              */
             obs: (env.getObservation?.() ?? []).slice(0, 40).map(v => Math.round(v * 1000) / 1000),
+            /**
+             * ⚠️ Y EL TEXTO, PORQUE LA HUELLA VIGILABA TRES PUERTAS DE CUATRO.
+             * ═══════════════════════════════════════════════════════════════
+             *
+             * Esto entra el 25-08 y lo destapé cambiando el juego yo misma.
+             *
+             * A ¡Busca! le añadí el radar completo en `describe()`: pasó de
+             * decirle al agente «lo más cerca está a 63 unidades, abajo» a darle
+             * los diez objetivos con distancia y desvío, que es lo que la persona
+             * ve en su pantalla desde siempre. De 163 caracteres a 458. Un cambio
+             * que puede doblarle la nota a un modelo de lenguaje.
+             *
+             * Corrí la huella esperando que saltara. **Dijo «sin cambios» en los
+             * nueve.**
+             *
+             * El motivo: hasta hoy se hasheaba el sustrato (lo que HAY), la
+             * observación (los escalares) y el comportamiento (pasos, recompensa,
+             * fin). Las tres puertas que NO usa un agente de lenguaje. La cuarta
+             * —el texto— era justo la que mi beta tester estaba usando cuando
+             * encontró que jugaba a ciegas.
+             *
+             * O sea: la huella podía certificar «sigue siendo el mismo juego»
+             * mientras el juego cambiaba entero para quien lo juega leyendo. Es el
+             * mismo fallo que llevo todo el día persiguiendo en otros —una capa
+             * que mira a otro sitio— cometido por mi propio instrumento.
+             *
+             * Se guarda RECORTADO a 400 caracteres: lo que importa es detectar el
+             * cambio, no archivar la prosa, y un texto largo haría el fichero de
+             * huellas ilegible para quien lo revise a ojo.
+             */
+            texto: String(env.describe?.() ?? '').slice(0, 400),
             pasos,
             /**
              * Se redondea a cuatro decimales a propósito: `Math.sin` y `Math.cos`

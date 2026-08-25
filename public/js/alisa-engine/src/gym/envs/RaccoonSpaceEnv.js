@@ -152,6 +152,47 @@ export class RaccoonSpaceEnv extends GymEnv {
         }
 
         /**
+         * ⚠️ EL RADAR. LA PERSONA LO VE ENTERO Y EL AGENTE VEÍA UNA FLECHA.
+         * ═══════════════════════════════════════════════════════════════════
+         *
+         * Arriba se decía SÓLO dónde queda el más próximo. El comentario defendía
+         * ocultar cuál tiene el mapache —y eso es correcto, es la gracia del
+         * juego— pero de paso ocultaba dónde están los otros nueve, que no es
+         * ningún secreto: **la página humana los enseña todos en su radar.** Está
+         * en la captura del 25-08: un círculo con un punto por objetivo.
+         *
+         * O sea que la persona planificaba una ruta entre diez y el agente
+         * recibía «a 63 unidades, abajo». Dos juegos con el mismo nombre, otra
+         * vez, y en la misma familia donde ya lo arreglamos una vez con las
+         * pistas del escáner.
+         *
+         * Se publica la POSICIÓN de los no escaneados, nunca cuál es el bueno.
+         * Exactamente lo que se ve en el radar y ni un dato más.
+         *
+         * ⚠️ Y SE DAN RELATIVAS A LA NAVE, NO ABSOLUTAS.
+         *
+         * Un radar muestra «a tu derecha, lejos», no coordenadas del universo.
+         * Además el número absoluto obligaría al modelo a restar para saber hacia
+         * dónde girar, y eso es hacerle pagar un peaje aritmético que la persona
+         * no paga — que es otra forma de que la nota mida la puerta.
+         */
+        if (sinEscanear.length) {
+            const n = s.nave;
+            const radar = sinEscanear
+                .map(o => ({
+                    i: s.planetas.indexOf(o),
+                    dx: Math.round(o.x - n.x),
+                    dy: Math.round(o.y - n.y),
+                    dz: Math.round(o.z - n.z),
+                    d: Math.round(Math.hypot(o.x - n.x, o.y - n.y, o.z - n.z)),
+                }))
+                .sort((a, b) => a.d - b.d);
+            partes.push(`Radar, sin escanear (número: distancia, y desvío respecto a ti): `
+                + radar.map(r => `${r.i}: ${r.d} (${r.dx > 0 ? '+' : ''}${r.dx}, `
+                    + `${r.dy > 0 ? '+' : ''}${r.dy}, ${r.dz > 0 ? '+' : ''}${r.dz})`).join('; ') + '.');
+        }
+
+        /**
          * ⚠️ LAS PISTAS, QUE SON EL JUEGO Y NO LLEGABAN A ESTA PUERTA.
          *
          * La página le decía a la persona «🟢 HOT (37 LY away)» al descartar un

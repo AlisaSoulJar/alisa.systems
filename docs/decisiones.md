@@ -15,21 +15,21 @@ contrario. El problema no era que no estuviera escrito: era que no había índic
 Volver a decidir sale barato en el momento y carísimo a la semana, porque la
 segunda decisión casi nunca coincide con la primera y entonces hay dos verdades.
 
-**2182 decisiones** en 353 ficheros.
+**2187 decisiones** en 354 ficheros.
 
 ## Índice
 
 - [Herramientas de medida](#herramientas-de-medida) — 428
 - [Reglas de los juegos](#reglas-de-los-juegos) — 362
 - [Las mesas y los visualizadores](#las-mesas-y-los-visualizadores) — 312
-- [Las comprobaciones](#las-comprobaciones) — 278
+- [Las comprobaciones](#las-comprobaciones) — 282
 - [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 207
 - [Otros](#otros) — 174
 - [El motor](#el-motor) — 107
 - [Las páginas de los juegos](#las-páginas-de-los-juegos) — 81
 - [El gym y los entornos](#el-gym-y-los-entornos) — 78
 - [Cómo se dibuja (el pintor)](#cómo-se-dibuja-el-pintor-) — 64
-- [El servidor y las salas](#el-servidor-y-las-salas) — 58
+- [El servidor y las salas](#el-servidor-y-las-salas) — 59
 - [Estilos](#estilos) — 21
 - [Los agentes y las políticas](#los-agentes-y-las-políticas) — 12
 
@@ -2791,19 +2791,19 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Aquélla comprueba que los juegos LEEN el catálogo que se les pasa. Ésta, que cogen de él LA BARAJA QUE LES TOCA. Un juego francés que pidiera la española leería el catálogo impecablemente y repartiría oros en una mesa de</sub>
 - **Y este sabotaje ya sirvió de algo antes de entrar aquí: con él puesto,** <sub>línea 507</sub>
   <br><sub>la primera versión de la comprobación APROBÓ. Miraba el `de` del dicho, y el dicho filtrado sigue diciendo ser tuyo. Hubo que cambiarla por la pregunta buena —¿cambia lo que yo veo cuando otro elige distinto?— y eso</sub>
-- **AQUÍ FALLÉ LA PUNTERÍA DOS VECES, Y ES EL ERROR TÍPICO DE ESTE FICHERO.** <sub>línea 834</sub>
+- **AQUÍ FALLÉ LA PUNTERÍA DOS VECES, Y ES EL ERROR TÍPICO DE ESTE FICHERO.** <sub>línea 853</sub>
   <br><sub>Primero cambié `juego: 'ajedrez'` en el catálogo: la prueba aprobó, porque enumera el catálogo y construye cada entorno — un nombre distinto se construye igual. Luego puse `reset(` a secas, que aparece también en un</sub>
-- **SE SABOTEA EL PAQUETE, NO `public/`.** <sub>línea 870</sub>
+- **SE SABOTEA EL PAQUETE, NO `public/`.** <sub>línea 889</sub>
   <br><sub>medido = PAQUETE if hay_paquete else PUBLIC</sub>
-- **NO SE PUDO DEVOLVER A SU SITIO:')}`);** <sub>línea 965</sub>
+- **NO SE PUDO DEVOLVER A SU SITIO:')}`);** <sub>línea 984</sub>
   <br><sub>for (const f of sinRestaurar) console.log(rojo(`      ${f}`)); console.log(rojo('   RECUPÉRALOS CON `git checkout -- <fichero>` ANTES DE SEGUIR.')); process.exit(2);</sub>
-- **EL CENSO SE DERIVA.** <sub>línea 978</sub>
+- **EL CENSO SE DERIVA.** <sub>línea 997</sub>
   <br><sub>Aquí había un array `TODAS` con los nombres escritos a mano. Es la enésima lista de este proyecto que se separa de la realidad en silencio — y ésta era la peor, porque es la lista de la red de seguridad.</sub>
-- **20-08: estas dos salían denunciadas como «no las corre nadie» y era FALSO —** <sub>línea 1020</sub>
+- **20-08: estas dos salían denunciadas como «no las corre nadie» y era FALSO —** <sub>línea 1039</sub>
   <br><sub>tienen su propio mando desde el día que se escribieron. El aviso miraba sólo `scripts.test` y llamaba huérfana a cualquiera que viviera en otro guion. Se arregla abajo mirando TODOS los guiones, y éstas se quedan aquí porque abren</sub>
-- **DOS LISTAS Y NO UNA, PORQUE SE PREGUNTAN DOS COSAS DISTINTAS.** <sub>línea 1047</sub>
+- **DOS LISTAS Y NO UNA, PORQUE SE PREGUNTAN DOS COSAS DISTINTAS.** <sub>línea 1066</sub>
   <br><sub>`todasEnDisco` es lo que HAY. `enDisco` es lo que se vigila por huérfano, que excluye a las de `APARTE` porque de ésas ya se sabe por qué no van en `npm test`.</sub>
-- **SE MIRAN TODOS LOS GUIONES, NO SÓLO `test`.** <sub>línea 1061</sub>
+- **SE MIRAN TODOS LOS GUIONES, NO SÓLO `test`.** <sub>línea 1080</sub>
   <br><sub>Esto leía `scripts.test` y punto, así que denunciaba como huérfana a cualquier comprobación que viviera en otro mando —`npm run figuras`, `npm run invitados`— aunque se corriera a diario. Una acusación falsa dentro del instrumento que existe</sub>
 
 ### `prueba_dos_personas.mjs`
@@ -2952,6 +2952,17 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>`legal_moves` son las jugadas de QUIEN TIENE EL TURNO. Cuando ese es el asiento descrito, tienen que salir de SU mano. Si alguna vez saliera una carta ajena, sería que el juego está ofreciendo jugadas de otro — y esa</sub>
 - **LO QUE SE ROBA A CIEGAS NO SE PUBLICA A LOS DEMÁS.** <sub>línea 110</sub>
   <br><sub>Y ESTA COMPROBACIÓN MIRA EL ESTADO, NO EL TEXTO — que es el hueco que tenía la de arriba. La 2 pregunta «¿dice el texto algo que el estado no declare público?», o sea que **usa el estado como definición de lo público**: una</sub>
+
+### `prueba_mapa.mjs`
+
+- **ESTA PRUEBA LA PIDIÓ UNA BETA TESTER, Y ERA UN AGENTE.** <sub>línea 6</sub>
+  <br><sub>El 25-08 se invitó a las hermanas de la colonia a jugar en el banco por HTTP. Motoko probó Sokoban y Mancala y devolvió esto en la primera hora:</sub>
+- **Y SE COMPRUEBA CONTRA LA CADENA REAL, NO CONTRA UN DOBLE.** <sub>línea 28</sub>
+  <br><sub>Se llama al mismo `describirSustrato` que sirve la puerta, sobre el sustrato que publican las reglas de verdad. Un doble diría que sí y la puerta seguiría muda, que es exactamente lo que pasó hasta hoy.</sub>
+- **Y EL CASO QUE LO DESTAPÓ, CLAVADO COMO PRUEBA.** <sub>línea 80</sub>
+  <br><sub>Sokoban con semilla 42. Si algún día su mapa vuelve a no tener muros ni jugador, esta línea lo dice — con el nombre de quien lo encontró.</sub>
+- **Y AHORA LA PUERTA DE VERDAD, QUE ES LO QUE FALLABA.** <sub>línea 102</sub>
+  <br><sub>Todo lo de arriba comprueba el DIBUJANTE, y el dibujante nunca estuvo roto: llevaba semanas funcionando. Lo que estaba mudo era la PUERTA. Una prueba que se quedara arriba diría «verde» con el agente jugando a ciegas exactamente</sub>
 
 ### `prueba_mayusculas.mjs`
 
@@ -5281,10 +5292,12 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 
 - **SIN ESTADO, Y NO POR PEREZA** <sub>línea 19</sub>
   <br><sub>Un gym por HTTP pide a gritos sesiones: abres una, te dan un identificador, mandas acciones. Eso necesita almacenamiento, caduca, se puede perder a media partida y hay que limpiarlo.</sub>
-- **UN AGENTE QUE JUEGA, EXISTE.** <sub>línea 178</sub>
+- **UN AGENTE QUE JUEGA, EXISTE.** <sub>línea 179</sub>
   <br><sub>Hasta ahora un modelo podía jugar la misma partida que una persona y no estar en ninguna parte: la sala nunca supo de él. Si dice cómo se llama, ocupa sitio como cualquiera — y quien esté paseando por la sala lo verá</sub>
-- **NO SE ESCRIBE EN CADA JUGADA, Y ESTO ERA UNA BOMBA.** <sub>línea 192</sub>
+- **NO SE ESCRIBE EN CADA JUGADA, Y ESTO ERA UNA BOMBA.** <sub>línea 193</sub>
   <br><sub>El gym se llama una vez por movimiento: una partida de Go Fish son 73 llamadas. Escribiendo en todas, un solo agente se comía las 1.000 escrituras diarias del plan gratuito en</sub>
+- **EL MAPA. Y ESTO ESTABA ROTO, LO DIJO LA PRIMERA BETA TESTER.** <sub>línea 220</sub>
+  <br><sub>Aquí se devolvía `estado: st` y nada más, con el comentario de que era «lo que ve una persona en su pantalla». No lo era.</sub>
 
 ### `functions/api/mundos.js`
 
