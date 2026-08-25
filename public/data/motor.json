@@ -169,6 +169,12 @@
    "kb": 10.5
   },
   {
+   "ruta": "gym/Gramatica.js",
+   "nombre": "Gramatica",
+   "familia": "gym",
+   "kb": 6.2
+  },
+  {
    "ruta": "gym/GymBridge.js",
    "nombre": "GymBridge",
    "familia": "gym",
@@ -178,7 +184,7 @@
    "ruta": "gym/GymEnv.js",
    "nombre": "GymEnv",
    "familia": "gym",
-   "kb": 6.9
+   "kb": 11.2
   },
   {
    "ruta": "gym/GymIdentity.js",
@@ -193,28 +199,46 @@
    "kb": 5.1
   },
   {
+   "ruta": "gym/HuellaDeMundo.js",
+   "nombre": "HuellaDeMundo",
+   "familia": "gym",
+   "kb": 7.9
+  },
+  {
+   "ruta": "gym/ObservacionDeSustrato.js",
+   "nombre": "ObservacionDeSustrato",
+   "familia": "gym",
+   "kb": 5.3
+  },
+  {
    "ruta": "gym/ProtoHubEnv.js",
    "nombre": "ProtoHubEnv",
    "familia": "gym",
-   "kb": 27.0
+   "kb": 28.8
+  },
+  {
+   "ruta": "gym/PuenteDeGimnasio.js",
+   "nombre": "PuenteDeGimnasio",
+   "familia": "gym",
+   "kb": 6.8
   },
   {
    "ruta": "gym/registro.js",
    "nombre": "registro",
    "familia": "gym",
-   "kb": 18.1
+   "kb": 19.7
   },
   {
    "ruta": "gym/envs/AsteroidsEnv.js",
    "nombre": "AsteroidsEnv",
    "familia": "envs",
-   "kb": 8.8
+   "kb": 9.8
   },
   {
    "ruta": "gym/envs/CabinetEscapeEnv.js",
    "nombre": "CabinetEscapeEnv",
    "familia": "envs",
-   "kb": 9.8
+   "kb": 15.1
   },
   {
    "ruta": "gym/envs/ChopperAquariumEnv.js",
@@ -226,7 +250,13 @@
    "ruta": "gym/envs/CorpBuildingEnv.js",
    "nombre": "CorpBuildingEnv",
    "familia": "envs",
-   "kb": 12.8
+   "kb": 17.2
+  },
+  {
+   "ruta": "gym/envs/DefiendeEnv.js",
+   "nombre": "DefiendeEnv",
+   "familia": "envs",
+   "kb": 13.9
   },
   {
    "ruta": "gym/envs/MarabuntaEnv.js",
@@ -238,7 +268,7 @@
    "ruta": "gym/envs/RaccoonSpaceEnv.js",
    "nombre": "RaccoonSpaceEnv",
    "familia": "envs",
-   "kb": 6.3
+   "kb": 17.4
   },
   {
    "ruta": "psyche/FSMSystem.js",
@@ -538,19 +568,25 @@
    "ruta": "world/CabinetBSPEngine.js",
    "nombre": "CabinetBSPEngine",
    "familia": "world",
-   "kb": 4.9
+   "kb": 6.3
   },
   {
    "ruta": "world/CroupierSystem.js",
    "nombre": "CroupierSystem",
    "familia": "world",
-   "kb": 5.4
+   "kb": 5.5
   },
   {
    "ruta": "world/OverworldECS.js",
    "nombre": "OverworldECS",
    "familia": "world",
    "kb": 3.3
+  },
+  {
+   "ruta": "world/core/Bandas.js",
+   "nombre": "Bandas",
+   "familia": "core",
+   "kb": 3.8
   },
   {
    "ruta": "world/core/BaseEnvironmentFactory.js",
@@ -610,7 +646,7 @@
    "ruta": "world/core/SeededRNG.js",
    "nombre": "SeededRNG",
    "familia": "core",
-   "kb": 2.6
+   "kb": 4.9
   },
   {
    "ruta": "world/factories/AquariumEnvironmentFactory.js",
@@ -685,6 +721,12 @@
    "kb": 7.7
   },
   {
+   "ruta": "world/factories/DefiendeMapaFactory.js",
+   "nombre": "DefiendeMapaFactory",
+   "familia": "factories",
+   "kb": 4.4
+  },
+  {
    "ruta": "world/factories/DojoEnvironmentFactory.js",
    "nombre": "DojoEnvironmentFactory",
    "familia": "factories",
@@ -742,7 +784,7 @@
    "ruta": "world/factories/RaccoonEnvironmentFactory.js",
    "nombre": "RaccoonEnvironmentFactory",
    "familia": "factories",
-   "kb": 23.7
+   "kb": 29.9
   },
   {
    "ruta": "world/factories/TrafficEnvironmentFactory.js",
@@ -766,13 +808,13 @@
    "ruta": "world/systems/AsteroidsEngine.js",
    "nombre": "AsteroidsEngine",
    "familia": "systems",
-   "kb": 9.2
+   "kb": 9.7
   },
   {
    "ruta": "world/systems/AsteroidsSystem.js",
    "nombre": "AsteroidsSystem",
    "familia": "systems",
-   "kb": 21.5
+   "kb": 26.5
   },
   {
    "ruta": "world/systems/BoidsSystem.js",
@@ -784,13 +826,13 @@
    "ruta": "world/systems/BulletHeavenEngine.js",
    "nombre": "BulletHeavenEngine",
    "familia": "systems",
-   "kb": 21.3
+   "kb": 27.6
   },
   {
    "ruta": "world/systems/CabinetEscapeSystem.js",
    "nombre": "CabinetEscapeSystem",
    "familia": "systems",
-   "kb": 10.8
+   "kb": 13.5
   },
   {
    "ruta": "world/systems/CabinetJumpscareSystem.js",
@@ -814,13 +856,19 @@
    "ruta": "world/systems/ChopperAquariumEngine.js",
    "nombre": "ChopperAquariumEngine",
    "familia": "systems",
-   "kb": 17.3
+   "kb": 21.2
   },
   {
    "ruta": "world/systems/CorporateSeekerSystem.js",
    "nombre": "CorporateSeekerSystem",
    "familia": "systems",
    "kb": 13.8
+  },
+  {
+   "ruta": "world/systems/DefiendeSystem.js",
+   "nombre": "DefiendeSystem",
+   "familia": "systems",
+   "kb": 26.4
   },
   {
    "ruta": "world/systems/EcosystemSystem.js",
@@ -868,7 +916,7 @@
    "ruta": "world/systems/InteractionLabEngine.js",
    "nombre": "InteractionLabEngine",
    "familia": "systems",
-   "kb": 6.7
+   "kb": 8.0
   },
   {
    "ruta": "world/systems/KataSequenceSystem.js",
@@ -916,7 +964,7 @@
    "ruta": "world/systems/MarabuntaSystem.js",
    "nombre": "MarabuntaSystem",
    "familia": "systems",
-   "kb": 10.8
+   "kb": 12.7
   },
   {
    "ruta": "world/systems/NavMeshAgentSystem.js",
@@ -970,19 +1018,19 @@
    "ruta": "world/systems/RaccoonCitySystem.js",
    "nombre": "RaccoonCitySystem",
    "familia": "systems",
-   "kb": 2.8
+   "kb": 2.6
   },
   {
    "ruta": "world/systems/RaccoonPlanetSystem.js",
    "nombre": "RaccoonPlanetSystem",
    "familia": "systems",
-   "kb": 1.5
+   "kb": 2.3
   },
   {
    "ruta": "world/systems/RaccoonSpaceCore.js",
    "nombre": "RaccoonSpaceCore",
    "familia": "systems",
-   "kb": 12.1
+   "kb": 45.3
   },
   {
    "ruta": "world/systems/RaccoonSpaceSystem.js",
@@ -1012,7 +1060,7 @@
    "ruta": "world/systems/SimonSaysSystem.js",
    "nombre": "SimonSaysSystem",
    "familia": "systems",
-   "kb": 8.0
+   "kb": 19.4
   },
   {
    "ruta": "world/systems/StealthSightSystem.js",
@@ -1036,7 +1084,7 @@
    "ruta": "world/systems/TrafficSurvivalSystem.js",
    "nombre": "TrafficSurvivalSystem",
    "familia": "systems",
-   "kb": 20.3
+   "kb": 20.4
   },
   {
    "ruta": "world/systems/TrafficSystem.js",
@@ -1075,5 +1123,5 @@
    "kb": 7.1
   }
  ],
- "total": 179
+ "total": 187
 }

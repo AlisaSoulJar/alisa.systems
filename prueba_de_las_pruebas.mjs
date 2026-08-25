@@ -726,6 +726,25 @@ const SABOTAJES = [
         vigila: 'que una intención sólo se ejecute en el mundo al que va dirigida',
     },
     {
+        /**
+         * El fallo REAL, y lo encontró una beta tester el 25-08 jugando: la
+         * puerta HTTP devolvía el estado numérico de las reglas y NINGÚN mapa,
+         * teniendo el dibujante a una llamada. 19 de los 40 juegos publican
+         * rejilla, así que había diecinueve entornos donde un modelo de lenguaje
+         * jugaba a ciegas — y su nota medía la puerta, no al agente.
+         *
+         * El sabotaje quita el mapa de la respuesta. Nada da error: la puerta
+         * sigue contestando 200 con su estado y sus acciones legales, igual que
+         * llevaba semanas haciendo. Por eso hace falta comprobarlo.
+         */
+        nombre: 'mapa',
+        corre: 'node prueba_mapa.mjs',
+        fichero: 'functions/api/gym.js',
+        de: '        if (sus?.rejilla) mapa = describirSustrato(sus);',
+        a: '        if (false) mapa = describirSustrato(sus);',
+        vigila: 'que el agente reciba el mismo tablero que ve la persona',
+    },
+    {
         nombre: 'gramatica',
         corre: 'node --import ./resolver_three.mjs prueba_gramatica.mjs',
         fichero: 'public/js/alisa-engine/src/gym/Gramatica.js',

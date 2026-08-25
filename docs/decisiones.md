@@ -1,6 +1,6 @@
 # Lo que ya decidimos
 
-> Generado por `npm run decisiones` el 2026-08-24. **No se escribe a mano.**
+> Generado por `npm run decisiones` el 2026-08-25. **No se escribe a mano.**
 > Recoge los bloques `⚠️` con título que hay repartidos por el código: cada uno
 > es una decisión que alguien se paró a justificar donde vive.
 
@@ -15,22 +15,22 @@ contrario. El problema no era que no estuviera escrito: era que no había índic
 Volver a decidir sale barato en el momento y carísimo a la semana, porque la
 segunda decisión casi nunca coincide con la primera y entonces hay dos verdades.
 
-**1889 decisiones** en 314 ficheros.
+**2182 decisiones** en 353 ficheros.
 
 ## Índice
 
-- [Herramientas de medida](#herramientas-de-medida) — 375
+- [Herramientas de medida](#herramientas-de-medida) — 428
 - [Reglas de los juegos](#reglas-de-los-juegos) — 362
-- [Las mesas y los visualizadores](#las-mesas-y-los-visualizadores) — 308
-- [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 204
-- [Las comprobaciones](#las-comprobaciones) — 202
-- [Otros](#otros) — 147
+- [Las mesas y los visualizadores](#las-mesas-y-los-visualizadores) — 312
+- [Las comprobaciones](#las-comprobaciones) — 278
+- [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 207
+- [Otros](#otros) — 174
+- [El motor](#el-motor) — 107
 - [Las páginas de los juegos](#las-páginas-de-los-juegos) — 81
+- [El gym y los entornos](#el-gym-y-los-entornos) — 78
 - [Cómo se dibuja (el pintor)](#cómo-se-dibuja-el-pintor-) — 64
-- [El servidor y las salas](#el-servidor-y-las-salas) — 54
-- [El motor](#el-motor) — 34
-- [El gym y los entornos](#el-gym-y-los-entornos) — 26
-- [Estilos](#estilos) — 20
+- [El servidor y las salas](#el-servidor-y-las-salas) — 58
+- [Estilos](#estilos) — 21
 - [Los agentes y las políticas](#los-agentes-y-las-políticas) — 12
 
 ## Herramientas de medida
@@ -164,6 +164,33 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>identificador real es `'alisa/brisca-protohub-v0'`: entre la comilla y el nombre va `alisa/`. Añadí ocho estaciones y el contador subió UNA — la única que acertaba lo hacía por su página propia, no por el</sub>
 - **Se pregunta por el RATÓN SOBRE EL TABLERO, no por «se puede clicar».** <sub>línea 180</sub>
   <br><sub>Los botones de `mesa.html` también son clics, así que la pregunta laxa daría 19/19 y no diría nada. Lo que interesa es si el 3D se toca: hasta hoy, cuatro de los seis tableros se dibujaban y no se podían tocar.</sub>
+
+### `calibrar_busca.mjs`
+
+- **Y HACE FALTA UN JUGADOR COMPETENTE, NO UNO CUALQUIERA.** <sub>línea 16</sub>
+  <br><sub>Lección de esta misma semana, dos veces: tres políticas igual de malas empatan en cualquier juego, y con eso se puede «demostrar» que un entorno no distingue a nadie. Aquí el piloto apunta al objetivo más cercano sin escanear, empuja, y</sub>
+- **ESTOS NÚMEROS SALEN DE UN BARRIDO, NO DE LA INTUICIÓN.** <sub>línea 34</sub>
+  <br><sub>Se midió tanque × combustible con el piloto de abajo. La relación es limpia: más combustible = más fácil, y con pocos objetivos el tamaño del sitio manda.</sub>
+- **Y LA CIUDAD SATURA: con doce objetivos gana el 91-95% haga lo que haga el** <sub>línea 43</sub>
+  <br><sub>tanque. No es un fallo — es el escalón fácil, y para la etapa 4 está bien que lo sea. Lo que no vale es fingir que se puede afinar.</sub>
+- **EL ESPACIO SÍ SE RETOCA, Y HAY QUE DECIR POR QUÉ.** <sub>línea 47</sub>
+  <br><sub>en el banco con combustible 32, pero al meter la PISTA en el núcleo —que la persona tenía y el agente no— la etapa pasó de ganarse el 43% a ganarse el 71%. No es la misma dificultad con otro número: es que antes se medía otro</sub>
+- **24-08: LOS NÚMEROS DE ARRIBA SON DE ANTES DE LOS MANDOS** <sub>línea 57</sub>
+  <br><sub>Al unir las páginas 4 y 5 con este núcleo aparecieron TRES reglas que la persona tenía y el banco no, y las tres cambian la dificultad:</sub>
+- **Y LA CIUDAD NO SE ARREGLA CON COMBUSTIBLE, PORQUE NO ES SU LÍMITE.** <sub>línea 73</sub>
+  <br><sub>Barrido de 30 a 46: 75, 75, 75. Ni un punto. El dron nunca se queda sin batería — pierde cuando el piloto ELIGE MAL, y eso no lo compra el depósito. Lo que sí mueve la aguja es cuántos edificios hay que descartar:</sub>
+- **Y LA SALIDA SEMBRADA VOLVIÓ A MOVERLO TODO.** <sub>línea 84</sub>
+  <br><sub>el satélite salían siempre del mismo sitio, así que dos semillas empezaban con observaciones idénticas —`prueba_semillas` lo cazó— y de paso había una apertura mecánica que valía siempre. Al sembrarla, las dos etapas se hicieron</sub>
+- **Y EL PILOTO USA LAS PISTAS, PORQUE SI NO CALIBRA OTRO JUEGO.** <sub>línea 101</sub>
+  <br><sub>Al escanear un objetivo equivocado, el escáner dice cómo de cerca estaba del bueno —caliente, templado, fresco, frío, helado—. Eso no es adorno: es la estrategia entera. Un piloto que va siempre al más cercano y no mira las</sub>
+- **Y EL PILOTO TIENE QUE SABER PILOTAR LAS TRES COSAS.** <sub>línea 133</sub>
+  <br><sub>Cada etapa lleva un vehículo distinto —dron, satélite, nave— y quien calibra no puede medirlas todas con los verbos de la nave: `girar_izq` en un satélite no existe, así que `step` lo ignoraría en silencio y las tres etapas saldrían</sub>
+- **¿EMPIEZA LA PARTIDA CON UN OBJETIVO YA A TIRO?** <sub>línea 212</sub>
+  <br><sub>Es la trampa de sokoban con otra ropa: allí la semilla del banco caía en el nivel tutorial de una jugada. Aquí, si el sitio es pequeño y el escáner largo, el primer `escanear` sale gratis y la etapa se resuelve</sub>
+- **LO QUE HACE QUE ESTO SEA UNA ESCALERA Y NO TRES ESCALONES SUELTOS.** <sub>línea 233</sub>
+  <br><sub>Cada etapa tiene que ganarse MENOS que la anterior. Si no, el orden es una opinión: la saga dice «5 es más difícil que 4» y el jugador nota lo contrario.</sub>
+- **Y UN EMPATE TAMPOCO ES UN ESCALÓN.** <sub>línea 238</sub>
+  <br><sub>Esta comprobación sólo miraba `>`, así que 75% y 75% le parecían bien. Con eso pasé por buena una escalera de dos peldaños disfrazada de tres — exactamente el error que este mismo fichero avisa arriba («70 y 67 no eran dos, era uno contado</sub>
 
 ### `calibrar.mjs`
 
@@ -606,6 +633,52 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **SE PREGUNTA A LA MALLA, NO SE INTERPOLA SOBRE LA CAJA.** <sub>línea 183</sub>
   <br><sub>La primera versión sacaba la posición de cada pieza interpolando sobre el `Box3` de la raíz. Esa caja incluye el FARO, que va metro y medio por encima del tablero, así que proyectaba todas las piezas por los aires — o</sub>
 
+### `motores.mjs`
+
+- **ESTA HERRAMIENTA HA MENTIDO DOS VECES, Y LAS DOS A LA ALTA** <sub>línea 23</sub>
+  <br><sub>**Primera: contaba MENCIONES, no imports.** Un motor citado en un comentario salía como usado. `RaccoonCitySystem` aparecía «en el banco» porque yo lo había nombrado esa tarde en una nota dentro de `RaccoonSpaceEnv.js`.</sub>
+- **Sólo IMPORTS. Contar el nombre a secas cuenta las menciones en** <sub>línea 83</sub>
+  <br><sub>comentarios: RaccoonCitySystem salía «en el banco» porque yo lo nombré hoy en una nota dentro de RaccoonSpaceEnv.js.</sub>
+- **Y SE ADMITE `?v=3` DESPUÉS DEL `.js`.** <sub>línea 87</sub>
+  <br><sub>`AsteroidsEngine.js?v=3` —un rompe-cachés— y el patrón exigía comilla justo detrás del `.js`, así que ese import no existía para mí.</sub>
+- **AQUÍ SE SALTABAN LOS MOTORES QUE IMPORTAN A OTROS MOTORES, Y ÉSE** <sub>línea 95</sub>
+  <br><sub>ERA EL FALLO GORDO.</sub>
+- **Y `otros` NO CONTABA PARA NADA, QUE ES EL FALLO MÁS FEO DE LOS TRES.** <sub>línea 125</sub>
+  <br><sub>La clasificación miraba `envs`, `paginas` y `runners` y **ignoraba `otros`**, que es donde caen las factories y los plugins. Resultado: `TrafficSystem` salía impreso como</sub>
+- **QUIÉN HEREDA DE QUIÉN, PORQUE UNA CLASE MADRE NO ES UN MOTOR PARADO** <sub>línea 139</sub>
+  <br><sub>`BulletHeavenEngine` sale con `pag:0 run:0 env:0` y con eso aterrizaba entre los motores sin puertas propias. Es cierto y es engañoso: `MarabuntaSystem` **extiende** esa clase, y Marabunta tiene el patrón dorado completo. O sea que</sub>
+- **SIN COMENTARIOS, O LA FRASE QUE NIEGA LA DEPENDENCIA LA CONFIRMA.** <sub>línea 206</sub>
+  <br><sub>La primera versión buscaba `THREE.` en el texto entero y acusó a `FoodChainSystem` y a `ChopperAquariumEngine` de no ser headless. Fui a comprobarlo porque contradecía a `PATRON_DORADO.md`, que nombra a</sub>
+- **LA FACTORY SE BUSCA POR QUIÉN LA USA, NO POR CÓMO SE LLAMA.** <sub>línea 240</sub>
+  <br><sub>Antes se emparejaba por raíz del nombre —`ChopperAquariumEngine` → «chopperaquarium»— y eso falla en cuanto alguien nombra bien sus ficheros: la factory de ese motor se llama `AquariumEnvironmentFactory`, que no</sub>
+- **Y SE EXCLUYE SÓLO EL FICHERO DEL PROPIO MOTOR, NO LA CARPETA ENTERA.** <sub>línea 254</sub>
+  <br><sub>El primer intento saltaba todo `world/systems`, y con eso `AsteroidsSystem` perdía su Factory: quien importa el motor y la Factory a la vez es `AsteroidsEngine` —el renderizador—, que vive en esa misma carpeta. Excluir</sub>
+- **Y EL MOTOR PUEDE IMPORTAR SU PROPIA FACTORÍA.** <sub>línea 263</sub>
+  <br><sub>Esto buscaba un TERCERO que importara motor y factoría a la vez, porque en los juegos 3D la factoría monta la escena y quien las junta es la página. En `DefiendeSystem` no hay escena: la factoría genera el TERRENO —la matriz</sub>
+- **LA PUERTA HUMANA PUEDE IR POR UN RENDERIZADOR, Y ANTES NO CONTABA.** <sub>línea 279</sub>
+  <br><sub>Esto exigía que una PÁGINA importara el System directamente. Pero un juego bien hecho separa reglas de dibujo: `croupier_asteroids_survival.html` importa `AsteroidsEngine` —el renderizador— y es ÉSE quien usa</sub>
+- **Y EL ENVOLTORIO PUEDE ESTAR EN CUALQUIER SITIO DE `world/`, NO SÓLO EN** <sub>línea 293</sub>
+  <br><sub>`world/systems`.</sub>
+- **TRINQUETE AL REVÉS: ESTE NÚMERO SÓLO PUEDE SUBIR.** <sub>línea 321</sub>
+  <br><sub>Los demás trinquetes de la casa cuentan deuda y sólo bajan. Éste cuenta juegos COMPLETOS —Factory, System headless, Env y puerta humana— y sólo sube. Si baja, alguien le ha quitado una pieza a un juego que la tenía, y eso no da error: da</sub>
+
+### `paginas.mjs`
+
+- **POR QUÉ SE MIDE, Y NO SE DEJA COMO BUENA INTENCIÓN.** <sub>línea 10</sub>
+  <br><sub>Una página con lógica propia acierta el día que se escribe y se separa después. Es lo que pasó con ¡Busca!: sus tres páginas llevaban el juego escrito dentro mientras el banco medía otro motor, y la persona y el agente</sub>
+- **LAS DOS COLUMNAS NO MIDEN LO MISMO, Y ESA ES LA TRAMPA.** <sub>línea 28</sub>
+  <br><sub>`raccoon_planet.html` compone tres piezas compartidas y no dibuja ni una malla — sale «limpia» de sobra. Pero lee el estado del motor por dentro (`nucleo.ciudades[i].escaneada`), no el sustrato. Es exactamente lo que era</sub>
+- **SEÑALES DE QUE UNA PÁGINA HACE LO QUE NO LE TOCA.** <sub>línea 51</sub>
+  <br><sub>No son pecados por sí solas —una página puede necesitar un `fillRect` para un HUD— pero juntas dibujan el perfil de una página que se ha escrito su propio motor. Se cuentan y se dicen; el juicio es de quien lea.</sub>
+- **NO BASTA CON QUE LA PÁGINA NOMBRE EL SUSTRATO: TIENE QUE PINTARLO.** <sub>línea 88</sub>
+  <br><sub>La primera versión de esto buscaba `sustrato(` en cualquier parte, y era inútil: ¡Defiende! lo llama en dos sitios —al dibujar y al publicarlo en `window`— así que cambiar el dibujo a `observacion()`</sub>
+- **EL TECHO SÓLO BAJA.** <sub>línea 123</sub>
+  <br><sub>Como el suelo de juegos completos, pero al revés: la suma de «señales» de todas las páginas no puede subir. Una página nueva que se escriba su propio dibujo lo dice aquí, y el día que se limpie una se actualiza a la baja.</sub>
+- **Y EL SUELO QUE IMPORTA: CUÁNTOS JUEGOS ENSEÑAN EL SUSTRATO.** <sub>línea 137</sub>
+  <br><sub>Sólo se exige a `public/games` — los laboratorios son experimentos y no pretenden ser la vista de un juego que el banco también mide. Exigírselo sería medir por medir, y ya me ha pasado cuatro veces acusar a código sano.</sub>
+- **Y SE PONE EN LO MEDIDO, NO EN UN NÚMERO CÓMODO.** <sub>línea 145</sub>
+  <br><sub>Estuvo un rato en 1 con dos páginas enchufadas, y con ese margen el sabotaje APROBABA con el cable cortado: se podía romper ¡Defiende! entero y el suelo seguía cumpliéndose gracias a ¡Busca!. Un trinquete con holgura no es un</sub>
+
 ### `perfil_jugador.mjs`
 
 - **Y SIRVE PARA REFUTAR, QUE ES PARA LO QUE SE ESCRIBIÓ.** <sub>línea 15</sub>
@@ -677,6 +750,43 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>El motor importa `three` como especificador desnudo (`import * as THREE from 'three'`), así que hace falta un `importmap`. Y un `importmap` NO se puede añadir una vez que ha empezado a cargar un módulo — el navegador lo rechaza.</sub>
 - **SI YA HAY UN `importmap` EN LA PÁGINA, ESTE NO SE PONE.** <sub>línea 31</sub>
   <br><sub>Durante la migración conviven páginas con el suyo propio. Dos mapas es un error del navegador, así que se mira antes; y se avisa por consola, porque una página que se queda con el mapa viejo se queda también con la versión vieja de three</sub>
+
+### `public/js/pintor_matriz.mjs`
+
+- **POR QUÉ EXISTE, Y ES LA TESIS DEL PROYECTO PUESTA A PRUEBA.** <sub>línea 8</sub>
+  <br><sub>`defiende_sendero.html` dibujaba leyendo `nucleo.observacion()` — un método propio de ESE juego, con `entidades` que tienen `que` y `z`. Funcionaba, pero hacía del escaparate un dibujante PARALELO: acertaba porque lo escribí el</sub>
+- **LOS ESCALARES NO ESTÁN AQUÍ, Y ES A PROPÓSITO.** <sub>línea 25</sub>
+  <br><sub>Vidas, presupuesto y oleada no son sustrato: el sustrato dice QUÉ HAY EN EL MUNDO, no cómo va el marcador. Es la misma frontera que el arcade lleva años usando —`describirSustrato` para el tablero, `describirEstado` para lo</sub>
+- **LOS COLORES VAN AQUÍ Y NO EN `pintar`, Y NO ES UN CAPRICHO.** <sub>línea 45</sub>
+  <br><sub>Estaban en `pintar(sus, opciones)`, y con eso los dos pintores de la casa pedían cosas distintas: éste dos parámetros y el de mundos uno. Dos formas para la misma familia es la duplicación que no se ve, porque no hay ni una</sub>
+- **EL ALCANCE SE DIBUJA SI LA PIEZA LO TRAE, Y NO SE INVENTA.** <sub>línea 95</sub>
+  <br><sub>Un dibujante que supusiera que las torretas tienen alcance estaría sabiendo una regla. Si el sustrato lo publica, se pinta; si no, no existe para esta capa.</sub>
+
+### `public/js/pintor_mundo.mjs`
+
+- **POR QUÉ «PINTOR» Y NO «MESA», QUE ES COMO SE LLAMABA HASTA HOY.** <sub>línea 19</sub>
+  <br><sub>Porque son dos oficios y los tenía con el mismo prefijo. Medido:</sub>
+- **Y LA PREGUNTA INCÓMODA: ¿ES ESTO UN DUPLICADO DE `crearPintor3d`?** <sub>línea 34</sub>
+  <br><sub>Se miró antes de renombrar, y no lo es — pero el solape es real y conviene tenerlo escrito, porque la próxima vez puede que sí:</sub>
+- **ESTO NO SABE NINGUNA REGLA, Y ES EL PUNTO.** <sub>línea 50</sub>
+  <br><sub>No conoce torretas ni mapaches ni tiburones: recibe `{rejilla, piezas}` y pinta. Si mañana aparece un mundo nuevo con sustrato, se dibuja solo. Y si alguien mete aquí una regla, la habrá metido en el sitio donde el estado y el</sub>
+- **LAS MALLAS SE REUSAN, NO SE RECREAN.** <sub>línea 86</sub>
+  <br><sub>Un mundo puede tener cien piezas y sesenta fotogramas por segundo. Crear y destruir mallas a ese ritmo es la forma clásica de que un juego se ponga a tirones sin que nadie sepa por qué — y la basura no se recoge donde se</sub>
+- **SI EL MUNDO TRAE SU PROPIA FIGURA, MANDA LA SUYA.** <sub>línea 98</sub>
+  <br><sub>Sin esto, el pintor sólo sirve para mundos que se conformen con esferas y cajas — y las tres etapas de ¡Busca! tienen planetas con textura hechos por una factoría. La disyuntiva sería: o el sustrato o el arte. Con el</sub>
+- **LA CLAVE DE UNA PIEZA ES SU SITIO Y SU TIPO, NO SU ORDEN.** <sub>línea 160</sub>
+  <br><sub>El sustrato es una lista, y una lista cambia de orden cuando algo muere en medio. Si la malla se atara al índice, al morir el bicho 3 todos los de atrás saltarían un sitio de golpe — y en pantalla se vería como un</sub>
+- **UN MUNDO SIN CASILLAS NO SE CENTRA, Y ESTO ESTABA MAL.** <sub>línea 171</sub>
+  <br><sub>Con rejilla, la casilla (0,0) es la esquina y hay que correr la escena media rejilla para que el tablero quede centrado en el origen. Sin rejilla —¡Busca! en el cubo y en la esfera— las coordenadas del sustrato</sub>
+- **SI EL MUNDO DA UN NOMBRE A LA PIEZA, ESE NOMBRE ES SU IDENTIDAD** <sub>línea 189</sub>
+  <br><sub>— Y EL TIPO NO ENTRA EN ÉL.</sub>
+
+### `public/js/psyche.js`
+
+- **AQUÍ ESTABA `import { AgentBridge } from './AlisaAgentBridge.js'`** <sub>línea 5</sub>
+  <br><sub>Ese fichero vive en `colonia_privada/` y NO viaja al paquete abierto: hace `fetch('http://localhost:8741/beings/queen/think')`, o sea que habla con la reina de una colonia que quien se descargue esto no tiene.</sub>
+- **NO SE COPIA EL PUENTE: SE INVIERTE LA DEPENDENCIA.** <sub>línea 19</sub>
+  <br><sub>Traer `AlisaAgentBridge` al paquete abierto publicaría la dirección de un servicio privado y, peor, ataría el modelo de Ser a UNA forma concreta de pensar. El Neocórtex no tiene por qué saber si detrás hay una reina en</sub>
 
 ### `public/labs/js/montarEscena.js`
 
@@ -824,27 +934,41 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>La nota de `correr` lo tiene medido — en remigio, con la política tonta, la silla 0 saca −54,5 y la silla 1 saca +131,8. Como se ROTA por semilla, cada partida cae en uno de dos regímenes separados por casi doscientos puntos, y esa</sub>
 - **SIN `&& se > 0`, Y ESTA ES LA SEGUNDA VEZ QUE LO ESCRIBO MAL.** <sub>línea 427</sub>
   <br><sub>Puse ese guardia esta misma mañana en `calibrar.mjs`, lo quité allí porque invertía el sentido, y lo volví a escribir aquí de memoria. Reversi sale de posición fija: las 80 partidas son idénticas, el error típico es 0 y el</sub>
-- **SI UN JUEGO PUNTÚA O NO LO DECIDEN LAS REFERENCIAS, NO LOS CONCURSANTES.** <sub>línea 455</sub>
+- **RE-PINTAR NO ES RE-JUGAR: `--desde resultados/tabla.json`** <sub>línea 442</sub>
+  <br><sub>La primera clasificación con modelos costó dos horas de máquina y 7,8 M de tokens. Se lanzó sin `--html`, así que la página del sitio se quedó con la tabla vieja —la de sólo líneas base— y para arreglarlo había que **volver a</sub>
+- **Y NO SE TOCA LA FECHA.** <sub>línea 460</sub>
+  <br><sub>si al redibujar se pusiera la fecha de hoy, una tabla de la semana pasada parecería recién medida, que es la mentira exacta que este proyecto persigue.</sub>
+- **SI UN JUEGO PUNTÚA O NO LO DECIDEN LAS REFERENCIAS, NO LOS CONCURSANTES.** <sub>línea 487</sub>
   <br><sub>Esto era `participantes.some(...)`, o sea: **si un solo participante no terminaba un juego, el juego se caía para todos**. Con un modelo apenas se notaba. Con tres, la tabla salió literalmente vacía — `0/26 juegos con</sub>
-- **EXIGIR EL 100% BORRABA UN JUEGO POR DOS PARTIDAS DE DOSCIENTAS CUARENTA.** <sub>línea 475</sub>
+- **EXIGIR EL 100% BORRABA UN JUEGO POR DOS PARTIDAS DE DOSCIENTAS CUARENTA.** <sub>línea 507</sub>
   <br><sub>Esto pedía que TODAS las partidas de las dos referencias terminaran. Medido en fagocito con las 120 semillas que juega la tabla: 238 de 240 terminan, y las dos que no son de la política TONTA —«la primera jugada legal siempre»— que entra en</sub>
-- **SÓLO ENTRAN LOS JUEGOS CON HUECO POSITIVO.** <sub>línea 527</sub>
+- **SÓLO ENTRAN LOS JUEGOS CON HUECO POSITIVO.** <sub>línea 559</sub>
   <br><sub>Si la casa saca MENOS que el suelo, el denominador es negativo y la escala se da la vuelta: un participante mediocre sale con 2,86 y uno bueno con −1. Le pasó a la brisca en la primera tanda. Un hueco negativo no es un juego difícil,</sub>
-- **UN JUEGO NO PUEDE DESAPARECER DE LAS DOS LISTAS A LA VEZ.** <sub>línea 545</sub>
+- **UN JUEGO NO PUEDE DESAPARECER DE LAS DOS LISTAS A LA VEZ.** <sub>línea 577</sub>
   <br><sub>Esto era un `continue` a secas: el juego no entraba en la clasificación Y tampoco en `descartados`, así que se evaporaba. Ni ranqueado ni descartado ni mencionado — la tabla decía «29 juegos» y el catálogo tenía 37, y los dos</sub>
-- **Y ESTE MOTIVO NO ES EL MISMO QUE EL DE ARRIBA, AUNQUE SE PAREZCA.** <sub>línea 561</sub>
+- **Y ESTE MOTIVO NO ES EL MISMO QUE EL DE ARRIBA, AUNQUE SE PAREZCA.** <sub>línea 593</sub>
   <br><sub>El veredicto de SI un juego puntúa lo da `separaDeVerdad` con los promedios LARGOS —las `--semillas-base` que juegan las referencias— y ya está escrito arriba. Esto de aquí es otra cosa: el DENOMINADOR con el que se normaliza a los</sub>
-- **Y LO QUE NO SE TERMINÓ NO SE PUNTÚA — PERO SÓLO A QUIEN NO LO** <sub>línea 597</sub>
+- **Y LO QUE NO SE TERMINÓ NO SE PUNTÚA — PERO SÓLO A QUIEN NO LO** <sub>línea 629</sub>
   <br><sub>TERMINÓ.</sub>
-- **LA INCERTIDUMBRE VIAJA CON EL NÚMERO.** <sub>línea 612</sub>
+- **LA INCERTIDUMBRE VIAJA CON EL NÚMERO.** <sub>línea 644</sub>
   <br><sub>Un modelo se mide con 3 partidas porque cuesta dinero, y 3 partidas de un juego de cartas dicen poco. Publicar «0,71» a secas es fingir una precisión que no se tiene. Se publica el ± y que cada cual juzgue.</sub>
-- **Y NO SE RECORTA LA SERIE PARA CALCULARLA — ANTES SÍ, Y MENTÍA.** <sub>línea 617</sub>
+- **Y NO SE RECORTA LA SERIE PARA CALCULARLA — ANTES SÍ, Y MENTÍA.** <sub>línea 649</sub>
   <br><sub>Estaba `.slice(0, SEMILLAS)`, que tiene sentido para la MEDIA (los modelos y las bases deben compararse sobre las mismas semillas) y ninguno para la dispersión: recortaba a una muestra las 80 partidas que</sub>
-- **SI EL AZAR LE GANA A LA CASA, LA CASA NO ES UN TECHO.** <sub>línea 636</sub>
+- **SI EL AZAR LE GANA A LA CASA, LA CASA NO ES UN TECHO.** <sub>línea 668</sub>
   <br><sub>Ya se descarta el juego cuyo techo no supera al suelo —la escala se invertiría—, pero faltaba el caso de en medio y apareció midiendo de verdad: en `rebaño` el azar sacó **2,39** y en `relevo` **1,80**, sobre una</sub>
-- **EL TITULAR ES LA MEDIANA, Y NO ES UN TECNICISMO: LA MEDIA MENTÍA.** <sub>línea 670</sub>
+- **Y RE-PINTANDO TAMBIÉN SE IMPRIME LA TABLA EN LA CONSOLA.** <sub>línea 715</sub>
+  <br><sub>La primera versión saltaba el bucle de abajo, que es quien imprime las filas — así que salía la cabecera, ninguna fila, y el fichero bien escrito. Una salida que enseña el encabezado de una tabla vacía hace pensar que no hay datos</sub>
+- **EL TITULAR ES LA MEDIANA, Y NO ES UN TECNICISMO: LA MEDIA MENTÍA.** <sub>línea 739</sub>
   <br><sub>Medido en la primera tanda completa: `qwen2.5:7b` salía con media −1,02 y mediana −0,10; el azar, con media −0,19 y mediana +0,20. Dos historias distintas de los mismos quince juegos.</sub>
-- **LA CLASIFICACIÓN, EN UNA PÁGINA — Y ES LO QUE NOS DIFERENCIA.** <sub>línea 746</sub>
+- **Y LA TABLA LO ESTABA TIRANDO A LA BASURA.** <sub>línea 794</sub>
+  <br><sub>Medido el 24-08 sobre la primera clasificación con modelos: `porJuego` sólo guardaba el valor NORMALIZADO. Para marea eso da `0.35`, que no significa nada fuera de aquí. El puente estaba construido y la tabla cruzaba por debajo.</sub>
+- **Y SE DICE CON CUÁNTAS SEMILLAS, PORQUE EN EL 2048 ESO LO ES TODO.** <sub>línea 815</sub>
+  <br><sub>Desviación medida por partida: 519 con la política del azar y **1702** con la de la casa. Con tres semillas el error de la media es de ±300 a ±983 — más grande que la distancia entre el suelo (814) y el azar</sub>
+- **UNA TANDA PARCIAL NO PISA LA CLASIFICACIÓN PUBLICADA** <sub>línea 849</sub>
+  <br><sub>Esto escribía `resultados/tabla.json` SIEMPRE, y ese fichero es la clasificación que se publica. El 24-08 me lo cargué dos veces en una tarde: una probando tres juegos con dos semillas, y otra comprobando que el bloque</sub>
+- **RE-PINTANDO NO SE REESCRIBE LA MEDIDA.** <sub>línea 875</sub>
+  <br><sub>el HTML y el markdown: tocar el JSON sólo serviría para cambiarle la fecha a una medida que no se ha vuelto a hacer.</sub>
+- **LA CLASIFICACIÓN, EN UNA PÁGINA — Y ES LO QUE NOS DIFERENCIA.** <sub>línea 891</sub>
   <br><sub>El argumento entero del proyecto es que una partida se comprueba VOLVIÉNDOLA A JUGAR, no pidiéndole a otro modelo que la puntúe. Eso sólo vale algo si la tabla resultante está donde cualquiera pueda mirarla y, sobre todo, discutirla:</sub>
 
 ### `tacto.mjs`
@@ -2269,15 +2393,19 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Los visualizadores se cargan como `<script type="module">` que se montan solos: no hay a quién pasarle argumentos, así que leen `window.ALISA_JUEGO`. `entropy.html` lo ponía a mano de cuando era una página escrita entera, y al</sub>
 - **Y A QUÉ SE JUEGA, PARA LA PERSONA.** <sub>línea 430</sub>
   <br><sub>(«ni idea tengo de cómo se juega») el mismo día que terminé de escribir los treinta y cinco objetivos: se lo estaba contando al agente y no a él.</sub>
-- **`?semilla=` NO SE APLICABA, Y LAS PÁGINAS PROMETÍAN QUE SÍ.** <sub>línea 442</sub>
+- **LAS REGLAS ESTABAN ESCRITAS Y NO HABÍA CÓMO LLEGAR A ELLAS** <sub>línea 443</sub>
+  <br><sub>`public/data/fichas_prosa.json` tiene las CUARENTA fichas completas —qué es, reparto, turno, cómo se gana, lo que pilla a todo el mundo la primera vez, y en qué se aparta del juego de la calle— y `arcade/ficha.html` las</sub>
+- **EL ENLACE LO PONE `objetivo_visible.js`, NO ESTO.** <sub>línea 461</sub>
+  <br><sub>ESTUVO AQUÍ, FLOTANDO EN LA ESQUINA DE ABAJO A LA IZQUIERDA.</sub>
+- **`?semilla=` NO SE APLICABA, Y LAS PÁGINAS PROMETÍAN QUE SÍ.** <sub>línea 471</sub>
   <br><sub>Esto registraba las reglas y dejaba que la primera consulta creara la partida sola — y `nuevaPartida()` sin semilla usa `Date.now()`. O sea que abrir dos veces la misma dirección daba dos repartos distintos, mientras el</sub>
-- **SIN VISUALIZADOR PROPIO NO SE QUEDA EN BLANCO: SALE LA VISTA GENÉRICA.** <sub>línea 474</sub>
+- **SIN VISUALIZADOR PROPIO NO SE QUEDA EN BLANCO: SALE LA VISTA GENÉRICA.** <sub>línea 503</sub>
   <br><sub>Antes, un juego sin `visualizador` cargaba el motor y nada más — o sea una página con HUD y un lienzo vacío. Por eso los once juegos nuevos vivían en `mesa.html`, que es de TEXTO: era eso o nada.</sub>
-- **Y SI LA PÁGINA NO LO DICE, LO DICE EL JUEGO.** <sub>línea 490</sub>
+- **Y SI LA PÁGINA NO LO DICE, LO DICE EL JUEGO.** <sub>línea 519</sub>
   <br><sub>`VISUALIZADOR` es el mismo dato que estas páginas venían pasando a mano, pero puesto donde pertenece: en el juego, no en una de las páginas donde se le mira. Lo que declare la página sigue mandando —no se rompe ninguna— y quien no declare</sub>
-- **LOS DE VISUALIZADOR PROPIO NO PUEDEN ENSEÑAR EL ESTADO POR SÍ SOLOS.** <sub>línea 504</sub>
+- **LOS DE VISUALIZADOR PROPIO NO PUEDEN ENSEÑAR EL ESTADO POR SÍ SOLOS.** <sub>línea 533</sub>
   <br><sub>Las dos mesas genéricas ya pintan las filas del estado con `filasDeEstado`, así que veintiuno de los veintiocho juegos donde el agente sabía más que la persona quedaron arreglados solos. Los siete con visualizador propio no: son scripts</sub>
-- **EL BOTÓN DE «ALGO VA RARO», EN LAS TREINTA Y CINCO DE UNA LÍNEA.** <sub>línea 527</sub>
+- **EL BOTÓN DE «ALGO VA RARO», EN LAS TREINTA Y CINCO DE UNA LÍNEA.** <sub>línea 556</sub>
   <br><sub>Va aquí y no en cada página por el mismo motivo que todo lo demás de este fichero: una cosa que hay que acordarse de poner en cada página acaba faltando en una, y será justo en la que falle algo.</sub>
 
 ### `public/arcade/js/objetivo_visible.js`
@@ -2288,6 +2416,10 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Es la misma razón por la que ya están fuera los botones de jugada y la pista: plegado, `#hud-content` queda con `max-height: 0`, y lo que esté dentro desaparece. Alguien que pliega el panel para ver la mesa es EXACTAMENTE quien</sub>
 - **EL OBJETIVO VA EN SU PROPIO ELEMENTO PARA PODER RECORTARLO SOLO.** <sub>línea 52</sub>
   <br><sub>Con el panel plegado, el CSS resume esto a dos líneas. Pero el rótulo es `display:block`, así que se llevaba UNA de las dos: del objetivo quedaba una línea, cortada a media palabra —«acabar con la caja mas BAJA… posible: cada</sub>
+- **Y EL CAMINO A LAS REGLAS, QUE ESTABAN ESCRITAS Y NO SE ALCANZABAN.** <sub>línea 66</sub>
+  <br><sub>`fichas_prosa.json` tiene las CUARENTA fichas completas —qué es, reparto, turno, cómo se gana, lo que pilla a todo el mundo la primera vez, y en qué se aparta del juego de la calle— y `ficha.html` las pinta</sub>
+- **Y VA AQUÍ Y NO EN UNA ESQUINA.** <sub>línea 78</sub>
+  <br><sub>izquierda desde `montarMesa`, y la captura lo enseñó DEBAJO de la fila de botones —tapado en 1280 y en 390, las dos—. La esquina parecía libre mirando el código y no lo estaba. Se vio abriendo la imagen, como casi</sub>
 
 ### `public/arcade/js/peaton_visualizer.js`
 
@@ -2514,6 +2646,737 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **Aquí había `OFFX = -3.5, OFFZ = -4.0`, inventados.** <sub>línea 178</sub>
   <br><sub>dónde coloca este fichero las piezas: `position.set(c - 4, y, r - 4.5)`. Media casilla de error basta para que el clic caiga en la vecina y, al no coincidir con ninguna jugada legal, no ocurra nada.</sub>
 
+## Las comprobaciones
+
+### `check_globales_huerfanos.py`
+
+- **Sobre los falsos positivos** <sub>línea 14</sub>
+  <br><sub>La primera versión buscaba `Simbolo\\s*\\.` y cazaba el `.js` de las propias rutas de import: daba por rotos `ProceduralSPE.js` y `CarverSystem.js`, que estaban perfectos. Ahora se quitan las cadenas antes de mirar el código. Un</sub>
+
+### `check_gym_envs.mjs`
+
+- **CONTROL POSITIVO** <sub>línea 24</sub>
+  <br><sub>Un catálogo vacío y un catálogo sano dan el mismo "sin fallos". Por eso, si hay menos de 2 entornos, esto NO dice OK: dice que la prueba no vale (2). Aprendido a base de dar por bueno un silencio que solo significaba que no</sub>
+- **Antes se importaba desde `src/index.js`, que es el índice del motor ENTERO:** <sub>línea 31</sub>
+  <br><sub>arrastra `AlisaRenderCore` y con él `three`. En una máquina con `node_modules` no se nota; en el runner de CI —donde no los hay— reventaba con `Cannot find package 'three'`. O sea: la CI habría fallado en el primer</sub>
+- **ANTES AQUÍ PONÍA `.filter(e => e.familia === 'propio')`, Y ESO DEJABA FUERA** <sub>línea 42</sub>
+  <br><sub>A 35 DE LOS 41 ENTORNOS DEL BANCO.</sub>
+- **SE MANDA `action` SI EXISTE, NO EL VERBO A SECAS.** <sub>línea 74</sub>
+  <br><sub>En `CabinetEscape` las ocho opciones comparten verbo —`abrir_cajon`— y lo que las distingue vive en `args.cajon` / `action`. Con `.verb` a secas, este recorrido abría OCHO VECES EL MISMO CAJÓN creyendo que probaba ocho. El</sub>
+
+### `check_secretos.py`
+
+- **POR QUÉ EXISTE, Y POR QUÉ ESTABA EN FALTA** <sub>línea 8</sub>
+  <br><sub>`.gitignore` lleva escrito desde hace tiempo:</sub>
+- **NO GARANTIZA NADA.** <sub>línea 30</sub>
+  <br><sub>como último filtro, no como permiso para no mirar.</sub>
+
+### `check_vanilla_boundary.py`
+
+- **ALCANCE — corregido tras un fallo real.** <sub>línea 41</sub>
+  <br><sub>Este script solo miraba `src/`, así que dio "publicable ✅" mientras el ARCADE entero seguía llamando a `http://127.0.0.1:8741` desde su propio código. Al abrir una partida de ajedrez en el navegador, la página martilleaba el hub de</sub>
+
+### `prueba_acercar.mjs`
+
+- **LA QUE PROTEGE: SÓLO SE MUEVE LA QUE SE MOVIÓ ──** <sub>línea 43</sub>
+  <br><sub>Tres fichas iguales SIN id —el caso de los juegos que aún no lo publican— y una cambia de sitio. Las otras dos no pueden desplazarse ni una milésima: si lo hacen, el emparejamiento las ha confundido y la pantalla enseñará un movimiento</sub>
+
+### `prueba_asientos.mjs`
+
+- **LA QUE PROTEGE DE VERDAD: LAS SEMILLAS NO SE CREAN NI SE DESTRUYEN ──** <sub>línea 73</sub>
+  <br><sub>En mancala hay 48 semillas —doce hoyos de cuatro— y la siembra las mueve de sitio, nunca las inventa ni las pierde. Es una ley del juego, así que sirve de piedra de toque para los asientos: si su suma se desvía en cualquier momento de</sub>
+
+### `prueba_asimetria.mjs`
+
+- **LA ÚNICA ASIMETRÍA QUE ESTE PROYECTO NO PUEDE PERMITIRSE.** <sub>línea 7</sub>
+  <br><sub>El banco compara a una persona con un agente en el MISMO juego, y esa comparación sólo significa algo si los dos ven lo mismo. La puerta de texto entrega el estado entero: el describidor vuelca los campos genéricamente, así que un agente lee</sub>
+- **CÓMO SE MIDE, Y POR QUÉ EN UN NAVEGADOR.** <sub>línea 27</sub>
+  <br><sub>Se abre la página de verdad, se juegan unas jugadas, y se comparan DOS textos del mismo momento: lo que `describirEstado` le daría a un agente y lo que el panel tiene escrito. Se buscan los VALORES del primero en el segundo — números y palabras, no</sub>
+- **Y LO QUE NO ES UNA ASIMETRÍA: LO QUE SE VE EN LA MESA.** <sub>línea 38</sub>
+  <br><sub>Un agente lee `dado: [3,3]` y la persona ve dos dados con tres puntos. Eso no es información escondida, es información dibujada — y contarlo como fallo llenaría esto de falsas alarmas hasta que nadie lo mirara. Así que las excepciones se</sub>
+- **Se espera a que el panel se ponga al día: el vigía de los visualizadores** <sub>línea 166</sub>
+  <br><sub>propios refresca cada 400 ms, y leer antes denunciaba al póker por esconder algo que ya estaba escrito. Una prueba que corre más que la pantalla mide la carrera, no el juego.</sub>
+- **SE LEE DOS VECES, Y NO ES DESCONFIANZA: ES QUE EL PANEL TIENE RITMO.** <sub>línea 173</sub>
+  <br><sub>Los visualizadores propios reciben sus filas de un vigía que refresca cada 400 ms, así que leer una vez mide la CARRERA y no el juego. Entropy pasaba corriéndolo solo y fallaba dentro de la tanda de 38 — el navegador va más</sub>
+- **SE COMPARAN VALORES, NO NOMBRES DE CAMPO.** <sub>línea 204</sub>
+  <br><sub>El panel dice «Triunfo: oros» donde el estado dice `triunfo: "O"`, así que buscar la palabra `triunfo` daría un falso negativo. Lo que tiene que estar en los dos sitios es el DATO: un número, o una cadena corta que signifique algo.</sub>
+- **Una excepción que ya no hace falta es una mentira guardada: se denuncia, igual** <sub>línea 246</sub>
+  <br><sub>que `prueba_de_las_pruebas` denuncia un sabotaje que apunta a una prueba borrada. const sobran = Object.keys(EN_LA_MESA).filter(k => !usadas.has(k));</sub>
+
+### `prueba_azar.mjs`
+
+- **POR QUÉ EXISTE: «SEMILLA 42» LLEGÓ A SIGNIFICAR DOS MUNDOS DISTINTOS.** <sub>línea 6</sub>
+  <br><sub>Había dos generadores sembrados en el motor. Medido el 24-08:</sub>
+- **Y NO SE UNIFICÓ PORQUE UNO FUERA MALO.** <sub>línea 20</sub>
+  <br><sub>En la prueba de retícula el viejo LCG salió incluso algo mejor (26.453 celdas contra 25.397). Su único límite real es que la secuencia se repite entera a las 233.280 tiradas — de sobra para un episodio. Se unificó por CONSISTENCIA.</sub>
+- **QUE NADIE ESCRIBA UN TERCERO A MANO.** <sub>línea 62</sub>
+  <br><sub>Un generador sembrado son tres líneas, así que aparecen solos: alguien necesita azar reproducible en un fichero, lo escribe ahí y ya hay dos verdades sobre lo que significa una semilla. Se buscan las constantes típicas.</sub>
+- **Y SE LEE EL CÓDIGO, NO LOS COMENTARIOS.** <sub>línea 68</sub>
+  <br><sub>detector mío contó prosa como si fuera código — incluida la nota que explicaba cómo se había quitado un `Math.random`.</sub>
+- **Y HAY DOS GRAVEDADES, NO UNA.** <sub>línea 73</sub>
+  <br><sub>Al correr esto salieron nueve ficheros y el mensaje decía «la semilla no significa lo mismo en toda la casa». **Era falso**: los nueve copian la constante de `mulberry32`, o sea que dan exactamente la misma secuencia. Lo</sub>
+- **TRADUCIR EN LA FRONTERA NO ES INVENTARSE UN IDIOMA, Y ESTA PRUEBA** <sub>línea 163</sub>
+  <br><sub>ACUSÓ A DOS SITIOS SANOS ANTES DE QUE LO DISTINGUIERA.</sub>
+- **SÓLO LO QUE SE COMPARA O SE DEVUELVE, Y ESA PRECISIÓN ES EL ARREGLO.** <sub>línea 187</sub>
+  <br><sub>La primera versión miraba `(===|!==|return|:)` y con el `:` acusaba al traductor de `CorpBuildingEnv` —`r === 'caliente' ? 'HOT' : 'COLD'`—, que es un adaptador correcto hacia un agente ajeno.</sub>
+
+### `prueba_barajas.mjs`
+
+- **LAS BARAJAS SE CONTIENEN UNAS A OTRAS. `spanish_40 ⊂ spanish_48` y** <sub>línea 27</sub>
+  <br><sub>`french_52 ⊂ french_54`. Así que «pertenecen a X» casi siempre da más de una respuesta, y la buena es LA MÁS PEQUEÑA que las contiene todas: si nunca sale un 8 ni un 9, la baraja es de 40, no de 48 con mala suerte. Con pocas cartas eso se</sub>
+- **QUÉ FICHA DE `games` LE CORRESPONDE A CADA JUEGO NUESTRO.** <sub>línea 49</sub>
+  <br><sub>Los nombres no coinciden y no hay forma de deducirlo: nuestro `poker` es el `texas_holdem` de la biblioteca, nuestro `remigio` es `rummy_basic` y no el `chinchon`, que es el rummy de baraja española. Normalizar cadenas acertaría en</sub>
+- **CANADIENSE NO ES LA CANASTA, y eso lo dijo esta prueba.** <sub>línea 76</sub>
+  <br><sub>a `canasta` por el nombre, y saltó el aviso de que declara `french_54` y reparte 52. La canasta lleva comodines; este juego es el Tock/Dog —el parchís con cartas— y son 52 sin comodines A PROPÓSITO, escrito en su cabecera. La</sub>
+- **Y LAS ESPECIALES, QUE NO SON PALO POR RANGO.** <sub>línea 103</sub>
+  <br><sub>La primera versión sólo cruzaba palos con rangos, así que el UNIT salió con «14 fuera del catálogo: W_WILD G_REV Y_D2 B_SKIP…» y yo estuve a punto de contarlo como hallazgo. No lo era: `decks.unit_108.specials` declara SKIP, REV, D2, WILD y WD4</sub>
+- **Y LLEVAN O NO PALO SEGÚN LO QUE DIGAN, no según lo que yo supusiera.** <sub>línea 111</sub>
+  <br><sub>Mi primera versión añadía las dos formas —`W_<id>` y `<palo>_<id>`— a todas. Eso metió `W_JK` en la baraja francesa de 54, y como el comodín de Entropy se llama igual, Entropy pasó a repartir «una carta francesa entre cuarenta y ocho nuestras»</sub>
+- **DOS COSAS QUE ME COSTARON UN VERDE FALSO DE «0 JUEGOS MIRADOS».** <sub>línea 174</sub>
+  <br><sub>La primera: `mover` no devuelve la partida nueva. La MUTA y devuelve un booleano — `true` si la jugada valía. Yo escribí `p = reglas.mover(p, …)` y a partir de ahí `p` valía `true`, así que el `estado` siguiente reventaba leyendo `p.manos[0]`. Parecía</sub>
+- **Y SE APUNTAN LAS JUGADAS, porque `robar_mazo` tiene forma de carta.** <sub>línea 191</sub>
+  <br><sub>El recolector busca cualquier cosa con pinta de `algo_algo`, y una jugada como `robar_mazo` la tiene. Salía en el informe como «1 fuera del catálogo» en remigio y entropy, o sea acusándolos de repartir una carta inventada.</sub>
+
+### `prueba_biblioteca.mjs`
+
+- **LA MARCA VIVE EN DOS SITIOS, Y HAY QUE MIRAR LOS DOS.** <sub>línea 36</sub>
+  <br><sub>Los de bazas y los portados la ponen en el ESTADO; blackjack y póker, en el objeto de REGLAS. La primera versión de esta prueba sólo miraba el estado, así que saltó a esos dos en silencio y cantó «todos ✓» sin haberlos mirado —</sub>
+- **AQUÍ HABÍA UN `ESPERADOS = 10` ESCRITO A MANO, con los diez nombres en un** <sub>línea 68</sub>
+  <br><sub>comentario al lado. Cumplía su función y traía la de siempre: al añadir el remigio la prueba se puso roja diciendo «se esperaban 10 y se han mirado 11», o sea acusando al juego nuevo de un fallo que no existía. Una prueba que hay</sub>
+- **ZONAS Y NINGUNA REJILLA» NO ES «ES DE CARTAS», Y AQUÍ SE VIO.** <sub>línea 82</sub>
+  <br><sub>Ésa era la definición que usaba esto —la misma que usa `montarMesa` para elegir motor— y sirvió hasta que llegó la GENERALA: cinco dados, ningún tablero, o sea zonas sin rejilla. La prueba la acusó de no publicar `biblioteca` y de estar</sub>
+
+### `prueba_censo.mjs`
+
+- **ESTA COMPROBACIÓN VIGILA UNA CLASE QUE EL SABOTAJE NO PUEDE VER.** <sub>línea 5</sub>
+  <br><sub>Todo lo demás en este repositorio comprueba PREDICADOS: «¿esta condición detecta este fallo?». Y para eso están los sabotajes de `npm run pruebas`, que rompen a propósito lo que cada comprobación vigila y exigen que suspenda.</sub>
+- **POR QUÉ EMPIEZA POR `tabla.mjs` Y NO POR OTRO** <sub>línea 23</sub>
+  <br><sub>Porque es el único medidor cuyo resultado sale al dominio. Un error de denominador en los demás muere en un informe interno que se rectifica con una nota; aquí saldría publicado como una comparación persona-contra-agente falsa, en un banco</sub>
+- **CÓMO, SIN PAGAR UNA PASADA ENTERA** <sub>línea 30</sub>
+  <br><sub>Medir de verdad tarda minutos. Así que el medidor declara su universo con `--censo` —una línea `universo=N` y la lista— y aquí se compara con el censo canónico. Preguntar tarda un segundo.</sub>
+
+### `prueba_clasificacion.mjs`
+
+- **NO COMPRUEBA QUE LOS NÚMEROS SEAN BUENOS, sino que sean LOS MISMOS.** <sub>línea 20</sub>
+  <br><sub>Si la medición está mal, esto sale verde igual — para eso están el calibrador y las líneas base. Lo único que vigila es que lo publicado y lo medido no se separen.</sub>
+
+### `prueba_css.mjs`
+
+- **ESTO ME COSTÓ UNA HORA Y NO DA NI UN ERROR.** <sub>línea 5</sub>
+  <br><sub>El 15-08-2026, arreglando que los botones del ajedrez se salieran de la pantalla, escribí tres reglas distintas y NINGUNA cambió la medida. Ni un píxel, las tres veces. Revisé la cascada, la especificidad, si el fichero se</sub>
+- **Y ESTE PROYECTO ES ESPECIALMENTE VULNERABLE.** <sub>línea 26</sub>
+  <br><sub>Las hojas llevan comentarios enormes a propósito —el porqué de cada regla, con la medida que la justifica—, así que se editan mucho y son largos. Cuantos más comentarios, más ocasiones de dejarse un cierre.</sub>
+- **Y SE CUENTAN LAS LLAVES DE FUERA DE LOS COMENTARIOS.** <sub>línea 67</sub>
+  <br><sub>Esta prueba sólo miraba el BALANCE de `/*` y `*` `/`, y con eso se le escapaba el caso peor: una apertura DE MÁS. Si alguien abre un comentario delante de una regla, se cierra solo con el siguiente cierre legítimo —el balance sigue</sub>
+- **Y LO SEGUNDO: EL PANEL NO PUEDE TRAGARSE TOQUES QUE VAN A LA MESA.** <sub>línea 124</sub>
+  <br><sub>`jugables.css` pone `.hud-panel { pointer-events: none }` y devuelve el clic sólo a lo que HACE algo — la regla está escrita ahí y explicada: el panel flota sobre el lienzo con fondo traslúcido, así que ves el tablero por debajo, pulsas donde lo ves</sub>
+- **ESTA COMPROBACIÓN EMPEZÓ SIENDO LISTA Y GRITABA EN FALSO.** <sub>línea 144</sub>
+  <br><sub>El primer intento exigía que todo lo que recuperase el toque «pareciera interactivo», con una expresión regular. Acusó a tres inocentes: un trozo de comentario que mi regex leyó como selector, el propio `.hud-panel`, y</sub>
+
+### `prueba_de_las_pruebas.mjs`
+
+- **POR QUÉ EXISTE: EN UN SOLO DÍA, CINCO INSTRUMENTOS MINTIERON.** <sub>línea 7</sub>
+  <br><sub>No uno. Cinco, el 15-08-2026, y ninguno daba error — todos salían en verde:</sub>
+- **QUÉ HACE ESTO, Y POR QUÉ NO ES «PROBAR LAS PRUEBAS» POR DEPORTE.** <sub>línea 27</sub>
+  <br><sub>Para cada comprobación de `npm test` hay un SABOTAJE declarado: un cambio concreto que rompe justo lo que esa prueba dice vigilar. Se aplica, se corre la prueba, y **tiene que suspender**. Si sale verde con el cable cortado, la prueba</sub>
+- **CÓMO SE PROTEGEN LOS FICHEROS DE VERDAD.** <sub>línea 38</sub>
+  <br><sub>El sabotaje toca ficheros del proyecto. Antes se guarda el contenido, se restaura SIEMPRE —pase lo que pase— y al final se verifica que todo quedó como estaba comparando el texto. Si algo no se pudo restaurar, se dice a gritos y se</sub>
+- **EL SABOTAJE TIENE QUE ROMPER LO QUE ESA PRUEBA VIGILA, NO CUALQUIER COSA.** <sub>línea 57</sub>
+  <br><sub>Meter un error de sintaxis haría suspender a cualquiera y no demostraría nada: probaría que node sabe leer. Cada sabotaje de aquí es el fallo REAL contra el que se escribió la prueba — quitarle las normas al enlace, dejar que las teclas jueguen</sub>
+- **ÉSTE ES EL PRIMER SABOTAJE DE ENUMERACIÓN, Y ES OTRA COSA QUE LOS DEMÁS.** <sub>línea 303</sub>
+  <br><sub>Los quince de arriba rompen una CONDICIÓN y esperan que la comprobación la eche de menos. Éste rompe el UNIVERSO: le cambia el nombre a un juego del catálogo, de modo que el conjunto medido sigue teniendo treinta y cinco</sub>
+- **DOS SABOTAJES PARA EL MISMO FICHERO, Y HACE FALTA.** <sub>línea 341</sub>
+  <br><sub>`prueba_fichas` vigila ahora dos cosas distintas: que lo declarado coincida con lo que hace el juego, y que las rutas que promete la ficha SE PUEDAN PEDIR. Con un solo sabotaje, la segunda estaría sin cubrir — y es justo la</sub>
+- **ES OTRA PREGUNTA QUE LA DE `biblioteca`, Y POR ESO OTRO SABOTAJE.** <sub>línea 447</sub>
+  <br><sub>Aquélla comprueba que los juegos LEEN el catálogo que se les pasa. Ésta, que cogen de él LA BARAJA QUE LES TOCA. Un juego francés que pidiera la española leería el catálogo impecablemente y repartiría oros en una mesa de</sub>
+- **Y este sabotaje ya sirvió de algo antes de entrar aquí: con él puesto,** <sub>línea 507</sub>
+  <br><sub>la primera versión de la comprobación APROBÓ. Miraba el `de` del dicho, y el dicho filtrado sigue diciendo ser tuyo. Hubo que cambiarla por la pregunta buena —¿cambia lo que yo veo cuando otro elige distinto?— y eso</sub>
+- **AQUÍ FALLÉ LA PUNTERÍA DOS VECES, Y ES EL ERROR TÍPICO DE ESTE FICHERO.** <sub>línea 834</sub>
+  <br><sub>Primero cambié `juego: 'ajedrez'` en el catálogo: la prueba aprobó, porque enumera el catálogo y construye cada entorno — un nombre distinto se construye igual. Luego puse `reset(` a secas, que aparece también en un</sub>
+- **SE SABOTEA EL PAQUETE, NO `public/`.** <sub>línea 870</sub>
+  <br><sub>medido = PAQUETE if hay_paquete else PUBLIC</sub>
+- **NO SE PUDO DEVOLVER A SU SITIO:')}`);** <sub>línea 965</sub>
+  <br><sub>for (const f of sinRestaurar) console.log(rojo(`      ${f}`)); console.log(rojo('   RECUPÉRALOS CON `git checkout -- <fichero>` ANTES DE SEGUIR.')); process.exit(2);</sub>
+- **EL CENSO SE DERIVA.** <sub>línea 978</sub>
+  <br><sub>Aquí había un array `TODAS` con los nombres escritos a mano. Es la enésima lista de este proyecto que se separa de la realidad en silencio — y ésta era la peor, porque es la lista de la red de seguridad.</sub>
+- **20-08: estas dos salían denunciadas como «no las corre nadie» y era FALSO —** <sub>línea 1020</sub>
+  <br><sub>tienen su propio mando desde el día que se escribieron. El aviso miraba sólo `scripts.test` y llamaba huérfana a cualquiera que viviera en otro guion. Se arregla abajo mirando TODOS los guiones, y éstas se quedan aquí porque abren</sub>
+- **DOS LISTAS Y NO UNA, PORQUE SE PREGUNTAN DOS COSAS DISTINTAS.** <sub>línea 1047</sub>
+  <br><sub>`todasEnDisco` es lo que HAY. `enDisco` es lo que se vigila por huérfano, que excluye a las de `APARTE` porque de ésas ya se sabe por qué no van en `npm test`.</sub>
+- **SE MIRAN TODOS LOS GUIONES, NO SÓLO `test`.** <sub>línea 1061</sub>
+  <br><sub>Esto leía `scripts.test` y punto, así que denunciaba como huérfana a cualquier comprobación que viviera en otro mando —`npm run figuras`, `npm run invitados`— aunque se corriera a diario. Una acusación falsa dentro del instrumento que existe</sub>
+
+### `prueba_dos_personas.mjs`
+
+- **LA CUARTA ES LA QUE NO MIRABA NADIE, Y ERA LA ROTA.** <sub>línea 13</sub>
+  <br><sub>El árbitro decide con el estado de la silla 0 y con `ordenAsientos`, así que repartía los turnos bien. Pero cada jugador ve `estado(p, su_silla)`, y ahí `turn` comparaba contra 0 en vez de contra su asiento: el segundo leía «player»</sub>
+- **NO TIENE SABOTAJE DECLARADO EN `npm run pruebas`, Y SE DICE POR QUÉ.** <sub>línea 21</sub>
+  <br><sub>Los sabotajes de la casa cambian un fichero del repositorio y vuelven a correr la comprobación. Esto no mide el repositorio: mide el worker DESPLEGADO, así que un sabotaje de verdad obligaría a desplegar código roto a producción y volver a</sub>
+- **LA CASA NO SE SIENTA EN LA SILLA DE QUIEN VIENE DE CAMINO.** <sub>línea 67</sub>
+  <br><sub>Un enlace se reparte y la gente llega cuando llega. Si el primero empieza a jugar mientras espera, la casa rellenaba el hueco: medido en entropy con una sola persona —ocho jugadas suyas y `played_by_house: 1`—, o sea que el amigo</sub>
+- **SE CUENTAN MIS JUGADAS CONTRA LAS DE LA MESA, NO `played_by_house`.** <sub>línea 90</sub>
+  <br><sub>Mi primer intento miraba ese campo y daba rojo con el arreglo ya puesto. No cuenta jugadas de la casa: es `ordenAsientos.length - asientos.length`, o sea SILLAS SIN DUEÑO. Con una persona en una mesa de dos vale 1 aunque la casa no</sub>
+- **SE MIRA LA PANTALLA DE LOS DOS, NO LA DEL QUE JUEGA.** <sub>línea 110</sub>
+  <br><sub>`player` es un pronombre: significa «tú». Si los dos lo ven a la vez, uno de los dos tiene delante una pantalla que le miente, aunque la mesa reparta bien los turnos. Exactamente una silla puede verlo — y `?quien=` existe</sub>
+- **EN LA MISMA RESPUESTA VIENEN DOS `turn` CON VOCABULARIOS DISTINTOS.** <sub>línea 126</sub>
+  <br><sub>El de arriba es el NOMBRE de quien mueve —lo traduce el árbitro— y ése es el bueno. Dentro de `state` viaja el del juego, que es un pronombre por silla (`player`/`cpu1`). Se miran los dos porque un cliente puede leer</sub>
+- **Y LA MISMA LISTA, POR LA OTRA PUERTA.** <sub>línea 144</sub>
+  <br><sub>`legal_moves` de arriba ya se entregaba sólo a quien mueve. Dentro de `state` iba la misma lista para todo el mundo, y el motor de cartas pinta los botones desde AHÍ. Se mira el estado crudo y no el campo de arriba,</sub>
+- **Y LO QUE MANDA EL CLIENTE, QUE ES DONDE ESTABA EL FALLO DE VERDAD.** <sub>línea 195</sub>
+  <br><sub>Todo lo de arriba se sienta mandando `jugadores: 2`, así que mide el contrato del árbitro y NO puede ver el fallo que se venía a cazar: el árbitro esperaba bien, y quien no lo pedía era la web. Escribí esa comprobación, salió verde con</sub>
+- **Y QUE ESPERAR NO SEA UNA TRAMPA: «EMPEZAR YA».** <sub>línea 209</sub>
+  <br><sub>La mesa espera ahora a TODAS las sillas del juego, que es lo que permite que cuatro amigos se repartan un enlace de parchís sin que la casa les coja los sitios. El precio es obvio y hay que medirlo: si sólo aparecen dos, esa espera</sub>
+- **SE ACEPTA `'todas'` ADEMÁS DE UN NÚMERO, Y NO ES LAXITUD.** <sub>línea 294</sub>
+  <br><sub>La web pide `jugadores: 'todas'` porque al sentarse todavía no sabe cuántas sillas tiene el juego —eso viene en la respuesta— y el árbitro sí lo sabe. Mi predicado era `Number(...) >= 2` y puso en rojo el comportamiento correcto: la</sub>
+
+### `prueba_enfrentamiento.mjs`
+
+- **LA QUE PROTEGE DE VERDAD: CONTAR SILLAS ──** <sub>línea 97</sub>
+  <br><sub>Si `contarSillas` se queda corto, el juego no sale mal puntuado: **sale como juego de un jugador y desaparece de la tabla**, sin un error y sin una fila que mirar. Le pasó a shinigami —ocho sillas, dos shinigami, un oráculo— por no leer `vivos`,</sub>
+
+### `prueba_entorno_recibo.mjs`
+
+- **Y ES REPETIBLE, QUE ES LO QUE SOSTIENE TODO LO DEMÁS.** <sub>línea 76</sub>
+  <br><sub>Se vuelve a jugar desde cero con la misma semilla y se compara la puntuación. Si esto fallara, el «válida» de arriba sería casualidad — y un verificador que da verdes por casualidad es peor que no tenerlo.</sub>
+
+### `prueba_fichas.mjs`
+
+- **LO IMPORTANTE ES EL CRUCE, NO LA CUENTA.** <sub>línea 14</sub>
+  <br><sub>Que 35 juegos declaren un número de asientos no vale nada si el número es inventado. Lo que ata la ficha a la realidad es que, en los juegos que ADEMÁS publican marcador —uno por silla—, las dos cosas coincidan. Ahí la ficha no puede mentir</sub>
+- **HAY DOS SITIOS QUE DICEN CUÁNTAS SILLAS TIENE CADA JUEGO, Y ESO SE VIGILA.** <sub>línea 30</sub>
+  <br><sub>`SILLAS` en `rules/index.js` es un mapa escrito a mano que usa el árbitro de las mesas compartidas; `ASIENTOS` lo declara cada juego en sus reglas. Son el mismo dato en dos sitios, que es exactamente la clase de copia que este proyecto lleva</sub>
+- **TRINQUETE: cuántos juegos declaran sus asientos.** <sub>línea 50</sub>
+  <br><sub>**sólo puede subir** (con juegos nuevos). Nació en 0: hasta el 16-08 no lo declaraba ninguno y la ficha lo deducía del marcador, que existía en diez juegos y en los otros veinticinco no — así que la ficha del ajedrez, juego</sub>
+- **¿SE PUEDE PEDIR LO QUE LA FICHA PROMETE, O SÓLO EXISTE EN MI DISCO?** <sub>línea 136</sub>
+  <br><sub>La ficha decía «captura 35/35, derivado y listo» y no había NI UNA publicada: apuntaba a `capturas_laboratorio/`, que está en `.gitignore` porque son ficheros de trabajo que el laboratorio rehace en cada pasada. Treinta y cinco rutas que desde el sitio dan 404</sub>
+- **Y QUE SE PUEDA LLEGAR A ELLAS DESDE EL JUEGO.** <sub>línea 170</sub>
+  <br><sub>Todo lo de arriba comprueba que la ficha no MIENTA. Faltaba lo anterior a mentir: que alguien la lea. Medido el 24-08: las cuarenta fichas en prosa están completas —qué es, reparto, turno, cómo se gana, lo que pilla la primera</sub>
+- **ESTA COMPROBACIÓN MIRABA `montarMesa.js`, QUE ES DONDE ESTUVO PRIMERO.** <sub>línea 189</sub>
+  <br><sub>El enlace se movió —flotando en la esquina quedaba TAPADO por la fila de botones, y eso se vio en la captura, no en el código— y el guardia se quedó vigilando el sitio de antes. Lo cazó él mismo en la pasada siguiente, que es</sub>
+
+### `prueba_figuras.mjs`
+
+- **Del MATERIAL QUE LA MALLA TIENE, no de uno recién hecho.** <sub>línea 74</sub>
+  <br><sub>diferencia entre esta prueba y la que ya había. const tintaDeLaMesa = (id) => { const mats = e.cachedMaterials?.[id];</sub>
+
+### `prueba_final.mjs`
+
+- **DE DÓNDE SALE: DE QUE NO LA HABÍA.** <sub>línea 6</sub>
+  <br><sub>El panel de jugadas empezaba con `if (terminada) return aviso('partida terminada')`. Ahí se acababa la página: sin botón para jugar otra, había que recargar. Y midiéndolo salió lo que lo hace peor — DIECISIETE juegos publican</sub>
+
+### `prueba_gramatica.mjs`
+
+- **QUÉ HABÍA, MEDIDO EL 25-08 SOBRE LOS 49 ENTORNOS.** <sub>línea 11</sub>
+  <br><sub>otra                529 verbos  10 mundos   a2a3 una palabra          99         29          subir palabra + espacio    68          1          enviar a</sub>
+- **Y POR QUÉ SE VIGILA EL MÉTODO Y NO EL VERBO.** <sub>línea 23</sub>
+  <br><sub>El `verb` crudo se queda como está a propósito: es lo que el banco lleva semanas midiendo y lo que va en los recibos. Cambiarlo sería cambiar el juego conservando el nombre. Lo que se exige es que la TRIPLETA que se emite encima</sub>
+- **LA REGLA ÚNICA: UN MÉTODO NO LLEVA SEPARADORES DENTRO.** <sub>línea 55</sub>
+  <br><sub>Dos puntos o un espacio dentro de un `#metodo` significan que hay un parámetro escondido ahí. Es literalmente el fallo de `enviar a`: 68 acciones con `args: {}` mientras el argumento viajaba pegado al verbo.</sub>
+- **Y EL PARÁMETRO TAMPOCO, QUE ES POR DONDE SE ESCAPABA.** <sub>línea 65</sub>
+  <br><sub>La primera versión sólo miraba el método, y el sabotaje APROBABA: al dejar de partir por el espacio, `enviar a` no se quedaba como método —el respaldo de ProtoHub lo mandaba a `#jugar |enviar a`— así que</sub>
+- **Y EL LECTOR TIENE QUE SER UNO SOLO.** <sub>línea 117</sub>
+  <br><sub>Es la lección medida del proyecto general: allí la ley está declarada y la máquina escrita, pero el paso texto→tripleta vive dentro de un `elif` de `Parse.Flow` y no se puede llamar. Cinco sitios se escribieron su propia</sub>
+- **LA INTENCIÓN ESCRITA TIENE QUE JUGAR, NO SÓLO DESCRIBIR.** <sub>línea 150</sub>
+  <br><sub>Es la diferencia entre haber adoptado la sintaxis y haber adoptado AIO. La primera versión de esto emitía la tripleta y seguía ejecutando por `stepVerb`: el átomo era adorno, y un adorno que hoy coincide con la ejecución y mañana</sub>
+- **Y UN ÁTOMO DIRIGIDO A OTRO MUNDO SE RECHAZA.** <sub>línea 201</sub>
+  <br><sub>Es la parte de identidad, y sin ella el error saldría EN VERDE: `@Chess #jugar |a2a3` movería una torreta en ¡Defiende! porque el método casa. Una jugada legal que no era la que se pidió es la peor forma de equivocarse.</sub>
+
+### `prueba_guardia.mjs`
+
+- **QUÉ PREGUNTA, Y POR QUÉ NO ES LO QUE YA PREGUNTA `calibrar`** <sub>línea 9</sub>
+  <br><sub>`calibrar` y `tabla` preguntan si el juego ORDENA a quien lo juega, que es una propiedad estadística de muchas partidas. Esto pregunta si ALGO SE ROMPIÓ, que es una propiedad de cada partida. Son dos preguntas distintas y hasta hoy sólo se hacía la</sub>
+- **EN VERDE NO DICE NADA.** <sub>línea 34</sub>
+  <br><sub>cada vez se acaba mirando en diagonal. Éste calla y, cuando habla, da el juego, la semilla y la jugada exacta — lo que hace falta para repetirlo, no para admirarlo.</sub>
+- **LA AUTOPRUEBA: UN GUARDIA QUE CALLA TIENE QUE DEMOSTRAR QUE SABE HABLAR.** <sub>línea 55</sub>
+  <br><sub>Con `--autoprueba` se AVERÍAN cuatro juegos a propósito, uno por cada clase de anomalía, y el guardia tiene que denunciar los cuatro. Si algún día un cambio en los detectores los deja mudos, esto sale en rojo — y sin esto, «sin anomalías en 71.861</sub>
+- **Y las averías son las de VERDAD, las que ya pasaron aquí: damas y xiangqi sin poder** <sub>línea 66</sub>
+  <br><sub>acabar, el panel ofreciendo jugadas que el juego rechaza, y ajedrez valiendo 0 en toda partida jugara quien jugara.</sub>
+- **EL MARCADOR NO SE MUEVE» ES UNA PREGUNTA SOBRE EL JUEGO, NO SOBRE UNA PARTIDA.** <sub>línea 94</sub>
+  <br><sub>La primera versión lo preguntaba por partida y en los 35 juegos disparó 25 alarmas, en brisca y tute. Todas ciertas y todas irrelevantes: en un juego de bazas se puede acabar con cero puntos legítimamente si no te llevas nada que valga, y eso no es un fallo de</sub>
+- **EL MARCADOR SE LLAMA DE TRES MANERAS, Y LEER MAL DA UN FALSO POSITIVO.** <sub>línea 130</sub>
+  <br><sub>En su primera pasada esto acusó a snake de tener el marcador mudo en las cinco semillas. Era mentira: yo leía `puntos` y `score.white`, y snake publica `score` como un número suelto. O sea que el fallo estaba en mi</sub>
+- **AQUÍ ESTÁ LA COMPROBACIÓN QUE FALTABA EN TODO EL PROYECTO.** <sub>línea 152</sub>
+  <br><sub>Se coge una jugada de la lista y se exige que `mover()` la ACEPTE. Si la lista ofrece algo que el juego rechaza, la promesa que sostiene el banco —que el panel de una persona es la misma lista que recibe un agente— es</sub>
+- **JUEGA EL RIVAL DE LA CASA, NO UN CONTADOR QUE ROTA.** <sub>línea 161</sub>
+  <br><sub>La primera versión elegía `movs[i % movs.length]`, y con eso la serpiente de snake se retuerce en el sitio y muere en veintiuna jugadas SIN COMER NADA. El marcador salía 0 en todas las semillas y el guardia lo denunciaba</sub>
+- **NO SE MUEVE» Y «NO LO ENCUENTRO» SON DOS ANOMALÍAS, NO UNA.** <sub>línea 190</sub>
+  <br><sub>La primera versión las juntaba: con el marcador ilegible el conjunto quedaba vacío, `size <= 1` se cumplía, y salía «el marcador vale siempre undefined». Eso acusa al juego de un fallo que es del lector. Un instrumento que no</sub>
+
+### `prueba_habla.mjs`
+
+- **ESO ES UNA PUERTA EN LA PIEZA QUE SOSTIENE TODO EL PROYECTO.** <sub>línea 11</sub>
+  <br><sub>El verificador es lo que convierte una partida en algo demostrable. Un patrón es, por construcción, un cheque en blanco del tamaño que el juego quiera: con `.*` dejaría de auditar nada mientras sigue diciendo «válida». Así que esto</sub>
+- **LA QUE PROTEGE DE VERDAD.** <sub>línea 79</sub>
+  <br><sub>Se cuela una jugada inventada donde iba una frase. No empieza por `decir:`, así que ningún patrón honrado la acepta. Si esto pasara, querría decir que algún patrón se ha ampliado hasta tragárselo todo — y entonces «verificada» dejaría</sub>
+
+### `prueba_huella.mjs`
+
+- **ESTO NO ES TEÓRICO: LOS TRES CAMBIARON ESTA SEMANA Y NINGUNO LO DIJO.** <sub>línea 18</sub>
+  <br><sub>RaccoonCity-v0    12 objetivos → 10 · combustible 30 → 38 → 30 RaccoonPlanet-v0  mando de órbita, coste de escaneo, combustible 26 → 11 CabinetEscape-v0  otro generador, y con él todos sus muebles</sub>
+- **Y `--sellar` NO ES UN ATAJO PARA CALLAR ESTO.** <sub>línea 28</sub>
+  <br><sub>Sellar dice «sí, este juego ha cambiado y lo asumo». Si se sella sin subir la versión, la prueba lo sigue diciendo — porque el problema no es que la huella cambie: es que cambie **con el mismo nombre**.</sub>
+- **POR QUÉ LOS TRES QUE CAMBIARON ESTA SEMANA SIGUEN SIENDO `-v0`.** <sub>línea 47</sub>
+  <br><sub>El estándar de la industria —Gym, Gymnasium, ALE— es que **el id es el contrato**: dos notas sólo se comparan dentro del mismo id, y se sube versión ante cualquier cambio de comportamiento. El ejemplo canónico es `CartPole-v0`</sub>
+- **Y DOS JUEGOS DISTINTOS NO PUEDEN TENER LA MISMA HUELLA.** <sub>línea 140</sub>
+  <br><sub>`huella.js` del arcade lleva esto escrito en su cabecera: al añadir los juegos de baza, **hearts y spades salieron idénticos** porque comparten baraja, reparto y semilla, y la huella sólo miraba el estado inicial.</sub>
+
+### `prueba_identidad.mjs`
+
+- **Y VIGILA TAMBIÉN LOS NOMBRES DE LOS CAMPOS, QUE ES DE DONDE VINO EL DAÑO.** <sub>línea 17</sub>
+  <br><sub>Alisapolis publicaba `{id, x, y, dueno, tipo}` cuando el contrato dice `de` y `t`. El pintor leía `undefined` en los dos y sus cuatro peones salían como discos grises idénticos — con un aviso de betatester diciendo «parece que juego</sub>
+- **Y ESTOS SON LOS PROHIBIDOS, POR PARECERSE DEMASIADO.** <sub>línea 38</sub>
+  <br><sub>No se prohíbe todo lo que no esté en el contrato —un juego puede publicar algo suyo con motivo, como `vida` en defensa— sino los que DUPLICAN un campo que ya existe. Ésos no añaden nada y sí rompen el pintor.</sub>
+- **LA QUE PROTEGE DE VERDAD: ESTABLE ENTRE TURNOS ──** <sub>línea 109</sub>
+  <br><sub>Un `id` que cambia cada turno pasa las dos comprobaciones de arriba —es único en cada foto— y no sirve para nada. Se mide en alisapolis, que es quien los usa: sus peones dan vueltas al tablero y tienen que seguir llamándose igual</sub>
+
+### `prueba_invitados.mjs`
+
+- **EL TESTIGO IMPORTA.** <sub>línea 57</sub>
+  <br><sub>publica, así que dio «no pasó nada» en los dos sitios y estuve a punto de contarlo como que el clic estaba roto. Se mira lo que el juego SÍ publica.</sub>
+- **EL AJEDREZ NECESITA DOS CLICS Y MI PRIMERA VERSIÓN DABA UNO.** <sub>línea 65</sub>
+  <br><sub>Se coge la pieza y se suelta en el destino. Con un solo clic el peón queda seleccionado, el FEN no cambia y la prueba cantó «es un decorado» sobre un ajedrez que se jugaba perfectamente. La prueba estaba jugando mal, no el juego.</sub>
+- **CADA CLIC A SU ALTURA, Y NO ES CAPRICHO: SON DOS PROBLEMAS DISTINTOS.** <sub>línea 76</sub>
+  <br><sub>COGER la pieza: hay que apuntar A LA PIEZA (`y = 0.6`). Si se apunta al suelo de su casilla, el rayo pasa rozando la fila de delante y choca con lo que haya de pie ahí — medido: apuntando al suelo de e2 el rayo choca con `p:k:0`, el REY de</sub>
+- **Y ESTO ES LO QUE ME COSTÓ CARO: probé `0.6, 0.6` y `0.02, 0.02`, las dos** <sub>línea 89</sub>
+  <br><sub>combinaciones homogéneas, y las dos fallan por motivos OPUESTOS. Nunca probé la mezcla, que es la buena. Con las dos en rojo di por hecho que el fallo era del juego y se lo conté así a Oscar y al mensaje del commit. No lo era: el ajedrez</sub>
+- **CUÁNTAS MALLAS SON POCAS LO DICE EL SUSTRATO, NO UN NÚMERO MÍO.** <sub>línea 180</sub>
+  <br><sub>Aquí había un `< 10` escrito a ojo, y era un número de TABLERO: el ajedrez dibuja noventa y siete. El blackjack reparte cuatro cartas y con eso está entero, así que la prueba lo puso en rojo por «sólo 4 mallas» sobre un</sub>
+- **Y SI NO SE PUEDE JUGAR, HAY QUE SABER SI ES CULPA DE SER INVITADO.** <sub>línea 262</sub>
+  <br><sub>Aquí me pilló el ajedrez. La prueba lo puso en rojo por «se pincha y no pasa nada», y la corrección natural era buscar qué le había hecho yo al meterlo en la sala. No le había hecho nada: el clic de dos pasos del ajedrez —coger la</sub>
+
+### `prueba_lenguaje.mjs`
+
+- **¿Se filtra algo que el jugador no deba ver?** <sub>línea 58</sub>
+  <br><sub>Se recogen las cartas que el propio juego declara PÚBLICAS y se exige que el texto no nombre ninguna otra. Que el descriptor pueda ser generoso depende de que las reglas oculten bien: esto lo comprueba, no lo supone.</sub>
+- **LA INVARIANTE QUE DE VERDAD IMPORTA:** <sub>línea 90</sub>
+  <br><sub>`legal_moves` son las jugadas de QUIEN TIENE EL TURNO. Cuando ese es el asiento descrito, tienen que salir de SU mano. Si alguna vez saliera una carta ajena, sería que el juego está ofreciendo jugadas de otro — y esa</sub>
+- **LO QUE SE ROBA A CIEGAS NO SE PUBLICA A LOS DEMÁS.** <sub>línea 110</sub>
+  <br><sub>Y ESTA COMPROBACIÓN MIRA EL ESTADO, NO EL TEXTO — que es el hueco que tenía la de arriba. La 2 pregunta «¿dice el texto algo que el estado no declare público?», o sea que **usa el estado como definición de lo público**: una</sub>
+
+### `prueba_mayusculas.mjs`
+
+- **POR QUÉ EXISTE: `npm test` PASABA AQUÍ Y FALLABA EN CI, Y ESO NOS DEJÓ** <sub>línea 6</sub>
+  <br><sub>CIENTO VEINTIÚN COMMITS SIN PUBLICAR.</sub>
+- **Y HAY QUE PREGUNTARLE AL DIRECTORIO, NO A `existsSync`.** <sub>línea 38</sub>
+  <br><sub>`existsSync('./Cosa.js')` devuelve `true` en Windows aunque el fichero se llame `cosa.js`, que es justo el fallo que se busca. La única forma de saber el nombre REAL es listar la carpeta y comparar la cadena.</sub>
+- **SE QUITAN LOS COMENTARIOS ANTES DE MIRAR, Y NO ES PRECAUCIÓN TEÓRICA.** <sub>línea 60</sub>
+  <br><sub>La primera versión de esto acusó a diez ficheros sanos. Ninguno tenía un import roto: lo que leía eran EJEMPLOS dentro de comentarios y CADENAS DE DATOS — `prueba_de_las_pruebas.mjs` guarda rutas de ficheros a sabotear en</sub>
+- **Y EL `import` PUEDE OCUPAR DOS LÍNEAS.** <sub>línea 75</sub>
+  <br><sub>El patrón exigía que la ruta estuviera en la MISMA línea que el `import`, y una lista larga de símbolos se parte:</sub>
+- **EL SEXTO ERA UNA PREGUNTA DE FRONTERA, Y SE RESOLVIÓ ABSORBIÉNDOLO.** <sub>línea 135</sub>
+  <br><sub>`public/js/psyche.js` importaba `AlisaAgentBridge.js`, que vive en `colonia_privada/` y hace `fetch` a `localhost:8741` — la reina de una colonia que quien se descargue esto no tiene. Con eso, **la cadena entera del Ser no</sub>
+
+### `prueba_mundo.mjs`
+
+- **LO QUE ESTO NO PUEDE COMPROBAR, Y HAY QUE DECIRLO.** <sub>línea 24</sub>
+  <br><sub>Que el `importmap` inyectado por un script clásico llegue a tiempo es cosa del navegador, no de Node. Eso se comprueba en `public/games/_prueba_mundo.html`, que hay que abrir de verdad. Aquí sólo se vigila el contrato estático.</sub>
+- **LA QUE PROTEGE DE VERDAD ──** <sub>línea 106</sub>
+  <br><sub>El pipeline tiene que venir PUESTO. Toda la razón de ser de `montarMundo` es que dejara de depender de que alguien se acordara — pasó de 2 de 6 a 6 de 6 exactamente por esto. Si un día se cambia a `cfg.cine === true`, la migración</sub>
+
+### `prueba_objetivo.mjs`
+
+- **POR QUÉ ESTO ES UNA PRUEBA Y NO UNA NOTA EN UN CUADERNO.** <sub>línea 8</sub>
+  <br><sub>Lo encontré jugando yo misma una mano de entropy, leyendo sólo lo que recibe un agente sin ojos: nada decía si convenía puntuar alto o bajo. Lo DEDUJE viendo moverse el número después de una jugada que ya creía buena — pero un agente que</sub>
+- **EL NÚMERO SÓLO PUEDE SUBIR.** <sub>línea 21</sub>
+  <br><sub>Igual que `prueba_sustrato.mjs` cuenta los que dependen del adaptador y su techo sólo baja, aquí se cuenta cuántos lo declaran y el suelo sólo sube. Escribir treinta y cinco frases es trabajo de contenido y se hace poco a poco; lo que no</sub>
+- **13-08-2026: LLEGÓ A 35 Y ESO LE CAMBIA EL SENTIDO.** <sub>línea 39</sub>
+  <br><sub>Mientras iba por la mitad, esto era una cuenta atrás: «faltan tantos». Ahora que están todos ya no mide progreso, mide OTRA COSA — que un juego nuevo no pueda nacer mudo. El primero que se añada sin objetivo baja el número y esto</sub>
+- **20-08-2026: EL SUELO SE HABÍA QUEDADO EN 35 CON 37 JUEGOS, Y ESO ES HOLGURA.** <sub>línea 46</sub>
+  <br><sub>`npm run pruebas` lo cazó: con el sabotaje puesto —quitarle el objetivo a las damas— esta prueba APROBABA. Claro: bajaba de 37 a 36 y el suelo estaba en 35. Dos juegos de margen es exactamente lo que la nota de arriba dice que no puede</sub>
+
+### `prueba_observacion.mjs`
+
+- **Y ESO IMPORTA PORQUE UN VECTOR ESCRITO A MANO ES UN SITIO DONDE MENTIR.** <sub>línea 14</sub>
+  <br><sub>Cada entorno se fabrica el suyo —24 números en ¡Busca!, 64 en Marabunta— y ahí es donde apareció que `escaner_listo` valía 1 mientras la puerta de lenguaje decía «lo tienes al alcance, pero ya lo escaneaste». El estado decía una cosa</sub>
+- **Y LAS ACCIONES NO PUEDEN CANCELARSE ENTRE SÍ, QUE ES COMO ME EQUIVOQUÉ.** <sub>línea 46</sub>
+  <br><sub>La primera versión recorría las acciones con `(i*7) % n`, que en un espacio de 8 verbos da el ciclo 0,7,6,5,4,3,2,1 — y ahí `oeste` anula a `este`, `sur` a `norte` y `subir` a `bajar`. Con 120 pasos son 15 ciclos completos:</sub>
+- **Y EL CÓDIGO DE UN TIPO TIENE QUE SER EL MISMO SIEMPRE.** <sub>línea 90</sub>
+  <br><sub>Esto es lo que de verdad se rompe si los tipos se derivan de las piezas presentes en vez de la `leyenda` declarada: al aparecer o desaparecer un tipo, TODOS los índices se desplazan, y «serpiente» pasa a valer un número</sub>
+
+### `prueba_openapi.mjs`
+
+- **POR QUÉ ESTO EXISTE.** <sub>línea 5</sub>
+  <br><sub>`openapi.json` declaraba TRES rutas. El sitio sirve al menos OCHO: las cuatro `/api/*` del sitio principal —`gym`, `dataset`, `verificar`, `presencia`— y las cuatro del árbitro de mesas. O sea que la especificación describía una de las dos</sub>
+- **Y SE COMPRUEBA EN LOS DOS SENTIDOS, QUE ES LO QUE SE OLVIDA.** <sub>línea 19</sub>
+  <br><sub>· lo declarado EXISTE — una ruta en el papel que ya no responde; · lo que existe está DECLARADO — una puerta nueva que nadie apuntó.</sub>
+
+### `prueba_pantallas.mjs`
+
+- **UNA PANTALLA ESTRECHA NO ES UNA PEQUEÑA CON MENOS SITIO: ES OTRA FORMA.** <sub>línea 15</sub>
+  <br><sub>En Three el campo de visión que se declara es el VERTICAL; el horizontal sale de multiplicarlo por el aspecto. Con 1280x800 (1,6) sobra ancho; con 390x844 (0,46) se ve menos de la mitad de ancho que de alto. Un tablero apaisado es exactamente la forma que</sub>
+- **Y LO QUE NO SE CUENTA, QUE ES LA MITAD DEL TRABAJO** <sub>línea 22</sub>
+  <br><sub>Las manos de los RIVALES se salen de cuadro A PROPÓSITO en las mesas de cartas: están boca abajo y de ellas sólo hace falta saber cuántas hay, así que el encuadre prioriza que la TUYA se lea. Está documentado como decisión en `mesa_cartas.mjs`.</sub>
+- **EL PANEL ES UN RECTÁNGULO, NO UNA BANDA.** <sub>línea 105</sub>
+  <br><sub>La primera versión preguntaba `y < panel.bottom`, o sea trataba el panel como una franja horizontal que ocupa todo el ancho. En un móvil lo es. En escritorio el panel es una COLUMNA a la izquierda, así que todo lo que</sub>
+- **FUERA» Y «BAJO EL PANEL» SON DOS PROBLEMAS DISTINTOS, Y MEZCLARLOS ENGAÑA.** <sub>línea 158</sub>
+  <br><sub>La primera versión imprimía «0 fuera» cuando lo que fallaba era que las piezas caían DEBAJO del panel del HUD. Un mensaje que dice cero de lo que enseña es peor que no decir nada, y además manda a arreglar lo que no toca: fuera de cuadro se</sub>
+- **SÓLO SE ESCRIBE LA PASADA COMPLETA.** <sub>línea 179</sub>
+  <br><sub>medidos como si estuvieran bien, que es la mentira más cómoda de todas.</sub>
+- **EL VEREDICTO CUENTA LAS DOS COSAS, Y NO PRESUME DE LOS 35 SI MIDIÓ CINCO.** <sub>línea 193</sub>
+  <br><sub>La primera versión sólo miraba `fuera`, así que decía «en las cuatro pantallas se alcanza todo» debajo de una tabla llena de problemas — el resumen contradiciendo al detalle en la misma pantalla. Y decía «en los 35» aunque se le hubieran pasado cinco</sub>
+
+### `prueba_pintor_matriz.mjs`
+
+- **QUÉ HABÍA ANTES, Y POR QUÉ NO VALÍA AUNQUE FUNCIONARA.** <sub>línea 10</sub>
+  <br><sub>`defiende_sendero.html` dibujaba leyendo `nucleo.observacion()` — un método propio de ESE juego. Se veía bien. Pero era un dibujante PARALELO: acertaba porque lo escribí el mismo día que el motor, no porque saliera del mismo sitio</sub>
+- **Y SE COMPRUEBA CON UN LIENZO DE MENTIRA, NO CON UNA CAPTURA.** <sub>línea 21</sub>
+  <br><sub>Un lienzo falso que apunta lo que le mandan dibujar contesta la pregunta exacta: ¿pintó una celda por casilla y una figura por pieza? Una captura sólo diría «se ve algo» — que es justo lo que decían las páginas rotas.</sub>
+- **Y LA PRUEBA QUE DE VERDAD IMPORTA: QUE NO SEPA A QUÉ SE JUEGA.** <sub>línea 103</sub>
+  <br><sub>Se le pasa el sustrato de OTRO mundo con rejilla —el edificio de oficinas, que no tiene torretas ni bichos— y tiene que pintarlo igual. Si el dibujante necesitara saber algo de ¡Defiende!, aquí se rompería.</sub>
+- **TODOS LOS PINTORES DE LA CASA HABLAN IGUAL: `#pintar |sustrato`.** <sub>línea 126</sub>
+  <br><sub>Es la misma tripleta con la que se hablan los Seres del proyecto — `@Princess #Chat |"hola"`—: un objeto, un método, UN parámetro. Aquí el parámetro es siempre el sustrato, y eso es lo que hace que la tesis se sostenga</sub>
+- **Y NO SE CUENTA CON `Function.length`, QUE ES CIEGO A ESTE FALLO EXACTO.** <sub>línea 145</sub>
+  <br><sub>`Function.length` sólo cuenta los parámetros ANTERIORES al primero que tiene valor por defecto. O sea que `pintar(sus, opciones = {})` —que es literalmente la forma que tenía el fallo— declara `length === 1` y habría pasado la</sub>
+
+### `prueba_pintor_mundo.mjs`
+
+- **SE COMPRUEBA CONTANDO MALLAS, NO MIRANDO LA PANTALLA.** <sub>línea 10</sub>
+  <br><sub>Un dibujante se puede comprobar sin ojos si se pregunta lo correcto: cuántas mallas hay, dónde están, y si dejan de estar cuando la pieza desaparece. Mirar una captura diría «se ve algo» — que es lo que decían las páginas de ¡Busca!</sub>
+- **Y UNA PIEZA QUE MUERE TIENE QUE DEJAR DE VERSE.** <sub>línea 75</sub>
+  <br><sub>Es el fallo clásico de un dibujante que reusa mallas: se esconde de pintarlas y se quedan donde estaban. En pantalla se ve un bicho muerto que sigue ahí, y quien juega decide contra un fantasma.</sub>
+- **UN MUNDO SIN CASILLAS SE PINTA DONDE DICE EL SUSTRATO, Y NI MEDIO PASO MÁS.** <sub>línea 98</sub>
+  <br><sub>El fallo que había: el pintor corría la escena media rejilla para centrar el tablero, y se lo hacía TAMBIÉN a los mundos sin rejilla. En ¡Busca! en el cubo eso ponía la nave en 0.5 con el motor diciendo 0 — un error pequeño y constante,</sub>
+- **Y SI EL MUNDO TRAE SU PROPIA FIGURA, SE USA LA SUYA.** <sub>línea 121</sub>
+  <br><sub>Es lo que hace que el pintor valga para las páginas con arte: ¡Busca! tiene planetas con textura hechos por una factoría, y sin este enganche habría que elegir entre el sustrato y lo que se ve. El pintor sigue llevando la posición, la</sub>
+- **Y LA PRUEBA QUE MONTA LA PÁGINA ENTERA SIN NAVEGADOR.** <sub>línea 147</sub>
+  <br><sub>Esto reproduce el cableado exacto de `raccoon_space.html`: figuras propias repartidas por `cajon`, un núcleo de verdad, y una partida en la que se ESCANEA un planeta — que es cuando la pieza cambia de tipo.</sub>
+
+### `prueba_portal.mjs`
+
+- **LO QUE SE BUSCA SON LAS MARCAS DE QUE JAVASCRIPT SE HA RENDIDO.** <sub>línea 13</sub>
+  <br><sub>`[object Object]`, `undefined`, `null` y `NaN` sueltos en el texto son lo que deja una plantilla cuando el dato no tiene la forma que esperaba. Ninguna de las cuatro es una palabra que quepa en una ficha escrita en español, así que encontrarlas es</sub>
+- **CUÁNTAS TARJETAS SE ESPERAN NO SE ESCRIBE A MANO.** <sub>línea 59</sub>
+  <br><sub>Estaba clavado en 35 y el catálogo tenía 37, así que esta comprobación suspendía enseñando `37/35` — un rojo que significaba «hay DE MÁS», que no es un fallo del catálogo sino de esta línea. Y el modo de fallo peligroso es el contrario: si un</sub>
+
+### `prueba_puente.mjs`
+
+- **Y LO QUE DE VERDAD SE MIDE AQUÍ ES SI LA PUERTA DE LENGUAJE DICE BASTANTE.** <sub>línea 14</sub>
+  <br><sub>Nació de un fallo mío, encontrado el 25-08 al enchufar el puente por primera vez: un Ser jugó 900 pasos a ¡Defiende! y colocó dos torretas donde no pasaba nadie. Culpé al agente. Era la descripción: `describe()` decía «el camino</sub>
+- **LA PRUEBA QUE IMPORTA: ¿LLEVA LA PUERTA DE LENGUAJE LO QUE HACE FALTA?** <sub>línea 82</sub>
+  <br><sub>Dos agentes con la MISMA capacidad de decidir. Uno lee la descripción para saber por dónde va el camino; el otro no la lee. Si la puerta de lenguaje lleva la información, el que lee tiene que ganar de calle.</sub>
+
+### `prueba_puertas_busca.mjs`
+
+- **Y ESTE ES EXACTAMENTE EL FALLO QUE VENGO ARRASTRANDO TODO EL DÍA.** <sub>línea 11</sub>
+  <br><sub>Cuatro veces he dado por unida una etapa mirando qué se importa y no qué se CONFIGURA. Importar el mismo módulo con parámetros distintos es la misma grieta con mejor disfraz, y encima una que ninguna prueba veía.</sub>
+- **SE LEE EL CÓDIGO, NO LOS COMENTARIOS.** <sub>línea 33</sub>
+  <br><sub>Tres veces esta semana un detector mío ha leído prosa como si fuera código: la explicación de un arreglo mencionaba `Math.random` y el instrumento la contaba como una llamada. Aquí los comentarios hablan largo y tendido de `fuel: 30` y</sub>
+- **Y VARIOS AJUSTES SON VARIABLES, NO NÚMEROS.** <sub>línea 46</sub>
+  <br><sub>La página deja elegir cuántos objetivos hay en su ventana de arranque, así que en el código pone `planets: totalBuildings`. Comparar el NOMBRE contra el número del banco daría siempre distinto — la prueba acusaría a una página</sub>
+- **Y DEL LADO DEL BANCO SE MIRA EL MOTOR MONTADO, NO LA DECLARACIÓN.** <sub>línea 83</sub>
+  <br><sub>`RaccoonSpaceEnv.ajustes` está vacío: la etapa 6 se apoya en los valores por defecto del núcleo. Comparar declaraciones diría «la página pone 400 y el banco no pone nada» y acusaría a una etapa que lleva unida desde ayer. Se</sub>
+- **SEGUNDA PARTE: ¿OFRECEN LO MISMO LA PUERTA DE LENGUAJE Y LA NUMÉRICA?** <sub>línea 139</sub>
+  <br><sub>Esto no es de ¡Busca!: es de TODOS los entornos, y se barre entero.</sub>
+- **Y SÓLO VALE PARA LAS ACCIONES DISCRETAS.** <sub>línea 171</sub>
+  <br><sub>UN ENTORNO SANO.</sub>
+- **Y HAY DISCRETOS CUYO `names` ES UNA LEYENDA, NO UNA ENUMERACIÓN.** <sub>línea 190</sub>
+  <br><sub>`alisa/Defiende-v0` tiene 433 acciones —una por torreta y celda— y cuatro nombres, porque enumerar «construir guijarro en (7,3)» 432 veces no ayuda a nadie. Comparar sus verbos contra esa lista de cuatro lo</sub>
+- **Y SON TRES CASOS, NO DOS.** <sub>línea 204</sub>
+  <br><sub>Al añadir el segundo caso di por hecho que todo `type: 'discrete'` tiene un `n` numérico. Medido: los entornos del ProtoHub —ajedrez, chinchón, alisápolis…— declaran `discrete` con `n` y `names` **sin definir**, y sus</sub>
+
+### `prueba_recibos.mjs`
+
+- **Y LO QUE HACE QUE ESTO MEREZCA UN INSTRUMENTO NO ES EL FALLO, ES CÓMO SE VEÍA.** <sub>línea 17</sub>
+  <br><sub>La clasificación rota la silla por semilla, así que su contador de recibos ponía `100/200`. Exactamente la mitad. Y un `100/200` se lee como un número normal, no como «la mitad de mis filas están apoyadas en nada». Estuvo así meses. Sólo saltó</sub>
+- **Y COMPRUEBA LAS DOS DIRECCIONES, que es lo que separa esta prueba de una que** <sub>línea 28</sub>
+  <br><sub>sólo dice que sí: una partida legítima desde cualquier silla tiene que ACEPTARSE, y una con los puntos inflados desde cualquier silla tiene que RECHAZARSE. Sin lo segundo, `verificar` podría devolver `true` a todo y esto seguiría en verde.</sub>
+
+### `prueba_reglas.mjs`
+
+- **`puntuacionDe` se IMPORTA, no se reescribe.** <sub>línea 48</sub>
+  <br><sub>prueba leía `estado.puntos` a pelo y daba 0 en go, reversi, mancala, snake, fagocito y peatón — que publican `score`, a veces como objeto. Seis juegos «rotos» que estaban perfectos: el roto era el comprobador.</sub>
+- **POR QUÉ HAY DOS POLÍTICAS Y NO UNA** <sub>línea 66</sub>
+  <br><sub>Go Fish llegaba a `manos [0,3,0] · mazo 1`: el único con cartas no tenía a quién pedir y la partida no estaba terminada, así que **se moría de pie** —ni seguía ni acababa, y el estado seguía diciendo `is_game_over: false`—. La</sub>
+- **NINGUNA CARTA DESAPARECE.** <sub>línea 168</sub>
+  <br><sub>`cartas_intactas` la publican guerra, unit y entropy, y hasta aquí sólo se miraba la de guerra. La de entropy llevaba con un comentario encima diciendo que fue **la lección más cara del original** —el recuento daba 95 de 96 porque</sub>
+
+### `prueba_repetidor.mjs`
+
+- **LA TABLA SE MIDE CONTRA `data/paginas.json`, QUE SE GENERA.** <sub>línea 87</sub>
+  <br><sub>`enlace_repetidor.js` lleva una tabla de dos alias (damas→checkers, ajedrez→chess) y eso es una lista escrita a mano — exactamente lo que `entrar.html` avisa que no se vuelva a hacer: «este proyecto ya ha tenido</sub>
+- **Y LAS NORMAS SE CARGAN DESDE EL ENLACE, NO DESDE `c.opciones`.** <sub>línea 158</sub>
+  <br><sub>Es la trampa entera de esta prueba: reutilizar las reglas de arriba la pondría verde aunque el enlace no llevara las normas, porque las tendría de todas formas. Se vuelven a cargar leyendo `?normas=`, igual que hace</sub>
+- **ESTO EXISTE PORQUE ME DEJÉ CUATRO JUEGOS FUERA.** <sub>línea 227</sub>
+  <br><sub>Monté el repetidor en la mesa genérica y en el motor de cartas y di el trabajo por terminado, sin haber contado nunca cuántos caminos había. Había tres:</sub>
+- **LA MARCA ES `crearRepetidor({`, CON EL PARÉNTESIS, Y NO ES QUISQUILLOSO.** <sub>línea 246</sub>
+  <br><sub>Estaba como `crearRepetidor` a secas. Al comprobar que esta prueba PUEDE fallar —renombrando la llamada a `crearRepetidorZZZ` en un motor— siguió en verde: el nombre saboteado CONTIENE el original, así que `includes` decía que sí.</sub>
+
+### `prueba_sagas.mjs`
+
+- **Y `RaccoonSpaceSystem` SE LLAMA A SÍ MISMO «headless» EN SU PRIMERA LÍNEA** <sub>línea 33</sub>
+  <br><sub>mientras importa THREE y usa `THREE.Vector3`. El comentario dice lo contrario que el código, que es la forma más cara de documentar algo.</sub>
+- **TRINQUETE. Las etapas que HOY corren código distinto según quién juegue.** <sub>línea 68</sub>
+  <br><sub>**Sólo puede encoger.** Si aparece una nueva, es que alguien ha escrito un segundo motor para una etapa y la comparación de esa etapa dejó de valer.</sub>
+- **`¡Busca! 1 Cabinet` TAMBIÉN SE HA IDO.** <sub>línea 74</sub>
+  <br><sub>Entró como «persona CabinetEscapeGame (59 KB, con THREE) · banco ScummInteractionEngine». Y aquí ganó el motor de la PERSONA, no el del banco: `CabinetEscapeSystem` (11 KB) es headless, va sembrado y tiene el</sub>
+- **`¡Busca! 6 Espacio` ESTUVO AQUÍ Y SE HA IDO.** <sub>línea 88</sub>
+  <br><sub>Entró con esto: «persona RaccoonSpaceSystem (combustible 100, escanear -10, nota fuel+restantes×20) · banco RaccoonSpaceCore (combustible 32, +500 encontrar)». Ya no: la página juega el mismo núcleo que el banco.</sub>
+- **AQUÍ ESTABAN ¡BUSCA! 4 Y 5, Y YA NO.** <sub>línea 110</sub>
+  <br><sub>Entraron al banco el 24-08 declaradas como partidas, a sabiendas: se medían con `RaccoonSpaceCore` mientras sus páginas corrían `RaccoonCitySystem` y `RaccoonPlanetSystem`. Ese mismo día se unieron, y al unirlas salieron TRES</sub>
+- **LA FONTANERÍA NO CUENTA COMO MOTOR, Y LA PRIMERA VERSIÓN SÍ LA CONTABA.** <sub>línea 136</sub>
+  <br><sub>`ECSWorld` lo importan la página y el entorno de Corp Building, así que con él dentro la etapa salía «comparten motor» aunque el juego fuera otro. Lo destapó `prueba_de_las_pruebas.mjs`: el sabotaje cambiaba el motor y la comprobación</sub>
+- **SE SIGUE UN SALTO: LA PÁGINA PUEDE MONTAR EL JUEGO A TRAVÉS DE UN ENVOLTORIO.** <sub>línea 198</sub>
+  <br><sub>`croupier_cabinet_escape.html` importa `CabinetEscapeGame`, y es ÉSE quien usa `CabinetEscapeSystem`. Mirando sólo lo que la página importa a la cara, la etapa salía partida cuando ya estaba unida.</sub>
+- **Y LA PISTA TIENE QUE LLEGAR A LAS TRES PUERTAS, NO A UNA.** <sub>línea 260</sub>
+  <br><sub>El fallo que esto vigila es el que se encontró el 24-08 al ir a unir Espacio: `raccoon_space.html` le decía a la persona «🟢 HOT (37 LY away)» al descartar un objetivo, y el núcleo del banco no le decía nada al agente. Con eso, la</sub>
+- **`colocarJunto`, y NO escribir `nave.x/y/z` a mano.** <sub>línea 285</sub>
+  <br><sub>Eso último es lo que hacía esta prueba, y con el satélite del planeta dejó de funcionar sin decir por qué: su posición sale de latitud, longitud y altura, y el primer `step` la recalcula y borra el</sub>
+
+### `prueba_semillas.mjs`
+
+- **EL DEFECTO ES SIEMPRE EL MISMO, Y NO ES UN DEFECTO DE DISEÑO** <sub>línea 7</sub>
+  <br><sub>Un sistema que llama a `Math.random()` funciona perfectamente en una demo — que es para lo que se escribió— y no sirve para nada que tenga que reproducirse: una tirada de banco de pruebas, un informe de fallo, el recibo</sub>
+- **POR QUÉ ESTO ES UNA PRUEBA Y NO UNA LISTA DE TAREAS** <sub>línea 19</sub>
+  <br><sub>Porque una lista de tareas envejece en silencio y un techo no. Este número **sólo puede bajar**. Si sube es que alguien añadió un sistema con azar incontrolado, y eso es justo lo que no queremos que pase callando — la misma</sub>
+- **TECHO DE SISTEMAS SIN SEMBRAR.** <sub>línea 34</sub>
+  <br><sub>Cada uno que acepte `rng` baja este número. **Nunca sube.**</sub>
+- **QUEDAN 2 DENTRO DE ALCANCE PERO NO SEMBRADOS A PROPÓSITO:** <sub>línea 66</sub>
+  <br><sub>AsteroidsSystem y MarabuntaSystem (con su base BulletHeavenEngine) NO aceptan `config.rng` cacheado en el constructor porque sus entornos del gym (`AsteroidsEnv._withSeed`, `MarabuntaEnv` + `DeterministicScope`)</sub>
+- **Y CON ESO, ESTE TRINQUETE HA TOCADO SUELO: **2 NO ES DEUDA, ES EL FONDO.** <sub>línea 77</sub>
+  <br><sub>Empezó en 28 y bajó hasta 2. Aquí decía que esos dos últimos —Asteroids y Marabunta— NO había que sembrarlos, y avisaba: *«si BAJA de 2, alguien los sembró y rompió su determinismo en silencio»*.</sub>
+- **EL AVISO ERA BUENO Y LA CONCLUSIÓN ERA FALSA, Y SE HA COMPROBADO SEMBRANDO.** <sub>línea 84</sub>
+  <br><sub>El 24-08 se sembró `AsteroidsSystem` —32 llamadas al azar enrutadas a su `rng`— y su determinismo NO se rompió: las tres notas publicadas de Pedrisco salieron idénticas antes y después (1234 → 30,5000 · 7 → 50,4850 · 99 → 0,2333), medidas</sub>
+- **Y LOS DOS QUE QUEDAN NO SON DEUDA: SON DECISIONES, Y VAN CON SU MOTIVO.** <sub>línea 97</sub>
+- **TAMBIÉN LOS `…Engine.js` Y LOS `…Core.js`.** <sub>línea 122</sub>
+  <br><sub>Esta casa nombra sus motores de tres maneras —`System`, `Engine`, `Core`— y esta prueba sólo miraba una. Con eso, la mitad del motor no tenía guardia: `InteractionLabEngine` llevaba SIETE `Math.random()` sin</sub>
+- **SIN COMENTARIOS, O ESTA PRUEBA ACUSA A QUIEN CUENTA CÓMO SE ARREGLÓ.** <sub>línea 137</sub>
+  <br><sub>Leía el fichero entero, comentarios incluidos. El 24-08, al sembrar `AsteroidsSystem`, la prueba lo siguió marcando cuando ya no le quedaba un solo `Math.random(` ejecutable: lo que encontraba eran las cuatro</sub>
+- **Y SE PERDONA EL RESPALDO ENVUELTO, QUE ES EL PATRÓN CORRECTO.** <sub>línea 161</sub>
+  <br><sub>`config.rng || (() => Math.random())` ES una llamada, así que esta prueba lo marcaba — y marcaba justo la forma BUENA. La referencia pelada (`|| Math.random`) captura la función global al construir, de</sub>
+- **LOS MIXTOS: ACEPTAN SEMILLA **Y ADEMÁS** LLAMAN A `Math.random(`.** <sub>línea 188</sub>
+  <br><sub>La cuenta de arriba es `azar && !sembrado`, así que un sistema que reciba `rng` en algún sitio queda absuelto aunque tenga un `Math.random(` suelto en otro. Y ése es igual de irreproducible que uno sin sembrar — **peor**, porque parece</sub>
+- **AVISO PARA QUIEN SIEMBRE SISTEMAS: ESTO LEE EL FICHERO ENTERO, COMENTARIOS** <sub>línea 203</sub>
+  <br><sub>INCLUIDOS. Al sembrar `RoboticArmSystem` (15-08) el comentario explicaba el cambio citando la llamada literal entre comillas, y esta comprobación la contó como una llamada de verdad: sistema sembrado + azar suelto = mixto, y en rojo.</sub>
+- **LOS DECLARADOS NO CUENTAN COMO FALLO, PERO SE IMPRIMEN IGUAL.** <sub>línea 229</sub>
+  <br><sub>Una excepción silenciosa se convierte en costumbre. Ésta se ve en cada pasada, con su motivo al lado, para que quien la lea pueda discutirla — que es lo que distingue una decisión de un descuido con antigüedad.</sub>
+- **Y SE BARREN LAS ACCIONES, NO SE REPITE LA PRIMERA.** <sub>línea 271</sub>
+  <br><sub>Costó tres intentos llegar aquí. Mirar sólo el estado inicial da un falso positivo en cuanto el entorno esconde algo —el mapache de Chopper se coloca con la semilla y precisamente NO se ve al empezar, que es el juego—. Y mirar</sub>
+- **TECHO DE COPIAS DE «MARCAR DÓNDE PUEDES JUGAR», Y SÓLO PUEDE BAJAR.** <sub>línea 370</sub>
+  <br><sub>Esto ya vive en dos sitios legítimos: `Entrada.js` lo hace para los tableros (y de paso resuelve el clic entero), y `protohub/marcas.js` para los visualizadores que son MÓDULOS, que no pueden llamar a un script clásico.</sub>
+
+### `prueba_senal.mjs`
+
+- **LA PRIMERA VERSIÓN DE ESTA PRUEBA ACUSÓ A SIETE ENTORNOS SANOS.** <sub>línea 18</sub>
+  <br><sub>Se escribió el 23-08 con tres políticas —recorrer en ciclo, coger siempre la primera, coger siempre la última— y **150 pasos**. Dio siete «no separan», con su lista, su trinquete y su sabotaje. Y estaba mal, por dos motivos que se</sub>
+- **TRINQUETE. Entornos a los que NO SE LES HA CONSEGUIDO sacar dos notas, con** <sub>línea 54</sub>
+  <br><sub>lo medido en cada uno. **Sólo puede subir de tamaño con explicación.** Si aparece uno nuevo, es que se ha añadido al banco algo que no distingue.</sub>
+- **LAS TRES DEL MAPACHE: TIENEN SEÑAL POR ENCIMA DE UN UMBRAL, Y DEBAJO NO.** <sub>línea 62</sub>
+  <br><sub>`RaccoonSpace` entró aquí el 23-08, salió el 24-08 por la mañana y ha vuelto por la tarde, y las tres veces por un motivo distinto. Vale la pena contarlo porque es el mejor ejemplo de lo fácil que es confundir «este</sub>
+- **Y AQUÍ EL BANDIDO NO APRENDE: APRENDE AL REVÉS.** <sub>línea 79</sub>
+  <br><sub>con cualquier semilla y con cualquier número de objetivos —-42 con combustible 32, -142 con 28— porque descubre que `escanear` cuesta -1 cuando no hay nada a tiro y deja de intentarlo para siempre. Su nota</sub>
+- **Y EL PLANETA HA VUELTO A ENTRAR AQUÍ.** <sub>línea 97</sub>
+  <br><sub>Estuvo declarado, se quitó porque separaba de verdad, y vuelve. Lo que cambió en medio: hasta el 24-08 esta etapa se pilotaba como una NAVE —empuje cartesiano sobre una esfera— porque el banco le daba los verbos de</sub>
+- **Y NO SE ARREGLA CON EL ALCANCE DEL ESCÁNER.** <sub>línea 109</sub>
+  <br><sub>además tiene sentido físico —un escáner orbital no es la cámara de un dron—. Las siete políticas siguieron sacando -100 clavado. Subir un número hasta que el instrumento calle es lo contrario de medir, así que se</sub>
+- **Y AQUÍ DECLARÉ DE MÁS: metí también a `RaccoonCity` y `RaccoonPlanet`** <sub>línea 119</sub>
+  <br><sub>dando por hecho que si el hermano grande no separa, los pequeños tampoco. La prueba lo cantó en la pasada siguiente —«ya separan y siguen declarados»— y tenía razón: en un sitio pequeño y con doce objetivos, una</sub>
+- **`sokoban` TAMBIÉN ESTUVO AQUÍ, Y TAMBIÉN ERA MENTIRA MÍA.** <sub>línea 130</sub>
+  <br><sub>Entró como «el generador reparte instancias triviales». No hay generador: hay ocho niveles escritos a mano, de fácil a difícil, y el primero es `#@$.#` —un tutorial de una jugada— que la semilla 1234 escoge. Uno de ocho es 12,5%, y</sub>
+- **`RaccoonSpace` ESTUVO AQUÍ Y SE HA IDO, QUE ES LO QUE TIENE QUE PASAR.** <sub>línea 142</sub>
+  <br><sub>Entró con la nota «la recompensa está detrás de NAVEGAR: `escanear` sólo se ofrece con un planeta al alcance, y ninguna política ciega llega». Era verdad con las tres sondas tontas. Con el bandido —que aprende qué verbo paga— y con</sub>
+- **EL HORIZONTE LO DICE EL ENTORNO, NO YO.** <sub>línea 154</sub>
+  <br><sub>`meta.horizon` lo escribió quien hizo el entorno y va de 150 a 5400. Medir a todos con el mismo número es preguntarle a un maratón cómo va a los cien metros. El tope existe sólo para que la prueba no tarde una eternidad, y</sub>
+- **UNA SOLA SEMILLA NO JUZGA A UN ENTORNO CUYA PARTIDA DEPENDE DE ELLA.** <sub>línea 269</sub>
+  <br><sub>`sokoban` tiene ocho niveles y la semilla elige cuál. El primero es `#@$.#` — jugador, caja y destino en fila: un TUTORIAL que se resuelve de una jugada. La semilla 1234 cae justo en él, así que la prueba medía a</sub>
+
+### `prueba_sonido.mjs`
+
+- **LÍMITE HONRADO: `sfx.js` no es un módulo —es una IIFE que toca `document` y** <sub>línea 16</sub>
+  <br><sub>`AudioContext`— así que esto lo lee, no lo ejecuta. Cuenta claves declaradas y llamadas escritas. Un `play(variable)` calculado en tiempo de ejecución se le escapa, y por eso se declara aparte cuántas llamadas eran dinámicas: si ese</sub>
+- **EL SABOTAJE, que es lo que le da valor a los dos verdes de arriba.** <sub>línea 120</sub>
+  <br><sub>Se pide un sonido que seguro no existe. Si esto NO suspendiera, querría decir que la comparación no compara: que el catálogo se leyó vacío, que el recorrido no encontró ficheros, o que el patrón de `play` dejó de encajar. Cualquiera de</sub>
+
+### `prueba_subasta.mjs`
+
+- **POR QUÉ ESTA FUNCIÓN Y NO OTRA** <sub>línea 10</sub>
+  <br><sub>Nuestro spades no tiene subasta: gana quien más bazas hace. Y en spades la subasta ES el juego — se puntúa por ACERTAR cuántas vas a hacer, no por hacer muchas. Sin ella, «predecirte a ti mismo» —que es la única capacidad que ningún otro de los 35</sub>
+- **INDIVIDUAL, NO POR PAREJAS, Y ES UNA DECISIÓN** <sub>línea 18</sub>
+  <br><sub>El spades de torneo es dos contra dos con las apuestas SUMADAS por equipo. Nuestro motor no tiene concepto de equipo —el marcador es por jugador— y meterlo tocaría el arbitraje de mesas, el reparto de asientos y la métrica. Así que se implementa la</sub>
+- **LO QUE NO SE PUEDE ROMPER** <sub>línea 26</sub>
+  <br><sub>Una partida se verifica volviéndola a jugar con `{juego, semilla, jugadas}`. Todo lo que decida el resultado tiene que vivir DENTRO del estado, no en una variable del módulo: si las apuestas se guardan fuera, la re-simulación no las tiene y el</sub>
+- **LA CARTA TIENE QUE SER UNA DE VERDAD, O ESTE VERDE NO VALE NADA.** <sub>línea 74</sub>
+  <br><sub>La primera versión probaba con `H_2` a secas y salía en verde HOY, sin subasta ninguna: el juego la rechazaba porque ese nombre no existe —sus jugadas se llaman `jugar:H_2`— no porque hubiera una fase de apuestas que respetar. Un verde que</sub>
+- **ESTE VERDE SÓLO CUENTA SI LAS APUESTAS SE ACEPTARON.** <sub>línea 111</sub>
+  <br><sub>Sin la comprobación de arriba, esto salía en verde HOY: como las cuatro apuestas se rechazaban, las jugadas seguían siendo cartas «después» de una fase que nunca ocurrió. Un verde que se cumple porque el paso anterior falló es peor que un rojo,</sub>
+- **ESTO FALTABA EN MI SPEC, Y ES EL FALLO QUE SE COLÓ POR EL HUECO.** <sub>línea 131</sub>
+  <br><sub>La primera versión de esta prueba pasó entera con una implementación que dejaba el juego MUERTO DE PIE: `prueba_reglas` lo cazó con «1 jugada · sin jugadas legales y sin terminar». La causa, medida:</sub>
+- **Y AQUÍ TAMBIÉN: SÓLO CUENTA SI LA LISTA LLEVA APUESTAS DENTRO.** <sub>línea 224</sub>
+  <br><sub>Hoy salía en verde con 52 jugadas y CERO apuestas — verificaba perfectamente una partida sin subasta. Lo que hay que demostrar no es que el verificador funcione: es que sigue funcionando CON la fase nueva dentro, que es donde se rompería si</sub>
+
+### `prueba_sustrato_sala.mjs`
+
+- **Y LA LECCIÓN YA ESTABA ESCRITA EN LA CASA, APLICADA A LA MITAD.** <sub>línea 12</sub>
+  <br><sub>La cabecera de `ProtoHub.sustrato()` lo cuenta con estas palabras: «la sala nueva usaba `sustratoDe(juego, estado)` para los treinta, que sólo DERIVA: los once juegos con sustrato propio salían vacíos». Se arregló el camino local y el</sub>
+- **SE MIDE CONTRA EL ÁRBITRO DESPLEGADO, Y NO ES POR GUSTO.** <sub>línea 22</sub>
+  <br><sub>Mi primera versión comparaba el sustrato propio contra el derivado, en local. Eso mide la DERIVACIÓN —que no puede reconstruir un sustrato escrito a mano, y eso ya se sabía— y no lo que le llega a un jugador. Al arreglarlo se me quedó</sub>
+- **SI SUSPENDE JUSTO DESPUÉS DE DESPLEGAR, REPÍTELA ANTES DE CREER NADA.** <sub>línea 32</sub>
+  <br><sub>Toca la red, así que hereda la trampa de siempre. Recién desplegado el árbitro dio cinco rojos —sokoban, cripta, relevo, cabina, pradera—; preguntándole a mano al mismo worker por relevo, entregaba sus 247 celdas perfectamente, y al</sub>
+
+### `prueba_sustrato.mjs`
+
+- **TECHO DE DEUDA.** <sub>línea 36</sub>
+  <br><sub>Cada juego que publique `sustrato(p)` nativo baja este número. **Nunca sube.** Si esta prueba falla porque el número creció, es que se añadió un juego sin sustrato propio — y eso es exactamente lo que no queremos que pase callando.</sub>
+- **ESTABA EN 19 CON LA DEUDA YA EN 17, Y ESO ES UN TRINQUETE FLOJO.** <sub>línea 42</sub>
+  <br><sub>Dos de holgura no parecen nada y son justo el hueco por el que se cuela lo que este número existe para impedir: `prueba_de_las_pruebas.mjs` le quitó el sustrato a las damas a propósito, la deuda subió a 18, y esta comprobación **aprobó**.</sub>
+- **UNA ZONA CON CASILLAS NO PUEDE PERDER NINGUNA.** <sub>línea 88</sub>
+  <br><sub>`items` sólo trae las cartas destapadas y `ocultas` es un número, así que juntos dicen CUÁNTAS hay y no DÓNDE. Para la caja de entropy eso no basta: `cambiar:5` nombra un hueco fijo y dos cartas iguales en la misma</sub>
+- **Y SE COMPRUEBA CON UN JUGADOR QUE ANDA, NO CON EL PRIMER MOVIMIENTO** <sub>línea 196</sub>
+  <br><sub>QUE PILLE.</sub>
+- **1.quinquies — UN SECRETO DICHO A SOLAS NO SE VE DESDE OTRA SILLA.** <sub>línea 245</sub>
+  <br><sub>La quinta estructura trae su propia forma de filtrar información, y en esta casa la información oculta ya se ha escapado DOS VECES —la mano del rival, las jugadas legales de otro— las dos en silencio y las dos porque alguien</sub>
+- **Y LO DE ARRIBA MIRA LA ETIQUETA, NO EL SECRETO.** <sub>línea 292</sub>
+  <br><sub>Comprobado sabotéandola: cambiar el filtro de shinigami por `Object.values(p.oculta)[0]` —o sea, enseñarle a TODOS la elección del primero— y la comprobación de arriba APROBÓ. Normal: el dicho filtrado sigue</sub>
+- **SE PARA EN CUANTO HAY SECRETO PENDIENTE, Y ESO NO ES UN DETALLE.** <sub>línea 319</sub>
+  <br><sub>La primera versión jugaba cuatro veces a lo tonto y sólo cazaba a shinigami. En `frentes` (dos sillas) y en `nave` (cuatro) la ronda se RESUELVE cuando han elegido todos, y al resolverse `p.oculta` se vacía:</sub>
+- **2.bis — QUE EL README NO MIENTA SOBRE CUÁNTOS JUEGOS HAY.** <sub>línea 360</sub>
+  <br><sub>Decía «19 juegos» con veintiséis en la lista, en dos sitios distintos, y es lo primero que lee quien llega al proyecto. No es un descuido aislado: es la cuarta vez que un número escrito a mano se separa de la realidad sin avisar</sub>
+- **2.bis.bis — Y QUE LOS DOCUMENTOS NO MIENTAN SOBRE CUÁNTAS BARAJAS HAY.** <sub>línea 383</sub>
+  <br><sub>Cinco sitios decían «6 barajas» el día que se añadió la séptima, y ninguno dio error: un número viejo nunca da error, sólo deja de ser cierto. Es la quinta vez que pasa esto mismo con otro número (los juegos del README, el escaparate,</sub>
+- **2.ter — QUE `montarMesa` SIGA ELIGIENDO EL MOTOR DE CARTAS PARA LOS QUE** <sub>línea 406</sub>
+  <br><sub>REPARTEN CARTAS.</sub>
+- **ZONAS MÁS REJILLA NO ES UN FALLO: ES UN JUEGO CON TABLERO Y COSAS ENCIMA.** <sub>línea 436</sub>
+  <br><sub>Esto marcaba en rojo a cualquiera que publicara las dos, con el argumento de que `montarMesa` le daría el motor de tablero y su mesa de casino saldría mal en silencio. El argumento sólo vale si el juego ES de cartas: para un parchís</sub>
+- **Y NO SE SUSPENDE A NADIE POR SER HÍBRIDO.** <sub>línea 457</sub>
+  <br><sub>Esto era un FALLO —«zonas y rejilla a la vez»— hasta que llegó el parchís, que tiene tablero, fichas y un dado sobre la mesa. Se afinó entonces a «items que son cartas de la biblioteca», y aguantó hasta el parchís canadiense, que reparte</sub>
+- **2.ter — Y CUÁNTOS LA USAN DE VERDAD.** <sub>línea 487</sub>
+  <br><sub>El número de arriba lleva meses diciendo diez y estaba en verde mientras OCHO de esos diez no tenían página: mide lo que el sustrato PERMITE, no lo que alguien puede abrir en el navegador. Un juego capaz de dibujarse en la mesa y</sub>
+- **2.quater — DOS NOMBRES PARA EL MISMO DATO.** <sub>línea 524</sub>
+  <br><sub>Un juego que publica `legal_moves` y `legal_actions` con el mismo valor no tiene dos campos: tiene uno y una trampa. El día que alguien quite el que sobra, quien leyera el otro se queda sin nada — y no dará error, porque</sub>
+- **SE MIDE POR VALOR, NO POR UNA LISTA DE SOSPECHOSOS.** <sub>línea 532</sub>
+  <br><sub>Una lista a mano es lo que ya falló seis veces en este proyecto — la última, dentro de `desajustes.mjs`, que juraba que `legal_actions` no lo leía nadie porque su lista de consumidores no incluía el motor de cartas.</sub>
+- **COINCIDIR UNA VEZ NO ES SER EL MISMO DATO.** <sub>línea 563</sub>
+  <br><sub>La primera versión contaba cualquier par que coincidiera en algún momento y daba SEIS, de los que la mitad eran ruido: `biblioteca` y `cartas_intactas` son dos booleanos que valen `true` los dos, y `explorado` y `puntos` cruzan el</sub>
+- **Y SE LLEVA LA CUENTA POR JUEGO, NO EN GLOBAL.** <sub>línea 577</sub>
+  <br><sub>Con una sola lista de «pares que han divergido», que `score` y `puntos` sean cosas distintas en go —allí `score` es `{black, white}` y `puntos` tu escalar— bastaría para absolver ese par en los OTROS seis juegos donde sí son el mismo</sub>
+- **TRES JUEGOS NECESITAN MÁS DE 8 PASOS, Y ES POR LO QUE MIDEN.** <sub>línea 591</sub>
+  <br><sub>`marcador` y `avance` son datos DISTINTOS en parchís, canadiense y oca —el primero suma un bono por fichas ya metidas, el segundo no— pero en los primeros turnos de una carrera nadie ha metido ninguna, así que los 8 pasos</sub>
+- **COMPROBADO DESPUÉS CON OCHO SEMILLAS, PORQUE UNA NO ES UNA MEDIDA.** <sub>línea 607</sub>
+  <br><sub>Un tope elegido sobre una sola partida es un fallo intermitente esperando otra semilla, y ésos son los peores. Con las semillas 1, 2, 3, 6, 7, 11, 23 y 42 el peor caso de cada uno es MUCHO más bajo de lo que salió al calibrar:</sub>
+- **LO QUE EL `>= 2` DE ARRIBA NO PUEDE VER, Y POR QUÉ SE DICE IGUALMENTE.** <sub>línea 669</sub>
+  <br><sub>Un par sólo cuenta si coincide en DOS juegos o más, y eso está bien: bajarlo a uno da diez pares de los que NUEVE son coincidencia —`height`/`width` en un tablero cuadrado, `vida`/`vida_rival` que empiezan iguales, `ganadas`/`perdidas` a cero,</sub>
+- **EL MOTOR NO SE LLAMA IGUAL EN TODOS, Y EL ESTADO NO SIEMPRE ESTÁ** <sub>línea 744</sub>
+  <br><sub>EN UN MOTOR.</sub>
+- **Y ESTO ES UN TRINQUETE, NO UN INFORME.** <sub>línea 787</sub>
+  <br><sub>Empezó siendo 0 de 9 esta misma tarde. Un contador que sólo informa vuelve a bajar en cuanto alguien añada un mundo con prisa, y entonces el juego nuevo no puede compartir dibujante y nadie se entera hasta que toca</sub>
+
+### `prueba_teclado.mjs`
+
+- **DE DÓNDE SALE, MEDIDO EN UN CHROME DE VERDAD:** <sub>línea 6</sub>
+  <br><sub>quería escribir  «las casas se ven raras y no se donde estoy» salía            «lcevenrrynoeoneetoy» letras perdidas  23</sub>
+- **ESTA PRUEBA ES DE TEXTO, NO DE NAVEGADOR, Y HAY QUE SABER QUÉ NO CUBRE.** <sub>línea 22</sub>
+  <br><sub>Lo de arriba se midió abriendo snake y escribiendo tecla a tecla; eso no cabe en `npm test` sin arrastrar un Chrome. Lo que sí se puede comprobar sin navegador es que **ningún manejador de teclas del arcade se salte la comprobación del foco**, y</sub>
+- **ESTO ERA `activeElement|isContentEditable` Y SE QUEDÓ VERDE CON EL CABLE CORTADO.** <sub>línea 41</sub>
+  <br><sub>Al comprobar que esta prueba puede fallar —quitando la llamada y renombrando la función— siguió aprobando: los nombres seguían APARECIENDO en el fichero, dentro de una función que ya no llamaba nadie. Buscar una palabra en alguna parte de un</sub>
+- **Y LA DEFINICIÓN NO CUENTA COMO LLAMADA.** <sub>línea 55</sub>
+  <br><sub>`function estaEscribiendo()` contiene literalmente `estaEscribiendo()`, así que la marca de arriba aprobaba el fichero que DEFINE la función aunque nadie la llamara — y ese fichero es justo el que hay que vigilar.</sub>
+
+### `prueba_texto.mjs`
+
+- **Y QUE EL TEXTO DIGA LO QUE HAY, NO SÓLO QUE EXISTA.** <sub>línea 63</sub>
+  <br><sub>Si el sustrato trae piezas, el texto tiene que nombrarlas. Un texto que habla del mundo sin mencionar lo que se mueve dentro es el equivalente del mapa de mancala saliendo sin una sola semilla.</sub>
+- **Y QUIEN DECLARE SU PROPIO TERRENO NO PUEDE VER LA LEYENDA DEL ARCADE.** <sub>línea 79</sub>
+  <br><sub>Es el fallo concreto que se encontró: «# muro, o destino, . libre» encima de un mapa donde `#` es tu núcleo.</sub>
+- **Y HAY QUE MIRAR EL MAPA, NO LA LEYENDA.** <sub>línea 89</sub>
+  <br><sub>Comprobaba sólo que la leyenda no fuera la del arcade — y el arnés de sabotajes aprobó con el cable cortado: al devolver el vocabulario escrito a fuego, los GLIFOS del mapa volvían a ser los de tablero mientras la leyenda</sub>
+- **SÓLO SE EXIGEN LAS CELDAS QUE NADIE TAPA, Y ESO LO APRENDÍ AQUÍ.** <sub>línea 106</sub>
+  <br><sub>La primera versión pedía que apareciera el símbolo de todo valor de celda presente, y acusó a ¡Defiende!: su terreno declara `4 = una torreta puesta` y ese símbolo nunca sale. No es un fallo del dibujo —</sub>
+
+### `prueba_topes.mjs`
+
+- **Y LA LISTA NO SE ESCRIBE A MANO: SE MIDE.** <sub>línea 15</sub>
+  <br><sub>Escribir «éstos cuatro son de supervivencia» sería la enésima lista paralela que se separa del código. Se juega cada juego con topes crecientes y se mira si la política de referencia llega a terminar alguna vez:</sub>
+- **TRES SEMILLAS NO BASTAN, Y LO APRENDÍ PUBLICANDO.** <sub>línea 47</sub>
+  <br><sub>Con 3 semillas snake y fagocito daban «terminan con tope 400», y la clasificación —que juega 120— los descartó igualmente por corte. No es que la sonda mintiera: es que el conjunto que miraba no contenía las semillas malas. Se pasa `--semillas` para</sub>
+- **SE MIDEN LAS DOS REFERENCIAS, Y LA SEGUNDA ES LA QUE IMPORTA.** <sub>línea 60</sub>
+  <br><sub>Empecé midiendo sólo la política tonta, pensando que si la tonta termina cualquiera termina. Es al revés, y snake lo cantó: la tonta se mata en veinte pasos y termina de sobra a las 120, mientras la de la casa —que juega bien— SOBREVIVE y se la come el</sub>
+- **EL MISMO UMBRAL QUE `tabla.mjs`, Y TIENE QUE SER EL MISMO.** <sub>línea 111</sub>
+  <br><sub>La tabla acepta un juego cuando termina el 95% de las partidas de referencia, porque exigir el 100% borraba fagocito por DOS partidas de doscientas cuarenta —dos bucles de la política tonta—. Si esta sonda exigiera el 100%, diría «no</sub>
+- **SE ESCRIBE LO MEDIDO, O `tabla.mjs` NO PUEDE USARLO.** <sub>línea 138</sub>
+  <br><sub>Este número es el que hace que un juego entre o no en la clasificación, así que dejarlo sólo en la terminal es lo mismo que no medirlo. Se guarda para que la tabla lo lea, y con MARGEN: el tope que se publica es el medido por dos.</sub>
+- **Y SÓLO SE ESCRIBE SI SE MIDIERON TODOS LOS QUE HAY EN EL FICHERO.** <sub>línea 150</sub>
+  <br><sub>pasada parcial borraría los topes de los que no se midieron esta vez, y la tabla los volvería a cortar sin que nadie tocara nada.</sub>
+
+### `prueba_turno.mjs`
+
+- **EL FALLO QUE SE BUSCA: dos sillas que ven la MISMA palabra de «me toca».** <sub>línea 54</sub>
+  <br><sub>Con el vocabulario `player`/`cpuN`, «player» significa «tú». Si dos sillas lo ven a la vez, una de las dos está mintiendo. Con `white`/`black` no aplica: eso es un color, no un pronombre, y las dos sillas deben verlo igual.</sub>
+- **EL INVARIANTE ES «EXACTAMENTE UNA», NO «LA SILLA `p.turno`».** <sub>línea 66</sub>
+  <br><sub>Mi primera versión comparaba contra `p.turno` y denunciaba al alisápolis en 19 de 40 jugadas. Era falso: en una subasta quien decide es el pujador, no quien tiene el turno de la mesa, así que `p.turno` no es la respuesta a «¿quién mueve</sub>
+
+### `prueba_variantes.mjs`
+
+- **Y COMER TIENE QUE QUITAR UNA FICHA.** <sub>línea 75</sub>
+  <br><sub>Lo de arriba comprueba dos cosas ciertas —que cada variante juega distinto y que una partida se repite igual con sus normas— y las dos las cumplía un juego ROTO. Con `damaVuela`, la captura de la dama no retiraba a la víctima: `mover` sólo quitaba la</sub>
+- **Y EL CASO CONCRETO, PUESTO A MANO.** <sub>línea 120</sub>
+  <br><sub>Escribí la invariante de más arriba, volví a meter el fallo a propósito… y siguió en verde: `11/11 capturas comieron`. Y era verdad — en una partida desde la posición inicial, con un rival tonto y doscientas jugadas, TODAS las capturas que salen son</sub>
+
+### `prueba_verbos.mjs`
+
+- **POR QUÉ EL DENOMINADOR ES EL PANEL Y NO UNA LISTA DE JUEGOS CON VERBOS.** <sub>línea 14</sub>
+  <br><sub>Escribir «estos doce tienen verbos» sería la enésima lista a mano, y de nueve números falsos de agosto siete fueron de denominador. Cada página dice cuántos verbos le tocan; si un juego no ofrece ninguno en ese instante, sale como NO COMPROBABLE, que</sub>
+- **Y HAY TRES CAMINOS DE PANEL, NO DOS.** <sub>línea 21</sub>
+  <br><sub>`jugadas.js`, `SovereignBoardEngine` y `SovereignCardEngine` pintan cada uno sus `.mesa-jugada`. El repetidor ya se montó una vez «en los dos motores» y cuatro juegos se quedaron fuera. Esta prueba es la que nota que falta el tercero.</sub>
+- **SE LEE `title`, QUE ES LA JUGADA, NO LA ETIQUETA.** <sub>línea 70</sub>
+  <br><sub>El panel muestra `H_Q` para la jugada `jugar:H_Q`, y la barra muestra «enviar a» para `enviar_a`. Comparando etiquetas salieron seis juegos en rojo —las trece cartas de la mano de hearts «faltando» en la barra—</sub>
+- **Y LO QUE EL AGENTE RECIBE, PARA PODER COMPARARLO CON LO QUE SE VE.** <sub>línea 82</sub>
+  <br><sub>«El panel de jugadas es literalmente `legal_moves`» está escrito en cinco comentarios de este proyecto y era la frase en la que se apoya el banco entero: si las puertas no ofrecen lo mismo, comparar a una persona con un</sub>
+- **LA PUERTA HUMANA Y LA DEL AGENTE, ¿OFRECEN LO MISMO?** <sub>línea 97</sub>
+  <br><sub>Se comparan las LISTAS y no los totales. Un panel al que le falte una jugada y le sobre otra tiene el mismo número de botones, y ése es exactamente el caso que importa: significa que una persona y un agente están jugando a cosas distintas</sub>
+- **COMPROBADO CORTANDO EL CABLE: quitando una jugada del pintado de `jugadas.js`** <sub>línea 105</sub>
+  <br><sub>(`legales.slice(1)`), parchís sale en rojo diciendo «no salen tirar». Y con el mismo sabotaje snake seguía en verde, que NO es un fallo de esta prueba sino el recordatorio de que hay TRES caminos de panel: cortar uno sólo prueba ése. Un</sub>
+- **SE ESCRIBE LO MEDIDO, CON FECHA, Y SÓLO EN LA PASADA COMPLETA.** <sub>línea 156</sub>
+  <br><sub>La ficha de cada juego deriva lo que puede y de la barra de verbos no sabía nada. Corriendo `node prueba_verbos.mjs snake` se guardaría un fichero con un juego y treinta y cuatro huecos, que en la ficha se leerían como «sin verbos» — y eso es</sub>
+- **`null`, NO CERO, CUANDO NO SE PUDO COMPROBAR.** <sub>línea 167</sub>
+  <br><sub>Escribir `verbos: 0` para un juego que en ese instante no ofrecía ninguno hace que la ficha publique «este juego no tiene verbos», que es una afirmación distinta y puede ser falsa: hearts no ofrece verbos al empezar la</sub>
+
+### `prueba_veredicto.mjs`
+
+- **Y LO QUE MÁS IMPORTA VIGILAR ES QUE NO SE PASE DE LISTO.** <sub>línea 11</sub>
+  <br><sub>Si un día alguien hace que «gráficamente muy pobre» devuelva un veredicto automático, el buzón empezará a marcar como resuelto lo que nadie ha mirado — y eso es peor que no tener veredicto, porque parece trabajo hecho. Por eso hay una</sub>
+- **EL DADO NO SE MUEVE» NO ES «SE MUEVE TODO EL RATO» ──** <sub>línea 64</sub>
+  <br><sub>Son la queja contraria y comparten las tres palabras. La primera versión del clasificador metía la de la oca en `movimiento` —la familia del temblor— y habría mandado a alguien a buscar un bucle de animación donde lo que falta es</sub>
+- **LA QUE PROTEGE DE VERDAD: LO DE ASPECTO NECESITA OJOS ──** <sub>línea 80</sub>
+  <br><sub>El día que «gráficamente muy pobre» devuelva un veredicto automático, el buzón empezará a dar por resuelto lo que nadie ha mirado. Y eso no da error: da una lista más corta.</sub>
+- **SE VIGILA LA DECLARACIÓN, NO SÓLO EL RESULTADO.** <sub>línea 88</sub>
+  <br><sub>La primera versión sólo miraba que el veredicto saliera «mirar», y el sabotaje —quitar `aspecto` de la lista— NO la hacía suspender: hay un camino por defecto al final de `veredicto()` que devuelve «mirar» igualmente. O sea</sub>
+- **Y LA TRAMPA DE ESTA COMPROBACIÓN ES ELEGIR MAL LA JUGADA.** <sub>línea 129</sub>
+  <br><sub>`movioLaPantalla` nació porque el aviso de `guerra` —«le doy a voltear y no pasa nada»— era cierto y no lo era: el árbitro movía las 52 cartas y el juego no publicaba sustrato, así que la pantalla no tenía nada que dibujar.</sub>
+- **`defensa` Y `relevo` SON LOS QUE HACEN QUE ESTO SIRVA DE ALGO.** <sub>línea 146</sub>
+  <br><sub>Con sólo damas/guerra/sokoban/go esta comprobación aprobaba igual con el cable cortado —lo dijo `prueba_de_las_pruebas.mjs`— porque en los cuatro la PRIMERA jugada legal ya se ve, y el sabotaje que reduce la búsqueda a una</sub>
+
+### `prueba_version.mjs`
+
+- **Y LO QUE FALTA AQUÍ NO ES UN AGUJERO.** <sub>línea 17</sub>
+  <br><sub>El resumen no cubre `js/protohub/` —ni el pintor, ni el sustrato, ni las reglas—, y además esos ficheros se importan como módulos con rutas normales, así que ni siquiera podrían llevar `?v=`. Visto así parece el mismo fallo que</sub>
+- **Ojo con lo que NO entra en el resumen: el vendor (va sellado en su ruta,** <sub>línea 35</sub>
+  <br><sub>`three-r128`) y `montarMesa.js` mismo, que no puede contener su propio hash. `montarMesa.js` no lo necesita: lo carga la página con `import`, y las páginas se sirven siempre frescas.</sub>
+- **LA LISTA SE LEE DE `montarMesa.js`, QUE ES QUIEN SELLA.** <sub>línea 49</sub>
+  <br><sub>Aquí había cuatro nombres escritos —`Entrada.js`, los dos motores y `arcade_mats.js`— y `montarMesa.js` sella además todo su `ANDAMIO`: `gestos.js`, `objetivo_visible.js`, `encuadre.js` y `mandos.js`. Esos cuatro</sub>
+- **ENTRA SOLO» ERA MENTIRA A MEDIAS: SÓLO SI SE ESCRIBÍA SIN BARRA.** <sub>línea 65</sub>
+  <br><sub>El patrón cazaba `'js/…'` y nada más. `montarMesa.js` sella TODO lo que no empiece por `/vendor/`, así que una entrada absoluta —`'/js/sfx.js'`, que es como hay que escribir lo que vive fuera del arcade— salía con `?v=` y NO</sub>
+- **Y LAS HOJAS DE ESTILO, QUE FALTABAN.** <sub>línea 92</sub>
+  <br><sub>El resumen sólo miraba los `.js`, así que cambiar el CSS no subía la versión y el sello seguía siendo el mismo: los navegadores servían la hoja guardada. Salió el 13-08-2026, cuando el arreglo de que el panel dejara pasar los clics resultó vivir</sub>
+- **SE NORMALIZAN LOS FINALES DE LÍNEA, Y ESO NOS TUVO OCHO DÍAS SIN PUBLICAR** <sub>línea 112</sub>
+  <br><sub>El resumen se hacía sobre los BYTES del fichero. En Windows, git deja CRLF en el árbol de trabajo (`core.autocrlf = true`) y guarda LF en el repositorio; en Linux el árbol es LF. O sea que **el mismo código daba dos sellos</sub>
+
+### `prueba_vida.mjs`
+
+- **Y EL PINTOR LA MIRA ──** <sub>línea 69</sub>
+  <br><sub>Se comprueba la función pura, no el dibujo: `escalaPorVida` no se puede importar —`pintar3d.js` necesita THREE y un lienzo— así que se lee su código y se reproduce el contrato que declara. Es menos de lo que me gustaría y se dice:</sub>
+- **LA QUE PROTEGE DE VERDAD: QUE EL BUCLE SIGA LLAMÁNDOLA ──** <sub>línea 93</sub>
+  <br><sub>Es la mitad que se pierde sin dejar rastro. Quitar la llamada de dentro del bucle de instancias no rompe nada: las piezas se dibujan todas del mismo tamaño, que es exactamente como se veían antes de hoy, y ninguna prueba de</sub>
+- **SE BUSCA POR LO QUE HACE, NO POR CÓMO ESTÁ ESCRITO.** <sub>línea 101</sub>
+  <br><sub>Buscaba literalmente `for (const p of g.items) {`, y el día que ese bucle se sacó a `volcarPiezas` para poder animar las piezas, esta comprobación suspendió con «no encuentro el bucle: la forma del pintor cambió». Hizo bien en saltar</sub>
+
+### `prueba_vistas.mjs`
+
+- **QUÉ SE PUEDE COMPROBAR Y QUÉ NO, QUE ES LA MITAD DEL VALOR** <sub>línea 18</sub>
+  <br><sub>Los juegos que pasan por el pintor genérico NOMBRAN lo que dibujan: `muro`, `niebla`, `sueloA`, y las piezas con prefijo `p:` o `z<zona>:v<valor>`. En ésos la cuenta se puede cruzar contra el sustrato y cuadra.</sub>
+- **TRINQUETE AL REVÉS: los NO comprobables sólo pueden bajar.** <sub>línea 46</sub>
+  <br><sub>Hoy son los que tienen visualizador propio y dibujan sin nombrar. Si sube, es que alguien ha añadido un juego que pinta a su manera sin decir qué pinta.</sub>
+- **NO HABLA EL IDIOMA» NO ES LO MISMO QUE «DICE OTRA COSA».** <sub>línea 135</sub>
+  <br><sub>Primero puse «si tiene mallas con nombre, es comprobable», y las mesas de cartas salieron como fallo: nombran el MUEBLE —`Node`, del modelo 3D— pero sus cartas no llevan el prefijo de pieza, así que salía «el sustrato dice 8 y se</sub>
+
 ## El ProtoHub y el sustrato
 
 ### `public/arcade/js/protohub/asientos.js`
@@ -2608,15 +3471,21 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>veces —una bien redactada y otra en crudo cuarenta palabras después— y en pradera o sigilo eso son sesenta palabras repetidas en el prompt de cada turno. Lo vi al leer la puerta de texto, no midiendo: las dos</sub>
 - **ESTO ES LO QUE HACE QUE UN GÉNERO NUEVO NO CUESTE NADA.** <sub>línea 466</sub>
   <br><sub>Los diecinueve juegos anteriores necesitaron un caso especial cada uno en `contarLaMesa` —bazas, gofish, entropy, los espaciales— porque cada uno publicaba su estado de una forma. Un juego que publica `sustrato(p)` no</sub>
-- **NO LO SÉ» NO ES LO MISMO QUE «ESTÁ VACÍO».** <sub>línea 486</sub>
+- **UN MUNDO SIN CASILLAS TAMBIÉN TIENE QUE PODER CONTARSE** <sub>línea 482</sub>
+  <br><sub>Esta función sabía dibujar rejillas, zonas y asientos, que es lo que hay en un juego de tablero. Medido el 25-08 sobre los nueve mundos del banco: **seis no publican rejilla —un cubo, una esfera, un acuario, una arena— y</sub>
+- **EL TERRENO PUEDE TENER MÁS DE TRES COSAS, Y HASTA HOY NO PODÍA DECIRLO.** <sub>línea 547</sub>
+  <br><sub>`{0:'.', 1:'#', 2:'o'}` —vacío, muro, destino— era todo el vocabulario que un mapa podía usar, escrito a fuego aquí. Bastaba mientras sólo había juegos de arcade.</sub>
+- **NO LO SÉ» NO ES LO MISMO QUE «ESTÁ VACÍO».** <sub>línea 570</sub>
   <br><sub>El contrato del terreno sabía decir vacío, muro, destino y cuenta — y nada más. Cuando llegó el primer género con observabilidad parcial, una casilla sin explorar no tenía cómo</sub>
-- **`sinVista` es OTRA ignorancia, y se lee distinto.** <sub>línea 502</sub>
+- **`sinVista` es OTRA ignorancia, y se lee distinto.** <sub>línea 586</sub>
   <br><sub>`?` es «no sé qué hay aquí». La coma es «sé qué hay y no veo quién anda»: conoces el pasillo, no sabes si está vacío. Sin distinguirlas, un modelo leería como desconocido un sitio que</sub>
-- **EL JUEGO PUEDE DECIR SUS SÍMBOLOS, Y CONVIENE QUE LO HAGA.** <sub>línea 513</sub>
+- **EL JUEGO PUEDE DECIR SUS SÍMBOLOS, Y CONVIENE QUE LO HAGA.** <sub>línea 597</sub>
   <br><sub>Por defecto se usa la inicial del tipo, y eso choca en cuanto hay dos que empiezan igual: en sokoban, `caja` y `caja_ok` salían las dos como `C` y el mapa era ilegible — para una persona y para un modelo.</sub>
-- **LOS `asientos` NO SALÍAN, Y ESO DEJABA A MANCALA SIN JUGAR A CIEGAS.** <sub>línea 538</sub>
+- **Y LA LEYENDA TIENE QUE DESCRIBIR EL MAPA QUE HAY, NO EL DE SIEMPRE.** <sub>línea 616</sub>
+  <br><sub>Decía «# muro, o destino, . libre» pasara lo que pasara. Con un mundo que declara su propio terreno, eso son dos vocabularios pegados y el primero es mentira. Cuando el juego declara `terreno`, la leyenda sale</sub>
+- **LOS `asientos` NO SALÍAN, Y ESO DEJABA A MANCALA SIN JUGAR A CIEGAS.** <sub>línea 634</sub>
   <br><sub>Esta función sabía contar rejilla y zonas, que eran las dos estructuras que había cuando se escribió. Al llegar la cuarta nadie la enchufó aquí, y el síntoma es feo: mancala publica sus catorce hoyos como `asientos` y el mapa</sub>
-- **Y LO QUE SE HA DICHO, QUE EN CUATRO JUEGOS ES EL TABLERO ENTERO.** <sub>línea 573</sub>
+- **Y LO QUE SE HA DICHO, QUE EN CUATRO JUEGOS ES EL TABLERO ENTERO.** <sub>línea 669</sub>
   <br><sub>En gofish la partida se gana recordando quién pidió qué; en spades se apuesta antes de jugar una sola carta; en cabina hablar es la única jugada de la guía. Sin esta línea, un modelo sentado en cualquiera de los tres lee un</sub>
 
 ### `public/arcade/js/protohub/enlace_repetidor.js`
@@ -3005,553 +3874,6 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **Y SE AUDITA LA LEGALIDAD IGUAL QUE EN LA OTRA PUERTA, si el entorno la** <sub>línea 318</sub>
   <br><sub>publica. `affordances()` da los verbos legales de ESTE instante —no la lista entera—, así que un verbo que no estaba ofrecido es una jugada inventada. Un entorno que no publique `affordances` se audita sólo por la puntuación, y eso</sub>
 
-## Las comprobaciones
-
-### `check_globales_huerfanos.py`
-
-- **Sobre los falsos positivos** <sub>línea 14</sub>
-  <br><sub>La primera versión buscaba `Simbolo\\s*\\.` y cazaba el `.js` de las propias rutas de import: daba por rotos `ProceduralSPE.js` y `CarverSystem.js`, que estaban perfectos. Ahora se quitan las cadenas antes de mirar el código. Un</sub>
-
-### `check_gym_envs.mjs`
-
-- **CONTROL POSITIVO** <sub>línea 24</sub>
-  <br><sub>Un catálogo vacío y un catálogo sano dan el mismo "sin fallos". Por eso, si hay menos de 2 entornos, esto NO dice OK: dice que la prueba no vale (2). Aprendido a base de dar por bueno un silencio que solo significaba que no</sub>
-- **Antes se importaba desde `src/index.js`, que es el índice del motor ENTERO:** <sub>línea 31</sub>
-  <br><sub>arrastra `AlisaRenderCore` y con él `three`. En una máquina con `node_modules` no se nota; en el runner de CI —donde no los hay— reventaba con `Cannot find package 'three'`. O sea: la CI habría fallado en el primer</sub>
-- **ANTES AQUÍ PONÍA `.filter(e => e.familia === 'propio')`, Y ESO DEJABA FUERA** <sub>línea 42</sub>
-  <br><sub>A 35 DE LOS 41 ENTORNOS DEL BANCO.</sub>
-
-### `check_secretos.py`
-
-- **POR QUÉ EXISTE, Y POR QUÉ ESTABA EN FALTA** <sub>línea 8</sub>
-  <br><sub>`.gitignore` lleva escrito desde hace tiempo:</sub>
-- **NO GARANTIZA NADA.** <sub>línea 30</sub>
-  <br><sub>como último filtro, no como permiso para no mirar.</sub>
-
-### `check_vanilla_boundary.py`
-
-- **ALCANCE — corregido tras un fallo real.** <sub>línea 41</sub>
-  <br><sub>Este script solo miraba `src/`, así que dio "publicable ✅" mientras el ARCADE entero seguía llamando a `http://127.0.0.1:8741` desde su propio código. Al abrir una partida de ajedrez en el navegador, la página martilleaba el hub de</sub>
-
-### `prueba_acercar.mjs`
-
-- **LA QUE PROTEGE: SÓLO SE MUEVE LA QUE SE MOVIÓ ──** <sub>línea 43</sub>
-  <br><sub>Tres fichas iguales SIN id —el caso de los juegos que aún no lo publican— y una cambia de sitio. Las otras dos no pueden desplazarse ni una milésima: si lo hacen, el emparejamiento las ha confundido y la pantalla enseñará un movimiento</sub>
-
-### `prueba_asientos.mjs`
-
-- **LA QUE PROTEGE DE VERDAD: LAS SEMILLAS NO SE CREAN NI SE DESTRUYEN ──** <sub>línea 73</sub>
-  <br><sub>En mancala hay 48 semillas —doce hoyos de cuatro— y la siembra las mueve de sitio, nunca las inventa ni las pierde. Es una ley del juego, así que sirve de piedra de toque para los asientos: si su suma se desvía en cualquier momento de</sub>
-
-### `prueba_asimetria.mjs`
-
-- **LA ÚNICA ASIMETRÍA QUE ESTE PROYECTO NO PUEDE PERMITIRSE.** <sub>línea 7</sub>
-  <br><sub>El banco compara a una persona con un agente en el MISMO juego, y esa comparación sólo significa algo si los dos ven lo mismo. La puerta de texto entrega el estado entero: el describidor vuelca los campos genéricamente, así que un agente lee</sub>
-- **CÓMO SE MIDE, Y POR QUÉ EN UN NAVEGADOR.** <sub>línea 27</sub>
-  <br><sub>Se abre la página de verdad, se juegan unas jugadas, y se comparan DOS textos del mismo momento: lo que `describirEstado` le daría a un agente y lo que el panel tiene escrito. Se buscan los VALORES del primero en el segundo — números y palabras, no</sub>
-- **Y LO QUE NO ES UNA ASIMETRÍA: LO QUE SE VE EN LA MESA.** <sub>línea 38</sub>
-  <br><sub>Un agente lee `dado: [3,3]` y la persona ve dos dados con tres puntos. Eso no es información escondida, es información dibujada — y contarlo como fallo llenaría esto de falsas alarmas hasta que nadie lo mirara. Así que las excepciones se</sub>
-- **Se espera a que el panel se ponga al día: el vigía de los visualizadores** <sub>línea 166</sub>
-  <br><sub>propios refresca cada 400 ms, y leer antes denunciaba al póker por esconder algo que ya estaba escrito. Una prueba que corre más que la pantalla mide la carrera, no el juego.</sub>
-- **SE LEE DOS VECES, Y NO ES DESCONFIANZA: ES QUE EL PANEL TIENE RITMO.** <sub>línea 173</sub>
-  <br><sub>Los visualizadores propios reciben sus filas de un vigía que refresca cada 400 ms, así que leer una vez mide la CARRERA y no el juego. Entropy pasaba corriéndolo solo y fallaba dentro de la tanda de 38 — el navegador va más</sub>
-- **SE COMPARAN VALORES, NO NOMBRES DE CAMPO.** <sub>línea 204</sub>
-  <br><sub>El panel dice «Triunfo: oros» donde el estado dice `triunfo: "O"`, así que buscar la palabra `triunfo` daría un falso negativo. Lo que tiene que estar en los dos sitios es el DATO: un número, o una cadena corta que signifique algo.</sub>
-- **Una excepción que ya no hace falta es una mentira guardada: se denuncia, igual** <sub>línea 246</sub>
-  <br><sub>que `prueba_de_las_pruebas` denuncia un sabotaje que apunta a una prueba borrada. const sobran = Object.keys(EN_LA_MESA).filter(k => !usadas.has(k));</sub>
-
-### `prueba_barajas.mjs`
-
-- **LAS BARAJAS SE CONTIENEN UNAS A OTRAS. `spanish_40 ⊂ spanish_48` y** <sub>línea 27</sub>
-  <br><sub>`french_52 ⊂ french_54`. Así que «pertenecen a X» casi siempre da más de una respuesta, y la buena es LA MÁS PEQUEÑA que las contiene todas: si nunca sale un 8 ni un 9, la baraja es de 40, no de 48 con mala suerte. Con pocas cartas eso se</sub>
-- **QUÉ FICHA DE `games` LE CORRESPONDE A CADA JUEGO NUESTRO.** <sub>línea 49</sub>
-  <br><sub>Los nombres no coinciden y no hay forma de deducirlo: nuestro `poker` es el `texas_holdem` de la biblioteca, nuestro `remigio` es `rummy_basic` y no el `chinchon`, que es el rummy de baraja española. Normalizar cadenas acertaría en</sub>
-- **CANADIENSE NO ES LA CANASTA, y eso lo dijo esta prueba.** <sub>línea 76</sub>
-  <br><sub>a `canasta` por el nombre, y saltó el aviso de que declara `french_54` y reparte 52. La canasta lleva comodines; este juego es el Tock/Dog —el parchís con cartas— y son 52 sin comodines A PROPÓSITO, escrito en su cabecera. La</sub>
-- **Y LAS ESPECIALES, QUE NO SON PALO POR RANGO.** <sub>línea 103</sub>
-  <br><sub>La primera versión sólo cruzaba palos con rangos, así que el UNIT salió con «14 fuera del catálogo: W_WILD G_REV Y_D2 B_SKIP…» y yo estuve a punto de contarlo como hallazgo. No lo era: `decks.unit_108.specials` declara SKIP, REV, D2, WILD y WD4</sub>
-- **Y LLEVAN O NO PALO SEGÚN LO QUE DIGAN, no según lo que yo supusiera.** <sub>línea 111</sub>
-  <br><sub>Mi primera versión añadía las dos formas —`W_<id>` y `<palo>_<id>`— a todas. Eso metió `W_JK` en la baraja francesa de 54, y como el comodín de Entropy se llama igual, Entropy pasó a repartir «una carta francesa entre cuarenta y ocho nuestras»</sub>
-- **DOS COSAS QUE ME COSTARON UN VERDE FALSO DE «0 JUEGOS MIRADOS».** <sub>línea 174</sub>
-  <br><sub>La primera: `mover` no devuelve la partida nueva. La MUTA y devuelve un booleano — `true` si la jugada valía. Yo escribí `p = reglas.mover(p, …)` y a partir de ahí `p` valía `true`, así que el `estado` siguiente reventaba leyendo `p.manos[0]`. Parecía</sub>
-- **Y SE APUNTAN LAS JUGADAS, porque `robar_mazo` tiene forma de carta.** <sub>línea 191</sub>
-  <br><sub>El recolector busca cualquier cosa con pinta de `algo_algo`, y una jugada como `robar_mazo` la tiene. Salía en el informe como «1 fuera del catálogo» en remigio y entropy, o sea acusándolos de repartir una carta inventada.</sub>
-
-### `prueba_biblioteca.mjs`
-
-- **LA MARCA VIVE EN DOS SITIOS, Y HAY QUE MIRAR LOS DOS.** <sub>línea 36</sub>
-  <br><sub>Los de bazas y los portados la ponen en el ESTADO; blackjack y póker, en el objeto de REGLAS. La primera versión de esta prueba sólo miraba el estado, así que saltó a esos dos en silencio y cantó «todos ✓» sin haberlos mirado —</sub>
-- **AQUÍ HABÍA UN `ESPERADOS = 10` ESCRITO A MANO, con los diez nombres en un** <sub>línea 68</sub>
-  <br><sub>comentario al lado. Cumplía su función y traía la de siempre: al añadir el remigio la prueba se puso roja diciendo «se esperaban 10 y se han mirado 11», o sea acusando al juego nuevo de un fallo que no existía. Una prueba que hay</sub>
-- **ZONAS Y NINGUNA REJILLA» NO ES «ES DE CARTAS», Y AQUÍ SE VIO.** <sub>línea 82</sub>
-  <br><sub>Ésa era la definición que usaba esto —la misma que usa `montarMesa` para elegir motor— y sirvió hasta que llegó la GENERALA: cinco dados, ningún tablero, o sea zonas sin rejilla. La prueba la acusó de no publicar `biblioteca` y de estar</sub>
-
-### `prueba_censo.mjs`
-
-- **ESTA COMPROBACIÓN VIGILA UNA CLASE QUE EL SABOTAJE NO PUEDE VER.** <sub>línea 5</sub>
-  <br><sub>Todo lo demás en este repositorio comprueba PREDICADOS: «¿esta condición detecta este fallo?». Y para eso están los sabotajes de `npm run pruebas`, que rompen a propósito lo que cada comprobación vigila y exigen que suspenda.</sub>
-- **POR QUÉ EMPIEZA POR `tabla.mjs` Y NO POR OTRO** <sub>línea 23</sub>
-  <br><sub>Porque es el único medidor cuyo resultado sale al dominio. Un error de denominador en los demás muere en un informe interno que se rectifica con una nota; aquí saldría publicado como una comparación persona-contra-agente falsa, en un banco</sub>
-- **CÓMO, SIN PAGAR UNA PASADA ENTERA** <sub>línea 30</sub>
-  <br><sub>Medir de verdad tarda minutos. Así que el medidor declara su universo con `--censo` —una línea `universo=N` y la lista— y aquí se compara con el censo canónico. Preguntar tarda un segundo.</sub>
-
-### `prueba_clasificacion.mjs`
-
-- **NO COMPRUEBA QUE LOS NÚMEROS SEAN BUENOS, sino que sean LOS MISMOS.** <sub>línea 20</sub>
-  <br><sub>Si la medición está mal, esto sale verde igual — para eso están el calibrador y las líneas base. Lo único que vigila es que lo publicado y lo medido no se separen.</sub>
-
-### `prueba_css.mjs`
-
-- **ESTO ME COSTÓ UNA HORA Y NO DA NI UN ERROR.** <sub>línea 5</sub>
-  <br><sub>El 15-08-2026, arreglando que los botones del ajedrez se salieran de la pantalla, escribí tres reglas distintas y NINGUNA cambió la medida. Ni un píxel, las tres veces. Revisé la cascada, la especificidad, si el fichero se</sub>
-- **Y ESTE PROYECTO ES ESPECIALMENTE VULNERABLE.** <sub>línea 26</sub>
-  <br><sub>Las hojas llevan comentarios enormes a propósito —el porqué de cada regla, con la medida que la justifica—, así que se editan mucho y son largos. Cuantos más comentarios, más ocasiones de dejarse un cierre.</sub>
-- **Y SE CUENTAN LAS LLAVES DE FUERA DE LOS COMENTARIOS.** <sub>línea 67</sub>
-  <br><sub>Esta prueba sólo miraba el BALANCE de `/*` y `*` `/`, y con eso se le escapaba el caso peor: una apertura DE MÁS. Si alguien abre un comentario delante de una regla, se cierra solo con el siguiente cierre legítimo —el balance sigue</sub>
-- **Y LO SEGUNDO: EL PANEL NO PUEDE TRAGARSE TOQUES QUE VAN A LA MESA.** <sub>línea 124</sub>
-  <br><sub>`jugables.css` pone `.hud-panel { pointer-events: none }` y devuelve el clic sólo a lo que HACE algo — la regla está escrita ahí y explicada: el panel flota sobre el lienzo con fondo traslúcido, así que ves el tablero por debajo, pulsas donde lo ves</sub>
-- **ESTA COMPROBACIÓN EMPEZÓ SIENDO LISTA Y GRITABA EN FALSO.** <sub>línea 144</sub>
-  <br><sub>El primer intento exigía que todo lo que recuperase el toque «pareciera interactivo», con una expresión regular. Acusó a tres inocentes: un trozo de comentario que mi regex leyó como selector, el propio `.hud-panel`, y</sub>
-
-### `prueba_de_las_pruebas.mjs`
-
-- **POR QUÉ EXISTE: EN UN SOLO DÍA, CINCO INSTRUMENTOS MINTIERON.** <sub>línea 7</sub>
-  <br><sub>No uno. Cinco, el 15-08-2026, y ninguno daba error — todos salían en verde:</sub>
-- **QUÉ HACE ESTO, Y POR QUÉ NO ES «PROBAR LAS PRUEBAS» POR DEPORTE.** <sub>línea 27</sub>
-  <br><sub>Para cada comprobación de `npm test` hay un SABOTAJE declarado: un cambio concreto que rompe justo lo que esa prueba dice vigilar. Se aplica, se corre la prueba, y **tiene que suspender**. Si sale verde con el cable cortado, la prueba</sub>
-- **CÓMO SE PROTEGEN LOS FICHEROS DE VERDAD.** <sub>línea 38</sub>
-  <br><sub>El sabotaje toca ficheros del proyecto. Antes se guarda el contenido, se restaura SIEMPRE —pase lo que pase— y al final se verifica que todo quedó como estaba comparando el texto. Si algo no se pudo restaurar, se dice a gritos y se</sub>
-- **EL SABOTAJE TIENE QUE ROMPER LO QUE ESA PRUEBA VIGILA, NO CUALQUIER COSA.** <sub>línea 57</sub>
-  <br><sub>Meter un error de sintaxis haría suspender a cualquiera y no demostraría nada: probaría que node sabe leer. Cada sabotaje de aquí es el fallo REAL contra el que se escribió la prueba — quitarle las normas al enlace, dejar que las teclas jueguen</sub>
-- **ÉSTE ES EL PRIMER SABOTAJE DE ENUMERACIÓN, Y ES OTRA COSA QUE LOS DEMÁS.** <sub>línea 303</sub>
-  <br><sub>Los quince de arriba rompen una CONDICIÓN y esperan que la comprobación la eche de menos. Éste rompe el UNIVERSO: le cambia el nombre a un juego del catálogo, de modo que el conjunto medido sigue teniendo treinta y cinco</sub>
-- **DOS SABOTAJES PARA EL MISMO FICHERO, Y HACE FALTA.** <sub>línea 341</sub>
-  <br><sub>`prueba_fichas` vigila ahora dos cosas distintas: que lo declarado coincida con lo que hace el juego, y que las rutas que promete la ficha SE PUEDAN PEDIR. Con un solo sabotaje, la segunda estaría sin cubrir — y es justo la</sub>
-- **ES OTRA PREGUNTA QUE LA DE `biblioteca`, Y POR ESO OTRO SABOTAJE.** <sub>línea 447</sub>
-  <br><sub>Aquélla comprueba que los juegos LEEN el catálogo que se les pasa. Ésta, que cogen de él LA BARAJA QUE LES TOCA. Un juego francés que pidiera la española leería el catálogo impecablemente y repartiría oros en una mesa de</sub>
-- **Y este sabotaje ya sirvió de algo antes de entrar aquí: con él puesto,** <sub>línea 507</sub>
-  <br><sub>la primera versión de la comprobación APROBÓ. Miraba el `de` del dicho, y el dicho filtrado sigue diciendo ser tuyo. Hubo que cambiarla por la pregunta buena —¿cambia lo que yo veo cuando otro elige distinto?— y eso</sub>
-- **AQUÍ FALLÉ LA PUNTERÍA DOS VECES, Y ES EL ERROR TÍPICO DE ESTE FICHERO.** <sub>línea 570</sub>
-  <br><sub>Primero cambié `juego: 'ajedrez'` en el catálogo: la prueba aprobó, porque enumera el catálogo y construye cada entorno — un nombre distinto se construye igual. Luego puse `reset(` a secas, que aparece también en un</sub>
-- **SE SABOTEA EL PAQUETE, NO `public/`.** <sub>línea 606</sub>
-  <br><sub>medido = PAQUETE if hay_paquete else PUBLIC</sub>
-- **NO SE PUDO DEVOLVER A SU SITIO:')}`);** <sub>línea 701</sub>
-  <br><sub>for (const f of sinRestaurar) console.log(rojo(`      ${f}`)); console.log(rojo('   RECUPÉRALOS CON `git checkout -- <fichero>` ANTES DE SEGUIR.')); process.exit(2);</sub>
-- **EL CENSO SE DERIVA.** <sub>línea 714</sub>
-  <br><sub>Aquí había un array `TODAS` con los nombres escritos a mano. Es la enésima lista de este proyecto que se separa de la realidad en silencio — y ésta era la peor, porque es la lista de la red de seguridad.</sub>
-- **20-08: estas dos salían denunciadas como «no las corre nadie» y era FALSO —** <sub>línea 756</sub>
-  <br><sub>tienen su propio mando desde el día que se escribieron. El aviso miraba sólo `scripts.test` y llamaba huérfana a cualquiera que viviera en otro guion. Se arregla abajo mirando TODOS los guiones, y éstas se quedan aquí porque abren</sub>
-- **DOS LISTAS Y NO UNA, PORQUE SE PREGUNTAN DOS COSAS DISTINTAS.** <sub>línea 783</sub>
-  <br><sub>`todasEnDisco` es lo que HAY. `enDisco` es lo que se vigila por huérfano, que excluye a las de `APARTE` porque de ésas ya se sabe por qué no van en `npm test`.</sub>
-- **SE MIRAN TODOS LOS GUIONES, NO SÓLO `test`.** <sub>línea 797</sub>
-  <br><sub>Esto leía `scripts.test` y punto, así que denunciaba como huérfana a cualquier comprobación que viviera en otro mando —`npm run figuras`, `npm run invitados`— aunque se corriera a diario. Una acusación falsa dentro del instrumento que existe</sub>
-
-### `prueba_dos_personas.mjs`
-
-- **LA CUARTA ES LA QUE NO MIRABA NADIE, Y ERA LA ROTA.** <sub>línea 13</sub>
-  <br><sub>El árbitro decide con el estado de la silla 0 y con `ordenAsientos`, así que repartía los turnos bien. Pero cada jugador ve `estado(p, su_silla)`, y ahí `turn` comparaba contra 0 en vez de contra su asiento: el segundo leía «player»</sub>
-- **NO TIENE SABOTAJE DECLARADO EN `npm run pruebas`, Y SE DICE POR QUÉ.** <sub>línea 21</sub>
-  <br><sub>Los sabotajes de la casa cambian un fichero del repositorio y vuelven a correr la comprobación. Esto no mide el repositorio: mide el worker DESPLEGADO, así que un sabotaje de verdad obligaría a desplegar código roto a producción y volver a</sub>
-- **LA CASA NO SE SIENTA EN LA SILLA DE QUIEN VIENE DE CAMINO.** <sub>línea 67</sub>
-  <br><sub>Un enlace se reparte y la gente llega cuando llega. Si el primero empieza a jugar mientras espera, la casa rellenaba el hueco: medido en entropy con una sola persona —ocho jugadas suyas y `played_by_house: 1`—, o sea que el amigo</sub>
-- **SE CUENTAN MIS JUGADAS CONTRA LAS DE LA MESA, NO `played_by_house`.** <sub>línea 90</sub>
-  <br><sub>Mi primer intento miraba ese campo y daba rojo con el arreglo ya puesto. No cuenta jugadas de la casa: es `ordenAsientos.length - asientos.length`, o sea SILLAS SIN DUEÑO. Con una persona en una mesa de dos vale 1 aunque la casa no</sub>
-- **SE MIRA LA PANTALLA DE LOS DOS, NO LA DEL QUE JUEGA.** <sub>línea 110</sub>
-  <br><sub>`player` es un pronombre: significa «tú». Si los dos lo ven a la vez, uno de los dos tiene delante una pantalla que le miente, aunque la mesa reparta bien los turnos. Exactamente una silla puede verlo — y `?quien=` existe</sub>
-- **EN LA MISMA RESPUESTA VIENEN DOS `turn` CON VOCABULARIOS DISTINTOS.** <sub>línea 126</sub>
-  <br><sub>El de arriba es el NOMBRE de quien mueve —lo traduce el árbitro— y ése es el bueno. Dentro de `state` viaja el del juego, que es un pronombre por silla (`player`/`cpu1`). Se miran los dos porque un cliente puede leer</sub>
-- **Y LA MISMA LISTA, POR LA OTRA PUERTA.** <sub>línea 144</sub>
-  <br><sub>`legal_moves` de arriba ya se entregaba sólo a quien mueve. Dentro de `state` iba la misma lista para todo el mundo, y el motor de cartas pinta los botones desde AHÍ. Se mira el estado crudo y no el campo de arriba,</sub>
-- **Y LO QUE MANDA EL CLIENTE, QUE ES DONDE ESTABA EL FALLO DE VERDAD.** <sub>línea 195</sub>
-  <br><sub>Todo lo de arriba se sienta mandando `jugadores: 2`, así que mide el contrato del árbitro y NO puede ver el fallo que se venía a cazar: el árbitro esperaba bien, y quien no lo pedía era la web. Escribí esa comprobación, salió verde con</sub>
-- **Y QUE ESPERAR NO SEA UNA TRAMPA: «EMPEZAR YA».** <sub>línea 209</sub>
-  <br><sub>La mesa espera ahora a TODAS las sillas del juego, que es lo que permite que cuatro amigos se repartan un enlace de parchís sin que la casa les coja los sitios. El precio es obvio y hay que medirlo: si sólo aparecen dos, esa espera</sub>
-- **SE ACEPTA `'todas'` ADEMÁS DE UN NÚMERO, Y NO ES LAXITUD.** <sub>línea 294</sub>
-  <br><sub>La web pide `jugadores: 'todas'` porque al sentarse todavía no sabe cuántas sillas tiene el juego —eso viene en la respuesta— y el árbitro sí lo sabe. Mi predicado era `Number(...) >= 2` y puso en rojo el comportamiento correcto: la</sub>
-
-### `prueba_enfrentamiento.mjs`
-
-- **LA QUE PROTEGE DE VERDAD: CONTAR SILLAS ──** <sub>línea 97</sub>
-  <br><sub>Si `contarSillas` se queda corto, el juego no sale mal puntuado: **sale como juego de un jugador y desaparece de la tabla**, sin un error y sin una fila que mirar. Le pasó a shinigami —ocho sillas, dos shinigami, un oráculo— por no leer `vivos`,</sub>
-
-### `prueba_entorno_recibo.mjs`
-
-- **Y ES REPETIBLE, QUE ES LO QUE SOSTIENE TODO LO DEMÁS.** <sub>línea 76</sub>
-  <br><sub>Se vuelve a jugar desde cero con la misma semilla y se compara la puntuación. Si esto fallara, el «válida» de arriba sería casualidad — y un verificador que da verdes por casualidad es peor que no tenerlo.</sub>
-
-### `prueba_fichas.mjs`
-
-- **LO IMPORTANTE ES EL CRUCE, NO LA CUENTA.** <sub>línea 14</sub>
-  <br><sub>Que 35 juegos declaren un número de asientos no vale nada si el número es inventado. Lo que ata la ficha a la realidad es que, en los juegos que ADEMÁS publican marcador —uno por silla—, las dos cosas coincidan. Ahí la ficha no puede mentir</sub>
-- **HAY DOS SITIOS QUE DICEN CUÁNTAS SILLAS TIENE CADA JUEGO, Y ESO SE VIGILA.** <sub>línea 30</sub>
-  <br><sub>`SILLAS` en `rules/index.js` es un mapa escrito a mano que usa el árbitro de las mesas compartidas; `ASIENTOS` lo declara cada juego en sus reglas. Son el mismo dato en dos sitios, que es exactamente la clase de copia que este proyecto lleva</sub>
-- **TRINQUETE: cuántos juegos declaran sus asientos.** <sub>línea 50</sub>
-  <br><sub>**sólo puede subir** (con juegos nuevos). Nació en 0: hasta el 16-08 no lo declaraba ninguno y la ficha lo deducía del marcador, que existía en diez juegos y en los otros veinticinco no — así que la ficha del ajedrez, juego</sub>
-- **¿SE PUEDE PEDIR LO QUE LA FICHA PROMETE, O SÓLO EXISTE EN MI DISCO?** <sub>línea 135</sub>
-  <br><sub>La ficha decía «captura 35/35, derivado y listo» y no había NI UNA publicada: apuntaba a `capturas_laboratorio/`, que está en `.gitignore` porque son ficheros de trabajo que el laboratorio rehace en cada pasada. Treinta y cinco rutas que desde el sitio dan 404</sub>
-
-### `prueba_figuras.mjs`
-
-- **Del MATERIAL QUE LA MALLA TIENE, no de uno recién hecho.** <sub>línea 74</sub>
-  <br><sub>diferencia entre esta prueba y la que ya había. const tintaDeLaMesa = (id) => { const mats = e.cachedMaterials?.[id];</sub>
-
-### `prueba_final.mjs`
-
-- **DE DÓNDE SALE: DE QUE NO LA HABÍA.** <sub>línea 6</sub>
-  <br><sub>El panel de jugadas empezaba con `if (terminada) return aviso('partida terminada')`. Ahí se acababa la página: sin botón para jugar otra, había que recargar. Y midiéndolo salió lo que lo hace peor — DIECISIETE juegos publican</sub>
-
-### `prueba_guardia.mjs`
-
-- **QUÉ PREGUNTA, Y POR QUÉ NO ES LO QUE YA PREGUNTA `calibrar`** <sub>línea 9</sub>
-  <br><sub>`calibrar` y `tabla` preguntan si el juego ORDENA a quien lo juega, que es una propiedad estadística de muchas partidas. Esto pregunta si ALGO SE ROMPIÓ, que es una propiedad de cada partida. Son dos preguntas distintas y hasta hoy sólo se hacía la</sub>
-- **EN VERDE NO DICE NADA.** <sub>línea 34</sub>
-  <br><sub>cada vez se acaba mirando en diagonal. Éste calla y, cuando habla, da el juego, la semilla y la jugada exacta — lo que hace falta para repetirlo, no para admirarlo.</sub>
-- **LA AUTOPRUEBA: UN GUARDIA QUE CALLA TIENE QUE DEMOSTRAR QUE SABE HABLAR.** <sub>línea 55</sub>
-  <br><sub>Con `--autoprueba` se AVERÍAN cuatro juegos a propósito, uno por cada clase de anomalía, y el guardia tiene que denunciar los cuatro. Si algún día un cambio en los detectores los deja mudos, esto sale en rojo — y sin esto, «sin anomalías en 71.861</sub>
-- **Y las averías son las de VERDAD, las que ya pasaron aquí: damas y xiangqi sin poder** <sub>línea 66</sub>
-  <br><sub>acabar, el panel ofreciendo jugadas que el juego rechaza, y ajedrez valiendo 0 en toda partida jugara quien jugara.</sub>
-- **EL MARCADOR NO SE MUEVE» ES UNA PREGUNTA SOBRE EL JUEGO, NO SOBRE UNA PARTIDA.** <sub>línea 94</sub>
-  <br><sub>La primera versión lo preguntaba por partida y en los 35 juegos disparó 25 alarmas, en brisca y tute. Todas ciertas y todas irrelevantes: en un juego de bazas se puede acabar con cero puntos legítimamente si no te llevas nada que valga, y eso no es un fallo de</sub>
-- **EL MARCADOR SE LLAMA DE TRES MANERAS, Y LEER MAL DA UN FALSO POSITIVO.** <sub>línea 130</sub>
-  <br><sub>En su primera pasada esto acusó a snake de tener el marcador mudo en las cinco semillas. Era mentira: yo leía `puntos` y `score.white`, y snake publica `score` como un número suelto. O sea que el fallo estaba en mi</sub>
-- **AQUÍ ESTÁ LA COMPROBACIÓN QUE FALTABA EN TODO EL PROYECTO.** <sub>línea 152</sub>
-  <br><sub>Se coge una jugada de la lista y se exige que `mover()` la ACEPTE. Si la lista ofrece algo que el juego rechaza, la promesa que sostiene el banco —que el panel de una persona es la misma lista que recibe un agente— es</sub>
-- **JUEGA EL RIVAL DE LA CASA, NO UN CONTADOR QUE ROTA.** <sub>línea 161</sub>
-  <br><sub>La primera versión elegía `movs[i % movs.length]`, y con eso la serpiente de snake se retuerce en el sitio y muere en veintiuna jugadas SIN COMER NADA. El marcador salía 0 en todas las semillas y el guardia lo denunciaba</sub>
-- **NO SE MUEVE» Y «NO LO ENCUENTRO» SON DOS ANOMALÍAS, NO UNA.** <sub>línea 190</sub>
-  <br><sub>La primera versión las juntaba: con el marcador ilegible el conjunto quedaba vacío, `size <= 1` se cumplía, y salía «el marcador vale siempre undefined». Eso acusa al juego de un fallo que es del lector. Un instrumento que no</sub>
-
-### `prueba_habla.mjs`
-
-- **ESO ES UNA PUERTA EN LA PIEZA QUE SOSTIENE TODO EL PROYECTO.** <sub>línea 11</sub>
-  <br><sub>El verificador es lo que convierte una partida en algo demostrable. Un patrón es, por construcción, un cheque en blanco del tamaño que el juego quiera: con `.*` dejaría de auditar nada mientras sigue diciendo «válida». Así que esto</sub>
-- **LA QUE PROTEGE DE VERDAD.** <sub>línea 79</sub>
-  <br><sub>Se cuela una jugada inventada donde iba una frase. No empieza por `decir:`, así que ningún patrón honrado la acepta. Si esto pasara, querría decir que algún patrón se ha ampliado hasta tragárselo todo — y entonces «verificada» dejaría</sub>
-
-### `prueba_identidad.mjs`
-
-- **Y VIGILA TAMBIÉN LOS NOMBRES DE LOS CAMPOS, QUE ES DE DONDE VINO EL DAÑO.** <sub>línea 17</sub>
-  <br><sub>Alisapolis publicaba `{id, x, y, dueno, tipo}` cuando el contrato dice `de` y `t`. El pintor leía `undefined` en los dos y sus cuatro peones salían como discos grises idénticos — con un aviso de betatester diciendo «parece que juego</sub>
-- **Y ESTOS SON LOS PROHIBIDOS, POR PARECERSE DEMASIADO.** <sub>línea 38</sub>
-  <br><sub>No se prohíbe todo lo que no esté en el contrato —un juego puede publicar algo suyo con motivo, como `vida` en defensa— sino los que DUPLICAN un campo que ya existe. Ésos no añaden nada y sí rompen el pintor.</sub>
-- **LA QUE PROTEGE DE VERDAD: ESTABLE ENTRE TURNOS ──** <sub>línea 109</sub>
-  <br><sub>Un `id` que cambia cada turno pasa las dos comprobaciones de arriba —es único en cada foto— y no sirve para nada. Se mide en alisapolis, que es quien los usa: sus peones dan vueltas al tablero y tienen que seguir llamándose igual</sub>
-
-### `prueba_invitados.mjs`
-
-- **EL TESTIGO IMPORTA.** <sub>línea 57</sub>
-  <br><sub>publica, así que dio «no pasó nada» en los dos sitios y estuve a punto de contarlo como que el clic estaba roto. Se mira lo que el juego SÍ publica.</sub>
-- **EL AJEDREZ NECESITA DOS CLICS Y MI PRIMERA VERSIÓN DABA UNO.** <sub>línea 65</sub>
-  <br><sub>Se coge la pieza y se suelta en el destino. Con un solo clic el peón queda seleccionado, el FEN no cambia y la prueba cantó «es un decorado» sobre un ajedrez que se jugaba perfectamente. La prueba estaba jugando mal, no el juego.</sub>
-- **CADA CLIC A SU ALTURA, Y NO ES CAPRICHO: SON DOS PROBLEMAS DISTINTOS.** <sub>línea 76</sub>
-  <br><sub>COGER la pieza: hay que apuntar A LA PIEZA (`y = 0.6`). Si se apunta al suelo de su casilla, el rayo pasa rozando la fila de delante y choca con lo que haya de pie ahí — medido: apuntando al suelo de e2 el rayo choca con `p:k:0`, el REY de</sub>
-- **Y ESTO ES LO QUE ME COSTÓ CARO: probé `0.6, 0.6` y `0.02, 0.02`, las dos** <sub>línea 89</sub>
-  <br><sub>combinaciones homogéneas, y las dos fallan por motivos OPUESTOS. Nunca probé la mezcla, que es la buena. Con las dos en rojo di por hecho que el fallo era del juego y se lo conté así a Oscar y al mensaje del commit. No lo era: el ajedrez</sub>
-- **CUÁNTAS MALLAS SON POCAS LO DICE EL SUSTRATO, NO UN NÚMERO MÍO.** <sub>línea 180</sub>
-  <br><sub>Aquí había un `< 10` escrito a ojo, y era un número de TABLERO: el ajedrez dibuja noventa y siete. El blackjack reparte cuatro cartas y con eso está entero, así que la prueba lo puso en rojo por «sólo 4 mallas» sobre un</sub>
-- **Y SI NO SE PUEDE JUGAR, HAY QUE SABER SI ES CULPA DE SER INVITADO.** <sub>línea 262</sub>
-  <br><sub>Aquí me pilló el ajedrez. La prueba lo puso en rojo por «se pincha y no pasa nada», y la corrección natural era buscar qué le había hecho yo al meterlo en la sala. No le había hecho nada: el clic de dos pasos del ajedrez —coger la</sub>
-
-### `prueba_lenguaje.mjs`
-
-- **¿Se filtra algo que el jugador no deba ver?** <sub>línea 58</sub>
-  <br><sub>Se recogen las cartas que el propio juego declara PÚBLICAS y se exige que el texto no nombre ninguna otra. Que el descriptor pueda ser generoso depende de que las reglas oculten bien: esto lo comprueba, no lo supone.</sub>
-- **LA INVARIANTE QUE DE VERDAD IMPORTA:** <sub>línea 90</sub>
-  <br><sub>`legal_moves` son las jugadas de QUIEN TIENE EL TURNO. Cuando ese es el asiento descrito, tienen que salir de SU mano. Si alguna vez saliera una carta ajena, sería que el juego está ofreciendo jugadas de otro — y esa</sub>
-- **LO QUE SE ROBA A CIEGAS NO SE PUBLICA A LOS DEMÁS.** <sub>línea 110</sub>
-  <br><sub>Y ESTA COMPROBACIÓN MIRA EL ESTADO, NO EL TEXTO — que es el hueco que tenía la de arriba. La 2 pregunta «¿dice el texto algo que el estado no declare público?», o sea que **usa el estado como definición de lo público**: una</sub>
-
-### `prueba_mundo.mjs`
-
-- **LO QUE ESTO NO PUEDE COMPROBAR, Y HAY QUE DECIRLO.** <sub>línea 24</sub>
-  <br><sub>Que el `importmap` inyectado por un script clásico llegue a tiempo es cosa del navegador, no de Node. Eso se comprueba en `public/games/_prueba_mundo.html`, que hay que abrir de verdad. Aquí sólo se vigila el contrato estático.</sub>
-- **LA QUE PROTEGE DE VERDAD ──** <sub>línea 106</sub>
-  <br><sub>El pipeline tiene que venir PUESTO. Toda la razón de ser de `montarMundo` es que dejara de depender de que alguien se acordara — pasó de 2 de 6 a 6 de 6 exactamente por esto. Si un día se cambia a `cfg.cine === true`, la migración</sub>
-
-### `prueba_objetivo.mjs`
-
-- **POR QUÉ ESTO ES UNA PRUEBA Y NO UNA NOTA EN UN CUADERNO.** <sub>línea 8</sub>
-  <br><sub>Lo encontré jugando yo misma una mano de entropy, leyendo sólo lo que recibe un agente sin ojos: nada decía si convenía puntuar alto o bajo. Lo DEDUJE viendo moverse el número después de una jugada que ya creía buena — pero un agente que</sub>
-- **EL NÚMERO SÓLO PUEDE SUBIR.** <sub>línea 21</sub>
-  <br><sub>Igual que `prueba_sustrato.mjs` cuenta los que dependen del adaptador y su techo sólo baja, aquí se cuenta cuántos lo declaran y el suelo sólo sube. Escribir treinta y cinco frases es trabajo de contenido y se hace poco a poco; lo que no</sub>
-- **13-08-2026: LLEGÓ A 35 Y ESO LE CAMBIA EL SENTIDO.** <sub>línea 39</sub>
-  <br><sub>Mientras iba por la mitad, esto era una cuenta atrás: «faltan tantos». Ahora que están todos ya no mide progreso, mide OTRA COSA — que un juego nuevo no pueda nacer mudo. El primero que se añada sin objetivo baja el número y esto</sub>
-- **20-08-2026: EL SUELO SE HABÍA QUEDADO EN 35 CON 37 JUEGOS, Y ESO ES HOLGURA.** <sub>línea 46</sub>
-  <br><sub>`npm run pruebas` lo cazó: con el sabotaje puesto —quitarle el objetivo a las damas— esta prueba APROBABA. Claro: bajaba de 37 a 36 y el suelo estaba en 35. Dos juegos de margen es exactamente lo que la nota de arriba dice que no puede</sub>
-
-### `prueba_openapi.mjs`
-
-- **POR QUÉ ESTO EXISTE.** <sub>línea 5</sub>
-  <br><sub>`openapi.json` declaraba TRES rutas. El sitio sirve al menos OCHO: las cuatro `/api/*` del sitio principal —`gym`, `dataset`, `verificar`, `presencia`— y las cuatro del árbitro de mesas. O sea que la especificación describía una de las dos</sub>
-- **Y SE COMPRUEBA EN LOS DOS SENTIDOS, QUE ES LO QUE SE OLVIDA.** <sub>línea 19</sub>
-  <br><sub>· lo declarado EXISTE — una ruta en el papel que ya no responde; · lo que existe está DECLARADO — una puerta nueva que nadie apuntó.</sub>
-
-### `prueba_pantallas.mjs`
-
-- **UNA PANTALLA ESTRECHA NO ES UNA PEQUEÑA CON MENOS SITIO: ES OTRA FORMA.** <sub>línea 15</sub>
-  <br><sub>En Three el campo de visión que se declara es el VERTICAL; el horizontal sale de multiplicarlo por el aspecto. Con 1280x800 (1,6) sobra ancho; con 390x844 (0,46) se ve menos de la mitad de ancho que de alto. Un tablero apaisado es exactamente la forma que</sub>
-- **Y LO QUE NO SE CUENTA, QUE ES LA MITAD DEL TRABAJO** <sub>línea 22</sub>
-  <br><sub>Las manos de los RIVALES se salen de cuadro A PROPÓSITO en las mesas de cartas: están boca abajo y de ellas sólo hace falta saber cuántas hay, así que el encuadre prioriza que la TUYA se lea. Está documentado como decisión en `mesa_cartas.mjs`.</sub>
-- **EL PANEL ES UN RECTÁNGULO, NO UNA BANDA.** <sub>línea 105</sub>
-  <br><sub>La primera versión preguntaba `y < panel.bottom`, o sea trataba el panel como una franja horizontal que ocupa todo el ancho. En un móvil lo es. En escritorio el panel es una COLUMNA a la izquierda, así que todo lo que</sub>
-- **FUERA» Y «BAJO EL PANEL» SON DOS PROBLEMAS DISTINTOS, Y MEZCLARLOS ENGAÑA.** <sub>línea 158</sub>
-  <br><sub>La primera versión imprimía «0 fuera» cuando lo que fallaba era que las piezas caían DEBAJO del panel del HUD. Un mensaje que dice cero de lo que enseña es peor que no decir nada, y además manda a arreglar lo que no toca: fuera de cuadro se</sub>
-- **SÓLO SE ESCRIBE LA PASADA COMPLETA.** <sub>línea 179</sub>
-  <br><sub>medidos como si estuvieran bien, que es la mentira más cómoda de todas.</sub>
-- **EL VEREDICTO CUENTA LAS DOS COSAS, Y NO PRESUME DE LOS 35 SI MIDIÓ CINCO.** <sub>línea 193</sub>
-  <br><sub>La primera versión sólo miraba `fuera`, así que decía «en las cuatro pantallas se alcanza todo» debajo de una tabla llena de problemas — el resumen contradiciendo al detalle en la misma pantalla. Y decía «en los 35» aunque se le hubieran pasado cinco</sub>
-
-### `prueba_portal.mjs`
-
-- **LO QUE SE BUSCA SON LAS MARCAS DE QUE JAVASCRIPT SE HA RENDIDO.** <sub>línea 13</sub>
-  <br><sub>`[object Object]`, `undefined`, `null` y `NaN` sueltos en el texto son lo que deja una plantilla cuando el dato no tiene la forma que esperaba. Ninguna de las cuatro es una palabra que quepa en una ficha escrita en español, así que encontrarlas es</sub>
-- **CUÁNTAS TARJETAS SE ESPERAN NO SE ESCRIBE A MANO.** <sub>línea 59</sub>
-  <br><sub>Estaba clavado en 35 y el catálogo tenía 37, así que esta comprobación suspendía enseñando `37/35` — un rojo que significaba «hay DE MÁS», que no es un fallo del catálogo sino de esta línea. Y el modo de fallo peligroso es el contrario: si un</sub>
-
-### `prueba_recibos.mjs`
-
-- **Y LO QUE HACE QUE ESTO MEREZCA UN INSTRUMENTO NO ES EL FALLO, ES CÓMO SE VEÍA.** <sub>línea 17</sub>
-  <br><sub>La clasificación rota la silla por semilla, así que su contador de recibos ponía `100/200`. Exactamente la mitad. Y un `100/200` se lee como un número normal, no como «la mitad de mis filas están apoyadas en nada». Estuvo así meses. Sólo saltó</sub>
-- **Y COMPRUEBA LAS DOS DIRECCIONES, que es lo que separa esta prueba de una que** <sub>línea 28</sub>
-  <br><sub>sólo dice que sí: una partida legítima desde cualquier silla tiene que ACEPTARSE, y una con los puntos inflados desde cualquier silla tiene que RECHAZARSE. Sin lo segundo, `verificar` podría devolver `true` a todo y esto seguiría en verde.</sub>
-
-### `prueba_reglas.mjs`
-
-- **`puntuacionDe` se IMPORTA, no se reescribe.** <sub>línea 48</sub>
-  <br><sub>prueba leía `estado.puntos` a pelo y daba 0 en go, reversi, mancala, snake, fagocito y peatón — que publican `score`, a veces como objeto. Seis juegos «rotos» que estaban perfectos: el roto era el comprobador.</sub>
-- **POR QUÉ HAY DOS POLÍTICAS Y NO UNA** <sub>línea 66</sub>
-  <br><sub>Go Fish llegaba a `manos [0,3,0] · mazo 1`: el único con cartas no tenía a quién pedir y la partida no estaba terminada, así que **se moría de pie** —ni seguía ni acababa, y el estado seguía diciendo `is_game_over: false`—. La</sub>
-- **NINGUNA CARTA DESAPARECE.** <sub>línea 168</sub>
-  <br><sub>`cartas_intactas` la publican guerra, unit y entropy, y hasta aquí sólo se miraba la de guerra. La de entropy llevaba con un comentario encima diciendo que fue **la lección más cara del original** —el recuento daba 95 de 96 porque</sub>
-
-### `prueba_repetidor.mjs`
-
-- **LA TABLA SE MIDE CONTRA `data/paginas.json`, QUE SE GENERA.** <sub>línea 87</sub>
-  <br><sub>`enlace_repetidor.js` lleva una tabla de dos alias (damas→checkers, ajedrez→chess) y eso es una lista escrita a mano — exactamente lo que `entrar.html` avisa que no se vuelva a hacer: «este proyecto ya ha tenido</sub>
-- **Y LAS NORMAS SE CARGAN DESDE EL ENLACE, NO DESDE `c.opciones`.** <sub>línea 158</sub>
-  <br><sub>Es la trampa entera de esta prueba: reutilizar las reglas de arriba la pondría verde aunque el enlace no llevara las normas, porque las tendría de todas formas. Se vuelven a cargar leyendo `?normas=`, igual que hace</sub>
-- **ESTO EXISTE PORQUE ME DEJÉ CUATRO JUEGOS FUERA.** <sub>línea 227</sub>
-  <br><sub>Monté el repetidor en la mesa genérica y en el motor de cartas y di el trabajo por terminado, sin haber contado nunca cuántos caminos había. Había tres:</sub>
-- **LA MARCA ES `crearRepetidor({`, CON EL PARÉNTESIS, Y NO ES QUISQUILLOSO.** <sub>línea 246</sub>
-  <br><sub>Estaba como `crearRepetidor` a secas. Al comprobar que esta prueba PUEDE fallar —renombrando la llamada a `crearRepetidorZZZ` en un motor— siguió en verde: el nombre saboteado CONTIENE el original, así que `includes` decía que sí.</sub>
-
-### `prueba_semillas.mjs`
-
-- **EL DEFECTO ES SIEMPRE EL MISMO, Y NO ES UN DEFECTO DE DISEÑO** <sub>línea 7</sub>
-  <br><sub>Un sistema que llama a `Math.random()` funciona perfectamente en una demo — que es para lo que se escribió— y no sirve para nada que tenga que reproducirse: una tirada de banco de pruebas, un informe de fallo, el recibo</sub>
-- **POR QUÉ ESTO ES UNA PRUEBA Y NO UNA LISTA DE TAREAS** <sub>línea 19</sub>
-  <br><sub>Porque una lista de tareas envejece en silencio y un techo no. Este número **sólo puede bajar**. Si sube es que alguien añadió un sistema con azar incontrolado, y eso es justo lo que no queremos que pase callando — la misma</sub>
-- **TECHO DE SISTEMAS SIN SEMBRAR.** <sub>línea 34</sub>
-  <br><sub>Cada uno que acepte `rng` baja este número. **Nunca sube.**</sub>
-- **QUEDAN 2 DENTRO DE ALCANCE PERO NO SEMBRADOS A PROPÓSITO:** <sub>línea 66</sub>
-  <br><sub>AsteroidsSystem y MarabuntaSystem (con su base BulletHeavenEngine) NO aceptan `config.rng` cacheado en el constructor porque sus entornos del gym (`AsteroidsEnv._withSeed`, `MarabuntaEnv` + `DeterministicScope`)</sub>
-- **Y CON ESO, ESTE TRINQUETE HA TOCADO SUELO: **2 NO ES DEUDA, ES EL FONDO.** <sub>línea 77</sub>
-  <br><sub>Empezó en 28 y ha bajado hasta 2, pero esos dos últimos NO hay que sembrarlos —el bloque de arriba explica por qué—, así que la regla de siempre («este número sólo puede bajar») deja de valer aquí y se invierte:</sub>
-- **LOS MIXTOS: ACEPTAN SEMILLA **Y ADEMÁS** LLAMAN A `Math.random(`.** <sub>línea 118</sub>
-  <br><sub>La cuenta de arriba es `azar && !sembrado`, así que un sistema que reciba `rng` en algún sitio queda absuelto aunque tenga un `Math.random(` suelto en otro. Y ése es igual de irreproducible que uno sin sembrar — **peor**, porque parece</sub>
-- **AVISO PARA QUIEN SIEMBRE SISTEMAS: ESTO LEE EL FICHERO ENTERO, COMENTARIOS** <sub>línea 133</sub>
-  <br><sub>INCLUIDOS. Al sembrar `RoboticArmSystem` (15-08) el comentario explicaba el cambio citando la llamada literal entre comillas, y esta comprobación la contó como una llamada de verdad: sistema sembrado + azar suelto = mixto, y en rojo.</sub>
-- **Y SE BARREN LAS ACCIONES, NO SE REPITE LA PRIMERA.** <sub>línea 185</sub>
-  <br><sub>Costó tres intentos llegar aquí. Mirar sólo el estado inicial da un falso positivo en cuanto el entorno esconde algo —el mapache de Chopper se coloca con la semilla y precisamente NO se ve al empezar, que es el juego—. Y mirar</sub>
-- **TECHO DE COPIAS DE «MARCAR DÓNDE PUEDES JUGAR», Y SÓLO PUEDE BAJAR.** <sub>línea 284</sub>
-  <br><sub>Esto ya vive en dos sitios legítimos: `Entrada.js` lo hace para los tableros (y de paso resuelve el clic entero), y `protohub/marcas.js` para los visualizadores que son MÓDULOS, que no pueden llamar a un script clásico.</sub>
-
-### `prueba_senal.mjs`
-
-- **LA PRIMERA VERSIÓN DE ESTA PRUEBA ACUSÓ A SIETE ENTORNOS SANOS.** <sub>línea 18</sub>
-  <br><sub>Se escribió el 23-08 con tres políticas —recorrer en ciclo, coger siempre la primera, coger siempre la última— y **150 pasos**. Dio siete «no separan», con su lista, su trinquete y su sabotaje. Y estaba mal, por dos motivos que se</sub>
-- **TRINQUETE. Entornos a los que NO SE LES HA CONSEGUIDO sacar dos notas, con** <sub>línea 54</sub>
-  <br><sub>lo medido en cada uno. **Sólo puede subir de tamaño con explicación.** Si aparece uno nuevo, es que se ha añadido al banco algo que no distingue.</sub>
-- **`sokoban` TAMBIÉN ESTUVO AQUÍ, Y TAMBIÉN ERA MENTIRA MÍA.** <sub>línea 63</sub>
-  <br><sub>Entró como «el generador reparte instancias triviales». No hay generador: hay ocho niveles escritos a mano, de fácil a difícil, y el primero es `#@$.#` —un tutorial de una jugada— que la semilla 1234 escoge. Uno de ocho es 12,5%, y</sub>
-- **`RaccoonSpace` ESTUVO AQUÍ Y SE HA IDO, QUE ES LO QUE TIENE QUE PASAR.** <sub>línea 75</sub>
-  <br><sub>Entró con la nota «la recompensa está detrás de NAVEGAR: `escanear` sólo se ofrece con un planeta al alcance, y ninguna política ciega llega». Era verdad con las tres sondas tontas. Con el bandido —que aprende qué verbo paga— y con</sub>
-- **EL HORIZONTE LO DICE EL ENTORNO, NO YO.** <sub>línea 87</sub>
-  <br><sub>`meta.horizon` lo escribió quien hizo el entorno y va de 150 a 5400. Medir a todos con el mismo número es preguntarle a un maratón cómo va a los cien metros. El tope existe sólo para que la prueba no tarde una eternidad, y</sub>
-- **UNA SOLA SEMILLA NO JUZGA A UN ENTORNO CUYA PARTIDA DEPENDE DE ELLA.** <sub>línea 202</sub>
-  <br><sub>`sokoban` tiene ocho niveles y la semilla elige cuál. El primero es `#@$.#` — jugador, caja y destino en fila: un TUTORIAL que se resuelve de una jugada. La semilla 1234 cae justo en él, así que la prueba medía a</sub>
-
-### `prueba_sonido.mjs`
-
-- **LÍMITE HONRADO: `sfx.js` no es un módulo —es una IIFE que toca `document` y** <sub>línea 16</sub>
-  <br><sub>`AudioContext`— así que esto lo lee, no lo ejecuta. Cuenta claves declaradas y llamadas escritas. Un `play(variable)` calculado en tiempo de ejecución se le escapa, y por eso se declara aparte cuántas llamadas eran dinámicas: si ese</sub>
-- **EL SABOTAJE, que es lo que le da valor a los dos verdes de arriba.** <sub>línea 120</sub>
-  <br><sub>Se pide un sonido que seguro no existe. Si esto NO suspendiera, querría decir que la comparación no compara: que el catálogo se leyó vacío, que el recorrido no encontró ficheros, o que el patrón de `play` dejó de encajar. Cualquiera de</sub>
-
-### `prueba_subasta.mjs`
-
-- **POR QUÉ ESTA FUNCIÓN Y NO OTRA** <sub>línea 10</sub>
-  <br><sub>Nuestro spades no tiene subasta: gana quien más bazas hace. Y en spades la subasta ES el juego — se puntúa por ACERTAR cuántas vas a hacer, no por hacer muchas. Sin ella, «predecirte a ti mismo» —que es la única capacidad que ningún otro de los 35</sub>
-- **INDIVIDUAL, NO POR PAREJAS, Y ES UNA DECISIÓN** <sub>línea 18</sub>
-  <br><sub>El spades de torneo es dos contra dos con las apuestas SUMADAS por equipo. Nuestro motor no tiene concepto de equipo —el marcador es por jugador— y meterlo tocaría el arbitraje de mesas, el reparto de asientos y la métrica. Así que se implementa la</sub>
-- **LO QUE NO SE PUEDE ROMPER** <sub>línea 26</sub>
-  <br><sub>Una partida se verifica volviéndola a jugar con `{juego, semilla, jugadas}`. Todo lo que decida el resultado tiene que vivir DENTRO del estado, no en una variable del módulo: si las apuestas se guardan fuera, la re-simulación no las tiene y el</sub>
-- **LA CARTA TIENE QUE SER UNA DE VERDAD, O ESTE VERDE NO VALE NADA.** <sub>línea 74</sub>
-  <br><sub>La primera versión probaba con `H_2` a secas y salía en verde HOY, sin subasta ninguna: el juego la rechazaba porque ese nombre no existe —sus jugadas se llaman `jugar:H_2`— no porque hubiera una fase de apuestas que respetar. Un verde que</sub>
-- **ESTE VERDE SÓLO CUENTA SI LAS APUESTAS SE ACEPTARON.** <sub>línea 111</sub>
-  <br><sub>Sin la comprobación de arriba, esto salía en verde HOY: como las cuatro apuestas se rechazaban, las jugadas seguían siendo cartas «después» de una fase que nunca ocurrió. Un verde que se cumple porque el paso anterior falló es peor que un rojo,</sub>
-- **ESTO FALTABA EN MI SPEC, Y ES EL FALLO QUE SE COLÓ POR EL HUECO.** <sub>línea 131</sub>
-  <br><sub>La primera versión de esta prueba pasó entera con una implementación que dejaba el juego MUERTO DE PIE: `prueba_reglas` lo cazó con «1 jugada · sin jugadas legales y sin terminar». La causa, medida:</sub>
-- **Y AQUÍ TAMBIÉN: SÓLO CUENTA SI LA LISTA LLEVA APUESTAS DENTRO.** <sub>línea 224</sub>
-  <br><sub>Hoy salía en verde con 52 jugadas y CERO apuestas — verificaba perfectamente una partida sin subasta. Lo que hay que demostrar no es que el verificador funcione: es que sigue funcionando CON la fase nueva dentro, que es donde se rompería si</sub>
-
-### `prueba_sustrato_sala.mjs`
-
-- **Y LA LECCIÓN YA ESTABA ESCRITA EN LA CASA, APLICADA A LA MITAD.** <sub>línea 12</sub>
-  <br><sub>La cabecera de `ProtoHub.sustrato()` lo cuenta con estas palabras: «la sala nueva usaba `sustratoDe(juego, estado)` para los treinta, que sólo DERIVA: los once juegos con sustrato propio salían vacíos». Se arregló el camino local y el</sub>
-- **SE MIDE CONTRA EL ÁRBITRO DESPLEGADO, Y NO ES POR GUSTO.** <sub>línea 22</sub>
-  <br><sub>Mi primera versión comparaba el sustrato propio contra el derivado, en local. Eso mide la DERIVACIÓN —que no puede reconstruir un sustrato escrito a mano, y eso ya se sabía— y no lo que le llega a un jugador. Al arreglarlo se me quedó</sub>
-- **SI SUSPENDE JUSTO DESPUÉS DE DESPLEGAR, REPÍTELA ANTES DE CREER NADA.** <sub>línea 32</sub>
-  <br><sub>Toca la red, así que hereda la trampa de siempre. Recién desplegado el árbitro dio cinco rojos —sokoban, cripta, relevo, cabina, pradera—; preguntándole a mano al mismo worker por relevo, entregaba sus 247 celdas perfectamente, y al</sub>
-
-### `prueba_sustrato.mjs`
-
-- **TECHO DE DEUDA.** <sub>línea 36</sub>
-  <br><sub>Cada juego que publique `sustrato(p)` nativo baja este número. **Nunca sube.** Si esta prueba falla porque el número creció, es que se añadió un juego sin sustrato propio — y eso es exactamente lo que no queremos que pase callando.</sub>
-- **ESTABA EN 19 CON LA DEUDA YA EN 17, Y ESO ES UN TRINQUETE FLOJO.** <sub>línea 42</sub>
-  <br><sub>Dos de holgura no parecen nada y son justo el hueco por el que se cuela lo que este número existe para impedir: `prueba_de_las_pruebas.mjs` le quitó el sustrato a las damas a propósito, la deuda subió a 18, y esta comprobación **aprobó**.</sub>
-- **UNA ZONA CON CASILLAS NO PUEDE PERDER NINGUNA.** <sub>línea 88</sub>
-  <br><sub>`items` sólo trae las cartas destapadas y `ocultas` es un número, así que juntos dicen CUÁNTAS hay y no DÓNDE. Para la caja de entropy eso no basta: `cambiar:5` nombra un hueco fijo y dos cartas iguales en la misma</sub>
-- **Y SE COMPRUEBA CON UN JUGADOR QUE ANDA, NO CON EL PRIMER MOVIMIENTO** <sub>línea 196</sub>
-  <br><sub>QUE PILLE.</sub>
-- **1.quinquies — UN SECRETO DICHO A SOLAS NO SE VE DESDE OTRA SILLA.** <sub>línea 245</sub>
-  <br><sub>La quinta estructura trae su propia forma de filtrar información, y en esta casa la información oculta ya se ha escapado DOS VECES —la mano del rival, las jugadas legales de otro— las dos en silencio y las dos porque alguien</sub>
-- **Y LO DE ARRIBA MIRA LA ETIQUETA, NO EL SECRETO.** <sub>línea 292</sub>
-  <br><sub>Comprobado sabotéandola: cambiar el filtro de shinigami por `Object.values(p.oculta)[0]` —o sea, enseñarle a TODOS la elección del primero— y la comprobación de arriba APROBÓ. Normal: el dicho filtrado sigue</sub>
-- **SE PARA EN CUANTO HAY SECRETO PENDIENTE, Y ESO NO ES UN DETALLE.** <sub>línea 319</sub>
-  <br><sub>La primera versión jugaba cuatro veces a lo tonto y sólo cazaba a shinigami. En `frentes` (dos sillas) y en `nave` (cuatro) la ronda se RESUELVE cuando han elegido todos, y al resolverse `p.oculta` se vacía:</sub>
-- **2.bis — QUE EL README NO MIENTA SOBRE CUÁNTOS JUEGOS HAY.** <sub>línea 360</sub>
-  <br><sub>Decía «19 juegos» con veintiséis en la lista, en dos sitios distintos, y es lo primero que lee quien llega al proyecto. No es un descuido aislado: es la cuarta vez que un número escrito a mano se separa de la realidad sin avisar</sub>
-- **2.bis.bis — Y QUE LOS DOCUMENTOS NO MIENTAN SOBRE CUÁNTAS BARAJAS HAY.** <sub>línea 383</sub>
-  <br><sub>Cinco sitios decían «6 barajas» el día que se añadió la séptima, y ninguno dio error: un número viejo nunca da error, sólo deja de ser cierto. Es la quinta vez que pasa esto mismo con otro número (los juegos del README, el escaparate,</sub>
-- **2.ter — QUE `montarMesa` SIGA ELIGIENDO EL MOTOR DE CARTAS PARA LOS QUE** <sub>línea 406</sub>
-  <br><sub>REPARTEN CARTAS.</sub>
-- **ZONAS MÁS REJILLA NO ES UN FALLO: ES UN JUEGO CON TABLERO Y COSAS ENCIMA.** <sub>línea 436</sub>
-  <br><sub>Esto marcaba en rojo a cualquiera que publicara las dos, con el argumento de que `montarMesa` le daría el motor de tablero y su mesa de casino saldría mal en silencio. El argumento sólo vale si el juego ES de cartas: para un parchís</sub>
-- **Y NO SE SUSPENDE A NADIE POR SER HÍBRIDO.** <sub>línea 457</sub>
-  <br><sub>Esto era un FALLO —«zonas y rejilla a la vez»— hasta que llegó el parchís, que tiene tablero, fichas y un dado sobre la mesa. Se afinó entonces a «items que son cartas de la biblioteca», y aguantó hasta el parchís canadiense, que reparte</sub>
-- **2.ter — Y CUÁNTOS LA USAN DE VERDAD.** <sub>línea 487</sub>
-  <br><sub>El número de arriba lleva meses diciendo diez y estaba en verde mientras OCHO de esos diez no tenían página: mide lo que el sustrato PERMITE, no lo que alguien puede abrir en el navegador. Un juego capaz de dibujarse en la mesa y</sub>
-- **2.quater — DOS NOMBRES PARA EL MISMO DATO.** <sub>línea 524</sub>
-  <br><sub>Un juego que publica `legal_moves` y `legal_actions` con el mismo valor no tiene dos campos: tiene uno y una trampa. El día que alguien quite el que sobra, quien leyera el otro se queda sin nada — y no dará error, porque</sub>
-- **SE MIDE POR VALOR, NO POR UNA LISTA DE SOSPECHOSOS.** <sub>línea 532</sub>
-  <br><sub>Una lista a mano es lo que ya falló seis veces en este proyecto — la última, dentro de `desajustes.mjs`, que juraba que `legal_actions` no lo leía nadie porque su lista de consumidores no incluía el motor de cartas.</sub>
-- **COINCIDIR UNA VEZ NO ES SER EL MISMO DATO.** <sub>línea 563</sub>
-  <br><sub>La primera versión contaba cualquier par que coincidiera en algún momento y daba SEIS, de los que la mitad eran ruido: `biblioteca` y `cartas_intactas` son dos booleanos que valen `true` los dos, y `explorado` y `puntos` cruzan el</sub>
-- **Y SE LLEVA LA CUENTA POR JUEGO, NO EN GLOBAL.** <sub>línea 577</sub>
-  <br><sub>Con una sola lista de «pares que han divergido», que `score` y `puntos` sean cosas distintas en go —allí `score` es `{black, white}` y `puntos` tu escalar— bastaría para absolver ese par en los OTROS seis juegos donde sí son el mismo</sub>
-- **TRES JUEGOS NECESITAN MÁS DE 8 PASOS, Y ES POR LO QUE MIDEN.** <sub>línea 591</sub>
-  <br><sub>`marcador` y `avance` son datos DISTINTOS en parchís, canadiense y oca —el primero suma un bono por fichas ya metidas, el segundo no— pero en los primeros turnos de una carrera nadie ha metido ninguna, así que los 8 pasos</sub>
-- **COMPROBADO DESPUÉS CON OCHO SEMILLAS, PORQUE UNA NO ES UNA MEDIDA.** <sub>línea 607</sub>
-  <br><sub>Un tope elegido sobre una sola partida es un fallo intermitente esperando otra semilla, y ésos son los peores. Con las semillas 1, 2, 3, 6, 7, 11, 23 y 42 el peor caso de cada uno es MUCHO más bajo de lo que salió al calibrar:</sub>
-- **LO QUE EL `>= 2` DE ARRIBA NO PUEDE VER, Y POR QUÉ SE DICE IGUALMENTE.** <sub>línea 669</sub>
-  <br><sub>Un par sólo cuenta si coincide en DOS juegos o más, y eso está bien: bajarlo a uno da diez pares de los que NUEVE son coincidencia —`height`/`width` en un tablero cuadrado, `vida`/`vida_rival` que empiezan iguales, `ganadas`/`perdidas` a cero,</sub>
-
-### `prueba_teclado.mjs`
-
-- **DE DÓNDE SALE, MEDIDO EN UN CHROME DE VERDAD:** <sub>línea 6</sub>
-  <br><sub>quería escribir  «las casas se ven raras y no se donde estoy» salía            «lcevenrrynoeoneetoy» letras perdidas  23</sub>
-- **ESTA PRUEBA ES DE TEXTO, NO DE NAVEGADOR, Y HAY QUE SABER QUÉ NO CUBRE.** <sub>línea 22</sub>
-  <br><sub>Lo de arriba se midió abriendo snake y escribiendo tecla a tecla; eso no cabe en `npm test` sin arrastrar un Chrome. Lo que sí se puede comprobar sin navegador es que **ningún manejador de teclas del arcade se salte la comprobación del foco**, y</sub>
-- **ESTO ERA `activeElement|isContentEditable` Y SE QUEDÓ VERDE CON EL CABLE CORTADO.** <sub>línea 41</sub>
-  <br><sub>Al comprobar que esta prueba puede fallar —quitando la llamada y renombrando la función— siguió aprobando: los nombres seguían APARECIENDO en el fichero, dentro de una función que ya no llamaba nadie. Buscar una palabra en alguna parte de un</sub>
-- **Y LA DEFINICIÓN NO CUENTA COMO LLAMADA.** <sub>línea 55</sub>
-  <br><sub>`function estaEscribiendo()` contiene literalmente `estaEscribiendo()`, así que la marca de arriba aprobaba el fichero que DEFINE la función aunque nadie la llamara — y ese fichero es justo el que hay que vigilar.</sub>
-
-### `prueba_topes.mjs`
-
-- **Y LA LISTA NO SE ESCRIBE A MANO: SE MIDE.** <sub>línea 15</sub>
-  <br><sub>Escribir «éstos cuatro son de supervivencia» sería la enésima lista paralela que se separa del código. Se juega cada juego con topes crecientes y se mira si la política de referencia llega a terminar alguna vez:</sub>
-- **TRES SEMILLAS NO BASTAN, Y LO APRENDÍ PUBLICANDO.** <sub>línea 47</sub>
-  <br><sub>Con 3 semillas snake y fagocito daban «terminan con tope 400», y la clasificación —que juega 120— los descartó igualmente por corte. No es que la sonda mintiera: es que el conjunto que miraba no contenía las semillas malas. Se pasa `--semillas` para</sub>
-- **SE MIDEN LAS DOS REFERENCIAS, Y LA SEGUNDA ES LA QUE IMPORTA.** <sub>línea 60</sub>
-  <br><sub>Empecé midiendo sólo la política tonta, pensando que si la tonta termina cualquiera termina. Es al revés, y snake lo cantó: la tonta se mata en veinte pasos y termina de sobra a las 120, mientras la de la casa —que juega bien— SOBREVIVE y se la come el</sub>
-- **EL MISMO UMBRAL QUE `tabla.mjs`, Y TIENE QUE SER EL MISMO.** <sub>línea 111</sub>
-  <br><sub>La tabla acepta un juego cuando termina el 95% de las partidas de referencia, porque exigir el 100% borraba fagocito por DOS partidas de doscientas cuarenta —dos bucles de la política tonta—. Si esta sonda exigiera el 100%, diría «no</sub>
-- **SE ESCRIBE LO MEDIDO, O `tabla.mjs` NO PUEDE USARLO.** <sub>línea 138</sub>
-  <br><sub>Este número es el que hace que un juego entre o no en la clasificación, así que dejarlo sólo en la terminal es lo mismo que no medirlo. Se guarda para que la tabla lo lea, y con MARGEN: el tope que se publica es el medido por dos.</sub>
-- **Y SÓLO SE ESCRIBE SI SE MIDIERON TODOS LOS QUE HAY EN EL FICHERO.** <sub>línea 150</sub>
-  <br><sub>pasada parcial borraría los topes de los que no se midieron esta vez, y la tabla los volvería a cortar sin que nadie tocara nada.</sub>
-
-### `prueba_turno.mjs`
-
-- **EL FALLO QUE SE BUSCA: dos sillas que ven la MISMA palabra de «me toca».** <sub>línea 54</sub>
-  <br><sub>Con el vocabulario `player`/`cpuN`, «player» significa «tú». Si dos sillas lo ven a la vez, una de las dos está mintiendo. Con `white`/`black` no aplica: eso es un color, no un pronombre, y las dos sillas deben verlo igual.</sub>
-- **EL INVARIANTE ES «EXACTAMENTE UNA», NO «LA SILLA `p.turno`».** <sub>línea 66</sub>
-  <br><sub>Mi primera versión comparaba contra `p.turno` y denunciaba al alisápolis en 19 de 40 jugadas. Era falso: en una subasta quien decide es el pujador, no quien tiene el turno de la mesa, así que `p.turno` no es la respuesta a «¿quién mueve</sub>
-
-### `prueba_variantes.mjs`
-
-- **Y COMER TIENE QUE QUITAR UNA FICHA.** <sub>línea 75</sub>
-  <br><sub>Lo de arriba comprueba dos cosas ciertas —que cada variante juega distinto y que una partida se repite igual con sus normas— y las dos las cumplía un juego ROTO. Con `damaVuela`, la captura de la dama no retiraba a la víctima: `mover` sólo quitaba la</sub>
-- **Y EL CASO CONCRETO, PUESTO A MANO.** <sub>línea 120</sub>
-  <br><sub>Escribí la invariante de más arriba, volví a meter el fallo a propósito… y siguió en verde: `11/11 capturas comieron`. Y era verdad — en una partida desde la posición inicial, con un rival tonto y doscientas jugadas, TODAS las capturas que salen son</sub>
-
-### `prueba_verbos.mjs`
-
-- **POR QUÉ EL DENOMINADOR ES EL PANEL Y NO UNA LISTA DE JUEGOS CON VERBOS.** <sub>línea 14</sub>
-  <br><sub>Escribir «estos doce tienen verbos» sería la enésima lista a mano, y de nueve números falsos de agosto siete fueron de denominador. Cada página dice cuántos verbos le tocan; si un juego no ofrece ninguno en ese instante, sale como NO COMPROBABLE, que</sub>
-- **Y HAY TRES CAMINOS DE PANEL, NO DOS.** <sub>línea 21</sub>
-  <br><sub>`jugadas.js`, `SovereignBoardEngine` y `SovereignCardEngine` pintan cada uno sus `.mesa-jugada`. El repetidor ya se montó una vez «en los dos motores» y cuatro juegos se quedaron fuera. Esta prueba es la que nota que falta el tercero.</sub>
-- **SE LEE `title`, QUE ES LA JUGADA, NO LA ETIQUETA.** <sub>línea 70</sub>
-  <br><sub>El panel muestra `H_Q` para la jugada `jugar:H_Q`, y la barra muestra «enviar a» para `enviar_a`. Comparando etiquetas salieron seis juegos en rojo —las trece cartas de la mano de hearts «faltando» en la barra—</sub>
-- **Y LO QUE EL AGENTE RECIBE, PARA PODER COMPARARLO CON LO QUE SE VE.** <sub>línea 82</sub>
-  <br><sub>«El panel de jugadas es literalmente `legal_moves`» está escrito en cinco comentarios de este proyecto y era la frase en la que se apoya el banco entero: si las puertas no ofrecen lo mismo, comparar a una persona con un</sub>
-- **LA PUERTA HUMANA Y LA DEL AGENTE, ¿OFRECEN LO MISMO?** <sub>línea 97</sub>
-  <br><sub>Se comparan las LISTAS y no los totales. Un panel al que le falte una jugada y le sobre otra tiene el mismo número de botones, y ése es exactamente el caso que importa: significa que una persona y un agente están jugando a cosas distintas</sub>
-- **COMPROBADO CORTANDO EL CABLE: quitando una jugada del pintado de `jugadas.js`** <sub>línea 105</sub>
-  <br><sub>(`legales.slice(1)`), parchís sale en rojo diciendo «no salen tirar». Y con el mismo sabotaje snake seguía en verde, que NO es un fallo de esta prueba sino el recordatorio de que hay TRES caminos de panel: cortar uno sólo prueba ése. Un</sub>
-- **SE ESCRIBE LO MEDIDO, CON FECHA, Y SÓLO EN LA PASADA COMPLETA.** <sub>línea 156</sub>
-  <br><sub>La ficha de cada juego deriva lo que puede y de la barra de verbos no sabía nada. Corriendo `node prueba_verbos.mjs snake` se guardaría un fichero con un juego y treinta y cuatro huecos, que en la ficha se leerían como «sin verbos» — y eso es</sub>
-- **`null`, NO CERO, CUANDO NO SE PUDO COMPROBAR.** <sub>línea 167</sub>
-  <br><sub>Escribir `verbos: 0` para un juego que en ese instante no ofrecía ninguno hace que la ficha publique «este juego no tiene verbos», que es una afirmación distinta y puede ser falsa: hearts no ofrece verbos al empezar la</sub>
-
-### `prueba_veredicto.mjs`
-
-- **Y LO QUE MÁS IMPORTA VIGILAR ES QUE NO SE PASE DE LISTO.** <sub>línea 11</sub>
-  <br><sub>Si un día alguien hace que «gráficamente muy pobre» devuelva un veredicto automático, el buzón empezará a marcar como resuelto lo que nadie ha mirado — y eso es peor que no tener veredicto, porque parece trabajo hecho. Por eso hay una</sub>
-- **EL DADO NO SE MUEVE» NO ES «SE MUEVE TODO EL RATO» ──** <sub>línea 64</sub>
-  <br><sub>Son la queja contraria y comparten las tres palabras. La primera versión del clasificador metía la de la oca en `movimiento` —la familia del temblor— y habría mandado a alguien a buscar un bucle de animación donde lo que falta es</sub>
-- **LA QUE PROTEGE DE VERDAD: LO DE ASPECTO NECESITA OJOS ──** <sub>línea 80</sub>
-  <br><sub>El día que «gráficamente muy pobre» devuelva un veredicto automático, el buzón empezará a dar por resuelto lo que nadie ha mirado. Y eso no da error: da una lista más corta.</sub>
-- **SE VIGILA LA DECLARACIÓN, NO SÓLO EL RESULTADO.** <sub>línea 88</sub>
-  <br><sub>La primera versión sólo miraba que el veredicto saliera «mirar», y el sabotaje —quitar `aspecto` de la lista— NO la hacía suspender: hay un camino por defecto al final de `veredicto()` que devuelve «mirar» igualmente. O sea</sub>
-- **Y LA TRAMPA DE ESTA COMPROBACIÓN ES ELEGIR MAL LA JUGADA.** <sub>línea 129</sub>
-  <br><sub>`movioLaPantalla` nació porque el aviso de `guerra` —«le doy a voltear y no pasa nada»— era cierto y no lo era: el árbitro movía las 52 cartas y el juego no publicaba sustrato, así que la pantalla no tenía nada que dibujar.</sub>
-- **`defensa` Y `relevo` SON LOS QUE HACEN QUE ESTO SIRVA DE ALGO.** <sub>línea 146</sub>
-  <br><sub>Con sólo damas/guerra/sokoban/go esta comprobación aprobaba igual con el cable cortado —lo dijo `prueba_de_las_pruebas.mjs`— porque en los cuatro la PRIMERA jugada legal ya se ve, y el sabotaje que reduce la búsqueda a una</sub>
-
-### `prueba_version.mjs`
-
-- **Y LO QUE FALTA AQUÍ NO ES UN AGUJERO.** <sub>línea 17</sub>
-  <br><sub>El resumen no cubre `js/protohub/` —ni el pintor, ni el sustrato, ni las reglas—, y además esos ficheros se importan como módulos con rutas normales, así que ni siquiera podrían llevar `?v=`. Visto así parece el mismo fallo que</sub>
-- **Ojo con lo que NO entra en el resumen: el vendor (va sellado en su ruta,** <sub>línea 35</sub>
-  <br><sub>`three-r128`) y `montarMesa.js` mismo, que no puede contener su propio hash. `montarMesa.js` no lo necesita: lo carga la página con `import`, y las páginas se sirven siempre frescas.</sub>
-- **LA LISTA SE LEE DE `montarMesa.js`, QUE ES QUIEN SELLA.** <sub>línea 49</sub>
-  <br><sub>Aquí había cuatro nombres escritos —`Entrada.js`, los dos motores y `arcade_mats.js`— y `montarMesa.js` sella además todo su `ANDAMIO`: `gestos.js`, `objetivo_visible.js`, `encuadre.js` y `mandos.js`. Esos cuatro</sub>
-- **ENTRA SOLO» ERA MENTIRA A MEDIAS: SÓLO SI SE ESCRIBÍA SIN BARRA.** <sub>línea 65</sub>
-  <br><sub>El patrón cazaba `'js/…'` y nada más. `montarMesa.js` sella TODO lo que no empiece por `/vendor/`, así que una entrada absoluta —`'/js/sfx.js'`, que es como hay que escribir lo que vive fuera del arcade— salía con `?v=` y NO</sub>
-- **Y LAS HOJAS DE ESTILO, QUE FALTABAN.** <sub>línea 92</sub>
-  <br><sub>El resumen sólo miraba los `.js`, así que cambiar el CSS no subía la versión y el sello seguía siendo el mismo: los navegadores servían la hoja guardada. Salió el 13-08-2026, cuando el arreglo de que el panel dejara pasar los clics resultó vivir</sub>
-
-### `prueba_vida.mjs`
-
-- **Y EL PINTOR LA MIRA ──** <sub>línea 69</sub>
-  <br><sub>Se comprueba la función pura, no el dibujo: `escalaPorVida` no se puede importar —`pintar3d.js` necesita THREE y un lienzo— así que se lee su código y se reproduce el contrato que declara. Es menos de lo que me gustaría y se dice:</sub>
-- **LA QUE PROTEGE DE VERDAD: QUE EL BUCLE SIGA LLAMÁNDOLA ──** <sub>línea 93</sub>
-  <br><sub>Es la mitad que se pierde sin dejar rastro. Quitar la llamada de dentro del bucle de instancias no rompe nada: las piezas se dibujan todas del mismo tamaño, que es exactamente como se veían antes de hoy, y ninguna prueba de</sub>
-- **SE BUSCA POR LO QUE HACE, NO POR CÓMO ESTÁ ESCRITO.** <sub>línea 101</sub>
-  <br><sub>Buscaba literalmente `for (const p of g.items) {`, y el día que ese bucle se sacó a `volcarPiezas` para poder animar las piezas, esta comprobación suspendió con «no encuentro el bucle: la forma del pintor cambió». Hizo bien en saltar</sub>
-
-### `prueba_vistas.mjs`
-
-- **QUÉ SE PUEDE COMPROBAR Y QUÉ NO, QUE ES LA MITAD DEL VALOR** <sub>línea 18</sub>
-  <br><sub>Los juegos que pasan por el pintor genérico NOMBRAN lo que dibujan: `muro`, `niebla`, `sueloA`, y las piezas con prefijo `p:` o `z<zona>:v<valor>`. En ésos la cuenta se puede cruzar contra el sustrato y cuadra.</sub>
-- **TRINQUETE AL REVÉS: los NO comprobables sólo pueden bajar.** <sub>línea 46</sub>
-  <br><sub>Hoy son los que tienen visualizador propio y dibujan sin nombrar. Si sube, es que alguien ha añadido un juego que pinta a su manera sin decir qué pinta.</sub>
-- **NO HABLA EL IDIOMA» NO ES LO MISMO QUE «DICE OTRA COSA».** <sub>línea 135</sub>
-  <br><sub>Primero puse «si tiene mallas con nombre, es comprobable», y las mesas de cartas salieron como fallo: nombran el MUEBLE —`Node`, del modelo 3D— pero sus cartas no llevan el prefijo de pieza, así que salía «el sustrato dice 8 y se</sub>
-
 ## Otros
 
 ### `public/games/_prueba_mundo.html`
@@ -3589,14 +3911,39 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **El plugin NO tiene interruptor propio: su `renderFn` es simplemente** <sub>línea 2014</sub>
   <br><sub>`() => composer.render()`. Escribí un `cine.enabled` de mi cosecha antes de mirar, y no habría hecho nada. Se alterna eligiendo QUIÉN pinta. let cineEncendido = true;</sub>
 
+### `public/games/defiende_sendero.html`
+
+- **Y SE DIBUJA EN 2D A PROPÓSITO, NO POR AHORRAR.** <sub>línea 113</sub>
+  <br><sub>El juego ES una matriz de 12×12. Pintarlo en 3D isométrico quedaría más bonito y escondería justo lo que este banco defiende: que al modelo se le entrega el mundo YA en forma de rejilla plana, en vez de que un modelo de</sub>
+- **ESTO ES TODO LO QUE APORTA ESTA PÁGINA AL DIBUJO: COSMÉTICA.** <sub>línea 130</sub>
+  <br><sub>Qué emoji lleva cada torreta y de qué color es cada bicho. Ni una posición, ni una regla, ni un tamaño de mundo — eso sale del sustrato y lo pinta un pintor que no sabe a qué se juega.</sub>
+- **EL MOTOR DICE POR QUÉ NO, Y AQUÍ SE ENSEÑA TAL CUAL.** <sub>línea 194</sub>
+  <br><sub>`construir` devuelve el motivo en vez de fallar en silencio. Un clic que no hace nada y no explica por qué es la clase de silencio que en este proyecto siempre acaba siendo un fallo que nadie ve — hoy me ha pasado con un enlace</sub>
+- **EL SUSTRATO SE PUBLICA EN LA PÁGINA, Y NO ES UN AÑADIDO DE DEPURACIÓN.** <sub>línea 270</sub>
+  <br><sub>Es la capa de abajo del proyecto: el estado en el idioma común del que salen el texto, los números, el pintor 2D y el 3D. Que esta página lo exponga significa que cualquiera —una extensión, un agente en la consola, otra vista— puede leer</sub>
+
 ### `public/games/raccoon_city_sector.html`
 
 - **En el <head> y SIN defer: un importmap no se puede añadir una vez que ha** <sub>línea 90</sub>
   <br><sub>empezado a cargar un módulo, y los módulos van diferidos. --> <script src="/js/mundo.js"></script></sub>
-- **`cielo:true` Y `luces:true`, Y AL PRINCIPIO LOS PUSE LOS DOS EN FALSE.** <sub>línea 138</sub>
+- **`cielo:true` Y `luces:true`, Y AL PRINCIPIO LOS PUSE LOS DOS EN FALSE.** <sub>línea 139</sub>
   <br><sub>El razonamiento era «la escena trae las suyas, no le añadas encima». Suena prudente y dejó la ciudad negra: media de luminancia 0,0404 con el 41% de los píxeles a negro puro. La sala cinematográfica —misma tubería, mismo preset</sub>
-- **LA NIEBLA TIENE QUE SER DEL COLOR DEL CIELO, Y ERA CASI NEGRA.** <sub>línea 163</sub>
+- **LA NIEBLA TIENE QUE SER DEL COLOR DEL CIELO, Y ERA CASI NEGRA.** <sub>línea 164</sub>
   <br><sub>Con `fogColor: 0x020408` sobre el cielo de noche salía una costura dura en el horizonte: los edificios lejanos se fundían a negro mientras el cielo detrás seguía azul. Una niebla que no es del color del fondo no</sub>
+- **AQUÍ MANDA `RaccoonSpaceCore`, Y ANTES NO** <sub>línea 200</sub>
+  <br><sub>Hasta el 24-08 esta página se jugaba sola: la batería la llevaba `RaccoonCitySystem`, el escaneo y el caliente/frío estaban escritos aquí en el HTML, y el banco medía `RaccoonSpaceCore` con otros números. Dos juegos con el</sub>
+- **EL RADIO DE DIBUJO ES EL DEL NÚCLEO, NO UN 80 SUELTO.** <sub>línea 231</sub>
+  <br><sub>El núcleo reparte los edificios en rejilla dentro de ±tanque/2. Si aquí se dibujara con otro radio, la persona vería una ciudad de un tamaño y jugaría en otra: el escáner llegaría a sitios que en pantalla parecen lejísimos. Se copia</sub>
+- **LAS BANDAS SALEN DEL NÚCLEO, NO DE UNOS UMBRALES ESCRITOS AQUÍ.** <sub>línea 320</sub>
+  <br><sub>Esta página tenía sus propios cortes (0,10 · 0,25 · 0,45 · 0,65) sobre una distancia normalizada distinta de la del núcleo, así que un mismo edificio podía salir «WARM» para la persona y «templado» para el modelo. El dato es</sub>
+- **EL CLIC APUNTA; QUIEN ESCANEA ES EL NÚCLEO.** <sub>línea 364</sub>
+  <br><sub>Antes esta función escaneaba ella misma cualquier edificio de la pantalla, y eso hacía el dron decorativo: se ganaba sin despegar. Ahora sólo pide, y el núcleo escanea únicamente lo que tiene a tiro. Si no llega, se dice — que el</sub>
+- **EL PORCENTAJE SE CALCULA; NO ES EL NÚMERO DE LA BATERÍA.** <sub>línea 431</sub>
+  <br><sub>La barra hacía `width = fuel + '%'`, que sólo era correcto porque el depósito viejo empezaba justo en 100. Con el del núcleo —treinta— la barra saldría al 30% con el depósito lleno: la pantalla mintiendo sin un error.</sub>
+- **A TIRO» LO DICE EL NÚCLEO, NO UN 25 ESCRITO AQUÍ.** <sub>línea 485</sub>
+  <br><sub>El HUD ponía `< 25` a ojo mientras el alcance real del escáner es `radio + 25` y cambia con cada edificio. O sea que había edificios que se podían escanear y el HUD decía que no, y al revés. Un indicador que</sub>
+- **EL PUENTE RL ERA UN TERCER JUEGO, Y AHORA ES EL MISMO.** <sub>línea 514</sub>
+  <br><sub>Tenía su propia observación —cinco números y dos por edificio, normalizados a ojo— y su propio `step` que empujaba el dron a mano y escaneaba con un radio de 25. O sea que esta página ofrecía TRES juegos distintos: el de la persona,</sub>
 
 ### `public/games/raccoon_floor_search.html`
 
@@ -3607,13 +3954,45 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 
 - **Va en el <head> y SIN defer a propósito: un importmap no se puede añadir** <sub>línea 46</sub>
   <br><sub>después de que empiece a cargar un módulo, y los módulos van diferidos. Un script clásico aquí arriba es lo único que llega a tiempo. --></sub>
-- **TRES BANDERAS APAGADAS, Y CADA UNA POR UN MOTIVO DISTINTO.** <sub>línea 96</sub>
+- **TRES BANDERAS APAGADAS, Y CADA UNA POR UN MOTIVO DISTINTO.** <sub>línea 97</sub>
   <br><sub>`cielo:false`  — esto se mira desde órbita: el fondo es espacio, y el cielo atmosférico de Rayleigh pintaría un horizonte que aquí no existe.</sub>
+- **AQUÍ MANDA `RaccoonSpaceCore`, Y ANTES NO** <sub>línea 133</sub>
+  <br><sub>Hasta el 24-08 el juego estaba escrito en este HTML —escaneo, caliente/frío, victoria— y la batería la llevaba `RaccoonPlanetSystem`, mientras el banco medía `RaccoonSpaceCore` con otros números. Dos juegos con el mismo nombre.</sub>
+- **LAS BANDAS SALEN DEL NÚCLEO, NO DE UNOS UMBRALES ESCRITOS AQUÍ.** <sub>línea 230</sub>
+  <br><sub>Esta página medía el ángulo entre ciudades sobre la esfera y lo cortaba con sus propios umbrales; el núcleo mide la distancia en línea recta con otros. La misma ciudad podía salir «WARM» para la persona y «fresco» para el modelo. El</sub>
+- **EL CLIC APUNTA; QUIEN ESCANEA ES EL NÚCLEO.** <sub>línea 312</sub>
+  <br><sub>Antes esta función escaneaba cualquier ciudad de la pantalla, y eso hacía la órbita decorativa: se ganaba sin mover el satélite. Ahora sólo pide, y el núcleo escanea únicamente lo que tiene a tiro — que en una esfera significa</sub>
+- **EL PORCENTAJE SE CALCULA; NO ES EL NÚMERO DE LA BATERÍA.** <sub>línea 350</sub>
+  <br><sub>`width = fuel + '%'` sólo funcionaba porque el depósito viejo empezaba en 100. Con el del núcleo —doce— la barra saldría al 12% con el depósito lleno: la pantalla mintiendo sin dar un error.</sub>
+- **EL INDICADOR DE ALCANCE, QUE ANTES NO EXISTÍA.** <sub>línea 386</sub>
+  <br><sub>Con el escaneo a distancia libre no hacía falta; ahora bajar la órbita es LA decisión de la etapa, y sin un indicador la persona no sabe si ya está lo bastante cerca — pincharía a ciegas hasta quedarse sin batería.</sub>
 
 ### `public/games/raccoon_space.html`
 
 - **En el <head> y SIN defer: un importmap no se puede añadir una vez que ha** <sub>línea 62</sub>
   <br><sub>empezado a cargar un módulo, y los módulos van diferidos. --> <script src="/js/mundo.js"></script></sub>
+- **EL NÚCLEO DEL BANCO, NO UN SEGUNDO MOTOR.** <sub>línea 102</sub>
+  <br><sub>Esta página usaba `RaccoonSpaceSystem` —4,5 KB de cinemática con THREE dentro— mientras el banco medía con `RaccoonSpaceCore`. Mismo nombre de etapa, dos juegos distintos:</sub>
+- **LOS DEDOS SE TRADUCEN A LOS VERBOS DEL NÚCLEO, Y A NINGÚN OTRO SITIO.** <sub>línea 180</sub>
+  <br><sub>Es la regla del patrón dorado para la puerta humana: *«traduce dedos a verbos. Nunca inventa una jugada»*. Antes esta página movía la nave por su cuenta con su propia cinemática; ahora sólo dice cuál de los ocho verbos legales quiere, y</sub>
+- **EL NÚCLEO PRIMERO, Y LA FACTORÍA DIBUJA LO SUYO.** <sub>línea 216</sub>
+  <br><sub>El orden importa: antes la factoría inventaba el mundo y el motor lo seguía. Ahora el mundo lo decide el núcleo —con la misma semilla que usaría el banco— y la factoría recibe sus posiciones. Una sola verdad.</sub>
+- **EL PINTOR COLOCA; LA PÁGINA SÓLO DICE QUÉ FIGURA VA EN CADA PIEZA.** <sub>línea 241</sub>
+  <br><sub>`PintorMundo` es la misma que pinta los otros ocho mundos y no sabe una sola regla de este. Lo único que aporta esta página es el enganche `malla`: las figuras ya están hechas —la factoría las construyó con textura y anillo— y</sub>
+- **LA PISTA SALE DEL NÚCLEO, Y SUS UMBRALES SON LOS QUE REPARTEN INFORMACIÓN.** <sub>línea 288</sub>
+  <br><sub>Esta función tenía su propia tabla —0,15 / 0,30 / 0,50 / 0,70 sobre `dist/400`— y medida sobre 9.200 distancias reales daba un reparto malísimo: **42-46% de los escaneos decían «helado» y «caliente» salía el 1% de las veces**. Una</sub>
+- **EL ALCANCE LO DECIDE EL NÚCLEO, NO LA DISTANCIA AL RATÓN.** <sub>línea 328</sub>
+  <br><sub>Aquí ponía `intersects[0].distance > 100`: o sea, podías escanear cualquier cosa a menos de 100 de la CÁMARA, apuntando con el ratón. El núcleo tiene otra regla —el objetivo tiene que estar a `r + 25` de la</sub>
+- **ESCANEAR ES UNA JUGADA DEL NÚCLEO, NO UNA CUENTA DE ESTA PÁGINA.** <sub>línea 343</sub>
+  <br><sub>Antes esto llevaba su propia contabilidad —restaba 10 de combustible, sumaba su marcador, decidía si habías ganado— en paralelo a la del banco. Dos marcadores para el mismo juego es la definición de dos juegos.</sub>
+- **EL COMBUSTIBLE VA EN PORCENTAJE DEL DEPÓSITO, NO EN CRUDO.** <sub>línea 402</sub>
+  <br><sub>La barra hacía `style.width = fuel + '%'` y funcionaba de casualidad: el motor viejo arrancaba con 100, así que el número y el porcentaje coincidían. El núcleo arranca con 24, y con la línea vieja la barra habría</sub>
+- **EL RÓTULO LLEVA UN `%` PEGADO EN EL HTML, Y HAY QUE RESPETARLO.** <sub>línea 416</sub>
+  <br><sub>La plantilla pone `<span id="hFuel">100</span>%` — funcionaba porque el motor viejo arrancaba justo en 100. Al pasar al núcleo puse aquí el combustible en crudo y la pantalla decía **«FUSION FUEL: 20%»** con el</sub>
+- **EL BUCLE: PEDIR UNA JUGADA Y PINTAR LO QUE SALGA.** <sub>línea 463</sub>
+  <br><sub>Antes esta función movía la nave con su propia cinemática. Ahora manda un verbo al núcleo y copia el resultado a la escena — que es exactamente lo que dice el patrón dorado de la puerta humana: *«traduce dedos a verbos; nunca</sub>
+- **UNA LÍNEA, Y ES LA TESIS DEL PROYECTO ENTERA.** <sub>línea 480</sub>
+  <br><sub>Antes esto copiaba a mano: la nave desde `nucleo.nave.x`, cada asteroide desde `nucleo.asteroides[i]`. Funcionaba, y aun así era un dibujante PARALELO — acertaba porque lo escribió la misma mano que el motor, no</sub>
 
 ### `public/index.html`
 
@@ -3989,6 +4368,318 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **Install MetaMask or Coinbase Wallet';** <sub>línea 1030</sub>
   <br><sub>status.style.color = '#ff6b6b'; window.open('https://metamask.io/download/', '_blank'); return;</sub>
 
+## El motor
+
+### `public/js/alisa-engine/src/extensions/alisa-colony/plugins/SovereignTickerPlugin.js`
+
+- **UN SOLO LIENZO, N CARAS.** <sub>línea 39</sub>
+  <br><sub>cada fotograma; son ~2 MB de textura subidos a la GPU por vuelta. Con cuatro instancias para rodear una sala serían ocho. Aquí las caras COMPARTEN textura y material: se dibuja una vez y se ve desde todos</sub>
+- **Conectarse a la colonia es una MEJORA, no un requisito.** <sub>línea 99</sub>
+  <br><sub>abría el EventSource a pelo: sin hub, el navegador reintenta en bucle para siempre y llena la consola de errores de red en una página que funciona perfectamente sin él. Ahora se rinde y se calla.</sub>
+
+### `public/js/alisa-engine/src/extensions/alisa-colony/psyche/EntityCardSystem.js`
+
+- **ESTA PIEZA TENÍA 0 IMPORTADORES, y por una razón concreta: creaba** <sub>línea 57</sub>
+  <br><sub>su DOM pero NO llevaba sus estilos. El CSS vivía suelto en el `style.css` del overworld viejo, que ya no existe en el proyecto. Quien la importara veía... nada: elementos sin forma, invisibles.</sub>
+
+### `public/js/alisa-engine/src/index.js`
+
+- **ESTA LISTA SE ESCRIBÍA A MANO, Y POR ESO MENTÍA.** <sub>línea 40</sub>
+  <br><sub>`check_gym_envs.mjs` la lee para comprobar los entornos nativos. Al añadir `ChopperAquariumEnv` seguía diciendo «5 entornos en el catálogo»: el comprobador estaba verificando una lista, no el catálogo.</sub>
+
+### `public/js/alisa-engine/src/soma/AssetManager.js`
+
+- **DEVUELVE `gltf.scene` (un THREE.Group), NO el gltf entero.** <sub>línea 51</sub>
+  <br><sub>(GLTFPlugin.load) ya hace ese desempaquetado. Escribir `.then(gltf => gltf.scene)` da undefined — era el fallo de Biolab y de ArcadeTableRoom. Las animaciones quedan en `.userData.animations`.</sub>
+- **No GLTF Delegate found.** <sub>línea 62</sub>
+  <br><sub>try { const module = await import('./plugins/GLTFPlugin.js'); const tempPlugin = new module.GLTFPlugin();</sub>
+
+### `public/js/alisa-engine/src/soma/plugins/CSS3DHologramPlugin.js`
+
+- **El cajón del cartucho. `CSS3DObject` se APROPIA del <iframe>: lo** <sub>línea 34</sub>
+  <br><sub>mete en el DOM del CSS3DRenderer, y al sacar el objeto de la escena three dispara su evento 'removed', que BORRA el elemento del DOM. Sin esto, levantarse de una máquina destruye el cartucho y sentarse</sub>
+- **TESTIGO DE MONTAJE.** <sub>línea 289</sub>
+  <br><sub>`onload`, y en ese hueco te puede dar tiempo a levantarte: el temporizador seguía en vuelo y montaba el cartucho DESPUÉS de haber desconectado, dejando la pantalla flotando en la sala. Cada carga</sub>
+- **MONTAR UNA SOLA VEZ POR CARTUCHO.** <sub>línea 306</sub>
+  <br><sub>Montar crea un `CSS3DObject` nuevo y lo mete en la escena, y eso reubica su elemento en el DOM. Reubicar un <iframe> —o CUALQUIER ancestro suyo— lo hace navegar otra vez desde cero,</sub>
+- **AL CSS3DObject SE LE DA UN <div>, NUNCA EL <iframe>.** <sub>línea 347</sub>
+  <br><sub>Aquí había `new CSS3DObject(iframe)` y montaba un bucle que se alimentaba solo:</sub>
+- **El pitch va sobre el eje X LOCAL, no el del mundo.** <sub>línea 384</sub>
+  <br><sub>`rotation.x = -0.15` y el orden Euler por defecto, la inclinación se aplica ANTES del giro: en una máquina girada 90° deja de ser inclinación de CRT y se vuelve ALABEO — la</sub>
+- **Vaciar la escena ENTERA, no solo `currentCssObject`. `iframe.onload`** <sub>línea 478</sub>
+  <br><sub>puede dispararse más de una vez (una recarga interna del juego basta), y cada disparo montaba un CSS3DObject nuevo sin soltar el anterior. El plugin solo recordaba el último, así que al levantarte quedaba un</sub>
+
+### `public/js/alisa-engine/src/soma/plugins/SpatialAudioPlugin.js`
+
+- **El parámetro `loop` existía y NO SE USABA: solo servía para decidir** <sub>línea 93</sub>
+  <br><sub>si programar la limpieza. Pedir un sonido en bucle daba un sonido que se oía una vez y moría en silencio, sin un error en consola. Medido en la Sala del Huevo: once máquinas con voz, cero sonando.</sub>
+
+### `public/js/alisa-engine/src/soma/tools/CrossSectionDrawTool.js`
+
+- **Hub save failed: ${e.message}`);** <sub>línea 140</sub>
+  <br><sub>}); }</sub>
+
+### `public/js/alisa-engine/src/tests/test_engines.js`
+
+- **FALSO AMIGO. Al revivir estas pruebas renombré `FSMEngine` -> `FSMSystem`** <sub>línea 28</sub>
+  <br><sub>por el patrón de la mudanza, pero NO es el mismo motor con otro nombre: el viejo era una FSM de depredador (`tick(agente, ?, presa, dt)` devolviendo `{nextState, actionVector}`) y `FSMSystem` es una máquina de estados genérica</sub>
+
+### `public/js/alisa-engine/src/world/BSPSystem.js`
+
+- **WHY THIS PARAMETER EXISTS.** <sub>línea 28</sub>
+  <br><sub>This generator called `this.rng()` in eleven places, which made it usable for a demo and unusable for anything that has to be REPLAYED: a benchmark run, a bug report, a match receipt. Same seed, different</sub>
+
+### `public/js/alisa-engine/src/world/CabinetBSPEngine.js`
+
+- **`cuts` SE VALIDA, y no es paranoia.** <sub>línea 8</sub>
+  <br><sub>El corte de la recursión es `depth >= maxDepth`. Si `maxDepth` llega como `NaN` —cosa fácil: basta un `undefined + 1` en quien llama— esa comparación es SIEMPRE falsa y la función se llama a sí misma hasta reventar la pila.</sub>
+- **Y SE GUARDA, PORQUE LA POLÍTICA DEL AZAR TAMBIÉN SE SIEMBRA.** <sub>línea 32</sub>
+  <br><sub>El MUNDO de este motor ya iba sembrado desde el principio. Lo que quedaba suelto era `selectRandom()`: el jugador que abre un cajón al azar, o sea **el SUELO de la clasificación**.</sub>
+- **Con la semilla de la partida, no con el azar del sistema.** <sub>línea 121</sub>
+  <br><sub>no se ha particionado todavía no hay semilla, y entonces se DICE en vez de tirar de `Math.random` a escondidas: un suelo que no se repite convierte la clasificación en una comparación contra nada.</sub>
+
+### `public/js/alisa-engine/src/world/core/Bandas.js`
+
+- **LO QUE SE UNIFICA ES EL IDIOMA, NO LOS CORTES.** <sub>línea 19</sub>
+  <br><sub>Los cortes tienen que seguir siendo de cada juego: los de Raccoon salen de medir dónde caen sus distancias y los del edificio cuentan plantas enteras. Igualarlos sería inventarse una calibración. Lo que se comparte es CÓMO SE</sub>
+- **EL ÚLTIMO CORTE TIENE QUE SER `Infinity`, Y SE COMPRUEBA.** <sub>línea 52</sub>
+  <br><sub>Sin él, un valor mayor que el último umbral devuelve `undefined`, y `undefined` viajando como si fuera una pista es un fallo que no da error: la puerta de lenguaje diría «el 3 estaba undefined» y la numérica pondría un</sub>
+
+### `public/js/alisa-engine/src/world/core/SeededRNG.js`
+
+- **HABÍA DOS GENERADORES Y «SEMILLA 42» DABA DOS MUNDOS DISTINTOS** <sub>línea 12</sub>
+  <br><sub>Medido el 24-08:</sub>
+- **Y NO SE CAMBIA PORQUE EL VIEJO FUERA MALO.** <sub>línea 27</sub>
+  <br><sub>Di por hecho que un LCG con módulo 233280 —el de los tutoriales de los noventa— sería flojo, y la medida me contradijo: en la prueba de retícula —40.000 pares consecutivos sobre una cuadrícula de 200×200— salió 26.453</sub>
+
+### `public/js/alisa-engine/src/world/factories/DefiendeMapaFactory.js`
+
+- **LA PRIMERA VERSIÓN HACÍA UN PASILLO, NO UN SENDERO.** <sub>línea 23</sub>
+  <br><sub>Iba del borde al núcleo sin volver nunca atrás, con «desvíos laterales». Los desvíos no desviaban nada: al ser monótono, cada paso acercaba, así que el camino medía siempre la distancia Manhattan y punto. Medido en 40</sub>
+
+### `public/js/alisa-engine/src/world/factories/ProceduralBuildingFactory.js`
+
+- **Esta salida temprana devolvía el grupo SIN COLGARLO DE LA ESCENA.** <sub>línea 732</sub>
+  <br><sub>`this.scene.add(this.buildingGroup)` está mucho más abajo, después de crear los personajes, así que por este camino nunca se ejecutaba: la fábrica construía el edificio entero — 183 mallas y 26 luces, todo</sub>
+- **Aquí ponía `window.flashDust = new THREE.Points(...)`, pero arriba (l.73)** <sub>línea 805</sub>
+  <br><sub>hay un `let flashDust` LOCAL. Son dos variables distintas: la global se rellenaba y la local seguía a null, así que la línea siguiente reventaba con «Cannot read properties of null (reading 'position')» — y con ella se</sub>
+
+### `public/js/alisa-engine/src/world/factories/RaccoonEnvironmentFactory.js`
+
+- **PUEDE DIBUJAR UN MUNDO DADO EN VEZ DE INVENTARSE EL SUYO** <sub>línea 48</sub>
+  <br><sub>Hasta hoy esta factoría se inventaba las posiciones y elegía ella el planeta del mapache. Eso está bien para una demo y es fatal para un banco: la persona jugaba el mundo de la FACTORÍA y el agente el de</sub>
+- **COLORES SUBIDOS Y CONTINENTES DE DOS OCTAVAS.** <sub>línea 199</sub>
+  <br><sub>Abierta la imagen, el planeta salía verde oscuro con las costas en ESCALONES: un damero mal disimulado en vez de continentes. La causa era `Math.sin(nx*2.3 + nz*1.7) > 0.3` — una sola onda, con su periodo</sub>
+- **EL ORDEN DE ESTAS CUATRO LÍNEAS ES EL DIBUJO.** <sub>línea 225</sub>
+  <br><sub>Con el umbral de océano en 0,35 y las bandas de latitud muy separadas entre sí, el planeta salía a RAYAS: se veían los paralelos y no se veía ni una costa. La latitud mandaba sobre el ruido.</sub>
+- **CON `mundo`, LAS CIUDADES VAN DONDE DICE EL NÚCLEO.** <sub>línea 271</sub>
+  <br><sub>El núcleo las reparte por la esfera con una espiral de Fibonacci —la misma idea que la de aquí arriba— pero a la escala de SU tanque, no a la del radio de este planeta. Se normaliza y se vuelve a</sub>
+- **UNA BALIZA, PORQUE EL SATÉLITE NO SE VEÍA** <sub>línea 343</sub>
+  <br><sub>Visto en pantalla el 24-08: paneles azul oscuro y cuerpo gris sobre fondo negro, midiendo 2,5 unidades al lado de un planeta de 15. En la cara de noche desaparece del todo.</sub>
+- **Y LA BALIZA NO PUEDE TAPAR LO QUE SEÑALA.** <sub>línea 359</sub>
+  <br><sub>La primera versión era una bola de 0,45 con un halo de 1,1 y en pantalla salía un borrón verde: se veía perfectamente y ya no parecía un satélite. Señalar algo escondiéndolo es no señalarlo. Baliza pequeña, halo tenue y</sub>
+- **CON `mundo`, LAS POSICIONES LAS PONE EL NÚCLEO.** <sub>línea 397</sub>
+  <br><sub>Igual que en `generateSpace`: esta factoría deja de decidir dónde están las cosas y sólo las dibuja. El núcleo coloca los objetivos en REJILLA —que es la forma de una ciudad, y por eso `forma: 'rejilla'`</sub>
+- **LOS EDIFICIOS ERAN CASI NEGROS POR DISEÑO, NO POR FALTA DE LUZ.** <sub>línea 414</sub>
+  <br><sub>Aquí ponía `setHSL(hue, 0.3, 0.08 + rng * 0.05)`. Medido en la escena viva: doce edificios con claridad HSL entre 0,083 y 0,125.</sub>
+- **Y ESE NÚMERO ES LINEAL, NO PERCEPTUAL.** <sub>línea 420</sub>
+  <br><sub>Escribí «están al nueve por ciento de claridad» tratando la cifra como si fuera brillo percibido, y no lo es: three trabaja en espacio LINEAL, y `setHSL`/`getHSL` usan ese espacio salvo que se les pida</sub>
+
+### `public/js/alisa-engine/src/world/gym_runners/CabinetEscapeGame.js`
+
+- **Esto era `this.sys.episodes + 1` a secas.** <sub>línea 249</sub>
+  <br><sub>`episodes` aún no existe, así que salía `NaN`, y ese NaN llegaba hasta `fractalPartition` como profundidad. Como `depth >= NaN` es siempre falso, la partición recursaba sin fondo y el juego moría al arrancar</sub>
+- **SNAKE! DODGE (SPACE)!', 500);** <sub>línea 555</sub>
+  <br><sub>return; }</sub>
+
+### `public/js/alisa-engine/src/world/systems/AsteroidsEngine.js`
+
+- **LA VARIEDAD LA PONE LA PUERTA HUMANA, NO EL MOTOR.** <sub>línea 18</sub>
+  <br><sub>`AsteroidsSystem` es determinista por construcción: sin semilla juega siempre la misma partida. Eso es lo correcto para medir, y sería horrible para quien se sienta a jugar. Así que la entropía la aporta</sub>
+
+### `public/js/alisa-engine/src/world/systems/AsteroidsSystem.js`
+
+- **RECIBE EL AZAR, NO LO BUSCA.** <sub>línea 47</sub>
+  <br><sub>enrutar los `Math.random()` de golpe, ésta quedó con un `this.rng()` que en un módulo no existe — `this` es `undefined` y revienta a la primera llamada.</sub>
+- **LA SEMILLA VIVE AQUÍ, NO EN EL ENTORNO.** <sub>línea 59</sub>
+  <br><sub>`AsteroidsEnv` conseguía su determinismo parcheando `Math.random` GLOBAL mientras corría el episodio, y su propio comentario lo llamaba «un puente honesto hasta que los systems usen DeterministicMath de serie». Esto es</sub>
+- **Y AQUÍ NO HAY RESPALDO A `Math.random`: EL SYSTEM ES DETERMINISTA SIEMPRE.** <sub>línea 72</sub>
+  <br><sub>El primer intento dejaba `() => Math.random()` de reserva, y `prueba_semillas.mjs` —que ya existía— lo cazó con la frase exacta: *«un sistema medio sembrado no es reproducible, y encima lo parece: misma semilla, distinto mundo»*.</sub>
+- **LO QUE CAMBIA AQUÍ ES QUÉ ES «EL SUELO».** <sub>línea 140</sub>
+  <br><sub>Esto no es una arena vista desde arriba: es un TÚNEL por el que se avanza. El plano interesante es «a lo ancho × a lo hondo» —x y z—, y la altura es el eje que la nave usa para esquivar. Así que `y` del sustrato es la</sub>
+- **Y NO ENTRAN NI LAS ESTRELLAS NI LAS PARTÍCULAS.** <sub>línea 150</sub>
+  <br><sub>`decorStars` son 300 y `particles` nacen y mueren cada tick. Son decorado: no cambian ninguna partida. El sustrato describe el estado del juego, y meter 300 puntos de adorno lo haría ilegible justo donde hay que mirar.</sub>
+
+### `public/js/alisa-engine/src/world/systems/BoidsSystem.js`
+
+- **SIN `import * as THREE`, Y ESO ES LO QUE LO HACE UTILIZABLE.** <sub>línea 6</sub>
+  <br><sub>El fichero se anunciaba como «pure headless» y arrastraba el motor de render en la primera línea. Con eso no se puede importar desde Node —ni desde una prueba, ni desde un banco de medidas— aunque el noventa por ciento del código</sub>
+- **La caja NO encerraba en Y. `initAgents` usa minY/maxY para** <sub>línea 179</sub>
+  <br><sub>repartir la bandada al nacer, y luego nadie los volvía a mirar: ni rebote ni recorte. En una escena abierta la bandada se escapa por arriba y por abajo y no vuelve — medido en El Andén, con las</sub>
+
+### `public/js/alisa-engine/src/world/systems/BulletHeavenEngine.js`
+
+- **LA SEMILLA. ERA LO ÚNICO QUE LE FALTABA A ESTE MOTOR PARA PUNTUAR.** <sub>línea 37</sub>
+  <br><sub>Este motor es un juego entero y honrado: arena, oleadas, armas con enfriamiento, XP, subidas de nivel, y fin por los dos lados —derrota con `hp <= 0` y victoria a los 1200 s—. Corre sin THREE y sin DOM. Le faltaba</sub>
+- **Y POR DEFECTO SIGUE SIENDO `Math.random`, A PROPÓSITO.** <sub>línea 51</sub>
+  <br><sub>`MarabuntaSystem` extiende esta clase y ya está en el banco; consigue su determinismo con `DeterministicScope`, que parchea el `Math.random` GLOBAL. Si aquí se pusiera un generador propio por defecto, Marabunta dejaría de</sub>
+- **Y EL RESPALDO ES UNA LLAMADA, NO UNA REFERENCIA.** <sub>línea 64</sub>
+  <br><sub>La primera versión decía `config.rng || Math.random`, que **captura la función global en el momento de construir**. `DeterministicScope` parchea `Math.random` DESPUÉS, al hacer `reset(semilla)`, así que el motor se</sub>
+- **Y AUN ASÍ, AQUÍ YA NO HAY RESPALDO AL AZAR DEL SISTEMA.** <sub>línea 80</sub>
+  <br><sub>La clase madre es PURA: sin semilla juega siempre la misma partida. Quien dependa del parche global lo declara en su propio fichero — ver `MarabuntaSystem`, que es quien lo necesita y quien lo dice.</sub>
+- **AQUÍ NO HAY `rejilla`, Y ESO ES UNA RESPUESTA, NO UN OLVIDO.** <sub>línea 627</sub>
+  <br><sub>La arena es un círculo continuo de radio `arenaRadius`: no hay casillas. El contrato lo permite —quien lee mira `if (sus.rejilla)`— y publicar una rejilla inventada sería peor que no publicar ninguna: el dibujante pintaría</sub>
+- **Y NO SE PUBLICAN LAS BALAS.** <sub>línea 634</sub>
+  <br><sub>`projectiles` llega a 100 y se renueva cada pocos ticks. El sustrato describe el ESTADO del juego, no cada chispa: meter cien piezas efímeras haría el sustrato ilegible por el sitio donde menos información hay. Las balas son</sub>
+
+### `public/js/alisa-engine/src/world/systems/CabinetEscapeSystem.js`
+
+- **`episodes` NO se inicializaba aquí, y de ahí salía todo lo demás:** <sub>línea 24</sub>
+  <br><sub>`randomizeCuts()` y `randomizeCabinetSize()` calculan `episodes + 1`, así que con `undefined`/`null` obtenían NaN. Ese NaN llegaba a la partición BSP como profundidad (y `depth >= NaN` es</sub>
+- **CADA CAJÓN SE PUBLICA CON LO QUE EL JUGADOR SABE, NO CON LO QUE HAY.** <sub>línea 238</sub>
+  <br><sub>Un cajón cerrado sale como `cerrado`, y sólo al abrirlo aparece qué tenía. Publicar la serpiente antes de tiempo pondría la solución en el sustrato, y cualquier dibujante que lo lea —o cualquier agente— la vería. Es la misma</sub>
+
+### `public/js/alisa-engine/src/world/systems/ChopperAquariumEngine.js`
+
+- **EL ECOSISTEMA JUGABA SIN SEMILLA, Y ESO HACÍA EL MUNDO IRREPETIBLE** <sub>línea 40</sub>
+  <br><sub>Se construía vacío —`new EcosystemSystem()`— mientras este motor tiene su propio `SeededRNG` unas líneas más abajo. `EcosystemSystem` acepta `config.rng` y su respaldo es `(() => Math.random())`, que es el patrón</sub>
+- **EL PLANCTON NO ENTRA.** <sub>línea 137</sub>
+  <br><sub>partida; el sustrato describe el estado, no el decorado.</sub>
+
+### `public/js/alisa-engine/src/world/systems/DefiendeSystem.js`
+
+- **Y NO ES UN MOTOR NUEVO: ES UN ENSAMBLAJE** <sub>línea 19</sub>
+  <br><sub>Cada pieza ya existía suelta en el árbol, y ninguna tenía juego encima:</sub>
+- **LOS PREMIOS SON BAJOS A PROPÓSITO, Y LOS BAJÉ MIDIENDO.** <sub>línea 72</sub>
+  <br><sub>Con los primeros (6/7/18) un jugador competente terminaba la partida con **41 torretas** puestas: la economía daba para alfombrar el mapa, así que se ganaba el 100% de las veces y la pregunta del juego pasaba de «¿dónde lo</sub>
+- **EL ORDEN DE LOS SISTEMAS ES ESTADO, Y AQUÍ SE DECLARA.** <sub>línea 105</sub>
+  <br><sub>Es el riesgo propio de ECS y no lo tiene ningún motor de estado propio: allí el orden está escrito dentro de un `step()` y se lee de un vistazo. Aquí lo decide quien registra los sistemas, así que **cambiar el orden de registro</sub>
+- **EL RESPALDO ES UNA LLAMADA, NO UNA REFERENCIA.** <sub>línea 138</sub>
+  <br><sub>`config.rng || Math.random` captura la función global al construir, así que un parche posterior no llega. Ese `||` ya cambió las notas publicadas de Marabunta una vez; aquí se nace con la lección puesta.</sub>
+- **Y ES EL PRIMERO DE UN MUNDO QUE LO PUBLICA.** <sub>línea 431</sub>
+  <br><sub>En el arcade esto lleva meses funcionando: `mesa_tablero.mjs` pide `hub.sustrato(juego)` y dibuja rejilla y piezas, y por eso 24 juegos comparten una sola mesa. Los mundos tienen `montarMundo` —la sala: escena,</sub>
+- **EL SUSTRATO ES 2D Y USA `y`, NO `z`.** <sub>línea 460</sub>
+  <br><sub>Dentro del motor la matriz es (x, z) porque el suelo de un mundo 3D es el plano XZ. El sustrato es una descripción PLANA —la misma que lee un tablero de ajedrez— y allí el segundo eje se llama `y`. Traducirlo aquí</sub>
+- **EL ALCANCE VIAJA EN EL SUSTRATO, PORQUE ES INFORMACIÓN DEL MUNDO.** <sub>línea 473</sub>
+  <br><sub>No es adorno: es con lo que se decide dónde va la siguiente torreta. La página lo pintaba leyendo `observacion()` —un método propio de este juego— y por eso su dibujante no servía para ningún otro. Si el</sub>
+- **QUÉ SIGNIFICA CADA VALOR DE CELDA.** <sub>línea 493</sub>
+  <br><sub>`describirSustrato` traía el vocabulario del arcade escrito a fuego —`0` vacío, `1` muro, `2` destino— porque hasta ahora sólo lo usaban juegos de tablero. Aquí `1` es el SENDERO y `2` el núcleo, así que</sub>
+- **AQUÍ SÓLO VA LO QUE SE MUEVE O SE PONE ENCIMA, NO EL TERRENO.** <sub>línea 511</sub>
+  <br><sub>Tenía `camino`, `nucleo` y `entrada` también aquí, y el mapa de texto salía con la leyenda repetida: primero como terreno y otra vez como pieza. Un vocabulario que se dice dos veces invita a creer que</sub>
+
+### `public/js/alisa-engine/src/world/systems/EcosystemSystem.js`
+
+- **POR QUÉ ESTE PARÁMETRO, Y POR QUÉ AHORA.** <sub>línea 16</sub>
+  <br><sub>Este sistema llamaba a `this.rng()` en veintidós sitios. Para una demo de peces nadando eso está perfecto; para cualquier cosa que tenga que REPETIRSE —una tirada de banco de pruebas, un informe de fallo, el recibo</sub>
+
+### `public/js/alisa-engine/src/world/systems/FileSystemDioramaSystem.js`
+
+- **ESTE IMPORT FALTABA, Y ERA EL MÓDULO MÁS GRANDE DEL MOTOR.** <sub>línea 10</sub>
+  <br><sub>52 KB y 111 usos de `THREE.` sin importarlo: dependía de que alguien hubiera dejado un `<script>` clásico con la global puesta. Cargado como módulo —que es como lo carga cualquier página moderna— reventaba con `THREE is not defined`.</sub>
+- **POR QUÉ HAY UN `rng` EN UN OBJETO SINGLETON SIN CONSTRUCTOR.** <sub>línea 46</sub>
+  <br><sub>Este módulo no es una clase, es un objeto único con `init()` haciendo de constructor — así que ahí es donde se cachea la fuente de azar, siguiendo el mismo patrón que `BSPSystem`/`WorldBuilderSystem` (config.rng cacheado</sub>
+- **AQUÍ HABÍA `Renderer.init();` — UNA LÍNEA QUE ARRANCABA AL IMPORTAR.** <sub>línea 1205</sub>
+  <br><sub>Dos cosas mal en cuatro palabras:</sub>
+
+### `public/js/alisa-engine/src/world/systems/InteractionLabEngine.js`
+
+- **LA SEMILLA, QUE FALTABA Y NADIE LO DECÍA.** <sub>línea 9</sub>
+  <br><sub>Este es el motor de ¡Sobrevive! 1 —el Interaction Lab— y llevaba OCHO llamadas al azar del sistema colocando las cajas, el queso, los ratones y los zorros. O sea: **el reparto inicial de la cadena trófica era distinto</sub>
+
+### `public/js/alisa-engine/src/world/systems/KinematicRageSystem.js`
+
+- **PONÍA «DETERMINISTIC» EN LA PRIMERA LÍNEA Y NO LO ERA.** <sub>línea 4</sub>
+  <br><sub>`applyImpulse` llamaba directamente a la función global de azar del motor de JS: dos volcados con los mismos datos daban dos estropicios distintos. Es justo la etiqueta-que-no-corresponde que nos mordió el 13-08-2026 con el temblor de las</sub>
+
+### `public/js/alisa-engine/src/world/systems/MarabuntaSystem.js`
+
+- **ANTES ERA `constructor()`, SIN ARGUMENTOS, Y SE TRAGABA LO QUE LE DIERAS.** <sub>línea 57</sub>
+  <br><sub>`new MarabuntaSystem({ rng: mulberry32(1234) })` no fallaba: aceptaba el objeto, lo tiraba, y jugaba con el azar del sistema. Dos partidas con la misma semilla salían distintas —20 muertes, luego 23— y el motivo no estaba</sub>
+- **ESTE ES EL QUE DEPENDE DEL PARCHE GLOBAL, Y LO DICE AQUÍ.** <sub>línea 78</sub>
+  <br><sub>`MarabuntaEnv` no parchea una vez: llama a `DeterministicScope.run` en CADA paso con `seed + steps`, o sea que re-siembra el mundo a cada tick. Ese es su modelo de determinismo y funciona — sus notas publicadas</sub>
+
+### `public/js/alisa-engine/src/world/systems/RaccoonCitySystem.js`
+
+- **La inclinación se saca de la VELOCIDAD del núcleo, no de las teclas.** <sub>línea 39</sub>
+  <br><sub>Si la leyera de las teclas, el dron se inclinaría aunque el núcleo hubiera ignorado la orden —por ejemplo con la partida terminada— y la pantalla estaría contando algo que no ha pasado.</sub>
+
+### `public/js/alisa-engine/src/world/systems/RaccoonPlanetSystem.js`
+
+- **LA POSICIÓN SE REESCALA, Y SI NO SE HACE EL SATÉLITE APARECE DENTRO DEL** <sub>línea 33</sub>
+  <br><sub>PLANETA. El núcleo trabaja a la escala de su tanque —las ciudades a 130 del centro— y aquí el planeta se dibuja con radio 15. Se conserva la DIRECCIÓN, que es lo que el juego decide, y se lleva la distancia a la escala del</sub>
+
+### `public/js/alisa-engine/src/world/systems/RaccoonSpaceCore.js`
+
+- **LÍMITE HONESTO: `Math.sin/cos` NO están fijados bit a bit por IEEE-754 y** <sub>línea 30</sub>
+  <br><sub>pueden diferir en el último bit entre navegadores o CPUs. Para validar una partida ajena se auditan las ACCIONES (que son enteros) y se compara la puntuación con tolerancia, no el estado final exacto.</sub>
+- **TRES MANDOS PARA UN MISMO JUEGO, PORQUE HAY TRES VEHÍCULOS** <sub>línea 47</sub>
+  <br><sub>La saga es siempre lo mismo —moverse, escanear, deducir con las pistas, encontrar al mapache antes de quedarte sin batería— pero lo que pilotas cambia en cada escalón, y con ello cambia lo que se puede pedir:</sub>
+- **ERA 32 Y AHORA ES 24, Y EL MOTIVO NO ES AFINAR: ES QUE CAMBIÓ EL** <sub>línea 131</sub>
+  <br><sub>JUEGO. Al meter la PISTA en este núcleo —la que la persona tenía en la página y el agente no— la etapa pasó de ganarse el 43% a ganarse el 71% con el mismo 32. No es la misma dificultad con otro número: antes</sub>
+- **Y LA TABLA DE ARRIBA ES DE ANTES DE LA PISTA.** <sub>línea 137</sub>
+  <br><sub>la FORMA de la relación —más combustible, más victorias— que sigue siendo cierta; sus números concretos, no. Los de hoy están medidos en `calibrar_busca.mjs` con un piloto que sí usa las pistas.</sub>
+- **Y NO ES UNA PALANCA PARA ARREGLAR LA SEÑAL.** <sub>línea 157</sub>
+  <br><sub>distingue a las políticas ciegas, subí el alcance a 70 para darles algo que pillar, y no cambió nada — siguen muriendo sin escanear. Se revirtió a 25. Lo dejo escrito porque la tentación de subirlo va a volver: el</sub>
+- **Y LA SALIDA TAMBIÉN VA SEMBRADA, PORQUE SI NO LA SEMILLA NO SE NOTA.** <sub>línea 184</sub>
+  <br><sub>El satélite salía siempre sobre el ecuador, en la longitud cero y a media altura. Como la esfera reparte los asentamientos con una espiral fija, las primeras observaciones de dos partidas con semillas distintas salían</sub>
+- **Y SÓLO SE GASTA AZAR EN EL MANDO QUE TOCA.** <sub>línea 198</sub>
+  <br><sub>Sacar un `rnd()` fuera de estos dos `if` costaría un número del generador también en el modo nave, y eso correría la secuencia entera: los seis planetas de ¡Busca! 6 caerían en otros sitios y su calibración —52%, medida</sub>
+- **LA FORMA DEL MUNDO ES PARTE DEL JUEGO, Y EL BANCO LA IGNORABA** <sub>línea 229</sub>
+  <br><sub>Al meter ¡Busca! 4 y 5 en el banco esta tarde les di este núcleo con otros números —doce objetivos en vez de seis, otro tanque— y di por hecho que con eso ya era «el mismo juego a otra escala».</sub>
+- **NINGUNA PARTIDA EMPIEZA RESUELTA.** <sub>línea 258</sub>
+  <br><sub>La nave arrancaba SIEMPRE en el (0,0,0) y los objetivos se reparten al azar por el cubo. En un sitio pequeño eso significa que a menudo hay uno ya dentro del alcance del escáner —`r + 25`— antes de tocar nada: el</sub>
+- **Y SI NO ENCUENTRA SITIO, SE QUEDA DONDE ESTÉ Y NO MIENTE.** <sub>línea 282</sub>
+  <br><sub>tan lleno que no tenga un hueco despejado es un mundo mal configurado, y es mejor que se note jugando que taparlo con un bucle infinito.</sub>
+- **EL SATÉLITE SE MUEVE POR SUS ÁNGULOS, NO POR SUS COORDENADAS.** <sub>línea 287</sub>
+  <br><sub>Escribirle `x/y/z` aquí lo dejaría en un sitio que `lat/lon/alt` no describen, y el primer `step` lo teletransportaría de vuelta a la órbita inicial. Es el mismo error que evita el guardia de la integración, y aquí</sub>
+- **Y UN DRON NO OBEDECE LOS VERBOS DE UNA NAVE.** <sub>línea 378</sub>
+  <br><sub>Estos dos bloques no miraban el mando, así que el dron aceptaba `empujar` —medido: 6,31 unidades— y `girar_izq` le cambiaba la guiñada. Verbos que no están en su `actionSpace`, o sea que la puerta numérica no</sub>
+- **EL SATÉLITE NO SE INTEGRA NI REBOTA.** <sub>línea 416</sub>
+  <br><sub>En órbita la posición NO sale de una velocidad: sale de dos ángulos y una altura, que es lo que `_pilotarOrbita` acaba de mover. Si además se integrase aquí habría dos cosas escribiendo la misma posición, y ganaría</sub>
+- **EL DRON TIENE SUELO.** <sub>línea 444</sub>
+  <br><sub>`RaccoonCitySystem` ya hacía `y = max(5, y)` y lo llamaba «floor collision»: la ciudad tiene suelo y el dron vuela por encima. Sin esta línea el núcleo dejaría al dron a y = -80, o sea ochenta metros</sub>
+- **LA PISTA. LA PERSONA LA TENÍA Y EL AGENTE NO.** <sub>línea 490</sub>
+  <br><sub>`games/raccoon_space.html` daba caliente/frío al escanear un objetivo equivocado —«🟢 HOT (37 LY away)»— y este núcleo no. Medido el 24-08 al ir a unir las dos puertas:</sub>
+- **Y ESCANEAR EN FALSO CUESTA BATERÍA.** <sub>línea 513</sub>
+  <br><sub>PERSONA TENÍA Y EL AGENTE NO.</sub>
+- **Y EL AVANCE SE DIVIDE POR EL COSENO DE LA LATITUD.** <sub>línea 575</sub>
+  <br><sub>polo un paso «al este» recorre casi nada de superficie y el satélite se queda pegado allí: el jugador pulsa, ve el número cambiar y no llega nunca.</sub>
+- **Existe porque escribir `nave.x/y/z` a pelo NO FUNCIONA en órbita, y no** <sub>línea 606</sub>
+  <br><sub>avisa. `_pilotarOrbita` recalcula la posición a partir de latitud, longitud y altura al principio de cada `step`, así que un teletransporte cartesiano se deshace solo en el tick siguiente. Una prueba de esta misma casa lo hacía</sub>
+- **Y LOS UMBRALES SON LOS QUINTILES MEDIDOS, NO LOS DE LA PÁGINA.** <sub>línea 648</sub>
+  <br><sub>`raccoon_space.html` usaba 0,15 / 0,30 / 0,50 / 0,70 sobre `dist/400`. Medido el 24-08 con 9.200 distancias reales de las tres escalas, ese reparto daba:</sub>
+- **NUEVO — lo bien que encaja cada uno de esos 2 candidatos con** <sub>línea 740</sub>
+  <br><sub>las pistas dadas hasta ahora</sub>
+- **ERAN 22 Y AHORA SON 24, Y NO ES UN CAPRICHO.** <sub>línea 743</sub>
+  <br><sub>La página le daba a la persona una pista al descartar un objetivo —«🟢 HOT (37 LY away)»— y ni el texto ni los números se la daban al agente. Con eso, la persona jugaba a una deducción y el agente a un recorrido a ciegas: dos</sub>
+- **Y ESTE SUSTRATO SIRVE PARA LAS TRES ETAPAS DE ¡BUSCA! DE UNA VEZ,** <sub>línea 781</sub>
+  <br><sub>porque esta mañana se unificaron sobre este núcleo. Antes habrían sido tres implementaciones y tres sitios donde separarse.</sub>
+- **CADA PIEZA VA CON NOMBRE, Y NO ES ADORNO.** <sub>línea 786</sub>
+  <br><sub>En este juego el tipo de un planeta CAMBIA: escanearlo lo pasa de `sin_escanear` a `caliente`. Quien dibuje el sustrato tiene que saber que sigue siendo el mismo planeta, y sin un nombre estable sólo puede mirar el</sub>
+- **HACIA DÓNDE MIRA LA NAVE ES ESTADO, NO DECORACIÓN.** <sub>línea 807</sub>
+  <br><sub>El empuje va donde apunta el morro: sin la orientación, el sustrato describe un mundo en el que «empujar» no se puede predecir. Los números ya la llevaban —`observacion()` publica cabeceo y guiñada— así que</sub>
+- **`escaner_listo` LE MENTÍA A LA PUERTA NUMÉRICA.** <sub>línea 878</sub>
+  <br><sub>Era `planetaCerca() ? 1 : 0`, y `planetaCerca` devuelve cualquier objetivo al alcance — escaneado o no. O sea que se le decía «escáner listo» a un agente que, si escaneaba, cobraba -1 y no sacaba nada.</sub>
+
+### `public/js/alisa-engine/src/world/systems/SimonSaysSystem.js`
+
+- **DÓNDE ESTÁ EL JUGADOR EN LA MATRIZ.** <sub>línea 59</sub>
+  <br><sub>Los objetivos de casilla se resolvían con `submitTileArrival(x, z)`: el motor no sabía dónde estabas, sólo comprobaba que dijeras haber llegado. Para una persona la dificultad era CORRER hasta allí; para</sub>
+- **UN PASO NO ES UNA RESPUESTA, ASÍ QUE NO PUEDE SER UN FALLO.** <sub>línea 177</sub>
+  <br><sub>Moverse es cómo se juega el objetivo de casilla, no un intento de acertarlo. Si contara como fallo, ir andando hasta la casilla que te han pedido restaría cinco puntos por cada paso del camino — y la única</sub>
+- **UN PASO GASTA RELOJ, Y SIN ESTO NO SE MIDE NADA** <sub>línea 200</sub>
+  <br><sub>Quitar el botón de teletransporte no basta. El reloj lo descuenta `tick(dt)`, así que una persona andando gasta segundos de verdad mientras un agente puede dar sus cuatro pasos en cuatro llamadas</sub>
+- **A UNA CASILLA SE LLEGA ANDANDO.** <sub>línea 243</sub>
+  <br><sub>Quité `move_to_target` del menú y di el trabajo por hecho. No lo estaba: `submitAction(state, 'tile_2_3')` seguía cayendo en la comparación de abajo y contando como acierto **sin dar un solo paso**. Medido con el</sub>
+- **ERA EL BOTÓN DE TELETRANSPORTE, Y SE QUEDA COMO LÁPIDA.** <sub>línea 296</sub>
+  <br><sub>Decía «estoy en la casilla X,Z» y el motor se lo creía, porque no sabía dónde estabas. Ahora lo sabe: se llega andando y llegar se detecta solo.</sub>
+- **Y LA OBSERVACIÓN ENTREGA LA MATRIZ, NO UNA DESCRIPCIÓN DE ELLA.** <sub>línea 316</sub>
+  <br><sub>Es la tesis del proyecto puesta en una función: al modelo se le da el mundo ya en forma de rejilla plana —dónde está él, dónde hay que llegar— en vez de obligarle a reconstruirla desde una imagen. Traducir el mundo a matriz</sub>
+- **EL MENÚ OFRECÍA VERBOS QUE `submitAction` NO ACEPTA.** <sub>línea 353</sub>
+  <br><sub>Decía `act_jump` cuando el objetivo es `jump`, y `move_to_target` cuando el objetivo es `tile_2_3`. `submitAction` compara con `===`, así que **ninguno de los verbos ofrecidos podía acertar jamás**.</sub>
+- **CON UN OBJETIVO DE CASILLA SE OFRECEN LOS PASOS, NO LA CASILLA.** <sub>línea 386</sub>
+  <br><sub>Antes esto ofrecía `move_to_target` —un botón que resolvía el problema— y luego, tras el primer arreglo, la casilla entera, que es lo mismo con otro nombre: decir `tile_2_3` y aparecer allí. Llegar tiene que costar</sub>
+
 ## Las páginas de los juegos
 
 ### `public/arcade/alisapolis.html`
@@ -4218,6 +4909,206 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **Y LAS AFIRMACIONES LAS PUEDE HACER CUALQUIERA.** <sub>línea 17</sub>
   <br><sub>`afirmo_shinigami:X` significa «he visto que X es un shinigami». Lo dice el oráculo y es verdad; lo dice un shinigami y es mentira; nadie puede comprobarlo. Si la lista de jugadas sólo se la ofreciera al oráculo, bastaría mirar quién PUEDE afirmar y el</sub>
 
+## El gym y los entornos
+
+### `public/js/alisa-engine/src/gym/envs/AsteroidsEnv.js`
+
+- **El tamaño se DEDUCE de los nombres.** <sub>línea 22</sub>
+  <br><sub>Aquí ponía `shape: [14]` mientras `names` calculaba 16 (4 de la nave + 4 asteroides × 3). Un agente que se fiara del espacio declarado reservaría 14 huecos y recibiría 16 números: se los comería desplazados y "aprendería"</sub>
+- **EL PUENTE ESTÁ CRUZADO: LA SEMILLA VIVE EN EL SYSTEM.** <sub>línea 66</sub>
+  <br><sub>Esto parcheaba `Math.random` GLOBAL mientras corría el episodio, y la cabecera de este fichero lo llamaba «un puente honesto hasta que los systems usen DeterministicMath de serie». Desde hoy `AsteroidsSystem`</sub>
+
+### `public/js/alisa-engine/src/gym/envs/CabinetEscapeEnv.js`
+
+- **ESTE ENTORNO MEDÍA UN JUEGO QUE NO JUEGA NADIE. 24-08.** <sub>línea 34</sub>
+  <br><sub>Usaba `ScummInteractionEngine` (3 KB) y la página de la persona usa `CabinetEscapeSystem` (11 KB). Los dos envuelven el MISMO `CabinetBSPEngine`, así que el mueble era el mismo — y las reglas, no:</sub>
+- **Y AQUÍ SE UNIFICA AL REVÉS QUE EN ¡BUSCA! 6.** <sub>línea 53</sub>
+  <br><sub>Allí mandaba el núcleo del banco porque era el bueno: headless, sembrado y completo. Aquí el bueno es el de la persona — también headless, también sembrado, y con el juego entero dentro. `ScummInteractionEngine` es la copia</sub>
+- **LAS NOTAS DE `alisa/CabinetEscape-v0` CAMBIAN, Y TIENEN QUE CAMBIAR.** <sub>línea 61</sub>
+  <br><sub>Antes: 1234 → 97,0 · 7 → 99,0 · 99 → -100,0. Esas cifras medían el juego equivocado, así que conservarlas habría sido conservar el error.</sub>
+- **AQUÍ UNA SERPIENTE YA NO MATA, ASÍ QUE EL FINAL LO PONE OTRA COSA.** <sub>línea 156</sub>
+  <br><sub>En el motor del banco viejo abrir una serpiente terminaba la partida, y eso hacía de tope natural. En el de la persona cuesta 2 puntos y sigues, que es un juego mejor —te obliga a seguir deduciendo con el susto</sub>
+- **AQUÍ UNA SERPIENTE YA NO ACABA LA PARTIDA.** <sub>línea 208</sub>
+  <br><sub>el día que alguien vuelva a poner un modo mortal, pero con el motor de la persona `dead` no se enciende: cuesta dos puntos y sigues.</sub>
+- **`-1` NO ES UNA CUENTA: ES «AQUÍ NO HAY CUENTA».** <sub>línea 219</sub>
+  <br><sub>`minesweeperCounts` arranca a -1 y sólo se rellena en los cajones vacíos. En uno con serpiente el motor sale antes, así que se queda en -1 — y esta puerta decía literalmente «el 0 (-1 serpiente(s) al</sub>
+- **Aquí me equivoqué en la primera versión: usé `idx-1, idx+1`, o sea** <sub>línea 271</sub>
+  <br><sub>índices contiguos. Pero el juego define "al lado" por distancia en el ÁRBOL BSP (`bspDistance(pA,pB) <= 2`), que no tiene por qué coincidir con el orden del array. Con vecinos equivocados la línea base apenas ganaba al</sub>
+
+### `public/js/alisa-engine/src/gym/envs/ChopperAquariumEnv.js`
+
+- **EL MOTOR NO PUNTÚA.** <sub>línea 30</sub>
+  <br><sub>un comentario que dice «dummy RL reward, to be hooked manually». Así que la puntuación se define AQUÍ, y se define con el objetivo del propio juego — escanear plantas hasta dar con el mapache— no con un número inventado.</sub>
+- **La recompensa la pone el entorno, no el motor: `stepSimulation`** <sub>línea 101</sub>
+  <br><sub>devuelve 0 siempre. Se premia el PROGRESO de la misión —plantas nuevas— y se premia mucho encontrar al mapache. Sin esto el episodio no distingue a nadie: todo el mundo saca cero.</sub>
+
+### `public/js/alisa-engine/src/gym/envs/CorpBuildingEnv.js`
+
+- **ANTES DECÍA `CALIENTE`/`TIBIO`/`FRÍO` Y ERA UN IDIOMA PROPIO.** <sub>línea 103</sub>
+  <br><sub>`RaccoonSpaceCore` usa cinco peldaños —caliente · templado · fresco · frío · helado— calibrados a quintiles medidos, y aquí había tres puestos a mano y en mayúsculas. O sea que **«caliente» quería decir cosas distintas</sub>
+- **VA EN EL ENTORNO Y NO EN UN MOTOR, PORQUE EL ESTADO ESTÁ AQUÍ.** <sub>línea 179</sub>
+  <br><sub>Éste es el otro juego de la casa que ya era ECS, y su mundo vive en `this.ecs`, no en un `System` aparte. El sustrato se publica donde está el estado; ponerlo en otro sitio obligaría a copiarlo, y una copia es un sitio</sub>
+- **Y SÓLO SE DIBUJA LO QUE EL JUGADOR SABE.** <sub>línea 185</sub>
+  <br><sub>Un escondite sin registrar sale como `sin_mirar`. Publicar dónde está el mapache pondría la solución en el sustrato, y cualquiera que lo lea —un dibujante o un agente— la vería. Misma regla que vigila `sustrato:secreto`.</sub>
+
+### `public/js/alisa-engine/src/gym/envs/DefiendeEnv.js`
+
+- **Y ES EL PRIMER ENTORNO DE LA CASA QUE NACE EN ECS.** <sub>línea 23</sub>
+  <br><sub>Sirve de piloto: los otros cinco motores completos llevan su estado a mano. Lo que se aprenda aquí decide si se migra el resto.</sub>
+- **EL ESPACIO DE ACCIÓN ES GRANDE A PROPÓSITO: 1 + 3×celdas.** <sub>línea 64</sub>
+  <br><sub>La decisión del juego es «qué torreta y en qué celda». Comprimirla —por ejemplo a «pon la mejor donde convenga»— sería medir otro juego, uno donde la colocación ya está resuelta. Con lado 12 salen 433 acciones, que para</sub>
+- **`names` AQUÍ ES UNA LEYENDA, NO LA LISTA DE LAS 433 ACCIONES.** <sub>línea 81</sub>
+  <br><sub>En los demás entornos discretos hay un nombre por acción y coinciden uno a uno. Aquí no cabe: enumerar «construir guijarro en (7,3)» 432 veces no ayuda a nadie. Así que `names.length !== n`, y quien</sub>
+- **CONSTRUIR NO GASTA EL TICK, Y NO ES UN REGALO.** <sub>línea 123</sub>
+  <br><sub>Poner una torreta es instantáneo en cualquier tower defense: lo que cuesta es el presupuesto, no el tiempo. Si construir consumiera el paso, un agente que construye mucho avanzaría el reloj más despacio que uno que no, y las</sub>
+- **EL CAMINO ENTERO, CELDA A CELDA.** <sub>línea 176</sub>
+  <br><sub>Decía «entra por (0,0) y llega a (6,6) pasando por 27 celdas» — o sea cuántas, no cuáles. Y esta etapa se apoya en un principio que yo mismo escribí en la factoría: *«el jugador ve el camino entero desde el</sub>
+- **Y SE DICE QUÉ NO SE PUEDE PAGAR, NO SÓLO QUÉ SÍ.** <sub>línea 222</sub>
+  <br><sub>Un menú que sólo enseña lo asequible esconde la decisión de AHORRAR, que en esta etapa es la jugada fina. Si no sabes que existe la pértiga, no puedes decidir esperar a tenerla.</sub>
+- **EL MENÚ OFRECE SÓLO LO QUE `step` ACEPTA.** <sub>línea 236</sub>
+  <br><sub>Por la mañana, ¡Busca! ofrecía los mandos de una nave para pilotar un dron. Por la tarde, `SimonSaysSystem` ofrecía verbos que su propio `submitAction` rechazaba — los cuatro, medido: 0 aciertos y 31 fallos jugando el menú.</sub>
+- **AQUÍ EL MUNDO SÍ SABE DÓNDE ACABA SU MÉTODO, Y LO DICE.** <sub>línea 260</sub>
+  <br><sub>`construir_guijarro` parece partible por el guión bajo, pero `ir_a_planta` —del edificio— es UN método entero. Nadie puede distinguirlos desde fuera, así que quien lo sabe lo declara y</sub>
+
+### `public/js/alisa-engine/src/gym/envs/MarabuntaEnv.js`
+
+- **`BulletHeavenEngine` es la clase ABSTRACTA: su tabla de oleadas nace vacía** <sub>línea 2</sub>
+  <br><sub>(`config.waves || []`), así que envolviéndola no aparece un solo enemigo — 400 ticks con la arena desierta y la falsa sensación de que el determinismo fallaba, cuando lo que pasaba es que no había nada que diferenciar.</sub>
+- **DETERMINISMO — mírate esto antes de fiarte de una puntuación** <sub>línea 31</sub>
+  <br><sub>El motor usa `Math.random()` por dentro (spawns, drops, la baraja de mejoras). Aquí NO se copia otro mulberry32: se usa `DeterministicScope`, que es el canónico. Ya hubo dos generadores conviviendo en el motor y, aunque</sub>
+- **El método del motor es `update(dt)`, no `step(dt)`.** <sub>línea 108</sub>
+  <br><sub>supuesto y reventó al primer tick. const resultado = DeterministicScope.run(this.seed + this.steps, () => { if (idx >= 0 && idx < VERBOS.length) this.sys.act(idx);</sub>
+
+### `public/js/alisa-engine/src/gym/envs/RaccoonSpaceEnv.js`
+
+- **¡BUSCA! 4, 5 Y 6 SON EL MISMO JUEGO A TRES ESCALAS.** <sub>línea 54</sub>
+  <br><sub>Las tres páginas tienen el MISMO marcador —`fuel + (restantes) × bonus`— y la misma mecánica: moverse con un presupuesto, escanear, encontrar. Sólo cambia el tamaño del sitio, cuántos objetivos hay y cómo se llaman:</sub>
+- **Y EL GÉNERO ESTÁ AQUÍ PORQUE LA PUERTA DE LENGUAJE SE LEE.** <sub>línea 79</sub>
+  <br><sub>La primera versión sólo tenía singular y plural, y el planeta salía con «No hay **ningún ciudad** al alcance. **El ciudad** sin escanear más cercano…». Un modelo leyendo eso está leyendo un texto mal escrito, y este</sub>
+- **SIN ADJETIVO, PARA NO ARRASTRAR MÁS GRAMÁTICA.** <sub>línea 142</sub>
+  <br><sub>Con «${el} ${uno} más cercano» salía «La ciudad más CERCANO»: el artículo ya concordaba y el adjetivo no. Cada palabra que concuerde es un campo más que mantener en tres sitios, así que la frase se</sub>
+- **LAS PISTAS, QUE SON EL JUEGO Y NO LLEGABAN A ESTA PUERTA.** <sub>línea 155</sub>
+  <br><sub>La página le decía a la persona «🟢 HOT (37 LY away)» al descartar un objetivo, y aquí no se contaba nada: el agente hacía un recorrido a ciegas mientras la persona deducía. Dos juegos con el mismo nombre.</sub>
+- **EL MENÚ SALE DE LOS VERBOS DE ESTA ETAPA, NO DE UNA LISTA FIJA** <sub>línea 186</sub>
+  <br><sub>Esta lista estaba escrita a mano con los verbos de la NAVE, y las tres etapas la heredaban. Medido el 24-08 en el navegador: a un modelo que jugara al sector de ciudad se le ofrecían `empujar`, `girar_izq`,</sub>
+- **Y LOS NÚMEROS SALEN DE UN BARRIDO, CON UN JUGADOR COMPETENTE.** <sub>línea 250</sub>
+  <br><sub>`calibrar_busca.mjs` mide lo único que define una escalera: cuántas veces gana un piloto que sabe jugar. Antes de calibrar, la escalera BAJABA en el medio —el planeta se ganaba más que la ciudad—, que es justo lo que `ESTADO_SAGAS.md`</sub>
+- **SIN ASTEROIDES, Y NO ES UN DESCUIDO.** <sub>línea 268</sub>
+  <br><sub>Cuando metí esta etapa al banco le puse ocho por inercia, copiando la configuración del espacio. La página no dibuja ninguno: el dron vuela sobre una ciudad. Ocho rocas invisibles empujando al agente y quitándole batería</sub>
+- **DOCE EDIFICIOS → DIEZ, Y NO ES POR HACERLO MÁS FÁCIL.** <sub>línea 277</sub>
+  <br><sub>Con doce, esta etapa y la del planeta se ganaban el 75% y el 67%: ocho puntos de separación, que con 60 semillas está dentro del ruido. Dos escalones que en realidad eran uno. El depósito no lo arreglaba —de 30 a 46</sub>
+- **26 → 12, Y OTRA VEZ NO ES AFINAR: ES QUE CAMBIÓ EL JUEGO.** <sub>línea 303</sub>
+  <br><sub>Con 26 el satélite ganaba el 100% de las partidas. No porque el planeta sea fácil, sino porque hasta hoy lo pilotaba como una nave —empuje cartesiano sobre una esfera— y le sobraba de todo. Con mando de órbita y el coste de</sub>
+
+### `public/js/alisa-engine/src/gym/Gramatica.js`
+
+- **POR QUÉ AQUÍ, Y QUÉ HABÍA ANTES.** <sub>línea 12</sub>
+  <br><sub>El banco emitía `{verb, args}` — que ya son `#metodo |parametros`— pero sin gramática declarada. Medido el 25-08 sobre los 49 entornos del catálogo:</sub>
+- **Y EL CASO QUE LO ENSEÑA ENTERO.** <sub>línea 28</sub>
+  <br><sub>`defensa-protohub` ofrecía 68 verbos así:</sub>
+- **EL OBJETO NO ES UNA ETIQUETA: ES LO QUE SE PUEDE RESOLVER.** <sub>línea 39</sub>
+  <br><sub>`@Chess #move |d7` no es `chess_move(d7)` con adornos. El objeto es la cosa que publica `sustrato()`, así que un método genérico puede leer de él cuántas casillas hay, qué leyenda usa y qué piezas existen, sin saber a qué se juega.</sub>
+- **LA GRAMÁTICA SE DECLARA, NO SE ADIVINA.** <sub>línea 50</sub>
+  <br><sub>Adivinar es lo que produjo las seis. Un guión bajo no es un separador — `ir_a_planta` es UN método y `esquivar_izquierda` también—, así que aquí nadie parte por guiones. Quien sabe dónde acaba el método es el mundo que lo emite,</sub>
+- **LA ÚNICA REGLA: UN MÉTODO NO LLEVA SEPARADORES DENTRO.** <sub>línea 59</sub>
+  <br><sub>Dos puntos o un espacio dentro de un `#metodo` significan que hay un parámetro escondido ahí — es literalmente el fallo de `enviar a`. Se comprueba, y por eso el banco no puede volver a tener seis gramáticas sin que salte.</sub>
+- **EL PRIMER DOS-PUNTOS SEPARA MÉTODO DE PARÁMETROS; LOS DEMÁS SEPARAN** <sub>línea 86</sub>
+  <br><sub>PARÁMETROS ENTRE SÍ.</sub>
+- **EL LECTOR ÚNICO, Y EXISTE PORQUE ALLÍ NO EXISTE.** <sub>línea 125</sub>
+  <br><sub>En el proyecto general la ley está declarada y la máquina está escrita, pero el paso texto→tripleta vive dentro de un `elif` de `Parse.Flow` y no se puede llamar. Resultado medido: cinco sitios más se escribieron su propia regex y</sub>
+
+### `public/js/alisa-engine/src/gym/GymEnv.js`
+
+- **NO SUSTITUYE A `affordances()`, LA ACOMPAÑA — Y ES A PROPÓSITO.** <sub>línea 59</sub>
+  <br><sub>El banco mide desde hace semanas con `{verb, args}`, y las huellas de comportamiento están selladas contra eso. Cambiar el menú por debajo sería cambiar el juego conservando el nombre, que es la avería que este proyecto</sub>
+- **ESTO ES LO QUE FALTABA, Y NO ERA SINTAXIS.** <sub>línea 102</sub>
+  <br><sub>La primera versión de la tripleta sólo la DESCRIBÍA: `verbos()` la emitía y `stepVerb()` seguía siendo lo único que ejecutaba. O sea que el átomo era adorno — dos caminos que hoy coinciden y mañana no, que es la avería</sub>
+- **Y EL OBJETO SE COMPRUEBA, QUE ES LA PARTE DE IDENTIDAD.** <sub>línea 120</sub>
+  <br><sub>Un átomo dirigido a otro mundo se rechaza en vez de ejecutarse a ciegas. Sin eso, `@Chess #jugar |a2a3` movería una torreta en ¡Defiende! porque el método casa — y el error saldría como una jugada legal, que es la peor</sub>
+- **EL EPISODIO ENTERO VA DENTRO DE UN DeterministicScope.** <sub>línea 167</sub>
+  <br><sub>palabra "determinista" era un deseo, no una garantía: el motor tiene 470 llamadas a `Math.random()` sin semilla repartidas por 67 ficheros, así que la misma semilla daba mundos distintos en la misma máquina. Medido, y</sub>
+
+### `public/js/alisa-engine/src/gym/HuellaDeMundo.js`
+
+- **Y ESTO NO ES TEÓRICO: PASÓ AYER Y HOY.** <sub>línea 18</sub>
+  <br><sub>`RaccoonCity-v0` cambió de 12 objetivos a 10 y de 30 de combustible a 38 y de vuelta a 30. `RaccoonPlanet-v0` estrenó mando de órbita, coste de escaneo y pasó de 26 de combustible a 11. `CabinetEscape-v0` cambió de generador y con</sub>
+- **LA HUELLA ES DE COMPORTAMIENTO, NO DE ESTADO INICIAL.** <sub>línea 29</sub>
+  <br><sub>`huellaDeReglas` del arcade toma una foto del estado en el primer turno, y su propio fichero cuenta que eso ya mintió una vez: hearts y spades salían con la MISMA huella porque comparten baraja, reparto y semilla.</sub>
+- **LA POLÍTICA TIENE QUE SER FIJA Y NO PUEDE CANCELARSE SOLA.** <sub>línea 60</sub>
+  <br><sub>Recorrer las acciones con un paso que divida al número de verbos hace que se anulen entre sí: medido esta semana, `(i*7) % 8` da el ciclo `0,7,6,5,4,3,2,1` y ahí `oeste` deshace a `este` y `norte` a `sur`. El satélite del planeta</sub>
+- **EL DESENLACE NO BASTA PARA DISTINGUIR DOS JUEGOS.** <sub>línea 85</sub>
+  <br><sub>La primera versión resumía sólo cómo acababa la partida —pasos, recompensa, nota— y `RaccoonSpace-v0` y `RaccoonCity-v0` salieron con la MISMA huella (`92650e99`). Son juegos distintos: otro tamaño de mundo, otro vehículo, otro</sub>
+- **Y LA OBSERVACIÓN, PORQUE EL SUSTRATO NO LLEVA ESCALARES.** <sub>línea 148</sub>
+  <br><sub>El sustrato describe lo que HAY —terreno y piezas— pero no cuánto combustible te queda ni cuántas vidas. Medido: cambié el combustible de ¡Busca! 4 de 30 a 31 y **la huella no se movió**,</sub>
+
+### `public/js/alisa-engine/src/gym/ObservacionDeSustrato.js`
+
+- **POR QUÉ EXISTE: UN VECTOR ESCRITO A MANO ES UN SITIO DONDE MENTIR.** <sub>línea 8</sub>
+  <br><sub>Cada entorno se fabrica su observación a mano —24 números en ¡Busca!, 64 en Marabunta, 26 en CorpBuilding— y ahí es exactamente donde el 24-08 encontré que `escaner_listo` valía 1 mientras la puerta de lenguaje decía «lo tienes al</sub>
+- **Y NO REEMPLAZA A LAS OBSERVACIONES QUE YA HAY, A PROPÓSITO.** <sub>línea 19</sub>
+  <br><sub>Cambiar el vector de un entorno publicado le cambia la forma y con ella las notas de quien ya jugó. Esto es para los mundos NUEVOS —que nacen con observación gratis— y para demostrar una cosa que hoy sólo era una intuición:</sub>
+- **LOS TIPOS SALEN DE `leyenda`, Y NO DE LAS PIEZAS QUE HAY AHORA.** <sub>línea 38</sub>
+  <br><sub>La primera versión los sacaba de las piezas presentes, y con eso dos mundos de nueve dieron un vector que NO CAMBIABA AL JUGAR:</sub>
+- **LAS COORDENADAS SE NORMALIZAN CON EL LÍMITE DEL MUNDO, Y SI NO LO HAY** <sub>línea 82</sub>
+  <br><sub>CON LO QUE HAYA. Un acuario mide 120 y una rejilla 12: sin normalizar, el mismo número significaría cosas distintas según el mundo y una red entrenada en uno no entendería el otro.</sub>
+
+### `public/js/alisa-engine/src/gym/ProtoHubEnv.js`
+
+- **CUÁNTAS SILLAS TIENE ESTE JUEGO, PREGUNTÁNDOSELO AL ESTADO** <sub>línea 84</sub>
+  <br><sub>Aquí ponía que ninguno de los 35 publica su lista de asientos, y era verdad hasta que los juegos empezaron a publicar `marcador`: un elemento por silla, o sea que su longitud las enumera. No hubo que inventar un campo — apareció</sub>
+- **ENTROPY SE QUEDA EN UNA SILLA A PROPÓSITO, Y CONVIENE SABER POR QUÉ.** <sub>línea 104</sub>
+  <br><sub>Publica `marcador: p.fin ? … : null`, o sea sólo al acabar, así que al empezar no hay nada que contar. Arreglarlo es de una línea en sus reglas —publicarlo siempre— pero ese campo entra en la HUELLA DE APERTURA</sub>
+- **EN QUÉ SILLA SE SIENTA EL AGENTE.** <sub>línea 126</sub>
+  <br><sub>No es un número de asiento porque NINGUNO de los 35 juegos publica su lista de asientos: `turn` es sólo un nombre suelto —`player`, `azul`, `ladron`, `guia`, `a`— y no hay forma uniforme de enumerarlos. Medido el</sub>
+- **ACTUALIZACIÓN 16-08: YA HAY FORMA DE ENUMERAR LAS SILLAS, Y ARREGLA** <sub>línea 143</sub>
+  <br><sub>EL PROBLEMA QUE DEJABA ESTO A MEDIAS.</sub>
+- **Y estas jugadas entran en el recibo como cualquier otra, igual que** <sub>línea 198</sub>
+  <br><sub>las de la casa en `step`. Si faltaran, al re-simular la partida saldría otro tablero y el verificador tumbaría a un jugador honrado —que es exactamente el fallo que ya nos costó una tarde con el `rnd`.</sub>
+- **EL ASIENTO SE LE PASA A LAS REGLAS.** <sub>línea 221</sub>
+  <br><sub>`this.asiento` movía al agente de silla para DECIDIR —la casa juega sus turnos antes, ahí arriba— pero esto llamaba a `reglas.estado(this.p)` a secas. O sea que el agente jugaba desde la silla 2 y se le devolvía la mano,</sub>
+- **AQUÍ METÍ LA PATA Y CASI NO SE VE.** <sub>línea 267</sub>
+  <br><sub>esto —`Number(e.puntos ?? e.score) || 0`— sin mirar que `Verificador.js` ya tenía `puntuacionDe()`. Con `score: {black, white}` mi versión hacía `Number(objeto)` → `NaN` → **0**, así que go, reversi</sub>
+- **`res` TAMBIÉN CUENTA COMO GANADOR, Y ANTES NO.** <sub>línea 298</sub>
+  <br><sub>Esta línea buscaba `winner` o `ganador`, y **ningún juego publica ninguno de los dos**: los diecinueve publican `result`. Como arriba sólo se compara con la notación de ajedrez (`1-0`, `0-1`, `1/2`) y</sub>
+- **EL OBJETIVO NO LLEGABA AQUÍ.** <sub>línea 384</sub>
+  <br><sub>A QUÉ.</sub>
+- **Y ES EXACTAMENTE EL MISMO FALLO QUE EL ÁRBITRO DE SALAS YA ARREGLÓ.** <sub>línea 399</sub>
+  <br><sub>`worker-mesas/mesas.js` lo cuenta en su propio comentario: «este árbitro no pasa por ahí, así que aquí no aparecían», y allí se corrigió. Aquí no, y nadie lo notó porque las dos puertas se probaban por separado. Lo destapó</sub>
+- **EL VERBO SE SIGUE ENTREGANDO CRUDO, Y LA TRIPLETA SE DECLARA APARTE.** <sub>línea 419</sub>
+  <br><sub>`verb` es la jugada tal como la declara el juego, y así tiene que seguir: es lo que `actFromVerb` compara y lo que el verificador escribe en el recibo. Tocarlo cambiaría el juego conservando el nombre.</sub>
+- **MATIZ, porque «cazamos al que cambia la semilla» no es cierto en** <sub>línea 482</sub>
+  <br><sub>todos: en **ajedrez y damas cambiar la semilla no invalida nada**, y está bien que así sea — son deterministas, la semilla no interviene en la partida. Ahí lo que autentica es la secuencia de jugadas, no la</sub>
+- **Y DESDE QUÉ SILLA SE PUNTUÓ, QUE FALTABA Y COSTABA LA MITAD DE LOS RECIBOS.** <sub>línea 490</sub>
+  <br><sub>`puntos` sale de `_estado()`, que mira desde TU silla. El verificador re-simulaba y leía la puntuación desde la silla 0 — porque no sabía que había otra—, así que toda partida jugada fuera de la 0 salía «la puntuación</sub>
+- **Lo peor no es el fallo, es cómo se veía: con la silla rotando por semilla,** <sub>línea 500</sub>
+  <br><sub>el contador de la tabla ponía `100/200` — exactamente la mitad— y eso se lee como un número normal, no como «la mitad de mis filas no verifican». En un banco cuya frase es «lo que no verifica, no puntúa», media tabla estaba</sub>
+- **`asientoReal` y no `asiento`.** <sub>línea 516</sub>
+  <br><sub>una pasada: `asiento` es lo que pide quien llama —«que la casa juegue n turnos antes de que me siente»— y `asientoReal` es la silla que resulta, envuelta sobre las que el juego tiene de verdad. `_estado()`</sub>
+
+### `public/js/alisa-engine/src/gym/PuenteDeGimnasio.js`
+
+- **Y ESTO NO ES UN ADORNO ARQUITECTÓNICO: HACE MEDIBLE EL MODELO DE SER.** <sub>línea 23</sub>
+  <br><sub>Hasta ahora `SovereignBeing` no se podía puntuar: no tenía un mundo con marcador. Con esto, un Ser juega una etapa del banco y saca una nota comparable con la de una persona y la de una política. Que es, literalmente,</sub>
+- **NO HAY DECISOR POR DEFECTO, Y ES A PROPÓSITO.** <sub>línea 39</sub>
+  <br><sub>Poner uno —«coge el primer verbo»— haría que un Ser sin agente pareciera estar pensando. Ya arreglé hoy ese mismo engaño en el Neocórtex: sin puente devuelve `sin_puente` en vez de fingir que continúa. Un puente sin</sub>
+- **SE OFRECE LO QUE EL ENTORNO ACEPTA, NI UNO MÁS.** <sub>línea 60</sub>
+  <br><sub>`affordances()` ya está vigilado por `prueba_puertas_busca.mjs`: hoy mismo cacé dos veces un menú que ofrecía verbos que el propio `step` luego rechazaba —en ¡Busca! por la mañana y en SimonSays por la tarde, donde un</sub>
+- **UN VERBO INVENTADO SE RECHAZA AQUÍ, NO SE MANDA AL ENTORNO.** <sub>línea 89</sub>
+  <br><sub>`stepVerb` de un verbo desconocido devuelve `{error}` y sigue como si nada, así que un agente que alucine verbos gastaría turnos sin enterarse. Aquí se dice: es la frontera, y una frontera que no comprueba no es una frontera.</sub>
+
+### `public/js/alisa-engine/src/gym/registro.js`
+
+- **EL CONTROL DEL BANCO DE PRUEBAS.** <sub>línea 49</sub>
+  <br><sub>agentes DEBEN empatar aquí. Si la tabla los separa, el que falla es el banco, no el agente. Ver la cabecera de `rules/guerra.js`. { juego: 'guerra', titulo: 'Guerra (control)', crear: 'crearGuerra' },</sub>
+- **El primero SIN azar y sin rival: pura planificación en una rejilla, con** <sub>línea 66</sub>
+  <br><sub>movimientos que no se pueden deshacer. Cubre una estructura de decisión que no tenía ninguno de los diecinueve anteriores.</sub>
+- **LA QUE COINCIDE, NO LA PRIMERA.** <sub>línea 202</sub>
+  <br><sub>Valía mientras cada fichero tuviera UN entorno. Desde que ¡Busca! 4 y 5 viven en `RaccoonSpaceEnv.js` —son el mismo juego a otra escala, y copiarlo tres veces habría creado tres verdades— ese fichero</sub>
+- **Y es honesto sobre su alcance: es una FSM GENÉRICA.** <sub>línea 275</sub>
+  <br><sub>alfil. Sirve para demostrar que la puerta funciona y para dar un suelo comparable; una FSM buena para un juego concreto se escribe con las reglas de ese juego delante.</sub>
+- **La primera versión guardaba el contador del generador en un cierre, y con** <sub>línea 319</sub>
+  <br><sub>eso `selfTest` decía «no reproducible» en 14 de 16 entornos. El fallo era mío: `selfTest` corre el mismo episodio dos veces con la MISMA política, así que la segunda arrancaba con el generador ya avanzado y salía otra partida.</sub>
+
 ## Cómo se dibuja (el pintor)
 
 ### `public/arcade/js/protohub/render/acercar.js`
@@ -4395,6 +5286,17 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **NO SE ESCRIBE EN CADA JUGADA, Y ESTO ERA UNA BOMBA.** <sub>línea 192</sub>
   <br><sub>El gym se llama una vez por movimiento: una partida de Go Fish son 73 llamadas. Escribiendo en todas, un solo agente se comía las 1.000 escrituras diarias del plan gratuito en</sub>
 
+### `functions/api/mundos.js`
+
+- **Y AQUÍ ESTÁ LO QUE ESTO DESBLOQUEA DE VERDAD** <sub>línea 16</sub>
+  <br><sub>Un decisor local es una demo. Lo que hace falta es una PUERTA donde enchufar cualquiera que piense: un modelo en el portátil, uno detrás de una API, un subagente, o una persona con curl. Con esto, «quién juega» deja de ser una</sub>
+- **SIN ESTADO, IGUAL QUE SU HERMANO, Y POR LOS MISMOS TRES MOTIVOS** <sub>línea 22</sub>
+  <br><sub>Mandas la partida entera y se re-simula desde la semilla:</sub>
+- **LA UNIDAD ES LA DECISIÓN, NO EL TICK.** <sub>línea 31</sub>
+  <br><sub>Estos mundos corren a 60 Hz: una partida de ¡Defiende! son 7.200 ticks, y nadie va a hacer 7.200 peticiones. Cada entrada de `jugadas` vale por un INTERVALO DE DECISIÓN (`ticksPorJugada`, 30 por defecto = medio segundo), y el</sub>
+- **UNA JUGADA RECHAZADA DETIENE LA RE-SIMULACIÓN Y SE DICE CUÁL.** <sub>línea 145</sub>
+  <br><sub>Seguir como si nada dejaría al agente creyendo que su plan iba bien mientras el mundo hace otra cosa — y su nota hablaría de un malentendido, no de él. Es el mismo criterio que la frontera de `PuenteDeGimnasio`.</sub>
+
 ### `functions/api/presencia.js`
 
 - **EL ÚNICO ESTADO COMPARTIDO DE TODO EL SITIO, Y DUELE** <sub>línea 16</sub>
@@ -4491,208 +5393,6 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **La comprobación que casi no escribo, por obvia: la primera vez salió** <sub>línea 244</sub>
   <br><sub>«ana 10, bruno 0». La partida terminaba, el marcador cuadraba y el recibo verificaba, pero el segundo jugador no había tocado una carta — la mesa reconocía un solo asiento y la casa jugaba el resto. Todo lo demás verde.</sub>
 
-## El motor
-
-### `public/js/alisa-engine/src/extensions/alisa-colony/plugins/SovereignTickerPlugin.js`
-
-- **UN SOLO LIENZO, N CARAS.** <sub>línea 39</sub>
-  <br><sub>cada fotograma; son ~2 MB de textura subidos a la GPU por vuelta. Con cuatro instancias para rodear una sala serían ocho. Aquí las caras COMPARTEN textura y material: se dibuja una vez y se ve desde todos</sub>
-- **Conectarse a la colonia es una MEJORA, no un requisito.** <sub>línea 99</sub>
-  <br><sub>abría el EventSource a pelo: sin hub, el navegador reintenta en bucle para siempre y llena la consola de errores de red en una página que funciona perfectamente sin él. Ahora se rinde y se calla.</sub>
-
-### `public/js/alisa-engine/src/extensions/alisa-colony/psyche/EntityCardSystem.js`
-
-- **ESTA PIEZA TENÍA 0 IMPORTADORES, y por una razón concreta: creaba** <sub>línea 57</sub>
-  <br><sub>su DOM pero NO llevaba sus estilos. El CSS vivía suelto en el `style.css` del overworld viejo, que ya no existe en el proyecto. Quien la importara veía... nada: elementos sin forma, invisibles.</sub>
-
-### `public/js/alisa-engine/src/index.js`
-
-- **ESTA LISTA SE ESCRIBÍA A MANO, Y POR ESO MENTÍA.** <sub>línea 40</sub>
-  <br><sub>`check_gym_envs.mjs` la lee para comprobar los entornos nativos. Al añadir `ChopperAquariumEnv` seguía diciendo «5 entornos en el catálogo»: el comprobador estaba verificando una lista, no el catálogo.</sub>
-
-### `public/js/alisa-engine/src/soma/AssetManager.js`
-
-- **DEVUELVE `gltf.scene` (un THREE.Group), NO el gltf entero.** <sub>línea 51</sub>
-  <br><sub>(GLTFPlugin.load) ya hace ese desempaquetado. Escribir `.then(gltf => gltf.scene)` da undefined — era el fallo de Biolab y de ArcadeTableRoom. Las animaciones quedan en `.userData.animations`.</sub>
-- **No GLTF Delegate found.** <sub>línea 62</sub>
-  <br><sub>try { const module = await import('./plugins/GLTFPlugin.js'); const tempPlugin = new module.GLTFPlugin();</sub>
-
-### `public/js/alisa-engine/src/soma/plugins/CSS3DHologramPlugin.js`
-
-- **El cajón del cartucho. `CSS3DObject` se APROPIA del <iframe>: lo** <sub>línea 34</sub>
-  <br><sub>mete en el DOM del CSS3DRenderer, y al sacar el objeto de la escena three dispara su evento 'removed', que BORRA el elemento del DOM. Sin esto, levantarse de una máquina destruye el cartucho y sentarse</sub>
-- **TESTIGO DE MONTAJE.** <sub>línea 289</sub>
-  <br><sub>`onload`, y en ese hueco te puede dar tiempo a levantarte: el temporizador seguía en vuelo y montaba el cartucho DESPUÉS de haber desconectado, dejando la pantalla flotando en la sala. Cada carga</sub>
-- **MONTAR UNA SOLA VEZ POR CARTUCHO.** <sub>línea 306</sub>
-  <br><sub>Montar crea un `CSS3DObject` nuevo y lo mete en la escena, y eso reubica su elemento en el DOM. Reubicar un <iframe> —o CUALQUIER ancestro suyo— lo hace navegar otra vez desde cero,</sub>
-- **AL CSS3DObject SE LE DA UN <div>, NUNCA EL <iframe>.** <sub>línea 347</sub>
-  <br><sub>Aquí había `new CSS3DObject(iframe)` y montaba un bucle que se alimentaba solo:</sub>
-- **El pitch va sobre el eje X LOCAL, no el del mundo.** <sub>línea 384</sub>
-  <br><sub>`rotation.x = -0.15` y el orden Euler por defecto, la inclinación se aplica ANTES del giro: en una máquina girada 90° deja de ser inclinación de CRT y se vuelve ALABEO — la</sub>
-- **Vaciar la escena ENTERA, no solo `currentCssObject`. `iframe.onload`** <sub>línea 478</sub>
-  <br><sub>puede dispararse más de una vez (una recarga interna del juego basta), y cada disparo montaba un CSS3DObject nuevo sin soltar el anterior. El plugin solo recordaba el último, así que al levantarte quedaba un</sub>
-
-### `public/js/alisa-engine/src/soma/plugins/SpatialAudioPlugin.js`
-
-- **El parámetro `loop` existía y NO SE USABA: solo servía para decidir** <sub>línea 93</sub>
-  <br><sub>si programar la limpieza. Pedir un sonido en bucle daba un sonido que se oía una vez y moría en silencio, sin un error en consola. Medido en la Sala del Huevo: once máquinas con voz, cero sonando.</sub>
-
-### `public/js/alisa-engine/src/soma/tools/CrossSectionDrawTool.js`
-
-- **Hub save failed: ${e.message}`);** <sub>línea 140</sub>
-  <br><sub>}); }</sub>
-
-### `public/js/alisa-engine/src/tests/test_engines.js`
-
-- **FALSO AMIGO. Al revivir estas pruebas renombré `FSMEngine` -> `FSMSystem`** <sub>línea 28</sub>
-  <br><sub>por el patrón de la mudanza, pero NO es el mismo motor con otro nombre: el viejo era una FSM de depredador (`tick(agente, ?, presa, dt)` devolviendo `{nextState, actionVector}`) y `FSMSystem` es una máquina de estados genérica</sub>
-
-### `public/js/alisa-engine/src/world/BSPSystem.js`
-
-- **WHY THIS PARAMETER EXISTS.** <sub>línea 28</sub>
-  <br><sub>This generator called `this.rng()` in eleven places, which made it usable for a demo and unusable for anything that has to be REPLAYED: a benchmark run, a bug report, a match receipt. Same seed, different</sub>
-
-### `public/js/alisa-engine/src/world/CabinetBSPEngine.js`
-
-- **`cuts` SE VALIDA, y no es paranoia.** <sub>línea 8</sub>
-  <br><sub>El corte de la recursión es `depth >= maxDepth`. Si `maxDepth` llega como `NaN` —cosa fácil: basta un `undefined + 1` en quien llama— esa comparación es SIEMPRE falsa y la función se llama a sí misma hasta reventar la pila.</sub>
-
-### `public/js/alisa-engine/src/world/factories/ProceduralBuildingFactory.js`
-
-- **Esta salida temprana devolvía el grupo SIN COLGARLO DE LA ESCENA.** <sub>línea 732</sub>
-  <br><sub>`this.scene.add(this.buildingGroup)` está mucho más abajo, después de crear los personajes, así que por este camino nunca se ejecutaba: la fábrica construía el edificio entero — 183 mallas y 26 luces, todo</sub>
-- **Aquí ponía `window.flashDust = new THREE.Points(...)`, pero arriba (l.73)** <sub>línea 805</sub>
-  <br><sub>hay un `let flashDust` LOCAL. Son dos variables distintas: la global se rellenaba y la local seguía a null, así que la línea siguiente reventaba con «Cannot read properties of null (reading 'position')» — y con ella se</sub>
-
-### `public/js/alisa-engine/src/world/factories/RaccoonEnvironmentFactory.js`
-
-- **COLORES SUBIDOS Y CONTINENTES DE DOS OCTAVAS.** <sub>línea 155</sub>
-  <br><sub>Abierta la imagen, el planeta salía verde oscuro con las costas en ESCALONES: un damero mal disimulado en vez de continentes. La causa era `Math.sin(nx*2.3 + nz*1.7) > 0.3` — una sola onda, con su periodo</sub>
-- **EL ORDEN DE ESTAS CUATRO LÍNEAS ES EL DIBUJO.** <sub>línea 181</sub>
-  <br><sub>Con el umbral de océano en 0,35 y las bandas de latitud muy separadas entre sí, el planeta salía a RAYAS: se veían los paralelos y no se veía ni una costa. La latitud mandaba sobre el ruido.</sub>
-- **LOS EDIFICIOS ERAN CASI NEGROS POR DISEÑO, NO POR FALTA DE LUZ.** <sub>línea 307</sub>
-  <br><sub>Aquí ponía `setHSL(hue, 0.3, 0.08 + rng * 0.05)`. Medido en la escena viva: doce edificios con claridad HSL entre 0,083 y 0,125.</sub>
-- **Y ESE NÚMERO ES LINEAL, NO PERCEPTUAL.** <sub>línea 313</sub>
-  <br><sub>Escribí «están al nueve por ciento de claridad» tratando la cifra como si fuera brillo percibido, y no lo es: three trabaja en espacio LINEAL, y `setHSL`/`getHSL` usan ese espacio salvo que se les pida</sub>
-
-### `public/js/alisa-engine/src/world/gym_runners/CabinetEscapeGame.js`
-
-- **Esto era `this.sys.episodes + 1` a secas.** <sub>línea 249</sub>
-  <br><sub>`episodes` aún no existe, así que salía `NaN`, y ese NaN llegaba hasta `fractalPartition` como profundidad. Como `depth >= NaN` es siempre falso, la partición recursaba sin fondo y el juego moría al arrancar</sub>
-- **SNAKE! DODGE (SPACE)!', 500);** <sub>línea 555</sub>
-  <br><sub>return; }</sub>
-
-### `public/js/alisa-engine/src/world/systems/BoidsSystem.js`
-
-- **SIN `import * as THREE`, Y ESO ES LO QUE LO HACE UTILIZABLE.** <sub>línea 6</sub>
-  <br><sub>El fichero se anunciaba como «pure headless» y arrastraba el motor de render en la primera línea. Con eso no se puede importar desde Node —ni desde una prueba, ni desde un banco de medidas— aunque el noventa por ciento del código</sub>
-- **La caja NO encerraba en Y. `initAgents` usa minY/maxY para** <sub>línea 179</sub>
-  <br><sub>repartir la bandada al nacer, y luego nadie los volvía a mirar: ni rebote ni recorte. En una escena abierta la bandada se escapa por arriba y por abajo y no vuelve — medido en El Andén, con las</sub>
-
-### `public/js/alisa-engine/src/world/systems/CabinetEscapeSystem.js`
-
-- **`episodes` NO se inicializaba aquí, y de ahí salía todo lo demás:** <sub>línea 24</sub>
-  <br><sub>`randomizeCuts()` y `randomizeCabinetSize()` calculan `episodes + 1`, así que con `undefined`/`null` obtenían NaN. Ese NaN llegaba a la partición BSP como profundidad (y `depth >= NaN` es</sub>
-
-### `public/js/alisa-engine/src/world/systems/EcosystemSystem.js`
-
-- **POR QUÉ ESTE PARÁMETRO, Y POR QUÉ AHORA.** <sub>línea 16</sub>
-  <br><sub>Este sistema llamaba a `this.rng()` en veintidós sitios. Para una demo de peces nadando eso está perfecto; para cualquier cosa que tenga que REPETIRSE —una tirada de banco de pruebas, un informe de fallo, el recibo</sub>
-
-### `public/js/alisa-engine/src/world/systems/FileSystemDioramaSystem.js`
-
-- **ESTE IMPORT FALTABA, Y ERA EL MÓDULO MÁS GRANDE DEL MOTOR.** <sub>línea 10</sub>
-  <br><sub>52 KB y 111 usos de `THREE.` sin importarlo: dependía de que alguien hubiera dejado un `<script>` clásico con la global puesta. Cargado como módulo —que es como lo carga cualquier página moderna— reventaba con `THREE is not defined`.</sub>
-- **POR QUÉ HAY UN `rng` EN UN OBJETO SINGLETON SIN CONSTRUCTOR.** <sub>línea 46</sub>
-  <br><sub>Este módulo no es una clase, es un objeto único con `init()` haciendo de constructor — así que ahí es donde se cachea la fuente de azar, siguiendo el mismo patrón que `BSPSystem`/`WorldBuilderSystem` (config.rng cacheado</sub>
-- **AQUÍ HABÍA `Renderer.init();` — UNA LÍNEA QUE ARRANCABA AL IMPORTAR.** <sub>línea 1205</sub>
-  <br><sub>Dos cosas mal en cuatro palabras:</sub>
-
-### `public/js/alisa-engine/src/world/systems/KinematicRageSystem.js`
-
-- **PONÍA «DETERMINISTIC» EN LA PRIMERA LÍNEA Y NO LO ERA.** <sub>línea 4</sub>
-  <br><sub>`applyImpulse` llamaba directamente a la función global de azar del motor de JS: dos volcados con los mismos datos daban dos estropicios distintos. Es justo la etiqueta-que-no-corresponde que nos mordió el 13-08-2026 con el temblor de las</sub>
-
-### `public/js/alisa-engine/src/world/systems/RaccoonSpaceCore.js`
-
-- **LÍMITE HONESTO: `Math.sin/cos` NO están fijados bit a bit por IEEE-754 y** <sub>línea 29</sub>
-  <br><sub>pueden diferir en el último bit entre navegadores o CPUs. Para validar una partida ajena se auditan las ACCIONES (que son enteros) y se compara la puntuación con tolerancia, no el estado final exacto.</sub>
-
-## El gym y los entornos
-
-### `public/js/alisa-engine/src/gym/envs/AsteroidsEnv.js`
-
-- **El tamaño se DEDUCE de los nombres.** <sub>línea 22</sub>
-  <br><sub>Aquí ponía `shape: [14]` mientras `names` calculaba 16 (4 de la nave + 4 asteroides × 3). Un agente que se fiara del espacio declarado reservaría 14 huecos y recibiría 16 números: se los comería desplazados y "aprendería"</sub>
-
-### `public/js/alisa-engine/src/gym/envs/CabinetEscapeEnv.js`
-
-- **Aquí me equivoqué en la primera versión: usé `idx-1, idx+1`, o sea** <sub>línea 182</sub>
-  <br><sub>índices contiguos. Pero el juego define "al lado" por distancia en el ÁRBOL BSP (`bspDistance(pA,pB) <= 2`), que no tiene por qué coincidir con el orden del array. Con vecinos equivocados la línea base apenas ganaba al</sub>
-
-### `public/js/alisa-engine/src/gym/envs/ChopperAquariumEnv.js`
-
-- **EL MOTOR NO PUNTÚA.** <sub>línea 30</sub>
-  <br><sub>un comentario que dice «dummy RL reward, to be hooked manually». Así que la puntuación se define AQUÍ, y se define con el objetivo del propio juego — escanear plantas hasta dar con el mapache— no con un número inventado.</sub>
-- **La recompensa la pone el entorno, no el motor: `stepSimulation`** <sub>línea 101</sub>
-  <br><sub>devuelve 0 siempre. Se premia el PROGRESO de la misión —plantas nuevas— y se premia mucho encontrar al mapache. Sin esto el episodio no distingue a nadie: todo el mundo saca cero.</sub>
-
-### `public/js/alisa-engine/src/gym/envs/MarabuntaEnv.js`
-
-- **`BulletHeavenEngine` es la clase ABSTRACTA: su tabla de oleadas nace vacía** <sub>línea 2</sub>
-  <br><sub>(`config.waves || []`), así que envolviéndola no aparece un solo enemigo — 400 ticks con la arena desierta y la falsa sensación de que el determinismo fallaba, cuando lo que pasaba es que no había nada que diferenciar.</sub>
-- **DETERMINISMO — mírate esto antes de fiarte de una puntuación** <sub>línea 31</sub>
-  <br><sub>El motor usa `Math.random()` por dentro (spawns, drops, la baraja de mejoras). Aquí NO se copia otro mulberry32: se usa `DeterministicScope`, que es el canónico. Ya hubo dos generadores conviviendo en el motor y, aunque</sub>
-- **El método del motor es `update(dt)`, no `step(dt)`.** <sub>línea 108</sub>
-  <br><sub>supuesto y reventó al primer tick. const resultado = DeterministicScope.run(this.seed + this.steps, () => { if (idx >= 0 && idx < VERBOS.length) this.sys.act(idx);</sub>
-
-### `public/js/alisa-engine/src/gym/GymEnv.js`
-
-- **EL EPISODIO ENTERO VA DENTRO DE UN DeterministicScope.** <sub>línea 82</sub>
-  <br><sub>palabra "determinista" era un deseo, no una garantía: el motor tiene 470 llamadas a `Math.random()` sin semilla repartidas por 67 ficheros, así que la misma semilla daba mundos distintos en la misma máquina. Medido, y</sub>
-
-### `public/js/alisa-engine/src/gym/ProtoHubEnv.js`
-
-- **CUÁNTAS SILLAS TIENE ESTE JUEGO, PREGUNTÁNDOSELO AL ESTADO** <sub>línea 83</sub>
-  <br><sub>Aquí ponía que ninguno de los 35 publica su lista de asientos, y era verdad hasta que los juegos empezaron a publicar `marcador`: un elemento por silla, o sea que su longitud las enumera. No hubo que inventar un campo — apareció</sub>
-- **ENTROPY SE QUEDA EN UNA SILLA A PROPÓSITO, Y CONVIENE SABER POR QUÉ.** <sub>línea 103</sub>
-  <br><sub>Publica `marcador: p.fin ? … : null`, o sea sólo al acabar, así que al empezar no hay nada que contar. Arreglarlo es de una línea en sus reglas —publicarlo siempre— pero ese campo entra en la HUELLA DE APERTURA</sub>
-- **EN QUÉ SILLA SE SIENTA EL AGENTE.** <sub>línea 125</sub>
-  <br><sub>No es un número de asiento porque NINGUNO de los 35 juegos publica su lista de asientos: `turn` es sólo un nombre suelto —`player`, `azul`, `ladron`, `guia`, `a`— y no hay forma uniforme de enumerarlos. Medido el</sub>
-- **ACTUALIZACIÓN 16-08: YA HAY FORMA DE ENUMERAR LAS SILLAS, Y ARREGLA** <sub>línea 142</sub>
-  <br><sub>EL PROBLEMA QUE DEJABA ESTO A MEDIAS.</sub>
-- **Y estas jugadas entran en el recibo como cualquier otra, igual que** <sub>línea 197</sub>
-  <br><sub>las de la casa en `step`. Si faltaran, al re-simular la partida saldría otro tablero y el verificador tumbaría a un jugador honrado —que es exactamente el fallo que ya nos costó una tarde con el `rnd`.</sub>
-- **EL ASIENTO SE LE PASA A LAS REGLAS.** <sub>línea 220</sub>
-  <br><sub>`this.asiento` movía al agente de silla para DECIDIR —la casa juega sus turnos antes, ahí arriba— pero esto llamaba a `reglas.estado(this.p)` a secas. O sea que el agente jugaba desde la silla 2 y se le devolvía la mano,</sub>
-- **AQUÍ METÍ LA PATA Y CASI NO SE VE.** <sub>línea 266</sub>
-  <br><sub>esto —`Number(e.puntos ?? e.score) || 0`— sin mirar que `Verificador.js` ya tenía `puntuacionDe()`. Con `score: {black, white}` mi versión hacía `Number(objeto)` → `NaN` → **0**, así que go, reversi</sub>
-- **`res` TAMBIÉN CUENTA COMO GANADOR, Y ANTES NO.** <sub>línea 297</sub>
-  <br><sub>Esta línea buscaba `winner` o `ganador`, y **ningún juego publica ninguno de los dos**: los diecinueve publican `result`. Como arriba sólo se compara con la notación de ajedrez (`1-0`, `0-1`, `1/2`) y</sub>
-- **EL OBJETIVO NO LLEGABA AQUÍ.** <sub>línea 383</sub>
-  <br><sub>A QUÉ.</sub>
-- **Y ES EXACTAMENTE EL MISMO FALLO QUE EL ÁRBITRO DE SALAS YA ARREGLÓ.** <sub>línea 398</sub>
-  <br><sub>`worker-mesas/mesas.js` lo cuenta en su propio comentario: «este árbitro no pasa por ahí, así que aquí no aparecían», y allí se corrigió. Aquí no, y nadie lo notó porque las dos puertas se probaban por separado. Lo destapó</sub>
-- **MATIZ, porque «cazamos al que cambia la semilla» no es cierto en** <sub>línea 449</sub>
-  <br><sub>todos: en **ajedrez y damas cambiar la semilla no invalida nada**, y está bien que así sea — son deterministas, la semilla no interviene en la partida. Ahí lo que autentica es la secuencia de jugadas, no la</sub>
-- **Y DESDE QUÉ SILLA SE PUNTUÓ, QUE FALTABA Y COSTABA LA MITAD DE LOS RECIBOS.** <sub>línea 457</sub>
-  <br><sub>`puntos` sale de `_estado()`, que mira desde TU silla. El verificador re-simulaba y leía la puntuación desde la silla 0 — porque no sabía que había otra—, así que toda partida jugada fuera de la 0 salía «la puntuación</sub>
-- **Lo peor no es el fallo, es cómo se veía: con la silla rotando por semilla,** <sub>línea 467</sub>
-  <br><sub>el contador de la tabla ponía `100/200` — exactamente la mitad— y eso se lee como un número normal, no como «la mitad de mis filas no verifican». En un banco cuya frase es «lo que no verifica, no puntúa», media tabla estaba</sub>
-- **`asientoReal` y no `asiento`.** <sub>línea 483</sub>
-  <br><sub>una pasada: `asiento` es lo que pide quien llama —«que la casa juegue n turnos antes de que me siente»— y `asientoReal` es la silla que resulta, envuelta sobre las que el juego tiene de verdad. `_estado()`</sub>
-
-### `public/js/alisa-engine/src/gym/registro.js`
-
-- **EL CONTROL DEL BANCO DE PRUEBAS.** <sub>línea 49</sub>
-  <br><sub>agentes DEBEN empatar aquí. Si la tabla los separa, el que falla es el banco, no el agente. Ver la cabecera de `rules/guerra.js`. { juego: 'guerra', titulo: 'Guerra (control)', crear: 'crearGuerra' },</sub>
-- **El primero SIN azar y sin rival: pura planificación en una rejilla, con** <sub>línea 66</sub>
-  <br><sub>movimientos que no se pueden deshacer. Cubre una estructura de decisión que no tenía ninguno de los diecinueve anteriores.</sub>
-- **Y es honesto sobre su alcance: es una FSM GENÉRICA.** <sub>línea 247</sub>
-  <br><sub>alfil. Sirve para demostrar que la puerta funciona y para dar un suelo comparable; una FSM buena para un juego concreto se escribe con las reglas de ese juego delante.</sub>
-- **La primera versión guardaba el contador del generador en un cierre, y con** <sub>línea 291</sub>
-  <br><sub>eso `selfTest` decía «no reproducible» en 14 de 16 entornos. El fallo era mío: `selfTest` corre el mismo episodio dos veces con la MISMA política, así que la segunda arrancaba con el generador ya avanzado y salía otra partida.</sub>
-
 ## Estilos
 
 ### `public/arcade/css/jugables.css`
@@ -4737,6 +5437,8 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Arriba a la derecha parecía la esquina libre: el panel está arriba a la izquierda y «¿algo va raro?» abajo a la derecha. En escritorio es verdad. En móvil NO: ahí el panel ocupa todo el ancho, así que «arriba a la derecha» es</sub>
 - **EL RECORTE VA EN EL TEXTO, NO EN EL RECUADRO.** <sub>línea 916</sub>
   <br><sub>el rótulo es `display:block` se llevaba una de las dos líneas: del objetivo quedaba UNA, partida a media palabra. El rótulo mide siempre lo mismo y no necesita recorte; lo que hay que acotar es la frase.</sub>
+- **EL ENLACE A LAS REGLAS TIENE QUE RECUPERAR LOS CLICS.** <sub>línea 931</sub>
+  <br><sub>`.hud-objetivo` lleva `pointer-events: none` para no robarle el ratón a la mesa que hay debajo. Un enlace heredando eso se pinta perfecto y NO SE PUEDE PULSAR: la peor clase de fallo de esta casa, porque no da error y parece que</sub>
 
 ## Los agentes y las políticas
 

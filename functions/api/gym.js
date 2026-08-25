@@ -46,6 +46,7 @@
 import { puntuacionDe } from '../../public/arcade/js/protohub/Verificador.js';
 import { huellaDeReglas } from '../../public/arcade/js/protohub/huella.js';
 import { JUEGOS, TITULOS, cargarReglas } from '../../public/arcade/js/protohub/rules/index.js';
+import { describirEstado, describirSustrato } from '../../public/arcade/js/protohub/descripcion.js';
 
 const BIBLIOTECA = '/arcade/data/card_library.json';
 const TOPE_JUGADAS = 4000;
@@ -215,9 +216,46 @@ export async function onRequestPost({ request, env }) {
         } catch { /* sin presencia se juega igual */ }
     }
 
-    // El estado tal cual lo publican las reglas, sin recortar: es lo que ve una
-    // persona en su pantalla. Lo que un agente NO recibe es lo que una persona
-    // tampoco ve — las cartas tapadas salen `null` desde las propias reglas.
+    /**
+     * ⚠️ EL MAPA. Y ESTO ESTABA ROTO, LO DIJO LA PRIMERA BETA TESTER.
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Aquí se devolvía `estado: st` y nada más, con el comentario de que era «lo
+     * que ve una persona en su pantalla». No lo era.
+     *
+     * Motoko jugó a Sokoban el 25-08 y reportó: «no puedo jugar razonando porque
+     * el estado es puramente numérico. NO ME MUESTRA EL MAPA. Me obligas a elegir
+     * arriba/abajo a ciegas como si fuera un modelo RL». Tenía toda la razón:
+     *
+     *     estado -> {nivel: 4, cajas_colocadas: 0, pasos: 0, distancia_restante: 4}
+     *
+     * Ni muros, ni cajas, ni dónde estás. Con eso, un modelo de lenguaje puntúa
+     * exactamente igual que una política al azar — y entonces la nota no mide al
+     * agente, mide la puerta.
+     *
+     * Y lo peor: el mapa EXISTÍA. `describirSustrato` lleva semanas dibujándolo
+     * para la página, a una llamada de distancia:
+     *
+     *     #######
+     *     #o....#      # muro · o destino · . libre
+     *     #.$#..#      $ caja · * caja colocada · @ tú
+     *     #.@.$.#
+     *     #....o#
+     *
+     * O sea: la persona veía el tablero y el agente no. Dos puertas, dos juegos,
+     * otra vez — la misma avería que este proyecto lleva toda la semana pagando,
+     * y esta vez la encontró un agente jugando en la primera hora.
+     *
+     * Se manda el mismo texto que lee la persona. `mapa` sólo aparece si el juego
+     * publica sustrato con rejilla; los que no la tienen —las cartas— no lo llevan
+     * y no se inventa ninguno.
+     */
+    let mapa = null;
+    try {
+        const sus = st.sustrato ?? (typeof reglas.sustrato === 'function' ? reglas.sustrato(r.p) : null);
+        if (sus?.rejilla) mapa = describirSustrato(sus);
+    } catch { /* un juego sin sustrato se sirve igual, sólo sin mapa */ }
+
     return responder(200, {
         juego: pet.juego,
         titulo: TITULOS[pet.juego] ?? pet.juego,
@@ -227,6 +265,9 @@ export async function onRequestPost({ request, env }) {
         terminada: !!st.is_game_over,
         puntos: puntuacionDe(st),
         acciones,
+        // Lo que la persona lee de un vistazo, en texto. Sale del mismo sitio.
+        descripcion: describirEstado(pet.juego, st),
+        mapa,
         estado: st,
         huella: huellaDeReglas(reglas),
         ms: Date.now() - t0,

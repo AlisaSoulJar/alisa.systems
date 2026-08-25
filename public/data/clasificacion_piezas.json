@@ -1,11 +1,11 @@
 {
- "fecha": "2026-08-24",
- "total": 179,
+ "fecha": "2026-08-25",
+ "total": 187,
  "cuenta": {
-  "apagada": 120,
+  "apagada": 126,
   "escena": 39,
   "sin_exportar": 3,
-  "gym": 17
+  "gym": 19
  },
  "piezas": [
   {
@@ -681,6 +681,27 @@
    "luces": 19
   },
   {
+   "ruta": "gym/Gramatica.js",
+   "nombre": "Gramatica",
+   "familia": "gym",
+   "kb": 6.2,
+   "clase": "apagada",
+   "exporta": [
+    "SEPARADORES",
+    "nombreDe",
+    "partir",
+    "tripleta",
+    "escribir",
+    "leer"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": []
+  },
+  {
    "ruta": "gym/GymBridge.js",
    "nombre": "GymBridge",
    "familia": "gym",
@@ -717,7 +738,7 @@
    "ruta": "gym/GymEnv.js",
    "nombre": "GymEnv",
    "familia": "gym",
-   "kb": 6.9,
+   "kb": 11.2,
    "clase": "gym",
    "exporta": [
     "GymEnv"
@@ -737,12 +758,13 @@
     "getObservation",
     "describe",
     "affordances",
+    "verbos",
     "actFromVerb",
     "stepVerb",
+    "stepAtomo",
     "getScore",
     "spec",
-    "runEpisode",
-    "selfTest"
+    "runEpisode"
    ]
   },
   {
@@ -794,10 +816,49 @@
    ]
   },
   {
+   "ruta": "gym/HuellaDeMundo.js",
+   "nombre": "HuellaDeMundo",
+   "familia": "gym",
+   "kb": 7.9,
+   "clase": "apagada",
+   "exporta": [
+    "SEMILLAS_HUELLA",
+    "PASOS_HUELLA",
+    "resumir",
+    "huellaDeMundo"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "centro",
+    "obs"
+   ]
+  },
+  {
+   "ruta": "gym/ObservacionDeSustrato.js",
+   "nombre": "ObservacionDeSustrato",
+   "familia": "gym",
+   "kb": 5.3,
+   "clase": "apagada",
+   "exporta": [
+    "observacionDeSustrato",
+    "largoDeObservacion"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": []
+  },
+  {
    "ruta": "gym/ProtoHubEnv.js",
    "nombre": "ProtoHubEnv",
    "familia": "gym",
-   "kb": 27,
+   "kb": 28.8,
    "clase": "gym",
    "exporta": [
     "crearEnvDeProtoHub"
@@ -827,10 +888,30 @@
    ]
   },
   {
+   "ruta": "gym/PuenteDeGimnasio.js",
+   "nombre": "PuenteDeGimnasio",
+   "familia": "gym",
+   "kb": 6.8,
+   "clase": "apagada",
+   "exporta": [
+    "PuenteDeGimnasio"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "generateActionMenu",
+    "dispatchToAgent",
+    "aplicar"
+   ]
+  },
+  {
    "ruta": "gym/registro.js",
    "nombre": "registro",
    "familia": "gym",
-   "kb": 18.1,
+   "kb": 19.7,
    "clase": "apagada",
    "exporta": [
     "CATALOGO",
@@ -852,7 +933,7 @@
    "ruta": "gym/envs/AsteroidsEnv.js",
    "nombre": "AsteroidsEnv",
    "familia": "envs",
-   "kb": 8.8,
+   "kb": 9.8,
    "clase": "gym",
    "exporta": [
     "AsteroidsEnv"
@@ -882,7 +963,7 @@
    "ruta": "gym/envs/CabinetEscapeEnv.js",
    "nombre": "CabinetEscapeEnv",
    "familia": "envs",
-   "kb": 9.8,
+   "kb": 15.1,
    "clase": "gym",
    "exporta": [
     "CabinetEscapeEnv"
@@ -942,7 +1023,7 @@
    "ruta": "gym/envs/CorpBuildingEnv.js",
    "nombre": "CorpBuildingEnv",
    "familia": "envs",
-   "kb": 12.8,
+   "kb": 17.2,
    "clase": "gym",
    "exporta": [
     "CorpBuildingEnv"
@@ -961,12 +1042,41 @@
     "reset",
     "_hint",
     "step",
+    "sustrato",
     "getObservation",
     "describe",
     "affordances",
     "actFromVerb",
     "getScore",
     "bayesianBaseline"
+   ]
+  },
+  {
+   "ruta": "gym/envs/DefiendeEnv.js",
+   "nombre": "DefiendeEnv",
+   "familia": "envs",
+   "kb": 13.9,
+   "clase": "gym",
+   "exporta": [
+    "DefiendeEnv"
+   ],
+   "arranque": [],
+   "gym": [
+    "reset",
+    "step",
+    "getObservation"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "reset",
+    "step",
+    "getObservation",
+    "describe",
+    "affordances",
+    "actFromVerb",
+    "getScore"
    ]
   },
   {
@@ -999,10 +1109,12 @@
    "ruta": "gym/envs/RaccoonSpaceEnv.js",
    "nombre": "RaccoonSpaceEnv",
    "familia": "envs",
-   "kb": 6.3,
+   "kb": 17.4,
    "clase": "gym",
    "exporta": [
-    "RaccoonSpaceEnv"
+    "RaccoonSpaceEnv",
+    "RaccoonCityEnv",
+    "RaccoonPlanetEnv"
    ],
    "arranque": [],
    "gym": [
@@ -2105,7 +2217,7 @@
    "ruta": "world/CabinetBSPEngine.js",
    "nombre": "CabinetBSPEngine",
    "familia": "world",
-   "kb": 4.9,
+   "kb": 6.3,
    "clase": "apagada",
    "exporta": [
     "CabinetBSPEngine"
@@ -2129,7 +2241,7 @@
    "ruta": "world/CroupierSystem.js",
    "nombre": "CroupierSystem",
    "familia": "world",
-   "kb": 5.4,
+   "kb": 5.5,
    "clase": "apagada",
    "exporta": [
     "CroupierSystem"
@@ -2175,6 +2287,25 @@
     "tick",
     "_invalidateCache"
    ]
+  },
+  {
+   "ruta": "world/core/Bandas.js",
+   "nombre": "Bandas",
+   "familia": "core",
+   "kb": 3.8,
+   "clase": "apagada",
+   "exporta": [
+    "ESCALA",
+    "ESCALA_CORTA",
+    "crearBandas",
+    "calorDe"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": []
   },
   {
    "ruta": "world/core/BaseEnvironmentFactory.js",
@@ -2389,7 +2520,7 @@
    "ruta": "world/core/SeededRNG.js",
    "nombre": "SeededRNG",
    "familia": "core",
-   "kb": 2.6,
+   "kb": 4.9,
    "clase": "apagada",
    "exporta": [
     "SeededRNG"
@@ -2803,6 +2934,25 @@
    "luces": 0
   },
   {
+   "ruta": "world/factories/DefiendeMapaFactory.js",
+   "nombre": "DefiendeMapaFactory",
+   "familia": "factories",
+   "kb": 4.4,
+   "clase": "apagada",
+   "exporta": [
+    "CELDA",
+    "DefiendeMapaFactory"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "trazar"
+   ]
+  },
+  {
    "ruta": "world/factories/DojoEnvironmentFactory.js",
    "nombre": "DojoEnvironmentFactory",
    "familia": "factories",
@@ -2829,7 +2979,7 @@
     "syncKatamariConsumption"
    ],
    "objetos": 54,
-   "mallas": 134,
+   "mallas": 130,
    "luces": 4
   },
   {
@@ -3066,7 +3216,7 @@
    "ruta": "world/factories/RaccoonEnvironmentFactory.js",
    "nombre": "RaccoonEnvironmentFactory",
    "familia": "factories",
-   "kb": 23.7,
+   "kb": 29.9,
    "clase": "escena",
    "exporta": [
     "RaccoonEnvironmentFactory"
@@ -3205,7 +3355,7 @@
    "ruta": "world/systems/AsteroidsEngine.js",
    "nombre": "AsteroidsEngine",
    "familia": "systems",
-   "kb": 9.2,
+   "kb": 9.7,
    "clase": "escena",
    "exporta": [
     "AsteroidsEngine"
@@ -3233,7 +3383,7 @@
    "ruta": "world/systems/AsteroidsSystem.js",
    "nombre": "AsteroidsSystem",
    "familia": "systems",
-   "kb": 21.5,
+   "kb": 26.5,
    "clase": "escena",
    "exporta": [
     "SHIP_GAUGES",
@@ -3251,6 +3401,7 @@
    "arranca_al_importar": false,
    "metodos": [
     "start",
+    "sustrato",
     "spawnStar",
     "updateStars",
     "spawnParticles",
@@ -3260,8 +3411,7 @@
     "spawnShip",
     "shipAI",
     "spawnAsteroid",
-    "breakAsteroid",
-    "spawnItem"
+    "breakAsteroid"
    ],
    "objetos": 0,
    "mallas": 0,
@@ -3296,7 +3446,7 @@
    "ruta": "world/systems/BulletHeavenEngine.js",
    "nombre": "BulletHeavenEngine",
    "familia": "systems",
-   "kb": 21.3,
+   "kb": 27.6,
    "clase": "gym",
    "exporta": [
     "BulletHeavenEngine"
@@ -3329,7 +3479,7 @@
    "ruta": "world/systems/CabinetEscapeSystem.js",
    "nombre": "CabinetEscapeSystem",
    "familia": "systems",
-   "kb": 10.8,
+   "kb": 13.5,
    "clase": "apagada",
    "exporta": [
     "CabinetEscapeSystem"
@@ -3346,6 +3496,7 @@
     "selectDrawer",
     "doMontyReveal",
     "pickUpBattery",
+    "sustrato",
     "getObservationVector"
    ]
   },
@@ -3426,7 +3577,7 @@
    "ruta": "world/systems/ChopperAquariumEngine.js",
    "nombre": "ChopperAquariumEngine",
    "familia": "systems",
-   "kb": 17.3,
+   "kb": 21.2,
    "clase": "apagada",
    "exporta": [
     "ChopperAquariumEngine"
@@ -3442,6 +3593,7 @@
     "on",
     "emit",
     "reset",
+    "sustrato",
     "vecLength",
     "vecNormalize",
     "vecDot",
@@ -3449,8 +3601,7 @@
     "winSequence",
     "crashSequence",
     "stepSimulation",
-    "getObservationVector",
-    "executeLogicTick"
+    "getObservationVector"
    ]
   },
   {
@@ -3479,6 +3630,43 @@
     "isFloorFullyChecked",
     "walkTo",
     "autoAgentStep"
+   ]
+  },
+  {
+   "ruta": "world/systems/DefiendeSystem.js",
+   "nombre": "DefiendeSystem",
+   "familia": "systems",
+   "kb": 26.4,
+   "clase": "gym",
+   "exporta": [
+    "TORRETAS",
+    "TIPOS",
+    "OLEADAS",
+    "ORDEN_SISTEMAS",
+    "DefiendeSystem"
+   ],
+   "arranque": [],
+   "gym": [
+    "reset",
+    "step",
+    "observacion"
+   ],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "reset",
+    "construir",
+    "construibles",
+    "celdasLibres",
+    "_registrarSistemas",
+    "_sisOleadas",
+    "_soltarAtacante",
+    "_sisRuta",
+    "_sisTorretas",
+    "_sisBalas",
+    "_sisBajas",
+    "step"
    ]
   },
   {
@@ -3668,7 +3856,7 @@
    "ruta": "world/systems/InteractionLabEngine.js",
    "nombre": "InteractionLabEngine",
    "familia": "systems",
-   "kb": 6.7,
+   "kb": 8,
    "clase": "apagada",
    "exporta": [
     "InteractionLabEngine"
@@ -3848,7 +4036,7 @@
    "ruta": "world/systems/MarabuntaSystem.js",
    "nombre": "MarabuntaSystem",
    "familia": "systems",
-   "kb": 10.8,
+   "kb": 12.7,
    "clase": "apagada",
    "exporta": [
     "MarabuntaSystem"
@@ -3870,7 +4058,8 @@
     "_killEnemy",
     "_damageEnemy",
     "_fireWeapon",
-    "_updateSpecials"
+    "_updateSpecials",
+    "rng"
    ]
   },
   {
@@ -4049,7 +4238,7 @@
    "ruta": "world/systems/RaccoonCitySystem.js",
    "nombre": "RaccoonCitySystem",
    "familia": "systems",
-   "kb": 2.8,
+   "kb": 2.6,
    "clase": "escena",
    "exporta": [
     "RaccoonCitySystem"
@@ -4058,13 +4247,12 @@
     "init"
    ],
    "gym": [],
-   "actualiza": true,
+   "actualiza": false,
    "usa_three_sin_importar": false,
    "arranca_al_importar": false,
    "metodos": [
     "init",
-    "setKeys",
-    "update"
+    "pintar"
    ],
    "objetos": 0,
    "mallas": 0,
@@ -4074,7 +4262,7 @@
    "ruta": "world/systems/RaccoonPlanetSystem.js",
    "nombre": "RaccoonPlanetSystem",
    "familia": "systems",
-   "kb": 1.5,
+   "kb": 2.3,
    "clase": "escena",
    "exporta": [
     "RaccoonPlanetSystem"
@@ -4083,12 +4271,12 @@
     "init"
    ],
    "gym": [],
-   "actualiza": true,
+   "actualiza": false,
    "usa_three_sin_importar": false,
    "arranca_al_importar": false,
    "metodos": [
     "init",
-    "update"
+    "pintar"
    ],
    "objetos": 0,
    "mallas": 0,
@@ -4098,10 +4286,13 @@
    "ruta": "world/systems/RaccoonSpaceCore.js",
    "nombre": "RaccoonSpaceCore",
    "familia": "systems",
-   "kb": 12.1,
+   "kb": 45.3,
    "clase": "gym",
    "exporta": [
     "VERBOS_ESPACIO",
+    "VERBOS_DRON",
+    "VERBOS_ORBITA",
+    "VERBOS_POR_MANDO",
     "RaccoonSpaceCore"
    ],
    "arranque": [],
@@ -4115,12 +4306,17 @@
    "arranca_al_importar": false,
    "metodos": [
     "reset",
+    "_colocar",
     "step",
+    "_pilotarDron",
+    "_pilotarOrbita",
+    "colocarJunto",
     "planetaCerca",
     "terminado",
+    "bandaDe",
+    "pistas",
     "info",
-    "observacion",
-    "vx"
+    "coherencia"
    ]
   },
   {
@@ -4223,7 +4419,7 @@
    "ruta": "world/systems/SimonSaysSystem.js",
    "nombre": "SimonSaysSystem",
    "familia": "systems",
-   "kb": 8,
+   "kb": 19.4,
    "clase": "gym",
    "exporta": [
     "SimonSaysSystem"
@@ -4316,7 +4512,7 @@
    "ruta": "world/systems/TrafficSurvivalSystem.js",
    "nombre": "TrafficSurvivalSystem",
    "familia": "systems",
-   "kb": 20.3,
+   "kb": 20.4,
    "clase": "apagada",
    "exporta": [
     "TrafficSurvivalSystem"
