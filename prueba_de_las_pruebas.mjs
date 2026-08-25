@@ -686,11 +686,31 @@ const SABOTAJES = [
          * en toda la página. Sigue dibujando igual de bien: por eso hace falta un
          * suelo que lo cuente, y no un ojo que lo mire.
          */
+        /**
+         * El fallo REAL, y estuvo puesto hasta el 25-08: dos pintores de la misma
+         * familia pidiendo cosas distintas. `PintorMatriz#pintar` llevaba los
+         * colores del terreno en un segundo parámetro y `PintorMundo#pintar` no.
+         *
+         * No daba ningún error —un parámetro de más se ignora en silencio— y es
+         * justo por eso que hace falta una comprobación: quien aprendiera una de
+         * las dos llamadas se equivocaría con la otra sin que nada se lo dijera.
+         *
+         * La tripleta es la misma con la que hablan los Seres del proyecto:
+         * `@Objeto #metodo |parametro`. Aquí, `#pintar |sustrato` y nada más.
+         */
+        nombre: 'pintores-hablan-igual',
+        corre: 'node --import ./resolver_three.mjs prueba_pintor_matriz.mjs',
+        fichero: 'public/js/pintor_matriz.mjs',
+        de: '    pintar(sus) {',
+        a: '    pintar(sus, opciones = {}) {',
+        vigila: 'que todos los pintores pidan lo mismo: el sustrato y nada más',
+    },
+    {
         nombre: 'paginas',
         corre: 'node paginas.mjs',
         fichero: 'public/games/defiende_sendero.html',
-        de: 'celda = pintor.pintar(nucleo.sustrato(), { colores: COLORES_TERRENO });',
-        a: 'celda = pintor.pintar(nucleo.observacion(), { colores: COLORES_TERRENO });',
+        de: 'celda = pintor.pintar(nucleo.sustrato());',
+        a: 'celda = pintor.pintar(nucleo.observacion());',
         vigila: 'que lo que ve la persona salga del mismo sitio que lee el banco',
     },
     {

@@ -149,7 +149,7 @@ const ESTILO = {
     rapido: { color: '#fd6' },
     gordo:  { color: '#f76', radio: 0.32 },
 };
-const pintor = new PintorMatriz(lienzo, ESTILO);
+const pintor = new PintorMatriz(lienzo, ESTILO, COLORES_TERRENO);
 
 function pintarPaleta() {
     const p = document.getElementById('paleta');
@@ -236,7 +236,7 @@ function bucle(ahora) {
  * lo que mide el banco, porque los tres salen del mismo `sustrato()`.
  */
 function dibujar() {
-    celda = pintor.pintar(nucleo.sustrato(), { colores: COLORES_TERRENO });
+    celda = pintor.pintar(nucleo.sustrato());
 }
 
 function actualizarHUD() {

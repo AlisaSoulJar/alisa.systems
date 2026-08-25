@@ -26,6 +26,7 @@
  */
 import { CATALOGO } from './public/js/alisa-engine/src/gym/registro.js';
 import { PintorMatriz } from './public/js/pintor_matriz.mjs';
+import { PintorMundo } from './public/js/pintor_mundo.mjs';
 
 let fallos = 0;
 const mal = (m) => { console.log(`  ✗ ${m}`); fallos++; };
@@ -118,6 +119,74 @@ console.log('\n¿Pinta el pintor plano desde el sustrato?\n');
         mal(`con el sustrato del edificio pintó ${apuntes.rects} casillas de ${celdas}`);
     } else {
         console.log(`  ✓ el mismo dibujante pinta otro mundo distinto sin cambiar nada`);
+    }
+}
+
+/**
+ * ⚠️ TODOS LOS PINTORES DE LA CASA HABLAN IGUAL: `#pintar |sustrato`.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Es la misma tripleta con la que se hablan los Seres del proyecto —
+ * `@Princess #Chat |"hola"`—: un objeto, un método, UN parámetro. Aquí el
+ * parámetro es siempre el sustrato, y eso es lo que hace que la tesis se sostenga
+ * mecánicamente en vez de por buena voluntad.
+ *
+ * Hasta hoy no se cumplía y no daba ningún error: `PintorMatriz#pintar` pedía
+ * `(sus, opciones)` con los colores del terreno dentro, y `PintorMundo#pintar`
+ * pedía `(sus)`. Dos formas para la misma familia — la duplicación que no se ve,
+ * porque no hay ni una línea repetida, sólo dos maneras de llamar a lo mismo.
+ * Quien aprendiera una se equivocaría con la otra, y el error sería silencioso:
+ * un parámetro de más se ignora.
+ *
+ * Lo que no es el sustrato es configuración, y la configuración se da al
+ * construir. Esta comprobación lo sostiene para el pintor que venga después.
+ */
+/**
+ * ⚠️ Y NO SE CUENTA CON `Function.length`, QUE ES CIEGO A ESTE FALLO EXACTO.
+ *
+ * `Function.length` sólo cuenta los parámetros ANTERIORES al primero que tiene
+ * valor por defecto. O sea que `pintar(sus, opciones = {})` —que es literalmente
+ * la forma que tenía el fallo— declara `length === 1` y habría pasado la
+ * comprobación tan campante.
+ *
+ * Lo dijo el arnés de sabotajes en el primer intento. Van tres esta semana:
+ * un instrumento nuevo que aprueba con el cable cortado es lo normal, no la
+ * excepción, y por eso ninguno se da por bueno hasta verlo suspender.
+ */
+function parametrosDe(fn) {
+    const src = fn.toString();
+    const abre = src.indexOf('(');
+    let prof = 0, cierra = abre;
+    for (let i = abre; i < src.length; i++) {
+        if ('([{'.includes(src[i])) prof++;
+        else if (')]}'.includes(src[i]) && --prof === 0) { cierra = i; break; }
+    }
+    const dentro = src.slice(abre + 1, cierra).trim();
+    if (!dentro) return [];
+    // Se corta sólo por las comas de primer nivel: `opciones = {a, b}` es UNO.
+    const partes = [];
+    let nivel = 0, actual = '';
+    for (const ch of dentro) {
+        if ('([{'.includes(ch)) nivel++;
+        if (')]}'.includes(ch)) nivel--;
+        if (ch === ',' && nivel === 0) { partes.push(actual.trim()); actual = ''; }
+        else actual += ch;
+    }
+    if (actual.trim()) partes.push(actual.trim());
+    return partes;
+}
+
+{
+    const pintores = [['PintorMatriz', PintorMatriz], ['PintorMundo', PintorMundo]];
+    for (const [nombre, Clase] of pintores) {
+        const ps = parametrosDe(Clase.prototype.pintar);
+        if (ps.length !== 1) {
+            mal(`${nombre}#pintar pide ${ps.length} parámetro(s) —${ps.join(', ')}— y la `
+              + 'tripleta es `#pintar |sustrato`: lo que no sea el sustrato va al constructor');
+        }
+    }
+    if (!fallos) {
+        console.log(`\n  ✓ los ${pintores.length} pintores hablan igual: #pintar |sustrato`);
     }
 }
 

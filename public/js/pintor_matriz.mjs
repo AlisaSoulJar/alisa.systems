@@ -40,18 +40,33 @@ export class PintorMatriz {
      * @param {Object} [estilo] por tipo de pieza: `{color, forma, radio}`. Es lo
      *        único que aporta el juego, y es cosmética: sin estilo se dibuja
      *        igual, sólo más soso.
+     * @param {string[]} [terreno] color de cada valor de celda.
+     *
+     * ⚠️ LOS COLORES VAN AQUÍ Y NO EN `pintar`, Y NO ES UN CAPRICHO.
+     *
+     * Estaban en `pintar(sus, opciones)`, y con eso los dos pintores de la casa
+     * pedían cosas distintas: éste dos parámetros y el de mundos uno. Dos formas
+     * para la misma familia es la duplicación que no se ve, porque no hay ni una
+     * línea repetida — sólo dos maneras de llamar a lo mismo, y quien aprenda una
+     * se equivoca con la otra.
+     *
+     * Ahora los dos son `#pintar |sustrato` y nada más. Es la misma tripleta con
+     * la que hablan los Seres —`@Princess #Chat |"hola"`—: el objeto, el método, y
+     * UN parámetro. Lo que no es el sustrato es configuración, y la configuración
+     * se da al construir.
      */
-    constructor(lienzo, estilo = {}) {
+    constructor(lienzo, estilo = {}, terreno = TERRENO) {
         this.lienzo = lienzo;
         this.ctx = lienzo.getContext('2d');
         this.estilo = estilo;
+        this.terreno = terreno;
     }
 
     /**
      * Pinta un sustrato. Devuelve el tamaño de celda, que es lo que hace falta
      * fuera para traducir un clic a coordenadas del mundo.
      */
-    pintar(sus, opciones = {}) {
+    pintar(sus) {
         const { ctx, lienzo } = this;
         const r = sus.rejilla;
         if (!r) return 0;
@@ -59,7 +74,7 @@ export class PintorMatriz {
         ctx.clearRect(0, 0, lienzo.width, lienzo.height);
 
         // 1. El terreno, con los colores del juego si los declara.
-        const colores = opciones.colores ?? TERRENO;
+        const colores = this.terreno;
         for (let z = 0; z < r.alto; z++) {
             for (let x = 0; x < r.ancho; x++) {
                 const v = r.celdas[z * r.ancho + x] ?? 0;
