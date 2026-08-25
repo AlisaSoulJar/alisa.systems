@@ -747,6 +747,24 @@ const SABOTAJES = [
          * cómo volvería a pasar: alguien «arregla» la página incrustando la tabla
          * para que cargue antes.
          */
+        /**
+         * El fallo REAL, y era el estado del proyecto hasta el 25-08: NINGUNA
+         * página de saga tenía botón de aviso. Se podía jugar y no se podía
+         * contar nada — un beta test es mirar a la gente jugar por un cristal si
+         * no hay canal de vuelta.
+         *
+         * El sabotaje le quita el botón a una etapa. Nada da error: la página
+         * carga igual, se juega igual, y quien vea algo raro no tendrá dónde
+         * decirlo. Por eso hace falta contarlo.
+         */
+        nombre: 'sagas-puerta',
+        corre: 'node prueba_sagas_puerta.mjs',
+        fichero: 'public/games/defiende_sendero.html',
+        de: '<script type="module" src="/arcade/js/protohub/reportar.js"></script>',
+        a: '',
+        vigila: 'que se pueda entrar a todas las sagas y avisar desde dentro',
+    },
+    {
         nombre: 'suelo-publicado',
         corre: 'node prueba_clasificacion.mjs',
         fichero: 'public/suelo.html',

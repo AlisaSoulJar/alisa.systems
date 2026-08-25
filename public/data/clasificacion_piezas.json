@@ -1,8 +1,8 @@
 {
  "fecha": "2026-08-25",
- "total": 187,
+ "total": 188,
  "cuenta": {
-  "apagada": 126,
+  "apagada": 127,
   "escena": 39,
   "sin_exportar": 3,
   "gym": 19
@@ -684,11 +684,12 @@
    "ruta": "gym/Gramatica.js",
    "nombre": "Gramatica",
    "familia": "gym",
-   "kb": 6.2,
+   "kb": 8,
    "clase": "apagada",
    "exporta": [
     "SEPARADORES",
     "nombreDe",
+    "DIRECCIONES",
     "partir",
     "tripleta",
     "escribir",
@@ -819,7 +820,7 @@
    "ruta": "gym/HuellaDeMundo.js",
    "nombre": "HuellaDeMundo",
    "familia": "gym",
-   "kb": 7.9,
+   "kb": 11,
    "clase": "apagada",
    "exporta": [
     "SEMILLAS_HUELLA",
@@ -927,6 +928,27 @@
    "arranca_al_importar": false,
    "metodos": [
     "cargar"
+   ]
+  },
+  {
+   "ruta": "gym/suelo.js",
+   "nombre": "suelo",
+   "familia": "gym",
+   "kb": 4.4,
+   "clase": "apagada",
+   "exporta": [
+    "azar",
+    "SEMILLAS_SUELO",
+    "politicasCiegas"
+   ],
+   "arranque": [],
+   "gym": [],
+   "actualiza": false,
+   "usa_three_sin_importar": false,
+   "arranca_al_importar": false,
+   "metodos": [
+    "elegir",
+    "aprender"
    ]
   },
   {
@@ -1083,7 +1105,7 @@
    "ruta": "gym/envs/MarabuntaEnv.js",
    "nombre": "MarabuntaEnv",
    "familia": "envs",
-   "kb": 8.4,
+   "kb": 10,
    "clase": "gym",
    "exporta": [
     "MarabuntaEnv"
@@ -1109,7 +1131,7 @@
    "ruta": "gym/envs/RaccoonSpaceEnv.js",
    "nombre": "RaccoonSpaceEnv",
    "familia": "envs",
-   "kb": 17.4,
+   "kb": 20.9,
    "clase": "gym",
    "exporta": [
     "RaccoonSpaceEnv",
@@ -2979,7 +3001,7 @@
     "syncKatamariConsumption"
    ],
    "objetos": 54,
-   "mallas": 136,
+   "mallas": 130,
    "luces": 4
   },
   {
@@ -4286,7 +4308,7 @@
    "ruta": "world/systems/RaccoonSpaceCore.js",
    "nombre": "RaccoonSpaceCore",
    "familia": "systems",
-   "kb": 45.3,
+   "kb": 46.2,
    "clase": "gym",
    "exporta": [
     "VERBOS_ESPACIO",

@@ -410,5 +410,18 @@ window.startSimulation = () => window.game.startSimulation();
 window.newEpisode = () => window.game.newEpisode();
 window.toggleAutoPlay = () => window.game.toggleAutoPlay();
 </script>
+
+<!--
+  ⚠️ EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.
+
+  Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y,
+  si esta página publica `window.getSustrato()`, adjunta el mundo entero — con
+  eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.
+
+  Hasta el 25-08 ninguna página de saga tenía botón: los betas podían jugar y no
+  podían contar nada. Fabricar un segundo reportero habría sido la sexta lista
+  paralela de este proyecto con otro disfraz.
+-->
+<script type="module" src="/arcade/js/protohub/reportar.js"></script>
 </body>
 </html>

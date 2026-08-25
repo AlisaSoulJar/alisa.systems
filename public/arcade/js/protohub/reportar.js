@@ -56,12 +56,50 @@ function recoger(comentario) {
                            legal_moves: (st.legal_moves ?? []).length };
     } catch { /* igual */ }
 
+    /**
+     * ⚠️ Y SI NO HAY PROTOHUB, ESTO NO ES EL ARCADE: ES UNA SAGA.
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Este reportero nació para las mesas, donde el recibo `{juego, semilla,
+     * jugadas}` reconstruye la partida entera. Las páginas de saga —¡Busca!,
+     * ¡Defiende!— no llevan ProtoHub y hasta hoy salían con `recibo: null` y
+     * `estado: null`: un «se ve raro» sin nada detrás, o sea una anécdota.
+     *
+     * Lo que sí publican desde el 25-08 es `window.getSustrato()`, y para un
+     * aviso VISUAL es incluso mejor que una lista de jugadas: es el mundo tal
+     * como estaba en el momento en que algo se vio mal. Con eso se puede repintar
+     * la escena exacta que esa persona tenía delante.
+     *
+     * No se fabrica un segundo reportero. La casa ya paga cinco listas paralelas;
+     * dos botones de aviso que recogen cosas distintas serían la sexta.
+     */
+    let sustrato = null;
+    if (!hub) {
+        try {
+            const s = typeof window.getSustrato === 'function' ? window.getSustrato() : null;
+            if (s) {
+                sustrato = {
+                    rejilla: s.rejilla ?? null,
+                    piezas: (s.piezas ?? []).length,
+                    // Las piezas enteras sólo si son pocas: un aviso no debe pesar
+                    // un megabyte, y con treinta ya se ve lo que pasaba.
+                    detalle: (s.piezas ?? []).length <= 40 ? s.piezas : null,
+                    leyenda: s.leyenda ?? null,
+                };
+            }
+        } catch { /* una saga sin sustrato manda el aviso igual, sólo vale menos */ }
+    }
+
     return {
         comentario: String(comentario).slice(0, 2000),
         juego,
         pagina: location.pathname + location.search,
         recibo,
         estado,
+        sustrato,
+        // El título dice a qué saga y etapa pertenece: `¡Busca! 4 — City Sector`.
+        // Sale gratis y ahorra tener que deducirlo de la ruta.
+        titulo: document.title || null,
         // Lo que ve el navegador. Ver la nota de arriba: los dos han mentido hoy.
         pantalla: { ancho: innerWidth, alto: innerHeight,
                     dpr: Math.round((devicePixelRatio ?? 1) * 100) / 100,
@@ -126,7 +164,13 @@ function montar() {
             <div style="color:#8a8a9e;font-size:11px;margin-bottom:10px">
               Va con la partida exacta, para poder repetirla igual. Nada más.
             </div>
-            <textarea id="ar-txt" rows="4" placeholder="p. ej.: las cartas se amontonan y no leo la mía"
+            <!--
+          El ejemplo decía «las cartas se amontonan», y desde el 25-08 este botón
+          también vive en las sagas —¡Busca!, ¡Defiende!—, donde no hay cartas.
+          Un ejemplo que no encaja con lo que la persona tiene delante la hace
+          dudar de si el botón es para ella. Se deja uno que vale para las dos.
+        -->
+        <textarea id="ar-txt" rows="4" placeholder="p. ej.: se me amontona todo y no veo dónde estoy"
               style="width:100%;box-sizing:border-box;padding:8px;border-radius:8px;
                      border:1px solid rgba(255,255,255,0.14);background:#0b0a12;
                      color:#e2e2f0;font:13px/1.4 inherit;resize:vertical"></textarea>

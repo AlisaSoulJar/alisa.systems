@@ -1,0 +1,117 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA — Entrar a las sagas</title>
+<meta name="alisa-escaparate" content="motor">
+<!--
+  juegos/entrar.html — la puerta de las sagas, para que los betas prueben todo
+  ═══════════════════════════════════════════════════════════════════════════
+
+  La hermana de `arcade/entrar.html`. Aquella reparte mesas de varios jugadores;
+  ésta reparte SAGAS de un jugador: ¡Busca!, ¡Defiende! y las que vengan.
+
+  ⚠️ NO TRAE NINGUNA LISTA DE JUEGOS.
+
+  Sale de `data/sagas.json`, que se GENERA leyendo el <title> de cada página de
+  `public/games`. Es la misma regla que `arcade/entrar.html` deja escrita y que
+  aquí se respeta al pie de la letra: este proyecto ha tenido CINCO listas
+  paralelas —los juegos del README, el escaparate, el catálogo del gym, las
+  barajas, las páginas— y las cinco acabaron separadas de la realidad sin dar un
+  solo error. La sexta tampoco nace aquí.
+
+  ⚠️ Y DICE CUÁLES DAN AVISOS REPETIBLES, QUE NO ES UN DETALLE TÉCNICO.
+
+  El botón de «algo se ve raro» adjunta el estado del mundo si la página publica
+  su sustrato. Cinco de las siete etapas todavía no lo publican, así que sus
+  avisos llegan sin nada detrás: son una anécdota en vez de un fallo que se pueda
+  arreglar. Eso se dice en la propia puerta en lugar de esconderlo — quien avisa
+  merece saber si su aviso servirá de algo.
+-->
+<style>
+:root{color-scheme:dark}
+body{margin:0;padding:2.5rem 1.25rem 5rem;background:#0a0a12;color:#e8e8f0;
+     font:15px/1.6 ui-sans-serif,system-ui,sans-serif}
+main{max-width:52rem;margin:0 auto}
+h1{font:700 26px/1.2 ui-monospace,monospace;margin:0 0 4px}
+.sub{color:rgba(255,255,255,.45);font-size:13px;margin:0 0 28px}
+h2{font:700 18px/1.2 ui-monospace,monospace;margin:2.2rem 0 .2rem}
+h2 .cuenta{font-size:12px;font-weight:400;color:rgba(255,255,255,.4);margin-left:.5rem}
+.etapas{display:flex;flex-wrap:wrap;gap:9px;margin-top:.9rem}
+a.etapa{flex:1 1 210px;text-decoration:none;color:#e8e8f0;padding:13px 15px;border-radius:9px;
+        background:rgba(12,12,22,.8);border:1px solid rgba(138,43,226,.3);transition:.15s}
+a.etapa:hover{background:rgba(138,43,226,.28);border-color:#a180ff}
+a.etapa b{display:block;font-size:15px}
+a.etapa small{display:block;margin-top:3px;font-size:11.5px;color:rgba(255,255,255,.42)}
+.marca{display:inline-block;margin-top:6px;font-size:10.5px;letter-spacing:.04em;
+       text-transform:uppercase;padding:2px 7px;border-radius:20px}
+.si{background:rgba(46,204,113,.16);color:#7ee2a8}
+.no{background:rgba(255,207,139,.14);color:#ffcf8b}
+.nota{margin-top:2.4rem;padding:15px;border-radius:10px;font-size:13px;line-height:1.6;
+      background:rgba(12,12,22,.8);border:1px solid rgba(138,43,226,.25);
+      color:rgba(255,255,255,.6)}
+.nota b{color:#e8e8f0}
+.fuera{margin-top:1.6rem;font-size:12px;color:rgba(255,255,255,.32)}
+</style>
+
+<main>
+<h1>Entrar a las sagas</h1>
+<p class="sub">Un jugador, tú contra el mundo. Elige por dónde empezar.</p>
+
+<div id="lista">Cargando…</div>
+
+<div class="nota">
+  <b>Si algo se ve raro, dilo desde dentro del juego.</b> Cada página lleva un
+  botón abajo a la derecha: escribes qué pasó y se manda con lo que tenías
+  delante. No hace falta que expliques cómo reproducirlo — si la etapa publica su
+  mundo, el aviso lo trae puesto y podemos repintar la escena exacta.
+</div>
+
+<div class="fuera" id="fuera"></div>
+</main>
+
+<script type="module">
+/**
+ * ⚠️ LA PÁGINA NO SABE QUÉ JUEGOS HAY. LO PREGUNTA.
+ *
+ * Mismo criterio que `suelo.html` y que las páginas de juego desde hoy: no
+ * guarda copia de nada. Si mañana hay una saga nueva, aparece aquí sola en
+ * cuanto se regenere el fichero — y si alguien la borra, desaparece. No hay
+ * segunda verdad que se pueda separar de la primera.
+ */
+const raiz = document.getElementById('lista');
+let d;
+try {
+    const r = await fetch('/data/sagas.json', { cache: 'no-store' });
+    if (!r.ok) throw new Error(r.status);
+    d = await r.json();
+} catch (e) {
+    raiz.innerHTML = `<p class="sub">No se pudo leer la lista de sagas
+        (<code>/data/sagas.json</code>: ${e.message}). Se genera con
+        <code>node gen_sagas.mjs</code>. Esta página no se inventa juegos.</p>`;
+    throw e;
+}
+
+raiz.innerHTML = d.sagas.map(s => `
+    <h2>¡${s.nombre}!<span class="cuenta">${s.etapas.length} etapas</span></h2>
+    <div class="etapas">${s.etapas.map(e => `
+        <a class="etapa" href="${e.pagina}">
+            <b>${e.etapa}. ${e.nombre}</b>
+            <small>${e.pagina.split('/').pop()}</small>
+            <span class="marca ${e.sustrato ? 'si' : 'no'}">${
+                e.sustrato ? 'avisos repetibles' : 'avisos sin mundo'
+            }</span>
+        </a>`).join('')}</div>`).join('');
+
+const total = d.sagas.reduce((n, s) => n + s.etapas.length, 0);
+const conSus = d.sagas.reduce((n, s) => n + s.conSustrato, 0);
+document.getElementById('fuera').textContent =
+    `${d.sagas.length} sagas · ${total} etapas · ${conSus} publican su mundo`
+    + (d.fuera?.length ? ` · ${d.fuera.length} páginas fuera de las sagas (laboratorios y versiones viejas)` : '');
+</script>
+
+<!--
+  El botón de aviso, el MISMO que usan las mesas del arcade. No se fabrica uno
+  nuevo: dos botones que recogen cosas distintas serían la sexta lista paralela
+  con otro disfraz.
+-->
+<script type="module" src="/arcade/js/protohub/reportar.js"></script>

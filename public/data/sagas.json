@@ -1,0 +1,78 @@
+{
+  "_que_es": "Las sagas y sus etapas, leídas del <title> de cada página de public/games. No se escribe a mano: este proyecto ya ha tenido cinco listas paralelas separándose de la realidad sin dar un error.",
+  "_generado_por": "node gen_sagas.mjs, dentro de npm run empaquetar",
+  "sagas": [
+    {
+      "nombre": "Busca",
+      "etapas": [
+        {
+          "etapa": 1,
+          "nombre": "Cabinet Escape",
+          "pagina": "/games/croupier_cabinet_escape.html",
+          "sustrato": false
+        },
+        {
+          "etapa": 2,
+          "nombre": "Registro de Planta",
+          "pagina": "/games/raccoon_floor_search.html",
+          "sustrato": false
+        },
+        {
+          "etapa": 3,
+          "nombre": "Corp Building",
+          "pagina": "/games/croupier_corporate_building.html",
+          "sustrato": false
+        },
+        {
+          "etapa": 4,
+          "nombre": "City Sector",
+          "pagina": "/games/raccoon_city_sector.html",
+          "sustrato": false
+        },
+        {
+          "etapa": 5,
+          "nombre": "Planet",
+          "pagina": "/games/raccoon_planet.html",
+          "sustrato": false
+        },
+        {
+          "etapa": 6,
+          "nombre": "Space",
+          "pagina": "/games/raccoon_space.html",
+          "sustrato": true
+        }
+      ],
+      "conSustrato": 1
+    },
+    {
+      "nombre": "Defiende",
+      "etapas": [
+        {
+          "etapa": 1,
+          "nombre": "Sendero",
+          "pagina": "/games/defiende_sendero.html",
+          "sustrato": true
+        }
+      ],
+      "conSustrato": 1
+    }
+  ],
+  "fuera": [
+    {
+      "pagina": "_prueba_mundo.html",
+      "titulo": "ALISA — banco de pruebas de montarMundo"
+    },
+    {
+      "pagina": "asteroid_gauntlet.html",
+      "titulo": "ALISA — Pedrisco 3D V3"
+    },
+    {
+      "pagina": "chopper_terrarium.html",
+      "titulo": "ALISA Lab - Chopper Aquarium v3"
+    },
+    {
+      "pagina": "corp_building.html",
+      "titulo": "ALISA — Corporate Building (13 Corp Building)"
+    }
+  ]
+}

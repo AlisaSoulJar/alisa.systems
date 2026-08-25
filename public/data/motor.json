@@ -172,7 +172,7 @@
    "ruta": "gym/Gramatica.js",
    "nombre": "Gramatica",
    "familia": "gym",
-   "kb": 6.2
+   "kb": 8.0
   },
   {
    "ruta": "gym/GymBridge.js",
@@ -202,7 +202,7 @@
    "ruta": "gym/HuellaDeMundo.js",
    "nombre": "HuellaDeMundo",
    "familia": "gym",
-   "kb": 7.9
+   "kb": 11.0
   },
   {
    "ruta": "gym/ObservacionDeSustrato.js",
@@ -227,6 +227,12 @@
    "nombre": "registro",
    "familia": "gym",
    "kb": 19.7
+  },
+  {
+   "ruta": "gym/suelo.js",
+   "nombre": "suelo",
+   "familia": "gym",
+   "kb": 4.4
   },
   {
    "ruta": "gym/envs/AsteroidsEnv.js",
@@ -262,13 +268,13 @@
    "ruta": "gym/envs/MarabuntaEnv.js",
    "nombre": "MarabuntaEnv",
    "familia": "envs",
-   "kb": 8.4
+   "kb": 10.0
   },
   {
    "ruta": "gym/envs/RaccoonSpaceEnv.js",
    "nombre": "RaccoonSpaceEnv",
    "familia": "envs",
-   "kb": 17.4
+   "kb": 20.9
   },
   {
    "ruta": "psyche/FSMSystem.js",
@@ -1030,7 +1036,7 @@
    "ruta": "world/systems/RaccoonSpaceCore.js",
    "nombre": "RaccoonSpaceCore",
    "familia": "systems",
-   "kb": 45.3
+   "kb": 46.2
   },
   {
    "ruta": "world/systems/RaccoonSpaceSystem.js",
@@ -1123,5 +1129,5 @@
    "kb": 7.1
   }
  ],
- "total": 187
+ "total": 188
 }
