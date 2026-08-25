@@ -469,7 +469,16 @@ export class DefiendeSystem {
         const w = this.mundo;
         for (const id of w.query(['Celda', 'Torreta'])) {
             const c = w.getComponent(id, 'Celda'), t = w.getComponent(id, 'Torreta');
-            piezas.push({ x: c.x, y: c.z, t: t.id, de: 0 });
+            /**
+             * ⚠️ EL ALCANCE VIAJA EN EL SUSTRATO, PORQUE ES INFORMACIÓN DEL MUNDO.
+             *
+             * No es adorno: es con lo que se decide dónde va la siguiente torreta.
+             * La página lo pintaba leyendo `observacion()` —un método propio de
+             * este juego— y por eso su dibujante no servía para ningún otro. Si el
+             * dato está en el sustrato, cualquier dibujante lo puede pintar sin
+             * saber que existen las torretas.
+             */
+            piezas.push({ x: c.x, y: c.z, t: t.id, de: 0, alcance: t.alcance });
         }
         for (const id of w.query(['Celda', 'Atacante'])) {
             const c = w.getComponent(id, 'Celda'), a = w.getComponent(id, 'Atacante');

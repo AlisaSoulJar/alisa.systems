@@ -121,20 +121,35 @@
  */
 import { DefiendeSystem, TORRETAS, TIPOS, CELDA }
     from '@alisa-engine/src/world/systems/DefiendeSystem.js';
+import { MesaMatriz } from '/js/mesa_matriz.mjs';
 
 const lienzo = document.getElementById('lienzo');
-const ctx = lienzo.getContext('2d');
 let nucleo = null, celda = 32, elegida = TORRETAS[0].id, ultimo = 0;
 
-const COLOR_CELDA = {
-    [CELDA.LIBRE]:   '#0e1620',
-    [CELDA.CAMINO]:  '#2b2417',
-    [CELDA.NUCLEO]:  '#1d4030',
-    [CELDA.ENTRADA]: '#3a2020',
-    [CELDA.TORRETA]: '#14303c',
+/**
+ * ⚠️ ESTO ES TODO LO QUE APORTA ESTA PÁGINA AL DIBUJO: COSMÉTICA.
+ *
+ * Qué emoji lleva cada torreta y de qué color es cada bicho. Ni una posición, ni
+ * una regla, ni un tamaño de mundo — eso sale del sustrato y lo pinta una mesa
+ * que no sabe a qué se juega.
+ *
+ * Es la prueba de que la capa es una capa: se puede cambiar entera sin tocar el
+ * juego, y se puede cambiar el juego sin tocarla.
+ */
+const COLORES_TERRENO = [
+    '#0e1620',   // CELDA.LIBRE
+    '#2b2417',   // CELDA.CAMINO
+    '#1d4030',   // CELDA.NUCLEO
+    '#3a2020',   // CELDA.ENTRADA
+    '#14303c',   // CELDA.TORRETA
+];
+const ESTILO = {
+    guijarro: { emoji: '🪨' }, pertiga: { emoji: '🎣' }, yunque: { emoji: '🔨' },
+    peon:   { color: '#8ad' },
+    rapido: { color: '#fd6' },
+    gordo:  { color: '#f76', radio: 0.32 },
 };
-const COLOR_BICHO = { peon: '#8ad', rapido: '#fd6', gordo: '#f76' };
-const ICONO_TORRETA = { guijarro: '🪨', pertiga: '🎣', yunque: '🔨' };
+const mesa = new MesaMatriz(lienzo, ESTILO);
 
 function pintarPaleta() {
     const p = document.getElementById('paleta');
@@ -199,52 +214,29 @@ function bucle(ahora) {
     requestAnimationFrame(bucle);
 }
 
-/** Dibuja la matriz. Nada de esto decide nada: todo sale de `observacion()`. */
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  DIBUJA LA MESA COMPARTIDA, Y ESTA PÁGINA YA NO SABE DIBUJAR
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Antes había aquí cuarenta líneas que leían `nucleo.observacion()` — un método
+ * propio de ESTE juego, con `entidades` que traen `que` y `z`. Funcionaba, y
+ * hacía del escaparate un dibujante PARALELO: acertaba porque lo escribí el
+ * mismo día, no porque saliera del mismo sitio que el banco.
+ *
+ * Eso se separa solo con el tiempo. Es exactamente lo que pasó con ¡Busca!: la
+ * persona y el banco jugaron dos juegos con el mismo nombre durante semanas.
+ *
+ * Ahora se pinta `nucleo.sustrato()` con `MesaMatriz`, que no sabe qué es una
+ * torreta. Lo único que aporta esta página es COSMÉTICA —qué emoji, qué color—
+ * y eso no puede desviarse del estado porque no lo toca.
+ *
+ * La tesis del proyecto deja de ser una intención y pasa a ser mecánica: si el
+ * estado cambia, se mueven a la vez lo que ve la persona, lo que lee el agente y
+ * lo que mide el banco, porque los tres salen del mismo `sustrato()`.
+ */
 function dibujar() {
-    const o = nucleo.observacion();
-    const L = o.lado, c = celda;
-    ctx.clearRect(0, 0, lienzo.width, lienzo.height);
-
-    for (let z = 0; z < L; z++) {
-        for (let x = 0; x < L; x++) {
-            ctx.fillStyle = COLOR_CELDA[o.rejilla[z][x]] ?? '#0e1620';
-            ctx.fillRect(x * c, z * c, c - 1, c - 1);
-        }
-    }
-
-    // El núcleo y la entrada, con su marca: son los dos extremos del problema.
-    ctx.font = `${Math.floor(c * 0.62)}px serif`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('🏰', (o.nucleo.x + 0.5) * c, (o.nucleo.z + 0.5) * c);
-    ctx.fillText('🕳️', (nucleo.entrada.x + 0.5) * c, (nucleo.entrada.z + 0.5) * c);
-
-    for (const e of o.entidades) {
-        if (e.que !== 'torreta') continue;
-        // El alcance se ve: es la información con la que se decide dónde poner la
-        // siguiente, y esconderla haría el juego de adivinar en vez de de colocar.
-        ctx.beginPath();
-        ctx.arc((e.x + 0.5) * c, (e.z + 0.5) * c, e.alcance * c, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(78,235,187,0.05)';
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(78,235,187,0.22)';
-        ctx.stroke();
-        ctx.fillText(ICONO_TORRETA[e.tipo] ?? '🔧', (e.x + 0.5) * c, (e.z + 0.5) * c);
-    }
-
-    for (const e of o.entidades) {
-        if (e.que !== 'atacante') continue;
-        const px = (e.x + 0.5) * c, pz = (e.z + 0.5) * c;
-        ctx.beginPath();
-        ctx.arc(px, pz, c * 0.26, 0, Math.PI * 2);
-        ctx.fillStyle = COLOR_BICHO[e.tipo] ?? '#aaa';
-        ctx.fill();
-        // Barra de vida: sin ella no se puede saber si merece la pena otra torreta.
-        const w = c * 0.6, h = 3;
-        ctx.fillStyle = '#300';
-        ctx.fillRect(px - w / 2, pz - c * 0.4, w, h);
-        ctx.fillStyle = '#4e6';
-        ctx.fillRect(px - w / 2, pz - c * 0.4, w * (e.hp / e.hpMax), h);
-    }
+    celda = mesa.pintar(nucleo.sustrato(), { colores: COLORES_TERRENO });
 }
 
 function actualizarHUD() {
@@ -274,6 +266,18 @@ function acabar() {
  * Mismo criterio que en ¡Busca!: si esta página ofrece un puente, tiene que
  * llevar al mismo sitio que el gimnasio, o serían tres juegos con un nombre.
  */
+/**
+ * ⚠️ EL SUSTRATO SE PUBLICA EN LA PÁGINA, Y NO ES UN AÑADIDO DE DEPURACIÓN.
+ *
+ * Es la capa de abajo del proyecto: el estado en el idioma común del que salen
+ * el texto, los números, la mesa 2D y la 3D. Que esta página lo exponga significa
+ * que cualquiera —una extensión, un agente en la consola, otra vista— puede leer
+ * exactamente lo mismo que está viendo la persona.
+ *
+ * Sin esto, comprobar que el dibujo y el estado coinciden obliga a mirar una
+ * captura. Con esto se cuenta.
+ */
+window.getSustrato = () => (nucleo ? nucleo.sustrato() : null);
 window.getObservationVector = () => nucleo ? nucleo.observacion() : null;
 window.stepSimulation = (accion, dt) => {
     if (!nucleo || nucleo.terminado()) return { done: true };
