@@ -119,6 +119,7 @@ import { RaccoonEnvironmentFactory } from '@alisa-engine/src/world/factories/Rac
 import { RaccoonSpaceCore } from '@alisa-engine/src/world/systems/RaccoonSpaceCore.js';
 
 import { montarMundo } from '/js/montarMundo.js';
+import { MesaMundo }   from '/js/mesa_mundo.mjs';
 
 /**
  * `cielo:false` y `luces:false` porque esto es el espacio abierto: no hay
@@ -168,6 +169,7 @@ let scannedCount = 0;
 let gameState = { playing: false, ended: false, score: 0 };
 let dustPoints = null;
 let shipRoot = null;
+let mesa = null;          // la mesa compartida: coloca las piezas desde el sustrato
 
 // Keystrokes
 const keys = {};
@@ -234,6 +236,42 @@ window.initGame = function() {
     camera.position.set(0, 5, 20);
     shipRig.root.add(camera);
     shipRoot = shipRig.root;
+
+    /**
+     * ⚠️ LA MESA COLOCA; LA PÁGINA SÓLO DICE QUÉ FIGURA VA EN CADA PIEZA.
+     *
+     * `MesaMundo` es la misma que pinta los otros ocho mundos y no sabe una sola
+     * regla de este. Lo único que aporta esta página es el enganche `malla`: las
+     * figuras ya están hechas —la factoría las construyó con textura y anillo— y
+     * aquí se le entrega la que toca. Quién es cada pieza lo dice el sustrato con
+     * `cajon`, no un contador nuestro, que se descuadraría a la primera baja.
+     *
+     * Y por eso el tipo de un planeta puede cambiar al escanearlo sin que la mesa
+     * pierda el planeta: su identidad es el `cajon`, y el tipo es apariencia.
+     */
+    const dePlaneta = (t, p) => planets[+p.cajon.slice(1)].mesh;
+    const ESTILO = {
+        nave: {
+            malla: () => shipRoot,
+            // Lo único que no cabía en una posición: hacia dónde mira el morro.
+            // El sustrato lo publica porque el empuje va por ahí.
+            aplicar: (m, p) => { if (p.giro) m.rotation.set(p.giro.cabeceo, p.giro.guinada, 0, 'YXZ'); },
+        },
+        asteroide: { malla: (t, p) => asteroidMeshes[+p.cajon.slice(1)] },
+    };
+    for (const t of ['sin_escanear', 'encontrado', 'escaneado',
+                     'caliente', 'templado', 'fresco', 'frío', 'helado']) {
+        ESTILO[t] = { malla: dePlaneta };
+    }
+    mesa = new MesaMundo(scene, ESTILO, 1);
+
+    /**
+     * El sustrato se publica en la página, y no es un añadido de depuración: es
+     * la forma de comprobar desde fuera que lo que se ve y lo que mide el banco
+     * son lo mismo. Sin esto sólo se puede mirar la pantalla y decir «se ve
+     * bien» — que es lo que se decía mientras estaban separados.
+     */
+    window.getSustrato = () => (nucleo ? nucleo.sustrato() : null);
 
     // UI Reset
     gameState = { playing: true, ended: false, score: 0 };
@@ -438,16 +476,23 @@ arrancar((dt) => {
     if (gameState.playing && nucleo) {
         nucleo.step(verboDeLasTeclas(), dt);
 
-        // La escena copia al núcleo, nunca al revés.
-        if (shipRoot) {
-            shipRoot.position.set(nucleo.nave.x, nucleo.nave.y, nucleo.nave.z);
-            shipRoot.rotation.set(nucleo.nave.cabeceo, nucleo.nave.guinada, 0, 'YXZ');
-        }
-        // Los asteroides del núcleo SÍ se mueven, así que se copian cada fotograma.
-        for (let i = 0; i < asteroidMeshes.length; i++) {
-            const a = nucleo.asteroides[i];
-            if (a) asteroidMeshes[i].position.set(a.x, a.y, a.z);
-        }
+        /**
+         * ⚠️ UNA LÍNEA, Y ES LA TESIS DEL PROYECTO ENTERA.
+         *
+         * Antes esto copiaba a mano: la nave desde `nucleo.nave.x`, cada asteroide
+         * desde `nucleo.asteroides[i]`. Funcionaba, y aun así era un dibujante
+         * PARALELO — acertaba porque lo escribió la misma mano que el motor, no
+         * porque saliera del mismo sitio que lee el banco.
+         *
+         * Eso se separa solo, y no es una hipótesis: es exactamente lo que le pasó
+         * a este juego, donde la persona y el banco jugaron a dos cosas distintas
+         * con el mismo nombre durante semanas.
+         *
+         * Ahora lo que se ve sale de `sustrato()`, que es lo mismo que lee el
+         * texto, lo mismo que lee el vector de números y lo mismo que sirve la
+         * puerta HTTP. Si el motor cambia, se mueven las cuatro capas a la vez.
+         */
+        mesa.pintar(nucleo.sustrato());
 
         if (dustPoints && shipRoot) dustPoints.position.copy(shipRoot.position);
         updateHUD();

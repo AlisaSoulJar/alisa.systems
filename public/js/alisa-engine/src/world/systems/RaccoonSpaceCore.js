@@ -782,18 +782,41 @@ export class RaccoonSpaceCore {
      * porque esta mañana se unificaron sobre este núcleo. Antes habrían sido
      * tres implementaciones y tres sitios donde separarse.
      */
+    /**
+     * ⚠️ CADA PIEZA VA CON NOMBRE, Y NO ES ADORNO.
+     *
+     * En este juego el tipo de un planeta CAMBIA: escanearlo lo pasa de
+     * `sin_escanear` a `caliente`. Quien dibuje el sustrato tiene que saber que
+     * sigue siendo el mismo planeta, y sin un nombre estable sólo puede mirar el
+     * tipo y el sitio en la lista — dos cosas que se mueven.
+     *
+     * `cajon` ya estaba en el contrato, puesto por el mueble. Aquí se usa para lo
+     * mismo: esto es la pieza 3, pase lo que pase con ella.
+     */
     sustrato() {
         const piezas = this.planetas.map((p, i) => ({
             x: p.x, y: p.z, alto: p.y,
             t: i === this.planetaDelMapache && p.escaneado ? 'encontrado'
              : p.escaneado ? (this.bandaDe(p) ?? 'escaneado') : 'sin_escanear',
-            de: 0, r: p.r,
+            de: 0, r: p.r, cajon: `p${i}`,
         }));
-        for (const a of this.asteroides) {
-            piezas.push({ x: a.x, y: a.z, alto: a.y, t: 'asteroide', de: 2, r: a.r });
-        }
+        this.asteroides.forEach((a, i) => {
+            piezas.push({ x: a.x, y: a.z, alto: a.y, t: 'asteroide', de: 2, r: a.r, cajon: `a${i}` });
+        });
+        /**
+         * ⚠️ HACIA DÓNDE MIRA LA NAVE ES ESTADO, NO DECORACIÓN.
+         *
+         * El empuje va donde apunta el morro: sin la orientación, el sustrato
+         * describe un mundo en el que «empujar» no se puede predecir. Los números
+         * ya la llevaban —`observacion()` publica cabeceo y guiñada— así que
+         * faltaba sólo en la capa de texto y en la de dibujo, que son las dos que
+         * mira la persona.
+         */
         const n = this.nave;
-        piezas.push({ x: n.x, y: n.z, alto: n.y, t: 'nave', de: 1 });
+        piezas.push({
+            x: n.x, y: n.z, alto: n.y, t: 'nave', de: 1, cajon: 'nave',
+            giro: { cabeceo: n.cabeceo, guinada: n.guinada },
+        });
 
         const sus = {
             piezas,

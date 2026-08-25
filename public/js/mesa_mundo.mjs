@@ -59,9 +59,34 @@ export class MesaMundo {
      * tirones sin que nadie sepa por qué — y la basura no se recoge donde se
      * genera, así que el tirón aparece lejos del culpable.
      */
-    _malla(clave, tipo) {
+    _malla(clave, tipo, pieza) {
         if (this._piezas.has(clave)) return this._piezas.get(clave);
         const e = { ...POR_DEFECTO, ...(this.estilo[tipo] ?? {}) };
+
+        /**
+         * ⚠️ SI EL MUNDO TRAE SU PROPIA FIGURA, MANDA LA SUYA.
+         *
+         * Sin esto, la mesa sólo sirve para mundos que se conformen con esferas y
+         * cajas — y las tres etapas de ¡Busca! tienen planetas con textura hechos
+         * por una factoría. La disyuntiva sería: o el sustrato o el arte. Con el
+         * enganche no hay disyuntiva: la posición, la identidad y el «esto ya no
+         * está» los sigue llevando la mesa desde el sustrato, y la página sólo
+         * aporta cómo se ve. Que es exactamente lo único que le toca.
+         *
+         * Recibe el tipo y la pieza entera: el tipo porque una misma página tiene
+         * varias figuras, y la pieza porque una página con arte ya tiene sus
+         * mallas hechas y necesita saber CUÁL le están pidiendo —para eso el
+         * mundo publica `cajon`—. Con sólo el tipo habría que llevar la cuenta por
+         * fuera, y esa cuenta se descuadra la primera vez que algo muere.
+         */
+        if (typeof e.malla === 'function') {
+            const propia = e.malla(tipo, pieza);
+            propia.userData.mallaPropia = true;
+            this.grupo.add(propia);
+            this._piezas.set(clave, propia);
+            return propia;
+        }
+
         const claveGeo = `${e.forma}:${e.radio}:${e.alto}`;
         if (!this._geo.has(claveGeo)) {
             this._geo.set(claveGeo, e.forma === 'caja'
@@ -111,25 +136,75 @@ export class MesaMundo {
     pintar(sus) {
         this.pintarTerreno(sus);
         const c = this.celda;
-        const ancho = sus.rejilla?.ancho ?? 0, alto = sus.rejilla?.alto ?? 0;
+        /**
+         * ⚠️ UN MUNDO SIN CASILLAS NO SE CENTRA, Y ESTO ESTABA MAL.
+         *
+         * Con rejilla, la casilla (0,0) es la esquina y hay que correr la escena
+         * media rejilla para que el tablero quede centrado en el origen. Sin
+         * rejilla —¡Busca! en el cubo y en la esfera— las coordenadas del sustrato
+         * YA son las del mundo, y la corrección sobra: dejaba todo desplazado
+         * media casilla, con la nave en 0.5 cuando el motor la tenía en 0.
+         *
+         * No lo vio nadie porque hasta hoy ninguna página usaba esta mesa: tenía
+         * nueve mundos de clientes en las pruebas y cero en pantalla.
+         */
+        const ox = sus.rejilla ? sus.rejilla.ancho / 2 - 0.5 : 0;
+        const oy = sus.rejilla ? sus.rejilla.alto / 2 - 0.5 : 0;
         const vivas = new Set();
 
         for (let i = 0; i < (sus.piezas?.length ?? 0); i++) {
             const p = sus.piezas[i];
-            const clave = `${p.t}#${p.cajon ?? i}`;
+            /**
+             * ⚠️ SI EL MUNDO DA UN NOMBRE A LA PIEZA, ESE NOMBRE ES SU IDENTIDAD
+             * — Y EL TIPO NO ENTRA EN ÉL.
+             *
+             * Con la clave anterior, `tipo#índice`, una pieza que CAMBIA DE TIPO
+             * pasaba por pieza nueva. En ¡Busca! eso es la mecánica entera:
+             * escanear un planeta lo pasa de `sin_escanear` a `caliente`. La mesa
+             * fabricaba otra malla, escondía la de antes, y una página con arte
+             * propio perdía el planeta que llevaba puesto.
+             *
+             * El sustrato ya tenía sitio para esto —`cajon`, que usa el mueble— y
+             * lo que faltaba era usarlo aquí. Cuando el mundo lo publica, la
+             * identidad es suya y el tipo se queda en lo que es: apariencia.
+             * Cuando no, se sigue como antes.
+             */
+            const clave = p.cajon !== undefined ? `#${p.cajon}` : `${p.t}#${i}`;
             vivas.add(clave);
-            const m = this._malla(clave, p.t);
             const e = { ...POR_DEFECTO, ...(this.estilo[p.t] ?? {}) };
+
+            let m = this._piezas.get(clave);
+            /**
+             * Una malla que hizo la mesa y cuya pieza ha cambiado de tipo hay que
+             * rehacerla: su forma y su color venían del tipo viejo. Una figura que
+             * puso la página NO se toca — su apariencia es cosa suya, y para eso
+             * tiene `aplicar`, que se llama cada fotograma con la pieza.
+             */
+            if (m && m.userData.tipoMesa !== p.t && !m.userData.mallaPropia) {
+                this.grupo.remove(m);
+                this._piezas.delete(clave);
+                m = null;
+            }
+            if (!m) m = this._malla(clave, p.t, p);
+            m.userData.tipoMesa = p.t;
             m.position.set(
-                (p.x - ancho / 2 + 0.5) * c,
-                (p.alto ?? 0) * c + e.alto / 2 + 0.1,
-                (p.y - alto / 2 + 0.5) * c,
+                (p.x - ox) * c,
+                (p.alto ?? 0) * c + (sus.rejilla ? e.alto / 2 + 0.1 : 0),
+                (p.y - oy) * c,
             );
             // La vida se ve en el tamaño: sin eso, un bicho a punto de morir se
             // ve igual que uno recién llegado y no se puede decidir nada.
-            const k = p.vida === undefined ? 1 : 0.45 + 0.55 * Math.max(0, Math.min(1, p.vida));
-            m.scale.setScalar(k);
+            if (p.vida !== undefined) {
+                m.scale.setScalar(0.45 + 0.55 * Math.max(0, Math.min(1, p.vida)));
+            }
             m.visible = true;
+            /**
+             * El último retoque lo da el mundo, si quiere: una figura propia
+             * puede tener que girar hacia donde va o cambiar de color según la
+             * pieza. Es cosmética, va después de colocar, y sin ella se dibuja
+             * igual — sólo más soso.
+             */
+            if (typeof e.aplicar === 'function') e.aplicar(m, p);
         }
 
         // Lo que ya no está en el sustrato, se esconde. No se destruye: puede

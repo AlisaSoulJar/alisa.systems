@@ -640,6 +640,25 @@ const SABOTAJES = [
     },
     {
         /**
+         * El fallo que tenía la mesa hasta hoy, y que sólo salía en los juegos
+         * donde una pieza CAMBIA DE TIPO: la clave llevaba el tipo dentro, así que
+         * un planeta escaneado pasaba por pieza nueva. La mesa fabricaba otra
+         * figura y escondía la que la página llevaba puesta — el planeta
+         * desaparecía justo al escanearlo, que es lo contrario de lo que hace el
+         * juego.
+         *
+         * No lo veía nadie porque la mesa tenía nueve mundos en las pruebas y cero
+         * páginas en pantalla. Salió al enchufar la primera.
+         */
+        nombre: 'mesa-mundo-identidad',
+        corre: 'node --import ./resolver_three.mjs prueba_mesa_mundo.mjs',
+        fichero: 'public/js/mesa_mundo.mjs',
+        de: "const clave = p.cajon !== undefined ? `#${p.cajon}` : `${p.t}#${i}`;",
+        a: 'const clave = `${p.t}#${p.cajon ?? i}`;',
+        vigila: 'que una pieza que cambia de tipo siga siendo la misma pieza',
+    },
+    {
+        /**
          * El fallo REAL que había hasta el 25-08: el vocabulario del terreno
          * estaba escrito a fuego —0 vacío, 1 muro, 2 destino— porque sólo lo
          * usaban juegos de tablero. ¡Defiende! usa 1=sendero y 2=núcleo, así que
@@ -654,6 +673,25 @@ const SABOTAJES = [
         de: "const SUELO = sus.terreno ?? { 0: '.', 1: '#', 2: 'o' };",
         a: "const SUELO = { 0: '.', 1: '#', 2: 'o' };",
         vigila: 'que el mapa de texto use el vocabulario que el mundo declara, no otro',
+    },
+    {
+        /**
+         * El fallo que ya pasó una vez y no dio ningún error: una página que se
+         * dibuja leyendo el motor por dentro en vez del sustrato. Se ve
+         * perfectamente —acierta el día que se escribe— y se separa sola después.
+         * Es literalmente lo que pasó con ¡Busca!, donde la persona y el banco
+         * jugaron a dos juegos con el mismo nombre durante semanas.
+         *
+         * El sabotaje le quita a ¡Defiende! la única llamada al sustrato que hay
+         * en toda la página. Sigue dibujando igual de bien: por eso hace falta un
+         * suelo que lo cuente, y no un ojo que lo mire.
+         */
+        nombre: 'paginas',
+        corre: 'node paginas.mjs',
+        fichero: 'public/games/defiende_sendero.html',
+        de: 'celda = mesa.pintar(nucleo.sustrato(), { colores: COLORES_TERRENO });',
+        a: 'celda = mesa.pintar(nucleo.observacion(), { colores: COLORES_TERRENO });',
+        vigila: 'que lo que ve la persona salga del mismo sitio que lee el banco',
     },
     {
         /**
