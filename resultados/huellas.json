@@ -1,4 +1,10 @@
 {
+  "_contrato": {
+    "sellado": "2026-08-25",
+    "regla": "El id es el contrato: dos notas sólo se comparan dentro del mismo id. Cambiar el comportamiento obliga a subir la versión (…-v0 → …-v1).",
+    "antes_de_esta_fecha": "Los mundos estaban en desarrollo y no había notas publicadas que proteger (medido: 0 referencias en resultados/tabla.json). Desde aquí, cualquier cambio de comportamiento exige versión nueva.",
+    "estandar": "Gym/Gymnasium: CartPole-v0 → v1 se diferencian sólo en el límite de pasos y el umbral de recompensa. Un umbral basta para una versión."
+  },
   "alisa/Pedrisco-v0": {
     "huella": "055f95d1",
     "sellada": "2026-08-25"

@@ -39,12 +39,54 @@ import { huellaDeMundo } from './public/js/alisa-engine/src/gym/HuellaDeMundo.js
 const ARCHIVO = 'resultados/huellas.json';
 const sellar = process.argv.includes('--sellar');
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  EL CONTRATO, ESCRITO EN EL PROPIO FICHERO DE HUELLAS
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ⚠️ POR QUÉ LOS TRES QUE CAMBIARON ESTA SEMANA SIGUEN SIENDO `-v0`.
+ *
+ * El estándar de la industria —Gym, Gymnasium, ALE— es que **el id es el
+ * contrato**: dos notas sólo se comparan dentro del mismo id, y se sube versión
+ * ante cualquier cambio de comportamiento. El ejemplo canónico es `CartPole-v0`
+ * → `v1`, que se diferencian SÓLO en el límite de pasos (200 → 500) y el umbral
+ * de recompensa. Un umbral bastó.
+ *
+ * Lo que cambiamos —el vehículo de dos etapas, el combustible, el número de
+ * objetivos, el generador de los muebles— está muy por encima de eso.
+ *
+ * Pero el estándar tiene un matiz que aquí aplica: **no se sube versión durante
+ * el desarrollo de un entorno, sólo desde que se publica**. Nadie bumpea un env
+ * que lleva tres días vivo y del que no hay resultados.
+ *
+ * Medido el 25-08: CERO notas publicadas referencian a `RaccoonCity-v0`,
+ * `RaccoonPlanet-v0` ni `CabinetEscape-v0` — la tabla publicada son los 32
+ * juegos de arcade. Y los tres nacieron o se calibraron esta misma semana.
+ *
+ * Así que se SELLAN aquí, y desde este fichero el `-v0` pasa a ser un contrato:
+ * a partir de ahora, cambiar el comportamiento obliga a `-v1`. La decisión queda
+ * escrita en vez de implícita, que es la diferencia entre una convención y un
+ * olvido.
+ */
+const CONTRATO = {
+    _contrato: {
+        sellado: '2026-08-25',
+        regla: 'El id es el contrato: dos notas sólo se comparan dentro del mismo id. '
+             + 'Cambiar el comportamiento obliga a subir la versión (…-v0 → …-v1).',
+        antes_de_esta_fecha: 'Los mundos estaban en desarrollo y no había notas publicadas '
+             + 'que proteger (medido: 0 referencias en resultados/tabla.json). '
+             + 'Desde aquí, cualquier cambio de comportamiento exige versión nueva.',
+        estandar: 'Gym/Gymnasium: CartPole-v0 → v1 se diferencian sólo en el límite de '
+             + 'pasos y el umbral de recompensa. Un umbral basta para una versión.',
+    },
+};
+
 let declaradas = {};
 if (existsSync(ARCHIVO)) declaradas = JSON.parse(readFileSync(ARCHIVO, 'utf8'));
 
 let fallos = 0, nuevos = 0, iguales = 0;
 const mal = (m) => { console.log(`  ✗ ${m}`); fallos++; };
-const ahora = {};
+const ahora = { ...CONTRATO };
 
 console.log('\n¿Sigue siendo el mismo juego que cuando se publicó su nota?\n');
 
@@ -112,6 +154,7 @@ if (sellar) {
 {
     const porHuella = new Map();
     for (const [id, v] of Object.entries(ahora)) {
+        if (id.startsWith('_')) continue;   // el contrato no es un juego
         if (!porHuella.has(v.huella)) porHuella.set(v.huella, []);
         porHuella.get(v.huella).push(id);
     }
