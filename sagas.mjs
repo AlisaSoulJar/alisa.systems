@@ -77,33 +77,52 @@ export const EN_EL_BANCO = [
       env: 'public/js/alisa-engine/src/gym/envs/MarabuntaEnv.js' },
 
     /**
-     * ⚠️ PEDRISCO IBA A ABRIR ¡ESQUIVA! Y NO ENTRA TODAVÍA. LO PARÓ LA PRUEBA.
+     * ⚠️ PEDRISCO ABRE ¡ESQUIVA!, Y EL CAMINO HASTA AQUÍ MERECE LEERSE.
      *
-     * El nombre estaba bien elegido y no por sonoridad: sus propios verbos son
+     * El nombre no lo elegí por sonoridad: sus propios verbos son
      * `esquivar_izquierda`, `esquivar_derecha`, `subir`, `bajar`, `centrar`,
      * `mantener`, `disparar`. El juego ya se había puesto el nombre. Y no es
      * ¡Sobrevive! porque ahí no te come nadie: cae granizo y te apartas.
      *
-     * Pero al meterlo, `prueba_sagas.mjs` lo tumbó:
+     * Al meterlo, `prueba_sagas.mjs` lo tumbó —«página y banco corren motores
+     * distintos»— y yo me creí la acusación y lo dejé fuera. Estaba mal: el fallo
+     * era del instrumento. `AsteroidsEngine.js:26` hace
+     * `this.system = new AsteroidsSystem(...)`, o sea que envuelve al motor del
+     * banco. La prueba SÍ sigue envoltorios, pero su filtro de rutas se saltaba
+     * el último salto —`'./AsteroidsSystem.js'`, el hermano de al lado— y la
+     * cadena se cortaba justo ahí.
      *
-     *     página  croupier_asteroids_survival.html  ->  AsteroidsEngine
-     *     banco   AsteroidsEnv.js                   ->  AsteroidsSystem
+     * Lección, y van cuatro con la misma forma: creerse a un instrumento sin
+     * mirar por qué acusa cuesta lo mismo que ignorarlo. Yo lo había escrito para
+     * no fiarme de mi criterio, y acabé no fiándome de la evidencia.
      *
-     * Dos motores. O sea: exactamente el caso que yo mismo había rechazado una
-     * hora antes para Chopper —«sería poner a un beta delante de un juego que el
-     * banco no mide»— y estaba a punto de colarlo por la puerta grande. Mi
-     * evaluación previa fue superficial: comprobé que la página importaba UN
-     * motor del engine, no que fuera EL MISMO.
-     *
-     * No se declara como deuda para que la prueba calle: declarar sería subir la
-     * deuda, y el trinquete existe justo para que no suba. Entra el día que una
-     * de las dos puertas se mueva a la otra.
-     *
-     * Se deja escrito porque la decisión importa más que el resultado: la puerta
-     * de los betas no es un escaparate de lo que hay, es una promesa de que lo
-     * que se juega es lo que se mide.
+     * Entra con una etapa, igual que ¡Defiende!. Una saga de una no es un
+     * problema: es una saga a la que le faltan las demás.
      */
+    { saga: 'Esquiva', etapa: 1, nombre: 'Pedrisco',
+      pagina: 'public/labs/croupier_asteroids_survival.html',
+      env: 'public/js/alisa-engine/src/gym/envs/AsteroidsEnv.js' },
 ];
+
+/**
+ * ⚠️ NOTA HISTÓRICA — LO QUE CREÍ QUE PASABA Y NO PASABA. TRES VECES.
+ *
+ * En una sola noche juzgué tres veces mal la misma pregunta —«¿juegan la persona
+ * y el banco al mismo juego?»— y las tres por mirar deprisa:
+ *
+ *   1. «Chopper no usa el motor». FALSO: importa `ChopperAquariumEngine` desde
+ *      `@alisa-engine/world/systems/…`, y mi grep exigía `/src` en la ruta.
+ *   2. «Pedrisco tiene dos motores». FALSO: `AsteroidsEngine` INSTANCIA
+ *      `AsteroidsSystem` en su línea 26.
+ *   3. Y cuando la prueba lo acusó, me creí la acusación sin mirar POR QUÉ
+ *      acusaba. El fallo era suyo: su filtro de rutas no seguía el último salto
+ *      de la cadena.
+ *
+ * Las tres veces la conclusión era «esto no puede entrar», y las tres estaba mal.
+ * Un instrumento no sustituye al criterio ni al revés: hay que mirar por qué dice
+ * lo que dice. Se deja escrito porque el próximo que dude entre creer al detector
+ * o creerse a sí mismo tiene aquí las dos formas de equivocarse.
+ */
 
 /**
  * Etapas que una persona PUEDE JUGAR y el banco NO PUEDE MEDIR.

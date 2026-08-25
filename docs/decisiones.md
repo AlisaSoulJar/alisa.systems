@@ -15,16 +15,16 @@ contrario. El problema no era que no estuviera escrito: era que no había índic
 Volver a decidir sale barato en el momento y carísimo a la semana, porque la
 segunda decisión casi nunca coincide con la primera y entonces hay dos verdades.
 
-**2235 decisiones** en 363 ficheros.
+**2239 decisiones** en 364 ficheros.
 
 ## Índice
 
-- [Herramientas de medida](#herramientas-de-medida) — 440
+- [Herramientas de medida](#herramientas-de-medida) — 442
 - [Reglas de los juegos](#reglas-de-los-juegos) — 362
 - [Las mesas y los visualizadores](#las-mesas-y-los-visualizadores) — 312
 - [Las comprobaciones](#las-comprobaciones) — 290
 - [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 208
-- [Otros](#otros) — 190
+- [Otros](#otros) — 192
 - [El motor](#el-motor) — 108
 - [El gym y los entornos](#el-gym-y-los-entornos) — 88
 - [Las páginas de los juegos](#las-páginas-de-los-juegos) — 81
@@ -894,6 +894,10 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 
 - **POR QUÉ EXISTE ESTE FICHERO, Y ES UN FALLO MÍO DEL 25-08.** <sub>línea 8</sub>
   <br><sub>Este mapa YA existía, dentro de `prueba_sagas.mjs`, como constantes locales `EN_EL_BANCO` y `SIN_ENTORNO`. Y yo, para montar la puerta de los betas, escribí `gen_sagas.mjs` **parseando el <title> de las páginas** — o sea, me</sub>
+- **MARABUNTA ENTRA EN ¡SOBREVIVE!, Y NO ES POR HUECO LIBRE.** <sub>línea 64</sub>
+  <br><sub>`docs/ESTADO_SAGAS.md` define la saga como «no ser lo que se comen», y dice que «le faltan etapas por delante y por detrás». Una marabunta es literalmente el enjambre que devora: eres la presa de una horda que se</sub>
+- **PEDRISCO IBA A ABRIR ¡ESQUIVA! Y NO ENTRA TODAVÍA.** <sub>línea 80</sub>
+  <br><sub>El nombre estaba bien elegido y no por sonoridad: sus propios verbos son `esquivar_izquierda`, `esquivar_derecha`, `subir`, `bajar`, `centrar`, `mantener`, `disparar`. El juego ya se había puesto el nombre. Y no es</sub>
 
 ### `salas.mjs`
 
@@ -4111,6 +4115,8 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 
 - **Esto era `engine.ship.userData.shields` y reventaba CADA FOTOGRAMA con** <sub>línea 376</sub>
   <br><sub>«Cannot read properties of undefined (reading 'shields')»: `engine.ship` existe pero no es una malla de THREE, así que no tiene `userData`. Los escudos viven en el sistema, no en el objeto de render.</sub>
+- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 400</sub>
+  <br><sub>Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y, si esta página publica `window.getSustrato()`, adjunta el mundo entero — con eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.</sub>
 
 ### `public/labs/croupier_banco_motores.html`
 
@@ -4135,6 +4141,11 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 ### `public/labs/croupier_interaction_lab.html`
 
 - **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 188</sub>
+  <br><sub>Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y, si esta página publica `window.getSustrato()`, adjunta el mundo entero — con eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.</sub>
+
+### `public/labs/croupier_marabunta.html`
+
+- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 218</sub>
   <br><sub>Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y, si esta página publica `window.getSustrato()`, adjunta el mundo entero — con eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.</sub>
 
 ### `public/labs/croupier_math_orbital_shmup.html`

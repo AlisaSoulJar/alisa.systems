@@ -154,11 +154,33 @@ const SIN_ENTORNO = {
  * que se mira lo que hay ANTES del `as`.
  */
 const ES_MOTOR = /(System|Engine|Core|Game)$/;
+
+/**
+ * ⚠️ Y LA RUTA PUEDE SER LA DE AL LADO. ESTO DIO UN FALSO POSITIVO GRAVE.
+ *
+ * El filtro pedía que la ruta del import contuviera `systems`, `Engine`, `Core`,
+ * `gym_runners` o `world/`. Vale para las rutas largas, y falla justo en el
+ * último salto de la cadena: cuando un motor importa a su HERMANO del mismo
+ * directorio.
+ *
+ *     AsteroidsEngine.js  ->  import { AsteroidsSystem } from './AsteroidsSystem.js'
+ *
+ * Esa ruta no contiene `systems` (es `System`, singular), ni `world/`. Se la
+ * saltaba. Resultado: la cadena se cortaba en el eslabón final y ¡Esquiva! salió
+ * acusada de correr dos motores cuando el Engine INSTANCIA al System en su línea
+ * 26. Yo me creí la acusación y dejé la saga fuera de la puerta.
+ *
+ * Cuarta vez que este proyecto tropieza con «mira quién importa a quién» sin
+ * seguir la cadena entera. Ahora también se acepta un hermano cuyo NOMBRE DE
+ * FICHERO sea de motor, que es la forma que faltaba.
+ */
+const RUTA_DE_MOTOR = /systems|Engine|Core|gym_runners|world\/|\/\w*(System|Engine|Core|Game)\.js/i;
+
 function motoresDe(txt) {
     const nombres = new Set();
     for (const m of txt.matchAll(/import\s*\{([^}]*)\}\s*from\s*'([^']+)'/g)) {
         const desde = m[2];
-        if (!/systems|Engine|Core|gym_runners|world\//i.test(desde)) continue;
+        if (!RUTA_DE_MOTOR.test(desde)) continue;
         for (const n of m[1].split(',')) {
             const limpio = n.trim().split(/\s+as\s+/)[0].trim();
             if (!limpio || !ES_MOTOR.test(limpio)) continue;

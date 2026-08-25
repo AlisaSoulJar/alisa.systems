@@ -122,7 +122,24 @@
       ],
       "conSustrato": 1,
       "medidas": 1
+    },
+    {
+      "nombre": "Esquiva",
+      "etapas": [
+        {
+          "saga": "Esquiva",
+          "etapa": 1,
+          "nombre": "Pedrisco",
+          "pagina": "/labs/croupier_asteroids_survival.html",
+          "existe": true,
+          "medida": true,
+          "sustrato": false,
+          "avisa": true
+        }
+      ],
+      "conSustrato": 0,
+      "medidas": 1
     }
   ],
-  "total": 10
+  "total": 11
 }
