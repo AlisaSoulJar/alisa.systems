@@ -162,54 +162,20 @@ const TOPE_PASOS = 3000;
 const horizonteDe = (Clase) => Math.min(Number(Clase.meta?.horizon) || 600, TOPE_PASOS);
 
 /** Un azar barato y sembrado: la misma política da siempre la misma partida. */
-function azar(semilla) {
-    let x = semilla >>> 0 || 1;
-    return () => { x ^= x << 13; x ^= x >>> 17; x ^= x << 5; return (x >>> 0) / 4294967296; };
-}
-
 /**
- * Las políticas. Las tres primeras son estructurales y baratas; las de azar
- * exploran de verdad; y el bandido APRENDE cuál de los verbos paga, que es lo
- * más parecido a un jugador competente que se puede escribir sin saber el juego.
+ * ⚠️ EL SUELO YA NO VIVE AQUÍ.
+ *
+ * Estaba escrito aquí y COPIADO en creditar.mjs, y las dos copias habían
+ * divergido el mismo día: semillas [1,7,99] contra [1,7,42], bandido con
+ * exploración contra bandido sin ella. Un recibo se juzgaba contra una vara y
+ * la tabla se publicaba con otra.
+ *
+ * Ahora vive en lisa-engine/src/gym/suelo.js y lo importa quien lo necesite.
+ * Ésta es la canónica —la que produjo el «46 de 49»— y por eso se movió tal cual,
+ * sin tocar ni una semilla: si el suelo cambia, ese número deja de significar lo
+ * que dice.
  */
-function politicas() {
-    const lista = [
-        { nombre: 'ciclo',   elegir: (v, i) => v[i % v.length] },
-        { nombre: 'primera', elegir: (v) => v[0] },
-        { nombre: 'ultima',  elegir: (v) => v[v.length - 1] },
-    ];
-    for (const s of [1, 7, 99]) {
-        const r = azar(s);
-        lista.push({ nombre: `azar${s}`, elegir: (v) => v[Math.floor(r() * v.length) % v.length] });
-    }
-    /**
-     * El bandido: se queda con el verbo que mejor media de recompensa lleva, y
-     * de vez en cuando prueba otro. No sabe jugar a nada, pero encuentra la
-     * palanca que paga — y con eso basta para separar a un entorno de uno plano.
-     */
-    const memoria = new Map();
-    const r = azar(4242);
-    lista.push({
-        nombre: 'bandido',
-        elegir: (v) => {
-            if (r() < 0.15) return v[Math.floor(r() * v.length) % v.length];
-            let mejor = v[0], mejorNota = -Infinity;
-            for (const o of v) {
-                const m = memoria.get(o.verb);
-                const nota = m ? m.suma / m.n : 0.001;   // lo no probado, un pelín mejor que 0
-                if (nota > mejorNota) { mejorNota = nota; mejor = o; }
-            }
-            return mejor;
-        },
-        aprender: (verbo, premio) => {
-            const m = memoria.get(verbo) ?? { suma: 0, n: 0 };
-            m.suma += premio; m.n++;
-            memoria.set(verbo, m);
-        },
-    });
-    return lista;
-}
-
+import { politicasCiegas as politicas } from './public/js/alisa-engine/src/gym/suelo.js';
 /** Las dos formas VÁLIDAS de mandar una jugada. Ver la nota de abajo. */
 const FORMAS = [['action', (o) => o.action], ['verb', (o) => o.verb]];
 
@@ -299,6 +265,60 @@ for (const [id, m] of planos) {
     if (razon) console.log(`      ${razon}`);
     else fallos.push(`${id}: ${m.notas.length} políticas distintas sacan ${m.notas[0].toFixed(1)} todas`
                    + ' — no se ha conseguido que este entorno distinga a un jugador de otro');
+}
+
+/**
+ * ⚠️ AQUÍ SE PUBLICA, Y ES A PROPÓSITO QUE LO HAGA EL QUE MIDE.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Los nueve mundos propios —los del patrón oro, en los que llevo semanas— no
+ * tenían NI UNA nota publicada. La clasificación del sitio son los 40 de arcade,
+ * que se enfrentan en torneo; los propios se juegan en solitario y no caben en
+ * esa tabla, así que se habían quedado fuera sin que nadie lo dijera.
+ *
+ * Lo obvio habría sido escribir `tabla_mundos.mjs`. Y habría sido el fallo del
+ * día otra vez: un segundo medidor que se separa del primero. Ya me pasó esta
+ * misma tarde con las políticas ciegas —dos copias, semillas distintas— y la
+ * página de clasificación ya se separó ocho días de su JSON en agosto.
+ *
+ * Así que publica QUIEN MIDE. Este fichero corre en cada `npm test`, así que el
+ * número medido y el número publicado no pueden separarse: son la misma línea.
+ *
+ * Se guarda lo que hace falta para que una nota signifique algo: contra qué suelo
+ * se midió, con cuántos pasos, con qué forma de mandar la jugada, y si el entorno
+ * separa. Una nota sin eso es un número suelto.
+ */
+{
+    const { writeFile, mkdir } = await import('node:fs/promises');
+    const filas = [...vivos, ...planos]
+        .map(([id, m]) => ({
+            id,
+            familia: CATALOGO.find(e => e.id === id)?.familia ?? '?',
+            separa: m.separa > 1,
+            /** Las siete notas ciegas, en el orden de `politicasCiegas()`. */
+            suelo: m.notas.map(n => Math.round(n * 1000) / 1000),
+            mejorCiega: Math.max(...m.notas),
+            peorCiega: Math.min(...m.notas),
+            pasos: m.pasos,
+            semilla: m.semilla,
+            forma: m.forma,
+        }))
+        .sort((a, b) => a.id.localeCompare(b.id));
+
+    await mkdir(new URL('./resultados/', import.meta.url), { recursive: true });
+    await writeFile(new URL('./resultados/suelo_por_entorno.json', import.meta.url),
+        JSON.stringify({
+            _que_es: 'Contra qué suelo se mide cada entorno. Una nota sólo significa algo '
+                   + 'comparada con estas siete políticas ciegas, en el mismo mundo, con la '
+                   + 'misma semilla y el mismo horizonte. Ver acreditar.mjs.',
+            _suelo: 'alisa-engine/src/gym/suelo.js — ciclo, primera, ultima, azar1, azar7, azar99, bandido',
+            _medido_por: 'prueba_senal.mjs, en cada npm test. Publica quien mide, para que no se separen.',
+            propios: filas.filter(f => f.familia === 'propio').length,
+            total: filas.length,
+            entornos: filas,
+        }, null, 2) + '\n', 'utf8');
+    console.log(`\n  ✎ publicado resultados/suelo_por_entorno.json `
+              + `(${filas.filter(f => f.familia === 'propio').length} propios de ${filas.length})`);
 }
 
 console.log(`\n  ${vivos.length}/${CATALOGO.length} entornos dan notas distintas a políticas distintas`);

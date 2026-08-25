@@ -1,0 +1,940 @@
+{
+  "_que_es": "Contra qué suelo se mide cada entorno. Una nota sólo significa algo comparada con estas siete políticas ciegas, en el mismo mundo, con la misma semilla y el mismo horizonte. Ver acreditar.mjs.",
+  "_suelo": "alisa-engine/src/gym/suelo.js — ciclo, primera, ultima, azar1, azar7, azar99, bandido",
+  "_medido_por": "prueba_senal.mjs, en cada npm test. Publica quien mide, para que no se separen.",
+  "propios": 9,
+  "total": 49,
+  "entornos": [
+    {
+      "id": "alisa/ajedrez-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        -35,
+        -33,
+        -31,
+        -24,
+        -24,
+        -1022,
+        -31
+      ],
+      "mejorCiega": -24,
+      "peorCiega": -1022,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/alisapolis-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        140,
+        -1000,
+        140,
+        140,
+        140,
+        140,
+        40
+      ],
+      "mejorCiega": 140,
+      "peorCiega": -1000,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/blackjack-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        -17,
+        -33,
+        -23,
+        -18,
+        -3,
+        -15,
+        -14
+      ],
+      "mejorCiega": -3,
+      "peorCiega": -33,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/brisca-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        39,
+        47,
+        28,
+        47,
+        47,
+        27,
+        23
+      ],
+      "mejorCiega": 47,
+      "peorCiega": 23,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/cabina-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        -152,
+        -155,
+        -164,
+        -171,
+        -198,
+        -165,
+        -129
+      ],
+      "mejorCiega": -129,
+      "peorCiega": -198,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/CabinetEscape-v0",
+      "familia": "propio",
+      "separa": true,
+      "suelo": [
+        10,
+        10,
+        -0.65,
+        10,
+        10,
+        10,
+        10
+      ],
+      "mejorCiega": 10,
+      "peorCiega": -0.6500000000000004,
+      "pasos": 64,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/canadiense-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        0,
+        142,
+        323,
+        7,
+        324,
+        29,
+        0
+      ],
+      "mejorCiega": 324,
+      "peorCiega": 0,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/chinchon-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        12,
+        36,
+        0,
+        14,
+        2,
+        25,
+        13
+      ],
+      "mejorCiega": 36,
+      "peorCiega": 0,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/ChopperAquarium-v0",
+      "familia": "propio",
+      "separa": true,
+      "suelo": [
+        110,
+        20,
+        20,
+        10,
+        10,
+        110,
+        30
+      ],
+      "mejorCiega": 110,
+      "peorCiega": 10,
+      "pasos": 3000,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/CorpBuilding-v0",
+      "familia": "propio",
+      "separa": true,
+      "suelo": [
+        78.5,
+        -1.55,
+        -2,
+        -18.55,
+        0,
+        85.15,
+        -2.45
+      ],
+      "mejorCiega": 85.15,
+      "peorCiega": -18.55,
+      "pasos": 40,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/cripta-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        -393,
+        -400,
+        -399,
+        -110,
+        -82,
+        -140,
+        -213
+      ],
+      "mejorCiega": -82,
+      "peorCiega": -400,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/damas-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        -1011,
+        -4,
+        -1010,
+        -1010,
+        -1011,
+        -1010,
+        -1008
+      ],
+      "mejorCiega": -4,
+      "peorCiega": -1011,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/defensa-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        -175,
+        -250,
+        -175,
+        -225,
+        -175,
+        -175,
+        -117
+      ],
+      "mejorCiega": -117,
+      "peorCiega": -250,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/Defiende-v0",
+      "familia": "propio",
+      "separa": true,
+      "suelo": [
+        42,
+        -300,
+        -300,
+        49,
+        -134,
+        51,
+        42
+      ],
+      "mejorCiega": 51,
+      "peorCiega": -300,
+      "pasos": 3000,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/domino-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        29,
+        48,
+        38,
+        40,
+        48,
+        29,
+        36
+      ],
+      "mejorCiega": 48,
+      "peorCiega": 29,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/entropy-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        -35,
+        -29,
+        -37,
+        -37,
+        -27,
+        -38,
+        -38
+      ],
+      "mejorCiega": -27,
+      "peorCiega": -38,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/fagocito-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        50,
+        10,
+        250,
+        100,
+        80,
+        80,
+        110
+      ],
+      "mejorCiega": 250,
+      "peorCiega": 10,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/flota-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        95,
+        140,
+        50,
+        105,
+        15,
+        105,
+        140
+      ],
+      "mejorCiega": 140,
+      "peorCiega": 15,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/frentes-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        0,
+        -90,
+        -90,
+        -30,
+        0,
+        0,
+        0
+      ],
+      "mejorCiega": 0,
+      "peorCiega": -90,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/generala-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        20,
+        7,
+        17,
+        25,
+        13,
+        18,
+        15
+      ],
+      "mejorCiega": 25,
+      "peorCiega": 7,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/go-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        151,
+        66,
+        0,
+        42,
+        150,
+        159,
+        58
+      ],
+      "mejorCiega": 159,
+      "peorCiega": 0,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/gofish-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        6,
+        3,
+        1,
+        4,
+        3,
+        0,
+        2
+      ],
+      "mejorCiega": 6,
+      "peorCiega": 0,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/guerra-protohub-v0",
+      "familia": "protohub",
+      "separa": false,
+      "suelo": [
+        28,
+        28,
+        28,
+        28,
+        28,
+        28,
+        28
+      ],
+      "mejorCiega": 28,
+      "peorCiega": 28,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/hearts-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        -10,
+        -8,
+        -9,
+        -8,
+        -8,
+        -11,
+        -8
+      ],
+      "mejorCiega": -8,
+      "peorCiega": -11,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/mancala-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        15,
+        10,
+        14,
+        10,
+        8,
+        9,
+        13
+      ],
+      "mejorCiega": 15,
+      "peorCiega": 8,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/Marabunta-v0",
+      "familia": "propio",
+      "separa": true,
+      "suelo": [
+        62.5,
+        -7.5,
+        -106.5,
+        59.5,
+        28,
+        66,
+        40.5
+      ],
+      "mejorCiega": 66,
+      "peorCiega": -106.5,
+      "pasos": 1200,
+      "semilla": 1234,
+      "forma": "verb"
+    },
+    {
+      "id": "alisa/marea-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        1432,
+        624,
+        1104,
+        1356,
+        1036,
+        1108,
+        1016
+      ],
+      "mejorCiega": 1432,
+      "peorCiega": 624,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/nave-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        -120,
+        -120,
+        240,
+        -120,
+        -120,
+        -120,
+        -120
+      ],
+      "mejorCiega": 240,
+      "peorCiega": -120,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/oca-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        250,
+        250,
+        250,
+        292,
+        172,
+        1490,
+        250
+      ],
+      "mejorCiega": 1490,
+      "peorCiega": 172,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/parchis-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        337,
+        382,
+        382,
+        800,
+        184,
+        64,
+        431
+      ],
+      "mejorCiega": 800,
+      "peorCiega": 64,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/peaton-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        10,
+        20,
+        0,
+        20,
+        20,
+        20,
+        20
+      ],
+      "mejorCiega": 20,
+      "peorCiega": 0,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/Pedrisco-v0",
+      "familia": "propio",
+      "separa": true,
+      "suelo": [
+        20.507,
+        20.665,
+        140.203,
+        50.27,
+        141.288,
+        141.265,
+        20.493
+      ],
+      "mejorCiega": 141.28833333333304,
+      "peorCiega": 20.49333333333336,
+      "pasos": 1800,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/poker-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        -43,
+        -21,
+        -62,
+        -26,
+        -6,
+        -22,
+        -36
+      ],
+      "mejorCiega": -6,
+      "peorCiega": -62,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/pradera-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        -9,
+        -18,
+        6,
+        -18,
+        -18,
+        -18,
+        -18
+      ],
+      "mejorCiega": 6,
+      "peorCiega": -18,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/RaccoonCity-v0",
+      "familia": "propio",
+      "separa": true,
+      "suelo": [
+        -100,
+        0,
+        -100,
+        -100,
+        -100,
+        -100,
+        -100
+      ],
+      "mejorCiega": 0,
+      "peorCiega": -100,
+      "pasos": 3000,
+      "semilla": 1234,
+      "forma": "verb"
+    },
+    {
+      "id": "alisa/RaccoonPlanet-v0",
+      "familia": "propio",
+      "separa": false,
+      "suelo": [
+        -100,
+        -100,
+        -100,
+        -100,
+        -100,
+        -100,
+        -100
+      ],
+      "mejorCiega": -100,
+      "peorCiega": -100,
+      "pasos": 3000,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/RaccoonSpace-v0",
+      "familia": "propio",
+      "separa": false,
+      "suelo": [
+        -100,
+        -100,
+        -100,
+        -100,
+        -100,
+        -100,
+        -100
+      ],
+      "mejorCiega": -100,
+      "peorCiega": -100,
+      "pasos": 3000,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/rebano-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        -112,
+        -133,
+        -125,
+        -151,
+        -82,
+        -84,
+        -107
+      ],
+      "mejorCiega": -82,
+      "peorCiega": -151,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/relevo-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        -156,
+        -156,
+        -156,
+        -155,
+        -154,
+        -156,
+        -155
+      ],
+      "mejorCiega": -154,
+      "peorCiega": -156,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/remigio-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        10,
+        -16,
+        0,
+        -9,
+        6,
+        12,
+        -1
+      ],
+      "mejorCiega": 12,
+      "peorCiega": -16,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/reversi-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        36,
+        29,
+        14,
+        22,
+        32,
+        10,
+        11
+      ],
+      "mejorCiega": 36,
+      "peorCiega": 10,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/shinigami-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        335,
+        275,
+        245,
+        -45,
+        245,
+        335,
+        275
+      ],
+      "mejorCiega": 335,
+      "peorCiega": -45,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/sigilo-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        -332,
+        -335,
+        -327,
+        -332,
+        -333,
+        -320,
+        -350
+      ],
+      "mejorCiega": -320,
+      "peorCiega": -350,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/snake-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        10,
+        0
+      ],
+      "mejorCiega": 10,
+      "peorCiega": 0,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/sokoban-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        -200,
+        -199,
+        -300,
+        -198,
+        -198,
+        -301,
+        -301
+      ],
+      "mejorCiega": -198,
+      "peorCiega": -301,
+      "pasos": 400,
+      "semilla": 99,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/spades-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        -94,
+        -96,
+        -130,
+        -95,
+        -94,
+        -96,
+        -98
+      ],
+      "mejorCiega": -94,
+      "peorCiega": -130,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/tute-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        41,
+        30,
+        27,
+        45,
+        14,
+        30,
+        30
+      ],
+      "mejorCiega": 45,
+      "peorCiega": 14,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/unit-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        38,
+        294,
+        -109,
+        -18,
+        -26,
+        10,
+        294
+      ],
+      "mejorCiega": 294,
+      "peorCiega": -109,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/xiangqi-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        -41.5,
+        -34,
+        -43.5,
+        -48,
+        -1029,
+        -47,
+        -32
+      ],
+      "mejorCiega": -32,
+      "peorCiega": -1029,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    }
+  ]
+}

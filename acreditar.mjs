@@ -43,40 +43,25 @@ import { readFileSync } from 'node:fs';
 import { cargarReglas, JUEGOS } from './public/arcade/js/protohub/rules/index.js';
 import { puntuacionDe } from './public/arcade/js/protohub/Verificador.js';
 
-/** Las MISMAS siete de `prueba_senal.mjs`. No se inventa un suelo nuevo. */
-function politicasCiegas() {
-    const lista = [
-        { nombre: 'ciclo', elegir: (v, i) => v[i % v.length] },
-        { nombre: 'primera', elegir: (v) => v[0] },
-        { nombre: 'ultima', elegir: (v) => v[v.length - 1] },
-    ];
-    for (const s of [1, 7, 42]) {
-        let x = s >>> 0;
-        const r = () => {
-            x ^= x << 13; x >>>= 0; x ^= x >> 17; x ^= x << 5; x >>>= 0;
-            return x / 4294967296;
-        };
-        lista.push({ nombre: `azar${s}`, elegir: (v) => v[Math.floor(r() * v.length) % v.length] });
-    }
-    const memoria = new Map();
-    lista.push({
-        nombre: 'bandido',
-        elegir: (v) => {
-            let mejor = v[0], mejorNota = -Infinity;
-            for (const o of v) {
-                const m = memoria.get(o);
-                const nota = m ? m.suma / m.n : 0.001;
-                if (nota > mejorNota) { mejorNota = nota; mejor = o; }
-            }
-            return mejor;
-        },
-        aprender: (o, premio) => {
-            const m = memoria.get(o) ?? { suma: 0, n: 0 };
-            m.suma += premio; m.n++; memoria.set(o, m);
-        },
-    });
-    return lista;
-}
+/**
+ * ⚠️ EL SUELO SE IMPORTA, Y AQUÍ HUBO UN FALLO MÍO QUE DURÓ UNA TARDE.
+ *
+ * La primera versión de este fichero llevaba las siete políticas COPIADAS, con
+ * el comentario «las MISMAS siete de prueba_senal.mjs, no se inventa un suelo
+ * nuevo». Era falso mientras lo escribía:
+ *
+ *     prueba_senal   semillas [1, 7, 99]   bandido con exploración ε=0.15
+ *     esta copia     semillas [1, 7, 42]   bandido SIN exploración
+ *
+ * O sea que un recibo se juzgaba contra una vara distinta de la que publica el
+ * banco, y las dos habrían dicho «superó a las siete políticas ciegas»
+ * significando cosas distintas. La misma avería que estaba auditando ese día en
+ * el parser del organismo, cometida por mí en la misma tarde.
+ *
+ * Ahora hay una sola, en `suelo.js`, y es la de `prueba_senal` — la que tiene
+ * trinquete y la que produjo el «46 de 49».
+ */
+import { politicasCiegas } from './public/js/alisa-engine/src/gym/suelo.js';
 
 /**
  * Re-simula una partida enviada. Mismo mecanismo que `/api/gym`: sin estado, se
