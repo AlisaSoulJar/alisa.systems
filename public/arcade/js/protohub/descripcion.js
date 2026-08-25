@@ -477,9 +477,93 @@ export function describirSustrato(sus) {
     if (!sus) return '';
     const t = [];
 
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  ⚠️ UN MUNDO SIN CASILLAS TAMBIÉN TIENE QUE PODER CONTARSE
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Esta función sabía dibujar rejillas, zonas y asientos, que es lo que hay
+     * en un juego de tablero. Medido el 25-08 sobre los nueve mundos del banco:
+     * **seis no publican rejilla —un cubo, una esfera, un acuario, una arena— y
+     * salían con CERO líneas de texto.**
+     *
+     * Y eso no es una limitación: es la misma avería que este fichero cuenta
+     * arriba con mancala. Un mundo que no se puede contar en texto no lo puede
+     * jugar un modelo de lenguaje, y su mala nota hablaría de la puerta y no de
+     * él.
+     *
+     * Un mundo continuo se cuenta en coordenadas: dónde está cada cosa. No es un
+     * mapa bonito, pero es completo — y completo es el requisito.
+     */
+    if (!sus.rejilla && (sus.piezas?.length ?? 0) > 0) {
+        const simbolos = sus.simbolos ?? {};
+        const leyenda = sus.leyenda ?? {};
+        const porTipo = new Map();
+        for (const p of sus.piezas) {
+            if (!porTipo.has(p.t)) porTipo.set(p.t, []);
+            porTipo.get(p.t).push(p);
+        }
+        const num = (v) => (v === undefined ? null : Math.round(v * 10) / 10);
+        const donde = (p) => p.alto === undefined
+            ? `(${num(p.x)}, ${num(p.y)})`
+            : `(${num(p.x)}, ${num(p.y)}, alto ${num(p.alto)})`;
+
+        if (sus.limite) {
+            t.push(sus.limite.forma === 'circulo'
+                ? `El mundo es un círculo de radio ${sus.limite.radio}`
+                : sus.limite.forma === 'caja'
+                ? `El mundo es una caja de ${sus.limite.ancho}×${sus.limite.largo}, `
+                  + `${sus.limite.alto} de alto`
+                : `El mundo mide ${sus.limite.ancho}×${sus.limite.alto}`);
+        }
+        for (const [tipo, lista] of porTipo) {
+            const nombre = leyenda[tipo] ?? tipo;
+            const glifo = simbolos[tipo] ? ` (${simbolos[tipo]})` : '';
+            /**
+             * Cuando hay muchos iguales se agrupan: veinticinco peces uno por uno
+             * son tres párrafos que nadie lee, ni persona ni modelo. Hasta ocho se
+             * enumeran; a partir de ahí se dice cuántos y dónde está el más cerca
+             * del centro, que es lo accionable.
+             */
+            /**
+             * Sin punto final: quien une las partes ya pone `. ` entre ellas, y
+             * añadirlo aquí daba frases terminadas en `..` — que es la clase de
+             * detalle que hace que un texto parezca generado por una máquina que
+             * no se relee.
+             */
+            if (lista.length <= 8) {
+                t.push(`${nombre}${glifo}: ${lista.map(donde).join(', ')}`);
+            } else {
+                const cerca = lista.slice().sort((a, b) =>
+                    Math.hypot(a.x, a.y) - Math.hypot(b.x, b.y))[0];
+                t.push(`${lista.length} × ${nombre}${glifo}, el más céntrico en ${donde(cerca)}`);
+            }
+        }
+    }
+
     if (sus.rejilla) {
         const { ancho, alto, celdas, niebla, sinVista } = sus.rejilla;
-        const SUELO = { 0: '.', 1: '#', 2: 'o' };   // vacío · muro · destino
+        /**
+         * ⚠️ EL TERRENO PUEDE TENER MÁS DE TRES COSAS, Y HASTA HOY NO PODÍA DECIRLO.
+         *
+         * `{0:'.', 1:'#', 2:'o'}` —vacío, muro, destino— era todo el vocabulario
+         * que un mapa podía usar, escrito a fuego aquí. Bastaba mientras sólo
+         * había juegos de arcade.
+         *
+         * Los MUNDOS llegaron con más: ¡Defiende! usa `1=camino, 2=núcleo,
+         * 3=entrada, 4=torreta`. Medido el 25-08 al pasarle su sustrato a esta
+         * función: el sendero salía como muros, el núcleo como «destino» y la
+         * entrada como un `3` suelto en medio del mapa. La leyenda decía «# muro»
+         * y debajo listaba mis nombres — dos vocabularios en la misma línea.
+         *
+         * Y eso no es feo: es FALSO. Un modelo leyendo ese mapa cree que hay
+         * muros donde hay un camino por el que le vienen los bichos.
+         *
+         * `terreno` es opcional, como lo fue `niebla` cuando llegó el primer
+         * juego con observabilidad parcial. Los veinticuatro de antes no lo traen
+         * y siguen exactamente igual.
+         */
+        const SUELO = sus.terreno ?? { 0: '.', 1: '#', 2: 'o' };   // vacío · muro · destino
         const mapa = Array.from({ length: alto }, (_, y) =>
             Array.from({ length: ancho }, (_, x) => {
                 /**
@@ -528,7 +612,19 @@ export function describirSustrato(sus) {
         }
         const clave = Object.entries(sus.leyenda ?? {})
             .map(([k, v]) => `${simbolos[k] ?? String(k)[0].toUpperCase()}=${v}`).join(', ');
-        t.push(`Mapa (# muro, o destino, . libre${niebla ? ', ? sin explorar' : ''}`
+        /**
+         * ⚠️ Y LA LEYENDA TIENE QUE DESCRIBIR EL MAPA QUE HAY, NO EL DE SIEMPRE.
+         *
+         * Decía «# muro, o destino, . libre» pasara lo que pasara. Con un mundo
+         * que declara su propio terreno, eso son dos vocabularios pegados y el
+         * primero es mentira. Cuando el juego declara `terreno`, la leyenda sale
+         * de sus nombres; si no, se queda la de toda la vida.
+         */
+        const claveTerreno = sus.terreno
+            ? Object.entries(sus.terreno)
+                .map(([v, s]) => `${s}=${sus.leyendaTerreno?.[v] ?? `celda ${v}`}`).join(', ')
+            : '# muro, o destino, . libre';
+        t.push(`Mapa (${claveTerreno}${niebla ? ', ? sin explorar' : ''}`
              + `${sinVista ? ', , fuera de tu vista' : ''}`
              + `${clave ? `, ${clave}` : ''}):\n`
              + mapa.map(f => f.join('')).join('\n'));

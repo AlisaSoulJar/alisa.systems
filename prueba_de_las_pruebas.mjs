@@ -639,6 +639,23 @@ const SABOTAJES = [
         vigila: 'que una pieza que desaparece del estado deje de verse en la mesa',
     },
     {
+        /**
+         * El fallo REAL que había hasta el 25-08: el vocabulario del terreno
+         * estaba escrito a fuego —0 vacío, 1 muro, 2 destino— porque sólo lo
+         * usaban juegos de tablero. ¡Defiende! usa 1=sendero y 2=núcleo, así que
+         * su mapa de texto decía que había MUROS por donde vienen los bichos.
+         *
+         * Un mapa que miente es peor que ninguno: el modelo decide contra un
+         * terreno que no existe y su mala nota habla de la puerta, no de él.
+         */
+        nombre: 'texto',
+        corre: 'node --import ./resolver_three.mjs prueba_texto.mjs',
+        fichero: 'public/arcade/js/protohub/descripcion.js',
+        de: "const SUELO = sus.terreno ?? { 0: '.', 1: '#', 2: 'o' };",
+        a: "const SUELO = { 0: '.', 1: '#', 2: 'o' };",
+        vigila: 'que el mapa de texto use el vocabulario que el mundo declara, no otro',
+    },
+    {
         nombre: 'senal',
         corre: 'node prueba_senal.mjs',
         fichero: 'public/js/alisa-engine/src/gym/ProtoHubEnv.js',

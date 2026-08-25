@@ -480,13 +480,40 @@ export class DefiendeSystem {
             rejilla: { ancho: L, alto: L, celdas },
             piezas,
             zonas: [],
+            /**
+             * ⚠️ QUÉ SIGNIFICA CADA VALOR DE CELDA. SIN ESTO, EL MAPA MIENTE.
+             *
+             * `describirSustrato` traía el vocabulario del arcade escrito a fuego
+             * —`0` vacío, `1` muro, `2` destino— porque hasta ahora sólo lo usaban
+             * juegos de tablero. Aquí `1` es el SENDERO y `2` el núcleo, así que
+             * el mapa de texto salía diciendo que había muros por donde vienen los
+             * bichos, y la entrada aparecía como un `3` suelto.
+             *
+             * No es un defecto de presentación: un modelo que lea ese mapa toma
+             * decisiones contra un terreno que no existe.
+             */
+            terreno: { [CELDA.LIBRE]: '.', [CELDA.CAMINO]: '·', [CELDA.NUCLEO]: '#',
+                       [CELDA.ENTRADA]: 'o', [CELDA.TORRETA]: 'T' },
+            leyendaTerreno: { [CELDA.LIBRE]: 'libre, aquí se puede construir',
+                              [CELDA.CAMINO]: 'el sendero por donde vienen',
+                              [CELDA.NUCLEO]: 'tu núcleo', [CELDA.ENTRADA]: 'por donde entran',
+                              [CELDA.TORRETA]: 'una torreta puesta' },
+            /**
+             * ⚠️ AQUÍ SÓLO VA LO QUE SE MUEVE O SE PONE ENCIMA, NO EL TERRENO.
+             *
+             * Tenía `camino`, `nucleo` y `entrada` también aquí, y el mapa de
+             * texto salía con la leyenda repetida: primero como terreno y otra vez
+             * como pieza. Un vocabulario que se dice dos veces invita a creer que
+             * son dos cosas distintas.
+             *
+             * El terreno se declara en `terreno`/`leyendaTerreno`; `piezas` son las
+             * torretas y los bichos, que es lo único que ocupa una celda encima.
+             */
             leyenda: {
-                camino: 'el sendero', nucleo: 'tu núcleo', entrada: 'por donde entran',
                 guijarro: 'torreta corta', pertiga: 'torreta larga', yunque: 'torreta lenta y fuerte',
                 peon: 'bicho normal', rapido: 'bicho veloz', gordo: 'bicho duro',
             },
             simbolos: {
-                camino: '·', nucleo: '#', entrada: 'o',
                 guijarro: 'g', pertiga: 'p', yunque: 'y',
                 peon: 'a', rapido: 'r', gordo: 'G',
             },
