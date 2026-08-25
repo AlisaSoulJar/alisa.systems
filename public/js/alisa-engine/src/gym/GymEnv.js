@@ -16,7 +16,7 @@
  * marcados ABSTRACTO. Lo demás te lo da el contrato.
  */
 import { DeterministicScope } from '../world/core/DeterministicScope.js';
-import { tripleta, escribir } from './Gramatica.js';
+import { tripleta, escribir, leer, nombreDe } from './Gramatica.js';
 
 export class GymEnv {
     /** Identificador estable, estilo gym: 'alisa/Pedrisco-v0' */
@@ -92,6 +92,62 @@ export class GymEnv {
         const r = this.step(action, dt);
         if (this.recorder) this.recorder.record({ verb, args, reward: r.reward, t: this.t });
         return r;
+    }
+
+    /**
+     * ─── LA INTENCIÓN COMO TEXTO: JUGAR ESCRIBIENDO UN ÁTOMO ─────────
+     *
+     *     env.stepAtomo('@Defiende #construir |guijarro,3,4')
+     *
+     * ⚠️ ESTO ES LO QUE FALTABA, Y NO ERA SINTAXIS.
+     *
+     * La primera versión de la tripleta sólo la DESCRIBÍA: `verbos()` la emitía
+     * y `stepVerb()` seguía siendo lo único que ejecutaba. O sea que el átomo
+     * era adorno — dos caminos que hoy coinciden y mañana no, que es la avería
+     * que este proyecto lleva toda la semana pagando.
+     *
+     * En AIO —Agent Intention Ontology— el átomo NO es la firma de una llamada:
+     * es una intención declarada, separada de su ejecución para poder ser vista,
+     * atribuida y auditada. Lo dice el curso de la colonia: se sustituye «la
+     * ejecución imperativa por terminal» por una intención que el anillo vital
+     * puede ver, que se ejecuta bajo la identidad real de quien la emite, y que
+     * deja recibo.
+     *
+     * El banco ya tenía la mitad de eso —recibos verificables, identidad de
+     * quien jugó, repetición con la misma semilla— y le faltaba justo la puerta:
+     * que la intención escrita fuera lo que juega.
+     *
+     * ⚠️ Y EL OBJETO SE COMPRUEBA, QUE ES LA PARTE DE IDENTIDAD.
+     *
+     * Un átomo dirigido a otro mundo se rechaza en vez de ejecutarse a ciegas.
+     * Sin eso, `@Chess #jugar |a2a3` movería una torreta en ¡Defiende! porque el
+     * método casa — y el error saldría como una jugada legal, que es la peor
+     * forma de equivocarse: en verde.
+     */
+    stepAtomo(texto, dt = 1 / 60) {
+        const at = leer(texto);
+        if (!at) {
+            return { obs: this.getObservation(), reward: 0, done: this.done,
+                     info: { error: `no es un átomo: ${texto}` } };
+        }
+        const mio = nombreDe(this.constructor.id);
+        if (at.objeto.toLowerCase() !== mio.toLowerCase()) {
+            return { obs: this.getObservation(), reward: 0, done: this.done,
+                     info: { error: `@${at.objeto} no es este mundo: aquí es @${mio}` } };
+        }
+        /**
+         * Se busca entre lo que HOY es legal, no en un catálogo. Es la misma
+         * regla de oro del arcade —«no se manda nada que no esté en
+         * `legal_moves`»— y por eso se compara contra `verbos()`.
+         */
+        const clave = (a) => `${a.metodo}|${(a.params ?? []).join(',')}`;
+        const buscado = `${at.metodo}|${at.params.join(',')}`;
+        const legal = this.verbos().find(a => clave(a) === buscado);
+        if (!legal) {
+            return { obs: this.getObservation(), reward: 0, done: this.done,
+                     info: { error: `intención no disponible ahora: ${texto}` } };
+        }
+        return this.stepVerb(legal.verb, legal.args ?? {}, dt);
     }
 
     // ─── PUNTUACIÓN COMPARABLE ───────────────────────────────────

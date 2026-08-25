@@ -146,6 +146,74 @@ if (conSeparador.length) {
     }
 }
 
+/**
+ * ⚠️ LA INTENCIÓN ESCRITA TIENE QUE JUGAR, NO SÓLO DESCRIBIR.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Es la diferencia entre haber adoptado la sintaxis y haber adoptado AIO. La
+ * primera versión de esto emitía la tripleta y seguía ejecutando por `stepVerb`:
+ * el átomo era adorno, y un adorno que hoy coincide con la ejecución y mañana
+ * no. Exactamente la avería que el banco lleva toda la semana pagando.
+ *
+ * Aquí se juega la MISMA jugada por los dos caminos, en dos mundos idénticos con
+ * la misma semilla, y tienen que dar el mismo resultado. Si divergen, hay dos
+ * juegos otra vez — uno para quien escribe la intención y otro para quien llama
+ * al método.
+ */
+{
+    let comprobados = 0, divergencias = 0;
+    for (const e of CATALOGO) {
+        let A, B;
+        try {
+            const C = await e.cargar();
+            A = new C(); A.reset(7);
+            B = new C(); B.reset(7);
+        } catch { continue; }
+
+        let menu = [];
+        try { menu = A.verbos?.() ?? []; } catch { continue; }
+        if (!menu.length) continue;
+
+        // La primera acción del menú, jugada de las dos maneras.
+        const a = menu[0];
+        let porVerbo, porAtomo;
+        try {
+            porVerbo = B.stepVerb(a.verb, a.args ?? {});
+            porAtomo = A.stepAtomo(a.atomo);
+        } catch { continue; }
+        comprobados++;
+
+        if (porAtomo?.info?.error) {
+            mal(`${e.id}: el átomo «${a.atomo}» no se puede jugar — ${porAtomo.info.error}`);
+            divergencias++;
+        } else if (porAtomo.reward !== porVerbo.reward || porAtomo.done !== porVerbo.done) {
+            mal(`${e.id}: «${a.atomo}» da ${porAtomo.reward}/${porAtomo.done} y el verbo `
+              + `${porVerbo.reward}/${porVerbo.done} — dos juegos con el mismo nombre`);
+            divergencias++;
+        }
+    }
+    if (!divergencias) {
+        console.log(`  ✓ en ${comprobados} mundos, escribir la intención juega igual que llamar al método`);
+    }
+}
+
+/**
+ * ⚠️ Y UN ÁTOMO DIRIGIDO A OTRO MUNDO SE RECHAZA.
+ *
+ * Es la parte de identidad, y sin ella el error saldría EN VERDE: `@Chess
+ * #jugar |a2a3` movería una torreta en ¡Defiende! porque el método casa. Una
+ * jugada legal que no era la que se pidió es la peor forma de equivocarse.
+ */
+{
+    const e = CATALOGO.find(x => x.id === 'alisa/Defiende-v0');
+    const C = await e.cargar();
+    const env = new C();
+    env.reset(7);
+    const ajeno = env.stepAtomo('@Chess #esperar');
+    if (!ajeno?.info?.error) mal('un átomo dirigido a @Chess se ejecutó en ¡Defiende!');
+    else console.log(`  ✓ un átomo de otro mundo se rechaza: ${ajeno.info.error}`);
+}
+
 console.log(`\n  ejemplo: ${escribir({ objeto: 'Chess', metodo: 'jugar', params: ['a2a3'] })}`);
 console.log('');
 if (fallos) { console.log(`  ✗ ${fallos} fallo(s) en la gramática\n`); process.exit(1); }

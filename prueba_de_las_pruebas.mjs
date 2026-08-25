@@ -708,6 +708,24 @@ const SABOTAJES = [
          * escondidos, que es la avería que la ley AIO-I evita teniendo las tres
          * partes separadas.
          */
+        /**
+         * El fallo que sale EN VERDE, que son los peores: ejecutar un átomo sin
+         * comprobar a qué mundo va dirigido. `@Chess #jugar |a2a3` movería una
+         * torreta en ¡Defiende! porque el método casa, y el resultado sería una
+         * jugada perfectamente legal — sólo que no la que se pidió.
+         *
+         * Es la parte de identidad de AIO: allí un decreto se ejecuta «bajo la
+         * identidad real del emisor», y aquí una intención sólo vale en el mundo
+         * al que va dirigida.
+         */
+        nombre: 'atomo-identidad',
+        corre: 'node --import ./resolver_three.mjs prueba_gramatica.mjs',
+        fichero: 'public/js/alisa-engine/src/gym/GymEnv.js',
+        de: 'if (at.objeto.toLowerCase() !== mio.toLowerCase()) {',
+        a: 'if (false) {',
+        vigila: 'que una intención sólo se ejecute en el mundo al que va dirigida',
+    },
+    {
         nombre: 'gramatica',
         corre: 'node --import ./resolver_three.mjs prueba_gramatica.mjs',
         fichero: 'public/js/alisa-engine/src/gym/Gramatica.js',
