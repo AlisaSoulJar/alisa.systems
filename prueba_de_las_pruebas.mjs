@@ -625,6 +625,20 @@ const SABOTAJES = [
         vigila: 'que del sustrato salga un vector que de verdad lleve el juego dentro',
     },
     {
+        /**
+         * El fallo clásico de un dibujante que reusa mallas: dejar de pintar una
+         * pieza que ha desaparecido y que la malla se quede donde estaba. En
+         * pantalla se ve un bicho muerto que sigue ahí, y quien juega decide
+         * contra un fantasma. No da ningún error.
+         */
+        nombre: 'mesa-mundo',
+        corre: 'node --import ./resolver_three.mjs prueba_mesa_mundo.mjs',
+        fichero: 'public/js/mesa_mundo.mjs',
+        de: 'for (const [clave, m] of this._piezas) if (!vivas.has(clave)) m.visible = false;',
+        a: 'for (const [clave, m] of this._piezas) if (!vivas.has(clave)) { /* fantasma */ }',
+        vigila: 'que una pieza que desaparece del estado deje de verse en la mesa',
+    },
+    {
         nombre: 'senal',
         corre: 'node prueba_senal.mjs',
         fichero: 'public/js/alisa-engine/src/gym/ProtoHubEnv.js',
