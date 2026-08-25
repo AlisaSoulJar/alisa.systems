@@ -41,6 +41,7 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 import { GymEnv } from './GymEnv.js';
+import { partir } from './Gramatica.js';
 // La normalización de puntos vive donde vive la verificación. Si el entorno y
 // el verificador contaran los puntos de forma distinta, el recibo de una
 // partida legítima no cuadraría — y eso pasó de verdad, ver `_puntosDe`.
@@ -414,17 +415,49 @@ export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
             return describirEstado(juego, { objetivo: reglas.OBJETIVO, ...this._estado() });
         }
 
+        /**
+         * ⚠️ EL VERBO SE SIGUE ENTREGANDO CRUDO, Y LA TRIPLETA SE DECLARA APARTE.
+         *
+         * `verb` es la jugada tal como la declara el juego, y así tiene que
+         * seguir: es lo que `actFromVerb` compara y lo que el verificador escribe
+         * en el recibo. Tocarlo cambiaría el juego conservando el nombre.
+         *
+         * Lo que se añade es dónde acaba el método, que aquí SÍ se sabe:
+         *
+         *   `enviar a`  → #enviar |a     ← 68 de éstos en defensa, con `args:{}`
+         *   `jugar:P_5` → #jugar  |P_5      mintiendo: el parámetro existía, sólo
+         *   `pasar`     → #pasar            que estaba metido en la cadena
+         *   `a2a3`      → #jugar  |a2a3  ← una jugada sin verbo ES jugar
+         *
+         * Ese último caso es el que unifica de verdad las seis gramáticas del
+         * banco: `a2a3`, `D_7` y `0` no son métodos distintos, son el MISMO
+         * método con parámetros distintos. Un modelo que aprende `#jugar` juega
+         * al ajedrez, al go y a las cartas; uno que aprende `a2a3` aprende una
+         * ficha suelta que no le sirve para nada más.
+         */
         affordances() {
             this._asegurarPartida();
             const e = this._estado();
             // Aquí no hay traducción que hacer: lo que el juego declara legal es
             // exactamente lo que se puede pedir.
-            return (e.legal_moves ?? []).map(j => ({
-                verb: String(j),
-                args: {},
-                label: String(j),
-                action: j,
-            }));
+            return (e.legal_moves ?? []).map(j => {
+                const crudo = String(j);
+                const { metodo, params } = partir(crudo);
+                /**
+                 * Si lo que queda como «método» no es una palabra —`a2a3`, `D_7`,
+                 * `0`—, entonces el juego no nombró ningún verbo: nombró una
+                 * jugada. El método es `jugar` y eso es el parámetro.
+                 */
+                const esPalabra = /^[a-záéíóúñ][a-záéíóúñ_]*$/i.test(metodo);
+                return {
+                    verb: crudo,
+                    args: {},
+                    label: crudo,
+                    action: j,
+                    metodo: esPalabra ? metodo : 'jugar',
+                    params: esPalabra ? params : [crudo],
+                };
+            });
         }
 
         getScore() {

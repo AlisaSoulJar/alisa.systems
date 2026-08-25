@@ -256,6 +256,19 @@ export class DefiendeEnv extends GymEnv {
                 const idx = TORRETAS.indexOf(t) * L * L + (c.z * L + c.x);
                 lista.push({
                     verb: `construir_${t.id}`, args: { x: c.x, z: c.z }, action: idx + 1,
+                    /**
+                     * ⚠️ AQUÍ EL MUNDO SÍ SABE DÓNDE ACABA SU MÉTODO, Y LO DICE.
+                     *
+                     * `construir_guijarro` parece partible por el guión bajo, pero
+                     * `ir_a_planta` —del edificio— es UN método entero. Nadie puede
+                     * distinguirlos desde fuera, así que quien lo sabe lo declara y
+                     * la gramática no adivina. Adivinar es lo que produjo las seis.
+                     *
+                     * Y con las tres partes separadas, un modelo aprende `#construir`
+                     * UNA vez y lo aplica a las tres torretas, en vez de tres fichas
+                     * sueltas que no se parecen entre sí.
+                     */
+                    metodo: 'construir', params: [t.id, c.x, c.z],
                     desc: `${t.nombre} en (${c.x}, ${c.z}) — cuesta ${t.coste}, `
                         + `alcance ${t.alcance}, ${t.dmg} de daño cada ${t.cadencia}s`,
                 });

@@ -16,6 +16,7 @@
  * marcados ABSTRACTO. Lo demás te lo da el contrato.
  */
 import { DeterministicScope } from '../world/core/DeterministicScope.js';
+import { tripleta, escribir } from './Gramatica.js';
 
 export class GymEnv {
     /** Identificador estable, estilo gym: 'alisa/Pedrisco-v0' */
@@ -47,6 +48,34 @@ export class GymEnv {
     describe() { throw new Error('GymEnv.describe() no implementado'); }
     /** @abstract Verbos disponibles AHORA: [{verb, args, label}] (capa SCUMM). */
     affordances() { throw new Error('GymEnv.affordances() no implementado'); }
+
+    /**
+     * ─── LA TRIPLETA: `@objeto #metodo |parametros` ──────────────────
+     *
+     * Lo mismo que `affordances()`, dicho en el idioma del organismo entero.
+     * Ver `Gramatica.js`: es la ley AIO-I del proyecto general, que allí lleva
+     * 802 usos en 267 ficheros y que aquí no se hablaba.
+     *
+     * ⚠️ NO SUSTITUYE A `affordances()`, LA ACOMPAÑA — Y ES A PROPÓSITO.
+     *
+     * El banco mide desde hace semanas con `{verb, args}`, y las huellas de
+     * comportamiento están selladas contra eso. Cambiar el menú por debajo sería
+     * cambiar el juego conservando el nombre, que es la avería que este proyecto
+     * lleva toda la semana pagando. Así que la tripleta se AÑADE: mismo menú,
+     * dos idiomas, y las notas publicadas siguen siendo comparables.
+     *
+     * Cada entrada gana `objeto`, `metodo`, `params` y `atomo`. Un mundo que
+     * sepa dónde acaba su método puede declararlo en `affordances()` —
+     * `{metodo: 'construir', params: ['guijarro', 3, 4]}`— y si no lo dice, el
+     * verbo entero es el método. Aquí nadie adivina.
+     */
+    verbos() {
+        const objeto = this.constructor.id;
+        return this.affordances().map(a => {
+            const t = tripleta(objeto, a);
+            return { ...a, ...t, atomo: escribir(t) };
+        });
+    }
 
     // ─── PUERTA DE LENGUAJE: verbo → acción numérica ─────────────
     /** Traduce un verbo de affordances() a la acción nativa. Sobrescribible. */

@@ -698,6 +698,24 @@ const SABOTAJES = [
          * La tripleta es la misma con la que hablan los Seres del proyecto:
          * `@Objeto #metodo |parametro`. Aquí, `#pintar |sustrato` y nada más.
          */
+        /**
+         * El fallo REAL, y estaba puesto hasta el 25-08: `defensa-protohub`
+         * ofrecía 68 acciones con el verbo `enviar a`, `enviar b`… y `args: {}`.
+         * Un método y 68 objetivos, con el parámetro metido dentro de la cadena
+         * donde nadie podía leerlo, y los `args` mintiendo.
+         *
+         * El sabotaje devuelve el método sin partir: vuelve a haber parámetros
+         * escondidos, que es la avería que la ley AIO-I evita teniendo las tres
+         * partes separadas.
+         */
+        nombre: 'gramatica',
+        corre: 'node --import ./resolver_three.mjs prueba_gramatica.mjs',
+        fichero: 'public/js/alisa-engine/src/gym/Gramatica.js',
+        de: '    const espacio = v.search(/\\s/);',
+        a: '    const espacio = -1;',
+        vigila: 'que ningún método esconda un parámetro dentro',
+    },
+    {
         nombre: 'pintores-hablan-igual',
         corre: 'node --import ./resolver_three.mjs prueba_pintor_matriz.mjs',
         fichero: 'public/js/pintor_matriz.mjs',
