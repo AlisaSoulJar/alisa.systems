@@ -59,6 +59,50 @@ export const EN_EL_BANCO = [
     { saga: 'Defiende', etapa: 1, nombre: 'Sendero',
       pagina: 'public/games/defiende_sendero.html',
       env: 'public/js/alisa-engine/src/gym/envs/DefiendeEnv.js' },
+
+    /**
+     * ⚠️ MARABUNTA ENTRA EN ¡SOBREVIVE!, Y NO ES POR HUECO LIBRE.
+     *
+     * `docs/ESTADO_SAGAS.md` define la saga como «no ser lo que se comen», y dice
+     * que «le faltan etapas por delante y por detrás». Una marabunta es
+     * literalmente el enjambre que devora: eres la presa de una horda que se
+     * cierra. Encaja en la definición que ya estaba escrita, no en una que yo
+     * necesite para colocarla.
+     *
+     * Va de 3 porque es la más dura de las tres: las dos primeras son ecosistemas
+     * donde se prototipa comer y ser comido; ésta tiene oleadas, jefes y mejoras.
+     */
+    { saga: 'Sobrevive', etapa: 3, nombre: 'Marabunta',
+      pagina: 'public/labs/croupier_marabunta.html',
+      env: 'public/js/alisa-engine/src/gym/envs/MarabuntaEnv.js' },
+
+    /**
+     * ⚠️ PEDRISCO IBA A ABRIR ¡ESQUIVA! Y NO ENTRA TODAVÍA. LO PARÓ LA PRUEBA.
+     *
+     * El nombre estaba bien elegido y no por sonoridad: sus propios verbos son
+     * `esquivar_izquierda`, `esquivar_derecha`, `subir`, `bajar`, `centrar`,
+     * `mantener`, `disparar`. El juego ya se había puesto el nombre. Y no es
+     * ¡Sobrevive! porque ahí no te come nadie: cae granizo y te apartas.
+     *
+     * Pero al meterlo, `prueba_sagas.mjs` lo tumbó:
+     *
+     *     página  croupier_asteroids_survival.html  ->  AsteroidsEngine
+     *     banco   AsteroidsEnv.js                   ->  AsteroidsSystem
+     *
+     * Dos motores. O sea: exactamente el caso que yo mismo había rechazado una
+     * hora antes para Chopper —«sería poner a un beta delante de un juego que el
+     * banco no mide»— y estaba a punto de colarlo por la puerta grande. Mi
+     * evaluación previa fue superficial: comprobé que la página importaba UN
+     * motor del engine, no que fuera EL MISMO.
+     *
+     * No se declara como deuda para que la prueba calle: declarar sería subir la
+     * deuda, y el trinquete existe justo para que no suba. Entra el día que una
+     * de las dos puertas se mueva a la otra.
+     *
+     * Se deja escrito porque la decisión importa más que el resultado: la puerta
+     * de los betas no es un escaparate de lo que hay, es una promesa de que lo
+     * que se juega es lo que se mide.
+     */
 ];
 
 /**

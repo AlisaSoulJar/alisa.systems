@@ -15,16 +15,16 @@ contrario. El problema no era que no estuviera escrito: era que no había índic
 Volver a decidir sale barato en el momento y carísimo a la semana, porque la
 segunda decisión casi nunca coincide con la primera y entonces hay dos verdades.
 
-**2229 decisiones** en 360 ficheros.
+**2235 decisiones** en 363 ficheros.
 
 ## Índice
 
-- [Herramientas de medida](#herramientas-de-medida) — 438
+- [Herramientas de medida](#herramientas-de-medida) — 440
 - [Reglas de los juegos](#reglas-de-los-juegos) — 362
 - [Las mesas y los visualizadores](#las-mesas-y-los-visualizadores) — 312
-- [Las comprobaciones](#las-comprobaciones) — 289
+- [Las comprobaciones](#las-comprobaciones) — 290
 - [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 208
-- [Otros](#otros) — 187
+- [Otros](#otros) — 190
 - [El motor](#el-motor) — 108
 - [El gym y los entornos](#el-gym-y-los-entornos) — 88
 - [Las páginas de los juegos](#las-páginas-de-los-juegos) — 81
@@ -467,10 +467,12 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 
 ### `gen_sagas.mjs`
 
-- **POR QUÉ SE GENERA Y NO SE ESCRIBE.** <sub>línea 6</sub>
-  <br><sub>Es la misma razón que `gen_paginas.mjs` deja escrita, y no la voy a repetir mejor de lo que está: este proyecto ha tenido **cinco listas paralelas** —los juegos del README, el escaparate, el catálogo del gym, las barajas, las</sub>
-- **DE DÓNDE SALE: DEL TÍTULO, QUE YA LO DICE.** <sub>línea 15</sub>
-  <br><sub>Las páginas se titulan `ALISA — ¡Busca! 4 — City Sector`. Ahí está todo: la saga, el número de etapa y el nombre. No hace falta un fichero de metadatos nuevo que alguien tenga que acordarse de actualizar — hace falta leer lo que ya</sub>
+- **LA PRIMERA VERSIÓN DE ESTE FICHERO ERA EL FALLO QUE DENUNCIA.** <sub>línea 6</sub>
+  <br><sub>Nació parseando el `<title>` de las páginas de `public/games`, para no escribir una lista a mano. La intención era la correcta y el resultado fue una LISTA PARALELA: el mapa de etapas ya existía dentro de `prueba_sagas.mjs`, y como</sub>
+- **¡${r.saga}! ${r.etapa}: la página no existe — ${r.pagina}`);** <sub>línea 76</sub>
+  <br><sub>const mudas = etapas.filter(e => e.existe && !e.avisa);</sub>
+- **¡${m.saga}! ${m.etapa}: sin botón de aviso`);** <sub>línea 78</sub>
+  <br><sub>console.log(`\n  ✎ ${SALIDA}\n`);</sub>
 
 ### `inventario_piezas.py`
 
@@ -887,6 +889,11 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 
 - **NO SE COPIA `three`: SE APUNTA AL QUE YA ESTÁ EN `public/vendor/`.** <sub>línea 16</sub>
   <br><sub>Es el MISMO fichero que carga el navegador. Si se instalara `three` de npm para esto, Node y el navegador podrían estar ejecutando versiones distintas y la prueba dejaría de decir nada sobre lo que ve un usuario.</sub>
+
+### `sagas.mjs`
+
+- **POR QUÉ EXISTE ESTE FICHERO, Y ES UN FALLO MÍO DEL 25-08.** <sub>línea 8</sub>
+  <br><sub>Este mapa YA existía, dentro de `prueba_sagas.mjs`, como constantes locales `EN_EL_BANCO` y `SIN_ENTORNO`. Y yo, para montar la puerta de los betas, escribí `gen_sagas.mjs` **parseando el <title> de las páginas** — o sea, me</sub>
 
 ### `salas.mjs`
 
@@ -3155,21 +3162,23 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 
 - **Y `RaccoonSpaceSystem` SE LLAMA A SÍ MISMO «headless» EN SU PRIMERA LÍNEA** <sub>línea 33</sub>
   <br><sub>mientras importa THREE y usa `THREE.Vector3`. El comentario dice lo contrario que el código, que es la forma más cara de documentar algo.</sub>
-- **TRINQUETE. Las etapas que HOY corren código distinto según quién juegue.** <sub>línea 68</sub>
+- **EL MAPA YA NO VIVE AQUÍ: SE IMPORTA.** <sub>línea 52</sub>
+  <br><sub>Estaba escrito en este fichero como constante local. Ese día, al montar la antesala de los betas, escribí `gen_sagas.mjs` parseando el `<title>` de las páginas — porque la lista buena estaba AQUÍ DENTRO y no se podía importar.</sub>
+- **TRINQUETE. Las etapas que HOY corren código distinto según quién juegue.** <sub>línea 75</sub>
   <br><sub>**Sólo puede encoger.** Si aparece una nueva, es que alguien ha escrito un segundo motor para una etapa y la comparación de esa etapa dejó de valer.</sub>
-- **`¡Busca! 1 Cabinet` TAMBIÉN SE HA IDO.** <sub>línea 74</sub>
+- **`¡Busca! 1 Cabinet` TAMBIÉN SE HA IDO.** <sub>línea 81</sub>
   <br><sub>Entró como «persona CabinetEscapeGame (59 KB, con THREE) · banco ScummInteractionEngine». Y aquí ganó el motor de la PERSONA, no el del banco: `CabinetEscapeSystem` (11 KB) es headless, va sembrado y tiene el</sub>
-- **`¡Busca! 6 Espacio` ESTUVO AQUÍ Y SE HA IDO.** <sub>línea 88</sub>
+- **`¡Busca! 6 Espacio` ESTUVO AQUÍ Y SE HA IDO.** <sub>línea 95</sub>
   <br><sub>Entró con esto: «persona RaccoonSpaceSystem (combustible 100, escanear -10, nota fuel+restantes×20) · banco RaccoonSpaceCore (combustible 32, +500 encontrar)». Ya no: la página juega el mismo núcleo que el banco.</sub>
-- **AQUÍ ESTABAN ¡BUSCA! 4 Y 5, Y YA NO.** <sub>línea 110</sub>
+- **AQUÍ ESTABAN ¡BUSCA! 4 Y 5, Y YA NO.** <sub>línea 117</sub>
   <br><sub>Entraron al banco el 24-08 declaradas como partidas, a sabiendas: se medían con `RaccoonSpaceCore` mientras sus páginas corrían `RaccoonCitySystem` y `RaccoonPlanetSystem`. Ese mismo día se unieron, y al unirlas salieron TRES</sub>
-- **LA FONTANERÍA NO CUENTA COMO MOTOR, Y LA PRIMERA VERSIÓN SÍ LA CONTABA.** <sub>línea 136</sub>
+- **LA FONTANERÍA NO CUENTA COMO MOTOR, Y LA PRIMERA VERSIÓN SÍ LA CONTABA.** <sub>línea 143</sub>
   <br><sub>`ECSWorld` lo importan la página y el entorno de Corp Building, así que con él dentro la etapa salía «comparten motor» aunque el juego fuera otro. Lo destapó `prueba_de_las_pruebas.mjs`: el sabotaje cambiaba el motor y la comprobación</sub>
-- **SE SIGUE UN SALTO: LA PÁGINA PUEDE MONTAR EL JUEGO A TRAVÉS DE UN ENVOLTORIO.** <sub>línea 198</sub>
+- **SE SIGUE UN SALTO: LA PÁGINA PUEDE MONTAR EL JUEGO A TRAVÉS DE UN ENVOLTORIO.** <sub>línea 205</sub>
   <br><sub>`croupier_cabinet_escape.html` importa `CabinetEscapeGame`, y es ÉSE quien usa `CabinetEscapeSystem`. Mirando sólo lo que la página importa a la cara, la etapa salía partida cuando ya estaba unida.</sub>
-- **Y LA PISTA TIENE QUE LLEGAR A LAS TRES PUERTAS, NO A UNA.** <sub>línea 260</sub>
+- **Y LA PISTA TIENE QUE LLEGAR A LAS TRES PUERTAS, NO A UNA.** <sub>línea 267</sub>
   <br><sub>El fallo que esto vigila es el que se encontró el 24-08 al ir a unir Espacio: `raccoon_space.html` le decía a la persona «🟢 HOT (37 LY away)» al descartar un objetivo, y el núcleo del banco no le decía nada al agente. Con eso, la</sub>
-- **`colocarJunto`, y NO escribir `nave.x/y/z` a mano.** <sub>línea 285</sub>
+- **`colocarJunto`, y NO escribir `nave.x/y/z` a mano.** <sub>línea 292</sub>
   <br><sub>Eso último es lo que hacía esta prueba, y con el satélite del planeta dejó de funcionar sin decir por qué: su posición sale de latitud, longitud y altura, y el primer `step` la recalcula y borra el</sub>
 
 ### `prueba_semillas.mjs`
@@ -4081,6 +4090,8 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>El botón de «algo se ve raro» adjunta el estado del mundo si la página publica su sustrato. Cinco de las siete etapas todavía no lo publican, así que sus avisos llegan sin nada detrás: son una anécdota en vez de un fallo que se pueda</sub>
 - **LA PÁGINA NO SABE QUÉ JUEGOS HAY.** <sub>línea 74</sub>
   <br><sub>Mismo criterio que `suelo.html` y que las páginas de juego desde hoy: no guarda copia de nada. Si mañana hay una saga nueva, aparece aquí sola en cuanto se regenere el fichero — y si alguien la borra, desaparece. No hay</sub>
+- **CADA ETAPA DICE DOS COSAS DISTINTAS, Y NO SON LO MISMO.** <sub>línea 95</sub>
+  <br><sub>medida    el banco tiene entorno para ella, así que lo que juega una persona y lo que mide un agente son el mismo juego. Sin esto se puede jugar igual, pero la opinión no se puede contrastar con una nota.</sub>
 
 ### `public/lab.html`
 
@@ -4106,6 +4117,11 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **Y leyéndolos aprendí lo importante: **NO son entornos de gym**.** <sub>línea 15</sub>
   <br><sub>`reset(seed)` ni `step(acción)` ni política — corren una simulación fija y devuelven métricas. Llamarlos gym sería vender humo. Son otra cosa, y hacía más falta: **arneses headless de cada motor**, o sea el ejecutor de pruebas</sub>
 
+### `public/labs/croupier_chopper_aquarium.html`
+
+- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 334</sub>
+  <br><sub>Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y, si esta página publica `window.getSustrato()`, adjunta el mundo entero — con eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.</sub>
+
 ### `public/labs/croupier_determinism_audit.html`
 
 - **NADA de `metodo?.()` aquí.** <sub>línea 48</sub>
@@ -4115,6 +4131,11 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 
 - **Mi primer intento de esta prueba estaba MAL: puse solo piedras negras y** <sub>línea 180</sub>
   <br><sub>esperaba 9 puntos. Con un solo color en el tablero, TODO el vacío toca solo a negras, así que por regla de área le pertenece entero — 361 es la respuesta correcta. Para medir territorio de verdad hacen falta los dos colores.</sub>
+
+### `public/labs/croupier_interaction_lab.html`
+
+- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 188</sub>
+  <br><sub>Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y, si esta página publica `window.getSustrato()`, adjunta el mundo entero — con eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.</sub>
 
 ### `public/labs/croupier_math_orbital_shmup.html`
 

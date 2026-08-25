@@ -91,10 +91,20 @@
           "medida": true,
           "sustrato": false,
           "avisa": true
+        },
+        {
+          "saga": "Sobrevive",
+          "etapa": 3,
+          "nombre": "Marabunta",
+          "pagina": "/labs/croupier_marabunta.html",
+          "existe": true,
+          "medida": true,
+          "sustrato": false,
+          "avisa": true
         }
       ],
       "conSustrato": 0,
-      "medidas": 1
+      "medidas": 2
     },
     {
       "nombre": "Defiende",
@@ -114,5 +124,5 @@
       "medidas": 1
     }
   ],
-  "total": 9
+  "total": 10
 }
