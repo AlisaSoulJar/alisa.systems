@@ -656,6 +656,23 @@ const SABOTAJES = [
         vigila: 'que el mapa de texto use el vocabulario que el mundo declara, no otro',
     },
     {
+        /**
+         * El fallo REAL, y estaba puesto: cambiar la calibración de un juego sin
+         * subirle la versión. Esta semana pasó tres veces —¡Busca! 4, ¡Busca! 5 y
+         * Cabinet— y las tres siguen llamándose `-v0`, así que cualquier nota
+         * publicada antes es hoy incomparable con una de después.
+         *
+         * El sabotaje cambia el combustible de ¡Busca! 4 en una unidad: suficiente
+         * para que el juego se comporte distinto, poco para que se note a ojo.
+         */
+        nombre: 'huella',
+        corre: 'node --import ./resolver_three.mjs prueba_huella.mjs',
+        fichero: 'public/js/alisa-engine/src/gym/envs/RaccoonSpaceEnv.js',
+        de: 'asteroids: 0, fuel: 30, tope: 3000',
+        a: 'asteroids: 0, fuel: 31, tope: 3000',
+        vigila: 'que un juego no cambie de comportamiento conservando su nombre',
+    },
+    {
         nombre: 'senal',
         corre: 'node prueba_senal.mjs',
         fichero: 'public/js/alisa-engine/src/gym/ProtoHubEnv.js',

@@ -35,7 +35,30 @@ export class ChopperAquariumEngine {
         this.time = 0.0;
         
         // Ecosystem Integration
-        this.ecosystem = new EcosystemSystem();
+        /**
+         * ═══════════════════════════════════════════════════════════════════
+         *  ⚠️ EL ECOSISTEMA JUGABA SIN SEMILLA, Y ESO HACÍA EL MUNDO IRREPETIBLE
+         * ═══════════════════════════════════════════════════════════════════
+         *
+         * Se construía vacío —`new EcosystemSystem()`— mientras este motor tiene
+         * su propio `SeededRNG` unas líneas más abajo. `EcosystemSystem` acepta
+         * `config.rng` y su respaldo es `(() => Math.random())`, que es el patrón
+         * correcto pero significa **azar de verdad si nadie le pasa nada**.
+         *
+         * Medido el 25-08, misma semilla y tres ejecuciones:
+         *
+         *     helicóptero  36.928141, 36.236886, 42.372989   ← idéntico
+         *     pez 0        -20.7,25.7,-37.0 · -15.1,19.5,-38.8 · -22.4,24.8,-33.2
+         *
+         * O sea que la mitad del mundo era reproducible y la otra mitad no. Y
+         * `prueba_semillas` pasaba, porque comprueba que un motor ACEPTE semilla
+         * — y éste la acepta: lo que no hacía era pasarla hacia abajo.
+         *
+         * Un mundo que no se puede volver a jugar no se puede verificar, y sin
+         * verificar no hay recibo ni nota comparable. Lo destapó la huella de
+         * comportamiento: cambiaba entre dos ejecuciones idénticas.
+         */
+        this.ecosystem = new EcosystemSystem({ rng: () => this.rng.next() });
         this.pheromoneGrid = new PheromoneGrid(this.TANK_SIZE, this.TANK_HEIGHT, this.TANK_SIZE, 8.0, 5.0);
         this.fishes = [];
         this.hunters = [];
