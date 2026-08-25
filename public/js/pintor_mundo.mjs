@@ -1,5 +1,5 @@
 /**
- * mesa_mundo — LA MESA COMPARTIDA DE LOS MUNDOS
+ * pintor_mundo — EL PINTOR COMPARTIDO DE LOS MUNDOS
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * Dibuja cualquier mundo del banco a partir de su `sustrato()`, sin saber a qué
@@ -16,6 +16,37 @@
  * Ahora los nueve lo publican, así que esto nace con nueve clientes en vez de
  * con uno — que era la condición para que mereciera la pena escribirlo.
  *
+ * ⚠️ POR QUÉ «PINTOR» Y NO «MESA», QUE ES COMO SE LLAMABA HASTA HOY.
+ *
+ * Porque son dos oficios y los tenía con el mismo prefijo. Medido:
+ *
+ *     mesa_tablero.mjs   1231 líneas   `montarMesa({juego})` — monta la mesa
+ *     mesa_cartas.mjs    1936 líneas    ENTERA: escena, interacción, la regla
+ *                                       de oro de `legal_moves`
+ *     pintor_matriz.mjs   110 líneas   una clase con `pintar(sustrato)`
+ *     pintor_mundo.mjs    208 líneas   ídem, en 3D
+ *
+ * **Una mesa se monta; un pintor pinta.** Y el nombre bueno ya existía en casa:
+ * `arcade/js/protohub/render/pintar3d.js` exporta `crearPintor3d` desde hace
+ * meses. O sea que la familia «esto pinta un sustrato» ya se llamaba pintor, y yo
+ * les había puesto mesa a dos pintores.
+ *
+ * ⚠️ Y LA PREGUNTA INCÓMODA: ¿ES ESTO UN DUPLICADO DE `crearPintor3d`?
+ *
+ * Se miró antes de renombrar, y no lo es — pero el solape es real y conviene
+ * tenerlo escrito, porque la próxima vez puede que sí:
+ *
+ *   · `crearPintor3d` es PLANO: la altura que usa es la de la FORMA (`ALTO` por
+ *     tipo), nunca la de la pieza. No lee `p.alto`. Es un pintor de tableros.
+ *   · dibuja INSTANCIADO — 561 piezas de fagocito en dos llamadas de dibujo—, y
+ *     por eso mismo no puede aceptar la figura que trae una página: una instancia
+ *     no es un objeto, y un planeta con textura y anillo no cabe ahí.
+ *   · esto es el caso contrario: pocas piezas, altura libre, y cada una puede ser
+ *     un objeto propio de la página (ver el enganche `malla`).
+ *
+ * Dos trabajos distintos. Si algún día un mundo necesita quinientas piezas
+ * iguales, el sitio al que mirar es aquél, no éste.
+ *
  * ⚠️ ESTO NO SABE NINGUNA REGLA, Y ES EL PUNTO.
  * No conoce torretas ni mapaches ni tiburones: recibe `{rejilla, piezas}` y
  * pinta. Si mañana aparece un mundo nuevo con sustrato, se dibuja solo. Y si
@@ -31,7 +62,7 @@ const TERRENO = ['#101822', '#2b2417', '#1d4030', '#3a2020', '#14303c'];
 /** Cómo se ve una pieza si su mundo no dice otra cosa. */
 const POR_DEFECTO = { color: '#88aacc', alto: 0.5, radio: 0.3, forma: 'esfera' };
 
-export class MesaMundo {
+export class PintorMundo {
     /**
      * @param {THREE.Scene} escena
      * @param {Object} [estilo] por tipo de pieza: `{color, forma, radio, alto}`.
@@ -66,11 +97,11 @@ export class MesaMundo {
         /**
          * ⚠️ SI EL MUNDO TRAE SU PROPIA FIGURA, MANDA LA SUYA.
          *
-         * Sin esto, la mesa sólo sirve para mundos que se conformen con esferas y
+         * Sin esto, el pintor sólo sirve para mundos que se conformen con esferas y
          * cajas — y las tres etapas de ¡Busca! tienen planetas con textura hechos
          * por una factoría. La disyuntiva sería: o el sustrato o el arte. Con el
          * enganche no hay disyuntiva: la posición, la identidad y el «esto ya no
-         * está» los sigue llevando la mesa desde el sustrato, y la página sólo
+         * está» los sigue llevando el pintor desde el sustrato, y la página sólo
          * aporta cómo se ve. Que es exactamente lo único que le toca.
          *
          * Recibe el tipo y la pieza entera: el tipo porque una misma página tiene
@@ -145,7 +176,7 @@ export class MesaMundo {
          * YA son las del mundo, y la corrección sobra: dejaba todo desplazado
          * media casilla, con la nave en 0.5 cuando el motor la tenía en 0.
          *
-         * No lo vio nadie porque hasta hoy ninguna página usaba esta mesa: tenía
+         * No lo vio nadie porque hasta hoy ninguna página usaba este pintor: tenía
          * nueve mundos de clientes en las pruebas y cero en pantalla.
          */
         const ox = sus.rejilla ? sus.rejilla.ancho / 2 - 0.5 : 0;
@@ -160,7 +191,7 @@ export class MesaMundo {
              *
              * Con la clave anterior, `tipo#índice`, una pieza que CAMBIA DE TIPO
              * pasaba por pieza nueva. En ¡Busca! eso es la mecánica entera:
-             * escanear un planeta lo pasa de `sin_escanear` a `caliente`. La mesa
+             * escanear un planeta lo pasa de `sin_escanear` a `caliente`. El pintor
              * fabricaba otra malla, escondía la de antes, y una página con arte
              * propio perdía el planeta que llevaba puesto.
              *
@@ -175,18 +206,18 @@ export class MesaMundo {
 
             let m = this._piezas.get(clave);
             /**
-             * Una malla que hizo la mesa y cuya pieza ha cambiado de tipo hay que
+             * Una malla que hizo el pintor y cuya pieza ha cambiado de tipo hay que
              * rehacerla: su forma y su color venían del tipo viejo. Una figura que
              * puso la página NO se toca — su apariencia es cosa suya, y para eso
              * tiene `aplicar`, que se llama cada fotograma con la pieza.
              */
-            if (m && m.userData.tipoMesa !== p.t && !m.userData.mallaPropia) {
+            if (m && m.userData.tipoDibujado !== p.t && !m.userData.mallaPropia) {
                 this.grupo.remove(m);
                 this._piezas.delete(clave);
                 m = null;
             }
             if (!m) m = this._malla(clave, p.t, p);
-            m.userData.tipoMesa = p.t;
+            m.userData.tipoDibujado = p.t;
             m.position.set(
                 (p.x - ox) * c,
                 (p.alto ?? 0) * c + (sus.rejilla ? e.alto / 2 + 0.1 : 0),

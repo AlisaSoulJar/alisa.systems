@@ -1,9 +1,9 @@
 /**
- * ¿PINTA LA MESA PLANA DESDE EL SUSTRATO, SIN SABER A QUÉ SE JUEGA?
+ * ¿PINTA EL PINTOR PLANO DESDE EL SUSTRATO, SIN SABER A QUÉ SE JUEGA?
  * ═══════════════════════════════════════════════════════════════════════════
- *     node --import ./resolver_three.mjs prueba_mesa_matriz.mjs
+ *     node --import ./resolver_three.mjs prueba_pintor_matriz.mjs
  *
- * `MesaMatriz` es la vista 2D del banco, y la prueba de que la tesis del
+ * `PintorMatriz` es la vista 2D del banco, y la prueba de que la tesis del
  * proyecto se cumple en la capa de arriba: **todo sale del mismo sustrato y se
  * le van sumando capas**.
  *
@@ -25,7 +25,7 @@
  * diría «se ve algo» — que es justo lo que decían las páginas rotas.
  */
 import { CATALOGO } from './public/js/alisa-engine/src/gym/registro.js';
-import { MesaMatriz } from './public/js/mesa_matriz.mjs';
+import { PintorMatriz } from './public/js/pintor_matriz.mjs';
 
 let fallos = 0;
 const mal = (m) => { console.log(`  ✗ ${m}`); fallos++; };
@@ -44,7 +44,7 @@ function lienzoFalso(w = 600, h = 600) {
     return { lienzo: { width: w, height: h, getContext: () => ctx }, apuntes };
 }
 
-console.log('\n¿Pinta la mesa plana desde el sustrato?\n');
+console.log('\n¿Pinta el pintor plano desde el sustrato?\n');
 
 {
     const e = CATALOGO.find(x => x.id === 'alisa/Defiende-v0');
@@ -53,12 +53,12 @@ console.log('\n¿Pinta la mesa plana desde el sustrato?\n');
     env.reset(7);
 
     const { lienzo, apuntes } = lienzoFalso();
-    const mesa = new MesaMatriz(lienzo, {
+    const pintor = new PintorMatriz(lienzo, {
         guijarro: { emoji: '🪨' }, peon: { color: '#8ad' },
     });
 
     const sus0 = env.sys.sustrato();
-    const celda = mesa.pintar(sus0);
+    const celda = pintor.pintar(sus0);
     const L = sus0.rejilla.ancho;
 
     if (celda !== Math.floor(600 / L)) mal(`el tamaño de celda sale ${celda}, se esperaba ${Math.floor(600 / L)}`);
@@ -75,8 +75,8 @@ console.log('\n¿Pinta la mesa plana desde el sustrato?\n');
 
     const sus1 = env.sys.sustrato();
     const { lienzo: l2, apuntes: a2 } = lienzoFalso();
-    const mesa2 = new MesaMatriz(l2, { guijarro: { emoji: '🪨' }, peon: { color: '#8ad' } });
-    mesa2.pintar(sus1);
+    const pintor2 = new PintorMatriz(l2, { guijarro: { emoji: '🪨' }, peon: { color: '#8ad' } });
+    pintor2.pintar(sus1);
 
     const conEmoji = sus1.piezas.filter(p => p.t === 'guijarro').length;
     const conAlcance = sus1.piezas.filter(p => p.alcance).length;
@@ -112,7 +112,7 @@ console.log('\n¿Pinta la mesa plana desde el sustrato?\n');
     env.reset(4);
     const sus = env.sustrato();
     const { lienzo, apuntes } = lienzoFalso();
-    new MesaMatriz(lienzo, {}).pintar(sus);
+    new PintorMatriz(lienzo, {}).pintar(sus);
     const celdas = sus.rejilla.ancho * sus.rejilla.alto;
     if (apuntes.rects !== celdas) {
         mal(`con el sustrato del edificio pintó ${apuntes.rects} casillas de ${celdas}`);
@@ -122,5 +122,5 @@ console.log('\n¿Pinta la mesa plana desde el sustrato?\n');
 }
 
 console.log('');
-if (fallos) { console.log(`  ✗ ${fallos} fallo(s) en la mesa plana\n`); process.exit(1); }
+if (fallos) { console.log(`  ✗ ${fallos} fallo(s) en el pintor plano\n`); process.exit(1); }
 console.log('  ✓ la vista humana sale del sustrato, igual que el texto, los números y el 3D\n');

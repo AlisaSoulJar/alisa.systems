@@ -1,8 +1,8 @@
 /**
- * mesa_matriz — LA VISTA PLANA, DIBUJADA DESDE EL SUSTRATO Y NADA MÁS
+ * pintor_matriz — LA VISTA PLANA, DIBUJADA DESDE EL SUSTRATO Y NADA MÁS
  * ═══════════════════════════════════════════════════════════════════════════
  *
- * La hermana 2D de `mesa_mundo.mjs`. Recibe un `sustrato()` y lo pinta en un
+ * La hermana 2D de `pintor_mundo.mjs`. Recibe un `sustrato()` y lo pinta en un
  * lienzo. No sabe a qué se juega.
  *
  * ⚠️ POR QUÉ EXISTE, Y ES LA TESIS DEL PROYECTO PUESTA A PRUEBA.
@@ -34,7 +34,7 @@
 /** Los colores por defecto del terreno, por valor de celda. */
 const TERRENO = ['#0e1620', '#2b2417', '#1d4030', '#3a2020', '#14303c'];
 
-export class MesaMatriz {
+export class PintorMatriz {
     /**
      * @param {HTMLCanvasElement} lienzo
      * @param {Object} [estilo] por tipo de pieza: `{color, forma, radio}`. Es lo
@@ -103,7 +103,7 @@ export class MesaMatriz {
             /**
              * La vida se ve. Sin ella un bicho a punto de caer se ve igual que
              * uno recién llegado, y no se puede decidir nada — que es el mismo
-             * criterio por el que la mesa 3D escala las piezas por su vida.
+             * criterio por el que el pintor 3D escala las piezas por su vida.
              */
             if (p.vida !== undefined && p.vida < 1) {
                 const w = c * 0.6;

@@ -631,12 +631,12 @@ const SABOTAJES = [
          * pantalla se ve un bicho muerto que sigue ahí, y quien juega decide
          * contra un fantasma. No da ningún error.
          */
-        nombre: 'mesa-mundo',
-        corre: 'node --import ./resolver_three.mjs prueba_mesa_mundo.mjs',
-        fichero: 'public/js/mesa_mundo.mjs',
+        nombre: 'pintor-mundo',
+        corre: 'node --import ./resolver_three.mjs prueba_pintor_mundo.mjs',
+        fichero: 'public/js/pintor_mundo.mjs',
         de: 'for (const [clave, m] of this._piezas) if (!vivas.has(clave)) m.visible = false;',
         a: 'for (const [clave, m] of this._piezas) if (!vivas.has(clave)) { /* fantasma */ }',
-        vigila: 'que una pieza que desaparece del estado deje de verse en la mesa',
+        vigila: 'que una pieza que desaparece del estado deje de verse en pantalla',
     },
     {
         /**
@@ -650,9 +650,9 @@ const SABOTAJES = [
          * No lo veía nadie porque la mesa tenía nueve mundos en las pruebas y cero
          * páginas en pantalla. Salió al enchufar la primera.
          */
-        nombre: 'mesa-mundo-identidad',
-        corre: 'node --import ./resolver_three.mjs prueba_mesa_mundo.mjs',
-        fichero: 'public/js/mesa_mundo.mjs',
+        nombre: 'pintor-mundo-identidad',
+        corre: 'node --import ./resolver_three.mjs prueba_pintor_mundo.mjs',
+        fichero: 'public/js/pintor_mundo.mjs',
         de: "const clave = p.cajon !== undefined ? `#${p.cajon}` : `${p.t}#${i}`;",
         a: 'const clave = `${p.t}#${p.cajon ?? i}`;',
         vigila: 'que una pieza que cambia de tipo siga siendo la misma pieza',
@@ -689,8 +689,8 @@ const SABOTAJES = [
         nombre: 'paginas',
         corre: 'node paginas.mjs',
         fichero: 'public/games/defiende_sendero.html',
-        de: 'celda = mesa.pintar(nucleo.sustrato(), { colores: COLORES_TERRENO });',
-        a: 'celda = mesa.pintar(nucleo.observacion(), { colores: COLORES_TERRENO });',
+        de: 'celda = pintor.pintar(nucleo.sustrato(), { colores: COLORES_TERRENO });',
+        a: 'celda = pintor.pintar(nucleo.observacion(), { colores: COLORES_TERRENO });',
         vigila: 'que lo que ve la persona salga del mismo sitio que lee el banco',
     },
     {

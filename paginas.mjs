@@ -4,7 +4,7 @@
  *     npm run paginas
  *
  * El patrón dorado de una página, dicho del derecho: **no debería saber hacer
- * casi nada**. Compone piezas compartidas —el sustrato, una mesa, una factoría,
+ * casi nada**. Compone piezas compartidas —el sustrato, un pintor, una factoría,
  * `montarMundo`— y aporta cosmética. Ni reglas, ni dibujo, ni física.
  *
  * ⚠️ POR QUÉ SE MIDE, Y NO SE DEJA COMO BUENA INTENCIÓN.
@@ -15,7 +15,7 @@
  * jugaron dos juegos con el mismo nombre durante semanas.
  *
  * `defiende_sendero.html` acaba de pasar por esto: sus cuarenta líneas de lienzo
- * se fueron a `MesaMatriz` y lo único que le queda es qué emoji lleva cada
+ * se fueron a `PintorMatriz` y lo único que le queda es qué emoji lleva cada
  * torreta. Ese es el listón.
  *
  * LO QUE SE CUENTA
@@ -43,7 +43,7 @@ const DIRS = ['public/games', 'public/labs'];
 
 /** Piezas compartidas: si una página importa esto, está componiendo. */
 const COMPARTIDAS = [
-    'montarMundo', 'montarMesa', 'mesa_matriz', 'mesa_mundo', 'mesa_tablero',
+    'montarMundo', 'montarMesa', 'pintor_matriz', 'pintor_mundo', 'mesa_tablero',
     'mesa_cartas', 'Factory', 'alisa-engine/src', 'protohub', '/js/sfx',
 ];
 
@@ -95,7 +95,7 @@ for (const d of DIRS) {
          * detectores.
          *
          * Lo que se exige es que el sustrato **entre en la llamada que pinta**.
-         * Las dos mesas —plana y 3D— se llaman igual, `pintar(sus)`, así que la
+         * Los dos pintores —plana y 3D— se llaman igual, `pintar(sus)`, así que la
          * regla vale para las dos sin saber cuál usa la página.
          */
         const sustrato = /pintar\s*\([^)]*sustrato/.test(limpio)
@@ -126,7 +126,7 @@ for (const r of filas) {
  * las páginas no puede subir. Una página nueva que se escriba su propio dibujo lo
  * dice aquí, y el día que se limpie una se actualiza a la baja.
  *
- * Medido el 25-08, después de pasar `defiende_sendero.html` a `MesaMatriz`.
+ * Medido el 25-08, después de pasar `defiende_sendero.html` a `PintorMatriz`.
  */
 const TECHO_SENALES = 341;
 const total = filas.reduce((s, r) => s + r.peso, 0);

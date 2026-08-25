@@ -121,7 +121,7 @@
  */
 import { DefiendeSystem, TORRETAS, TIPOS, CELDA }
     from '@alisa-engine/src/world/systems/DefiendeSystem.js';
-import { MesaMatriz } from '/js/mesa_matriz.mjs';
+import { PintorMatriz } from '/js/pintor_matriz.mjs';
 
 const lienzo = document.getElementById('lienzo');
 let nucleo = null, celda = 32, elegida = TORRETAS[0].id, ultimo = 0;
@@ -130,7 +130,7 @@ let nucleo = null, celda = 32, elegida = TORRETAS[0].id, ultimo = 0;
  * ⚠️ ESTO ES TODO LO QUE APORTA ESTA PÁGINA AL DIBUJO: COSMÉTICA.
  *
  * Qué emoji lleva cada torreta y de qué color es cada bicho. Ni una posición, ni
- * una regla, ni un tamaño de mundo — eso sale del sustrato y lo pinta una mesa
+ * una regla, ni un tamaño de mundo — eso sale del sustrato y lo pinta un pintor
  * que no sabe a qué se juega.
  *
  * Es la prueba de que la capa es una capa: se puede cambiar entera sin tocar el
@@ -149,7 +149,7 @@ const ESTILO = {
     rapido: { color: '#fd6' },
     gordo:  { color: '#f76', radio: 0.32 },
 };
-const mesa = new MesaMatriz(lienzo, ESTILO);
+const pintor = new PintorMatriz(lienzo, ESTILO);
 
 function pintarPaleta() {
     const p = document.getElementById('paleta');
@@ -216,7 +216,7 @@ function bucle(ahora) {
 
 /**
  * ═══════════════════════════════════════════════════════════════════════════
- *  DIBUJA LA MESA COMPARTIDA, Y ESTA PÁGINA YA NO SABE DIBUJAR
+ *  DIBUJA EL PINTOR COMPARTIDO, Y ESTA PÁGINA YA NO SABE DIBUJAR
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * Antes había aquí cuarenta líneas que leían `nucleo.observacion()` — un método
@@ -227,7 +227,7 @@ function bucle(ahora) {
  * Eso se separa solo con el tiempo. Es exactamente lo que pasó con ¡Busca!: la
  * persona y el banco jugaron dos juegos con el mismo nombre durante semanas.
  *
- * Ahora se pinta `nucleo.sustrato()` con `MesaMatriz`, que no sabe qué es una
+ * Ahora se pinta `nucleo.sustrato()` con `PintorMatriz`, que no sabe qué es una
  * torreta. Lo único que aporta esta página es COSMÉTICA —qué emoji, qué color—
  * y eso no puede desviarse del estado porque no lo toca.
  *
@@ -236,7 +236,7 @@ function bucle(ahora) {
  * lo que mide el banco, porque los tres salen del mismo `sustrato()`.
  */
 function dibujar() {
-    celda = mesa.pintar(nucleo.sustrato(), { colores: COLORES_TERRENO });
+    celda = pintor.pintar(nucleo.sustrato(), { colores: COLORES_TERRENO });
 }
 
 function actualizarHUD() {
@@ -270,7 +270,7 @@ function acabar() {
  * ⚠️ EL SUSTRATO SE PUBLICA EN LA PÁGINA, Y NO ES UN AÑADIDO DE DEPURACIÓN.
  *
  * Es la capa de abajo del proyecto: el estado en el idioma común del que salen
- * el texto, los números, la mesa 2D y la 3D. Que esta página lo exponga significa
+ * el texto, los números, el pintor 2D y el 3D. Que esta página lo exponga significa
  * que cualquiera —una extensión, un agente en la consola, otra vista— puede leer
  * exactamente lo mismo que está viendo la persona.
  *

@@ -119,7 +119,7 @@ import { RaccoonEnvironmentFactory } from '@alisa-engine/src/world/factories/Rac
 import { RaccoonSpaceCore } from '@alisa-engine/src/world/systems/RaccoonSpaceCore.js';
 
 import { montarMundo } from '/js/montarMundo.js';
-import { MesaMundo }   from '/js/mesa_mundo.mjs';
+import { PintorMundo }   from '/js/pintor_mundo.mjs';
 
 /**
  * `cielo:false` y `luces:false` porque esto es el espacio abierto: no hay
@@ -169,7 +169,7 @@ let scannedCount = 0;
 let gameState = { playing: false, ended: false, score: 0 };
 let dustPoints = null;
 let shipRoot = null;
-let mesa = null;          // la mesa compartida: coloca las piezas desde el sustrato
+let pintor = null;          // el pintor compartido: coloca las piezas desde el sustrato
 
 // Keystrokes
 const keys = {};
@@ -238,15 +238,15 @@ window.initGame = function() {
     shipRoot = shipRig.root;
 
     /**
-     * ⚠️ LA MESA COLOCA; LA PÁGINA SÓLO DICE QUÉ FIGURA VA EN CADA PIEZA.
+     * ⚠️ EL PINTOR COLOCA; LA PÁGINA SÓLO DICE QUÉ FIGURA VA EN CADA PIEZA.
      *
-     * `MesaMundo` es la misma que pinta los otros ocho mundos y no sabe una sola
+     * `PintorMundo` es la misma que pinta los otros ocho mundos y no sabe una sola
      * regla de este. Lo único que aporta esta página es el enganche `malla`: las
      * figuras ya están hechas —la factoría las construyó con textura y anillo— y
      * aquí se le entrega la que toca. Quién es cada pieza lo dice el sustrato con
      * `cajon`, no un contador nuestro, que se descuadraría a la primera baja.
      *
-     * Y por eso el tipo de un planeta puede cambiar al escanearlo sin que la mesa
+     * Y por eso el tipo de un planeta puede cambiar al escanearlo sin que el pintor
      * pierda el planeta: su identidad es el `cajon`, y el tipo es apariencia.
      */
     const dePlaneta = (t, p) => planets[+p.cajon.slice(1)].mesh;
@@ -263,7 +263,7 @@ window.initGame = function() {
                      'caliente', 'templado', 'fresco', 'frío', 'helado']) {
         ESTILO[t] = { malla: dePlaneta };
     }
-    mesa = new MesaMundo(scene, ESTILO, 1);
+    pintor = new PintorMundo(scene, ESTILO, 1);
 
     /**
      * El sustrato se publica en la página, y no es un añadido de depuración: es
@@ -492,7 +492,7 @@ arrancar((dt) => {
          * texto, lo mismo que lee el vector de números y lo mismo que sirve la
          * puerta HTTP. Si el motor cambia, se mueven las cuatro capas a la vez.
          */
-        mesa.pintar(nucleo.sustrato());
+        pintor.pintar(nucleo.sustrato());
 
         if (dustPoints && shipRoot) dustPoints.position.copy(shipRoot.position);
         updateHUD();
