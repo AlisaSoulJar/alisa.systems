@@ -4,44 +4,45 @@
     "regla": "El id es el contrato: dos notas sólo se comparan dentro del mismo id. Cambiar el comportamiento obliga a subir la versión (…-v0 → …-v1).",
     "antes_de_esta_fecha": "Los mundos estaban en desarrollo y no había notas publicadas que proteger (medido: 0 referencias en resultados/tabla.json). Desde aquí, cualquier cambio de comportamiento exige versión nueva.",
     "estandar": "Gym/Gymnasium: CartPole-v0 → v1 se diferencian sólo en el límite de pasos y el umbral de recompensa. Un umbral basta para una versión.",
-    "cobertura": "La huella mira CUATRO puertas: el sustrato (qué hay), la observación numérica (los escalares), el comportamiento (pasos, recompensa, fin) y el TEXTO que lee un agente de lenguaje.",
-    "resellado_25_08": "El texto se añadió el 25-08, y lo destapé cambiando un juego yo misma: a los tres ¡Busca! les di el radar completo en describe() —de 163 a 458 caracteres, de «lo más cerca está a 63 unidades» a los diez objetivos con distancia y desvío— y la huella dijo «sin cambios» en los nueve. Vigilaba las tres puertas que NO usa un agente de lenguaje. Las nueve huellas cambian por eso: seis SÓLO porque el instrumento se volvió más completo (los juegos no se tocaron) y tres porque su puerta de texto se reparó para decir lo mismo que la página humana lleva enseñando desde siempre en su radar.",
-    "por_que_no_suben_a_v1": "Porque no hay nota que proteger: medido de nuevo el 25-08, cero entradas de mundos propios en resultados/tabla.json. Y porque cuando las dos puertas discrepaban, las notas viejas no eran obsoletas: eran inválidas —medían la puerta, no al agente—. Una versión nueva sirve para conservar medidas buenas, no para dignificar medidas rotas."
+    "cobertura": "La huella MUESTREA cuatro puertas: el sustrato (qué hay), la observación numérica (los escalares), el comportamiento (pasos, recompensa, fin) y el TEXTO que lee un agente de lenguaje, tomado al empezar y al acabar.",
+    "lo_que_no_demuestra": "Que dos juegos sean idénticos. Es una MUESTRA: una política fija sobre cuatro semillas. Medido el 25-08: añadí a ¡Busca! una línea que dice si la nave va derivando y la huella no se movió, porque esa política alterna empujar y frenar y acaba PARADA, así que esa línea no aparecía nunca. Por eso el texto se toma ahora en dos momentos, y por eso el contrato dice «sigue comportándose como cuando se selló» y no «es idéntico».",
+    "el_texto_entro_el_25_08": "Y lo destapé cambiando un juego yo misma: a los tres ¡Busca! les di el radar completo en describe() —de 163 a 458 caracteres— y la huella dijo «sin cambios» en los nueve. Hasta entonces hasheaba las tres puertas que NO usa un agente de lenguaje.",
+    "por_que_no_suben_a_v1": "Porque no hay nota que proteger: cero entradas de mundos propios en resultados/tabla.json. Y porque cuando dos puertas discrepaban, las notas viejas no eran obsoletas sino inválidas —medían la puerta, no al agente—. Una versión nueva conserva medidas buenas; no dignifica medidas rotas."
   },
   "alisa/Pedrisco-v0": {
-    "huella": "f8af3ac8",
+    "huella": "3c8d4f5d",
     "sellada": "2026-08-25"
   },
   "alisa/CabinetEscape-v0": {
-    "huella": "86dc40bb",
+    "huella": "e1699571",
     "sellada": "2026-08-25"
   },
   "alisa/Marabunta-v0": {
-    "huella": "db480680",
+    "huella": "6b064c12",
     "sellada": "2026-08-25"
   },
   "alisa/RaccoonSpace-v0": {
-    "huella": "b5aeaa25",
+    "huella": "8098d37d",
     "sellada": "2026-08-25"
   },
   "alisa/RaccoonCity-v0": {
-    "huella": "030c223e",
+    "huella": "04bb5317",
     "sellada": "2026-08-25"
   },
   "alisa/RaccoonPlanet-v0": {
-    "huella": "2003332a",
+    "huella": "8cef3b51",
     "sellada": "2026-08-25"
   },
   "alisa/CorpBuilding-v0": {
-    "huella": "4aa80199",
+    "huella": "1a2ecfbf",
     "sellada": "2026-08-25"
   },
   "alisa/Defiende-v0": {
-    "huella": "f0d2f5c8",
+    "huella": "7ad84f42",
     "sellada": "2026-08-25"
   },
   "alisa/ChopperAquarium-v0": {
-    "huella": "c9a48be8",
+    "huella": "5ff57d08",
     "sellada": "2026-08-25"
   }
 }

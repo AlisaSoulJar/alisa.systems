@@ -497,7 +497,7 @@
       "peorCiega": -106.5,
       "pasos": 1200,
       "semilla": 1234,
-      "forma": "verb"
+      "forma": "action"
     },
     {
       "id": "alisa/marea-protohub-v0",
@@ -668,7 +668,7 @@
       "peorCiega": -100,
       "pasos": 3000,
       "semilla": 1234,
-      "forma": "verb"
+      "forma": "action"
     },
     {
       "id": "alisa/RaccoonPlanet-v0",

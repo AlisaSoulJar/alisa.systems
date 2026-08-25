@@ -812,10 +812,26 @@ export class RaccoonSpaceCore {
          * faltaba sólo en la capa de texto y en la de dibujo, que son las dos que
          * mira la persona.
          */
+        /**
+         * ⚠️ Y LA VELOCIDAD, QUE ESTABA EN LOS NÚMEROS Y NO EN LO DEMÁS.
+         *
+         * Medido el 25-08: `observacion()` publica `vx, vy, vz` —la velocidad
+         * propia de la nave— y ni el sustrato ni el texto la llevaban. En un mundo
+         * con inercia eso no es un detalle: decide si hay que empujar o frenar.
+         * Un piloto que lee números sabe que va derivando; uno que lee texto, no.
+         *
+         * Y la persona SÍ la percibe: `RaccoonCitySystem.pintar` inclina el dron
+         * en función de `vx`/`vz`, así que el balanceo en pantalla es velocidad
+         * hecha imagen. Otra vez la misma avería, en la tercera puerta.
+         *
+         * Va en la pieza y no en los escalares porque es de la nave, no del
+         * marcador — la misma frontera que `vida` y `alcance`, que ya viven aquí.
+         */
         const n = this.nave;
         piezas.push({
             x: n.x, y: n.z, alto: n.y, t: 'nave', de: 1, cajon: 'nave',
             giro: { cabeceo: n.cabeceo, guinada: n.guinada },
+            vel: { x: n.vx, y: n.vz, alto: n.vy },
         });
 
         const sus = {

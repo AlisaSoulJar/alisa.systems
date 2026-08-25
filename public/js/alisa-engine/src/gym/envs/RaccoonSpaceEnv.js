@@ -120,6 +120,28 @@ export class RaccoonSpaceEnv extends GymEnv {
             `Has escaneado ${i.escaneados} de ${i.total} ${varios}.`,
         ];
 
+        /**
+         * ⚠️ LA DERIVA. Estaba en `observacion()` como vx/vy/vz y no en el texto.
+         *
+         * Este mundo tiene inercia: si vas lanzada, empujar te aleja más. El
+         * piloto que lee números lo sabía y el que lee texto no — y la persona
+         * tampoco lo lee, lo VE, porque el dron se inclina al desplazarse.
+         *
+         * Se dice la rapidez y hacia dónde, no los tres componentes: «vas a 12, a
+         * babor» es lo que se decide, y darle las tres cifras sería pedirle al
+         * modelo que haga trigonometría para saber si tiene que frenar.
+         */
+        const nv = s.nave;
+        const rapidez = Math.hypot(nv.vx ?? 0, nv.vy ?? 0, nv.vz ?? 0);
+        if (rapidez > 0.5) {
+            const hacia = [];
+            if (Math.abs(nv.vx) > 0.5) hacia.push(nv.vx > 0 ? 'a estribor' : 'a babor');
+            if (Math.abs(nv.vy) > 0.5) hacia.push(nv.vy > 0 ? 'arriba' : 'abajo');
+            if (Math.abs(nv.vz) > 0.5) hacia.push(nv.vz > 0 ? 'atrás' : 'adelante');
+            partes.push(`Vas derivando a ${Math.round(rapidez)}`
+                      + `${hacia.length ? ' ' + hacia.join(' y ') : ''}.`);
+        }
+
         const p = s.planetaCerca();
         partes.push(p
             ? (p.escaneado
@@ -265,13 +287,13 @@ export class RaccoonSpaceEnv extends GymEnv {
         };
         const lista = this.constructor.actionSpace.names
             .filter(v => v !== 'escanear')
-            .map(v => ({ verb: v, args: {}, desc: DESC[v] ?? v }));
+            .map(v => ({ verb: v, args: {}, action: v, desc: DESC[v] ?? v }));
 
         // `escanear` solo se ofrece si sirve de algo. Ofrecerlo siempre
         // enseñaría al agente a malgastar, y penalizarlo después sería tramposo.
         const p = s.planetaCerca();
         if (p && !p.escaneado) {
-            lista.unshift({ verb: 'escanear', args: {},
+            lista.unshift({ verb: 'escanear', args: {}, action: 'escanear',
                             desc: `Escanear el ${this.constructor.objetivo.uno} que tienes al alcance` });
         }
         return lista;

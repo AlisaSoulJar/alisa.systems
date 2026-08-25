@@ -174,21 +174,45 @@ export class MarabuntaEnv extends GymEnv {
 
         if (s.pendingUpgrade) {
             const ops = s.pendingUpgrade.options || s.pendingUpgrade || [];
-            return [0, 1, 2].map(i => ({
+        /**
+         * ⚠️ `action` NO ES REDUNDANTE CON `verb`, Y NO TENERLO ROMPÍA EL JUEGO.
+         * ═══════════════════════════════════════════════════════════════════
+         *
+         * `GymEnv.actFromVerb` hace `a.action !== undefined ? a.action : args`.
+         * Sin `action`, devolvía `args` —que aquí es `{}`— y `stepVerb` acababa
+         * mandándole un objeto vacío al núcleo en vez del verbo.
+         *
+         * Medido el 25-08 sobre los nueve mundos propios: cuatro no lo declaraban
+         * —éste y los tres ¡Busca!— y en los cuatro `stepVerb` hacía algo distinto
+         * que `step(verbo)`. En ¡Busca! era literal:
+         *
+         *     stepVerb('empujar') -> z=0.00   vz=0.000     la nave NO se movía
+         *     step('empujar')     -> z=-6.31  vz=-22.271
+         *
+         * O sea que la puerta de los agentes de lenguaje no movía nada, mientras
+         * la del banco sí. `PuenteDeGimnasio`, `stepAtomo` y la huella pasan por
+         * `stepVerb`: un Ser de la colonia no podía volar, y la huella llevaba
+         * semanas sellando el comportamiento de una nave congelada.
+         *
+         * Se declara aquí, en el mundo, y no se arregla adivinando en la clase
+         * base: quien sabe cómo se manda una jugada en este juego es este juego.
+         */
+        return [0, 1, 2].map(i => ({
                 verb: VERBOS[9 + i],
                 args: {},
+                action: VERBOS[9 + i],
                 desc: ops[i] ? `Elegir: ${ops[i].name || ops[i].id}` : `Elegir la mejora ${i + 1}`,
             }));
         }
 
         const mover = VERBOS.slice(0, 9).map(v => ({
-            verb: v, args: {}, desc: `Moverse hacia ${v}`,
+            verb: v, args: {}, action: v, desc: `Moverse hacia ${v}`,
         }));
         return [
             ...mover,
-            { verb: 'barrido', args: {}, desc: 'Barrido en círculo: limpia lo pegado a ti' },
-            { verb: 'golpe',   args: {}, desc: 'Golpe al suelo: daño en área, te deja plantado' },
-            { verb: 'esquiva', args: {}, desc: 'Dash: atraviesa el cerco, sin daño' },
+            { verb: 'barrido', args: {}, action: 'barrido', desc: 'Barrido en círculo: limpia lo pegado a ti' },
+            { verb: 'golpe',   args: {}, action: 'golpe',   desc: 'Golpe al suelo: daño en área, te deja plantado' },
+            { verb: 'esquiva', args: {}, action: 'esquiva', desc: 'Dash: atraviesa el cerco, sin daño' },
         ];
     }
 }

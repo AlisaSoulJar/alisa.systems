@@ -78,6 +78,30 @@ const CONTRATO = {
              + 'Desde aquí, cualquier cambio de comportamiento exige versión nueva.',
         estandar: 'Gym/Gymnasium: CartPole-v0 → v1 se diferencian sólo en el límite de '
              + 'pasos y el umbral de recompensa. Un umbral basta para una versión.',
+        /**
+         * ⚠️ ESTAS NOTAS VIVEN AQUÍ Y NO EN EL JSON, PORQUE SELLAR LO REESCRIBE.
+         *
+         * Las escribí a mano en `huellas.json` y el primer `--sellar` se las llevó
+         * por delante: el fichero se regenera entero desde esta plantilla. Una nota
+         * que desaparece cada vez que se sella es una nota que se va a perder.
+         */
+        cobertura: 'La huella MUESTREA cuatro puertas: el sustrato (qué hay), la observación '
+             + 'numérica (los escalares), el comportamiento (pasos, recompensa, fin) y el TEXTO '
+             + 'que lee un agente de lenguaje, tomado al empezar y al acabar.',
+        lo_que_no_demuestra: 'Que dos juegos sean idénticos. Es una MUESTRA: una política fija '
+             + 'sobre cuatro semillas. Medido el 25-08: añadí a ¡Busca! una línea que dice si la '
+             + 'nave va derivando y la huella no se movió, porque esa política alterna empujar y '
+             + 'frenar y acaba PARADA, así que esa línea no aparecía nunca. Por eso el texto se '
+             + 'toma ahora en dos momentos, y por eso el contrato dice «sigue comportándose como '
+             + 'cuando se selló» y no «es idéntico».',
+        el_texto_entro_el_25_08: 'Y lo destapé cambiando un juego yo misma: a los tres ¡Busca! les '
+             + 'di el radar completo en describe() —de 163 a 458 caracteres— y la huella dijo «sin '
+             + 'cambios» en los nueve. Hasta entonces hasheaba las tres puertas que NO usa un '
+             + 'agente de lenguaje.',
+        por_que_no_suben_a_v1: 'Porque no hay nota que proteger: cero entradas de mundos propios '
+             + 'en resultados/tabla.json. Y porque cuando dos puertas discrepaban, las notas viejas '
+             + 'no eran obsoletas sino inválidas —medían la puerta, no al agente—. Una versión '
+             + 'nueva conserva medidas buenas; no dignifica medidas rotas.',
     },
 };
 

@@ -125,6 +125,7 @@ export function huellaDeMundo(Clase) {
         const sys = [env.sys, env.core, env.nucleo, env.motor, env]
             .find(o => o && typeof o.sustrato === 'function');
         const alEmpezar = retrato(sys);
+        const textoInicial = String(env.describe?.() ?? '').slice(0, 400);
         let recompensa = 0, pasos = 0;
         for (let i = 0; i < PASOS_HUELLA && !env.done; i++) {
             try {
@@ -187,6 +188,25 @@ export function huellaDeMundo(Clase) {
              * cambio, no archivar la prosa, y un texto largo haría el fichero de
              * huellas ilegible para quien lo revise a ojo.
              */
+            /**
+             * ⚠️ Y SE TOMA AL EMPEZAR Y AL ACABAR, PORQUE UNA SOLA MUESTRA MIENTE.
+             *
+             * La primera versión guardaba sólo el texto FINAL, y al día siguiente
+             * lo pillé fallando: añadí a ¡Busca! una línea que dice si la nave va
+             * derivando, y la huella no se movió. Motivo: la política fija de la
+             * huella alterna empujar y frenar, así que al acabar el episodio la
+             * nave está PARADA y esa línea no aparece nunca.
+             *
+             * O sea que una parte del texto que sólo existe en estados a los que
+             * esa política no llega era invisible para el sello.
+             *
+             * Con las dos muestras se cubre más, y conviene decir lo que esto es y
+             * lo que no: la huella MUESTREA las cuatro puertas, no demuestra que
+             * dos juegos sean iguales. Es la misma honestidad que ya lleva el
+             * comportamiento —una política, cuatro semillas— y por eso el contrato
+             * dice «sigue comportándose como cuando se selló», no «es idéntico».
+             */
+            textoAlEmpezar: textoInicial,
             texto: String(env.describe?.() ?? '').slice(0, 400),
             pasos,
             /**
