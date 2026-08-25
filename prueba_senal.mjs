@@ -305,8 +305,8 @@ for (const [id, m] of planos) {
         }))
         .sort((a, b) => a.id.localeCompare(b.id));
 
-    await mkdir(new URL('./resultados/', import.meta.url), { recursive: true });
-    await writeFile(new URL('./resultados/suelo_por_entorno.json', import.meta.url),
+    await mkdir(new URL('./public/data/', import.meta.url), { recursive: true });
+    await writeFile(new URL('./public/data/suelo_por_entorno.json', import.meta.url),
         JSON.stringify({
             _que_es: 'Contra qué suelo se mide cada entorno. Una nota sólo significa algo '
                    + 'comparada con estas siete políticas ciegas, en el mismo mundo, con la '
@@ -317,7 +317,7 @@ for (const [id, m] of planos) {
             total: filas.length,
             entornos: filas,
         }, null, 2) + '\n', 'utf8');
-    console.log(`\n  ✎ publicado resultados/suelo_por_entorno.json `
+    console.log(`\n  ✎ publicado public/data/suelo_por_entorno.json `
               + `(${filas.filter(f => f.familia === 'propio').length} propios de ${filas.length})`);
 }
 

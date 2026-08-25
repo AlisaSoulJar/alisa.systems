@@ -1,0 +1,133 @@
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA — el suelo ciego</title>
+<meta name="alisa-escaparate" content="motor">
+<style>
+:root{color-scheme:light dark}
+body{margin:0;padding:2.5rem 1.25rem;background:#f4f6f8;color:#1a2230;
+font:15px/1.6 ui-sans-serif,system-ui,sans-serif}
+main{max-width:60rem;margin:0 auto}
+h1{font:600 1.5rem/1.2 ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase}
+h2{font:600 1rem/1.2 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;margin-top:2.2rem}
+p.sub{color:#4a5866;max-width:48rem}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;background:#fff;
+border:1px solid #d9e0e7;font-size:14px}
+th,td{padding:.42rem .6rem;border-bottom:1px solid #eef2f5}
+thead th{font:600 11px/1.4 ui-monospace,monospace;text-transform:uppercase;
+letter-spacing:.06em;color:#4a5866;text-align:right}
+thead th:first-child{text-align:left}
+td{text-align:right;font-variant-numeric:tabular-nums}
+td:first-child{text-align:left;font-family:ui-monospace,monospace}
+tbody tr:hover{background:#f8fafb}
+.muro{color:#0a7d55;font-weight:600}
+.plano{color:#b23}
+code{background:#eef2f5;padding:.1rem .3rem;border-radius:3px;font-size:13px}
+.nota{color:#4a5866;font-size:13px;border-left:3px solid #d9e0e7;padding-left:.9rem;margin:1.4rem 0}
+</style>
+
+<main>
+<h1>El suelo ciego</h1>
+
+<p class="sub">Siete formas de jugar sin entender nada —recorrer en ciclo, coger
+la primera, coger la última, tres de azar con semilla y un bandido que aprende
+qué palanca paga— puestas a jugar en cada entorno del banco. Es la vara con la
+que se mide todo lo demás: <b>un entorno vale si les da notas distintas, y una
+partida acredita si les gana</b>.</p>
+
+<p class="sub">Una nota suelta no significa nada. Significa algo comparada con
+esta tabla, <b>en el mismo mundo, con la misma semilla y el mismo horizonte</b>.
+Para comprobar una partida:
+<code>node acreditar.mjs --juego X --semilla N --jugadas a,b,c</code></p>
+
+<!--
+  ⚠️ ESTA PÁGINA NO LLEVA NI UN NÚMERO DENTRO, Y ES POR UNA CICATRIZ.
+
+  `public/clasificacion.html` los lleva incrustados, y el 16-08 se descubrió que
+  llevaba desde el 8 publicando una clasificación que no correspondía a ninguna
+  medida guardada: la página decía `azar 0.14` y el JSON `0.686`. Ocho días. Y
+  como los números estaban dentro del HTML, tampoco podía corregirse sola.
+
+  Así que aquí se leen del fichero que escribe quien mide. No hay segunda copia
+  que pueda separarse, porque no hay segunda copia. Es lo mismo que hicimos con
+  el sustrato en los juegos: una sola verdad y capas encima.
+-->
+<div id="tabla">Cargando la medición…</div>
+
+<p class="nota">Lo mide <code>prueba_senal.mjs</code> en cada <code>npm test</code>
+y lo escribe en <code>public/data/suelo_por_entorno.json</code>. Publica quien
+mide: así el número medido y el número publicado son la misma línea.</p>
+
+<script type="module">
+/**
+ * ⚠️ LA PÁGINA NO SABE NADA. LEE.
+ *
+ * Mismo criterio que las páginas de juego: no calcula, no guarda números, no
+ * decide nada. Pide el fichero que escribió la medición y lo pinta.
+ */
+const F = '/data/suelo_por_entorno.json';
+const num = (v) => (Math.round(v * 100) / 100).toLocaleString('es-ES');
+
+const raiz = document.getElementById('tabla');
+let d;
+try {
+    const res = await fetch(F, { cache: 'no-store' });
+    if (!res.ok) throw new Error(res.status);
+    d = await res.json();
+} catch (e) {
+    raiz.innerHTML = `<p class="sub"><b>No se pudo leer la medición</b> (<code>${F}</code>: ${e.message}).
+        Se corre con <code>npm test</code>. La página no se inventa números.</p>`;
+    throw e;
+}
+
+/**
+ * Se separan por familia porque son dos cosas distintas: los mundos PROPIOS son
+ * del motor —patrón oro, se juegan en solitario— y los de arcade vienen de las
+ * reglas del ProtoHub y además se enfrentan entre sí en la clasificación.
+ */
+const grupos = [
+    ['Mundos propios del motor', d.entornos.filter(e => e.familia === 'propio')],
+    ['Arcade (ProtoHub)', d.entornos.filter(e => e.familia !== 'propio')],
+];
+
+const fila = (e) => {
+    const rango = e.peorCiega === e.mejorCiega
+        ? `<span class="muro">muro en ${num(e.mejorCiega)}</span>`
+        : `${num(e.peorCiega)} … ${num(e.mejorCiega)}`;
+    return `<tr>
+        <td>${e.id}</td>
+        <td>${e.separa ? 'sí' : '<span class="plano">no</span>'}</td>
+        <td>${rango}</td>
+        <td><b>${num(e.mejorCiega)}</b></td>
+        <td>${e.pasos}</td></tr>`;
+};
+
+raiz.innerHTML = grupos.map(([titulo, lista]) => !lista.length ? '' : `
+    <h2>${titulo} — ${lista.length}</h2>
+    <table>
+      <thead><tr>
+        <th>entorno</th><th>separa</th><th>rango del suelo</th>
+        <th>hay que superar</th><th>pasos</th>
+      </tr></thead>
+      <tbody>${lista.map(fila).join('')}</tbody>
+    </table>`).join('');
+
+/**
+ * ⚠️ Y SE EXPLICA EL «MURO», PORQUE LEÍDO A LA LIGERA PARECE UN DEFECTO.
+ *
+ * Un entorno donde las siete políticas sacan EXACTAMENTE lo mismo aparece como
+ * «no separa», y durante meses eso se leyó como debilidad. Para acreditar es al
+ * revés y es el caso más limpio del banco: si ninguna política ciega pasa nunca
+ * de ahí, cualquier nota por encima demuestra sin ambigüedad que hubo algo más
+ * que tanteo. Es un muro, no un suelo plano.
+ */
+const muros = d.entornos.filter(e => e.peorCiega === e.mejorCiega);
+if (muros.length) {
+    const p = document.createElement('p');
+    p.className = 'nota';
+    p.innerHTML = `<b>Los ${muros.length} marcados «no separa» son muros, no defectos.</b>
+        Las siete políticas ciegas sacan ahí exactamente la misma nota —nunca llegan a
+        más—, así que <b>cualquier resultado por encima es prueba inequívoca</b> de que
+        no se llegó a tientas: ${muros.map(m => `<code>${m.id}</code> (${num(m.mejorCiega)})`).join(', ')}.`;
+    raiz.appendChild(p);
+}
+</script>
+</main>

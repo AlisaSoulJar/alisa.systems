@@ -82,4 +82,69 @@ if (fallos) {
 } else {
     console.log(`\n  ✓ los ${resumen.length} participantes publicados son los medidos.`);
 }
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  Y LA OTRA TABLA PUBLICADA: `public/suelo.html`
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * La de arriba se vigila COMPARANDO números, porque los lleva incrustados. Ésta
+ * se vigila al revés: comprobando que **no lleve ninguno**.
+ *
+ * Nació el 25-08 con la cicatriz de la otra delante. Si no guarda copia de la
+ * medición, no puede separarse de ella — no hay nada de lo que separarse. Es el
+ * mismo criterio que el sustrato en los juegos: una sola verdad, capas encima.
+ *
+ * Lo que se exige, entonces:
+ *   1. que el fichero medido exista y tenga los 49 entornos;
+ *   2. que la página lo PIDA, en vez de traérselo puesto;
+ *   3. que no haya una sola nota escrita a mano en el HTML.
+ *
+ * La (3) es la que de verdad protege. El día que alguien «arregle» la página
+ * pegando la tabla para que cargue más rápido, habrá reinventado los ocho días
+ * de agosto — y saldrá aquí en rojo el mismo día, no ocho después.
+ */
+{
+    const DATOS = new URL('./public/data/suelo_por_entorno.json', import.meta.url);
+    const PAGINA = new URL('./public/suelo.html', import.meta.url);
+    let d, pag;
+    try {
+        d = JSON.parse(await readFile(DATOS, 'utf8'));
+        pag = await readFile(PAGINA, 'utf8');
+    } catch (e) {
+        console.log(`\n  ✗ falta el suelo publicado: ${e.message}`);
+        console.log('    Se mide y se escribe con `node prueba_senal.mjs`.');
+        process.exit(1);
+    }
+
+    if (!Array.isArray(d.entornos) || d.entornos.length < 40) {
+        fallos++;
+        console.log(`\n  ✗ el suelo medido trae ${d.entornos?.length ?? 0} entornos y el banco tiene 49.`);
+    }
+    if (!pag.includes('suelo_por_entorno.json')) {
+        fallos++;
+        console.log('\n  ✗ `suelo.html` no pide la medición: se la ha traído puesta.');
+    }
+
+    /**
+     * Números escritos a mano en el HTML. Se miran sólo fuera del `<script>` y
+     * del `<style>`: el guion tiene índices y tamaños de fuente que no son notas,
+     * y contarlos sería acusar a código sano — cosa que ya me ha pasado cinco
+     * veces esta semana.
+     */
+    const cuerpo = pag
+        .replace(/<script[\s\S]*?<\/script>/g, '')
+        .replace(/<style[\s\S]*?<\/style>/g, '')
+        .replace(/<!--[\s\S]*?-->/g, '');
+    const sospechosos = [...cuerpo.matchAll(/-?\d+[.,]\d+|(?<![\w-])-\d{2,}(?![\w-])/g)].map(m => m[0]);
+    if (sospechosos.length) {
+        fallos++;
+        console.log(`\n  ✗ hay ${sospechosos.length} número(s) escritos a mano en suelo.html: `
+                  + `${sospechosos.slice(0, 6).join(', ')}`);
+        console.log('    Una tabla con copia de los datos se separa de ellos. Que los pida.');
+    } else {
+        console.log(`  ✓ suelo.html no guarda ni una nota: pide las ${d.entornos.length} medidas`);
+    }
+}
+
 process.exit(fallos ? 1 : 0);

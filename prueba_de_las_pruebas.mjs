@@ -737,6 +737,24 @@ const SABOTAJES = [
          * sigue contestando 200 con su estado y sus acciones legales, igual que
          * llevaba semanas haciendo. Por eso hace falta comprobarlo.
          */
+        /**
+         * El fallo REAL, y le costó ocho días a este proyecto: una tabla
+         * publicada con los números incrustados, que se separó de la medición sin
+         * que nada avisara. La página decía `azar 0.14` y el JSON `0.686`.
+         *
+         * `suelo.html` nació sin copia —pide el fichero— así que no puede
+         * separarse. El sabotaje le pega una nota a mano, que es exactamente
+         * cómo volvería a pasar: alguien «arregla» la página incrustando la tabla
+         * para que cargue antes.
+         */
+        nombre: 'suelo-publicado',
+        corre: 'node prueba_clasificacion.mjs',
+        fichero: 'public/suelo.html',
+        de: '<h1>El suelo ciego</h1>',
+        a: '<h1>El suelo ciego</h1>\n<p>Defiende: -300,00</p>',
+        vigila: 'que la tabla publicada no guarde copia de la medición',
+    },
+    {
         nombre: 'mapa',
         corre: 'node prueba_mapa.mjs',
         fichero: 'functions/api/gym.js',
