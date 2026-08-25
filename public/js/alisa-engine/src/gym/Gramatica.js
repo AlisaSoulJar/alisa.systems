@@ -77,9 +77,44 @@ export function nombreDe(id) {
  * Si no los lleva, el verbo entero es el método y no hay parámetros — que es lo
  * correcto para `subir` y para `ir_a_planta` por igual.
  */
+/**
+ * ⚠️ LAS DIRECCIONES SON PARÁMETROS, Y ESTO SÍ ES DECLARAR.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Medido el 25-08 sobre los 49 entornos: `derecha` era un método en 13 mundos,
+ * `izquierda` en 11, `abajo` en 10, `arriba` en 8… doce métodos distintos para
+ * una sola acción. Un agente tenía que aprender doce fichas sueltas donde hay
+ * UNA cosa —moverse— con doce destinos.
+ *
+ * El coste no es estético: es que no transfiere. Quien aprende `#mover` lo
+ * aplica en trece mundos; quien aprende `derecha` no ha aprendido nada que le
+ * sirva en el siguiente.
+ *
+ * ⚠️ Y NO CONTRADICE LA REGLA DE «SE DECLARA, NO SE ADIVINA».
+ *
+ * La regla existe porque `ir_a_planta` (un método entero) y `construir_guijarro`
+ * (método + objeto) son indistinguibles desde fuera: el guion bajo no dice cuál
+ * es cuál, y adivinarlo fue lo que produjo las seis gramáticas.
+ *
+ * Esto es otra cosa: una LISTA CERRADA Y ESCRITA. No se infiere de la forma de
+ * la palabra —no hay heurística de sufijos ni de longitud—, está aquí, a la
+ * vista, y se puede discutir línea por línea. Eso es exactamente lo que pedía la
+ * regla: que la decisión esté declarada en un sitio en vez de deducida en varios.
+ *
+ * Y un mundo que no esté de acuerdo tiene la última palabra: si declara su
+ * `metodo` en `affordances()`, manda el suyo. La lista es el defecto, no la ley.
+ */
+export const DIRECCIONES = new Set([
+    'arriba', 'abajo', 'izquierda', 'derecha',
+    'norte', 'sur', 'este', 'oeste',
+    'adelante', 'atras', 'atrás',
+    'subir', 'bajar',
+]);
+
 export function partir(verbo) {
     const v = String(verbo ?? '').trim();
     if (!v) return { metodo: '', params: [] };
+    if (DIRECCIONES.has(v.toLowerCase())) return { metodo: 'mover', params: [v] };
     const dosPuntos = v.indexOf(':');
     if (dosPuntos > 0) {
         /**

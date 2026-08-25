@@ -763,6 +763,28 @@ const SABOTAJES = [
         vigila: 'que el agente reciba el mismo tablero que ve la persona',
     },
     {
+        /**
+         * El fallo REAL, medido antes de arreglarlo: `derecha` era un método en
+         * 13 mundos, `izquierda` en 11, `abajo` en 10, `arriba` en 8. Doce
+         * métodos distintos para UNA acción con doce destinos.
+         *
+         * No es cosmética: quien aprende `#mover` lo aplica en trece mundos, y
+         * quien aprende `#derecha` no ha aprendido nada que le sirva en el
+         * siguiente. Un banco que dice medir transferencia no puede partir la
+         * misma acción en doce fichas sueltas.
+         *
+         * El sabotaje vacía la lista de direcciones. Nada da error: los verbos
+         * siguen siendo legales y las partidas se juegan igual — sólo vuelven a
+         * ser doce métodos donde había uno.
+         */
+        nombre: 'direcciones',
+        corre: 'node --import ./resolver_three.mjs prueba_gramatica.mjs',
+        fichero: 'public/js/alisa-engine/src/gym/Gramatica.js',
+        de: "    'arriba', 'abajo', 'izquierda', 'derecha',",
+        a: '',
+        vigila: 'que una dirección no se haga pasar por método',
+    },
+    {
         nombre: 'gramatica',
         corre: 'node --import ./resolver_three.mjs prueba_gramatica.mjs',
         fichero: 'public/js/alisa-engine/src/gym/Gramatica.js',

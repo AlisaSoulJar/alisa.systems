@@ -38,6 +38,30 @@ console.log('\n¿Habla el banco un solo idioma de acciones?\n');
 const metodos = new Map();
 let mundos = 0, acciones = 0, sinTripleta = 0;
 const conSeparador = [];
+const direcciones = [];
+
+/**
+ * ⚠️ ESTA LISTA ESTÁ DUPLICADA A PROPÓSITO, Y ES LA ÚNICA DUPLICACIÓN QUE
+ *    DEFIENDO EN TODO EL BANCO.
+ *
+ * La primera versión usaba `DIRECCIONES` importado de `Gramatica.js` — o sea, la
+ * misma lista que tiene que vigilar. El sabotaje la vació y la comprobación
+ * APROBÓ: al no estar `derecha` en la lista, el detector dejó de reconocerla como
+ * dirección exactamente igual que el código que fallaba. Se quedó ciega con ella.
+ *
+ * Un guardián que comparte la constante que guarda no guarda nada. Aquí las
+ * palabras se escriben otra vez, a mano, para que romper una no rompa la otra —
+ * que es justo lo que un control independiente significa.
+ *
+ * Sexta vez esta semana que un instrumento nuevo aprueba con el cable cortado, y
+ * ninguna se ha dado por buena hasta verla suspender.
+ */
+const ES_DIRECCION = new Set([
+    'arriba', 'abajo', 'izquierda', 'derecha',
+    'norte', 'sur', 'este', 'oeste',
+    'adelante', 'atras', 'atrás',
+    'subir', 'bajar',
+]);
 
 for (const e of CATALOGO) {
     let env;
@@ -82,6 +106,24 @@ for (const e of CATALOGO) {
                 conSeparador.push(`${e.id}: #${a.metodo} |${p}`);
             }
         }
+        /**
+         * ⚠️ UNA DIRECCIÓN NO ES UN MÉTODO.
+         *
+         * Medido antes de unificarlas: `derecha` era método en 13 mundos,
+         * `izquierda` en 11, `abajo` en 10, `arriba` en 8. Doce métodos distintos
+         * para UNA acción con doce destinos.
+         *
+         * El daño no es de estilo: quien aprende `#mover` lo aplica en trece
+         * mundos, y quien aprende `#derecha` no ha aprendido nada que le sirva en
+         * el siguiente. Un banco que quiere medir transferencia no puede partir
+         * la misma acción en doce fichas.
+         *
+         * La lista vive en `Gramatica.js` y está a la vista para discutirla. Esto
+         * sólo vigila que siga aplicándose: si alguien la vacía, aquí sale.
+         */
+        if (ES_DIRECCION.has(String(a.metodo).toLowerCase())) {
+            direcciones.push(`${e.id}: #${a.metodo}`);
+        }
         metodos.set(a.metodo, (metodos.get(a.metodo) ?? 0) + 1);
 
         /**
@@ -111,6 +153,13 @@ if (conSeparador.length) {
     for (const s of conSeparador.slice(0, 6)) console.log(`      ${s}`);
 } else {
     console.log('  ✓ ningún método esconde un parámetro dentro');
+}
+
+if (direcciones.length) {
+    mal(`${direcciones.length} método(s) son en realidad una dirección — deberían ser #mover:`);
+    for (const s of direcciones.slice(0, 6)) console.log(`      ${s}`);
+} else {
+    console.log('  ✓ ninguna dirección se hace pasar por método');
 }
 
 /**
