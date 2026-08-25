@@ -48,21 +48,28 @@ const AQUI = path.dirname(fileURLToPath(import.meta.url));
  * Las etapas que están en el banco, con su página de persona y su entorno.
  * Las que no están en el banco se listan aparte, abajo: no tener entorno es otra
  * cosa que tener dos motores, y mezclarlas escondería las dos.
+ *
+ * ⚠️ EL MAPA YA NO VIVE AQUÍ: SE IMPORTA. Y ES POR UN FALLO DEL 25-08.
+ *
+ * Estaba escrito en este fichero como constante local. Ese día, al montar la
+ * antesala de los betas, escribí `gen_sagas.mjs` parseando el `<title>` de las
+ * páginas — porque la lista buena estaba AQUÍ DENTRO y no se podía importar.
+ * Resultado: mi generador sólo miró `public/games` y la saga ¡Sobrevive! entera
+ * se quedó fuera de la puerta. Sus dos etapas viven en `labs/`.
+ *
+ * Lo vio Oscar preguntando por qué faltaban sagas. No lo vio ninguna prueba.
+ *
+ * Una fuente canónica enterrada en un fichero que no la exporta es exactamente
+ * el fallo del parser de la tripleta, el del resolver de intención y el del suelo
+ * ciego. Cuatro veces el mismo día, y ésta me la hice yo sola.
  */
-const EN_EL_BANCO = [
-    { etapa: '¡Busca! 1 Cabinet Escape', pagina: 'public/games/croupier_cabinet_escape.html',
-      env: 'public/js/alisa-engine/src/gym/envs/CabinetEscapeEnv.js' },
-    { etapa: '¡Busca! 3 Corp Building', pagina: 'public/games/croupier_corporate_building.html',
-      env: 'public/js/alisa-engine/src/gym/envs/CorpBuildingEnv.js' },
-    { etapa: '¡Busca! 4 City Sector', pagina: 'public/games/raccoon_city_sector.html',
-      env: 'public/js/alisa-engine/src/gym/envs/RaccoonSpaceEnv.js' },
-    { etapa: '¡Busca! 5 Planeta', pagina: 'public/games/raccoon_planet.html',
-      env: 'public/js/alisa-engine/src/gym/envs/RaccoonSpaceEnv.js' },
-    { etapa: '¡Busca! 6 Espacio', pagina: 'public/games/raccoon_space.html',
-      env: 'public/js/alisa-engine/src/gym/envs/RaccoonSpaceEnv.js' },
-    { etapa: '¡Sobrevive! 2 Acuario', pagina: 'public/labs/croupier_chopper_aquarium.html',
-      env: 'public/js/alisa-engine/src/gym/envs/ChopperAquariumEnv.js' },
-];
+import { EN_EL_BANCO as MAPA } from './sagas.mjs';
+
+const EN_EL_BANCO = MAPA.map(e => ({
+    etapa: `¡${e.saga}! ${e.etapa} ${e.nombre}`,
+    pagina: e.pagina,
+    env: e.env,
+}));
 
 /**
  * ⚠️ TRINQUETE. Las etapas que HOY corren código distinto según quién juegue.

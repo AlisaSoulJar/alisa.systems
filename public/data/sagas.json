@@ -1,78 +1,118 @@
 {
-  "_que_es": "Las sagas y sus etapas, leídas del <title> de cada página de public/games. No se escribe a mano: este proyecto ya ha tenido cinco listas paralelas separándose de la realidad sin dar un error.",
-  "_generado_por": "node gen_sagas.mjs, dentro de npm run empaquetar",
+  "_que_es": "Las sagas y sus etapas. La LISTA se declara en sagas.mjs —una sola vez, compartida con prueba_sagas.mjs—; lo demás se mide leyendo cada página.",
+  "_por_que": "La primera versión parseaba títulos y sólo miraba public/games, así que dejó fuera la saga ¡Sobrevive! entera, que vive en labs/. Una lista paralela más en un proyecto que ya ha perdido cinco.",
   "sagas": [
     {
       "nombre": "Busca",
       "etapas": [
         {
+          "saga": "Busca",
           "etapa": 1,
           "nombre": "Cabinet Escape",
           "pagina": "/games/croupier_cabinet_escape.html",
-          "sustrato": false
+          "existe": true,
+          "medida": true,
+          "sustrato": false,
+          "avisa": true
         },
         {
+          "saga": "Busca",
           "etapa": 2,
           "nombre": "Registro de Planta",
           "pagina": "/games/raccoon_floor_search.html",
-          "sustrato": false
+          "existe": true,
+          "medida": false,
+          "sustrato": false,
+          "avisa": true
         },
         {
+          "saga": "Busca",
           "etapa": 3,
           "nombre": "Corp Building",
           "pagina": "/games/croupier_corporate_building.html",
-          "sustrato": false
+          "existe": true,
+          "medida": true,
+          "sustrato": false,
+          "avisa": true
         },
         {
+          "saga": "Busca",
           "etapa": 4,
           "nombre": "City Sector",
           "pagina": "/games/raccoon_city_sector.html",
-          "sustrato": false
+          "existe": true,
+          "medida": true,
+          "sustrato": false,
+          "avisa": true
         },
         {
+          "saga": "Busca",
           "etapa": 5,
-          "nombre": "Planet",
+          "nombre": "Planeta",
           "pagina": "/games/raccoon_planet.html",
-          "sustrato": false
+          "existe": true,
+          "medida": true,
+          "sustrato": false,
+          "avisa": true
         },
         {
+          "saga": "Busca",
           "etapa": 6,
-          "nombre": "Space",
+          "nombre": "Espacio",
           "pagina": "/games/raccoon_space.html",
-          "sustrato": true
+          "existe": true,
+          "medida": true,
+          "sustrato": true,
+          "avisa": true
         }
       ],
-      "conSustrato": 1
+      "conSustrato": 1,
+      "medidas": 5
+    },
+    {
+      "nombre": "Sobrevive",
+      "etapas": [
+        {
+          "saga": "Sobrevive",
+          "etapa": 1,
+          "nombre": "Interaction Lab",
+          "pagina": "/labs/croupier_interaction_lab.html",
+          "existe": true,
+          "medida": false,
+          "sustrato": false,
+          "avisa": true
+        },
+        {
+          "saga": "Sobrevive",
+          "etapa": 2,
+          "nombre": "Acuario",
+          "pagina": "/labs/croupier_chopper_aquarium.html",
+          "existe": true,
+          "medida": true,
+          "sustrato": false,
+          "avisa": true
+        }
+      ],
+      "conSustrato": 0,
+      "medidas": 1
     },
     {
       "nombre": "Defiende",
       "etapas": [
         {
+          "saga": "Defiende",
           "etapa": 1,
           "nombre": "Sendero",
           "pagina": "/games/defiende_sendero.html",
-          "sustrato": true
+          "existe": true,
+          "medida": true,
+          "sustrato": true,
+          "avisa": true
         }
       ],
-      "conSustrato": 1
+      "conSustrato": 1,
+      "medidas": 1
     }
   ],
-  "fuera": [
-    {
-      "pagina": "_prueba_mundo.html",
-      "titulo": "ALISA — banco de pruebas de montarMundo"
-    },
-    {
-      "pagina": "asteroid_gauntlet.html",
-      "titulo": "ALISA — Pedrisco 3D V3"
-    },
-    {
-      "pagina": "chopper_terrarium.html",
-      "titulo": "ALISA Lab - Chopper Aquarium v3"
-    },
-    {
-      "pagina": "corp_building.html",
-      "titulo": "ALISA — Corporate Building (13 Corp Building)"
-    }
-  ]
+  "total": 9
 }

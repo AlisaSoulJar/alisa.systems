@@ -15,16 +15,16 @@ contrario. El problema no era que no estuviera escrito: era que no había índic
 Volver a decidir sale barato en el momento y carísimo a la semana, porque la
 segunda decisión casi nunca coincide con la primera y entonces hay dos verdades.
 
-**2214 decisiones** en 357 ficheros.
+**2229 decisiones** en 360 ficheros.
 
 ## Índice
 
-- [Herramientas de medida](#herramientas-de-medida) — 436
+- [Herramientas de medida](#herramientas-de-medida) — 438
 - [Reglas de los juegos](#reglas-de-los-juegos) — 362
 - [Las mesas y los visualizadores](#las-mesas-y-los-visualizadores) — 312
-- [Las comprobaciones](#las-comprobaciones) — 287
-- [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 207
-- [Otros](#otros) — 177
+- [Las comprobaciones](#las-comprobaciones) — 289
+- [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 208
+- [Otros](#otros) — 187
 - [El motor](#el-motor) — 108
 - [El gym y los entornos](#el-gym-y-los-entornos) — 88
 - [Las páginas de los juegos](#las-páginas-de-los-juegos) — 81
@@ -464,6 +464,13 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>La antesala necesita saber a dónde mandar a cada uno: entropy tiene su mesa de casino, el ajedrez su tablero, y los dieciséis juegos nuevos no tienen página propia — se juegan en `mesa.html`, que sirve a los treinta.</sub>
 - **Y LOS QUE NO TIENEN PÁGINA NO SE OMITEN: SE MANDAN A LA GENÉRICA.** <sub>línea 51</sub>
   <br><sub>Omitirlos dejaría a dieciséis juegos fuera de la antesala sin decir por qué — y no están rotos, se juegan perfectamente en `mesa.html`. Un catálogo que esconde la mitad de lo que hay es peor que uno que lo lista todo.</sub>
+
+### `gen_sagas.mjs`
+
+- **POR QUÉ SE GENERA Y NO SE ESCRIBE.** <sub>línea 6</sub>
+  <br><sub>Es la misma razón que `gen_paginas.mjs` deja escrita, y no la voy a repetir mejor de lo que está: este proyecto ha tenido **cinco listas paralelas** —los juegos del README, el escaparate, el catálogo del gym, las barajas, las</sub>
+- **DE DÓNDE SALE: DEL TÍTULO, QUE YA LO DICE.** <sub>línea 15</sub>
+  <br><sub>Las páginas se titulan `ALISA — ¡Busca! 4 — City Sector`. Ahí está todo: la saga, el número de etapa y el nombre. No hace falta un fichero de metadatos nuevo que alguien tenga que acordarse de actualizar — hace falta leer lo que ya</sub>
 
 ### `inventario_piezas.py`
 
@@ -2810,19 +2817,19 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Aquélla comprueba que los juegos LEEN el catálogo que se les pasa. Ésta, que cogen de él LA BARAJA QUE LES TOCA. Un juego francés que pidiera la española leería el catálogo impecablemente y repartiría oros en una mesa de</sub>
 - **Y este sabotaje ya sirvió de algo antes de entrar aquí: con él puesto,** <sub>línea 507</sub>
   <br><sub>la primera versión de la comprobación APROBÓ. Miraba el `de` del dicho, y el dicho filtrado sigue diciendo ser tuyo. Hubo que cambiarla por la pregunta buena —¿cambia lo que yo veo cuando otro elige distinto?— y eso</sub>
-- **AQUÍ FALLÉ LA PUNTERÍA DOS VECES, Y ES EL ERROR TÍPICO DE ESTE FICHERO.** <sub>línea 893</sub>
+- **AQUÍ FALLÉ LA PUNTERÍA DOS VECES, Y ES EL ERROR TÍPICO DE ESTE FICHERO.** <sub>línea 911</sub>
   <br><sub>Primero cambié `juego: 'ajedrez'` en el catálogo: la prueba aprobó, porque enumera el catálogo y construye cada entorno — un nombre distinto se construye igual. Luego puse `reset(` a secas, que aparece también en un</sub>
-- **SE SABOTEA EL PAQUETE, NO `public/`.** <sub>línea 929</sub>
+- **SE SABOTEA EL PAQUETE, NO `public/`.** <sub>línea 947</sub>
   <br><sub>medido = PAQUETE if hay_paquete else PUBLIC</sub>
-- **NO SE PUDO DEVOLVER A SU SITIO:')}`);** <sub>línea 1024</sub>
+- **NO SE PUDO DEVOLVER A SU SITIO:')}`);** <sub>línea 1042</sub>
   <br><sub>for (const f of sinRestaurar) console.log(rojo(`      ${f}`)); console.log(rojo('   RECUPÉRALOS CON `git checkout -- <fichero>` ANTES DE SEGUIR.')); process.exit(2);</sub>
-- **EL CENSO SE DERIVA.** <sub>línea 1037</sub>
+- **EL CENSO SE DERIVA.** <sub>línea 1055</sub>
   <br><sub>Aquí había un array `TODAS` con los nombres escritos a mano. Es la enésima lista de este proyecto que se separa de la realidad en silencio — y ésta era la peor, porque es la lista de la red de seguridad.</sub>
-- **20-08: estas dos salían denunciadas como «no las corre nadie» y era FALSO —** <sub>línea 1079</sub>
+- **20-08: estas dos salían denunciadas como «no las corre nadie» y era FALSO —** <sub>línea 1097</sub>
   <br><sub>tienen su propio mando desde el día que se escribieron. El aviso miraba sólo `scripts.test` y llamaba huérfana a cualquiera que viviera en otro guion. Se arregla abajo mirando TODOS los guiones, y éstas se quedan aquí porque abren</sub>
-- **DOS LISTAS Y NO UNA, PORQUE SE PREGUNTAN DOS COSAS DISTINTAS.** <sub>línea 1106</sub>
+- **DOS LISTAS Y NO UNA, PORQUE SE PREGUNTAN DOS COSAS DISTINTAS.** <sub>línea 1124</sub>
   <br><sub>`todasEnDisco` es lo que HAY. `enDisco` es lo que se vigila por huérfano, que excluye a las de `APARTE` porque de ésas ya se sabe por qué no van en `npm test`.</sub>
-- **SE MIRAN TODOS LOS GUIONES, NO SÓLO `test`.** <sub>línea 1120</sub>
+- **SE MIRAN TODOS LOS GUIONES, NO SÓLO `test`.** <sub>línea 1138</sub>
   <br><sub>Esto leía `scripts.test` y punto, así que denunciaba como huérfana a cualquier comprobación que viviera en otro mando —`npm run figuras`, `npm run invitados`— aunque se corriera a diario. Una acusación falsa dentro del instrumento que existe</sub>
 
 ### `prueba_dos_personas.mjs`
@@ -3136,6 +3143,13 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Monté el repetidor en la mesa genérica y en el motor de cartas y di el trabajo por terminado, sin haber contado nunca cuántos caminos había. Había tres:</sub>
 - **LA MARCA ES `crearRepetidor({`, CON EL PARÉNTESIS, Y NO ES QUISQUILLOSO.** <sub>línea 246</sub>
   <br><sub>Estaba como `crearRepetidor` a secas. Al comprobar que esta prueba PUEDE fallar —renombrando la llamada a `crearRepetidorZZZ` en un motor— siguió en verde: el nombre saboteado CONTIENE el original, así que `includes` decía que sí.</sub>
+
+### `prueba_sagas_puerta.mjs`
+
+- **QUÉ VIGILA, Y POR QUÉ CADA COSA.** <sub>línea 10</sub>
+  <br><sub>1. QUE LA LISTA SE GENERE Y NO SE ESCRIBA. Es la regla que `gen_paginas.mjs` dejó escrita tras cinco listas paralelas que se separaron de la realidad sin dar un error. Si la puerta guarda copia de los juegos, esta prueba lo dice.</sub>
+- **4. EL TRINQUETE: CUÁNTAS DAN AVISOS REPETIBLES.** <sub>línea 83</sub>
+  <br><sub>Medido el 25-08: 2 de 7. Son las dos que pasaron al pintor compartido y publican `window.getSustrato()`. Las otras cinco dibujan desde su sistema y todavía no publican nada, así que sus avisos llegan sin mundo detrás.</sub>
 
 ### `prueba_sagas.mjs`
 
@@ -3788,11 +3802,13 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Va también el tamaño de la ventana y si estaba oculta. Los dos han mentido hoy: una proporción de pantalla rara descuadraba el encuadre, y con la ventana minimizada no hay fotogramas —`document.hidden`— así que la página parece viva</sub>
 - **NO SE MANDA NADA SIN QUE ALGUIEN LO PULSE.** <sub>línea 28</sub>
   <br><sub>automático y no se recoge nada al cargar la página. Se manda lo que se ve en el cuadro, cuando se le da a mandar, y se dice antes de mandarlo.</sub>
-- **QUÉ APARATO, Y SE DEDUCE DE TRES COSAS, NO DE UNA.** <sub>línea 70</sub>
+- **Y SI NO HAY PROTOHUB, ESTO NO ES EL ARCADE: ES UNA SAGA.** <sub>línea 60</sub>
+  <br><sub>Este reportero nació para las mesas, donde el recibo `{juego, semilla, jugadas}` reconstruye la partida entera. Las páginas de saga —¡Busca!, ¡Defiende!— no llevan ProtoHub y hasta hoy salían con `recibo: null` y</sub>
+- **QUÉ APARATO, Y SE DEDUCE DE TRES COSAS, NO DE UNA.** <sub>línea 108</sub>
   <br><sub>La cadena del navegador miente por diseño —un iPad lleva años diciendo «Macintosh»— y sólo por el ancho tampoco vale: una ventana estrecha en un escritorio no es un móvil, y esa</sub>
-- **Se enseña ANTES de mandarlo, y se actualiza mientras se escribe.** <sub>línea 151</sub>
+- **Se enseña ANTES de mandarlo, y se actualiza mientras se escribe.** <sub>línea 195</sub>
   <br><sub>manda a ciegas algo que no puede ver: es su partida, no la nuestra. const refrescar = () => { json.textContent = JSON.stringify(recoger(txt.value), null, 1); }; refrescar();</sub>
-- **SI EL BUZÓN NO CONTESTA, NO SE PIERDE EL AVISO.** <sub>línea 175</sub>
+- **SI EL BUZÓN NO CONTESTA, NO SE PIERDE EL AVISO.** <sub>línea 219</sub>
   <br><sub>Un botón que se traga lo que alguien se ha molestado en escribir es peor que no tenerlo. Se deja el texto a la vista y se ofrece copiarlo, que es lo único que se puede prometer sin red.</sub>
 
 ### `public/arcade/js/protohub/sala.js`
@@ -3937,6 +3953,8 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 
 - **Aquí había dos envoltorios más:** <sub>línea 396</sub>
   <br><sub>window.enterCabinetMode = () => window.game.enterCabinetMode(); window.exitCabinetMode  = () => window.game.exitCabinetMode();</sub>
+- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 415</sub>
+  <br><sub>Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y, si esta página publica `window.getSustrato()`, adjunta el mundo entero — con eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.</sub>
 
 ### `public/games/croupier_corporate_building.html`
 
@@ -3950,6 +3968,8 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>quien aplica la corrección de luz — y sin ella la escena sale NEGRA.</sub>
 - **El plugin NO tiene interruptor propio: su `renderFn` es simplemente** <sub>línea 2014</sub>
   <br><sub>`() => composer.render()`. Escribí un `cine.enabled` de mi cosecha antes de mirar, y no habría hecho nada. Se alterna eligiendo QUIÉN pinta. let cineEncendido = true;</sub>
+- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 2359</sub>
+  <br><sub>Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y, si esta página publica `window.getSustrato()`, adjunta el mundo entero — con eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.</sub>
 
 ### `public/games/defiende_sendero.html`
 
@@ -3961,6 +3981,8 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>`construir` devuelve el motivo en vez de fallar en silencio. Un clic que no hace nada y no explica por qué es la clase de silencio que en este proyecto siempre acaba siendo un fallo que nadie ve — hoy me ha pasado con un enlace</sub>
 - **EL SUSTRATO SE PUBLICA EN LA PÁGINA, Y NO ES UN AÑADIDO DE DEPURACIÓN.** <sub>línea 270</sub>
   <br><sub>Es la capa de abajo del proyecto: el estado en el idioma común del que salen el texto, los números, el pintor 2D y el 3D. Que esta página lo exponga significa que cualquiera —una extensión, un agente en la consola, otra vista— puede leer</sub>
+- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 290</sub>
+  <br><sub>Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y, si esta página publica `window.getSustrato()`, adjunta el mundo entero — con eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.</sub>
 
 ### `public/games/raccoon_city_sector.html`
 
@@ -3984,11 +4006,15 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>El HUD ponía `< 25` a ojo mientras el alcance real del escáner es `radio + 25` y cambia con cada edificio. O sea que había edificios que se podían escanear y el HUD decía que no, y al revés. Un indicador que</sub>
 - **EL PUENTE RL ERA UN TERCER JUEGO, Y AHORA ES EL MISMO.** <sub>línea 514</sub>
   <br><sub>Tenía su propia observación —cinco números y dos por edificio, normalizados a ojo— y su propio `step` que empujaba el dron a mano y escaneaba con un radio de 25. O sea que esta página ofrecía TRES juegos distintos: el de la persona,</sub>
+- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 567</sub>
+  <br><sub>Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y, si esta página publica `window.getSustrato()`, adjunta el mundo entero — con eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.</sub>
 
 ### `public/games/raccoon_floor_search.html`
 
 - **El juego estaba MUDO, y los 24 juegos de `games/` con él: ni una línea** <sub>línea 101</sub>
   <br><sub>de audio en toda la carpeta. Teníamos al lado `js/sfx.js` — 36 KB, 66 efectos sintetizados con Web Audio, sin un solo .wav — y CERO usuarios. No es un script de módulo: publica `window.SFX`, así que va aquí arriba y</sub>
+- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 383</sub>
+  <br><sub>Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y, si esta página publica `window.getSustrato()`, adjunta el mundo entero — con eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.</sub>
 
 ### `public/games/raccoon_planet.html`
 
@@ -4006,6 +4032,8 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>`width = fuel + '%'` sólo funcionaba porque el depósito viejo empezaba en 100. Con el del núcleo —doce— la barra saldría al 12% con el depósito lleno: la pantalla mintiendo sin dar un error.</sub>
 - **EL INDICADOR DE ALCANCE, QUE ANTES NO EXISTÍA.** <sub>línea 386</sub>
   <br><sub>Con el escaneo a distancia libre no hacía falta; ahora bajar la órbita es LA decisión de la etapa, y sin un indicador la persona no sabe si ya está lo bastante cerca — pincharía a ciegas hasta quedarse sin batería.</sub>
+- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 440</sub>
+  <br><sub>Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y, si esta página publica `window.getSustrato()`, adjunta el mundo entero — con eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.</sub>
 
 ### `public/games/raccoon_space.html`
 
@@ -4033,6 +4061,8 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Antes esta función movía la nave con su propia cinemática. Ahora manda un verbo al núcleo y copia el resultado a la escena — que es exactamente lo que dice el patrón dorado de la puerta humana: *«traduce dedos a verbos; nunca</sub>
 - **UNA LÍNEA, Y ES LA TESIS DEL PROYECTO ENTERA.** <sub>línea 480</sub>
   <br><sub>Antes esto copiaba a mano: la nave desde `nucleo.nave.x`, cada asteroide desde `nucleo.asteroides[i]`. Funcionaba, y aun así era un dibujante PARALELO — acertaba porque lo escribió la misma mano que el motor, no</sub>
+- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 514</sub>
+  <br><sub>Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y, si esta página publica `window.getSustrato()`, adjunta el mundo entero — con eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.</sub>
 
 ### `public/index.html`
 
@@ -4042,6 +4072,15 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>enlazar: la clasificación y la matriz de géneros vivían en URLs que sólo conocía quien las había hecho. Un banco de pruebas al que no se llega desde la portada no lo verifica nadie, por bien medido que esté. --></sub>
 - **Y ésta es la tercera, por el mismo motivo.** <sub>línea 84</sub>
   <br><sub>partida de agente deja el mismo recibo que la tuya» — y hasta hoy no había forma de VER ni uno. El corpus estaba, la verificación estaba, y lo único que faltaba era la puerta. Cada fila abre la partida volviéndose a jugar. --></sub>
+
+### `public/juegos/entrar.html`
+
+- **NO TRAE NINGUNA LISTA DE JUEGOS.** <sub>línea 13</sub>
+  <br><sub>Sale de `data/sagas.json`, que se GENERA leyendo el <title> de cada página de `public/games`. Es la misma regla que `arcade/entrar.html` deja escrita y que aquí se respeta al pie de la letra: este proyecto ha tenido CINCO listas</sub>
+- **Y DICE CUÁLES DAN AVISOS REPETIBLES, QUE NO ES UN DETALLE TÉCNICO.** <sub>línea 22</sub>
+  <br><sub>El botón de «algo se ve raro» adjunta el estado del mundo si la página publica su sustrato. Cinco de las siete etapas todavía no lo publican, así que sus avisos llegan sin nada detrás: son una anécdota en vez de un fallo que se pueda</sub>
+- **LA PÁGINA NO SABE QUÉ JUEGOS HAY.** <sub>línea 74</sub>
+  <br><sub>Mismo criterio que `suelo.html` y que las páginas de juego desde hoy: no guarda copia de nada. Si mañana hay una saga nueva, aparece aquí sola en cuanto se regenere el fichero — y si alguien la borra, desaparece. No hay</sub>
 
 ### `public/lab.html`
 

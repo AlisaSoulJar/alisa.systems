@@ -40,7 +40,7 @@ if (!existsSync(DATOS)) {
 }
 const d = JSON.parse(readFileSync(DATOS, 'utf8'));
 const puerta = readFileSync(PUERTA, 'utf8');
-const etapas = d.sagas.flatMap(s => s.etapas.map(e => ({ ...e, saga: s.nombre })));
+const etapas = d.sagas.flatMap(s => s.etapas);
 
 console.log(`  ${d.sagas.length} saga(s) · ${etapas.length} etapa(s)`);
 for (const s of d.sagas) console.log(`    ¡${s.nombre}!  ${s.etapas.length} etapas`);

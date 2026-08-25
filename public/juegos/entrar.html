@@ -91,22 +91,35 @@ try {
     throw e;
 }
 
+/**
+ * ⚠️ CADA ETAPA DICE DOS COSAS DISTINTAS, Y NO SON LO MISMO.
+ *
+ *   medida    el banco tiene entorno para ella, así que lo que juega una persona
+ *             y lo que mide un agente son el mismo juego. Sin esto se puede jugar
+ *             igual, pero la opinión no se puede contrastar con una nota.
+ *   con mundo publica `getSustrato()`, así que un aviso trae la escena y se puede
+ *             REPETIR. Sin esto, «se ve raro» es una anécdota.
+ *
+ * Se enseñan las dos porque quien va a dedicar su tarde a probar esto merece
+ * saber para qué va a servir lo que cuente. Esconderlo sería más bonito y menos
+ * honrado.
+ */
 raiz.innerHTML = d.sagas.map(s => `
-    <h2>¡${s.nombre}!<span class="cuenta">${s.etapas.length} etapas</span></h2>
+    <h2>¡${s.nombre}!<span class="cuenta">${s.etapas.length} etapas · ${s.medidas} en el banco</span></h2>
     <div class="etapas">${s.etapas.map(e => `
         <a class="etapa" href="${e.pagina}">
             <b>${e.etapa}. ${e.nombre}</b>
-            <small>${e.pagina.split('/').pop()}</small>
+            <small>${e.pagina.replace(/^\//, '')}</small>
             <span class="marca ${e.sustrato ? 'si' : 'no'}">${
                 e.sustrato ? 'avisos repetibles' : 'avisos sin mundo'
-            }</span>
+            }</span>${e.medida ? '' : '<span class="marca no">sin nota</span>'}
         </a>`).join('')}</div>`).join('');
 
-const total = d.sagas.reduce((n, s) => n + s.etapas.length, 0);
+const total = d.total ?? d.sagas.reduce((n, s) => n + s.etapas.length, 0);
 const conSus = d.sagas.reduce((n, s) => n + s.conSustrato, 0);
+const medidas = d.sagas.reduce((n, s) => n + s.medidas, 0);
 document.getElementById('fuera').textContent =
-    `${d.sagas.length} sagas · ${total} etapas · ${conSus} publican su mundo`
-    + (d.fuera?.length ? ` · ${d.fuera.length} páginas fuera de las sagas (laboratorios y versiones viejas)` : '');
+    `${d.sagas.length} sagas · ${total} etapas · ${medidas} las mide el banco · ${conSus} publican su mundo`;
 </script>
 
 <!--
