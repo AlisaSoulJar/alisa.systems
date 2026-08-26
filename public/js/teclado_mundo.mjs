@@ -32,12 +32,24 @@
 export function montarTeclado(dameNucleo, cfg = {}) {
     const estado = { subir: false, bajar: false, izquierda: false, derecha: false };
 
+    /**
+     * ⚠️ TECLAS DE MÁS, DECLARADAS — NO UN SEGUNDO ESCUCHADOR.
+     *
+     * El submarino tiene SHIFT para avanzar, que no es ninguna de las cuatro
+     * direcciones. La salida fácil habría sido que su página se pusiera su propio
+     * `keydown` al lado, y entonces habría dos sitios decidiendo lo mismo — que
+     * es exactamente cómo empezaron los HUD y las cartelas que acabo de recoger.
+     *
+     * `extra: { shift: 'adelante' }` añade el campo al estado y lo mantiene.
+     */
+    for (const campo of Object.values(cfg.extra ?? {})) estado[campo] = false;
+
     const cual = (k) => (
         (k === 'w' || k === 'arrowup') ? 'subir'
         : (k === 's' || k === 'arrowdown') ? 'bajar'
         : (k === 'a' || k === 'arrowleft') ? 'izquierda'
         : (k === 'd' || k === 'arrowright') ? 'derecha'
-        : null
+        : (cfg.extra?.[k] ?? null)
     );
 
     const abajo = (e) => {

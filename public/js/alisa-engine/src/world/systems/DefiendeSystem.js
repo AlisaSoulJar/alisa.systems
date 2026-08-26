@@ -1,4 +1,5 @@
 import { ECSWorld } from '../OverworldECS.js';
+import { SpawnWaveSystem } from './SpawnWaveSystem.js';
 import { mulberry32 } from '../core/DeterministicScope.js';
 import { DefiendeMapaFactory, CELDA } from '../factories/DefiendeMapaFactory.js';
 
@@ -119,13 +120,64 @@ export const OLEADAS = [
 export const ORDEN_SISTEMAS = ['oleadas', 'ruta', 'torretas', 'balas', 'bajas'];
 
 export class DefiendeSystem {
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  EL CARTUCHO — ¡DEFIENDE! DICHO COMO TABLA
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Este juego ya era medio declarativo antes de que existiera la palabra ROM:
+     * las torretas, los bichos y las oleadas llevaban meses siendo tablas, y el
+     * motor no sabía de ellas más que lo que decían sus columnas. Lo que faltaba
+     * era juntarlas y decir en voz alta que ESO es el juego.
+     *
+     * ⚠️ EL `orden` NO ES DOCUMENTACIÓN: ES UNA REGLA DEL JUEGO.
+     *
+     * En un ECS el orden de registro decide la partida —si `bajas` corriera antes
+     * que `balas`, dos disparos irían al mismo muerto— y no da ningún error. Va
+     * en el cartucho porque es tan parte del juego como el precio del yunque, y
+     * `prueba_defiende.mjs` comprueba que el mundo se registra en este orden.
+     *
+     * ⚠️ SIN `hud` NI `cartel`, Y ES A PROPÓSITO.
+     *
+     * Los otros cartuchos los traen porque su página los LEE. Ésta todavía no se
+     * ha convertido, y declarar aquí un HUD que nadie pinta sería exactamente el
+     * adorno del que este fichero se ha pasado el día quejándose: una tabla que
+     * no manda sobre nada se desincroniza el martes y nadie se entera.
+     */
+    static ROM = {
+        id: 'alisa/Defiende-v0',
+        familia: 'tiempo_real',
+        verbos: ['esperar', ...TORRETAS.map((t) => `construir_${t.id}`)],
+        mundo: { lado: 12, vidas: 10, presupuesto: 40, tope: 7200 },
+        sistemas: [
+            ['SpawnWaveSystem', { oleadas: OLEADAS }],
+            ['DefiendeMapaFactory', {}],
+        ],
+        orden: ORDEN_SISTEMAS,
+        /** Las tres tablas que SON el juego: qué compras, a qué te enfrentas. */
+        torretas: TORRETAS,
+        atacantes: TIPOS,
+    };
+
+    /** Los números con los que este cartucho llama a una pieza. */
+    static params(pieza) {
+        return DefiendeSystem.ROM.sistemas.find(([n]) => n === pieza)?.[1] ?? {};
+    }
+
     constructor(opts = {}) {
-        this.lado = opts.lado ?? 12;              // matriz lado × lado
-        this.vidasIniciales = opts.vidas ?? 10;
+        /**
+         * El calendario de oleadas, compuesto. La TABLA sigue siendo de este
+         * juego —qué manda cada ola y cada cuánto—; el reloj que la recorre es un
+         * átomo que ahora puede usar cualquier ROM de «aguanta oleadas».
+         */
+        this.olas = new SpawnWaveSystem(DefiendeSystem.params('SpawnWaveSystem'));
+        const a = { ...DefiendeSystem.ROM.mundo, ...opts };
+        this.lado = a.lado;                       // matriz lado × lado
+        this.vidasIniciales = a.vidas;
         // 40 y no 60: poder comprar el yunque de entrada resulta ser una TRAMPA.
         // Medido, con premios x0,4: con 60 de salida se gana el 63% y con 40 el 75%.
-        this.presupuestoInicial = opts.presupuesto ?? 40;
-        this.tope = opts.tope ?? 7200;            // 120 s a 60 Hz
+        this.presupuestoInicial = a.presupuesto;
+        this.tope = a.tope;                       // 120 s a 60 Hz
 
         /**
          * El terreno lo hace la factoría, no las reglas. Se puede cambiar por otra
@@ -164,6 +216,7 @@ export class DefiendeSystem {
         this.oleada = 0;
         this.tOleada = 0;
         this.acumSpawn = 0;
+        this.olas.reset();
         this.eventos = [];
         this._idBala = 0;
 
@@ -260,29 +313,28 @@ export class DefiendeSystem {
         }
     }
 
+    /**
+     * ⚠️ EL CALENDARIO YA NO VIVE AQUÍ.
+     *
+     * Eran quince líneas de reloj —acumular, soltar los que quepan, pasar de
+     * oleada— más la tirada ponderada del tipo. Ahora es `SpawnWaveSystem`, que
+     * no sabe qué suelta: eso sigue siendo de este juego y va en la función.
+     *
+     * Se movió con el MISMO orden de operaciones y la MISMA tirada por bicho, y
+     * lo comprueba la huella de ¡Defiende!, que no se movió.
+     *
+     * `this.oleada` se mantiene como espejo porque lo leen la condición de
+     * victoria y el HUD; la verdad está en el sistema.
+     */
     _sisOleadas(w, dt) {
-        if (this.oleada >= OLEADAS.length) return;
-        const ola = OLEADAS[this.oleada];
-        this.tOleada += dt;
-        this.acumSpawn += dt;
-        while (this.acumSpawn >= ola.cada) {
-            this.acumSpawn -= ola.cada;
-            this._soltarAtacante(ola);
-        }
-        if (this.tOleada >= ola.dura) {
-            this.oleada++;
-            this.tOleada = 0;
-            this.eventos.push({ tipo: 'OLEADA', n: this.oleada + 1 });
-        }
+        const eventos = this.olas.tick(dt, () => this.rng(), (tipo, ola) => this._soltarAtacante(tipo, ola));
+        this.oleada = this.olas.oleada;
+        this.tOleada = this.olas.tOleada;
+        this.acumSpawn = this.olas.acumSpawn;
+        for (const e of eventos) this.eventos.push(e);
     }
 
-    _soltarAtacante(ola) {
-        const r = this.rng();
-        let acc = 0, tipo = 'peon';
-        for (const [k, p] of Object.entries(ola.mezcla)) {
-            acc += p;
-            if (r <= acc) { tipo = k; break; }
-        }
+    _soltarAtacante(tipo, ola) {
         const t = TIPOS[tipo];
         const e = this.mundo.createEntity();
         this.mundo.addComponent(e, 'Celda', { x: this.entrada.x, z: this.entrada.z });

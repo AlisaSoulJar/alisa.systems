@@ -34,28 +34,122 @@ import { mulberry32 } from '../core/DeterministicScope.js';
 export const VERBS = ['nada', 'subir', 'bajar', 'izquierda', 'derecha', 'adelante', 'esconderse'];
 
 export class SubmarineCore {
-    constructor(cfg = {}) {
-        this.lado = cfg.lado ?? 120;
-        this.altura = cfg.altura ?? 112;
-        this.peces = cfg.peces ?? 25;
-        this.cazadores = cfg.cazadores ?? 4;
-        this.tiburones = cfg.tiburones ?? 2;
-        this.medusas = cfg.medusas ?? 5;
-        this.arrecifes = cfg.arrecifes ?? 4;
+    /**
+     * ⚠️ LA ROM: EL CARTUCHO, DECLARADO COMO DATOS.
+     *
+     * Un submarino del tamaño de un pez dentro de una cadena trófica viva. Lo que
+     * hace que sea ESTE juego y no otro son los números de esta tabla: cuántos
+     * bichos de cada clase, cuánto metabolismo, a qué distancia se come y cuánto
+     * hay que aguantar.
+     *
+     * Compone tres piezas del motor y no escribe ni una regla de ecosistema: eso
+     * lo lleva `EcosystemSystem`, que a su vez pide su bandada a `FlockingSystem`.
+     */
+    static ROM = {
+        id: 'alisa/Submarine-v0',
+        familia: 'tiempo_real',
+        verbos: VERBS,
 
-        this.planctonInicial = cfg.plancton ?? 90;
-        this.planctonTope = cfg.planctonTope ?? 140;
-        this.energiaInicial = cfg.energia ?? 100;
-        this.gasto = cfg.gasto ?? 1.2;          // metabolismo
-        this.daPlancton = cfg.daPlancton ?? 12;
-        this.bocado = cfg.bocado ?? 3.0;        // a qué distancia se come
-        this.alcanceCaza = cfg.alcanceCaza ?? 4.0;
-        this.aguanta = cfg.aguanta ?? 120;      // segundos para ganar
+        /** El tanque. Es un volumen continuo: aquí no hay rejilla. */
+        mundo: { lado: 120, altura: 112, aguanta: 120 },
+
+        sistemas: [
+            ['VolumeVehicleSystem', { velMax: 14, rozamiento: 0.93 }],
+            /**
+             * La fauna, con su censo. `peces` es lo que hace banco; `cazadores` y
+             * `tiburones` son lo que te come. Medusas y arrecifes son los
+             * escondites — ahí dentro no te ven.
+             */
+            ['EcosystemSystem', {
+                peces: 25, cazadores: 4, tiburones: 2,
+                medusas: 5, arrecifes: 4,
+                plancton: 90, planctonTope: 140,
+                bocado: 3.0, alcanceCaza: 4.0,
+            }],
+            // El metabolismo: baja solo y sube comiendo. Sin barra de vida — la
+            // energía ES la vida, que es lo que hace que comer sea la mecánica.
+            ['EnergySystem', { energia: 100, gasto: 1.2, daPlancton: 12 }],
+        ],
+
+        voz: {
+            jugador: 'submarino',
+            texto: {
+                Volumen: 'Tanque', plantas: 'zonas', planta: 'zona',
+                Recurso: 'Energía', recurso: 'energía',
+                punto: 'mota de plancton', puntos: 'motas de plancton',
+            },
+        },
+
+        hud: {
+            titulo: '¡Sobrevive!', subtitulo: 'Submarino', acento: '#3ddc97',
+            mandos: 'W/S: subir y bajar · A/D: babor y estribor · SHIFT: avanzar · ESPACIO: esconderse',
+            filas: [
+                { etiqueta: 'Aguantas', campo: 't', de: 'aguanta' },
+                { etiqueta: 'Energía', campo: 'energia', barra: true, de: 'energiaInicial' },
+                { etiqueta: 'Plancton comido', campo: 'comidos' },
+            ],
+        },
+
+        cartel: {
+            titulo: '¡Sobrevive! — Submarino',
+            parrafos: [
+                'Pilotas un submarino <b>del tamaño de un pez</b> dentro de una cadena trófica '
+                + 'viva: plancton que aparece, peces que forrajean y hacen banco, cazadores que '
+                + 'los siguen por el olor, y tiburones.',
+                'Come plancton para no quedarte sin energía y métete en una <b>medusa</b> o en el '
+                + '<b>arrecife</b> cuando algo grande se acerque: <b>ahí dentro no te ven</b>. '
+                + 'Aguanta el tiempo y ganas.',
+            ],
+            pie: 'Powered by ALISA <b>SubmarineCore</b> — el mismo núcleo que juega el banco. Las '
+               + 'reglas del ecosistema son las de <b>EcosystemSystem</b>, que ya existían.',
+            ajustes: [
+                { clave: 'seed', etiqueta: 'Semilla', valor: 42 },
+                { clave: 'aguanta', etiqueta: 'Aguantar', valor: 120, min: 20, max: 600 },
+            ],
+            boton: '▶ SUMERGIRSE',
+            final: {
+                gana: 'Aguantaste',
+                pierde: 'Se acabó',
+                detalleGana: '{t} segundos enteros. Comiste {comidos} de plancton.',
+                detallePierde: 'Duraste {t} s. Comiste {comidos} de plancton.',
+            },
+        },
+
+        fases: ['intencion', 'movimiento', 'reglas', 'sustrato'],
+    };
+
+    /** Los parámetros de una pieza de la ROM, por nombre. */
+    static params(pieza) {
+        return SubmarineCore.ROM.sistemas.find(([n]) => n === pieza)?.[1] ?? {};
+    }
+
+    constructor(cfg = {}) {
+        const ROM = SubmarineCore.ROM;
+        const vehiculoP = SubmarineCore.params('VolumeVehicleSystem');
+        const faunaP = SubmarineCore.params('EcosystemSystem');
+        const energiaP = SubmarineCore.params('EnergySystem');
+
+        this.lado = cfg.lado ?? ROM.mundo.lado;
+        this.altura = cfg.altura ?? ROM.mundo.altura;
+        this.peces = cfg.peces ?? faunaP.peces;
+        this.cazadores = cfg.cazadores ?? faunaP.cazadores;
+        this.tiburones = cfg.tiburones ?? faunaP.tiburones;
+        this.medusas = cfg.medusas ?? faunaP.medusas;
+        this.arrecifes = cfg.arrecifes ?? faunaP.arrecifes;
+
+        this.planctonInicial = cfg.plancton ?? faunaP.plancton;
+        this.planctonTope = cfg.planctonTope ?? faunaP.planctonTope;
+        this.energiaInicial = cfg.energia ?? energiaP.energia;
+        this.gasto = cfg.gasto ?? energiaP.gasto;          // metabolismo
+        this.daPlancton = cfg.daPlancton ?? energiaP.daPlancton;
+        this.bocado = cfg.bocado ?? faunaP.bocado;         // a qué distancia se come
+        this.alcanceCaza = cfg.alcanceCaza ?? faunaP.alcanceCaza;
+        this.aguanta = cfg.aguanta ?? ROM.mundo.aguanta;   // segundos para ganar
 
         this.reglas = new EcosystemSystem({ rng: () => this.rng() });
         this.vehiculo = new VolumeVehicleSystem({
             ancho: this.lado, alto: this.altura, largo: this.lado,
-            velMax: cfg.velMax ?? 14, rozamiento: 0.93,
+            velMax: cfg.velMax ?? vehiculoP.velMax, rozamiento: vehiculoP.rozamiento,
         });
         this.reset(cfg.seed ?? 42);
     }

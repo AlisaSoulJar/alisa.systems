@@ -199,7 +199,7 @@ console.log(`  ${filas.filter(r => r.peso === 0).length} de ${filas.length} pág
  * seguía cumpliéndose gracias a ¡Busca!. Un trinquete con holgura no es un
  * trinquete, es un adorno.
  */
-const SUELO_SUSTRATO = 6;
+const SUELO_SUSTRATO = 7;
 const juegos = filas.filter(r => r.esJuego);
 const conSustrato = juegos.filter(r => r.sustrato);
 console.log(`\n  juegos que enseñan el sustrato: ${conSustrato.length} de ${juegos.length} (suelo: ${SUELO_SUSTRATO})`);

@@ -27,7 +27,8 @@ import { DefiendeSystem, TORRETAS, TIPOS, CELDA, OLEADAS }
 export class DefiendeEnv extends GymEnv {
     static id = 'alisa/Defiende-v0';
 
-    static ajustes = { lado: 12, vidas: 10, presupuesto: 40, tope: 7200 };
+    /** Los números del juego los pone el cartucho; aquí sólo se dice cuál. */
+    static ajustes = DefiendeSystem.ROM.mundo;
 
     /**
      * ═══════════════════════════════════════════════════════════════════════
@@ -90,7 +91,7 @@ export class DefiendeEnv extends GymEnv {
              * `affordances()`: los tuve un rato con `:` aquí y `_` allí, que es la
              * clase de diferencia que sólo se ve cuando algo la compara.
              */
-            names: ['esperar', ...TORRETAS.map(t => `construir_${t.id}`)],
+            names: DefiendeSystem.ROM.verbos,
             enumerada: false,
             decodifica: '0 = esperar · a>0 → torreta ⌊(a-1)/(lado²)⌋ en celda (a-1)%(lado²)',
         };

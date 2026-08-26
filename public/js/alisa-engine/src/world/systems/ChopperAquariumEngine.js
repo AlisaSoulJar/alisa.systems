@@ -6,14 +6,62 @@ import { PheromoneGrid } from './PheromoneGrid.js';
 import { SeededRNG } from '../core/SeededRNG.js';
 
 export class ChopperAquariumEngine {
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  EL CARTUCHO — Y ESTE ES EL QUE MEJOR EXPLICA PARA QUÉ SIRVE ESCRIBIRLO
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Este motor tiene DOS juegos dentro y lo dice él mismo unas líneas más
+     * abajo: un «¡Busca!» —rascacielos, plantas, escaneo, mapache escondido— y
+     * un acuario con su cadena trófica. Pegados. Es la avería que se estaba
+     * partiendo cuando se sacó `FloorScanSystem`.
+     *
+     * Puesto como tabla se ve de un vistazo lo que en 480 líneas no se veía: la
+     * lista de piezas son las MISMAS que componen el dron de la torre y las
+     * mismas que componen el submarino. O sea que no eran dos juegos raros: era
+     * un cartucho de búsqueda y un cartucho de ecosistema en el mismo cartucho.
+     *
+     * ⚠️ NO SE PARTE HOY, Y NO ES PEREZA.
+     *
+     * Este motor no está sellado en `resultados/huellas.json` —no tiene notas
+     * publicadas que proteger— pero tampoco tiene red: partirlo sin huella sería
+     * refactorizar por fe. Se declara lo que hay, que ya es más de lo que había,
+     * y la partición espera a tener con qué demostrarla.
+     *
+     * ⚠️ Y `plantas` NO SE ESCRIBE DOS VECES.
+     *
+     * El número de plantas está en `mundo` y el constructor se lo pasa a la
+     * búsqueda desde ahí. Ponerlo también en los parámetros de `FloorScanSystem`
+     * sería tener dos edificios: el día que uno subiera a 20 el escáner seguiría
+     * buscando en 18 y el mapache podría estar donde nadie mira.
+     */
+    static ROM = {
+        id: 'alisa/ChopperAquarium-v0',
+        familia: 'tiempo_real',
+        mundo: { plantas: 18, altoPlanta: 4.0, lado: 120, aire: 40 },
+        vehiculo: { velMax: 25.0, salida: { x: 40.0, z: 40.0 }, empuje: { x: -10.0, y: 0.0, z: 10.0 } },
+        sistemas: [
+            ['FloorScanSystem', { cuestaFallar: 5, margen: 1 }],
+            ['EnergySystem', { maxEnergy: 100, currentEnergy: 100, drainRate: 0, hasDevice: true, isOn: true }],
+            ['EcosystemSystem', {}],
+            ['PheromoneGrid', { celda: 8.0, evapora: 5.0 }],
+        ],
+    };
+
+    /** Los números con los que este cartucho llama a una pieza. */
+    static params(pieza) {
+        return ChopperAquariumEngine.ROM.sistemas.find(([n]) => n === pieza)?.[1] ?? {};
+    }
+
     constructor() {
         this.listeners = {};
 
         // Configuration
-        this.totalFloors = 18;
-        this.FL_H = 4.0;
-        this.TANK_SIZE = 120;
-        this.TANK_HEIGHT = this.totalFloors * this.FL_H + 40;
+        const { mundo, vehiculo } = ChopperAquariumEngine.ROM;
+        this.totalFloors = mundo.plantas;
+        this.FL_H = mundo.altoPlanta;
+        this.TANK_SIZE = mundo.lado;
+        this.TANK_HEIGHT = this.totalFloors * this.FL_H + mundo.aire;
         
         // State
         this.gameState = { playing: false, ended: false, activeFloor: -1, isAI: true };
@@ -24,10 +72,10 @@ export class ChopperAquariumEngine {
         this.ecs.addSystem(this.energySys.update.bind(this.energySys), ['EnergyComponent']);
         this.chopperEntity = this.ecs.createEntity();
         
-        this.chopper = { x: 40.0, y: (this.totalFloors * this.FL_H)/2.0, z: 40.0, rotY: 0.0 };
-        this.chopperVelocity = { x: -10.0, y: 0.0, z: 10.0 };
-        this.chopperTracking = { tx: 40.0, ty: (this.totalFloors * this.FL_H)/2.0, tz: 40.0 };
-        this.maxSpeed = 25.0;
+        this.chopper = { x: vehiculo.salida.x, y: (this.totalFloors * this.FL_H)/2.0, z: vehiculo.salida.z, rotY: 0.0 };
+        this.chopperVelocity = { ...vehiculo.empuje };
+        this.chopperTracking = { tx: vehiculo.salida.x, ty: (this.totalFloors * this.FL_H)/2.0, tz: vehiculo.salida.z };
+        this.maxSpeed = vehiculo.velMax;
         
         this.chopperState = { mode: 'ROAM', targetFloor: -1, stateTimer: 1.0, scannedFloors: new Set() };
 
@@ -48,7 +96,8 @@ export class ChopperAquariumEngine {
          * comprobado con `prueba_huella`, que vigila justo eso.
          */
         this.busqueda = new FloorScanSystem({
-            plantas: this.totalFloors, cuestaFallar: 5, margen: 1,
+            plantas: this.totalFloors,
+            ...ChopperAquariumEngine.params('FloorScanSystem'),
         });
         
         this.time = 0.0;
@@ -78,7 +127,7 @@ export class ChopperAquariumEngine {
          * comportamiento: cambiaba entre dos ejecuciones idénticas.
          */
         this.ecosystem = new EcosystemSystem({ rng: () => this.rng.next() });
-        this.pheromoneGrid = new PheromoneGrid(this.TANK_SIZE, this.TANK_HEIGHT, this.TANK_SIZE, 8.0, 5.0);
+        this.pheromoneGrid = this._rejillaDeFeromonas();
         this.fishes = [];
         this.hunters = [];
         this.sharks = [];
@@ -87,6 +136,16 @@ export class ChopperAquariumEngine {
         this.ecosystemJellyfishes = [];
         
         this.rng = new SeededRNG(42);
+    }
+
+    /**
+     * La rejilla de feromonas, con las medidas del cartucho. Estaba escrita
+     * igual en el constructor y en `reset`, con los dos números a fuego en las
+     * dos: dos sitios donde cambiar una cosa es un sitio donde olvidarla.
+     */
+    _rejillaDeFeromonas() {
+        const f = ChopperAquariumEngine.params('PheromoneGrid');
+        return new PheromoneGrid(this.TANK_SIZE, this.TANK_HEIGHT, this.TANK_SIZE, f.celda, f.evapora);
     }
 
     on(event, callback) {
@@ -102,13 +161,13 @@ export class ChopperAquariumEngine {
 
     reset(seed = 42) {
         this.gameState = { playing: true, ended: false, activeFloor: -1, isAI: true };
-        this.ecs.addComponent(this.chopperEntity, 'EnergyComponent', EnergyComponent({
-            maxEnergy: 100, currentEnergy: 100, drainRate: 0, hasDevice: true, isOn: true
-        }));
-        
-        this.chopper = { x: 40.0, y: (this.totalFloors * this.FL_H)/2.0, z: 40.0, rotY: 0.0 };
-        this.chopperVelocity = { x: -10.0, y: 0.0, z: 10.0 };
-        this.chopperTracking = { tx: 40.0, ty: (this.totalFloors * this.FL_H)/2.0, tz: 40.0 };
+        this.ecs.addComponent(this.chopperEntity, 'EnergyComponent',
+            EnergyComponent(ChopperAquariumEngine.params('EnergySystem')));
+
+        const v = ChopperAquariumEngine.ROM.vehiculo;
+        this.chopper = { x: v.salida.x, y: (this.totalFloors * this.FL_H)/2.0, z: v.salida.z, rotY: 0.0 };
+        this.chopperVelocity = { ...v.empuje };
+        this.chopperTracking = { tx: v.salida.x, ty: (this.totalFloors * this.FL_H)/2.0, tz: v.salida.z };
         this.chopperState = { mode: 'ROAM', targetFloor: -1, stateTimer: 1.0, scannedFloors: new Set() };
         this.time = 0.0;
         
@@ -127,7 +186,7 @@ export class ChopperAquariumEngine {
         this.chopperState.scannedFloors = this.busqueda.escaneadas;
 
         // Reset Ecosystem
-        this.pheromoneGrid = new PheromoneGrid(this.TANK_SIZE, this.TANK_HEIGHT, this.TANK_SIZE, 8.0, 5.0);
+        this.pheromoneGrid = this._rejillaDeFeromonas();
         const S = this.TANK_SIZE;
         this.fishes = Array.from({ length: 25 }, (_, i) => ({
             id: `f_${i}`, x: (this.rng.next()-0.5)*S*0.8, y: 10+this.rng.next()*40, z: (this.rng.next()-0.5)*S*0.8,

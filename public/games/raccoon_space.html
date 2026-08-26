@@ -88,7 +88,7 @@
     <div class="fuel-container"><div class="fuel-fill" id="vFuelBar"></div></div>
     <span class="stat">TARGET:</span> <span class="v-gold">UNKNOWN</span><br>
     <span class="stat">SCORE:</span> <span id="hScore" class="v-gold">0</span>
-    <div id="radar-container"><div id="radar-sweep"></div></div>
+    <div id="radar-container"><canvas id="radar" width="150" height="150"></canvas><div id="radar-sweep"></div></div>
 </div>
 
 <div id="messages"></div>
@@ -120,6 +120,7 @@ import { RaccoonSpaceCore } from '@alisa-engine/src/world/systems/RaccoonSpaceCo
 
 import { montarMundo } from '/js/montarMundo.js';
 import { PintorMundo }   from '/js/pintor_mundo.mjs';
+import { PintorRadar }   from '/js/pintor_radar.mjs';
 
 /**
  * `cielo:false` y `luces:false` porque esto es el espacio abierto: no hay
@@ -432,30 +433,37 @@ function updateHUD() {
     else document.getElementById('vFuelBar').style.background = 'linear-gradient(90deg, #ff3b30, #ff9500, #34c759)';
 }
 
-function updateRadar() {
-    if(!shipRoot) return;
-    const rC = document.getElementById('radar-container');
-    rC.querySelectorAll('.radar-blip').forEach(b => b.remove());
-    
-    const factor = 75 / 200;
-    planets.forEach(p => {
-        const relPos = p.pos.clone().sub(shipRoot.position);
-        const x = 75 + relPos.x * factor;
-        const z = 75 + relPos.z * factor;
-        if(x >= 0 && x <= 150 && z >= 0 && z <= 150) {
-            const blip = document.createElement('div');
-            blip.className = 'radar-blip';
-            blip.style.left = x + 'px';
-            blip.style.top = z + 'px';
-            if(p.scanned) {
-                const temp = getPlanetTemperature(p.index);
-                blip.style.background = temp.cssColor;
-                blip.style.boxShadow = `0 0 5px ${temp.cssColor}`;
-            }
-            rC.appendChild(blip);
-        }
-    });
-}
+/**
+ * ⚠️ EL RADAR LEÍA OTRO MUNDO, Y POR ESO SE CAMBIÓ.
+ *
+ * Aquí había veintitrés líneas que recorrían `planets` y `shipRoot.position` —el
+ * estado que esta PÁGINA lleva por su cuenta— y creaban un `div` por planeta.
+ * O sea que el minimapa se dibujaba de una fuente distinta que el mundo, y podía
+ * desviarse de él sin que nada avisara. Es la misma avería que este juego ya tuvo
+ * en grande, escrita en el comentario de abajo, pero en la esquina de la
+ * pantalla.
+ *
+ * Medido: **dieciocho ficheros de la casa se dibujan su propio radar**. Ninguno
+ * necesitaba un sistema nuevo — lo que un radar dibuja (dónde está cada cosa, de
+ * qué tipo es y cuál eres tú) ya está TODO en el sustrato. Así que es un PINTOR
+ * más, hermano de los otros tres, y pide lo mismo: `pintar(sustrato)`.
+ */
+const ESTILO_RADAR = {
+    nave: { color: '#ffffff', radio: 4 },
+    asteroide: { color: '#6b6b7a', radio: 2 },
+    sin_escanear: { color: '#8a8a9e', radio: 3 },
+    // Las cinco bandas del núcleo, con el mismo nombre que publica el sustrato.
+    caliente: { color: '#ff5a36', radio: 3 },
+    templado: { color: '#ffa53d', radio: 3 },
+    fresco: { color: '#ffe066', radio: 3 },
+    'frío': { color: '#7fb0ff', radio: 3 },
+    helado: { color: '#4a7bd0', radio: 3 },
+    encontrado: { color: '#7CFC98', radio: 5 },
+    // El combustible, que ya publica su alcance y aquí sale con su halo.
+    bidon: { color: '#3ddc97', radio: 3, halo: 'rgba(61,220,151,0.12)' },
+};
+const radar = new PintorRadar(
+    document.getElementById('radar'), ESTILO_RADAR, { alcance: 200, jugador: 'nave' });
 
 // `arrancar` y no `startLoop`: aquel pinta con el renderer pelado y dejaría el
 // post-proceso registrado, vivo, y sin llegar a la pantalla. Ver `montarMundo.js`.
@@ -498,7 +506,7 @@ arrancar((dt) => {
         updateHUD();
         // Sin `Math.random`: el radar se refresca cada 10 fotogramas, y así el
         // dibujo tampoco depende del azar del sistema.
-        if ((contadorRadar++ % 10) === 0) updateRadar();
+        if ((contadorRadar++ % 10) === 0) radar.pintar(nucleo.sustrato());
 
         if (nucleo.muerto && !gameState.ended) endGameFail();
     }

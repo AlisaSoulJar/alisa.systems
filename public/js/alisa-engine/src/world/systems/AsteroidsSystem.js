@@ -19,7 +19,10 @@ export const SHIP_GAUGES = {
     ]
 };
 
-const AST_TYPES = {
+// Se EXPORTA: el aspecto de cada roca —su color— sale de aqui, no de una copia
+// en el fichero de figuras. hp y col viven juntos porque son la misma cosa
+// dicha para dos publicos: la regla y el ojo.
+export const AST_TYPES = {
     BASIC: { hp: 20, col: 0x887766 },
     FAST:  { hp: 10, col: 0x3366ff },
     GOLD:  { hp: 50, col: 0xffdd22 },
@@ -55,6 +58,86 @@ function dist3(p1, p2) {
 function uuid(rng) { return rng().toString(36).substring(2, 9); }
 
 export class AsteroidsSystem {
+    /**
+     * ⚠️ LA ROM: EL CARTUCHO, DECLARADO COMO DATOS.
+     *
+     * Este juego tenía CINCO sitios donde vivía: esta clase, `AsteroidsEngine`,
+     * `AsteroidsFactory`, `AsteroidsEnv` y —la peor— `asteroid_gauntlet.html`, 897
+     * líneas que no importaban nada y llevaban el juego entero escrito dentro.
+     *
+     * Al compararlos salió que la página y este núcleo son **el mismo juego con
+     * los mismos números**: `BASIC hp 20`, `FAST 10`, `GOLD 50`, `MONO 999999`,
+     * densidad 15, los mismos `SHIP_GAUGES`. El núcleo se hizo copiando la página
+     * y poniéndole `this.` delante.
+     *
+     * Y eso lo distingue de los otros tres casos de la casa: no son dos juegos que
+     * se separaron — es una copia fiel que TODAVÍA no se ha separado. Por eso este
+     * era el mejor momento para juntarlos: no hay nada que reconciliar.
+     *
+     * Las tablas de verdad —`WAVES`, `AST_TYPES`, `SHIP_GAUGES`— siguen arriba,
+     * exportadas, porque las lee también quien dibuja. La ROM las NOMBRA en vez de
+     * copiarlas: una tabla en dos sitios es un sitio donde separarse.
+     */
+    static ROM = {
+        id: 'alisa/Pedrisco-v0',
+        familia: 'tiempo_real',
+        verbos: ['nada', 'izquierda', 'derecha', 'subir', 'bajar', 'disparar'],
+
+        mundo: { etapa: 1, nave: 'VIPER', densidad: 15, velocidad: 20, cicloOleada: WAVE_CYCLE },
+
+        /**
+         * Las piezas que compone. `SpawnWaveSystem` no está en la lista todavía:
+         * este juego cicla sus oleadas por FRACCIÓN de un ciclo de 60 s
+         * (`start`/`end`), no por duración e intervalo como ¡Defiende!. Son dos
+         * calendarios distintos y unificarlos a ojo cambiaría el juego — la misma
+         * trampa que la bandada. Queda dicho para el día que se mida.
+         */
+        sistemas: [
+            ['AsteroidsEngine', { tablaOleadas: 'WAVES', ciclo: WAVE_CYCLE }],
+            ['AsteroidTypes', { tabla: 'AST_TYPES' }],
+        ],
+
+        voz: {
+            jugador: 'nave',
+            texto: { Volumen: 'Cinturón', plantas: 'oleadas', planta: 'oleada' },
+        },
+
+        hud: {
+            titulo: '¡Esquiva!', subtitulo: 'Pedrisco', acento: '#7fd1ff',
+            mandos: 'A / D: a los lados · W / S: altura · ESPACIO: disparar',
+            filas: [
+                { etiqueta: 'Oleada', campo: 'wave' },
+                { etiqueta: 'Puntos', campo: 'score' },
+                { etiqueta: 'Escudo', campo: 'shield', barra: true, de: 100, sufijo: '%' },
+            ],
+        },
+
+        cartel: {
+            titulo: '¡Esquiva! 1 — Pedrisco',
+            parrafos: [
+                'Un túnel de rocas que no para. Esquiva, dispara y aguanta: las oleadas '
+                + 'van cambiando de carácter cada minuto — calma, densa, monolitos, enjambre.',
+                '<b>El monolito negro no se rompe.</b> Tiene 999.999 de vida y está ahí para '
+                + 'que aprendas a rodearlo, no para que lo revientes.',
+            ],
+            pie: 'Powered by ALISA <b>AsteroidsSystem</b> — el mismo núcleo que juega el banco '
+               + 'como <b>alisa/Pedrisco-v0</b>.',
+            ajustes: [
+                { clave: 'seed', etiqueta: 'Semilla', valor: 42 },
+                { clave: 'densidad', etiqueta: 'Rocas', valor: 15, min: 5, max: 40 },
+            ],
+            boton: '▶ ENTRAR AL CINTURÓN',
+            final: {
+                gana: 'Aguantaste',
+                pierde: 'Te hicieron polvo',
+                detalleGana: '{score} puntos en {wave} oleadas.',
+                detallePierde: '{score} puntos, y caíste en la oleada {wave}.',
+            },
+        },
+
+        fases: ['intencion', 'movimiento', 'reglas', 'sustrato'],
+    };
+
     /**
      * ⚠️ LA SEMILLA VIVE AQUÍ, NO EN EL ENTORNO. ÉSA ES LA PALANCA.
      *
@@ -249,6 +332,34 @@ export class AsteroidsSystem {
                 nave: '@', nave_rota: 'x', dron: 'd',
                 basic: 'o', fast: '>', gold: '$', mono: '#', suelo: '+',
             },
+        };
+    }
+
+    /**
+     * ⚠️ ESTO NO EXISTÍA, Y LO PIDIÓ EL HUD DECLARATIVO.
+     *
+     * El núcleo publicaba `sustrato()` —lo que HAY— pero no los escalares de la
+     * partida: puntos, oleada, escudos. La página se los sacaba de `stats` y de
+     * `currentWave` metiendo la mano por dentro, y el entorno del banco hacía lo
+     * mismo con `this.sys.stats`.
+     *
+     * Es la tercera vez hoy que declarar una vista obliga al núcleo a decir en voz
+     * alta algo que se estaba cogiendo por la ventana. Y no es cosmética: `info()`
+     * es lo que `step()` le devuelve al agente en cada paso, y desde esta mañana
+     * entra en la huella.
+     */
+    info() {
+        const s = this.ship;
+        return {
+            t: Math.round((this.stats?.time ?? 0) * 10) / 10,
+            wave: this.currentWave?.name ?? '—',
+            score: Math.round(this.stats?.score ?? 0),
+            shield: s ? Math.min(100, (s.shields ?? 0) * 50) : 0,
+            racha: this.stats?.streak ?? 0,
+            mejorRacha: this.stats?.bestStreak ?? 0,
+            muertes: this.stats?.deaths ?? 0,
+            terminado: !!(s && s.dead),
+            ganado: false,           // Pedrisco no se gana: se aguanta.
         };
     }
 

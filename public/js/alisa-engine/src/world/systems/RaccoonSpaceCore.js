@@ -86,24 +86,40 @@ export const VERBS_BY_CONTROL = {
 };
 
 export class RaccoonSpaceCore {
+    /**
+     * ⚠️ EL CARTUCHO SE ELIGE AQUÍ, Y LOS NÚMEROS YA NO ESTÁN ESCRITOS DOS VECES.
+     *
+     * `opts.rom` dice qué cartucho de `ROMS` se monta; sin él, el del espacio, que
+     * es lo que este núcleo ha sido desde que existe. Lo que llegue suelto en
+     * `opts` pisa al cartucho, para que una prueba pueda apretar UN número sin
+     * tener que declararse un cartucho entero.
+     *
+     * Antes cada etapa traía sus números en el `static ajustes` de su entorno y
+     * aquí había un `?? 400` esperando. Dos sitios diciendo lo mismo es un sitio
+     * de más: el martes se desincronizan y nadie avisa.
+     */
     constructor(opts = {}) {
-        this.tanque      = opts.tankSize   ?? 400;   // lado del cubo jugable
+        const cartucho = RaccoonSpaceCore.ROMS[opts.rom] ?? RaccoonSpaceCore.ROM;
+        const a = { ...cartucho.ajustes, ...RaccoonSpaceCore.params(cartucho, 'RechargeSystem'), ...opts };
+        this.rom = cartucho;
+
+        this.tanque      = a.tankSize;   // lado del cubo jugable
         /**
          * La FORMA del mundo: `cubo` (espacio) · `rejilla` (sector de ciudad) ·
          * `esfera` (planeta). Ver `_colocar`, que explica por qué esto no es
          * decoración sino parte del problema.
          */
-        this.forma       = opts.forma      ?? 'cubo';
+        this.forma       = a.forma;
         /** Qué se pilota: `nave` · `dron` · `orbita`. Ver `VERBS_BY_CONTROL`. */
-        this.mando       = opts.mando      ?? 'nave';
+        this.mando       = a.mando;
         this.verbos      = VERBS_BY_CONTROL[this.mando] ?? VERBS_SPACE;
-        this.velMax      = opts.maxSpeed   ?? 100;
-        this.aceleracion = opts.accel      ?? 60;
-        this.rozamiento  = opts.drag       ?? 0.98;
-        this.velGiro     = opts.turnSpeed  ?? 2.0;
-        this.nAsteroides = opts.asteroids  ?? 30;
-        this.nPlanetas   = opts.planets    ?? 6;
-        this.tope        = opts.tope       ?? 5400;  // 90 s a 60 Hz
+        this.velMax      = a.maxSpeed;
+        this.aceleracion = a.accel;
+        this.rozamiento  = a.drag;
+        this.velGiro     = a.turnSpeed;
+        this.nAsteroides = a.asteroids;
+        this.nPlanetas   = a.planets;
+        this.tope        = a.tope;       // 90 s a 60 Hz en el cartucho del espacio
 
         /**
          * EL PRESUPUESTO — el número que decide si esto mide algo
@@ -142,13 +158,13 @@ export class RaccoonSpaceCore {
          *
          * Súbelo para practicar, bájalo para apretar. Para PUNTUAR, 24.
          */
-        this.combustibleInicial = opts.fuel ?? 24;
+        this.combustibleInicial = a.fuel;
         /**
          * Lo que cuesta un escaneo fallido, en FRACCIÓN del depósito. Las páginas
          * cobraban 5% (ciudad) y 8% (planeta); el espacio no cobraba, y se queda
          * así para no cambiar una etapa ya calibrada. Ver el comentario en `step`.
          */
-        this.costeEscaneo = (opts.scanCost ?? 0) * this.combustibleInicial;
+        this.costeEscaneo = a.scanCost * this.combustibleInicial;
 
         /**
          * ═══════════════════════════════════════════════════════════════════
@@ -202,7 +218,7 @@ export class RaccoonSpaceCore {
          * cumple veinticuatro horas después de escribirla no es una regla: es una
          * intención. Costó doce referencias.
          */
-        this.puntosDeEnlace = opts.puntosDeEnlace ?? 3;
+        this.puntosDeEnlace = a.puntosDeEnlace;
 
         /**
          * ⚠️ LA PIEL VA POR ETAPA, Y ME CORRIJO: EL HUD NO MENTÍA.
@@ -223,14 +239,14 @@ export class RaccoonSpaceCore {
          * herede la piel correcta sin que nadie se acuerde de ponerla. Y se puede
          * forzar con `opts.piel` cuando el vehículo no diga bastante.
          */
-        this.piel = opts.piel ?? (
+        this.piel = a.piel ?? (
             this.mando === 'dron' ? 'pila'
                 : this.mando === 'orbita' ? 'enlace'
                     : 'combustible');
         this.recargas = new RechargeSystem({
             piel: this.piel,
-            da: (opts.recargaFraccion ?? 0.35) * this.combustibleInicial,
-            alcance: opts.recargaAlcance ?? 12,
+            da: a.recargaFraccion * this.combustibleInicial,
+            alcance: a.recargaAlcance,
         });
         /**
          * Hasta dónde llega el escáner, en unidades del mundo y sumado al radio
@@ -245,7 +261,7 @@ export class RaccoonSpaceCore {
          * problema de esa etapa no es el alcance, es que la recompensa está detrás
          * de navegar. Ver la declaración en `prueba_senal.mjs`.
          */
-        this.alcance = opts.scanRange ?? 25;
+        this.alcance = a.scanRange;
 
         this.reset(opts.seed ?? 42);
     }
@@ -1063,6 +1079,92 @@ export class RaccoonSpaceCore {
         for (const { o } of candidatos) obs.push(this.coherencia(o));
         while (obs.length < 24) obs.push(0);
         return obs;
+    }
+
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  TRES CARTUCHOS EN EL MISMO MUEBLE — POR ESO ES `ROMS` Y NO `ROM`
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Los otros núcleos declaran UNA `static ROM` porque son un juego. Éste no:
+     * es un mueble con tres cartuchos —ciudad, planeta y espacio— que comparten
+     * el mundo, el recurso, el escáner, la pista y el marcador, y se diferencian
+     * en qué se pilota, cuánto mundo hay y cuánto depósito te dan.
+     *
+     * ⚠️ Y ESTO NO ES UNA TABLA DECORATIVA: ES DE DONDE SALEN LOS NÚMEROS.
+     *
+     * El constructor se construye desde aquí y los tres `static ajustes` de
+     * `RaccoonSpaceEnv.js` leen de aquí. Si estuvieran escritos en los dos
+     * sitios, el día que alguien aprieta el depósito de la ciudad en un sitio y
+     * no en el otro, la persona y el agente juegan a dos juegos con el mismo
+     * nombre — que es exactamente la avería que este fichero nació para arreglar.
+     *
+     * ⚠️ LO QUE NO ESTÁ EN `sistemas` ES DEUDA DECLARADA, NO OLVIDO.
+     *
+     * El movimiento de las tres etapas está integrado a mano aquí dentro
+     * teniendo `VolumeVehicleSystem` y `OrbitalKinematicsSystem` al lado. Sale
+     * contado en `npm run sistemas` como integrador, y ahí seguirá hasta que se
+     * pueda sacar CON la huella quieta. Declarar aquí una pieza que el núcleo no
+     * llama sería maquillar la vara.
+     */
+    static ROMS = {
+        'alisa/RaccoonCity-v1': {
+            id: 'alisa/RaccoonCity-v1',
+            familia: 'tiempo_real',
+            titulo: '¡Busca! 4 — Sector de ciudad',
+            verbos: VERBS_DRONE,
+            objetivo: { uno: 'edificio', varios: 'edificios', el: 'El', un: 'un', ningun: 'ningún' },
+            /** Sin asteroides: la página no los dibuja, y medir lo que no se ve es mentir. */
+            ajustes: {
+                tankSize: 180, planets: 10, asteroids: 0, fuel: 30, tope: 3000,
+                forma: 'rejilla', mando: 'dron', scanCost: 0.05,
+                maxSpeed: 100, accel: 60, drag: 0.98, turnSpeed: 2.0, scanRange: 25,
+            },
+            sistemas: [
+                ['RechargeSystem', { puntosDeEnlace: 3, recargaFraccion: 0.35, recargaAlcance: 12 }],
+                ['Bandas', { cortes: RaccoonSpaceCore.BANDAS }],
+            ],
+        },
+        'alisa/RaccoonPlanet-v1': {
+            id: 'alisa/RaccoonPlanet-v1',
+            familia: 'tiempo_real',
+            titulo: '¡Busca! 5 — Planeta',
+            verbos: VERBS_ORBIT,
+            objetivo: { uno: 'ciudad', varios: 'ciudades', el: 'La', un: 'una', ningun: 'ninguna' },
+            ajustes: {
+                tankSize: 260, planets: 8, asteroids: 0, fuel: 11, tope: 3600,
+                forma: 'esfera', mando: 'orbita', scanCost: 0.08,
+                maxSpeed: 100, accel: 60, drag: 0.98, turnSpeed: 2.0, scanRange: 25,
+            },
+            sistemas: [
+                ['RechargeSystem', { puntosDeEnlace: 3, recargaFraccion: 0.35, recargaAlcance: 12 }],
+                ['Bandas', { cortes: RaccoonSpaceCore.BANDAS }],
+            ],
+        },
+        'alisa/RaccoonSpace-v1': {
+            id: 'alisa/RaccoonSpace-v1',
+            familia: 'tiempo_real',
+            titulo: '¡Busca! 6 — Espacio profundo',
+            verbos: VERBS_SPACE,
+            objetivo: { uno: 'planeta', varios: 'planetas', el: 'El', un: 'un', ningun: 'ningún' },
+            ajustes: {
+                tankSize: 400, planets: 6, asteroids: 30, fuel: 24, tope: 5400,
+                forma: 'cubo', mando: 'nave', scanCost: 0,
+                maxSpeed: 100, accel: 60, drag: 0.98, turnSpeed: 2.0, scanRange: 25,
+            },
+            sistemas: [
+                ['RechargeSystem', { puntosDeEnlace: 3, recargaFraccion: 0.35, recargaAlcance: 12 }],
+                ['Bandas', { cortes: RaccoonSpaceCore.BANDAS }],
+            ],
+        },
+    };
+
+    /** El cartucho por defecto: el espacio, que es lo que este núcleo era. */
+    static ROM = RaccoonSpaceCore.ROMS['alisa/RaccoonSpace-v1'];
+
+    /** Los números con los que un cartucho llama a una pieza. */
+    static params(cartucho, pieza) {
+        return cartucho.sistemas.find(([n]) => n === pieza)?.[1] ?? {};
     }
 }
 

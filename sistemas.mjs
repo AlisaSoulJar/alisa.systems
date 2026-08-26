@@ -53,11 +53,32 @@ const ATOMOS = new Set([
     'OrbitalKinematicsSystem.js',   // balística y órbitas
 ]);
 
-/** Los núcleos que declaran contrato, por nombre de fichero. */
+/**
+ * Los núcleos que declaran contrato, por nombre de fichero.
+ *
+ * ⚠️ TRES CAMBIOS EL 26-08, Y LOS TRES BAJAN EL DENOMINADOR — ASÍ QUE SE
+ *    EXPLICAN, QUE SI NO ESTO ES MAQUILLAR LA VARA.
+ *
+ * Salen `RaccoonCitySystem` y `CabinetJumpscareSystem`. Al ir a declararles la
+ * ROM se vio que **no son juegos**: el primero inclina un dron, gira sus hélices
+ * y abre su haz de luz —su juego es el cartucho `RaccoonCity`, que vive en
+ * `RaccoonSpaceCore`—; el segundo es una escena de susto que mueve mallas y
+ * cámara. Ninguno tiene `info()` ni `sustrato()` ni sabe cuándo se acaba nada.
+ * Declararles un cartucho habría sido inventarles un juego para que la columna
+ * saliera bonita.
+ *
+ * Y sale `BulletHeavenEngine` para que entre `MarabuntaSystem`, que es quien de
+ * verdad es el juego: el motor nace VACÍO —sin armas, sin bichos, sin oleadas— y
+ * quien se las pone es el cartucho. El mueble no se mide como si fuera un juego,
+ * igual que no se mide `SearchInVolumeCore`.
+ *
+ * Los dos pintores siguen contándose en la vara de integradores, que mira TODOS
+ * los ficheros: que no sean juegos no les quita el `+= algo * dt`.
+ */
 const NUCLEOS = [
-    'DroneTowerCore.js', 'SatelliteSweepCore.js', 'CorpBuildingCore.js', 'SubmarineCore.js', 'RaccoonSpaceCore.js',
-    'BulletHeavenEngine.js', 'AsteroidsSystem.js', 'DefiendeSystem.js',
-    'RaccoonCitySystem.js', 'CabinetJumpscareSystem.js', 'ChopperAquariumEngine.js',
+    'DroneTowerCore.js', 'SatelliteSweepCore.js', 'CorpBuildingCore.js',
+    'AsteroidsSystem.js', 'SubmarineCore.js', 'RaccoonSpaceCore.js',
+    'MarabuntaSystem.js', 'DefiendeSystem.js', 'ChopperAquariumEngine.js',
 ];
 
 const dir = path.join(RAIZ, SISTEMAS);
@@ -91,12 +112,44 @@ console.log('  núcleo                         decl.  compone  piezas');
  * núcleos arrastran el motor de render al importarlos, y una vara que necesita
  * un navegador para medir no se puede poner en `npm test`.
  */
+/**
+ * Recorta el bloque que empieza en `desde` contando su pareja de signos. Se
+ * cuenta en vez de buscar la indentación de cierre porque un cartucho anidado
+ * cierra a doce espacios y el mueble a cuatro, y una regla por sangría se
+ * equivoca en cuanto alguien reformatea.
+ */
+function bloque(t, desde, abre, cierra) {
+    let n = 0;
+    for (let i = desde; i < t.length; i++) {
+        if (t[i] === abre) n++;
+        else if (t[i] === cierra) { n--; if (n === 0) return t.slice(desde, i + 1); }
+    }
+    return null;
+}
+
+/**
+ * ⚠️ Y `ROMS` EN PLURAL, PORQUE UN MUEBLE PUEDE TENER VARIOS CARTUCHOS.
+ *
+ * `RaccoonSpaceCore` es un solo núcleo con TRES juegos publicados encima
+ * —ciudad, planeta y espacio—, cada uno con su id y su huella. Contarlo como
+ * «una ROM» diría menos verdad que la realidad: son tres cartuchos en el mismo
+ * mueble, igual que `SearchInVolumeCore` sostiene dos en dos ficheros.
+ *
+ * Así que esto devuelve las piezas Y cuántos cartuchos las declaran.
+ */
 function declaracion(t) {
-    const bloque = t.match(/static\s+ROM\s*=\s*\{[\s\S]*?\n {4}\};/);
-    if (!bloque) return null;
-    const lista = bloque[0].match(/sistemas\s*:\s*\[([\s\S]*?)\n {8}\]/);
-    if (!lista) return null;
-    return [...lista[1].matchAll(/\[\s*['"]([\w]+)['"]/g)].map((m) => m[1]);
+    const m = t.match(/static\s+ROMS?\s*=\s*\{/);
+    if (!m) return null;
+    const cuerpo = bloque(t, m.index + m[0].length - 1, '{', '}');
+    if (!cuerpo) return null;
+
+    const listas = [];
+    for (const s of cuerpo.matchAll(/sistemas\s*:\s*\[/g)) {
+        const lista = bloque(cuerpo, s.index + s[0].length - 1, '[', ']');
+        if (lista) listas.push([...lista.matchAll(/\[\s*['"]([\w]+)['"]/g)].map((x) => x[1]));
+    }
+    if (!listas.length) return null;
+    return { piezas: [...new Set(listas.flat())], cartuchos: listas.length };
 }
 
 const filas = [];
@@ -109,12 +162,13 @@ for (const f of NUCLEOS) {
      * Respaldo: los `import` de OTRAS piezas del motor. No cualquier import —
      * traerse una utilidad de texto no es componer un sistema.
      */
-    const piezas = declarada ?? [...t.matchAll(/import\s*\{([^}]+)\}\s*from\s*['"][^'"]*?([\w]+(?:System|Component|Core))\.js['"]/g)]
+    const piezas = declarada?.piezas ?? [...t.matchAll(/import\s*\{([^}]+)\}\s*from\s*['"][^'"]*?([\w]+(?:System|Component|Core))\.js['"]/g)]
         .map((m) => m[2])
         .filter((n) => n !== f.replace('.js', ''));
     const unicas = [...new Set(piezas)];
-    filas.push({ f, unicas, rom: !!declarada });
-    const marca = declarada ? 'ROM' : ' — ';
+    const cartuchos = declarada?.cartuchos ?? 0;
+    filas.push({ f, unicas, cartuchos });
+    const marca = (cartuchos > 1 ? `ROM×${cartuchos}` : cartuchos ? 'ROM' : '—').padEnd(6);
     console.log(`  ${f.replace('.js', '').padEnd(30)} ${marca}  ${String(unicas.length).padStart(5)}  ${unicas.join(', ') || '—'}`);
 }
 
@@ -127,7 +181,15 @@ const componen = filas.filter((r) => r.unicas.length >= 2);
  * aprueba con el cable cortado. Es la lección que `paginas.mjs` lleva escrita
  * desde que su suelo estuvo en 1 con dos páginas enchufadas.
  */
-const SUELO_COMPONEN = 6;
+/**
+ * ⚠️ 6 → 9 EL 26-08: LOS NUEVE. Y ESO CONVIERTE ESTA VARA EN OTRA COSA.
+ *
+ * Mientras iba por 6 de 11 medía un progreso. En 9 de 9 ya no mide progreso:
+ * mide que **no se pueda añadir un juego que no componga**. El siguiente núcleo
+ * que entre con toda su física escrita dentro suspende aquí, que es exactamente
+ * para lo que se puso.
+ */
+const SUELO_COMPONEN = 9;
 
 /**
  * ⚠️ VEINTIDÓS. ÉSA ES LA DEUDA, Y ESTÁ CONTADA, NO ESTIMADA.
@@ -162,11 +224,25 @@ const TECHO_INTEGRADORES = 22;
  * de un cambio de piel: si la huella fuera la misma, sería el mismo juego con
  * otro nombre.
  */
-const SUELO_ROMS = 3;
-const conRom = filas.filter((r) => r.rom);
+/**
+ * ⚠️ 4 → 11 EL 26-08, Y AQUÍ SE ACABA LA CONVERSIÓN: NO QUEDA NINGUNO.
+ *
+ * Los nueve núcleos del banco declaran su cartucho, y entre los nueve suman
+ * once —el mueble del mapache sostiene tres—. Ninguno cambió de comportamiento
+ * al declararlo: las once huellas de `prueba_huella.mjs` siguen donde estaban, y
+ * el acuario, que no está sellado, se comprobó a mano antes y después (misma
+ * partida, mismo resumen `d5c341c3`).
+ *
+ * Ésa es toda la prueba de que esto no es papeleo: si la tabla describiera un
+ * juego distinto del que se jugaba, la huella lo habría dicho once veces.
+ */
+const SUELO_ROMS = 11;
+const conRom = filas.filter((r) => r.cartuchos);
+/** Se cuentan CARTUCHOS, no ficheros: el mueble del mapache sostiene tres. */
+const cartuchos = filas.reduce((s, r) => s + r.cartuchos, 0);
 
-console.log(`\n  juegos declarados como ROM: ${conRom.length} de ${filas.length} (suelo: ${SUELO_ROMS})`);
-console.log(`  ${conRom.map((r) => r.f.replace('.js', '')).join(', ') || '—'}`);
+console.log(`\n  juegos declarados como ROM: ${cartuchos} en ${conRom.length} de ${filas.length} núcleos (suelo: ${SUELO_ROMS})`);
+console.log(`  ${conRom.map((r) => r.f.replace('.js', '') + (r.cartuchos > 1 ? `×${r.cartuchos}` : '')).join(', ') || '—'}`);
 
 console.log(`\n  núcleos que componen dos o más piezas: ${componen.length} de ${filas.length} (suelo: ${SUELO_COMPONEN})`);
 console.log(`  ${componen.map((r) => r.f.replace('.js', '')).join(', ') || '—'}`);
@@ -176,8 +252,8 @@ console.log(`  ${integradores.map((f) => f.replace('.js', '')).join(', ')}`);
 console.log(`\n  átomos de movimiento declarados: ${[...ATOMOS].map((f) => f.replace('.js', '')).join(', ')}`);
 
 let mal = 0;
-if (conRom.length < SUELO_ROMS) {
-    console.log(`\n  ✗ el suelo de ROMs ha bajado de ${SUELO_ROMS} a ${conRom.length}`);
+if (cartuchos < SUELO_ROMS) {
+    console.log(`\n  ✗ el suelo de ROMs ha bajado de ${SUELO_ROMS} a ${cartuchos}`);
     mal++;
 }
 if (componen.length < SUELO_COMPONEN) {

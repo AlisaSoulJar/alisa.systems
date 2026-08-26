@@ -84,8 +84,17 @@ export class RaccoonSpaceEnv extends GymEnv {
      * banco compara justamente lo que cada puerta entrega: si la de lenguaje
      * entrega castellano roto, la comparación tiene un sesgo que no es del juego.
      */
-    static ajustes = {};
-    static objetivo = { uno: 'planeta', varios: 'planetas', el: 'El', un: 'un', ningun: 'ningún' };
+    /**
+     * ⚠️ LOS NÚMEROS YA NO VIVEN AQUÍ: VIVEN EN EL CARTUCHO.
+     *
+     * Las tres etapas son el mismo mueble (`RaccoonSpaceCore`) con tres
+     * cartuchos (`RaccoonSpaceCore.ROMS`). Antes cada entorno traía su propia
+     * tabla de números y el núcleo tenía otra escrita en sus `??`: dos verdades
+     * para un solo juego. Ahora hay una, y estas tres líneas sólo dicen CUÁL.
+     */
+    static rom = RaccoonSpaceCore.ROMS['alisa/RaccoonSpace-v1'];
+    static ajustes = this.rom.ajustes;
+    static objetivo = this.rom.objetivo;
 
     constructor(opts = {}) {
         super(opts);
@@ -326,7 +335,6 @@ export class RaccoonSpaceEnv extends GymEnv {
  */
 export class RaccoonCityEnv extends RaccoonSpaceEnv {
     static id = 'alisa/RaccoonCity-v1';
-    static objetivo = { uno: 'edificio', varios: 'edificios', el: 'El', un: 'un', ningun: 'ningún' };
     /**
      * ⚠️ SIN ASTEROIDES, Y NO ES UN DESCUIDO.
      *
@@ -346,8 +354,9 @@ export class RaccoonCityEnv extends RaccoonSpaceEnv {
      * batería— así que el que manda es el número de edificios que descartar.
      * Medido en `calibrar_busca.mjs`.
      */
-    static ajustes = { tankSize: 180, planets: 10, asteroids: 0, fuel: 30, tope: 3000,
-                       forma: 'rejilla', mando: 'dron', scanCost: 0.05 };
+    static rom = RaccoonSpaceCore.ROMS['alisa/RaccoonCity-v1'];
+    static ajustes = this.rom.ajustes;
+    static objetivo = this.rom.objetivo;
     static actionSpace = { type: 'discrete', n: VERBS_DRONE.length, names: VERBS_DRONE };
     static meta = {
         title: '¡Busca! 4 — Sector de ciudad',
@@ -360,7 +369,6 @@ export class RaccoonCityEnv extends RaccoonSpaceEnv {
 
 export class RaccoonPlanetEnv extends RaccoonSpaceEnv {
     static id = 'alisa/RaccoonPlanet-v1';
-    static objetivo = { uno: 'ciudad', varios: 'ciudades', el: 'La', un: 'una', ningun: 'ninguna' };
     /** Sin asteroides por el mismo motivo que la ciudad: la página no los dibuja. */
     /**
      * ⚠️ 26 → 12, Y OTRA VEZ NO ES AFINAR: ES QUE CAMBIÓ EL JUEGO.
@@ -371,8 +379,9 @@ export class RaccoonPlanetEnv extends RaccoonSpaceEnv {
      * escaneo que la página sí cobraba, 11 lo deja en el 72%: entre el 87% de la
      * ciudad y el 52% del espacio. Medido en `calibrar_busca.mjs`.
      */
-    static ajustes = { tankSize: 260, planets: 8, asteroids: 0, fuel: 11, tope: 3600,
-                       forma: 'esfera', mando: 'orbita', scanCost: 0.08 };
+    static rom = RaccoonSpaceCore.ROMS['alisa/RaccoonPlanet-v1'];
+    static ajustes = this.rom.ajustes;
+    static objetivo = this.rom.objetivo;
     static actionSpace = { type: 'discrete', n: VERBS_ORBIT.length, names: VERBS_ORBIT };
     static meta = {
         title: '¡Busca! 5 — Planeta',

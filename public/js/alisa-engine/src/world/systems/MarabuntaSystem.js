@@ -72,6 +72,58 @@ export class MarabuntaSystem extends BulletHeavenEngine {
    * `config` va DESPUÉS de los valores propios para que se pueda ajustar la
    * arena en un experimento; `rng` es lo que hace falta para puntuar.
    */
+  /**
+   * ═══════════════════════════════════════════════════════════════════════
+   *  EL CARTUCHO — MARABUNTA SOBRE EL MUEBLE DEL «BULLET HEAVEN»
+   * ═══════════════════════════════════════════════════════════════════════
+   *
+   * Esto ya era una ROM y no lo sabía: `BulletHeavenEngine` nace vacío —sin
+   * armas, sin bichos, sin oleadas— y este fichero le pasaba las cinco tablas
+   * y once números en un objeto literal metido dentro del `super()`. O sea que
+   * el mueble no sabe a qué juego juega, y quien lo decide es el cartucho.
+   *
+   * Ponerle nombre no cambia una línea de lo que corre; cambia lo que se puede
+   * LEER. Un `super({ ... })` de treinta líneas es una tabla escondida en una
+   * llamada: no se puede listar, ni comparar con la de otro juego, ni contar en
+   * `npm run sistemas`. Sacada aquí, este juego se lee de un vistazo — y el que
+   * quiera otro bullet heaven ya sabe qué tiene que escribir y qué no.
+   *
+   * ⚠️ LAS TABLAS SIGUEN SIENDO `const` DE ARRIBA, NO SE COPIAN AQUÍ.
+   *
+   * El cartucho las NOMBRA; el sitio donde están escritas no se mueve. Copiar
+   * `WEAPONS_DB` dentro sería tener dos armerías, y la de la ROM ganaría en
+   * silencio el día que alguien tocara la de arriba.
+   */
+  static ROM = {
+    id: 'alisa/Marabunta-v0',
+    familia: 'tiempo_real',
+    mundo: {
+      arenaRadius: 40,
+      maxEnemies: 200,
+      maxProjectiles: 100,
+      maxPickups: 80,
+      waveDuration: 30,
+      pickupRangeBase: 1.5,
+    },
+    sistemas: [
+      ['BulletHeavenEngine', {
+        weapons: WEAPONS_DB,
+        enemies: ENEMY_TYPES,
+        waves: WAVE_TABLE,
+        passives: PASSIVES_DB,
+        xpPerLevel: XP_PER_LEVEL,
+      }],
+      /** Los llama el mueble para mover a los bichos; el cartucho no los afina. */
+      ['SteeringSystem', {}],
+      ['FSMSystem', {}],
+    ],
+  };
+
+  /** Los números con los que este cartucho llama a una pieza. */
+  static params(pieza) {
+    return MarabuntaSystem.ROM.sistemas.find(([n]) => n === pieza)?.[1] ?? {};
+  }
+
   constructor(config = {}) {
     super({
       /**
@@ -92,17 +144,8 @@ export class MarabuntaSystem extends BulletHeavenEngine {
        * hace falta parchear nada.
        */
       rng: () => Math.random(),
-      weapons: WEAPONS_DB,
-      enemies: ENEMY_TYPES,
-      waves: WAVE_TABLE,
-      passives: PASSIVES_DB,
-      xpPerLevel: XP_PER_LEVEL,
-      arenaRadius: 40,
-      maxEnemies: 200,
-      maxProjectiles: 100,
-      maxPickups: 80,
-      waveDuration: 30,
-      pickupRangeBase: 1.5,
+      ...MarabuntaSystem.params('BulletHeavenEngine'),
+      ...MarabuntaSystem.ROM.mundo,
       ...config,
     });
   }

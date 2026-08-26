@@ -3,92 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALISA — ¡Sobrevive! — Submarino</title>
-    <!-- El mapa del motor lo pone `/js/mundo.js`. Clásico y sin `defer`. -->
+    <!-- El mapa del motor lo pone `/js/mundo.js`. El título, el estilo, el HUD y
+         las cartelas los ponen la ROM y `montarMundo`. -->
     <script src="/js/mundo.js"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { overflow: hidden; background: #020a14; color: #cfe4ee;
-               font-family: 'JetBrains Mono', ui-monospace, monospace; }
-        #hud { position: fixed; top: 14px; left: 14px; z-index: 10;
-               background: rgba(4,14,26,.84); border: 1px solid #1d3a52;
-               border-radius: 10px; padding: 14px 18px; font-size: 13px; line-height: 1.7; }
-        #hud b { color: #7fd1ff; }
-        .barra { display: inline-block; width: 120px; height: 9px; background: #10202f;
-                 border-radius: 5px; overflow: hidden; vertical-align: middle; }
-        .barra i { display: block; height: 100%; background: linear-gradient(90deg,#3ddc97,#ffe066); }
-        .baja i { background: linear-gradient(90deg,#ff4d4d,#c0392b); }
-        #aviso { color: #ffe066; }
-        #pie { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
-               background: rgba(4,14,26,.84); border: 1px solid #1d3a52; border-radius: 8px;
-               padding: 8px 16px; font-size: 12px; color: #7d95a8; z-index: 10; }
-        #modal, #fin { position: fixed; inset: 0; display: grid; place-items: center;
-                       background: rgba(1,6,12,.93); z-index: 40; }
-        #fin { display: none; }
-        .caja { border: 1px solid #1d3a52; border-radius: 14px; padding: 30px 36px;
-                background: #041020; max-width: 640px; }
-        .caja h1 { font-size: 22px; color: #7fd1ff; margin-bottom: 14px; }
-        .caja p { font-size: 13px; line-height: 1.8; color: #9bb4c6; margin-bottom: 10px; }
-        .caja button { margin-top: 18px; width: 100%; padding: 13px; font-size: 15px;
-                       font-family: inherit; font-weight: 700; cursor: pointer; border: none;
-                       border-radius: 9px; color: #020a14;
-                       background: linear-gradient(135deg,#3ddc97,#2bb37a); }
-        label { font-size: 12px; color: #7d95a8; margin-right: 6px; }
-        input { width: 84px; background: #08182a; border: 1px solid #1d3a52; color: #cfe4ee;
-                border-radius: 6px; padding: 6px 8px; font-family: inherit; }
-    </style>
 </head>
 <body>
-
-<div id="hud">
-    <div><b>¡Sobrevive!</b> — Submarino</div>
-    <div>Aguantas: <b id="vT">0</b> / <span id="vMeta">120</span> s</div>
-    <div>Energía: <span class="barra" id="cajaBarra"><i id="vBarra" style="width:100%"></i></span>
-        <b id="vE">100</b></div>
-    <div>Plancton comido: <b id="vC">0</b></div>
-    <div id="aviso"></div>
-</div>
-
-<div id="pie">W/S: subir y bajar · A/D: babor y estribor · SHIFT: avanzar · ESPACIO: esconderse</div>
-
-<div id="modal">
-    <div class="caja">
-        <h1>¡Sobrevive! — Submarino</h1>
-        <p>Pilotas un submarino <b>del tamaño de un pez</b> dentro de una cadena
-           trófica viva: plancton que aparece, peces que forrajean y hacen banco,
-           cazadores que los siguen por el olor, y tiburones.</p>
-        <p>Come plancton para no quedarte sin energía y métete en una
-           <b style="color:#c38fff">medusa</b> o en el
-           <b style="color:#3ddc97">arrecife</b> cuando algo grande se acerque:
-           <b>ahí dentro no te ven</b>. Aguanta el tiempo y ganas.</p>
-        <p style="color:#63788a">Powered by ALISA <b>SubmarineCore</b> — el mismo núcleo
-           que juega el banco. Las reglas del ecosistema son las de
-           <b>EcosystemSystem</b>, que ya existían: forrajeo, huida, banco,
-           metabolismo, escondite y feromonas.</p>
-        <div style="margin-top:14px">
-            <label>Semilla</label><input id="inSemilla" value="42">
-            <label style="margin-left:14px">Aguantar</label><input id="inMeta" value="120">
-        </div>
-        <button id="btnEmpezar">▶ SUMERGIRSE</button>
-    </div>
-</div>
-
-<div id="fin"><div class="caja"><h1 id="finTitulo"></h1><p id="finTexto"></p>
-    <button onclick="location.reload()">Otra vez</button></div></div>
-
 <script type="module">
 import { montarMundo } from '/js/montarMundo.js';
 import { PintorMundo } from '/js/pintor_mundo.mjs';
 import { SubmarineCore } from '@alisa-engine/src/world/systems/SubmarineCore.js';
 import { figurasDeSubmarino, encuadrarSubmarino } from '/js/figuras_submarino.mjs';
+import { montarHud, montarPie } from '/js/hud_mundo.mjs';
+import { montarCartel } from '/js/cartelas_mundo.mjs';
+import { montarTeclado } from '/js/teclado_mundo.mjs';
 import { animarGLB } from '/js/figuras_glb.mjs';
 
 /**
- * Esta página no tiene ni una regla dentro: pide el mundo al núcleo
- * (`sustrato()`) y se lo da al dibujante compartido. El núcleo es el MISMO que
+ * ⚠️ ESTA PÁGINA NO SABE A QUÉ SE JUEGA, Y ÉSE ES EL PUNTO.
+ *
+ * Ni reglas, ni estilo, ni HUD, ni cartelas, ni teclas: todo eso lo declara la
+ * ROM `SubmarineCore` y lo pintan piezas compartidas. El núcleo es el MISMO que
  * juega el banco, así que la persona y el agente no pueden acabar jugando a dos
  * juegos parecidos.
+ *
+ * Lo único propio es la PIEL — qué modelo tiene cada bicho — y eso está en
+ * `figuras_submarino.mjs`, porque el arte cambia sin que el juego cambie.
  */
+const ROM = SubmarineCore.ROM;
+
 const { app: gfx, THREE, arrancar } = await montarMundo({
     ambiente: 'night',
     cielo: false,
@@ -96,76 +38,43 @@ const { app: gfx, THREE, arrancar } = await montarMundo({
     nucleo: { clearColor: 0x020a14, fogColor: 0x03121f, fogDensity: 0.006 },
 });
 
-const ESTILO = figurasDeSubmarino(THREE);
-let nucleo = null;
-let pintor = null;
-let acabado = false;
-const mando = { subir: false, bajar: false, izquierda: false, derecha: false,
-                adelante: false, esconderse: false };
+let nucleo = null, pintor = null, hud = null, acabado = false;
 
-function empezar() {
-    const semilla = parseInt(document.getElementById('inSemilla').value) || 42;
-    const meta = Math.max(20, Math.min(600, parseInt(document.getElementById('inMeta').value) || 120));
+/** SHIFT avanza y ESPACIO esconde: dos verbos de este cartucho, declarados. */
+const mando = montarTeclado(() => nucleo, {
+    extra: { shift: 'adelante' },
+    accion: () => {},                 // ESPACIO se lee como estado, no como golpe
+});
 
-    nucleo = new SubmarineCore({ seed: semilla, aguanta: meta });
-    pintor = new PintorMundo(gfx.scene, ESTILO, 1);
-
-    document.getElementById('vMeta').textContent = meta;
-    document.getElementById('modal').style.display = 'none';
-
+const cartel = montarCartel(ROM.cartel, (ajustes) => {
+    nucleo = new SubmarineCore({ seed: ajustes.seed, aguanta: ajustes.aguanta });
+    pintor = new PintorMundo(gfx.scene, figurasDeSubmarino(THREE), 1);
+    hud = montarHud(ROM.hud);
+    montarPie(ROM.hud.mandos);
     encuadrarSubmarino(gfx);
-
     /** El mundo, publicado, para que un aviso se pueda REPINTAR. */
     window.getSustrato = () => { try { return nucleo?.sustrato() ?? null; } catch { return null; } };
-}
+});
 
-function hud() {
-    const i = nucleo.info();
-    document.getElementById('vT').textContent = Math.floor(i.t);
-    document.getElementById('vE').textContent = Math.round(i.energia);
-    document.getElementById('vC').textContent = i.comidos;
-    const pct = Math.max(0, i.energia / nucleo.energiaInicial * 100);
-    document.getElementById('vBarra').style.width = pct + '%';
-    document.getElementById('cajaBarra').classList.toggle('baja', pct < 30);
-    document.getElementById('aviso').textContent = i.escondido ? '🫧 escondido — aquí no te ven' : '';
-}
-
-function acabar() {
-    const g = nucleo.estado.ganado;
-    const i = nucleo.info();
-    document.getElementById('finTitulo').textContent = g ? 'Aguantaste' : 'Se acabó';
-    document.getElementById('finTexto').textContent = g
-        ? `${Math.floor(i.t)} segundos enteros. Comiste ${i.comidos} de plancton.`
-        : (i.energia <= 0
-            ? `Te quedaste sin energía a los ${Math.floor(i.t)} s. Comiste ${i.comidos} de plancton.`
-            : `Te alcanzaron a los ${Math.floor(i.t)} s. Comiste ${i.comidos} de plancton.`);
-    document.getElementById('fin').style.display = 'grid';
-}
-
-document.getElementById('btnEmpezar').addEventListener('click', empezar);
-
-const tecla = (e, v) => {
-    const k = e.key.toLowerCase();
-    if (k === 'w' || k === 'arrowup') mando.subir = v;
-    if (k === 's' || k === 'arrowdown') mando.bajar = v;
-    if (k === 'a' || k === 'arrowleft') mando.izquierda = v;
-    if (k === 'd' || k === 'arrowright') mando.derecha = v;
-    if (k === 'shift') mando.adelante = v;
-    if (k === ' ') { e.preventDefault(); mando.esconderse = v; }
-};
-addEventListener('keydown', (e) => tecla(e, true));
-addEventListener('keyup', (e) => tecla(e, false));
+/**
+ * `esconderse` va por tecla mantenida, no por pulsación: mientras estés dentro de
+ * la medusa no te ven, y soltarla te descubre. Es estado, no un golpe.
+ */
+addEventListener('keydown', (e) => { if (e.key === ' ') { e.preventDefault(); mando.estado.esconderse = true; } });
+addEventListener('keyup', (e) => { if (e.key === ' ') mando.estado.esconderse = false; });
 
 arrancar((dt) => {
     if (!nucleo) return;
-    const hay = Object.values(mando).some(Boolean);
-    nucleo.tick(Math.min(dt, 0.1), hay ? mando : null);
+    const paso = Math.min(dt, 0.1);
+    const hay = Object.values(mando.estado).some(Boolean);
+    nucleo.tick(paso, hay ? mando.estado : null);
     pintor.pintar(nucleo.sustrato());
-    // El pintor COLOCA; los esqueletos de los GLB los mueve esto. Un modelo
-    // con hueso y sin nadie que se lo mueva se queda en la pose que trae.
-    animarGLB(Math.min(dt, 0.1));
-    hud();
-    if (nucleo.terminado() && !acabado) { acabado = true; acabar(); }
+    // El pintor COLOCA; los esqueletos de los GLB los mueve esto. Un modelo con
+    // hueso y sin nadie que se lo mueva se queda en la pose que trae.
+    animarGLB(paso);
+    const info = nucleo.info();
+    hud.pintar(info, nucleo);
+    if (info.terminado && !acabado) { acabado = true; cartel.final(info); }
 });
 
 /** La puerta de los agentes, en la PÁGINA — no dentro del núcleo. */
@@ -181,10 +90,8 @@ window.stepSimulation = (accion, dt = 1 / 60) => {
 window.ALISA_STREAM_SIM_NAME = 'submarino';
 </script>
 
-<!--
-  El botón de «algo se ve raro»: recoge lo que la persona tenía delante y, como
-  esta página publica `window.getSustrato()`, adjunta el mundo entero.
--->
+<!-- El botón de «algo se ve raro»: adjunta el mundo entero porque esta página
+     publica `window.getSustrato()`. -->
 <script type="module" src="/arcade/js/protohub/reportar.js"></script>
 </body>
 </html>
