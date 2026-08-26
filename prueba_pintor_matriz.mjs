@@ -24,7 +24,7 @@
  * exacta: ¿pintó una celda por casilla y una figura por pieza? Una captura sólo
  * diría «se ve algo» — que es justo lo que decían las páginas rotas.
  */
-import { CATALOGO } from './public/js/alisa-engine/src/gym/registro.js';
+import { CATALOGO } from './public/js/alisa-engine/src/gym/registry.js';
 import { PintorMatriz } from './public/js/pintor_matriz.mjs';
 import { PintorMundo } from './public/js/pintor_mundo.mjs';
 

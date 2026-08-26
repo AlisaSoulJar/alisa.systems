@@ -71,7 +71,7 @@ import { SovereignHaloPlugin } from '@alisa-engine/src/extensions/alisa-colony/p
 // de otro, pero una máquina no podía jugar aquí.
 //
 // Las que no lo declaran es porque todavía no lo tienen; se dice, no se
-// disimula. El catálogo completo vive en `js/alisa-engine/src/gym/registro.js`
+// disimula. El catálogo completo vive en `js/alisa-engine/src/gym/registry.js`
 // y se puede jugar entero sin abrir esta sala:
 // `labs/croupier_gym_estaciones.html`.
 const ARCADES = [
@@ -1383,7 +1383,7 @@ window.__sala = {
    *
    * Esto es la portada hecha comprobable: `[{estacion, env, url}]`. Un agente
    * enumera esto, carga el entorno por su id desde
-   * `js/alisa-engine/src/gym/registro.js`, juega, y su episodio deja el MISMO
+   * `js/alisa-engine/src/gym/registry.js`, juega, y su episodio deja el MISMO
    * recibo que dejaría una persona sentada aquí —{juego, semilla, jugadas,
    * puntos}— así que lo verifica el mismo `Verificador.js`.
    *

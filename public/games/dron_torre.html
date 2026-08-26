@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--
+        El mapa del motor lo pone `/js/mundo.js`, que es donde vive esa decisión.
+        Clásico y sin `defer` a propósito: un `importmap` no se puede añadir una
+        vez que un módulo ha empezado a cargar. El título lo pone la ROM.
+    -->
+    <script src="/js/mundo.js"></script>
+</head>
+<body>
+<script type="module">
+import { montarVolumen } from '/js/montarVolumen.mjs';
+import { DroneTowerCore } from '@alisa-engine/src/world/systems/DroneTowerCore.js';
+
+/**
+ * ⚠️ ESTA PÁGINA EMPEZÓ CON EL JUEGO ESCRITO DENTRO.
+ *
+ * Y ésa era la avería que este proyecto lleva semanas midiéndose: la persona y el
+ * agente jugaban a dos juegos con el mismo nombre. Hoy la página no sabe a qué se
+ * juega — sólo dice QUÉ CARTUCHO se mete y CÓMO SE PINTA.
+ *
+ * El dron usa el modelo y el color por defecto del género, así que aquí no hay ni
+ * piel.
+ */
+await montarVolumen({ Core: DroneTowerCore, nombre: 'dron_torre' });
+</script>
+
+<!--
+  El botón de «algo se ve raro». Es el MISMO de las mesas del arcade: recoge lo
+  que la persona tenía delante y, como `montarVolumen` publica
+  `window.getSustrato()`, adjunta el mundo entero — así un aviso deja de ser una
+  anécdota y pasa a ser una partida que se puede repintar.
+-->
+<script type="module" src="/arcade/js/protohub/reportar.js"></script>
+</body>
+</html>

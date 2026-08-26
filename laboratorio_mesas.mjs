@@ -258,7 +258,7 @@ async function jugarComoUnHumano(page, legales) {
      *
      * Se prueban los demás botones, saltándose los que se sabe que ROMPEN la
      * partida en vez de jugarla. Y sí, eso es una lista escrita a mano — pero es de
-     * VERBOS y no de juegos, y si algún día se queda corta el laboratorio pulsa un
+     * VERBS y no de juegos, y si algún día se queda corta el laboratorio pulsa un
      * «reiniciar» y sale un falso NEGATIVO ruidoso, no un verde callado.
      */
     if (!(await llegó())) {

@@ -63,7 +63,40 @@ export class CabinetEscapeSystem {
         return Math.ceil(Math.log2(this.partition.leaves.length));
     }
 
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  RESET — REJUGAR EL MISMO EPISODIO, QUE ES LO QUE PIDE EL CONTRATO
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * ⚠️ NO PUEDE SER UN `reset()` A SECAS, Y EL MOTIVO ES DEL JUEGO.
+     *
+     * `initEpisode` recibe la PARTICIÓN BSP desde fuera —la construye el
+     * llamante con su `bspEngine`—, así que este sistema no puede rehacer su
+     * propio mundo de la nada: no sabe cómo se cortó el mueble. Un `reset()` que
+     * dejara la partición a `null` devolvería un archivador sin cajones, que es
+     * peor que no tener `reset`.
+     *
+     * Así que recuerda el último episodio y lo vuelve a montar. Con eso «misma
+     * semilla, misma partida» se cumple de verdad, que es lo único que el
+     * contrato pide y la razón de que un recibo se pueda volver a jugar.
+     *
+     * `resetState()` sigue existiendo y NO es lo mismo: vacía el estado sin
+     * montar nada. Es el paso de dentro; esto es la puerta.
+     */
+    reset(config = {}) {
+        const a = { ...(this._ultimoEpisodio ?? {}), ...config };
+        if (!a.partition) {
+            // Todavía no ha habido episodio: lo único honrado es dejarlo limpio.
+            this.resetState();
+            return this.sustrato();
+        }
+        this.initEpisode(a.partition, a.seed, a.stage, a.mode, a.snakeMode);
+        return this.sustrato();
+    }
+
     initEpisode(partition, seed, stage, mode, snakeMode) {
+        // Lo que hace falta para volver a montar ESTE mismo episodio. Ver `reset`.
+        this._ultimoEpisodio = { partition, seed, stage, mode, snakeMode };
         this.partition = partition;
         this.currentStage = stage;
         this.mode = mode;
@@ -150,7 +183,24 @@ export class CabinetEscapeSystem {
         this.bspEngine.syncState(this.tried, this.montyRevealed, this.targetId, this.snakeIds, this.partition);
     }
 
-    selectDrawer(idx) {
+    /**
+     * `step(idx)` — el verbo de la familia POR TURNOS: aquí no existe `dt`
+     * porque el mundo no se mueve hasta que alguien abre un cajón.
+     *
+     * ⚠️ SE LLAMABA `selectDrawer`, Y SE RENOMBRA AUNQUE ERA UN BUEN NOMBRE.
+     * En este juego la acción ES el cajón, así que `step(idx)` no pierde nada: el
+     * qué lo dice el argumento. Y el contrato existe para que un corredor pueda
+     * mover cualquier núcleo sin saber a qué se juega — si cada uno llama a su
+     * verbo como quiera, eso no se puede.
+     *
+     * Se renombra en vez de añadir un alias, a diferencia de `stepSimulation` en
+     * el acuario: aquel es la PUERTA DE LOS AGENTES y lo usan el SDK y dos
+     * corredores del gimnasio; éste sólo lo llamaban `CabinetEscapeEnv` y
+     * `CabinetEscapeGame`, los dos en esta casa. Dos nombres vivos para lo mismo
+     * es la enfermedad; mantenerlos cuando hay terceros enchufados es la cura
+     * cara. Aquí no hacía falta pagarla.
+     */
+    step(idx) {
         if (this.done || idx < 0 || idx >= this.partition.leaves.length) return { reward: 0, bspDist: -1, valid: false };
         if (this.tried[idx]) return { reward: 0, bspDist: -1, valid: false };
 

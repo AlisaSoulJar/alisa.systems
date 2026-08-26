@@ -147,7 +147,7 @@ export class CabinetEscapeEnv extends GymEnv {
                      info: { repetido: true, cajon: idx } };
         }
 
-        const r = this.sys.selectDrawer(idx);
+        const r = this.sys.step(idx);
         this.steps++; this.t += dt;
         this._pistas.set(idx, { snakes: this.sys.minesweeperCounts?.[idx] ?? 0, rabbit: 0 });
         this._lastScore += r.reward;

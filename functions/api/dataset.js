@@ -161,7 +161,7 @@ async function firmaDe(juego, semilla, jugadas, normas = null) {
     const texto = `${juego}|${semilla}|${jugadas.join(',')}`
         + (normas ? `|${JSON.stringify(normas)}` : '');
     const bytes = new TextEncoder().encode(texto);
-    const hash = await crypto.subtle.digest('SHA-256', bytes);
+    const hash = await crypto.subtle.resumir('SHA-256', bytes);
     return [...new Uint8Array(hash)].slice(0, 12)
         .map(b => b.toString(16).padStart(2, '0')).join('');
 }

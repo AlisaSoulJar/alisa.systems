@@ -1131,7 +1131,7 @@ const deCasillas = ([d]) => {
     return n * 2 > (d.legalesLista ?? []).length;
 };
 /**
- * ⚠️ Y HAY UNA TERCERA CLASE: LOS QUE JUEGAN A VERBOS.
+ * ⚠️ Y HAY UNA TERCERA CLASE: LOS QUE JUEGAN A VERBS.
  *
  * Con sólo dos grupos —casillas y piezas— snake y peatón caían en «piezas» y el titular
  * salía 7 de 24. Pero la jugada de snake es `arriba`: tocar la serpiente no la mueve, y
@@ -1169,7 +1169,7 @@ console.log(`  MESA, apuntando a las piezas con nombre: ${okPiezas.length}/${deP
  * ⚠️ «TIENE REJILLA» NO ES «JUEGA A CASILLAS», Y CONTARLO ASÍ SALÍA MAL.
  *
  * Sokoban, cripta o defensa publican rejilla —viven en un tablero— pero sus jugadas son
- * VERBOS: `arriba`, `torre a1`. Contándolos aquí salían en las dos listas a la vez y el
+ * VERBS: `arriba`, `torre a1`. Contándolos aquí salían en las dos listas a la vez y el
  * titular decía «5 de 21» cuando el denominador real son los que de verdad juegan
  * nombrando una casilla. Es el mismo error de conjunto de esta mañana, en el sitio de
  * al lado.
@@ -1186,7 +1186,7 @@ if (casillas.length && !conCasillas.length) {
               + ` ${casillas.join(', ')})`);
 }
 if (verbos.length) {
-    console.log(`  (${verbos.length} juegan a VERBOS —arriba, robar, plantarse— que no están en la mesa:`
+    console.log(`  (${verbos.length} juegan a VERBS —arriba, robar, plantarse— que no están en la mesa:`
               + ` ${verbos.join(', ')}. Ésos se miden con \`npm run verbos\`, no aquí)`);
 }
 if (aCiegas.length) {

@@ -15,7 +15,7 @@
  * mientras la persona y el banco jugaban a dos juegos distintos.
  */
 import * as THREE from 'three';
-import { CATALOGO } from './public/js/alisa-engine/src/gym/registro.js';
+import { CATALOGO } from './public/js/alisa-engine/src/gym/registry.js';
 import { PintorMundo } from './public/js/pintor_mundo.mjs';
 
 let fallos = 0;
@@ -161,7 +161,7 @@ for (const e of CATALOGO) {
  * salía perfecta con el mundo congelado. Una pantalla bonita no es una medida.
  */
 {
-    const e = CATALOGO.find(x => x.id === 'alisa/RaccoonSpace-v0');
+    const e = CATALOGO.find(x => x.id === 'alisa/RaccoonSpace-v1');
     const Clase = await e.cargar();
     const env = new Clase();
     env.reset(42);
@@ -175,9 +175,27 @@ for (const e of CATALOGO) {
         hechas.set(p.cajon, (hechas.get(p.cajon) ?? 0) + 1);
         return g;
     };
+    /**
+     * ⚠️ ESTA LISTA SE ESCRIBE A MANO, Y HAY QUE AÑADIRLE LOS TIPOS NUEVOS.
+     *
+     * El pintor tiene figura POR DEFECTO para un tipo que no conoce, así que un
+     * tipo nuevo se ve igual — pero esta prueba busca las mallas por el `cajon`
+     * de la pieza, y sólo las figuras que pone la página llevan ese nombre. Si
+     * el mundo gana un tipo y no se añade aquí, la prueba lo cuenta como
+     * «figura que no está donde dice el sustrato».
+     *
+     * Pasó el 2026-08-26 al meter los puntos de sincronización en
+     * `RaccoonSpaceCore`: «3 de 40 figuras no están donde dice el sustrato», y
+     * las tres eran los puntos nuevos. La prueba tenía razón en quejarse —no
+     * podía emparejarlos— pero el fallo era suyo, no del mundo.
+     */
     const ESTILO = { nave: { malla: propia }, asteroide: { malla: propia } };
     for (const t of ['sin_escanear', 'encontrado', 'escaneado',
-                     'caliente', 'templado', 'fresco', 'frío', 'helado']) {
+                     'caliente', 'templado', 'fresco', 'frío', 'helado',
+                     // Los tres puntos de recarga: la piel la elige cada etapa
+                     // según su vehículo (dron→pila, satélite→sincronización,
+                     // nave→bidón), así que los tres tipos pueden aparecer.
+                     'pila', 'sincronizacion', 'bidon']) {
         ESTILO[t] = { malla: propia };
     }
 

@@ -32,7 +32,7 @@ const AQUI = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z
 const impo = (rel) => import(pathToFileURL(path.join(AQUI, rel)).href);
 const { jugarEpisodio } = await impo('public/arcade/js/agentes/llm.js');
 // El mismo censo que usa `tabla.mjs`, para medir sobre el conjunto que ella mide.
-const { CATALOGO } = await impo('public/js/alisa-engine/src/gym/registro.js');
+const { CATALOGO } = await impo('public/js/alisa-engine/src/gym/registry.js');
 const ENTORNOS = Object.fromEntries(CATALOGO.map(e => [e.juego, e]));
 
 /**

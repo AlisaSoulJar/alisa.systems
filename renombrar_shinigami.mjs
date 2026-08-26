@@ -49,7 +49,7 @@ const DEL_JUEGO = [
     'public/arcade/js/protohub/rules/yokai.js',
     'public/arcade/yokai.html',
     'public/arcade/js/protohub/rules/index.js',
-    'public/js/alisa-engine/src/gym/registro.js',
+    'public/js/alisa-engine/src/gym/registry.js',
     'enfrentamiento.mjs',
     'enfrentar.mjs',
     'prueba_enfrentamiento.mjs',

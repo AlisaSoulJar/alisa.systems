@@ -27,7 +27,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const impo = (rel) => import(pathToFileURL(path.join(AQUI, rel)).href);
-const { CATALOGO } = await impo('public/js/alisa-engine/src/gym/registro.js');
+const { CATALOGO } = await impo('public/js/alisa-engine/src/gym/registry.js');
 const { verificar } = await impo('public/arcade/js/protohub/Verificador.js');
 
 const verde = (s) => `\x1b[32m${s}\x1b[0m`;

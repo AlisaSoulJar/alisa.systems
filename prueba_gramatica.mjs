@@ -27,8 +27,8 @@
  * conservando el nombre. Lo que se exige es que la TRIPLETA que se emite encima
  * sea uniforme — y ahí sí hay una sola regla.
  */
-import { CATALOGO } from './public/js/alisa-engine/src/gym/registro.js';
-import { SEPARADORES, leer, escribir } from './public/js/alisa-engine/src/gym/Gramatica.js';
+import { CATALOGO } from './public/js/alisa-engine/src/gym/registry.js';
+import { SEPARATORS, leer, escribir } from './public/js/alisa-engine/src/gym/Grammar.js';
 
 let fallos = 0;
 const mal = (m) => { console.log(`  ✗ ${m}`); fallos++; };
@@ -44,7 +44,7 @@ const direcciones = [];
  * ⚠️ ESTA LISTA ESTÁ DUPLICADA A PROPÓSITO, Y ES LA ÚNICA DUPLICACIÓN QUE
  *    DEFIENDO EN TODO EL BANCO.
  *
- * La primera versión usaba `DIRECCIONES` importado de `Gramatica.js` — o sea, la
+ * La primera versión usaba `DIRECTIONS` importado de `Grammar.js` — o sea, la
  * misma lista que tiene que vigilar. El sabotaje la vació y la comprobación
  * APROBÓ: al no estar `derecha` en la lista, el detector dejó de reconocerla como
  * dirección exactamente igual que el código que fallaba. Se quedó ciega con ella.
@@ -76,13 +76,13 @@ for (const e of CATALOGO) {
         if (!a.objeto || !a.metodo) { sinTripleta++; continue; }
 
         /**
-         * ⚠️ LA REGLA ÚNICA: UN MÉTODO NO LLEVA SEPARADORES DENTRO.
+         * ⚠️ LA REGLA ÚNICA: UN MÉTODO NO LLEVA SEPARATORS DENTRO.
          *
          * Dos puntos o un espacio dentro de un `#metodo` significan que hay un
          * parámetro escondido ahí. Es literalmente el fallo de `enviar a`: 68
          * acciones con `args: {}` mientras el argumento viajaba pegado al verbo.
          */
-        if (SEPARADORES.test(a.metodo)) {
+        if (SEPARATORS.test(a.metodo)) {
             conSeparador.push(`${e.id}: #${a.metodo}`);
         }
         /**
@@ -102,7 +102,7 @@ for (const e of CATALOGO) {
          * cortado. Por eso ninguna se da por buena hasta verla suspender.
          */
         for (const p of (a.params ?? [])) {
-            if (SEPARADORES.test(String(p))) {
+            if (SEPARATORS.test(String(p))) {
                 conSeparador.push(`${e.id}: #${a.metodo} |${p}`);
             }
         }
@@ -118,7 +118,7 @@ for (const e of CATALOGO) {
          * el siguiente. Un banco que quiere medir transferencia no puede partir
          * la misma acción en doce fichas.
          *
-         * La lista vive en `Gramatica.js` y está a la vista para discutirla. Esto
+         * La lista vive en `Grammar.js` y está a la vista para discutirla. Esto
          * sólo vigila que siga aplicándose: si alguien la vacía, aquí sale.
          */
         if (ES_DIRECCION.has(String(a.metodo).toLowerCase())) {
@@ -171,7 +171,7 @@ if (direcciones.length) {
  * regex, y 3 de cada 8 frases se leen distinto según quién las lea — hasta el
  * punto de que Metatron encola como orden lo que Parse trataría como charla.
  *
- * Aquí sólo puede haber una regex del átomo, y vive en `Gramatica.js`.
+ * Aquí sólo puede haber una regex del átomo, y vive en `Grammar.js`.
  */
 {
     const { readdirSync, readFileSync } = await import('node:fs');

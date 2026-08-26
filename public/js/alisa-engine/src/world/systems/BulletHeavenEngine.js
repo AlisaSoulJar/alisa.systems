@@ -89,7 +89,22 @@ export class BulletHeavenEngine {
   }
 
   reset() {
-    this.tick = 0;
+    /**
+     * ⚠️ SE LLAMABA `this.tick`, Y AL RENOMBRAR EL MÉTODO A `tick(dt)` TAPABA
+     *    AL MÉTODO. Éste es el fallo, y no dio ningún error al renombrar.
+     *
+     * Una propiedad de instancia SOMBREA al método del prototipo: `g.tick` pasó
+     * a ser el número 0 y `g.tick(dt)` reventaba con «is not a function». La
+     * clase seguía teniendo el método —el prototipo estaba perfecto— así que
+     * mirar la clase decía que todo bien. Sólo se ve INSTANCIANDO.
+     *
+     * Por eso `prueba_contrato.mjs` ahora instancia además de mirar el
+     * prototipo: fue este fallo el que enseñó que mirar la clase no basta.
+     *
+     * El contador se renombra; la CLAVE `tick` del estado se queda igual, que
+     * es lo que ve quien lee `getState()`.
+     */
+    this.tickCount = 0;
     this.time = 0;
     this.gameOver = false;
     this.victory = false;
@@ -149,16 +164,31 @@ export class BulletHeavenEngine {
     if (actionId === 12) this.specialInput.sweep = true;
     if (actionId === 13) this.specialInput.slam = true;
     if (actionId === 14) this.specialInput.dash = true;
-    return this.update(1 / 30);
+    return this.tick(1 / 30);
   }
 
-  // === MAIN LOOP ===
-  update(dt) {
+  /**
+   * === MAIN LOOP ===
+   *
+   * ⚠️ SE LLAMABA `update(dt)`, Y EL CAMBIO NO ES COSMÉTICO.
+   *
+   * Medido el 2026-08-26: avanzar el mundo se decía de cuatro maneras entre los
+   * ocho núcleos del motor —`update`, `tick`, `step`, `start`— y tres no lo
+   * decían de ninguna. `GameContract` lo zanja por familias: `tick(dt)` para
+   * los de tiempo real, `step(accion)` para los de turnos. Éste es de tiempo
+   * real: el mundo se mueve mientras piensas.
+   *
+   * Y `update` era el peor nombre posible aquí, porque es EL MISMO que usan las
+   * fábricas para sincronizar sus mallas. En la página de Marabunta convivían
+   * `game.update(dt)` y `factory.update(dt)` en dos líneas seguidas: el mundo y
+   * el dibujo, indistinguibles a simple vista.
+   */
+  tick(dt) {
     if (this.gameOver || this.victory) return { state: this.getState(), reward: 0, done: true };
     if (this.pendingUpgrade) return { state: this.getState(), reward: 0, done: false };
 
     this._rewardAccum = 0;
-    this.tick++;
+    this.tickCount++;
     this.time += dt;
 
     this._updatePlayer(dt);
@@ -247,7 +277,7 @@ export class BulletHeavenEngine {
     const spawnDist = this.arenaRadius + 5;
     
     const enemy = {
-      id: 'e' + this.tick + '_' + this.enemies.length,
+      id: 'e' + this.tickCount + '_' + this.enemies.length,
       x: Math.cos(angle) * spawnDist,
       z: Math.sin(angle) * spawnDist,
       vx: 0, vz: 0,
@@ -669,7 +699,7 @@ export class BulletHeavenEngine {
 
   getState() {
     return {
-      tick: this.tick,
+      tick: this.tickCount,
       time: Math.round(this.time * 10) / 10,
       wave: this.wave,
       gameOver: this.gameOver,

@@ -84,7 +84,22 @@ export class AsteroidsSystem {
      * conoce ni el reloj ni el azar del sistema.
      */
     constructor(config = {}) {
-        this.rng = config.rng || mulberry32((config.seed ?? 42) >>> 0);
+        /**
+         * ⚠️ SE GUARDA CÓMO SE FABRICA EL AZAR, NO SÓLO EL AZAR.
+         *
+         * Sin esto, `reset()` devuelve el mundo a su sitio pero DEJA EL
+         * GENERADOR DONDE ESTABA, así que la segunda partida de una instancia no
+         * es la misma que la primera con la misma semilla. Medido al escribir el
+         * `reset`: el sustrato tras resetear no coincidía con el de una
+         * instancia recién construida, y ese es exactamente el fallo que hace
+         * que un recibo no se pueda volver a jugar.
+         *
+         * Si el llamante trae su propio `rng`, es SUYO y no se toca: puede ser
+         * un `DeterministicScope` que lleva la cuenta por fuera.
+         */
+        this._rngExterno = config.rng || null;
+        this._semilla = (config.seed ?? 42) >>> 0;
+        this.rng = this._rngExterno || mulberry32(this._semilla);
         this.ARENA_W = 40;
         this.ARENA_H = 25;
         this.VISIBLE_Z = 130;
@@ -114,6 +129,62 @@ export class AsteroidsSystem {
         this.decorStars = [];
         
         this.events = [];
+    }
+
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  RESET — DEJAR EL MUNDO COMO ESTABA, Y LUEGO EMPEZAR
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * ⚠️ ESTO NO EXISTÍA, Y `start()` NO LO HACÍA: `start` SÓLO PUEBLA.
+     *
+     * Llamarlo dos veces sobre el mismo sistema no da ningún error — spawnea
+     * OTRA nave, otras 300 estrellas y otros quince asteroides encima de los que
+     * ya había. Una segunda partida en la misma instancia salía con el doble de
+     * todo, y nadie lo veía porque en la práctica siempre se construía un
+     * sistema nuevo. El día que alguien reutilice la instancia, la nota de esa
+     * partida no significará nada.
+     *
+     * `GameContract` pide `reset()` justo por esto: con la misma semilla, la
+     * misma partida. Sin él, un recibo no se puede volver a jugar.
+     *
+     * Se devuelve al estado del constructor a mano, y no con un `new`, porque
+     * quien tiene la referencia —la página, el entorno— seguiría apuntando al
+     * objeto viejo.
+     */
+    reset(config = {}) {
+        // El azar vuelve al principio, o el mundo se reinicia y la partida no.
+        // Un `rng` traído de fuera no se toca: lo lleva quien lo trajo.
+        if (config.seed !== undefined) this._semilla = config.seed >>> 0;
+        if (!this._rngExterno) this.rng = mulberry32(this._semilla);
+
+        this.lastWallZ = 0;
+        this.globalZ = 0;
+        this.scrollSpeed = 20;
+        this.baseScrollSpeed = 20;
+        this.maxEnemies = 0;
+        this.targetAsteroidDensity = 15;
+
+        this.rank = 0;
+        this.energy = 100;
+        this.gaugeIndex = -1;
+        this.selectedShipClass = 'VIPER';
+        this.currentStage = 1;
+
+        this.stats = { time: 0, score: 0, deaths: 0, graze: 0, streak: 0, bestStreak: 0, capsules: 0 };
+        this.currentWave = WAVES[0];
+
+        this.ship = null;
+        this.asteroids = [];
+        this.enemies = [];
+        this.projectiles = [];
+        this.items = [];
+        this.particles = [];
+        this.decorStars = [];
+        this.events = [];
+
+        this.start(config);
+        return this.sustrato();
     }
 
     start(config) {

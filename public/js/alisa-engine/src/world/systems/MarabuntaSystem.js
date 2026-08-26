@@ -151,8 +151,9 @@ export class MarabuntaSystem extends BulletHeavenEngine {
     }
   }
 
-  update(dt) {
-    const res = super.update(dt);
+  /** `tick(dt)` — el verbo de la familia de tiempo real. Antes era `update`. */
+  tick(dt) {
+    const res = super.tick(dt);
     this._updatePuddles(dt);
     this._updateBossLogic(dt);
     return res;

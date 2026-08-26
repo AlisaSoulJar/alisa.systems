@@ -223,7 +223,10 @@ arrancar((dt) => {
   game.setSpecial(!!keys['q'], !!keys[' '], !!keys['shift']);
 
   // 2. System tick
-  const result = game.update(dt);
+  // `game.tick` mueve el MUNDO; `factory.update`, tres líneas más abajo, mueve
+  // el DIBUJO. Hasta hoy los dos se llamaban `update` y eran indistinguibles a
+  // simple vista, en dos líneas seguidas.
+  const result = game.tick(dt);
 
   // 3. System state → Factory visuals
   factory.syncState(result.state, dt);

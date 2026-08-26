@@ -275,7 +275,7 @@ if (sinSembrar.length > TECHO_SIN_SEMBRAR) {
  * sólo la recompensa da un falso negativo, porque un barrido corto no llega a
  * cobrar. Hace falta barrer todas las acciones y comparar la observación entera.
  */
-const { CATALOGO } = await import('./public/js/alisa-engine/src/gym/registro.js');
+const { CATALOGO } = await import('./public/js/alisa-engine/src/gym/registry.js');
 
 /** Entornos que hoy NO usan la semilla. **Esta lista sólo puede encoger.** */
 const INERTES = ['alisa/CorpBuilding-v0'];

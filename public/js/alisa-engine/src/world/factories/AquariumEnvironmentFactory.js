@@ -68,21 +68,45 @@ export class AquariumEnvironmentFactory {
     //  PUBLIC BUILD METHODS
     // ────────────────────────────────────────────────
 
+    /**
+     * ⚠️ LAS PIEZAS SE PUEDEN PEDIR SUELTAS, Y ESO NO ES UN CAPRICHO.
+     *
+     * Aquí sólo `corals` era opcional: todo lo demás venía pegado —pecera de
+     * cristal, helicóptero, plancton, feromonas—, así que quien quisiera
+     * únicamente **el rascacielos de N plantas que se iluminan una a una** no
+     * podía usarlo sin llevarse un acuario entero detrás.
+     *
+     * Y esa parte es la joya del fichero: `_buildSkyscraper` deja en
+     * `this.floors[i].glow` una caja aditiva por planta, hecha exactamente para
+     * decir «esta planta está mirada». Es la mecánica de ¡Busca! —plantas
+     * enteras, no puertas— y es distinta de la de `ProceduralBuildingFactory`,
+     * que se recorre a pie mirando puertas en los rellanos.
+     *
+     * ¡Busca! 7 la necesitaba y se estaba dibujando dieciocho losas azules.
+     *
+     * Todos los interruptores son `!== false`: quien llamaba antes sin config
+     * sigue recibiendo el acuario completo, bit por bit.
+     */
     buildAll(config = {}) {
         this.totalFloors = config.totalFloors || 18;
+        if (config.FL_H) this.FL_H = config.FL_H;
+        if (config.FL_W) this.FL_W = config.FL_W;
+        if (config.FL_D) this.FL_D = config.FL_D;
         this.TANK_HEIGHT = this.totalFloors * this.FL_H + 40;
 
-        this._buildLighting();
-        this._buildGround();
-        this._buildTank();
-        this._buildSkyscraper();
-        this._buildChopper();
-        this._buildPheromoneGrid();
-        this._buildDust();
+        if (config.lighting !== false) this._buildLighting();
+        if (config.ground !== false) this._buildGround();
+        if (config.tank !== false) this._buildTank();
+        if (config.skyscraper !== false) this._buildSkyscraper();
+        if (config.chopper !== false) this._buildChopper();
+        if (config.pheromones !== false) this._buildPheromoneGrid();
+        if (config.dust !== false) this._buildDust();
         if (config.corals !== false) this._buildCorals();
 
         // Position camera
-        this.camera.position.set(100, this.totalFloors * this.FL_H, 100);
+        if (config.camera !== false) {
+            this.camera.position.set(100, this.totalFloors * this.FL_H, 100);
+        }
 
         return this;
     }

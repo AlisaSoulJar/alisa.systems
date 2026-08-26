@@ -41,7 +41,7 @@
  * ═══════════════════════════════════════════════════════════════════════════
  */
 import { GymEnv } from './GymEnv.js';
-import { partir } from './Gramatica.js';
+import { partir } from './Grammar.js';
 // La normalización de puntos vive donde vive la verificación. Si el entorno y
 // el verificador contaran los puntos de forma distinta, el recibo de una
 // partida legítima no cuadraría — y eso pasó de verdad, ver `_puntosDe`.

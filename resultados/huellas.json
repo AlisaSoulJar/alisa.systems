@@ -10,39 +10,47 @@
     "por_que_no_suben_a_v1": "Porque no hay nota que proteger: cero entradas de mundos propios en resultados/tabla.json. Y porque cuando dos puertas discrepaban, las notas viejas no eran obsoletas sino inválidas —medían la puerta, no al agente—. Una versión nueva conserva medidas buenas; no dignifica medidas rotas."
   },
   "alisa/Pedrisco-v0": {
-    "huella": "3c8d4f5d",
-    "sellada": "2026-08-25"
+    "huella": "fd061509",
+    "sellada": "2026-08-26"
   },
   "alisa/CabinetEscape-v0": {
-    "huella": "e1699571",
-    "sellada": "2026-08-25"
+    "huella": "d63d3cba",
+    "sellada": "2026-08-26"
   },
   "alisa/Marabunta-v0": {
-    "huella": "6b064c12",
-    "sellada": "2026-08-25"
+    "huella": "856713aa",
+    "sellada": "2026-08-26"
   },
-  "alisa/RaccoonSpace-v0": {
-    "huella": "8098d37d",
-    "sellada": "2026-08-25"
+  "alisa/RaccoonSpace-v1": {
+    "huella": "7d54197b",
+    "sellada": "2026-08-26"
   },
-  "alisa/RaccoonCity-v0": {
-    "huella": "04bb5317",
-    "sellada": "2026-08-25"
+  "alisa/RaccoonCity-v1": {
+    "huella": "66d24069",
+    "sellada": "2026-08-26"
   },
-  "alisa/RaccoonPlanet-v0": {
-    "huella": "8cef3b51",
-    "sellada": "2026-08-25"
+  "alisa/RaccoonPlanet-v1": {
+    "huella": "82936c95",
+    "sellada": "2026-08-26"
   },
   "alisa/CorpBuilding-v0": {
-    "huella": "1a2ecfbf",
-    "sellada": "2026-08-25"
+    "huella": "14eead53",
+    "sellada": "2026-08-26"
+  },
+  "alisa/DroneTower-v0": {
+    "huella": "f43669e8",
+    "sellada": "2026-08-26"
+  },
+  "alisa/SatelliteSweep-v0": {
+    "huella": "23eb7c13",
+    "sellada": "2026-08-26"
   },
   "alisa/Defiende-v0": {
-    "huella": "7ad84f42",
-    "sellada": "2026-08-25"
+    "huella": "77bef3c2",
+    "sellada": "2026-08-26"
   },
-  "alisa/ChopperAquarium-v0": {
-    "huella": "5ff57d08",
-    "sellada": "2026-08-25"
+  "alisa/Submarine-v0": {
+    "huella": "8701514f",
+    "sellada": "2026-08-26"
   }
 }

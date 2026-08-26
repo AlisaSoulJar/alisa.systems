@@ -9,7 +9,7 @@
  * a las reglas por mi cuenta. Es la regla 5 de `docs/COMO_MEDIR.md` llevada hasta
  * el final: si el instrumento oficial existe, se usa el instrumento oficial.
  */
-import { CATALOGO } from './public/js/alisa-engine/src/gym/registro.js';
+import { CATALOGO } from './public/js/alisa-engine/src/gym/registry.js';
 import { cargarReglas } from './public/arcade/js/protohub/rules/index.js';
 import { huecoEmparejado, diHueco } from './medir.mjs';
 

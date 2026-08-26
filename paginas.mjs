@@ -98,9 +98,36 @@ for (const d of DIRS) {
          * Los dos pintores —plana y 3D— se llaman igual, `pintar(sus)`, así que la
          * regla vale para las dos sin saber cuál usa la página.
          */
-        const sustrato = /pintar\s*\([^)]*sustrato/.test(limpio)
-            || (/\b(?:const|let|var)\s+\w+\s*=\s*[^;\n]*sustrato\s*\(/.test(limpio)
-                && /pintar\s*\(/.test(limpio));
+        /**
+         * ⚠️ Y SE MIRA UN NIVEL MÁS ABAJO, PORQUE COMPONER NO ES DEJAR DE HACERLO.
+         *
+         * `dron_torre.html` pasó de 89 líneas a 3 delegando en `montarVolumen`, y
+         * esta vara la suspendió: dejó de tener `pintar(sustrato)` DENTRO. Pero el
+         * sustrato se sigue pintando — una capa más abajo, en la pieza compartida.
+         *
+         * Suspender a una página por componer es exactamente lo contrario de lo
+         * que este fichero existe para premiar, y habría empujado a la siguiente
+         * etapa a copiar el bucle otra vez para «aprobar». Un instrumento que
+         * castiga lo que quiere fomentar no está midiendo: está estorbando.
+         *
+         * Así que si la página no lo hace ella, se busca en los módulos propios
+         * que importa (`/js/...`). UN nivel, no más: a partir de ahí ya no se
+         * puede decir que la página lo enseñe, y una cadena larga escondería que
+         * nadie lo hace.
+         */
+        const pinta = (txt) => /pintar\s*\([^)]*sustrato/.test(txt)
+            || (/\b(?:const|let|var)\s+\w+\s*=\s*[^;\n]*sustrato\s*\(/.test(txt)
+                && /pintar\s*\(/.test(txt));
+
+        let sustrato = pinta(limpio);
+        if (!sustrato) {
+            for (const m of limpio.matchAll(/from\s+['"](\/js\/[\w./-]+)['"]/g)) {
+                try {
+                    const suyo = readFileSync(path.join(RAIZ, 'public', m[1]), 'utf8');
+                    if (pinta(suyo)) { sustrato = true; break; }
+                } catch { /* un import que no resuelve ya lo dice `prueba_enlaces` */ }
+            }
+        }
         filas.push({
             f, propio, compone, senales, sustrato,
             esJuego: d === 'public/games',
@@ -127,8 +154,31 @@ for (const r of filas) {
  * dice aquí, y el día que se limpie una se actualiza a la baja.
  *
  * Medido el 25-08, después de pasar `defiende_sendero.html` a `PintorMatriz`.
+ *
+ * ⚠️ BAJADO A 340 EL 26-08, Y LA HISTORIA MERECE CONTARSE.
+ *
+ * La etapa nueva `dron_torre.html` nació escribiéndose su propio estilo de
+ * dibujo dentro y subió el total a 349. La tentación era subir el techo ocho
+ * puntos «porque la página es nueva». Pero este comentario ya decía para qué
+ * existe la vara: «una página nueva que se escriba su propio dibujo lo dice
+ * aquí». El aviso no estaba equivocado.
+ *
+ * El estilo se sacó a `/js/figuras_torre.mjs` —donde además lo puede reusar la
+ * siguiente torre— y la página pasó de diez señales a una.
+ *
+ * ⚠️ Y A 339 CON LA SEGUNDA ETAPA, QUE ES CUANDO SE VIO LA REGLA ENTERA.
+ *
+ * Al entrar `submarino.html` el total volvió a 341: cada página nueva costaba
+ * UNA señal, la de encuadrar su cámara. Con la regla «sólo baja» tal cual,
+ * añadir etapas sería imposible sin saltársela — y ése no puede ser el sentido.
+ *
+ * La salida no fue subir la vara: el ENCUADRE también es aspecto —desde dónde se
+ * mira decide tanto como de qué color es cada cosa—, así que se fue con las
+ * figuras. Las dos páginas quedaron a CERO señales y el total en 339.
+ *
+ * O sea que la vara no impedía crecer: impedía crecer mal.
  */
-const TECHO_SENALES = 341;
+const TECHO_SENALES = 339;
 const total = filas.reduce((s, r) => s + r.peso, 0);
 console.log(`\n  señales en total: ${total} (techo: ${TECHO_SENALES})`);
 console.log(`  ${filas.filter(r => r.peso === 0).length} de ${filas.length} páginas no hacen nada que no les toque`);
@@ -149,7 +199,7 @@ console.log(`  ${filas.filter(r => r.peso === 0).length} de ${filas.length} pág
  * seguía cumpliéndose gracias a ¡Busca!. Un trinquete con holgura no es un
  * trinquete, es un adorno.
  */
-const SUELO_SUSTRATO = 2;
+const SUELO_SUSTRATO = 6;
 const juegos = filas.filter(r => r.esJuego);
 const conSustrato = juegos.filter(r => r.sustrato);
 console.log(`\n  juegos que enseñan el sustrato: ${conSustrato.length} de ${juegos.length} (suelo: ${SUELO_SUSTRATO})`);

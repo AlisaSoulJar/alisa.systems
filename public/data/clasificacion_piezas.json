@@ -681,7 +681,7 @@
    "luces": 19
   },
   {
-   "ruta": "gym/Gramatica.js",
+   "ruta": "gym/Grammar.js",
    "nombre": "Gramatica",
    "familia": "gym",
    "kb": 8,
@@ -817,7 +817,7 @@
    ]
   },
   {
-   "ruta": "gym/HuellaDeMundo.js",
+   "ruta": "gym/WorldFingerprint.js",
    "nombre": "HuellaDeMundo",
    "familia": "gym",
    "kb": 11,
@@ -839,7 +839,7 @@
    ]
   },
   {
-   "ruta": "gym/ObservacionDeSustrato.js",
+   "ruta": "gym/SubstrateObservation.js",
    "nombre": "ObservacionDeSustrato",
    "familia": "gym",
    "kb": 5.3,
@@ -909,7 +909,7 @@
    ]
   },
   {
-   "ruta": "gym/registro.js",
+   "ruta": "gym/registry.js",
    "nombre": "registro",
    "familia": "gym",
    "kb": 19.7,
@@ -931,7 +931,7 @@
    ]
   },
   {
-   "ruta": "gym/suelo.js",
+   "ruta": "gym/baseline.js",
    "nombre": "suelo",
    "familia": "gym",
    "kb": 4.4,

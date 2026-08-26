@@ -47,9 +47,62 @@ export const EN_EL_BANCO = [
     { saga: 'Busca', etapa: 6, nombre: 'Espacio',
       pagina: 'public/games/raccoon_space.html',
       env: 'public/js/alisa-engine/src/gym/envs/RaccoonSpaceEnv.js' },
-    { saga: 'Sobrevive', etapa: 2, nombre: 'Acuario',
-      pagina: 'public/labs/croupier_chopper_aquarium.html',
-      env: 'public/js/alisa-engine/src/gym/envs/ChopperAquariumEnv.js' },
+
+    /**
+     * ⚠️ ¡BUSCA! 7 NO ES UNA ETAPA NUEVA: ES UNA MITAD QUE ESTABA EN OTRA SAGA.
+     *
+     * «Chopper Aquarium» —archivada en ¡Sobrevive! 2— tenía DOS juegos dentro, y
+     * medido casi al 50%: 37 referencias al edificio y 30 al ecosistema. Su
+     * propia portada lo decía: «scanning a procedural skyscraper for a hidden
+     * raccoon», que es la definición literal de ESTA saga. Un helicóptero-pez
+     * escaneando un rascacielos dentro de una pecera no era mala ambientación:
+     * eran dos juegos pegados.
+     *
+     * Aquí queda la mitad que busca. La otra se queda de submarino en
+     * ¡Sobrevive!, donde el ecosistema —plancton, peces, tiburones, arrecifes y
+     * medusas— ya estaba escrito, sembrado y funcionando.
+     *
+     * Va de 7 y no entre las seis porque es ¡Busca! en VOLUMEN: donde el Corp
+     * Building se recorre de lado, aquí se vuela alrededor y se elige altura. Y
+     * es la primera etapa con la mecánica de recurso ENTERA — gasta, se recarga,
+     * y las pilas salen en el sustrato, así que la persona y el agente ven las
+     * mismas.
+     */
+    { saga: 'Busca', etapa: 7, nombre: 'Torre en volumen',
+      pagina: 'public/games/dron_torre.html',
+      env: 'public/js/alisa-engine/src/gym/envs/DroneTowerEnv.js' },
+    /**
+     * ⚠️ ERA «ACUARIO», Y SE SUSTITUYE. NO ES UN RETOQUE DE AMBIENTACIÓN.
+     *
+     * `ChopperAquariumEngine` tenía DOS juegos dentro, medido casi al 50%: 37
+     * referencias al edificio y 30 al ecosistema. Su portada decía «scanning a
+     * procedural skyscraper for a hidden raccoon» —la definición literal de
+     * ¡Busca!— mientras la etapa vivía archivada aquí. Un helicóptero-pez
+     * escaneando un rascacielos dentro de una pecera no era mala ambientación:
+     * eran dos juegos pegados.
+     *
+     * La mitad que busca se fue a ¡Busca! 7. Ésta es la que de verdad pertenecía
+     * a «no ser lo que se comen», y sus reglas ya estaban escritas en
+     * `EcosystemSystem` —forrajeo, huida, banco, metabolismo, escondite en
+     * medusas y arrecife, feromonas— sin que ninguna etapa las usara.
+     *
+     * ⚠️ Y AL MONTARLA SALIÓ QUE EL ECOSISTEMA VIEJO ESTABA MEDIO MUERTO.
+     * El acuario dejaba `plankton`, `ecosystemCorals` y `ecosystemJellyfishes`
+     * como arrays VACÍOS, y `tickPlankton` sólo mueve el plancton que ya existe.
+     * Veinticinco peces sin nada que comer y sin dónde esconderse, nadando por
+     * inercia desde siempre. Por eso parecía decorado: lo era.
+     *
+     * El id NO sube a `-v1`: se retira `alisa/ChopperAquarium-v0` y nace
+     * `alisa/Submarine-v0`. Un `-v1` diría «el mismo juego, que cambió», e
+     * invitaría a comparar notas entre buscar y sobrevivir. Medido antes: cero
+     * referencias al acuario en `resultados/tabla.json` y `matriz.json`.
+     *
+     * La página vieja sigue viva en `labs/` — deja de ser etapa, no deja de
+     * existir. Borrar algo que funciona es una decisión aparte.
+     */
+    { saga: 'Sobrevive', etapa: 2, nombre: 'Submarino',
+      pagina: 'public/games/submarino.html',
+      env: 'public/js/alisa-engine/src/gym/envs/SubmarineEnv.js' },
     /**
      * ¡Defiende! entró el 25-08 y no estaba en el mapa de `prueba_sagas.mjs`
      * porque ese fichero es anterior. Es justo el tipo de omisión que produce una

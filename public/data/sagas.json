@@ -64,10 +64,20 @@
           "medida": true,
           "sustrato": true,
           "avisa": true
+        },
+        {
+          "saga": "Busca",
+          "etapa": 7,
+          "nombre": "Torre en volumen",
+          "pagina": "/games/dron_torre.html",
+          "existe": true,
+          "medida": true,
+          "sustrato": true,
+          "avisa": true
         }
       ],
-      "conSustrato": 4,
-      "medidas": 5
+      "conSustrato": 5,
+      "medidas": 6
     },
     {
       "nombre": "Sobrevive",
@@ -79,14 +89,14 @@
           "pagina": "/labs/croupier_interaction_lab.html",
           "existe": true,
           "medida": false,
-          "sustrato": false,
+          "sustrato": true,
           "avisa": true
         },
         {
           "saga": "Sobrevive",
           "etapa": 2,
-          "nombre": "Acuario",
-          "pagina": "/labs/croupier_chopper_aquarium.html",
+          "nombre": "Submarino",
+          "pagina": "/games/submarino.html",
           "existe": true,
           "medida": true,
           "sustrato": true,
@@ -103,7 +113,7 @@
           "avisa": true
         }
       ],
-      "conSustrato": 2,
+      "conSustrato": 3,
       "medidas": 2
     },
     {
@@ -141,5 +151,5 @@
       "medidas": 1
     }
   ],
-  "total": 11
+  "total": 12
 }

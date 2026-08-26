@@ -812,6 +812,26 @@ build(totalFloors, doorsPerFloor, isLightsOut, currentStage, rabbitModel, seeker
     volumetricBeam.rotation.x = Math.atan2(fY - targetY, 4.0 - fZ);
     seeker.flashLightGroup.add(volumetricBeam);
 
+    /**
+     * ⚠️ LA LINTERNA SE PUBLICA, Y HASTA HOY NO SALÍA DE AQUÍ.
+     *
+     * `flashLight` y `volumetricBeam` son LOCALES de `build()` (l.71-72). La
+     * página declara sus propios `let flashLight = null` / `volumetricBeam =
+     * null` y **nunca los asigna**, así que sus cinco
+     * `if (flashLight) flashLight.intensity = …` eran no-ops: el cono se quedaba
+     * a intensidad fija y NO SE APAGABA NUNCA, aunque el HUD pusiera OFF o DEAD.
+     * La interfaz mentía sobre lo que hacía la tecla F.
+     *
+     * Es exactamente el fallo que ya está documentado veinte líneas más abajo
+     * con `flashDust`, y que allí se arregló publicándolo. Aquí se hace igual:
+     * en `this` para quien tenga la fábrica, y en `seeker` para quien tenga al
+     * personaje. Dos referencias al MISMO objeto, no dos copias.
+     */
+    this.flashLight = flashLight;
+    this.volumetricBeam = volumetricBeam;
+    seeker.flashLight = flashLight;
+    seeker.volumetricBeam = volumetricBeam;
+
     // Flashlight Dust Particles
     const dustGeo = new THREE.BufferGeometry();
     const dustCount = 60;
@@ -908,6 +928,21 @@ build(totalFloors, doorsPerFloor, isLightsOut, currentStage, rabbitModel, seeker
     targetDoor = scent.door;
     this.cinematica = { floor: targetFloor, door: targetDoor };
 
+    /**
+     * ⚠️ LAS PILAS SON CONTENIDO DEL JUEGO, NO CINEMÁTICA. ESTO LO PUSE MAL YO.
+     *
+     * Al dejar inerte el bloque de la cinemática, `spawnBatteries()` se quedó
+     * DETRÁS del `return` de abajo, porque estaba escrito al final del método.
+     * Con eso, la mecánica de la linterna quedaba coja: la barra bajaba 1,5 por
+     * segundo y no había ni una sola pila en el edificio para subirla. Eso no es
+     * un juego de recurso, es una cuenta atrás.
+     *
+     * (Antes tampoco aparecían, por otro motivo: `build()` reventaba mucho antes
+     * con las globales huérfanas. O sea que esta mecánica lleva sin verse desde
+     * que se extrajo la fábrica del monolito.)
+     */
+    this.spawnBatteries(totalFloors);
+
     if (!opts.cinematica) return;
 
     // Initial State override
@@ -941,8 +976,9 @@ build(totalFloors, doorsPerFloor, isLightsOut, currentStage, rabbitModel, seeker
     cam.position.set(0, 0, 60);
     cam.lookAt(0, 0, 0);
     this.buildingGroup.position.y = -bldgCenterY + this.FL_H * 0.3;
-
-    this.spawnBatteries(totalFloors);
+    // Las pilas ya se repartieron antes del `return` de la cinemática: son
+    // contenido del juego y tienen que existir se juegue la cinemática o no.
+    // Volver a llamar aquí las borraría y las repartiría otra vez.
 }
 
 /**

@@ -33,8 +33,8 @@
  */
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
-import { CATALOGO } from './public/js/alisa-engine/src/gym/registro.js';
-import { huellaDeMundo } from './public/js/alisa-engine/src/gym/HuellaDeMundo.js';
+import { CATALOGO } from './public/js/alisa-engine/src/gym/registry.js';
+import { worldFingerprint } from './public/js/alisa-engine/src/gym/WorldFingerprint.js';
 
 const ARCHIVO = 'resultados/huellas.json';
 const sellar = process.argv.includes('--sellar');
@@ -120,7 +120,7 @@ for (const e of CATALOGO) {
     try { Clase = await e.cargar(); } catch (err) {
         mal(`${e.id}: no carga (${String(err.message).slice(0, 60)})`); continue;
     }
-    const { huella, detalle } = huellaDeMundo(Clase);
+    const { huella, detalle } = worldFingerprint(Clase);
     ahora[e.id] = { huella, sellada: new Date().toISOString().slice(0, 10) };
 
     const previa = declaradas[e.id];

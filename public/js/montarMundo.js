@@ -44,6 +44,31 @@
 
 const RUTA_SFX = '/js/sfx.js';
 
+/**
+ * ⚠️ Y TRAE LA DIRECCIÓN DE ARTE, QUE ERA LA OTRA MITAD QUE FALTABA.
+ *
+ * `montarMesa` reparte cuatro hojas a las cincuenta y cinco páginas del arcade, y
+ * su cabecera cuenta por qué: encontró «CSS idéntico copiado seis veces». Las
+ * etapas en 3D no tenían nada de eso — cada una escribía sus cuarenta líneas de
+ * estilo dentro del HTML, y el día que se quisiera cambiar el color de un panel
+ * había que abrirlas todas.
+ *
+ * Medido antes de escribir esto: **71 variables CSS distintas** por el proyecto,
+ * con `--bg`, `--text` y `--accent` declaradas cuatro y seis veces en ficheros que
+ * no se conocen. Eso no es una paleta: son cuatro paletas parecidas.
+ */
+const HOJA_MUNDO = '/css/mundo.css';
+
+/** Pone una hoja de estilo una sola vez. Mismo gesto que `hoja()` en las mesas. */
+function hoja(href) {
+    if (document.querySelector(`link[data-mundo="${href}"]`)) return;
+    const l = document.createElement('link');
+    l.rel = 'stylesheet';
+    l.href = href;
+    l.dataset.mundo = href;
+    document.head.appendChild(l);
+}
+
 /** Carga un script clásico una sola vez. Devuelve cuando está listo. */
 function cargarClasico(src) {
     return new Promise((listo, falla) => {
@@ -74,6 +99,11 @@ function cargarClasico(src) {
  * @returns {Promise<{app, THREE, cine, sonar}>}
  */
 export async function montarMundo(cfg = {}) {
+    // La línea visual, antes que nada: si llegara después del primer dibujo, la
+    // etapa parpadearía en blanco. Se puede quitar con `estilo: false` para una
+    // página que quiera su propio aspecto entero — hoy no la hay.
+    if (cfg.estilo !== false) hoja(HOJA_MUNDO);
+
     /**
      * ⚠️ LOS IMPORTS SON DINÁMICOS Y NO DE CABECERA, Y NO ES CAPRICHO.
      *

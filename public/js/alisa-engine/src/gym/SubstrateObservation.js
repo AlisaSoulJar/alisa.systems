@@ -56,7 +56,7 @@
  * codifica como 0 y los declarados empiezan en 1/(n+1): así el cero significa
  * «esto no lo tengo en el vocabulario» y no puede pasar por otra cosa.
  */
-export function observacionDeSustrato(sus, opts = {}) {
+export function substrateObservation(sus, opts = {}) {
     const maxPiezas = opts.maxPiezas ?? 32;
     const tipos = opts.tipos
         ?? (sus.leyenda ? Object.keys(sus.leyenda).sort()
@@ -105,4 +105,4 @@ export function observacionDeSustrato(sus, opts = {}) {
 }
 
 /** El largo que va a tener, para declararlo en `observationSpace`. */
-export const largoDeObservacion = (maxPiezas = 32) => 3 + maxPiezas * 5 + 1;
+export const observationLength = (maxPiezas = 32) => 3 + maxPiezas * 5 + 1;

@@ -9,7 +9,7 @@
  *
  * La respuesta, medida el 25-08: no. El SUSTRATO ya lleva bastante. De los nueve
  * mundos sale un vector numérico finito, en rango y que refleja el juego, con
- * `ObservacionDeSustrato.js` y sin una línea por juego.
+ * `SubstrateObservation.js` y sin una línea por juego.
  *
  * ⚠️ Y ESO IMPORTA PORQUE UN VECTOR ESCRITO A MANO ES UN SITIO DONDE MENTIR.
  *
@@ -22,8 +22,8 @@
  * quien ya jugó— pero demuestra que la información ESTÁ, y deja a los mundos
  * nuevos con observación gratis.
  */
-import { CATALOGO } from './public/js/alisa-engine/src/gym/registro.js';
-import { observacionDeSustrato, largoDeObservacion } from './public/js/alisa-engine/src/gym/ObservacionDeSustrato.js';
+import { CATALOGO } from './public/js/alisa-engine/src/gym/registry.js';
+import { substrateObservation, observationLength } from './public/js/alisa-engine/src/gym/SubstrateObservation.js';
 
 let fallos = 0;
 const mal = (m) => { console.log(`  ✗ ${m}`); fallos++; };
@@ -40,7 +40,7 @@ for (const e of CATALOGO) {
     if (!sys) { mal(`${e.id}: sin \`sustrato()\` — lo vigila prueba_sustrato.mjs`); continue; }
     vistos++;
 
-    const v0 = observacionDeSustrato(sys.sustrato());
+    const v0 = substrateObservation(sys.sustrato());
 
     /**
      * ⚠️ Y LAS ACCIONES NO PUEDEN CANCELARSE ENTRE SÍ, QUE ES COMO ME EQUIVOQUÉ.
@@ -66,10 +66,10 @@ for (const e of CATALOGO) {
             }
         } catch { break; }
     }
-    const v1 = observacionDeSustrato(sys.sustrato());
+    const v1 = substrateObservation(sys.sustrato());
 
-    if (v0.length !== largoDeObservacion()) {
-        mal(`${e.id}: el vector mide ${v0.length} y se declaran ${largoDeObservacion()}`);
+    if (v0.length !== observationLength()) {
+        mal(`${e.id}: el vector mide ${v0.length} y se declaran ${observationLength()}`);
     }
     if (!v0.every(Number.isFinite) || !v1.every(Number.isFinite)) {
         mal(`${e.id}: el vector trae NaN o Infinity — una red no puede aprender de eso`);
@@ -103,7 +103,7 @@ for (const e of CATALOGO) {
      */
     const sus = sys.sustrato();
     if ((sus.piezas?.length ?? 0) >= 2) {
-        const codigoDe = (s) => observacionDeSustrato(s).slice(3, 8)[0];   // tipo de la 1ª pieza
+        const codigoDe = (s) => substrateObservation(s).slice(3, 8)[0];   // tipo de la 1ª pieza
         const completo = codigoDe(sus);
         const recortado = codigoDe({ ...sus, piezas: sus.piezas.slice(0, -1) });
         if (completo !== recortado) {

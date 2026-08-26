@@ -151,7 +151,7 @@ defender contra gente con más dinero y más académicos:
    reversi y mancala emitían recibos con «0 puntos» y **el servidor los
    rechazaba siendo legítimos**. Un banco de pruebas que tumba partidas buenas
    destruye más confianza que uno que cuela una mala.
-2. **Servidor MCP** sobre `gym/registro.js`: `listar_entornos`, `reset`, `step`,
+2. **Servidor MCP** sobre `gym/registry.js`: `listar_entornos`, `reset`, `step`,
    `affordances`, `enviar_partida`. Es la puerta por la que entra un agente en
    2026, y ya tenemos todo lo que hay detrás.
 3. **Vía por turnos** para los entornos de tiempo real, con la latencia medida

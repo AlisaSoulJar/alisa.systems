@@ -5,6 +5,7 @@
  * Foraging, Fleeing, Hunting, Schooling (Boids), and Metabolism.
  * Upgraded to use O(1) Spatial Pheromone Grids instead of O(N^2) distances.
  */
+import { FlockingSystem, SHOAL } from './FlockingSystem.js';
 
 export class EcosystemSystem {
 
@@ -132,56 +133,20 @@ export class EcosystemSystem {
             // STIGMERGY: Los peces emiten olor a comida que atrae a los cazadores.
             if (grid && !f.isHidden) grid.addPheromone(f.x, f.y, f.z, 'food', dt * 10);
 
-            // BOIDS (O(N^2) mantenido solo dentro de la manada cercana para cohesión biológica local)
-            let alignX=0, alignY=0, alignZ=0;
-            let cohX=0, cohY=0, cohZ=0;
-            let sepX=0, sepY=0, sepZ=0;
-            let flockCount = 0;
-            
-            for (let j = 0; j < fishes.length; j++) {
-                let other = fishes[j];
-                if (!other.alive || other.id === f.id || other.isHidden) continue;
-                let dSq = this.getDistanceSq(f, other);
-                if (dSq < 25.0) { // dist < 5.0
-                    let d = Math.sqrt(dSq);
-                    flockCount++;
-                    
-                    let dx = other.tx - other.x;
-                    let dy = other.ty - other.y;
-                    let dz = other.tz - other.z;
-                    let odLen = Math.sqrt(dx*dx + dy*dy + dz*dz) || 1;
-                    
-                    alignX += dx/odLen; alignY += dy/odLen; alignZ += dz/odLen;
-                    cohX += other.x; cohY += other.y; cohZ += other.z;
-                    
-                    if (d < 1.5 && d > 0.001) {
-                        sepX += (f.x - other.x)/d;
-                        sepY += (f.y - other.y)/d;
-                        sepZ += (f.z - other.z)/d;
-                    }
-                }
-            }
-            
-            let bx=0, by=0, bz=0;
-            if (flockCount > 0) {
-                let alLen = Math.sqrt(alignX*alignX + alignY*alignY + alignZ*alignZ) || 1;
-                alignX = (alignX/flockCount/alLen) * 0.4;
-                alignY = (alignY/flockCount/alLen) * 0.4;
-                alignZ = (alignZ/flockCount/alLen) * 0.4;
-
-                cohX = (cohX/flockCount) - f.x;
-                cohY = (cohY/flockCount) - f.y;
-                cohZ = (cohZ/flockCount) - f.z;
-                let coLen = Math.sqrt(cohX*cohX + cohY*cohY + cohZ*cohZ) || 1;
-                cohX = (cohX/coLen) * 0.3; cohY = (cohY/coLen) * 0.3; cohZ = (cohZ/coLen) * 0.3;
-
-                let sepLen = Math.sqrt(sepX*sepX + sepY*sepY + sepZ*sepZ) || 1;
-                sepX = (sepX/sepLen) * 1.2; sepY = (sepY/sepLen) * 1.2; sepZ = (sepZ/sepLen) * 1.2;
-
-                bx = alignX + cohX + sepX;
-                by = alignY + cohY + sepY;
-                bz = alignZ + cohZ + sepZ;
-            }
+            /**
+             * LA BANDADA, QUE YA NO VIVE AQUÍ.
+             *
+             * Eran cuarenta líneas de Reynolds con los pesos escritos a mano en
+             * medio del bucle, entre la estigmergia y el metabolismo. Ahora es
+             * `FlockingSystem` con los números en `SHOAL`: la ley fuera, los
+             * parámetros con nombre, y este bucle vuelve a hablar sólo de peces.
+             *
+             * Se movió sin cambiar una milésima —mismo orden de operaciones— y lo
+             * comprueba la huella del submarino, que no se movió.
+             */
+            const banco = FlockingSystem.force(f, fishes, SHOAL, (a, b) => this.getDistanceSq(a, b));
+            const flockCount = banco.count;
+            const bx = banco.x, by = banco.y, bz = banco.z;
 
             // HIDE LOGIC
             if (f.hideCooldown > 0) {

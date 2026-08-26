@@ -343,7 +343,7 @@ import { SovereignHaloPlugin } from '@alisa-engine/src/extensions/alisa-colony/p
 // de otro, pero una máquina no podía jugar aquí.
 //
 // Las que no lo declaran es porque todavía no lo tienen; se dice, no se
-// disimula. El catálogo completo vive en `js/alisa-engine/src/gym/registro.js`
+// disimula. El catálogo completo vive en `js/alisa-engine/src/gym/registry.js`
 // y se puede jugar entero sin abrir esta sala:
 // `labs/croupier_gym_estaciones.html`.
 const ARCADES = [
@@ -360,7 +360,7 @@ const ARCADES = [
   { n:'¡Busca! 3 - Corp Building', u:'../games/croupier_corporate_building.html' },
   { n:'¡Busca! 4 - City Sector', u:'../games/raccoon_city_sector.html' },
   { n:'¡Busca! 5 - Planeta', u:'../games/raccoon_planet.html' },
-  { n:'¡Busca! 6 - Interestelar', u:'../games/raccoon_space.html',  env:'alisa/RaccoonSpace-v0' },
+  { n:'¡Busca! 6 - Interestelar', u:'../games/raccoon_space.html',  env:'alisa/RaccoonSpace-v1' },
   { n:'¡Sobrevive! 1 - Interaction Lab', u:'../labs/croupier_interaction_lab.html' },
   { n:'¡Sobrevive! 2 - Chopper Aquarium',u:'../labs/croupier_chopper_aquarium.html' },
   { n:'Marabunta',     u:'../labs/croupier_marabunta.html', env:'alisa/Marabunta-v0' },
@@ -380,7 +380,7 @@ const ARCADES = [
 // sale exacta: no se puede alucinar una jugada ilegal porque solo se ofrecen
 // las legales.
 /**
- * ⚠️ AQUÍ HABÍA CATORCE DIRECCIONES ESCRITAS A MANO, Y YA SE HABÍAN SEPARADO.
+ * ⚠️ AQUÍ HABÍA CATORCE DIRECTIONS ESCRITAS A MANO, Y YA SE HABÍAN SEPARADO.
  *
  * Cada mesa traía su `u:'../arcade/mesa.html?juego=brisca'`. El día que brisca,
  * tute, hearts, spades, gofish y unit estrenaron página propia, estas seis líneas
@@ -1994,7 +1994,7 @@ window.__sala = {
    *
    * Esto es la portada hecha comprobable: `[{estacion, env, url}]`. Un agente
    * enumera esto, carga el entorno por su id desde
-   * `js/alisa-engine/src/gym/registro.js`, juega, y su episodio deja el MISMO
+   * `js/alisa-engine/src/gym/registry.js`, juega, y su episodio deja el MISMO
    * recibo que dejaría una persona sentada aquí —{juego, semilla, jugadas,
    * puntos}— así que lo verifica el mismo `Verificador.js`.
    *

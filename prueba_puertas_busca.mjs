@@ -153,7 +153,7 @@ for (const [nombre, ruta, Env] of ETAPAS) {
  * — sólo que aquí la grieta está en el MENÚ y no en los ajustes.
  */
 {
-    const { CATALOGO } = await import('./public/js/alisa-engine/src/gym/registro.js');
+    const { CATALOGO } = await import('./public/js/alisa-engine/src/gym/registry.js');
     let revisados = 0, conMenuRoto = 0;
     for (const entrada of CATALOGO) {
         let env;

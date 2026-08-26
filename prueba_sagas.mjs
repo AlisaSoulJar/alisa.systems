@@ -300,9 +300,9 @@ for (const [etapa, nota] of Object.entries(SIN_ENTORNO)) {
  * queda sin una parte del estado es una comparación con trampa.
  */
 {
-    const { CATALOGO } = await import('./public/js/alisa-engine/src/gym/registro.js');
+    const { CATALOGO } = await import('./public/js/alisa-engine/src/gym/registry.js');
     const cargar = Object.fromEntries(CATALOGO.map(e => [e.id, e.cargar]));
-    for (const id of ['alisa/RaccoonCity-v0', 'alisa/RaccoonPlanet-v0', 'alisa/RaccoonSpace-v0']) {
+    for (const id of ['alisa/RaccoonCity-v1', 'alisa/RaccoonPlanet-v1', 'alisa/RaccoonSpace-v1']) {
         const Clase = await cargar[id]();
         const env = new Clase();
         env.reset(1234);

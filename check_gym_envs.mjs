@@ -36,7 +36,7 @@
 //
 // El contrato del gym no necesita un renderizador. Se lee del registro, que es
 // donde se declaran los entornos.
-import { CATALOGO } from './public/js/alisa-engine/src/gym/registro.js';
+import { CATALOGO } from './public/js/alisa-engine/src/gym/registry.js';
 
 /**
  * ⚠️ ANTES AQUÍ PONÍA `.filter(e => e.familia === 'propio')`, Y ESO DEJABA FUERA

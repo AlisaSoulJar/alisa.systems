@@ -61,7 +61,7 @@ import { puntuacionDe } from './public/arcade/js/protohub/Verificador.js';
  * Ahora hay una sola, en `suelo.js`, y es la de `prueba_senal` — la que tiene
  * trinquete y la que produjo el «46 de 49».
  */
-import { politicasCiegas } from './public/js/alisa-engine/src/gym/suelo.js';
+import { blindPolicies } from './public/js/alisa-engine/src/gym/baseline.js';
 
 /**
  * Re-simula una partida enviada. Mismo mecanismo que `/api/gym`: sin estado, se
@@ -124,7 +124,7 @@ const jugadas = (recibo.jugadas ?? []).map(String);
 const { p, rechazadas } = reproducir(reglas, recibo.semilla, jugadas);
 const suya = puntuacionDe(reglas.estado(p));
 
-const ciegas = politicasCiegas().map(pol => ({
+const ciegas = blindPolicies().map(pol => ({
     nombre: pol.nombre,
     nota: correrCiega(reglas, recibo.semilla, jugadas.length, pol),
 }));

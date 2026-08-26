@@ -57,14 +57,14 @@ for (const [j, h] of Object.entries(huellas)) console.log(`    ${j.padEnd(10)} $
 // Se juegan con el mismo entorno que usa el navegador.
 const { pathToFileURL } = await import('node:url');
 const reg = await import(
-    pathToFileURL(path.join(AQUI, 'public/js/alisa-engine/src/gym/registro.js')).href);
+    pathToFileURL(path.join(AQUI, 'public/js/alisa-engine/src/gym/registry.js')).href);
 
 console.log('\n  PARTIDAS');
 let bien = 0, total = 0, cazadas = 0, intentos = 0;
 for (const juego of Object.keys(huellas)) {
     const Env = await reg.cargar(`alisa/${juego}-protohub-v0`);
     const env = new Env();
-    env.runEpisode(reg.politicaAzar(11), { seed: 2026, maxSteps: 220 });
+    env.runEpisode(reg.randomPolicy(11), { seed: 2026, maxSteps: 220 });
     const partida = env.partida();
 
     const pedir = async (c) => (await fn.onRequestPost({ request: peticion(c) })).json();

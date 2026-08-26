@@ -46,7 +46,7 @@ export { CorpBuildingEnv }  from './gym/envs/CorpBuildingEnv.js';
  * silencio es la peor. Ahora sale del registro, que es donde de verdad se
  * declaran.
  */
-import { CATALOGO } from './gym/registro.js';
+import { CATALOGO } from './gym/registry.js';
 
 export const GYM_ENVS = Object.fromEntries(
     CATALOGO.filter(e => e.familia === 'propio').map(e => [e.id, e.cargar]));

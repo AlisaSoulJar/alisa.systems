@@ -11,7 +11,7 @@
  * que es donde estaba el fallo — snake pintaba sus cuatro flechas en el panel y la
  * barra no existía.
  *
- * ⚠️ POR QUÉ EL DENOMINADOR ES EL PANEL Y NO UNA LISTA DE JUEGOS CON VERBOS.
+ * ⚠️ POR QUÉ EL DENOMINADOR ES EL PANEL Y NO UNA LISTA DE JUEGOS CON VERBS.
  *
  * Escribir «estos doce tienen verbos» sería la enésima lista a mano, y de nueve números
  * falsos de agosto siete fueron de denominador. Cada página dice cuántos verbos le

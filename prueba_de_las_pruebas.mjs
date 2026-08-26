@@ -63,6 +63,21 @@ const gris  = (s) => `\x1b[90m${s}\x1b[0m`;
  */
 const SABOTAJES = [
     {
+        nombre: 'sistemas',
+        corre: 'node sistemas.mjs',
+        fichero: 'public/js/alisa-engine/src/world/systems/SubmarineCore.js',
+        // El fallo REAL contra el que existe la vara: un núcleo deja de componer
+        // y se escribe la pieza dentro. Aquí se le quita al submarino el átomo de
+        // movimiento; el suelo de composición baja de 4 a 3 y tiene que saltar.
+        //
+        // Se sabotea el SUELO y no el TECHO a propósito: para subir el techo
+        // habría que escribir un integrador entero, y un sabotaje que añade
+        // cuarenta líneas prueba menos que uno que quita una.
+        de: "import { VolumeVehicleSystem } from './VolumeVehicleSystem.js';",
+        a: "const VolumeVehicleSystem = null; // el núcleo se lo escribe él",
+        vigila: 'que un núcleo componga piezas del motor en vez de reimplementarlas',
+    },
+    {
         nombre: 'recibos',
         corre: 'node prueba_recibos.mjs',
         fichero: 'public/arcade/js/protohub/Verificador.js',
@@ -298,7 +313,7 @@ const SABOTAJES = [
     {
         nombre: 'censo',
         corre: 'node prueba_censo.mjs',
-        fichero: 'public/js/alisa-engine/src/gym/registro.js',
+        fichero: 'public/js/alisa-engine/src/gym/registry.js',
         /**
          * ⚠️ ÉSTE ES EL PRIMER SABOTAJE DE ENUMERACIÓN, Y ES OTRA COSA QUE LOS DEMÁS.
          *
@@ -557,7 +572,7 @@ const SABOTAJES = [
         corre: 'node prueba_puertas_busca.mjs',
         fichero: 'public/js/alisa-engine/src/gym/envs/RaccoonSpaceEnv.js',
         de: "const lista = this.constructor.actionSpace.names",
-        a: "const lista = VERBOS_ESPACIO",
+        a: "const lista = VERBS_SPACE",
         vigila: 'que el menú de lenguaje sólo ofrezca verbos que la acción admite',
     },
     {
@@ -619,7 +634,7 @@ const SABOTAJES = [
          */
         nombre: 'observacion',
         corre: 'node --import ./resolver_three.mjs prueba_observacion.mjs',
-        fichero: 'public/js/alisa-engine/src/gym/ObservacionDeSustrato.js',
+        fichero: 'public/js/alisa-engine/src/gym/SubstrateObservation.js',
         de: '?? (sus.leyenda ? Object.keys(sus.leyenda).sort()',
         a: '?? (false ? Object.keys(sus.leyenda).sort()',
         vigila: 'que del sustrato salga un vector que de verdad lleve el juego dentro',
@@ -797,7 +812,7 @@ const SABOTAJES = [
          */
         nombre: 'direcciones',
         corre: 'node --import ./resolver_three.mjs prueba_gramatica.mjs',
-        fichero: 'public/js/alisa-engine/src/gym/Gramatica.js',
+        fichero: 'public/js/alisa-engine/src/gym/Grammar.js',
         de: "    'arriba', 'abajo', 'izquierda', 'derecha',",
         a: '',
         vigila: 'que una dirección no se haga pasar por método',
@@ -805,7 +820,7 @@ const SABOTAJES = [
     {
         nombre: 'gramatica',
         corre: 'node --import ./resolver_three.mjs prueba_gramatica.mjs',
-        fichero: 'public/js/alisa-engine/src/gym/Gramatica.js',
+        fichero: 'public/js/alisa-engine/src/gym/Grammar.js',
         de: '    const espacio = v.search(/\\s/);',
         a: '    const espacio = -1;',
         vigila: 'que ningún método esconda un parámetro dentro',
@@ -965,6 +980,27 @@ const SABOTAJES = [
         a: '<link rel="stylesheet" href="css/arcade.css">\n'
          + '<script src="https://cdn.jsdelivr.net/npm/roto@1"></script>',
         vigila: 'que ninguna página del PAQUETE cargue código desde un CDN',
+    },
+    {
+        nombre: 'contrato',
+        corre: 'node prueba_contrato.mjs',
+        fichero: 'public/js/alisa-engine/src/world/systems/AsteroidsSystem.js',
+        /**
+         * El fallo REAL contra el que existe `prueba_contrato`, y es de los que
+         * NO dan error: si un núcleo deja de publicar `sustrato()`, el juego
+         * sigue jugándose igual de bien. Lo único que pasa es que el aviso de un
+         * beta deja de traer la partida dentro y la nota deja de poder
+         * repetirse. Nadie mira eso jugando, y ninguna otra prueba lo nota.
+         *
+         * Se sabotea RENOMBRANDO, no borrando, porque así es como pasa de
+         * verdad: alguien renombra el método al refactorizar y la página que lo
+         * llamaba se queda con un `?.` que devuelve `undefined` sin quejarse.
+         * Es exactamente lo que le pasó a esta casa con `getSustrato`: seis
+         * etapas con el botón de avisar puesto y sin mundo que adjuntar.
+         */
+        de: '    sustrato() {',
+        a: '    sustratoViejo() {',
+        vigila: 'que todo núcleo declarado siga publicando el mundo de su etapa',
     },
 ];
 

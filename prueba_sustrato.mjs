@@ -731,7 +731,7 @@ if (derivados > TECHO_DERIVADOS) {
  * cuentan y se dice cuántos van— pero el que lo publique, lo publica bien.
  */
 {
-    const { CATALOGO } = await import('./public/js/alisa-engine/src/gym/registro.js');
+    const { CATALOGO } = await import('./public/js/alisa-engine/src/gym/registry.js');
     let conSustrato = 0, revisados = 0;
     for (const entrada of CATALOGO) {
         if (entrada.familia !== 'propio') continue;

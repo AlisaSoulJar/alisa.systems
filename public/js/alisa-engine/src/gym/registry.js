@@ -166,7 +166,7 @@ const PROPIOS = [
     { id: 'alisa/Pedrisco-v0',     titulo: 'Pedrisco',      fichero: 'AsteroidsEnv.js' },
     { id: 'alisa/CabinetEscape-v0', titulo: 'Cabinet Escape', fichero: 'CabinetEscapeEnv.js' },
     { id: 'alisa/Marabunta-v0',    titulo: 'Marabunta',    fichero: 'MarabuntaEnv.js' },
-    { id: 'alisa/RaccoonSpace-v0',  titulo: 'Interestelar',   fichero: 'RaccoonSpaceEnv.js' },
+    { id: 'alisa/RaccoonSpace-v1',  titulo: 'Interestelar',   fichero: 'RaccoonSpaceEnv.js' },
     /**
      * Las dos etapas de ¡Busca! que se jugaban y no se medían. Viven en el mismo
      * fichero que la sexta porque son el MISMO juego a otra escala —mismo
@@ -174,9 +174,34 @@ const PROPIOS = [
      * entornos nuevos. La escalera que forman está medida en `calibrar_busca.mjs`:
      * 82% · 60% · 43% de victorias con un piloto competente, en ese orden.
      */
-    { id: 'alisa/RaccoonCity-v0',   titulo: 'Sector de ciudad', fichero: 'RaccoonSpaceEnv.js' },
-    { id: 'alisa/RaccoonPlanet-v0', titulo: 'Planeta',        fichero: 'RaccoonSpaceEnv.js' },
+    { id: 'alisa/RaccoonCity-v1',   titulo: 'Sector de ciudad', fichero: 'RaccoonSpaceEnv.js' },
+    { id: 'alisa/RaccoonPlanet-v1', titulo: 'Planeta',        fichero: 'RaccoonSpaceEnv.js' },
     { id: 'alisa/CorpBuilding-v0', titulo: 'Corp Building', fichero: 'CorpBuildingEnv.js' },
+    /**
+     * La mitad ¡BUSCA! de lo que era «Chopper Aquarium». Aquel motor tenía dos
+     * juegos dentro —37 referencias al edificio y 30 al ecosistema— y su portada
+     * decía «scanning a procedural skyscraper for a hidden raccoon», que es la
+     * definición de esta saga mientras la etapa estaba archivada en ¡Sobrevive!.
+     *
+     * Es ¡Busca! en VOLUMEN: donde Corp Building se recorre de lado, aquí se
+     * vuela alrededor y se elige altura. Y es la primera etapa cuya mecánica de
+     * recurso está entera —gasta, se recarga, y las pilas salen en el sustrato—.
+     */
+    { id: 'alisa/DroneTower-v0', titulo: 'Torre en volumen', fichero: 'DroneTowerEnv.js' },
+    /**
+     * ⚠️ LA PRIMERA ETAPA QUE NO TIENE CÓDIGO: ES UNA ROM.
+     *
+     * Un satélite barriendo las cubiertas de una estación a la deriva, con el
+     * enlace perdiéndose en vez de una batería. Sus dos ficheros son TABLAS —qué
+     * piezas, con qué números y con qué nombres—; la física, las reglas, el
+     * sustrato, la observación y el texto los ponen `SearchInVolumeCore` y
+     * `SearchInVolumeEnv`, que ya jugaban la torre.
+     *
+     * No es la torre con otra piel: 26 cubiertas en vez de 18, el recurso cae al
+     * doble, fallar cuesta 8 en vez de 5 y sólo hay dos puntos de recarga. Su
+     * huella es distinta, que es como se sabe que es otro juego.
+     */
+    { id: 'alisa/SatelliteSweep-v0', titulo: 'Estación a la deriva', fichero: 'SatelliteSweepEnv.js' },
     /**
      * El primero que NACE en ECS, y el primero cuya observación es literalmente
      * la matriz —dos capas de 12×12— en vez de un vector escrito a mano. Sirve de
@@ -186,7 +211,29 @@ const PROPIOS = [
     { id: 'alisa/Defiende-v0', titulo: 'Sendero', fichero: 'DefiendeEnv.js' },
     // El primero cuyo MUNDO sale de la semilla, no sólo el azar dentro del
     // mundo. Ver la cabecera de su fichero: es la casilla que no ocupa nadie.
-    { id: 'alisa/ChopperAquarium-v0', titulo: 'Chopper Terrarium', fichero: 'ChopperAquariumEnv.js' },
+    /**
+     * ⚠️ AQUI ESTABA alisa/ChopperAquarium-v0, Y SE RETIRA — NO SE VERSIONA.
+     *
+     * Aquel motor tenia DOS juegos dentro, medido casi al 50%: 37 referencias al
+     * edificio y 30 al ecosistema. Su portada decia «scanning a procedural
+     * skyscraper for a hidden raccoon» —la definicion de ¡Busca!— mientras la
+     * etapa vivia en ¡Sobrevive!. La mitad que busca se fue a
+     * alisa/DroneTower-v0; esta es la que de verdad pertenecia a esta saga.
+     *
+     * Un `-v1` habría dicho «el mismo juego, que cambió», e invitaría a comparar
+     * notas entre buscar y sobrevivir, que no se parecen en nada. Se retira y
+     * nace otro id. Medido antes: CERO referencias a `ChopperAquarium` en
+     * `resultados/tabla.json` y `matriz.json`, así que no se retira ninguna nota.
+     *
+     * ⚠️ Y ESTE COMENTARIO SE ESCRIBIÓ DOS VECES.
+     * La primera lo generé desde PowerShell y se comió tres letras: la «a» de
+     * «alisa» dos veces y la «r» de «resultados». El acento grave es SU escape,
+     * así que `a` se convirtió en un BEL y `r` en un retorno de carro —bytes de
+     * control invisibles metidos dentro del fichero—, y después ninguna búsqueda
+     * de texto casaba con lo que se veía al leerlo. Está en la memoria de esta
+     * casa y volví a caer: el código se escribe con la herramienta de escribir.
+     */
+    { id: 'alisa/Submarine-v0', titulo: 'Submarino', fichero: 'SubmarineEnv.js' },
 ];
 
 /** El catálogo, sin cargar nada. `[{id, titulo, familia, cargar()}]` */
@@ -259,7 +306,7 @@ export const politicaTonta = (obs, env) => {
  * Decimos que el mismo entorno lo juegan **personas, FSM y agentes LLM**. Las
  * personas ya juegan (la sala), los agentes LLM tienen su puerta
  * (`affordances()` — no pueden ni alucinar una jugada ilegal), y para las
- * políticas numéricas están `politicaTonta` y `politicaAzar`.
+ * políticas numéricas están `politicaTonta` y `randomPolicy`.
  *
  * Faltaba la FSM, que es raro porque el motor lleva `FSMSystem` desde hace
  * meses y hay un cazador FSM dentro de Corp Building. Otra pieza construida
@@ -326,7 +373,7 @@ export function politicaFSM() {
  * función pura de (semilla, semilla del episodio, paso): sin memoria que
  * arrastrar entre partidas.
  */
-export function politicaAzar(semilla = 1) {
+export function randomPolicy(semilla = 1) {
     return (obs, env) => {
         const opciones = env.affordances();
         if (!opciones.length) return null;

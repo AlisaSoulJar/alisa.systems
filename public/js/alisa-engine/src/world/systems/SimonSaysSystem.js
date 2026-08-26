@@ -350,7 +350,7 @@ export class SimonSaysSystem {
 
     /**
      * ═══════════════════════════════════════════════════════════════════════
-     *  ⚠️ EL MENÚ OFRECÍA VERBOS QUE `submitAction` NO ACEPTA. TODOS.
+     *  ⚠️ EL MENÚ OFRECÍA VERBS QUE `submitAction` NO ACEPTA. TODOS.
      * ═══════════════════════════════════════════════════════════════════════
      *
      * Decía `act_jump` cuando el objetivo es `jump`, y `move_to_target` cuando el

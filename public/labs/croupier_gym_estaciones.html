@@ -40,7 +40,7 @@
 <body>
 <h1>▓ LAS MÁQUINAS DE LA SALA, JUGADAS POR UNA MÁQUINA</h1>
 <div class="sub">
-  Se enumera el catálogo (<code>gym/registro.js</code>), se carga cada entorno y
+  Se enumera el catálogo (<code>gym/registry.js</code>), se carga cada entorno y
   se juega una partida entera con dos políticas. Sin sala, sin persona, sin hub.<br>
   <b>reproducible</b>: misma semilla ⇒ misma partida. <b>sensible</b>: otra semilla ⇒
   otro resultado (si no, el juego ignora la semilla y no se puede verificar).<br>
@@ -63,8 +63,8 @@
                "three/addons/": "/vendor/three-0.160.0/examples/jsm/" } }
 </script>
 <script type="module">
-import { CATALOGO, politicaTonta, politicaAzar, politicaFSM }
-  from '../js/alisa-engine/src/gym/registro.js';
+import { CATALOGO, politicaTonta, randomPolicy, politicaFSM }
+  from '../js/alisa-engine/src/gym/registry.js';
 
 const salida = document.getElementById('salida');
 const resumen = document.getElementById('resumen');
@@ -93,7 +93,7 @@ document.getElementById('correr').addEventListener('click', async () => {
       const Env = await entrada.cargar();
       if (typeof Env !== 'function') throw new Error('el módulo no exporta un entorno');
 
-      const azar = politicaAzar(7);
+      const azar = randomPolicy(7);
       const opciones = { seed: 1234, maxSteps: 400 };
       const prueba = Env.selfTest(azar, opciones);
 
@@ -102,7 +102,7 @@ document.getElementById('correr').addEventListener('click', async () => {
       const conTonta = new Env().runEpisode(politicaTonta, opciones);
       const conFSM   = new Env().runEpisode(politicaFSM(), opciones);
       const env = new Env();
-      const conAzar = env.runEpisode(politicaAzar(7), opciones);
+      const conAzar = env.runEpisode(randomPolicy(7), opciones);
       const recibo = typeof env.partida === 'function' ? env.partida() : null;
       console.log = logReal;
 

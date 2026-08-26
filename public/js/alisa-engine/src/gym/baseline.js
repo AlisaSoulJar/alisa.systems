@@ -35,13 +35,13 @@
  */
 
 /** El azar del suelo: reproducible, y el mismo para todos. */
-export function azar(semilla) {
+export function seededRng(semilla) {
     let x = semilla >>> 0 || 1;
     return () => { x ^= x << 13; x ^= x >>> 17; x ^= x << 5; return (x >>> 0) / 4294967296; };
 }
 
 /** Las semillas de las tres políticas de azar. Parte del contrato del suelo. */
-export const SEMILLAS_SUELO = [1, 7, 99];
+export const BASELINE_SEEDS = [1, 7, 99];
 
 /**
  * Las siete, recién hechas. Se llama una vez por medición: el bandido tiene
@@ -54,14 +54,14 @@ export const SEMILLAS_SUELO = [1, 7, 99];
  * `aprender(clave, premio)` sólo lo usa el bandido. La clave la pone quien
  * llama, porque sólo él sabe qué identifica una jugada en su mundo.
  */
-export function politicasCiegas() {
+export function blindPolicies() {
     const lista = [
         { nombre: 'ciclo',   elegir: (v, i) => v[i % v.length] },
         { nombre: 'primera', elegir: (v) => v[0] },
         { nombre: 'ultima',  elegir: (v) => v[v.length - 1] },
     ];
-    for (const s of SEMILLAS_SUELO) {
-        const r = azar(s);
+    for (const s of BASELINE_SEEDS) {
+        const r = seededRng(s);
         lista.push({ nombre: `azar${s}`, elegir: (v) => v[Math.floor(r() * v.length) % v.length] });
     }
 
@@ -74,7 +74,7 @@ export function politicasCiegas() {
      * ganarle a éste significa que hiciste algo que no se descubre a tientas.
      */
     const memoria = new Map();
-    const r = azar(4242);
+    const r = seededRng(4242);
     lista.push({
         nombre: 'bandido',
         elegir: (v) => {

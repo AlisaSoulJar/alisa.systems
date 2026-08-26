@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ALISA — ¡Busca! 3 — 13 Corp Building</title>
+    <!--
+        El mapa del motor, que resuelve `@alisa-engine/`. Clásico y sin `defer`:
+        un `importmap` no se puede añadir una vez que un módulo ha empezado a
+        cargar. La hoja de estilo la reparte `montarMundo`.
+    -->
+    <script src="/js/mundo.js"></script>
+</head>
+<body>
+<script type="module">
+import { montarMundo } from '/js/montarMundo.js';
+import { CorpBuildingCore } from '@alisa-engine/src/world/systems/CorpBuildingCore.js';
+import { ProceduralBuildingFactory } from '@alisa-engine/src/world/factories/ProceduralBuildingFactory.js';
+import { AssetManager } from '@alisa-engine/src/soma/AssetManager.js';
+import { PintorEdificio, encuadrarEdificio } from '/js/pintor_edificio.mjs';
+import { montarHud, montarPie } from '/js/hud_mundo.mjs';
+import { montarCartel } from '/js/cartelas_mundo.mjs';
+
+/**
+ * ⚠️ LA PUERTA HUMANA QUE ESTE JUEGO NO TENÍA, Y POR QUÉ ESTÁ APARTE.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * `alisa/CorpBuilding-v0` lleva meses en el banco y **ninguna persona podía
+ * jugarlo**. Las dos páginas que dicen «Corp Building» —`corp_building.html` y
+ * `croupier_corporate_building.html`— son OTRO juego: sigilo en tiempo real, con
+ * un acosador que te busca, linterna y ascensor. Medido: 335 y 395 menciones de
+ * `seeker`, 118 y 122 de `elevator`.
+ *
+ * Lo que mide el banco es esto otro: por TURNOS, catorce comprobaciones, pistas
+ * de temperatura, sin amenazas. Es la avería que este proyecto lleva semanas
+ * persiguiendo —la persona y el agente jugando a dos juegos con el mismo
+ * nombre— sólo que aquí no eran parecidos: eran de géneros distintos.
+ *
+ * Ésta es la primera vez que una persona puede jugar EXACTAMENTE lo que el banco
+ * puntúa. El edificio lo pone `ProceduralBuildingFactory` —el que se recorre por
+ * rellanos mirando puertas— y las puertas se pintan del sustrato.
+ *
+ * ⚠️ Y LAS PUERTAS SE PINTAN DESDE EL SUSTRATO, NO DESDE EL RESULTADO.
+ *
+ * El laboratorio de esta misma etapa coloreaba las puertas leyendo la jugada,
+ * con un diccionario `{'CALIENTE':…, 'TIBIO':…, 'FRÍO':…}` — un vocabulario que
+ * este juego dejó de usar hace meses. O sea que no coloreaba ninguna, y no daba
+ * error: simplemente no pasaba nada. Leyendo el sustrato eso no puede ocurrir.
+ */
+const ROM = CorpBuildingCore.ROM;
+
+const { app: gfx, THREE, arrancar } = await montarMundo({
+    ambiente: 'interior',
+    cielo: false,
+    // La fábrica trae su propio suelo; el del motor cortaba el edificio en dos.
+    suelo: false,
+    // El ARTE del edificio trae sus propias luces prácticas; el ambiente va bajo
+    // a propósito para que la planta encendida destaque. Lo mismo que hace el
+    // laboratorio de esta etapa.
+    luces: false,
+    nucleo: { clearColor: 0x090d16 },
+});
+
+/** Qué color tiene cada estado de una puerta. Los tipos son los del sustrato. */
+const ESTILO = {
+    sin_mirar: { color: 0x8a6b3a },
+    mirado: { color: 0x39405c, emision: 0x11141f, brillo: 0.3 },
+    mapache: { color: 0xffcc33, emision: 0xffcc33, brillo: 1.2 },
+};
+
+let nucleo = null, fab = null, pintor = null, hud = null, acabado = false;
+const puertas = [];
+
+const cartel = montarCartel(ROM.cartel, (ajustes) => {
+    nucleo = new CorpBuildingCore({ seed: ajustes.seed, plantas: ajustes.plantas });
+
+    fab = new ProceduralBuildingFactory(gfx.scene, AssetManager);
+    fab.buildAll({
+        floors: nucleo.plantas,
+        doorsPerFloor: nucleo.puertasPorPlanta,
+        characters: false,
+        // Las intensidades de la fábrica están calibradas para el modelo de luz
+        // de three anterior a r155; sin escalarlas la escena sale negra. Lo dice
+        // su propio `buildAll`.
+        lightScale: 6,
+    });
+    /**
+     * ⚠️ Y SE LEVANTA EL EDIFICIO PARA QUE SE APOYE EN EL SUELO.
+     *
+     * La fábrica lo CENTRA en el origen —baja su grupo media altura—, así que la
+     * mitad queda bajo el cero y el suelo del motor lo cortaba por la cintura. Es
+     * la misma corrección que hubo que hacerle al rascacielos del acuario cuando
+     * entró en la torre del dron.
+     */
+    if (fab.buildingGroup) fab.buildingGroup.position.y += (nucleo.plantas * fab.FL_H) / 2;
+    // Aquí hay que VER todas las puertas para poder pulsarlas.
+    gfx.scene.add(new THREE.AmbientLight(0xbfd0e8, 1.6));
+
+    /**
+     * Atar cada puerta de la fábrica al sitio del juego que le toca. Es la misma
+     * costura que ya hacía `croupier_corp_building_3d.html`: la fábrica numera
+     * sus puertas por planta en el mismo orden en que el núcleo numera sus
+     * escondites.
+     */
+    puertas.length = 0;
+    (fab.floors ?? []).forEach((planta, iPlanta) => {
+        (planta.doors ?? []).forEach((d, iPuerta) => {
+            if (!d?.mesh) return;
+            const sitio = nucleo.spots.find((s) => s.floor === iPlanta && s.index === iPuerta);
+            if (!sitio) return;
+            d.mesh.userData.sitio = sitio;
+            puertas.push({ malla: d.mesh, planta: iPlanta, indice: iPuerta, tipo: sitio.kind });
+        });
+    });
+
+    pintor = new PintorEdificio(puertas, ESTILO, THREE);
+    encuadrarEdificio(gfx, nucleo.plantas);
+    hud = montarHud(ROM.hud);
+    montarPie(ROM.hud.mandos);
+
+    /** El mundo, publicado, para que un aviso se pueda REPINTAR. */
+    window.getSustrato = () => { try { return nucleo?.sustrato() ?? null; } catch { return null; } };
+});
+
+/**
+ * Jugar es señalar. El clic se traduce a las MISMAS acciones que usa el agente
+ * —`ir_a_planta` y `comprobar_*`— para que las dos puertas hagan lo mismo.
+ */
+const rayo = new THREE.Raycaster(), raton = new THREE.Vector2();
+addEventListener('pointerdown', (ev) => {
+    if (!nucleo || nucleo.terminado() || !puertas.length) return;
+    raton.x = (ev.clientX / innerWidth) * 2 - 1;
+    raton.y = -(ev.clientY / innerHeight) * 2 + 1;
+    rayo.setFromCamera(raton, gfx.camera);
+    const impacto = rayo.intersectObjects(puertas.map((p) => p.malla))[0];
+    if (!impacto) return;
+    const s = impacto.object.userData.sitio;
+    if (nucleo.plantaActual !== s.floor) nucleo.irAPlanta(s.floor);
+    else nucleo.comprobar(s.kind, s.index);
+});
+
+arrancar((dt) => {
+    if (!nucleo) return;
+    fab.update?.(Math.min(dt, 0.1));
+    const sus = nucleo.sustrato();
+    pintor.pintar(sus);
+    const info = nucleo.info();
+    hud.pintar(info, nucleo);
+    if (info.terminado && !acabado) { acabado = true; cartel.final(info); }
+});
+
+/** La puerta de los agentes, en la PÁGINA — no dentro del núcleo. */
+window.stepSimulation = (accion) => {
+    if (!nucleo) return null;
+    const { verb, floor, index = 0 } = accion || {};
+    if (verb === 'ir_a_planta') nucleo.irAPlanta(floor);
+    else if (verb) nucleo.comprobar(verb === 'comprobar_puerta' ? 'puerta' : 'escondite', index);
+    return { done: nucleo.terminado(), info: nucleo.info() };
+};
+window.ALISA_STREAM_SIM_NAME = 'corp_deduccion';
+</script>
+
+<!-- El botón de «algo se ve raro»: adjunta el mundo entero porque esta página
+     publica `window.getSustrato()`. -->
+<script type="module" src="/arcade/js/protohub/reportar.js"></script>
+</body>
+</html>

@@ -1086,12 +1086,12 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Mientras la mesa se sondeaba a ciegas, su número no podía significar nada: 320 toques repartidos por la pantalla no aciertan una carta, y ese cero se leía como un límite de la sonda. Por eso la garantía tenía que ser el panel — y por eso el</sub>
 - **ESTA SONDA APUNTA A PIEZAS, Y HAY JUGADAS QUE NO SON UNA PIEZA.** <sub>línea 1113</sub>
   <br><sub>En ajedrez la jugada es `d2d4`: DOS casillas, y la segunda casi siempre está vacía. En go son los 357 cruces libres del goban, que no tienen malla porque todavía no hay piedra. Tocar una pieza no hace ninguna de esas jugadas ni queriendo, así que su</sub>
-- **Y HAY UNA TERCERA CLASE: LOS QUE JUEGAN A VERBOS.** <sub>línea 1134</sub>
+- **Y HAY UNA TERCERA CLASE: LOS QUE JUEGAN A VERBS.** <sub>línea 1134</sub>
   <br><sub>Con sólo dos grupos —casillas y piezas— snake y peatón caían en «piezas» y el titular salía 7 de 24. Pero la jugada de snake es `arriba`: tocar la serpiente no la mueve, y nunca debió contar como un juego que se juega tocando algo. Esos ya tienen su sitio</sub>
 - **LAS CASILLAS YA SE MIDEN, DESDE QUE EL PINTOR PUBLICA DÓNDE ESTÁN.** <sub>línea 1159</sub>
   <br><sub>Hasta el 16-08 esta línea decía «esta sonda no sabe apuntar a un hueco» y era verdad: el terreno se dibuja con `InstancedMesh`, así que no hay una malla por casilla a la que apuntar. Se arregló publicando seis números —`userData.rejillaMundo`— en vez de</sub>
 - **TIENE REJILLA» NO ES «JUEGA A CASILLAS», Y CONTARLO ASÍ SALÍA MAL.** <sub>línea 1169</sub>
-  <br><sub>Sokoban, cripta o defensa publican rejilla —viven en un tablero— pero sus jugadas son VERBOS: `arriba`, `torre a1`. Contándolos aquí salían en las dos listas a la vez y el titular decía «5 de 21» cuando el denominador real son los que de verdad juegan</sub>
+  <br><sub>Sokoban, cripta o defensa publican rejilla —viven en un tablero— pero sus jugadas son VERBS: `arriba`, `torre a1`. Contándolos aquí salían en las dos listas a la vez y el titular decía «5 de 21» cuando el denominador real son los que de verdad juegan</sub>
 - **SIN ASOMAR» ES LO QUE MIDE ESTE MUESTREO, NI MÁS NI MENOS.** <sub>línea 1197</sub>
   <br><sub>Se prueban el centro y veinticuatro puntos hacia los bordes de la caja envolvente. Si en ninguno el trazador de rayos contesta esta pieza, se cuenta como que no asoma. Con un muestreo más flojo —sólo las cuatro esquinas— hearts daba nueve cartas tapadas de</sub>
 - **Y LO QUE ESTE INSTRUMENTO NO PUEDE VER, DICHO EN VOZ ALTA.** <sub>línea 1213</sub>
@@ -2911,7 +2911,7 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>El `verb` crudo se queda como está a propósito: es lo que el banco lleva semanas midiendo y lo que va en los recibos. Cambiarlo sería cambiar el juego conservando el nombre. Lo que se exige es que la TRIPLETA que se emite encima</sub>
 - **ESTA LISTA ESTÁ DUPLICADA A PROPÓSITO, Y ES LA ÚNICA DUPLICACIÓN QUE** <sub>línea 44</sub>
   <br><sub>DEFIENDO EN TODO EL BANCO.</sub>
-- **LA REGLA ÚNICA: UN MÉTODO NO LLEVA SEPARADORES DENTRO.** <sub>línea 79</sub>
+- **LA REGLA ÚNICA: UN MÉTODO NO LLEVA SEPARATORS DENTRO.** <sub>línea 79</sub>
   <br><sub>Dos puntos o un espacio dentro de un `#metodo` significan que hay un parámetro escondido ahí. Es literalmente el fallo de `enviar a`: 68 acciones con `args: {}` mientras el argumento viajaba pegado al verbo.</sub>
 - **Y EL PARÁMETRO TAMPOCO, QUE ES POR DONDE SE ESCAPABA.** <sub>línea 89</sub>
   <br><sub>La primera versión sólo miraba el método, y el sabotaje APROBABA: al dejar de partir por el espacio, `enviar a` no se quedaba como método —el respaldo de ProtoHub lo mandaba a `#jugar |enviar a`— así que</sub>
@@ -3134,7 +3134,7 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 
 - **Y LO QUE HACE QUE ESTO MEREZCA UN INSTRUMENTO NO ES EL FALLO, ES CÓMO SE VEÍA.** <sub>línea 17</sub>
   <br><sub>La clasificación rota la silla por semilla, así que su contador de recibos ponía `100/200`. Exactamente la mitad. Y un `100/200` se lee como un número normal, no como «la mitad de mis filas están apoyadas en nada». Estuvo así meses. Sólo saltó</sub>
-- **Y COMPRUEBA LAS DOS DIRECCIONES, que es lo que separa esta prueba de una que** <sub>línea 28</sub>
+- **Y COMPRUEBA LAS DOS DIRECTIONS, que es lo que separa esta prueba de una que** <sub>línea 28</sub>
   <br><sub>sólo dice que sí: una partida legítima desde cualquier silla tiene que ACEPTARSE, y una con los puntos inflados desde cualquier silla tiene que RECHAZARSE. Sin lo segundo, `verificar` podría devolver `true` a todo y esto seguiría en verde.</sub>
 
 ### `prueba_reglas.mjs`
@@ -3383,7 +3383,7 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 
 ### `prueba_verbos.mjs`
 
-- **POR QUÉ EL DENOMINADOR ES EL PANEL Y NO UNA LISTA DE JUEGOS CON VERBOS.** <sub>línea 14</sub>
+- **POR QUÉ EL DENOMINADOR ES EL PANEL Y NO UNA LISTA DE JUEGOS CON VERBS.** <sub>línea 14</sub>
   <br><sub>Escribir «estos doce tienen verbos» sería la enésima lista a mano, y de nueve números falsos de agosto siete fueron de denominador. Cada página dice cuántos verbos le tocan; si un juego no ofrece ninguno en ese instante, sale como NO COMPROBABLE, que</sub>
 - **Y HAY TRES CAMINOS DE PANEL, NO DOS.** <sub>línea 21</sub>
   <br><sub>`jugadas.js`, `SovereignBoardEngine` y `SovereignCardEngine` pintan cada uno sus `.mesa-jugada`. El repetidor ya se montó una vez «en los dos motores» y cuatro juegos se quedaron fuera. Esta prueba es la que nota que falta el tercero.</sub>
@@ -4385,7 +4385,7 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>reglas para personas y para máquinas»— y lo que había: existían 5 entornos y NINGUNA de las 24 estaciones declaraba el suyo. Se podía verificar la partida de otro, pero una máquina no podía jugar aquí.</sub>
 - **ESTOS TRES ESTABAN EN `legacy/` Y NO LOS ENLAZABA NADIE.** <sub>línea 350</sub>
   <br><sub>Son los juegos más terminados que tenemos —87, 62 y 42 KB— y llevaban meses dados por obsoletos. No lo estaban: el traslado a `legacy/` les rompió las rutas y una pantalla rota se parece a una pantalla vieja.</sub>
-- **AQUÍ HABÍA CATORCE DIRECCIONES ESCRITAS A MANO, Y YA SE HABÍAN SEPARADO.** <sub>línea 383</sub>
+- **AQUÍ HABÍA CATORCE DIRECTIONS ESCRITAS A MANO, Y YA SE HABÍAN SEPARADO.** <sub>línea 383</sub>
   <br><sub>Cada mesa traía su `u:'../arcade/mesa.html?juego=brisca'`. El día que brisca, tute, hearts, spades, gofish y unit estrenaron página propia, estas seis líneas quedaron señalando a la genérica — seguía funcionando, así que nadie lo notó.</sub>
 - **Y VAN TODAS A LA SALA DE BOLSILLO, NO A LA PÁGINA PLANA.** <sub>línea 393</sub>
   <br><sub>`sala.html` dibuja el juego sobre una mesa igual que ésta, a escala de persona. Sentarse aquí y entrar por `/arcade/entrar` tienen que ser lo mismo, y hasta hoy no lo eran: aquí te cargaba la página plana en la pantallita de una máquina,</sub>
@@ -4845,7 +4845,7 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Decía «estoy en la casilla X,Z» y el motor se lo creía, porque no sabía dónde estabas. Ahora lo sabe: se llega andando y llegar se detecta solo.</sub>
 - **Y LA OBSERVACIÓN ENTREGA LA MATRIZ, NO UNA DESCRIPCIÓN DE ELLA.** <sub>línea 316</sub>
   <br><sub>Es la tesis del proyecto puesta en una función: al modelo se le da el mundo ya en forma de rejilla plana —dónde está él, dónde hay que llegar— en vez de obligarle a reconstruirla desde una imagen. Traducir el mundo a matriz</sub>
-- **EL MENÚ OFRECÍA VERBOS QUE `submitAction` NO ACEPTA.** <sub>línea 353</sub>
+- **EL MENÚ OFRECÍA VERBS QUE `submitAction` NO ACEPTA.** <sub>línea 353</sub>
   <br><sub>Decía `act_jump` cuando el objetivo es `jump`, y `move_to_target` cuando el objetivo es `tile_2_3`. `submitAction` compara con `===`, así que **ninguno de los verbos ofrecidos podía acertar jamás**.</sub>
 - **CON UN OBJETIVO DE CASILLA SE OFRECEN LOS PASOS, NO LA CASILLA.** <sub>línea 386</sub>
   <br><sub>Antes esto ofrecía `move_to_target` —un botón que resolvía el problema— y luego, tras el primer arreglo, la casilla entera, que es lo mismo con otro nombre: decir `tile_2_3` y aparecer allí. Llegar tiene que costar</sub>
@@ -4918,7 +4918,7 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **DETERMINISMO — mírate esto antes de fiarte de una puntuación** <sub>línea 31</sub>
   <br><sub>El motor usa `Math.random()` por dentro (spawns, drops, la baraja de mejoras). Aquí NO se copia otro mulberry32: se usa `DeterministicScope`, que es el canónico. Ya hubo dos generadores conviviendo en el motor y, aunque</sub>
 - **El método del motor es `update(dt)`, no `step(dt)`.** <sub>línea 108</sub>
-  <br><sub>supuesto y reventó al primer tick. const resultado = DeterministicScope.run(this.seed + this.steps, () => { if (idx >= 0 && idx < VERBOS.length) this.sys.act(idx);</sub>
+  <br><sub>supuesto y reventó al primer tick. const resultado = DeterministicScope.run(this.seed + this.steps, () => { if (idx >= 0 && idx < VERBS.length) this.sys.act(idx);</sub>
 - **`action` NO ES REDUNDANTE CON `verb`, Y NO TENERLO ROMPÍA EL JUEGO.** <sub>línea 178</sub>
   <br><sub>`GymEnv.actFromVerb` hace `a.action !== undefined ? a.action : args`. Sin `action`, devolvía `args` —que aquí es `{}`— y `stepVerb` acababa mandándole un objeto vacío al núcleo en vez del verbo.</sub>
 
@@ -4949,7 +4949,7 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **26 → 12, Y OTRA VEZ NO ES AFINAR: ES QUE CAMBIÓ EL JUEGO.** <sub>línea 366</sub>
   <br><sub>Con 26 el satélite ganaba el 100% de las partidas. No porque el planeta sea fácil, sino porque hasta hoy lo pilotaba como una nave —empuje cartesiano sobre una esfera— y le sobraba de todo. Con mando de órbita y el coste de</sub>
 
-### `public/js/alisa-engine/src/gym/Gramatica.js`
+### `public/js/alisa-engine/src/gym/Grammar.js`
 
 - **POR QUÉ AQUÍ, Y QUÉ HABÍA ANTES.** <sub>línea 12</sub>
   <br><sub>El banco emitía `{verb, args}` — que ya son `#metodo |parametros`— pero sin gramática declarada. Medido el 25-08 sobre los 49 entornos del catálogo:</sub>
@@ -4959,9 +4959,9 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>`@Chess #move |d7` no es `chess_move(d7)` con adornos. El objeto es la cosa que publica `sustrato()`, así que un método genérico puede leer de él cuántas casillas hay, qué leyenda usa y qué piezas existen, sin saber a qué se juega.</sub>
 - **LA GRAMÁTICA SE DECLARA, NO SE ADIVINA.** <sub>línea 50</sub>
   <br><sub>Adivinar es lo que produjo las seis. Un guión bajo no es un separador — `ir_a_planta` es UN método y `esquivar_izquierda` también—, así que aquí nadie parte por guiones. Quien sabe dónde acaba el método es el mundo que lo emite,</sub>
-- **LA ÚNICA REGLA: UN MÉTODO NO LLEVA SEPARADORES DENTRO.** <sub>línea 59</sub>
+- **LA ÚNICA REGLA: UN MÉTODO NO LLEVA SEPARATORS DENTRO.** <sub>línea 59</sub>
   <br><sub>Dos puntos o un espacio dentro de un `#metodo` significan que hay un parámetro escondido ahí — es literalmente el fallo de `enviar a`. Se comprueba, y por eso el banco no puede volver a tener seis gramáticas sin que salte.</sub>
-- **LAS DIRECCIONES SON PARÁMETROS, Y ESTO SÍ ES DECLARAR.** <sub>línea 81</sub>
+- **LAS DIRECTIONS SON PARÁMETROS, Y ESTO SÍ ES DECLARAR.** <sub>línea 81</sub>
   <br><sub>Medido el 25-08 sobre los 49 entornos: `derecha` era un método en 13 mundos, `izquierda` en 11, `abajo` en 10, `arriba` en 8… doce métodos distintos para una sola acción. Un agente tenía que aprender doce fichas sueltas donde hay</sub>
 - **Y NO CONTRADICE LA REGLA DE «SE DECLARA, NO SE ADIVINA».** <sub>línea 93</sub>
   <br><sub>La regla existe porque `ir_a_planta` (un método entero) y `construir_guijarro` (método + objeto) son indistinguibles desde fuera: el guion bajo no dice cuál es cuál, y adivinarlo fue lo que produjo las seis gramáticas.</sub>
@@ -4981,7 +4981,7 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **EL EPISODIO ENTERO VA DENTRO DE UN DeterministicScope.** <sub>línea 167</sub>
   <br><sub>palabra "determinista" era un deseo, no una garantía: el motor tiene 470 llamadas a `Math.random()` sin semilla repartidas por 67 ficheros, así que la misma semilla daba mundos distintos en la misma máquina. Medido, y</sub>
 
-### `public/js/alisa-engine/src/gym/HuellaDeMundo.js`
+### `public/js/alisa-engine/src/gym/WorldFingerprint.js`
 
 - **Y ESTO NO ES TEÓRICO: PASÓ AYER Y HOY.** <sub>línea 18</sub>
   <br><sub>`RaccoonCity-v0` cambió de 12 objetivos a 10 y de 30 de combustible a 38 y de vuelta a 30. `RaccoonPlanet-v0` estrenó mando de órbita, coste de escaneo y pasó de 26 de combustible a 11. `CabinetEscape-v0` cambió de generador y con</sub>
@@ -4998,7 +4998,7 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **Y SE TOMA AL EMPEZAR Y AL ACABAR, PORQUE UNA SOLA MUESTRA MIENTE.** <sub>línea 192</sub>
   <br><sub>La primera versión guardaba sólo el texto FINAL, y al día siguiente lo pillé fallando: añadí a ¡Busca! una línea que dice si la nave va derivando, y la huella no se movió. Motivo: la política fija de la</sub>
 
-### `public/js/alisa-engine/src/gym/ObservacionDeSustrato.js`
+### `public/js/alisa-engine/src/gym/SubstrateObservation.js`
 
 - **POR QUÉ EXISTE: UN VECTOR ESCRITO A MANO ES UN SITIO DONDE MENTIR.** <sub>línea 8</sub>
   <br><sub>Cada entorno se fabrica su observación a mano —24 números en ¡Busca!, 64 en Marabunta, 26 en CorpBuilding— y ahí es exactamente donde el 24-08 encontré que `escaner_listo` valía 1 mientras la puerta de lenguaje decía «lo tienes al</sub>
@@ -5053,7 +5053,7 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **UN VERBO INVENTADO SE RECHAZA AQUÍ, NO SE MANDA AL ENTORNO.** <sub>línea 89</sub>
   <br><sub>`stepVerb` de un verbo desconocido devuelve `{error}` y sigue como si nada, así que un agente que alucine verbos gastaría turnos sin enterarse. Aquí se dice: es la frontera, y una frontera que no comprueba no es una frontera.</sub>
 
-### `public/js/alisa-engine/src/gym/registro.js`
+### `public/js/alisa-engine/src/gym/registry.js`
 
 - **EL CONTROL DEL BANCO DE PRUEBAS.** <sub>línea 49</sub>
   <br><sub>agentes DEBEN empatar aquí. Si la tabla los separa, el que falla es el banco, no el agente. Ver la cabecera de `rules/guerra.js`. { juego: 'guerra', titulo: 'Guerra (control)', crear: 'crearGuerra' },</sub>
@@ -5066,7 +5066,7 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **La primera versión guardaba el contador del generador en un cierre, y con** <sub>línea 319</sub>
   <br><sub>eso `selfTest` decía «no reproducible» en 14 de 16 entornos. El fallo era mío: `selfTest` corre el mismo episodio dos veces con la MISMA política, así que la segunda arrancaba con el generador ya avanzado y salía otra partida.</sub>
 
-### `public/js/alisa-engine/src/gym/suelo.js`
+### `public/js/alisa-engine/src/gym/baseline.js`
 
 - **POR QUÉ ESTÁN AQUÍ Y NO EN CADA SITIO QUE LAS USA.** <sub>línea 9</sub>
   <br><sub>Estaban escritas dos veces —`prueba_senal.mjs` y `acreditar.mjs`— y **no eran iguales**. Medido el 25-08, el mismo día que escribí la segunda:</sub>

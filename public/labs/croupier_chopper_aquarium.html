@@ -329,7 +329,10 @@
         // pantalla, sin dar un solo error. Lo explica `montarMundo.js`.
         arrancar((dt) => {
             if (engine.gameState.playing || engine.gameState.ended) {
-                engine.executeLogicTick(dt);
+                // `tick(dt)` es el verbo del núcleo. La puerta de los agentes
+                // —`stepSimulation(accion, dt)`— sigue donde estaba: aplica una
+                // acción y luego llama aquí. Dos capas, no dos nombres.
+                engine.tick(dt);
 
                 factory.syncToEngine({
                     chopper: engine.chopper,

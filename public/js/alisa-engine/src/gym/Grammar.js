@@ -56,16 +56,16 @@
  */
 
 /**
- * ⚠️ LA ÚNICA REGLA: UN MÉTODO NO LLEVA SEPARADORES DENTRO.
+ * ⚠️ LA ÚNICA REGLA: UN MÉTODO NO LLEVA SEPARATORS DENTRO.
  *
  * Dos puntos o un espacio dentro de un `#metodo` significan que hay un parámetro
  * escondido ahí — es literalmente el fallo de `enviar a`. Se comprueba, y por eso
  * el banco no puede volver a tener seis gramáticas sin que salte.
  */
-export const SEPARADORES = /[:\s]/;
+export const SEPARATORS = /[:\s]/;
 
 /** `alisa/Defiende-v0` → `Defiende`. El objeto es el mundo, resoluble. */
-export function nombreDe(id) {
+export function nameOf(id) {
     const s = String(id ?? '');
     const barra = s.lastIndexOf('/');
     const corto = barra >= 0 ? s.slice(barra + 1) : s;
@@ -78,7 +78,7 @@ export function nombreDe(id) {
  * correcto para `subir` y para `ir_a_planta` por igual.
  */
 /**
- * ⚠️ LAS DIRECCIONES SON PARÁMETROS, Y ESTO SÍ ES DECLARAR.
+ * ⚠️ LAS DIRECTIONS SON PARÁMETROS, Y ESTO SÍ ES DECLARAR.
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * Medido el 25-08 sobre los 49 entornos: `derecha` era un método en 13 mundos,
@@ -104,7 +104,7 @@ export function nombreDe(id) {
  * Y un mundo que no esté de acuerdo tiene la última palabra: si declara su
  * `metodo` en `affordances()`, manda el suyo. La lista es el defecto, no la ley.
  */
-export const DIRECCIONES = new Set([
+export const DIRECTIONS = new Set([
     'arriba', 'abajo', 'izquierda', 'derecha',
     'norte', 'sur', 'este', 'oeste',
     'adelante', 'atras', 'atrás',
@@ -114,7 +114,7 @@ export const DIRECCIONES = new Set([
 export function partir(verbo) {
     const v = String(verbo ?? '').trim();
     if (!v) return { metodo: '', params: [] };
-    if (DIRECCIONES.has(v.toLowerCase())) return { metodo: 'mover', params: [v] };
+    if (DIRECTIONS.has(v.toLowerCase())) return { metodo: 'mover', params: [v] };
     const dosPuntos = v.indexOf(':');
     if (dosPuntos > 0) {
         /**
@@ -147,7 +147,7 @@ export function tripleta(objeto, accion) {
     const { metodo, params } = declarado
         ? { metodo: accion.metodo, params: accion.params ?? [] }
         : partir(accion.verb);
-    return { objeto: nombreDe(objeto), metodo, params: [...params] };
+    return { objeto: nameOf(objeto), metodo, params: [...params] };
 }
 
 /** La forma canónica en texto: lo que una persona lee y un Ser escribe. */

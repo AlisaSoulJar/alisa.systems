@@ -42,7 +42,7 @@
  * entera de ¡Defiende! cuesta 9 ms de CPU medidos, así que sale a microsegundos
  * por decisión. Se dice en voz alta en vez de descubrirse.
  */
-import { CATALOGO } from '../../public/js/alisa-engine/src/gym/registro.js';
+import { CATALOGO } from '../../public/js/alisa-engine/src/gym/registry.js';
 
 const TOPE_JUGADAS = 2000;
 const TICKS_POR_JUGADA = 30;          // medio segundo de mundo por decisión

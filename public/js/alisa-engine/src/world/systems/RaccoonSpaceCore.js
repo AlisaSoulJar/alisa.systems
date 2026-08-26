@@ -1,5 +1,6 @@
 import { mulberry32 } from '../core/DeterministicScope.js';
 import { crearBandas } from '../core/Bandas.js';
+import { RechargeSystem } from './RechargeSystem.js';
 
 /**
  * RaccoonSpaceCore — la etapa 6 de ¡Busca!, SIN PANTALLA
@@ -35,7 +36,7 @@ import { crearBandas } from '../core/Bandas.js';
  */
 
 /** Los verbos, en el orden que espera `step(accion)`. */
-export const VERBOS_ESPACIO = [
+export const VERBS_SPACE = [
     'nada', 'empujar', 'frenar',
     'girar_izq', 'girar_der',
     'morro_arriba', 'morro_abajo',
@@ -64,24 +65,24 @@ export const VERBOS_ESPACIO = [
  * marcador. Eso vive todo aquí, así que las tres etapas siguen siendo el mismo
  * juego y sus notas se pueden poner en la misma tabla.
  */
-export const VERBOS_DRON = [
+export const VERBS_DRONE = [
     'nada', 'adelante', 'atras',
     'izquierda', 'derecha',
     'subir', 'bajar',
     'escanear',
 ];
 
-export const VERBOS_ORBITA = [
+export const VERBS_ORBIT = [
     'nada', 'norte', 'sur',
     'este', 'oeste',
     'bajar_orbita', 'subir_orbita',
     'escanear',
 ];
 
-export const VERBOS_POR_MANDO = {
-    nave: VERBOS_ESPACIO,
-    dron: VERBOS_DRON,
-    orbita: VERBOS_ORBITA,
+export const VERBS_BY_CONTROL = {
+    nave: VERBS_SPACE,
+    dron: VERBS_DRONE,
+    orbita: VERBS_ORBIT,
 };
 
 export class RaccoonSpaceCore {
@@ -93,9 +94,9 @@ export class RaccoonSpaceCore {
          * decoración sino parte del problema.
          */
         this.forma       = opts.forma      ?? 'cubo';
-        /** Qué se pilota: `nave` · `dron` · `orbita`. Ver `VERBOS_POR_MANDO`. */
+        /** Qué se pilota: `nave` · `dron` · `orbita`. Ver `VERBS_BY_CONTROL`. */
         this.mando       = opts.mando      ?? 'nave';
-        this.verbos      = VERBOS_POR_MANDO[this.mando] ?? VERBOS_ESPACIO;
+        this.verbos      = VERBS_BY_CONTROL[this.mando] ?? VERBS_SPACE;
         this.velMax      = opts.maxSpeed   ?? 100;
         this.aceleracion = opts.accel      ?? 60;
         this.rozamiento  = opts.drag       ?? 0.98;
@@ -148,6 +149,89 @@ export class RaccoonSpaceCore {
          * así para no cambiar una etapa ya calibrada. Ver el comentario en `step`.
          */
         this.costeEscaneo = (opts.scanCost ?? 0) * this.combustibleInicial;
+
+        /**
+         * ═══════════════════════════════════════════════════════════════════
+         *  PUNTOS DE SINCRONIZACIÓN — LA MITAD QUE FALTABA DE ESTA MECÁNICA
+         * ═══════════════════════════════════════════════════════════════════
+         *
+         * Estas tres etapas gastaban y no había NADA que llenara: soporte vital,
+         * empuje y escaneo restan, y a cero mueres. Eso no es un juego de
+         * recurso: es una cuenta atrás con mando.
+         *
+         * ⚠️ Y SE LLAMAN «SINCRONIZACIÓN» Y NO «PILAS» POR UN MOTIVO.
+         * El HUD de estas páginas pone `BATTERY: 100%` y lo que baja es el
+         * combustible de la nave — una etiqueta que nombra una mecánica que no
+         * existe. Y un satélite con gasolina es raro. Un satélite que PIERDE EL
+         * ENLACE y tiene que volver a sincronizar es la misma regla —un recurso
+         * que se agota y se recupera en puntos del mundo— contando algo que
+         * encaja con lo que se ve. La regla es compartida (`RechargeSystem`); lo
+         * que cambia es la piel.
+         *
+         * `da` es fracción del depósito, no un número suelto: las tres etapas
+         * arrancan con depósitos distintos y una constante las descuadraría.
+         */
+        /**
+         * ⚠️ CERO POR DEFECTO, Y NO ES QUE LA MECÁNICA ESTÉ A MEDIAS.
+         *
+         * Está entera y probada: sembrar, recoger, recargar y publicarse en el
+         * sustrato. Pero encenderla CAMBIA EL JUEGO, y estas tres etapas ya
+         * tienen notas publicadas en el banco. `prueba_huella` lo cazó en cuanto
+         * la puse a 3 —«3 cambiados sin decirlo»— y dicta la política de la casa:
+         *
+         *     «sube la versión del id (…-v0 → …-v1) y vuelve a sellar, porque
+         *      las notas de antes ya no se pueden comparar con las de ahora»
+         *
+         * Retirar notas publicadas es una decisión de quien diseña el banco, no
+         * de quien escribe el código. Así que se queda en cero hasta que se
+         * decida, y encenderla es pasar `puntosDeEnlace` — una etapa nueva puede
+         * nacer con ellos sin tocar las viejas.
+         *
+         * Esto NO es «inerte para que la prueba se calle»: es que el número que
+         * cambia aquí es el que compara a una persona con un agente.
+         *
+         * ⚠️ 2026-08-26, DECIDIDO Y ENCENDIDO: los tres entornos suben a `-v1`.
+         *
+         * Medido antes de decidirlo: `resultados/tabla.json` y `matriz.json` no
+         * tienen NI UNA referencia a `RaccoonSpace/City/Planet-v0` — la tabla
+         * publicada son los 32 juegos del arcade. O sea que no había notas que
+         * proteger.
+         *
+         * Y aun así se sube la versión, porque el contrato de `prueba_huella` se
+         * selló CON FECHA el 25-08 y este cambio es del 26. Una regla que no se
+         * cumple veinticuatro horas después de escribirla no es una regla: es una
+         * intención. Costó doce referencias.
+         */
+        this.puntosDeEnlace = opts.puntosDeEnlace ?? 3;
+
+        /**
+         * ⚠️ LA PIEL VA POR ETAPA, Y ME CORRIJO: EL HUD NO MENTÍA.
+         *
+         * Denuncié que `BATTERY: 100%` en el sector de ciudad nombraba una
+         * mecánica inexistente. Al mirar las tres páginas, cada una lo llama de
+         * una forma distinta y las tres tienen razón:
+         *
+         *     ciudad   BATTERY       es un DRON      → batería y pilas
+         *     planeta  SAT POWER     es un SATÉLITE  → enlace y sincronización
+         *     espacio  FUSION FUEL   es una NAVE     → combustible y bidones
+         *
+         * Lo que estaba mal no era el rótulo: era que este núcleo llama
+         * `combustible` a las tres cosas. La regla es la misma —un recurso que
+         * se agota y se recupera en puntos del mundo—; lo que cambia es qué es.
+         *
+         * Se deduce del MANDO, que ya está declarado, para que una etapa nueva
+         * herede la piel correcta sin que nadie se acuerde de ponerla. Y se puede
+         * forzar con `opts.piel` cuando el vehículo no diga bastante.
+         */
+        this.piel = opts.piel ?? (
+            this.mando === 'dron' ? 'pila'
+                : this.mando === 'orbita' ? 'enlace'
+                    : 'combustible');
+        this.recargas = new RechargeSystem({
+            piel: this.piel,
+            da: (opts.recargaFraccion ?? 0.35) * this.combustibleInicial,
+            alcance: opts.recargaAlcance ?? 12,
+        });
         /**
          * Hasta dónde llega el escáner, en unidades del mundo y sumado al radio
          * del objetivo. Estaba escrito a fuego (`p.r + 25`); es un parámetro
@@ -214,6 +298,28 @@ export class RaccoonSpaceCore {
         this.puntos = 0;
         this.muerto = false;
         this.encontrado = false;
+
+        /**
+         * ⚠️ LOS PUNTOS DE ENLACE SE SIEMBRAN CON UN GENERADOR APARTE, Y ESO NO
+         *    ES CAPRICHO: ES LO ÚNICO QUE IMPIDE CAMBIAR PARTIDAS PUBLICADAS.
+         *
+         * `rnd` reparte planetas, asteroides y la salida del satélite. Si les
+         * robara tiradas para colocar esto, TODAS las semillas darían mundos
+         * distintos — y estas tres etapas ya tienen notas en el banco. Es la
+         * misma trampa que en su día cambió las de Marabunta con un `||`.
+         *
+         * Con un generador derivado de la misma semilla (`^` con una constante)
+         * los puntos son igual de reproducibles y la secuencia de `rnd` no se
+         * mueve ni una tirada. Comprobado con `prueba_huella`.
+         */
+        const rndEnlace = mulberry32((semilla ^ 0x5117) >>> 0);
+        const medio = this.tanque / 2;
+        this.recargas.sembrar(
+            Array.from({ length: this.puntosDeEnlace }, () => ({
+                x: (rndEnlace() * 2 - 1) * medio,
+                y: (rndEnlace() * 2 - 1) * medio * 0.5,
+                z: (rndEnlace() * 2 - 1) * medio,
+            })));
 
         const b = this.tanque / 2;
         const enRango = () => (rnd() * 2 - 1) * b;
@@ -534,6 +640,29 @@ export class RaccoonSpaceCore {
 
         this.combustible -= dt * 0.5;       // el soporte vital siempre gasta
         this.t += dt;
+
+        /**
+         * ⚠️ RECARGAR VA ANTES DE MORIR, Y EL ORDEN ES LA MECÁNICA.
+         *
+         * Si se comprobara la muerte primero, llegar al punto de sincronización
+         * con el depósito en las últimas no serviría de nada: habrías muerto en
+         * el fotograma en que lo alcanzas. Que la última gota te dé para llegar
+         * es justamente lo que hace que esto sea un juego de recurso y no una
+         * cuenta atrás.
+         *
+         * `RechargeSystem` habla el idioma de `EnergyComponent`, así que se le
+         * pasa un adaptador de tres campos y se copia de vuelta. Un adaptador de
+         * tres líneas es más barato que una segunda implementación de «coger una
+         * cosa del suelo que sube una barra», que es lo que este proyecto lleva
+         * semanas midiéndose.
+         */
+        const deposito = { currentEnergy: this.combustible, maxEnergy: this.combustibleInicial };
+        const cogido = this.recargas.tick(this.nave, deposito, dt);
+        if (cogido) {
+            this.combustible = deposito.currentEnergy;
+            recompensa += 2;                // volver a tener señal es un acierto
+        }
+
         if (this.combustible <= 0) { this.combustible = 0; this.muerto = true; recompensa -= 100; }
 
         return { obs: this.observacion(), reward: recompensa, done: this.terminado(), info: this.info() };
@@ -834,6 +963,22 @@ export class RaccoonSpaceCore {
             vel: { x: n.vx, y: n.vz, alto: n.vy },
         });
 
+        /**
+         * ⚠️ LOS PUNTOS DE ENLACE VAN EN EL SUSTRATO, Y ÉSA ES LA MITAD QUE
+         *    FALTABA EN LAS CINCO ETAPAS QUE USAN UN RECURSO.
+         *
+         * Medido el 2026-08-26: ninguna publicaba su energía ni sus recargas. La
+         * persona veía una barra en el HUD y el agente no veía nada — así que
+         * uno jugaba a administrar un recurso y el otro a una cuenta atrás
+         * invisible, y el banco los comparaba como si fuera el mismo juego.
+         *
+         * Lo que entra aquí lo ven todas las inteligencias a la vez: el texto,
+         * los números, el dibujo en 2D, el mundo en 3D y la puerta HTTP. Lo que
+         * se queda fuera sólo lo ve quien mire la pantalla.
+         */
+        piezas.push(...this.recargas.piezas());
+        const voz = this.recargas.vocabulario();
+
         const sus = {
             piezas,
             zonas: [],
@@ -842,10 +987,12 @@ export class RaccoonSpaceCore {
                 caliente: 'muy cerca del mapache', templado: 'cerca',
                 fresco: 'ni frío ni caliente', 'frío': 'lejos', helado: 'lejísimos',
                 asteroide: 'roca', nave: 'tú',
+                ...voz.leyenda,
             },
             simbolos: {
                 sin_escanear: '?', encontrado: '*', caliente: '1', templado: '2',
                 fresco: '3', 'frío': '4', helado: '5', asteroide: 'o', nave: '@',
+                ...voz.simbolos,
             },
         };
 

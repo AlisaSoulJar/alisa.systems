@@ -1,9 +1,9 @@
 {
   "_que_es": "Contra qué suelo se mide cada entorno. Una nota sólo significa algo comparada con estas siete políticas ciegas, en el mismo mundo, con la misma semilla y el mismo horizonte. Ver acreditar.mjs.",
-  "_suelo": "alisa-engine/src/gym/suelo.js — ciclo, primera, ultima, azar1, azar7, azar99, bandido",
+  "_suelo": "alisa-engine/src/gym/baseline.js — ciclo, primera, ultima, azar1, azar7, azar99, bandido",
   "_medido_por": "prueba_senal.mjs, en cada npm test. Publica quien mide, para que no se separen.",
-  "propios": 9,
-  "total": 49,
+  "propios": 11,
+  "total": 51,
   "entornos": [
     {
       "id": "alisa/ajedrez-protohub-v0",
@@ -158,25 +158,6 @@
       "forma": "action"
     },
     {
-      "id": "alisa/ChopperAquarium-v0",
-      "familia": "propio",
-      "separa": true,
-      "suelo": [
-        110,
-        20,
-        20,
-        10,
-        10,
-        110,
-        30
-      ],
-      "mejorCiega": 110,
-      "peorCiega": 10,
-      "pasos": 3000,
-      "semilla": 1234,
-      "forma": "action"
-    },
-    {
       "id": "alisa/CorpBuilding-v0",
       "familia": "propio",
       "separa": true,
@@ -287,6 +268,25 @@
       "mejorCiega": 48,
       "peorCiega": 29,
       "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/DroneTower-v0",
+      "familia": "propio",
+      "separa": true,
+      "suelo": [
+        -5.5,
+        -5,
+        -5.5,
+        -7,
+        -6,
+        -6.5,
+        -57.833
+      ],
+      "mejorCiega": -4.999999999999968,
+      "peorCiega": -57.83333333333355,
+      "pasos": 3000,
       "semilla": 1234,
       "forma": "action"
     },
@@ -652,7 +652,7 @@
       "forma": "action"
     },
     {
-      "id": "alisa/RaccoonCity-v0",
+      "id": "alisa/RaccoonCity-v1",
       "familia": "propio",
       "separa": true,
       "suelo": [
@@ -661,7 +661,7 @@
         -100,
         -100,
         -100,
-        -100,
+        -98,
         -100
       ],
       "mejorCiega": 0,
@@ -671,7 +671,7 @@
       "forma": "action"
     },
     {
-      "id": "alisa/RaccoonPlanet-v0",
+      "id": "alisa/RaccoonPlanet-v1",
       "familia": "propio",
       "separa": false,
       "suelo": [
@@ -690,7 +690,7 @@
       "forma": "action"
     },
     {
-      "id": "alisa/RaccoonSpace-v0",
+      "id": "alisa/RaccoonSpace-v1",
       "familia": "propio",
       "separa": false,
       "suelo": [
@@ -781,6 +781,25 @@
       "mejorCiega": 36,
       "peorCiega": 10,
       "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/SatelliteSweep-v0",
+      "familia": "propio",
+      "separa": true,
+      "suelo": [
+        -54.683,
+        -54.547,
+        -54.683,
+        -55.378,
+        -54.818,
+        -54.818,
+        -55.688
+      ],
+      "mejorCiega": -54.54666666666656,
+      "peorCiega": -55.68833333333323,
+      "pasos": 3000,
       "semilla": 1234,
       "forma": "action"
     },
@@ -876,6 +895,25 @@
       "mejorCiega": -94,
       "peorCiega": -130,
       "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/Submarine-v0",
+      "familia": "propio",
+      "separa": true,
+      "suelo": [
+        25,
+        25,
+        25,
+        25,
+        -44.025,
+        25,
+        25
+      ],
+      "mejorCiega": 24.999999999999222,
+      "peorCiega": -44.02499999999991,
+      "pasos": 3000,
       "semilla": 1234,
       "forma": "action"
     },

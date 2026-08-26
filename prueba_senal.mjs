@@ -48,7 +48,7 @@
  * primera versión de esta prueba habría hecho que se «arreglaran» cinco entornos
  * que funcionaban.
  */
-import { CATALOGO } from './public/js/alisa-engine/src/gym/registro.js';
+import { CATALOGO } from './public/js/alisa-engine/src/gym/registry.js';
 
 /**
  * ⚠️ TRINQUETE. Entornos a los que NO SE LES HA CONSEGUIDO sacar dos notas, con
@@ -90,7 +90,7 @@ const NO_SEPARAN = {
      * Lo que sí se dice, porque es verdad y es medible: con un piloto competente
      * los tres separan perfectamente. No están rotos: son difíciles.
      */
-    'alisa/RaccoonSpace-v0':
+    'alisa/RaccoonSpace-v1':
         'la recompensa está detrás de NAVEGAR y ninguna política ciega llega a escanear. '
       + 'Con el piloto de `calibrar_busca.mjs` gana el 52% de las partidas',
     /**
@@ -112,7 +112,7 @@ const NO_SEPARAN = {
      * hasta que el instrumento calle es lo contrario de medir, así que se
      * revirtió y se declara.
      */
-    'alisa/RaccoonPlanet-v0':
+    'alisa/RaccoonPlanet-v1':
         'el satélite tiene que ponerse encima Y bajar la órbita para escanear, y ninguna '
       + 'política ciega lo consigue. Con el piloto de `calibrar_busca.mjs` gana el 72%',
     /**
@@ -170,12 +170,12 @@ const horizonteDe = (Clase) => Math.min(Number(Clase.meta?.horizon) || 600, TOPE
  * exploración contra bandido sin ella. Un recibo se juzgaba contra una vara y
  * la tabla se publicaba con otra.
  *
- * Ahora vive en lisa-engine/src/gym/suelo.js y lo importa quien lo necesite.
+ * Ahora vive en lisa-engine/src/gym/baseline.js y lo importa quien lo necesite.
  * Ésta es la canónica —la que produjo el «46 de 49»— y por eso se movió tal cual,
  * sin tocar ni una semilla: si el suelo cambia, ese número deja de significar lo
  * que dice.
  */
-import { politicasCiegas as politicas } from './public/js/alisa-engine/src/gym/suelo.js';
+import { blindPolicies as politicas } from './public/js/alisa-engine/src/gym/baseline.js';
 /** Las dos formas VÁLIDAS de mandar una jugada. Ver la nota de abajo. */
 const FORMAS = [['action', (o) => o.action], ['verb', (o) => o.verb]];
 
@@ -295,7 +295,7 @@ for (const [id, m] of planos) {
             id,
             familia: CATALOGO.find(e => e.id === id)?.familia ?? '?',
             separa: m.separa > 1,
-            /** Las siete notas ciegas, en el orden de `politicasCiegas()`. */
+            /** Las siete notas ciegas, en el orden de `blindPolicies()`. */
             suelo: m.notas.map(n => Math.round(n * 1000) / 1000),
             mejorCiega: Math.max(...m.notas),
             peorCiega: Math.min(...m.notas),
@@ -311,7 +311,7 @@ for (const [id, m] of planos) {
             _que_es: 'Contra qué suelo se mide cada entorno. Una nota sólo significa algo '
                    + 'comparada con estas siete políticas ciegas, en el mismo mundo, con la '
                    + 'misma semilla y el mismo horizonte. Ver acreditar.mjs.',
-            _suelo: 'alisa-engine/src/gym/suelo.js — ciclo, primera, ultima, azar1, azar7, azar99, bandido',
+            _suelo: 'alisa-engine/src/gym/baseline.js — ciclo, primera, ultima, azar1, azar7, azar99, bandido',
             _medido_por: 'prueba_senal.mjs, en cada npm test. Publica quien mide, para que no se separen.',
             propios: filas.filter(f => f.familia === 'propio').length,
             total: filas.length,

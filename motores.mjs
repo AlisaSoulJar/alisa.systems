@@ -67,7 +67,7 @@ const todos = await ficheros(path.join(RAIZ, 'public'));
 const textos = new Map();
 for (const f of todos) textos.set(f, await readFile(f, 'utf-8'));
 
-const { CATALOGO } = await import('./public/js/alisa-engine/src/gym/registro.js');
+const { CATALOGO } = await import('./public/js/alisa-engine/src/gym/registry.js');
 const enBanco = new Set();
 for (const e of CATALOGO) {
     if (e.familia !== 'propio') continue;

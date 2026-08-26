@@ -16,7 +16,7 @@
  * marcados ABSTRACTO. Lo demás te lo da el contrato.
  */
 import { DeterministicScope } from '../world/core/DeterministicScope.js';
-import { tripleta, escribir, leer, nombreDe } from './Gramatica.js';
+import { tripleta, escribir, leer, nameOf } from './Grammar.js';
 
 export class GymEnv {
     /** Identificador estable, estilo gym: 'alisa/Pedrisco-v0' */
@@ -53,7 +53,7 @@ export class GymEnv {
      * ─── LA TRIPLETA: `@objeto #metodo |parametros` ──────────────────
      *
      * Lo mismo que `affordances()`, dicho en el idioma del organismo entero.
-     * Ver `Gramatica.js`: es la ley AIO-I del proyecto general, que allí lleva
+     * Ver `Grammar.js`: es la ley AIO-I del proyecto general, que allí lleva
      * 802 usos en 267 ficheros y que aquí no se hablaba.
      *
      * ⚠️ NO SUSTITUYE A `affordances()`, LA ACOMPAÑA — Y ES A PROPÓSITO.
@@ -130,7 +130,7 @@ export class GymEnv {
             return { obs: this.getObservation(), reward: 0, done: this.done,
                      info: { error: `no es un átomo: ${texto}` } };
         }
-        const mio = nombreDe(this.constructor.id);
+        const mio = nameOf(this.constructor.id);
         if (at.objeto.toLowerCase() !== mio.toLowerCase()) {
             return { obs: this.getObservation(), reward: 0, done: this.done,
                      info: { error: `@${at.objeto} no es este mundo: aquí es @${mio}` } };

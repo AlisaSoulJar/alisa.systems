@@ -1,0 +1,113 @@
+/**
+ * mundo.css — LA DIRECCIÓN DE ARTE DE LAS ETAPAS EN 3D
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * La pone `montarMundo` en cada etapa, igual que `montarMesa` reparte
+ * `arcade.css` a las cincuenta y cinco páginas del arcade. Ninguna página vuelve
+ * a escribir un color.
+ *
+ * ⚠️ POR QUÉ ESTO EXISTE, Y POR QUÉ HEREDA DEL ARCADE EN VEZ DE INVENTARSE OTRA.
+ *
+ * El arcade lleva desde hace meses con UNA línea visual repartida por una sola
+ * puerta —lo dice la cabecera de `montarMesa.js`: «Y ya está. Ni CSS, ni lista de
+ * scripts, ni HUD, ni orden de carga», escrita después de encontrar «CSS idéntico
+ * copiado seis veces»—. Las etapas en 3D no tenían nada de eso: cada una se
+ * escribía cuarenta líneas de estilo dentro del HTML.
+ *
+ * Lo medido antes de escribir esto: **71 variables CSS distintas** repartidas por
+ * el proyecto, con `--bg`, `--text`, `--accent` y `--border` declaradas cuatro y
+ * seis veces cada una en ficheros que no se conocen entre sí. Eso no es una
+ * paleta: son cuatro paletas parecidas.
+ *
+ * Los tokens de aquí son los del arcade —mismo negro, mismo cristal, misma
+ * tipografía— para que una mesa y una torre se vean de la misma casa. Lo que
+ * cambia entre etapas es el ACENTO, y va en una variable que la página fija en
+ * una línea.
+ */
+@import url('/vendor/fonts/fuentes.css');
+
+:root {
+    /* Heredados de `arcade/css/arcade.css`: la misma casa. */
+    --bg-dark: #07070a;
+    --glass-bg: rgba(20, 20, 30, 0.6);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --text-primary: #e0e0ec;
+    --text-muted: #8a8a9e;
+
+    /* Propios de las etapas en volumen. El acento lo pisa cada etapa. */
+    --acento: #7fd1ff;
+    --acento-suave: #4aa3e0;
+    --panel-bg: rgba(8, 10, 18, .82);
+    --panel-borde: #2a3350;
+    --barra-fondo: #1b2136;
+    --barra-llena: linear-gradient(90deg, #2ecc71, #f1c40f);
+    --barra-baja: linear-gradient(90deg, #e74c3c, #c0392b);
+    --radio: 10px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    overflow: hidden;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* ── el panel de estado ──────────────────────────────────────────────────── */
+
+#hud {
+    position: fixed; top: 14px; left: 14px; z-index: 10;
+    background: var(--panel-bg); border: 1px solid var(--panel-borde);
+    border-radius: var(--radio); padding: 14px 18px;
+    font-size: 13px; line-height: 1.7;
+}
+#hud b { color: var(--acento); }
+
+.barra {
+    display: inline-block; width: 120px; height: 9px;
+    background: var(--barra-fondo); border-radius: 5px;
+    overflow: hidden; vertical-align: middle;
+}
+.barra i { display: block; height: 100%; background: var(--barra-llena); }
+.baja i { background: var(--barra-baja); }
+
+/* ── el pie con los mandos ───────────────────────────────────────────────── */
+
+#pie {
+    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+    background: var(--panel-bg); border: 1px solid var(--panel-borde);
+    border-radius: 8px; padding: 8px 16px;
+    font-size: 12px; color: var(--text-muted); z-index: 10;
+}
+
+/* ── las cartelas de entrada y de final ──────────────────────────────────── */
+
+#modal {
+    position: fixed; inset: 0; display: grid; place-items: center;
+    background: rgba(3, 4, 10, .92); z-index: 40;
+}
+#fin {
+    position: fixed; inset: 0; display: none; place-items: center;
+    background: rgba(3, 4, 10, .9); z-index: 45;
+}
+
+.caja {
+    border: 1px solid var(--panel-borde); border-radius: 14px;
+    padding: 30px 36px; background: #0a0d18; max-width: 620px;
+}
+.caja h1 { font-size: 22px; color: var(--acento); margin-bottom: 14px; }
+.caja p { font-size: 13px; line-height: 1.8; color: #9fb0cc; margin-bottom: 10px; }
+.caja button {
+    margin-top: 18px; width: 100%; padding: 13px; font-size: 15px;
+    font-family: inherit; font-weight: 700; cursor: pointer;
+    border: none; border-radius: 9px; color: var(--bg-dark);
+    background: linear-gradient(135deg, var(--acento), var(--acento-suave));
+}
+
+label { font-size: 12px; color: var(--text-muted); margin-right: 6px; }
+input {
+    width: 84px; background: #0f1424; border: 1px solid var(--panel-borde);
+    color: var(--text-primary); border-radius: 6px; padding: 6px 8px;
+    font-family: inherit;
+}

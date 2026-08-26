@@ -1,6 +1,7 @@
 import { ECSWorld } from '../OverworldECS.js';
 import { EnergySystem, EnergyComponent } from './EnergySystem.js';
 import { EcosystemSystem } from './EcosystemSystem.js';
+import { FloorScanSystem } from './FloorScanSystem.js';
 import { PheromoneGrid } from './PheromoneGrid.js';
 import { SeededRNG } from '../core/SeededRNG.js';
 
@@ -29,8 +30,26 @@ export class ChopperAquariumEngine {
         this.maxSpeed = 25.0;
         
         this.chopperState = { mode: 'ROAM', targetFloor: -1, stateTimer: 1.0, scannedFloors: new Set() };
-        
+
         this.targetFloorInfo = { index: -1 };
+
+        /**
+         * ⚠️ LA MITAD «¡BUSCA!» DE ESTE MOTOR, YA COMPUESTA EN VEZ DE ESCRITA.
+         *
+         * Este fichero tiene DOS juegos dentro —37 referencias al edificio y 30
+         * al ecosistema— y por eso un helicóptero-pez escaneando un rascacielos
+         * dentro de una pecera chirría: no es mala ambientación, son dos juegos
+         * pegados. La portada del propio juego lo delata: «scanning a procedural
+         * skyscraper for a hidden raccoon», que es la definición de la OTRA saga.
+         *
+         * Se extrae la mitad de búsqueda a `FloorScanSystem` y aquí se
+         * COMPONE. Primer paso de la partición, y a propósito el que no cambia
+         * nada: mismo número de tiradas, mismo orden, mismo resultado —
+         * comprobado con `prueba_huella`, que vigila justo eso.
+         */
+        this.busqueda = new FloorScanSystem({
+            plantas: this.totalFloors, cuestaFallar: 5, margen: 1,
+        });
         
         this.time = 0.0;
         
@@ -94,7 +113,18 @@ export class ChopperAquariumEngine {
         this.time = 0.0;
         
         this.rng = new SeededRNG(seed);
-        this.targetFloorInfo.index = Math.floor(this.rng.next() * (this.totalFloors - 2)) + 1;
+        /**
+         * Una sola tirada, la primera tras sembrar, exactamente como antes:
+         * `Math.floor(rng() * (plantas - 2)) + 1`. La cuenta vive ahora en
+         * `FloorScanSystem`, pero el número de tiradas y su sitio no se
+         * mueven — si se movieran, cambiaría TODO el mundo de esta etapa con la
+         * misma semilla, peces incluidos, y sus notas dejarían de valer.
+         */
+        this.targetFloorInfo.index = this.busqueda.reset(() => this.rng.next());
+        // Las plantas ya escaneadas las lleva la búsqueda; esto es la MISMA
+        // colección, no una copia, para que quien leía `scannedFloors` siga
+        // leyendo la verdad y no un reflejo que se desincroniza.
+        this.chopperState.scannedFloors = this.busqueda.escaneadas;
 
         // Reset Ecosystem
         this.pheromoneGrid = new PheromoneGrid(this.TANK_SIZE, this.TANK_HEIGHT, this.TANK_SIZE, 8.0, 5.0);
@@ -168,24 +198,26 @@ export class ChopperAquariumEngine {
     }
     vecDot(v1, v2) { return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z; }
 
+    /**
+     * Mirar una planta. La REGLA la lleva `FloorScanSystem`; aquí se
+     * queda lo que es de este juego: avisar a la vista y decidir que la partida
+     * termina. Un sistema componible no debería saber que existe un `emit`.
+     */
     checkFloor(floorIdx) {
-        if(this.gameState.ended || floorIdx === -1) return;
-        if(this.chopperState.scannedFloors.has(floorIdx)) return;
-        
-        this.gameState.activeFloor = floorIdx;
-        this.chopperState.scannedFloors.add(floorIdx);
+        if (this.gameState.ended || floorIdx === -1) return;
 
         const energy = this.ecs.getComponent(this.chopperEntity, 'EnergyComponent');
+        const r = this.busqueda.escanear(floorIdx, energy);
+        if (r.estado === 'repetida') return;
 
-        if(floorIdx === this.targetFloorInfo.index) {
+        this.gameState.activeFloor = floorIdx;
+
+        if (r.estado === 'acierto') {
             this.emit('floor_checked', { floorIdx, success: true });
             this.winSequence();
         } else {
-            if (energy) energy.currentEnergy = Math.max(0, energy.currentEnergy - 5);
             this.emit('floor_checked', { floorIdx, success: false, fuel: energy ? energy.currentEnergy : 0 });
-            if(energy && energy.currentEnergy <= 0) {
-                this.crashSequence();
-            }
+            if (r.sinRecurso) this.crashSequence();
         }
     }
 
@@ -223,7 +255,7 @@ export class ChopperAquariumEngine {
         this.chopperVelocity.y += thrust.y * 40 * dt;
         this.chopperVelocity.z += thrust.z * 40 * dt;
 
-        this.executeLogicTick(dt, isRLMode ? (actionIdx > 0 && actionIdx < 7) : false, rlYawVelocity);
+        this.tick(dt, isRLMode ? (actionIdx > 0 && actionIdx < 7) : false, rlYawVelocity);
 
         // Calculate a dummy RL reward (to be hooked manually if needed)
         let r = 0;
@@ -265,7 +297,28 @@ export class ChopperAquariumEngine {
         };
     }
 
-    executeLogicTick(dt, manualThrust = false, rlYawVelocity = 0.0) {
+    /**
+     * `tick(dt)` — el verbo de la familia de TIEMPO REAL: el tanque se mueve
+     * mientras piensas.
+     *
+     * ⚠️ SE LLAMABA `executeLogicTick`, Y `stepSimulation` NO ERA ESTO.
+     *
+     * Al poner contrato a los núcleos parecía que aquí el verbo de avanzar se
+     * llamaba `stepSimulation`, y eso daba miedo tocarlo: `window.stepSimulation`
+     * es la PUERTA DE LOS AGENTES —la enganchan `alisa_sim_sdk.js`, los dos
+     * corredores del gimnasio, y hay un laboratorio que comprueba que exista—.
+     * Consulté con Motoko antes de moverla.
+     *
+     * Al mirarlo de cerca no había nada que mover: `stepSimulation(accion, dt,
+     * isRLMode)` DESCODIFICA una acción en empuje, llama a este método y
+     * devuelve `{obs, reward, done, info}`. O sea que son dos CAPAS, no dos
+     * nombres para lo mismo: la puerta aplica una acción y avanza; el verbo sólo
+     * avanza. La puerta se queda exactamente como estaba.
+     *
+     * Los parámetros de más llevan valor por defecto, así que `tick(dt)` a secas
+     * cumple el contrato y quien necesite el empuje manual lo sigue pasando.
+     */
+    tick(dt, manualThrust = false, rlYawVelocity = 0.0) {
         this.ecs.tick(dt);
         this.time += dt;
 

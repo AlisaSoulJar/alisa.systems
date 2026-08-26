@@ -1,4 +1,7 @@
-import * as THREE from 'three';
+// ⚠️ Aquí había `import * as THREE from 'three'` y `THREE` sólo aparecía en los
+// comentarios de tipo (`@param {THREE.Object3D}`), nunca en el código. Un import
+// muerto ata el fichero al navegador para nada, y lo atado al navegador no lo
+// puede cargar el banco.
 
 /**
  * [ALISA V4 Engine: ProceduralRiggingEngine]

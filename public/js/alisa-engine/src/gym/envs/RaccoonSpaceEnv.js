@@ -1,5 +1,5 @@
 import { GymEnv } from '../GymEnv.js';
-import { RaccoonSpaceCore, VERBOS_ESPACIO, VERBOS_DRON, VERBOS_ORBITA }
+import { RaccoonSpaceCore, VERBS_SPACE, VERBS_DRONE, VERBS_ORBIT }
     from '../../world/systems/RaccoonSpaceCore.js';
 
 /**
@@ -25,7 +25,7 @@ import { RaccoonSpaceCore, VERBOS_ESPACIO, VERBOS_DRON, VERBOS_ORBITA }
  * ═══════════════════════════════════════════════════════════════════════════
  */
 export class RaccoonSpaceEnv extends GymEnv {
-    static id = 'alisa/RaccoonSpace-v0';
+    static id = 'alisa/RaccoonSpace-v1';
 
     static observationSpace = {
         shape: [24],
@@ -38,7 +38,7 @@ export class RaccoonSpaceEnv extends GymEnv {
         low: -1, high: 1,
     };
 
-    static actionSpace = { type: 'discrete', n: VERBOS_ESPACIO.length, names: VERBOS_ESPACIO };
+    static actionSpace = { type: 'discrete', n: VERBS_SPACE.length, names: VERBS_SPACE };
 
     static meta = {
         title: '¡Busca! 6 — Espacio',
@@ -325,7 +325,7 @@ export class RaccoonSpaceEnv extends GymEnv {
  * fallo: en la escala pequeña, 22 de cada 40 se resolvían sin moverse.
  */
 export class RaccoonCityEnv extends RaccoonSpaceEnv {
-    static id = 'alisa/RaccoonCity-v0';
+    static id = 'alisa/RaccoonCity-v1';
     static objetivo = { uno: 'edificio', varios: 'edificios', el: 'El', un: 'un', ningun: 'ningún' };
     /**
      * ⚠️ SIN ASTEROIDES, Y NO ES UN DESCUIDO.
@@ -348,7 +348,7 @@ export class RaccoonCityEnv extends RaccoonSpaceEnv {
      */
     static ajustes = { tankSize: 180, planets: 10, asteroids: 0, fuel: 30, tope: 3000,
                        forma: 'rejilla', mando: 'dron', scanCost: 0.05 };
-    static actionSpace = { type: 'discrete', n: VERBOS_DRON.length, names: VERBOS_DRON };
+    static actionSpace = { type: 'discrete', n: VERBS_DRONE.length, names: VERBS_DRONE };
     static meta = {
         title: '¡Busca! 4 — Sector de ciudad',
         summary: 'Encuentra el edificio donde se esconde el mapache antes de quedarte sin '
@@ -359,7 +359,7 @@ export class RaccoonCityEnv extends RaccoonSpaceEnv {
 }
 
 export class RaccoonPlanetEnv extends RaccoonSpaceEnv {
-    static id = 'alisa/RaccoonPlanet-v0';
+    static id = 'alisa/RaccoonPlanet-v1';
     static objetivo = { uno: 'ciudad', varios: 'ciudades', el: 'La', un: 'una', ningun: 'ninguna' };
     /** Sin asteroides por el mismo motivo que la ciudad: la página no los dibuja. */
     /**
@@ -373,7 +373,7 @@ export class RaccoonPlanetEnv extends RaccoonSpaceEnv {
      */
     static ajustes = { tankSize: 260, planets: 8, asteroids: 0, fuel: 11, tope: 3600,
                        forma: 'esfera', mando: 'orbita', scanCost: 0.08 };
-    static actionSpace = { type: 'discrete', n: VERBOS_ORBITA.length, names: VERBOS_ORBITA };
+    static actionSpace = { type: 'discrete', n: VERBS_ORBIT.length, names: VERBS_ORBIT };
     static meta = {
         title: '¡Busca! 5 — Planeta',
         summary: 'Encuentra la ciudad donde se esconde el mapache antes de quedarte sin '

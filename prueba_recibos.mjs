@@ -25,7 +25,7 @@
  * `npm test` no lo habría cazado ni lo cazaría si volviera: sus 74 trampas se juegan
  * desde la silla 0. Por eso existe esto.
  *
- * ⚠️ Y COMPRUEBA LAS DOS DIRECCIONES, que es lo que separa esta prueba de una que
+ * ⚠️ Y COMPRUEBA LAS DOS DIRECTIONS, que es lo que separa esta prueba de una que
  * sólo dice que sí: una partida legítima desde cualquier silla tiene que ACEPTARSE,
  * y una con los puntos inflados desde cualquier silla tiene que RECHAZARSE. Sin lo
  * segundo, `verificar` podría devolver `true` a todo y esto seguiría en verde.
@@ -36,7 +36,7 @@ import path from 'node:path';
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const impo = (rel) => import(pathToFileURL(path.join(AQUI, rel)).href);
 
-const { CATALOGO } = await impo('public/js/alisa-engine/src/gym/registro.js');
+const { CATALOGO } = await impo('public/js/alisa-engine/src/gym/registry.js');
 const { cargarReglas, SILLAS } = await impo('public/arcade/js/protohub/rules/index.js');
 const { verificar } = await impo('public/arcade/js/protohub/Verificador.js');
 const { jugarEpisodio } = await impo('public/arcade/js/agentes/llm.js');

@@ -42,7 +42,7 @@ import { DeterministicScope } from '../../world/core/DeterministicScope.js';
  */
 
 /** Los 15 verbos del motor, en el orden que espera `act(actionId)`. */
-const VERBOS = [
+const VERBS = [
     'quieto', 'norte', 'noreste', 'este', 'sureste',
     'sur', 'suroeste', 'oeste', 'noroeste',
     'mejora_1', 'mejora_2', 'mejora_3',
@@ -70,8 +70,8 @@ export class MarabuntaEnv extends GymEnv {
      */
     static observationSpace = { shape: [64], low: -1, high: 1 };
 
-    /** Discreta: un verbo por tick. Ver VERBOS. */
-    static actionSpace = { type: 'discrete', n: VERBOS.length, names: VERBOS };
+    /** Discreta: un verbo por tick. Ver VERBS. */
+    static actionSpace = { type: 'discrete', n: VERBS.length, names: VERBS };
 
     static meta = {
         title: 'Enjambre de Marabuntas',
@@ -102,14 +102,27 @@ export class MarabuntaEnv extends GymEnv {
         // La acción puede venir como índice o como verbo: un agente numérico
         // manda 12, uno de lenguaje manda 'barrido'. Las dos son válidas.
         const idx = typeof action === 'string'
-            ? VERBOS.indexOf(action)
+            ? VERBS.indexOf(action)
             : Number(action) | 0;
 
-        // ⚠️ El método del motor es `update(dt)`, no `step(dt)`. Lo di por
-        // supuesto y reventó al primer tick.
+        /**
+         * ⚠️ AQUÍ PONÍA QUE EL MÉTODO DEL MOTOR ERA `update(dt)`, Y YA NO.
+         *
+         * La nota vieja decía: «lo di por supuesto y reventó al primer tick».
+         * Tenía razón en el hecho y el hecho era el síntoma — el motor se
+         * llamaba `update` porque nadie había decidido cómo se dice avanzar el
+         * mundo. Medido el 2026-08-26: se decía de cuatro maneras (`update`,
+         * `tick`, `step`, `start`) repartidas entre ocho núcleos.
+         *
+         * Ahora `GameContract` lo declara por familias —`tick(dt)` para los
+         * de tiempo real, `step(accion)` para los de turnos— y este motor es de
+         * tiempo real. El `step` de aquí es otra cosa: la puerta del gimnasio,
+         * que recibe una acción y devuelve recompensa. Dos capas, dos verbos, y
+         * ahora se distinguen por el nombre.
+         */
         const resultado = DeterministicScope.run(this.seed + this.steps, () => {
-            if (idx >= 0 && idx < VERBOS.length) this.sys.act(idx);
-            return this.sys.update(dt);
+            if (idx >= 0 && idx < VERBS.length) this.sys.act(idx);
+            return this.sys.tick(dt);
         });
 
         this.steps++;
@@ -198,14 +211,14 @@ export class MarabuntaEnv extends GymEnv {
          * base: quien sabe cómo se manda una jugada en este juego es este juego.
          */
         return [0, 1, 2].map(i => ({
-                verb: VERBOS[9 + i],
+                verb: VERBS[9 + i],
                 args: {},
-                action: VERBOS[9 + i],
+                action: VERBS[9 + i],
                 desc: ops[i] ? `Elegir: ${ops[i].name || ops[i].id}` : `Elegir la mejora ${i + 1}`,
             }));
         }
 
-        const mover = VERBOS.slice(0, 9).map(v => ({
+        const mover = VERBS.slice(0, 9).map(v => ({
             verb: v, args: {}, action: v, desc: `Moverse hacia ${v}`,
         }));
         return [

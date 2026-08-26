@@ -548,7 +548,7 @@ export class CabinetEscapeGame {
     }
 
     triggerDrawerSelection(idx) {
-        const res = this.sys.selectDrawer(idx);
+        const res = this.sys.step(idx);
         if (!res.valid) return;
         this.factory.openDrawer3D(idx);
 

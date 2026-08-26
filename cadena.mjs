@@ -48,7 +48,7 @@ const { puntuacionDe } = await imp('Verificador.js');
 const arcade = await readdir(path.join(PUB, 'arcade'));
 const labs = await readdir(path.join(PUB, 'labs'));
 const sala = await readFile(path.join(PUB, 'rooms/room_sala_del_huevo.html'), 'utf8');
-const registro = await readFile(path.join(PUB, 'js/alisa-engine/src/gym/registro.js'), 'utf8');
+const registro = await readFile(path.join(PUB, 'js/alisa-engine/src/gym/registry.js'), 'utf8');
 
 // El fichero de la página no siempre se llama como el juego: son nombres de
 // mesa, no identificadores. Se declara en vez de adivinarse.

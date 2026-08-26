@@ -593,8 +593,17 @@ function resetEpisode() {
         seekerAI.reset(floors.length, mappedFloors);
     }
     
-    // Respawn batteries
-    spawnBatteries();
+    /**
+     * ⚠️ AQUÍ PONÍA `spawnBatteries();` A SECAS, Y ESA FUNCIÓN NO EXISTE EN ESTA
+     *    PÁGINA: `ReferenceError` en CADA reinicio de episodio.
+     *
+     * La única definición de ese nombre está en `ProceduralBuildingFactory`, y
+     * es un método, no una global. Como la llamada era la última línea de este
+     * bloque, el fallo no rompía nada visible aquí dentro — sólo salía disparado
+     * hacia quien hubiera llamado a reiniciar.
+     */
+    window.factory?.spawnBatteries?.(totalFloors);
+    batteryPickups = window.factory?.batteryPickups ?? [];
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -666,8 +675,48 @@ window.startSimulation = function() {
     DOOR_ZONE_START = window.factory.DOOR_ZONE_START;
     DOOR_ZONE_W = window.factory.DOOR_ZONE_W;
 
+    /**
+     * ⚠️ LA LINTERNA, QUE HASTA HOY NO SE RECOGÍA DE NINGÚN SITIO.
+     *
+     * `let flashLight = null` y `let volumetricBeam = null` se declaran arriba y
+     * NUNCA se asignaban: el foco de verdad se creaba como local dentro de
+     * `build()` en la fábrica. Resultado medido: los cinco
+     * `if (flashLight) flashLight.intensity = …` de esta página eran no-ops, el
+     * cono se quedaba encendido a intensidad fija y la tecla F sólo cambiaba el
+     * texto del HUD. La interfaz decía OFF con la luz dada.
+     *
+     * Ahora la fábrica los publica —igual que ya hacía con `flashDust`— y aquí
+     * se recogen. Son la MISMA referencia, no una copia.
+     */
+    flashLight = window.factory.flashLight ?? null;
+    volumetricBeam = window.factory.volumetricBeam ?? null;
+
         simulationRunning = true;
-        
+
+        /**
+         * ⚠️ ESTA LÍNEA ES LA QUE ENCIENDE MEDIO JUEGO, Y NO ESTABA.
+         *
+         * Todo el bloque de la linterna —el gasto de batería, el parpadeo con
+         * poca carga, apagar el cono, el susto al llegar a cero y la recogida de
+         * pilas— vive detrás de `if (simulationRunning && gamePhase ===
+         * 'seeking')` (l. 2116 y 2162). Y `gamePhase` sólo pasa a `'seeking'`
+         * dentro de `resetEpisode()`, que se llamaba desde los caminos del
+         * AGENTE (l. 874 y 1064) y **no desde `startSimulation`**, que es lo que
+         * pulsa una persona en «ENTER BUILDING».
+         *
+         * Medido antes de tocar nada: con la pestaña visible y el bucle
+         * corriendo, la barra `[■■■■]` no bajaba NI UN cuadrito en 90 fotogramas
+         * y `flashLight.intensity` se quedaba fija aunque el HUD dijera OFF.
+         *
+         * O sea que la persona y el agente no estaban jugando al mismo juego: al
+         * agente se le gastaba la linterna y a la persona no. En un banco que
+         * compara a los dos, eso no es un detalle.
+         *
+         * Va DESPUÉS de construir porque reparte el mapache entre los escondites
+         * y necesita el edificio hecho.
+         */
+        resetEpisode();
+
         if (autoPlaying) {
             document.getElementById('aiPhaseRow').classList.remove('hud-hidden');
             document.getElementById('aiBeliefsRow').classList.remove('hud-hidden');
@@ -828,6 +877,22 @@ function checkDoor(doorIndex, fd) {
     batteryPickups = window.factory.batteryPickups;
     DOOR_ZONE_START = window.factory.DOOR_ZONE_START;
     DOOR_ZONE_W = window.factory.DOOR_ZONE_W;
+
+    /**
+     * ⚠️ LA LINTERNA, QUE HASTA HOY NO SE RECOGÍA DE NINGÚN SITIO.
+     *
+     * `let flashLight = null` y `let volumetricBeam = null` se declaran arriba y
+     * NUNCA se asignaban: el foco de verdad se creaba como local dentro de
+     * `build()` en la fábrica. Resultado medido: los cinco
+     * `if (flashLight) flashLight.intensity = …` de esta página eran no-ops, el
+     * cono se quedaba encendido a intensidad fija y la tecla F sólo cambiaba el
+     * texto del HUD. La interfaz decía OFF con la luz dada.
+     *
+     * Ahora la fábrica los publica —igual que ya hacía con `flashDust`— y aquí
+     * se recogen. Son la MISMA referencia, no una copia.
+     */
+    flashLight = window.factory.flashLight ?? null;
+    volumetricBeam = window.factory.volumetricBeam ?? null;
 
                 }
                 resetEpisode();
@@ -1002,6 +1067,22 @@ function checkHidingSpot(spotIndex, fd) {
     batteryPickups = window.factory.batteryPickups;
     DOOR_ZONE_START = window.factory.DOOR_ZONE_START;
     DOOR_ZONE_W = window.factory.DOOR_ZONE_W;
+
+    /**
+     * ⚠️ LA LINTERNA, QUE HASTA HOY NO SE RECOGÍA DE NINGÚN SITIO.
+     *
+     * `let flashLight = null` y `let volumetricBeam = null` se declaran arriba y
+     * NUNCA se asignaban: el foco de verdad se creaba como local dentro de
+     * `build()` en la fábrica. Resultado medido: los cinco
+     * `if (flashLight) flashLight.intensity = …` de esta página eran no-ops, el
+     * cono se quedaba encendido a intensidad fija y la tecla F sólo cambiaba el
+     * texto del HUD. La interfaz decía OFF con la luz dada.
+     *
+     * Ahora la fábrica los publica —igual que ya hacía con `flashDust`— y aquí
+     * se recogen. Son la MISMA referencia, no una copia.
+     */
+    flashLight = window.factory.flashLight ?? null;
+    volumetricBeam = window.factory.volumetricBeam ?? null;
 
                 }
                 resetEpisode();
@@ -2103,32 +2184,23 @@ gfx.startLoop((engineDt) => {
 
     // Battery Logic (Delegated to ECS)
     if (simulationRunning && gamePhase === 'seeking') {
-        if (flashLightOn) {
-            hudEnergy -= dt * 1.5; // Consume battery at 1.5 units per second
-            if (hudEnergy < 0) {
-                hudEnergy = 0;
-                flashLightOn = false;
-                document.getElementById('cam-flash').innerText = '🔦 DEAD';
-                // Trigger Jumpscare
-                gamePhase = 'jumpscare';
-                phaseTimer = 2.0;
-                jumpscareState = { active: true, phase: 'flicker' };
-                if (!window.phantomGroup) {
-                    window.phantomGroup = new THREE.Group();
-                    if (phantomModel) window.phantomGroup.add(phantomModel);
-                    scene.add(window.phantomGroup);
-                }
-                window.phantomGroup.visible = false;
-                const angle = seeker.mesh.rotation.y + Math.PI;
-                window.phantomGroup.position.set(
-                    seeker.mesh.position.x + Math.sin(angle) * 1.5,
-                    seeker.mesh.position.y,
-                    seeker.mesh.position.z + Math.cos(angle) * 1.5
-                );
-                window.phantomGroup.rotation.y = angle;
-            }
-        }
-        
+        /**
+         * ⚠️ AQUÍ HABÍA UN SEGUNDO DRENAJE, Y LA BATERÍA BAJABA AL DOBLE.
+         *
+         * `hudEnergy -= dt * 1.5` en el mismo fotograma en que el bloque de
+         * arriba (l. 2140-2165) ya hace `window.ecs.tick(dt)` —que drena por
+         * `EnergySystem`, también a 1,5— y luego copia el resultado con
+         * `hudEnergy = eComp.currentEnergy`. Dos contabilidades para la misma
+         * pila, y con el susto del fantasma escrito DOS VECES, una en cada rama.
+         *
+         * Medido en el navegador antes de quitarlo: 64,67 → 54,58 en cuatro
+         * segundos. Son 2,5 por segundo con `drainRate: 1.5` declarado.
+         *
+         * Se queda la del ECS y se va ésta, no al revés: `EnergySystem` es la
+         * pieza compartida y headless —la que puede correr en el banco—, y la de
+         * aquí sólo existe en esta página. La copia manda sobre la fuente sólo
+         * cuando la fuente no existe.
+         */
         let visualIntensity = flashLightOn ? 1.2 : 0.0;
         let isLowBatt = (hudEnergy < 20 && hudEnergy > 0);
         

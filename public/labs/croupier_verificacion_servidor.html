@@ -64,7 +64,7 @@ ocho caracteres. Si navegador y servidor no coinciden, todo lo demás sobra.</di
                "three/addons/": "/vendor/three-0.160.0/examples/jsm/" } }
 </script>
 <script type="module">
-import { cargar, politicaAzar } from '../js/alisa-engine/src/gym/registro.js';
+import { cargar, randomPolicy } from '../js/alisa-engine/src/gym/registry.js';
 import { huellaDeReglas } from '../arcade/js/protohub/huella.js';
 
 const SERVIDOR = 'http://127.0.0.1:8020';
@@ -116,7 +116,7 @@ $('correr').addEventListener('click', async () => {
   for (const j of JUEGOS) {
     const Env = clases[j];
     const env = new Env();
-    env.runEpisode(politicaAzar(11), { seed: 2026, maxSteps: 220 });
+    env.runEpisode(randomPolicy(11), { seed: 2026, maxSteps: 220 });
     const partida = env.partida();
 
     const pedir = async (cuerpo) => fetch(`${SERVIDOR}/verificar`, {

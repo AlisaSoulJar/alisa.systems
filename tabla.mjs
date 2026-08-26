@@ -45,7 +45,7 @@ globalThis.fetch = async (entrada, init) => {
 };
 const impo = (rel) => import(pathToFileURL(path.join(AQUI, rel)).href);
 
-const { CATALOGO } = await impo('public/js/alisa-engine/src/gym/registro.js');
+const { CATALOGO } = await impo('public/js/alisa-engine/src/gym/registry.js');
 /**
  * El censo canónico de juegos, para comprobar más abajo que se mide sobre TODOS.
  * Se importa del mismo sitio del que se sirven las reglas y el árbitro de salas: si

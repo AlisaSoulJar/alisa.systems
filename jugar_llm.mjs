@@ -37,7 +37,7 @@ globalThis.fetch = async (entrada, init) => {
 };
 
 const impo = (rel) => import(pathToFileURL(path.join(AQUI, rel)).href);
-const { CATALOGO } = await impo('public/js/alisa-engine/src/gym/registro.js');
+const { CATALOGO } = await impo('public/js/alisa-engine/src/gym/registry.js');
 const { verificar } = await impo('public/arcade/js/protohub/Verificador.js');
 const { cargarReglas } = await impo('public/arcade/js/protohub/rules/index.js');
 const { jugarEpisodio } = await impo('public/arcade/js/agentes/llm.js');

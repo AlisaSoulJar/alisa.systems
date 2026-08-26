@@ -1,4 +1,7 @@
-import * as THREE from 'three';
+// ⚠️ Aquí había `import * as THREE from 'three'` y `THREE` no aparecía NI UNA
+// VEZ en el código. Un import muerto no es sólo ruido: ata el fichero al
+// navegador, y un fichero atado al navegador no lo puede cargar el banco. Es la
+// misma línea que tenía a ¡Sobrevive! 1 fuera del gimnasio hasta hoy.
 
 /**
  * RaccoonPlanetSystem — EL DIBUJANTE DEL SATÉLITE, YA NO SU FÍSICA

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- El mapa del motor lo pone `/js/mundo.js`. El título lo pone la ROM. -->
+    <script src="/js/mundo.js"></script>
+</head>
+<body>
+<script type="module">
+import { montarVolumen } from '/js/montarVolumen.mjs';
+import { SatelliteSweepCore } from '@alisa-engine/src/world/systems/SatelliteSweepCore.js';
+
+/**
+ * ⚠️ UN JUEGO ENTERO EN CUATRO LÍNEAS, Y NO ES UN TRUCO.
+ *
+ * Las reglas, los números, los nombres, el HUD y las cartelas están en la ROM
+ * `SatelliteSweepCore` — que a su vez no tiene código: compone cuatro piezas del
+ * motor. Lo que se juega, lo que mide el banco y lo que lee un modelo por la
+ * puerta de texto salen todos de ahí.
+ *
+ * Lo único que esta página aporta es la PIEL: qué modelo y qué color. El arte
+ * cambia sin que el juego cambie, y por eso no está en el cartucho.
+ */
+await montarVolumen({
+    Core: SatelliteSweepCore,
+    nombre: 'satelite_estacion',
+    piel: { punto: 'sincronizacion', modelo: 'Spaceship (1).glb', color: 0x9d7bff },
+});
+</script>
+
+<!-- El botón de «algo se ve raro»: adjunta el mundo entero porque
+     `montarVolumen` publica `window.getSustrato()`. -->
+<script type="module" src="/arcade/js/protohub/reportar.js"></script>
+</body>
+</html>

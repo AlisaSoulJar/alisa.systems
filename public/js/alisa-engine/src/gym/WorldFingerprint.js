@@ -40,13 +40,13 @@
  */
 
 /** Las semillas con las que se toma la huella. Cambiarlas invalida las anteriores. */
-export const SEMILLAS_HUELLA = [1, 7, 42, 1234];
+export const FINGERPRINT_SEEDS = [1, 7, 42, 1234];
 
 /** Cuántos pasos se juegan por semilla. Suficiente para que se note una calibración. */
-export const PASOS_HUELLA = 300;
+export const FINGERPRINT_STEPS = 300;
 
 /** Suma de control corta y estable (FNV-1a). No hace falta criptografía. */
-export function resumir(valor) {
+export function digest(valor) {
     const s = typeof valor === 'string' ? valor : JSON.stringify(valor);
     let h = 0x811c9dc5;
     for (let i = 0; i < s.length; i++) {
@@ -72,7 +72,7 @@ function accionFija(env, i) {
     if (esp?.type === 'discrete' && Number.isFinite(esp.n)) {
         return 1 + (i % Math.max(1, esp.n - 1));
     }
-    return null;   // por verbos: se resuelve en `huellaDeMundo`
+    return null;   // por verbos: se resuelve en `worldFingerprint`
 }
 
 /**
@@ -99,6 +99,47 @@ function accionFija(env, i) {
  * de qué tipo y dónde. Dos juegos distintos no pueden tener el mismo sustrato,
  * porque entonces serían el mismo juego.
  */
+/**
+ * ⚠️ EL `info` DE CADA PASO, QUE ERA LA QUINTA PUERTA Y NO LA MIRABA NADIE.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Esto entra el 26-08 y lo destapé, otra vez, cambiando el juego yo misma.
+ *
+ * Al declarar el HUD de ¡Busca! 7 en su ROM, la fila de las pilas desapareció:
+ * salía de meterle la mano al núcleo desde la página, porque `info()` no publicaba
+ * cuántas quedaban. Lo añadí —es un dato de juego, no de adorno— y corrí la
+ * huella esperando que saltara.
+ *
+ * **Dijo «sin cambios» en las doce.**
+ *
+ * El motivo: la huella muestreaba el sustrato, la observación numérica, el texto
+ * y el comportamiento. Pero `step()` devuelve además un `info` —tiempo, recurso,
+ * planta, cuántas llevas— que **el agente recibe en CADA paso** y que ninguna de
+ * esas cuatro cubre. Se le podía cambiar por debajo sin que saltara nada.
+ *
+ * Es el mismo fallo que este fichero ya tiene escrito dos veces más arriba: una
+ * capa que mira a otro sitio. Van tres. Y el patrón es siempre el mismo — la
+ * puerta que se añade después de escribir el sello se queda fuera del sello.
+ *
+ * Se toma al empezar y al acabar, como el texto, y por la misma razón: una sola
+ * muestra no ve los campos que sólo existen en estados a los que la política fija
+ * no llega.
+ */
+function resumirInfo(o) {
+    if (!o || typeof o !== 'object') return null;
+    const fuera = {};
+    // Claves ORDENADAS: `Object.keys` respeta el orden de inserción, y dos
+    // núcleos que publiquen lo mismo en otro orden no son dos juegos distintos.
+    for (const k of Object.keys(o).sort()) {
+        const v = o[k];
+        // Mismo redondeo que la observación y la recompensa: cuatro decimales
+        // distinguen una calibración y perdonan una CPU distinta.
+        fuera[k] = typeof v === 'number' ? Math.round(v * 10000) / 10000
+                 : (typeof v === 'boolean' || v === null ? v : String(v).slice(0, 40));
+    }
+    return fuera;
+}
+
 function retrato(sys) {
     if (!sys || typeof sys.sustrato !== 'function') return null;
     const s = sys.sustrato();
@@ -117,9 +158,9 @@ function retrato(sys) {
     };
 }
 
-export function huellaDeMundo(Clase) {
+export function worldFingerprint(Clase) {
     const detalle = [];
-    for (const semilla of SEMILLAS_HUELLA) {
+    for (const semilla of FINGERPRINT_SEEDS) {
         const env = new Clase();
         env.reset(semilla);
         const sys = [env.sys, env.core, env.nucleo, env.motor, env]
@@ -127,16 +168,21 @@ export function huellaDeMundo(Clase) {
         const alEmpezar = retrato(sys);
         const textoInicial = String(env.describe?.() ?? '').slice(0, 400);
         let recompensa = 0, pasos = 0;
-        for (let i = 0; i < PASOS_HUELLA && !env.done; i++) {
+        let infoPrimera = null, infoUltima = null;
+        for (let i = 0; i < FINGERPRINT_STEPS && !env.done; i++) {
             try {
                 const a = accionFija(env, i);
-                if (a !== null) { recompensa += env.step(a)?.reward ?? 0; }
+                let res = null;
+                if (a !== null) { res = env.step(a); }
                 else {
                     const menu = env.affordances?.() ?? [];
                     if (!menu.length) break;
                     const v = menu[i % menu.length];
-                    recompensa += env.stepVerb(v.verb, v.args ?? {})?.reward ?? 0;
+                    res = env.stepVerb(v.verb, v.args ?? {});
                 }
+                recompensa += res?.reward ?? 0;
+                if (infoPrimera === null) infoPrimera = res?.info ?? null;
+                infoUltima = res?.info ?? null;
                 pasos++;
             } catch { break; }
         }
@@ -208,6 +254,9 @@ export function huellaDeMundo(Clase) {
              */
             textoAlEmpezar: textoInicial,
             texto: String(env.describe?.() ?? '').slice(0, 400),
+            /** La quinta puerta: lo que `step()` le devuelve al agente. */
+            infoAlEmpezar: resumirInfo(infoPrimera),
+            infoAlAcabar: resumirInfo(infoUltima),
             pasos,
             /**
              * Se redondea a cuatro decimales a propósito: `Math.sin` y `Math.cos`
@@ -220,5 +269,5 @@ export function huellaDeMundo(Clase) {
             terminada: !!env.done,
         });
     }
-    return { huella: resumir(detalle), detalle };
+    return { huella: digest(detalle), detalle };
 }

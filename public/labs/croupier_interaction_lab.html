@@ -179,6 +179,19 @@
             updateHUD();
         });
 
+        /**
+         * El mundo, publicado, para que un aviso se pueda REPINTAR.
+         *
+         * Sale del núcleo headless, no de la página: `InteractionLabSystem` es
+         * el que posee la arena, y es el mismo que puede correr en el banco. Si
+         * lo recompusiera aquí desde el HUD, la persona y el agente estarían
+         * describiendo dos mundos parecidos, que es exactamente la avería que
+         * tiene ¡Busca! 3.
+         */
+        window.getSustrato = () => {
+            try { return labEngine.sustrato() ?? null; } catch { return null; }
+        };
+
         // ─── RL BRIDGE ───
         window.RLMode = false;
         window.getObservationVector = () => labEngine.getObservationVector();
