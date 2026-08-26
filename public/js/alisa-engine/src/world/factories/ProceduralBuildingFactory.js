@@ -74,6 +74,30 @@ build(totalFloors, doorsPerFloor, isLightsOut, currentStage, rabbitModel, seeker
     let gamePhase     = opts.gamePhase     ?? 'idle'; // fase del juego (la lleva el System)
     let cinematicPhase = opts.cinematicPhase ?? null;
     let cinematicTimer = opts.cinematicTimer ?? 0;
+    /**
+     * ⚠️ TRES QUE SE QUEDARON FUERA DE ESA MISMA LISTA, Y NO ERAN INOFENSIVAS.
+     *
+     * `targetFloor`, `targetDoor` y `seekerAI` son huérfanas del monolito igual
+     * que las de arriba, pero a éstas no se las declaró — y estaban al FINAL de
+     * `build()`, en el bloque de la cinemática. Resultado medido en el navegador:
+     *
+     *     ReferenceError: targetFloor is not defined   (ProceduralBuildingFactory:867)
+     *
+     * en CADA partida de ¡Busca! 3, porque `build()` es el camino normal, no un
+     * caso raro. Todo lo que va después de esa línea —el reparto de escondites
+     * del bucle de la 905— no llegaba a ejecutarse nunca. Y no se veía: la
+     * excepción salía por `onError` del `GLTFLoader`, que la envuelve, así que
+     * parecía «un modelo que no carga» cuando los tres cargan bien.
+     *
+     * Es exactamente la avería que la nota de arriba describe, con una víctima
+     * más. Van declaradas, y el destino elegido se publica en `this` para que
+     * quien llame pueda leerlo en vez de tener que adivinarlo.
+     */
+    let targetFloor   = opts.targetFloor   ?? 0;
+    let targetDoor    = opts.targetDoor    ?? 0;
+    const seekerAI    = opts.seekerAI      ?? {
+        exploredFloors: new Set(),   // el bloque de abajo llama a .clear()
+    };
 
     if (this.buildingGroup) this.scene.remove(this.buildingGroup);
     this.buildingGroup = new THREE.Group();
@@ -850,14 +874,30 @@ build(totalFloors, doorsPerFloor, isLightsOut, currentStage, rabbitModel, seeker
     controls.target.set(0, 0, bCenterZ);
     controls.update();
 
-    // Initial State override
-    gamePhase = 'cinematic';
-    cinematicPhase = 'walking_to_elevator';
-    cinematicTimer = 0;
-
-    // Pick a cinematic target floor (Sotano, Azotea, or Cuarto de Escobas)
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  DE AQUÍ AL FINAL: LA CINEMÁTICA. APAGADA SALVO QUE SE PIDA, Y NO ES
+     *  PEREZA — ES QUE ENCENDERLA CAMBIA EL JUEGO.
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Este bloque nunca llegó a ejecutarse: `targetFloor` estaba sin declarar y
+     * `build()` moría aquí en cada partida, con la excepción disfrazada de «un
+     * modelo que no carga» porque salía por el `onError` del `GLTFLoader`.
+     *
+     * Al declararla y volver a mirar la pantalla, el bloque se activó y el
+     * buscador DESAPARECIÓ —línea `seeker.mesh.visible = false`, «durante la
+     * cinemática»— en una página que no ejecuta ninguna cinemática. Y la cámara
+     * se reencuadraba sola al final. O sea que arreglar la excepción, a secas,
+     * habría estropeado el juego para dejar el código «correcto».
+     *
+     * Así que se hace lo que ya dice la nota de las huérfanas del principio:
+     * queda INERTE, no roto. Con `opts.cinematica` se enciende entero, y quien
+     * lo encienda tiene que traerse también `seekerAI` y sus globales. Lo que
+     * sí sale siempre es `this.cinematica`, el destino elegido, porque calcularlo
+     * no cuesta nada y no tenerlo obligaba a adivinarlo.
+     */
     let cinematicScenarios = [
-        { floor: 0, door: 0 }, 
+        { floor: 0, door: 0 },
         { floor: totalFloors - 1, door: 0 }
     ];
     if (this.floors[1].doors.length > 1) {
@@ -866,6 +906,15 @@ build(totalFloors, doorsPerFloor, isLightsOut, currentStage, rabbitModel, seeker
     let scent = cinematicScenarios[Math.floor(Math.random() * cinematicScenarios.length)];
     targetFloor = scent.floor;
     targetDoor = scent.door;
+    this.cinematica = { floor: targetFloor, door: targetDoor };
+
+    if (!opts.cinematica) return;
+
+    // Initial State override
+    gamePhase = 'cinematic';
+    cinematicPhase = 'walking_to_elevator';
+    cinematicTimer = 0;
+
     seeker.mesh.visible = false; // Hide seeker during cinematic
 
     // ─── Reset Córtex Tiburón AI ───
@@ -893,15 +942,28 @@ build(totalFloors, doorsPerFloor, isLightsOut, currentStage, rabbitModel, seeker
     cam.lookAt(0, 0, 0);
     this.buildingGroup.position.y = -bldgCenterY + this.FL_H * 0.3;
 
-    this.spawnBatteries();
+    this.spawnBatteries(totalFloors);
 }
 
-spawnBatteries() {
-    for (let i = 0; i < batteryPickups.length; i++) {
-        if(batteryPickups[i].mesh.parent) batteryPickups[i].mesh.parent.remove(batteryPickups[i].mesh);
+/**
+ * ⚠️ DOS HUÉRFANAS MÁS, CAZADAS POR `check_globales_huerfanos.py` EL 26-08.
+ *
+ * Este método usaba `batteryPickups` y `totalFloors` como si fueran globales
+ * del monolito: en un módulo, la primera línea lanza `ReferenceError`. Nadie lo
+ * había visto porque `build()` moría antes de llegar a llamarlo — un fallo
+ * tapando a otro.
+ *
+ * `batteryPickups` ya existía como estado de la fábrica (`this.batteryPickups`,
+ * declarado en el constructor) y la página lo lee de ahí después de construir.
+ * Así que no había que inventar nada: había que usar el que ya estaba. Y las
+ * plantas entran por parámetro, que es de donde vienen.
+ */
+spawnBatteries(totalFloors) {
+    for (const b of this.batteryPickups) {
+        if (b.mesh.parent) b.mesh.parent.remove(b.mesh);
     }
-    batteryPickups = [];
-    
+    this.batteryPickups = [];
+
     for (let f = 1; f < totalFloors; f++) { // Skip basement (f=0) just in case
         if (Math.random() < 0.7) { // 70% chance to have a battery
             const bMat = new THREE.MeshStandardMaterial({color: 0x34c759, emissive: 0x34c759, emissiveIntensity: 0.8, roughness: 0.2, metalness: 0.8});
@@ -915,7 +977,7 @@ spawnBatteries() {
             const bx = (Math.random() - 0.5) * (this.CORRIDOR_W - 6);
             batt.position.set(bx, this.floors[f].baseY + 0.1, (Math.random() - 0.5) * 2.0);
             this.buildingGroup.add(batt);
-            batteryPickups.push({mesh: batt, floor: f, x: bx, z: batt.position.z});
+            this.batteryPickups.push({mesh: batt, floor: f, x: bx, z: batt.position.z});
         }
     }
 }

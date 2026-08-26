@@ -10,44 +10,44 @@
 
 <div id="scenarioModal">
     <div class="modal-box large">
-        <h1>ðŸ¢ CORPORATE BUILDING</h1>
+        <h1>🏢 CORPORATE BUILDING</h1>
         <div class="scenario-cards">
             <div class="scenario-card card-s1 selected" onclick="selectStage(1)">
-                <span class="card-emoji">ðŸ¢ðŸ”¦</span>
+                <span class="card-emoji">🏢🔦</span>
                 <h3>Stage 1 · Night Shift</h3>
                 <p>Find the raccoon in the corridors and landings. Dark mode stealth.</p>
             </div>
             <div class="scenario-card card-s2" onclick="selectStage(2)">
-                <span class="card-emoji">ðŸ—„ï¸ðŸ”¦â“</span>
+                <span class="card-emoji">🗄️🔦❓</span>
                 <h3>Stage 2 · Prop Hunt</h3>
                 <p>The raccoon hides INSIDE boxes and cabinets! Search hiding spots.</p>
             </div>
             <div class="scenario-card card-s3" onclick="selectStage(3)">
-                <span class="card-emoji">ðŸ‘»ðŸ—„ï¸ðŸ’€</span>
+                <span class="card-emoji">👻🗄️💀</span>
                 <h3>Stage 3 · Survival Horror</h3>
                 <p>The Phantom patrols the dark. Hide, survive, and catch the raccoon.</p>
             </div>
         </div>
         <div class="config-section">
             <div class="slider-row expanded">
-                <label>ðŸ’ª Level</label>
+                <label>💪 Level</label>
                 <input type="range" min="1" max="10" value="1" id="mLevel" aria-label="Level" oninput="this.nextElementSibling.textContent=this.value">
                 <span class="val">1</span>
             </div>
             <div class="slider-row expanded">
-                <label>ðŸ—ï¸ Floors</label>
+                <label>🏗️ Floors</label>
                 <input type="range" min="3" max="12" value="6" id="sFloors" aria-label="Floors" oninput="this.nextElementSibling.textContent=this.value">
                 <span class="val">6</span>
             </div>
             <div class="slider-row expanded">
-                <label>ðŸŽ® Mode</label>
+                <label>🎮 Mode</label>
                 <select id="mMode" aria-label="Mode" class="styled-select">
-                    <option value="human">ðŸŽ® Human</option>
-                    <option value="ai" selected>ðŸ¤– AI Agent</option>
+                    <option value="human">🎮 Human</option>
+                    <option value="ai" selected>🤖 AI Agent</option>
                 </select>
             </div>
             <div class="slider-row expanded">
-                <label>ðŸ’¡ Lights Out</label>
+                <label>💡 Lights Out</label>
                 <input type="checkbox" id="mLightsOut" aria-label="Lights Out" class="styled-checkbox" checked onchange="toggleGlobalLights(this.checked)">
             </div>
         </div>
@@ -56,12 +56,12 @@
 </div>
 
 <div id="hud">
-    <div class="title" id="hudTitle">ðŸ¢ Corporate Building</div>
+    <div class="title" id="hudTitle">🏢 Corporate Building</div>
     <div class="stat">Floor: <span id="valFloor" class="val">1</span> / <span id="valTotalFloors" class="val">6</span></div>
     <div class="stat">Mode: <span id="valMode" class="val">Walking</span></div>
     <div class="stat stat-mt">Searches: <span id="valSearches" class="val">0</span></div>
     <div class="stat">Status: <span id="valStatus" class="val">Hunting</span></div>
-    <div class="stat stat-mt hud-hidden" id="aiPhaseRow">ðŸ§  AI: <span id="valAIPhase" class="val">PICK_FLOOR</span></div>
+    <div class="stat stat-mt hud-hidden" id="aiPhaseRow">🧠 AI: <span id="valAIPhase" class="val">PICK_FLOOR</span></div>
     <div class="stat hud-hidden beliefs-row" id="aiBeliefsRow">
         <span id="valBeliefs" class="beliefs-text"></span>
     </div>
@@ -70,8 +70,8 @@
 <!-- ─── Immersive Camcorder HUD ─── -->
 <div id="camcorder" class="immersive-camcorder hud-hidden">
     <div id="cam-batt">[■■■■]</div>
-    <div id="cam-flash" class="cam-btn cam-flash-btn" onclick="toggleFlashlight()">ðŸ”¦ ON (F)</div>
-    <div id="cam-global" class="cam-btn cam-global-btn" onclick="manuallyToggleGlobalLights()">ðŸ‘ï¸ GLOBAL LIGHTS</div>
+    <div id="cam-flash" class="cam-btn cam-flash-btn" onclick="toggleFlashlight()">🔦 ON (F)</div>
+    <div id="cam-global" class="cam-btn cam-global-btn" onclick="manuallyToggleGlobalLights()">👁️ GLOBAL LIGHTS</div>
 </div>
 
 <div id="controlsHelp">
@@ -82,9 +82,9 @@
 
 <!-- ─── Mode Badges (4 vertientes) ─── -->
 <div id="mode-badges" style="display:none;">
-    <span class="mode-badge" id="badge-game">ðŸŽ® Minigame</span>
-    <span class="mode-badge" id="badge-world" style="display:none">ðŸŒ Overworld</span>
-    <span class="mode-badge" id="badge-ml">ðŸ§  ML Training</span>
+    <span class="mode-badge" id="badge-game">🎮 Minigame</span>
+    <span class="mode-badge" id="badge-world" style="display:none">🌍 Overworld</span>
+    <span class="mode-badge" id="badge-ml">🧠 ML Training</span>
 </div>
 
 <!-- ─── AI Machine Data Layer ─── -->
@@ -111,13 +111,13 @@ import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
 import { CorporateSeekerSystem } from '@alisa-engine/src/world/systems/CorporateSeekerSystem.js';
 window.THREE = Object.assign({}, THREE, { OrbitControls, GLTFLoader });
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 //  13, CORP BUILDING — Cross-Section Diorama Building
 //
 //  Camera: fixed orthographic side view, all floors visible.
 //  Each floor = corridor with doors, stair-portal, elevator.
 //  Movement: left/right on corridor, portals for vertical.
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 
 // ─── Scene Setup ───
 const gfx = new AlisaRenderCore({
@@ -146,9 +146,9 @@ scene.add(dirLight);
 
 const clock = new THREE.Clock();
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 //  CONFIGURATION
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 let totalFloors = 6;
 let doorsPerFloor = 2;
 let simulationRunning = false;
@@ -196,9 +196,9 @@ const FLOOR_COLORS = [
 ];
 const DOOR_COLORS = [0x885522, 0x664411, 0x553311, 0x774422, 0x886633, 0x665533];
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 //  BUILDING DATA
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 let buildingGroup = null;
 let floors = []; // Array of floor data
 
@@ -234,7 +234,7 @@ let volumetricBeam = null;
 window.toggleFlashlight = function() {
     if (hudEnergy <= 0 && !flashLightOn) return;
     flashLightOn = !flashLightOn;
-    document.getElementById('cam-flash').innerText = flashLightOn ? 'ðŸ”¦ ON (F)' : 'ðŸ”¦ OFF (F)';
+    document.getElementById('cam-flash').innerText = flashLightOn ? '🔦 ON (F)' : '🔦 OFF (F)';
 };
 
 window.toggleGlobalLights = function(checked) {
@@ -456,9 +456,9 @@ function loadModels(callback) {
     });
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 //  EPISODE RESET (used by auto-restart after FOUND!)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 function resetEpisode() {
     // Reset all hidingSpot search states across all floors
     for (let fi = 0; fi < floors.length; fi++) {
@@ -540,9 +540,9 @@ function resetEpisode() {
     spawnBatteries();
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 //  MODAL
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 // window.onload is intentionally removed so the modal demands ENTER BUILDING always
 
 window.startSimulation = function() {
@@ -561,11 +561,11 @@ window.startSimulation = function() {
     
     document.getElementById('hud').style.display = 'block';
     document.getElementById('controlsHelp').style.display = 'block';
-    document.getElementById('hudTitle').innerText = 'ðŸ¢ LOADING...';
+    document.getElementById('hudTitle').innerText = '🏢 LOADING...';
 
     // Load GLB models FIRST, then build the world
     loadModels(() => {
-        document.getElementById('hudTitle').innerText = 'ðŸ¢ Corporate Building';
+        document.getElementById('hudTitle').innerText = '🏢 Corporate Building';
         buildBuilding();
         simulationRunning = true;
         
@@ -580,9 +580,9 @@ window.startSimulation = function() {
     });
 };
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 //  BUILD THE DIORAMA
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 let DOOR_ZONE_START = 0;
 let DOOR_ZONE_W = 0;
 
@@ -1425,9 +1425,9 @@ function _makeArrow(char, color) {
     );
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 //  INPUT
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 const keys = {};
 const keysJustPressed = {};
 document.addEventListener('keydown', e => {
@@ -1447,9 +1447,9 @@ function consumeKey(k) {
     return false;
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 //  DOOR SEARCH LOGIC
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 function checkDoor(doorIndex, fd) {
     if (gameStatus === 'Found') return;
 
@@ -1547,9 +1547,9 @@ function _flashDoor(mesh, colorHex, frameGroup = null) {
     }, 800);
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 //  HIDING SPOT SEARCH (Stage 2: Cabinet Search mechanic from H&S)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 function checkHidingSpot(spotIndex, fd) {
     if (gameStatus === 'Found') return;
     const spot = fd.hidingSpots[spotIndex];
@@ -1652,9 +1652,9 @@ function checkHidingSpot(spotIndex, fd) {
     }
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 //  SEEKER UPDATE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 function updateSeeker(dt) {
     if (gamePhase === 'cinematic') return;
 
@@ -1993,9 +1993,9 @@ function _flashSeeker(color) {
     }, 300);
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 //  BANNER & CELEBRATION (ported from H&S)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 function showBanner(text, duration) {
     const el = document.getElementById('phase-banner');
     if (!el) return;
@@ -2042,7 +2042,7 @@ function celebrateFound() {
     }
     
     // Banner
-    showBanner('ðŸŽ‰ ¡ATRAPADO!', 3000);
+    showBanner('🎉 ¡ATRAPADO!', 3000);
     
     // Seeker victory jumps
     let jumpCount = 0;
@@ -2080,9 +2080,9 @@ function celebrateFound() {
     }, 400);
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 //  ELEVATOR UPDATE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 function updateElevator(dt) {
     if (!elevator.cabin) return;
 
@@ -2140,18 +2140,18 @@ function updateElevator(dt) {
     }
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 //  HUD UPDATE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 function updateHUD() {
     document.getElementById('valFloor').textContent = seeker.floor + 1;
     const modeIcons = {
-        walking: 'ðŸš¶ Walking',
-        elevator: 'ðŸ›— Elevator',
-        stairs_up: 'ðŸªœ Stairs ▲',
-        stairs_down: 'ðŸªœ Stairs ▼',
+        walking: '🚶 Walking',
+        elevator: '🛗 Elevator',
+        stairs_up: '🪜 Stairs ▲',
+        stairs_down: '🪜 Stairs ▼',
         chute: '⚡ Chute',
-        roof: 'ðŸ—ï¸ Roof'
+        roof: '🏗️ Roof'
     };
     document.getElementById('valMode').textContent = modeIcons[seeker.mode] || seeker.mode;
     document.getElementById('valSearches').textContent = searches;
@@ -2172,9 +2172,9 @@ function updateHUD() {
     if (belRow) { isAI ? belRow.classList.remove('hud-hidden') : belRow.classList.add('hud-hidden'); }
     if (isAI) {
         const phaseIcons = {
-            PICK_FLOOR: 'ðŸŽ¯ PICKING',
-            TRAVEL: 'ðŸš€ TRAVEL→F' + (seekerAI.aiTargetFloor + 1),
-            EXPLORE: 'ðŸ” SWEEP F' + (seekerAI.aiTargetFloor + 1),
+            PICK_FLOOR: '🎯 PICKING',
+            TRAVEL: '🚀 TRAVEL→F' + (seekerAI.aiTargetFloor + 1),
+            EXPLORE: '🔍 SWEEP F' + (seekerAI.aiTargetFloor + 1),
         };
         const aiPhaseElem = document.getElementById('valAIPhase');
         if (aiPhaseElem) {
@@ -2201,9 +2201,9 @@ function updateHUD() {
     }
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 //  CINEMATIC LOGIC
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 function updateCinematic(dt) {
     if (gamePhase !== 'cinematic' || !rabbit.mesh) return;
     
@@ -2283,7 +2283,7 @@ function updateCinematic(dt) {
                 // Disappear deep inside
                 rabbit.mesh.visible = false;
                 gamePhase = 'seeking';
-                document.getElementById('hudTitle').innerText = 'ðŸ¢ Corporate Building';
+                document.getElementById('hudTitle').innerText = '🏢 Corporate Building';
                 document.getElementById('camcorder').style.display = 'flex';
                 if (seeker.mesh) {
                     seeker.mesh.visible = true; // Reveal player!
@@ -2304,16 +2304,16 @@ function updateCinematic(dt) {
 }
 
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 //  MAIN LOOP
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 
 window.RLMode = false;
 window.setRLMode = function(enabled) {
     window.RLMode = enabled;
     const modeBadge = document.getElementById('aiBadgeMode');
     if (modeBadge) {
-        modeBadge.innerText = enabled ? 'ðŸ¤– ML Training' : 'ðŸ§ User Mode';
+        modeBadge.innerText = enabled ? '🤖 ML Training' : '🧍 User Mode';
         modeBadge.classList.toggle('minigame-badge', !enabled);
         modeBadge.classList.toggle('training-badge', enabled);
     }
@@ -2572,7 +2572,7 @@ gfx.startLoop((engineDt) => {
             if (hudEnergy < 0) {
                 hudEnergy = 0;
                 flashLightOn = false;
-                document.getElementById('cam-flash').innerText = 'ðŸ”¦ DEAD';
+                document.getElementById('cam-flash').innerText = '🔦 DEAD';
                 // Trigger Jumpscare
                 gamePhase = 'jumpscare';
                 phaseTimer = 2.0;
@@ -2648,7 +2648,7 @@ gfx.startLoop((engineDt) => {
                     hudEnergy = Math.min(100.0, hudEnergy + 60.0);
                     if (p.mesh.parent) p.mesh.parent.remove(p.mesh);
                     batteryPickups.splice(i, 1);
-                    document.getElementById('cam-flash').innerText = flashLightOn ? 'ðŸ”¦ ON (F)' : 'ðŸ”¦ OFF (F)';
+                    document.getElementById('cam-flash').innerText = flashLightOn ? '🔦 ON (F)' : '🔦 OFF (F)';
                     _flashSeeker(0x34c759); // Flash green!
                 }
             }
@@ -2747,7 +2747,7 @@ gfx.startLoop((engineDt) => {
                 jumpscareState.active = false;
                 gamePhase = 'gameover'; 
                 simulationRunning = false;
-                document.getElementById('bldg-title').innerText = 'ðŸ’€ THE END';
+                document.getElementById('bldg-title').innerText = '💀 THE END';
             }
         }
     }
@@ -2766,9 +2766,9 @@ document.addEventListener('keydown', e => {
     }
 });
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 //  ALISA SDK
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════════════════════════════
 ALISA_SDK.register({
     sim: 'corporate_building',
     getSemanticState: () => ({
