@@ -72,6 +72,26 @@ export const EN_EL_BANCO = [
       pagina: 'public/games/dron_torre.html',
       env: 'public/js/alisa-engine/src/gym/envs/DroneTowerEnv.js' },
     /**
+     * ⚠️ ESTAS DOS FALTABAN, Y ES EXACTAMENTE LA ENFERMEDAD QUE ESTE FICHERO
+     *    DESCRIBE EN SU CABECERA — sólo que esta vez la lista atrasada era ÉSTA.
+     *
+     * `satelite_estacion.html` lleva desde el 26-08 con su entorno, su huella y
+     * su página, y no estaba aquí. Nadie lo dijo: `npm test` seguía verde,
+     * porque lo que se comprueba es que lo declarado exista, no que exista lo
+     * declarado. Un mapa que sólo mira hacia dentro no detecta lo que le falta.
+     *
+     * Van las dos de 8 y de 9 y no entre las seis primeras por lo mismo que la
+     * torre: la saga es «encuentra al mapache», y lo que escala es CÓMO. La
+     * estación es la torre con el recurso apretado; el edificio a oscuras es el
+     * Corp Building de la etapa 3 con la luz apagada y algo detrás.
+     */
+    { saga: 'Busca', etapa: 8, nombre: 'Estación a la deriva',
+      pagina: 'public/games/satelite_estacion.html',
+      env: 'public/js/alisa-engine/src/gym/envs/SatelliteSweepEnv.js' },
+    { saga: 'Busca', etapa: 9, nombre: 'Corp Building a oscuras',
+      pagina: 'public/games/corp_sigilo.html',
+      env: 'public/js/alisa-engine/src/gym/envs/CorpStealthEnv.js' },
+    /**
      * ⚠️ ERA «ACUARIO», Y SE SUSTITUYE. NO ES UN RETOQUE DE AMBIENTACIÓN.
      *
      * `ChopperAquariumEngine` tenía DOS juegos dentro, medido casi al 50%: 37

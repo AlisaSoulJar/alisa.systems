@@ -72,12 +72,32 @@
           "pagina": "/games/dron_torre.html",
           "existe": true,
           "medida": true,
+          "sustrato": false,
+          "avisa": true
+        },
+        {
+          "saga": "Busca",
+          "etapa": 8,
+          "nombre": "Estación a la deriva",
+          "pagina": "/games/satelite_estacion.html",
+          "existe": true,
+          "medida": true,
+          "sustrato": false,
+          "avisa": true
+        },
+        {
+          "saga": "Busca",
+          "etapa": 9,
+          "nombre": "Corp Building a oscuras",
+          "pagina": "/games/corp_sigilo.html",
+          "existe": true,
+          "medida": true,
           "sustrato": true,
           "avisa": true
         }
       ],
       "conSustrato": 5,
-      "medidas": 6
+      "medidas": 8
     },
     {
       "nombre": "Sobrevive",
@@ -151,5 +171,5 @@
       "medidas": 1
     }
   ],
-  "total": 12
+  "total": 14
 }

@@ -38,7 +38,7 @@
  * esté escrito cuáles y no se añada un tercero sin que salte.
  */
 import { readFile } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -270,6 +270,80 @@ if (nuevas.length) {
 
 console.log(`\n  ${comparten}/${EN_EL_BANCO.length} etapas del banco corren el MISMO motor por las dos puertas`);
 console.log(`  ${partidasHoy.length} con dos motores (declaradas: ${Object.keys(PARTIDAS).length})`);
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ Y AHORA AL REVÉS: ¿FALTA ALGUNA PÁGINA EN EL MAPA?
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Todo lo de arriba comprueba que lo DECLARADO exista. Eso no detecta lo
+ * contrario —que exista algo sin declarar— y es un agujero con víctima:
+ * `satelite_estacion.html` estuvo desde el 26-08 con su entorno, su huella y su
+ * página, y no aparecía en ninguna saga. `npm test` seguía verde. Lo encontré de
+ * casualidad al ir a añadir otra etapa.
+ *
+ * Un mapa que sólo mira hacia dentro nunca dice lo que le falta. Y la cabecera
+ * de `sagas.mjs` avisa justo de esta enfermedad —listas paralelas que envejecen
+ * por separado— sólo que aquella vez la lista atrasada era la otra.
+ *
+ * Se mira sólo `public/games`: los laboratorios son experimentos y no pretenden
+ * ser etapas. Y se mira que la página tenga puerta de agente (`stepSimulation`),
+ * que es lo que la convierte en una etapa medible y no en una demo.
+ */
+/**
+ * ⚠️ TRINQUETE, NO ESCOPETA. La primera pasada suspendió a tres páginas sanas.
+ *
+ * Al escribir la comprobación di por hecho que «jugable y sin saga» = «olvidada».
+ * Salieron tres, y ninguna era un olvido: dos son SEGUNDAS PUERTAS del mismo
+ * motor que ya tiene etapa, y la tercera es una etapa retirada que sigue viva a
+ * propósito. Suspender por eso habría empujado a inventarles número de etapa o a
+ * borrarlas, y las dos cosas son peores que el problema.
+ *
+ * Así que se declaran, con su motivo, y la lista SÓLO PUEDE ENCOGER. Lo que la
+ * vara impide es que aparezca una NUEVA sin que nadie lo diga — que es lo que le
+ * pasó a `satelite_estacion.html` durante un día entero con `npm test` en verde.
+ *
+ * Sexta o séptima vez este mes que un detector nuevo acusa a código sano. La
+ * regla, ya escrita en `prueba_senal.mjs`: cuando una comprobación nueva suspende
+ * a mucha gente, la rota es ella.
+ */
+const SIN_SAGA = {
+    'asteroid_gauntlet.html':
+        'segunda puerta de ¡Esquiva! 1 — corre el mismo `AsteroidsSystem` que el laboratorio '
+      + 'declarado. Salió de convertir un monolito el 26-08 y falta decidir cuál de las dos es LA etapa',
+    'corp_deduccion.html':
+        'segunda puerta de ¡Busca! 3 — corre el mismo `CorpBuildingCore` que el banco. La declarada '
+      + 'es `croupier_corporate_building.html`; decidir cuál se queda es trabajo aparte',
+    'chopper_terrarium.html':
+        'etapa RETIRADA: su motor se partió en ¡Busca! 7 y ¡Sobrevive! 2. La página sigue viva a '
+      + 'propósito — borrar algo que funciona es una decisión aparte, y está dicho en `sagas.mjs`',
+};
+
+const declaradas = new Set([
+    ...MAPA.map(e => path.basename(e.pagina)),
+    ...Object.values(SIN_ENTORNO).map(n => path.basename(n.split(' — ')[0])),
+]);
+const sinDeclarar = [];
+for (const f of readdirSync(path.join(AQUI, 'public/games')).filter(f => f.endsWith('.html'))) {
+    if (declaradas.has(f)) continue;
+    const txt = await readFile(path.join(AQUI, 'public/games', f), 'utf-8');
+    if (!/stepSimulation/.test(txt)) continue;   // sin puerta de agente no es etapa
+    sinDeclarar.push(f);
+}
+console.log(`\n  páginas jugables fuera del mapa de sagas: ${sinDeclarar.length} `
+          + `(declaradas: ${Object.keys(SIN_SAGA).length})`);
+for (const f of sinDeclarar) {
+    const razon = SIN_SAGA[f];
+    console.log(`      ${razon ? '·' : rojo('✗')} ${f}`);
+    if (razon) console.log(`          ${gris(razon)}`);
+    else fallos.push(`${f}: es una etapa jugable y medible y no está en \`sagas.mjs\` ni declarada aquí. `
+                   + 'Nadie la encuentra desde el mapa, y el mapa dice que la saga está completa.');
+}
+const sobran = Object.keys(SIN_SAGA).filter(f => !sinDeclarar.includes(f));
+if (sobran.length) {
+    fallos.push(`declarado de más en SIN_SAGA: ${sobran.join(', ')} — ya está en el mapa o ya no existe. `
+              + 'Una lista de excepciones con nombres que no hacen falta deja de leerse.');
+}
 
 /**
  * Y lo que ni siquiera llega a tener dos motores: las etapas que una persona
