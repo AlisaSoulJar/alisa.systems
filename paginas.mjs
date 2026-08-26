@@ -199,7 +199,15 @@ console.log(`  ${filas.filter(r => r.peso === 0).length} de ${filas.length} pág
  * seguía cumpliéndose gracias a ¡Busca!. Un trinquete con holgura no es un
  * trinquete, es un adorno.
  */
-const SUELO_SUSTRATO = 7;
+/**
+ * ⚠️ 7 → 8 CON `corp_sigilo.html`, QUE NACIÓ ENSEÑÁNDOLO.
+ *
+ * No es una página que se haya arreglado: es la primera que se escribe ya sobre
+ * las piezas compartidas —cartela, HUD, pintor y figuras—, y le salieron 56
+ * líneas propias y CERO señales. Es lo que esta vara lleva pidiendo desde que
+ * existe, así que sube.
+ */
+const SUELO_SUSTRATO = 8;
 const juegos = filas.filter(r => r.esJuego);
 const conSustrato = juegos.filter(r => r.sustrato);
 console.log(`\n  juegos que enseñan el sustrato: ${conSustrato.length} de ${juegos.length} (suelo: ${SUELO_SUSTRATO})`);

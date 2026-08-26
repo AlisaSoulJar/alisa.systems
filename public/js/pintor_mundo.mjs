@@ -83,6 +83,26 @@ export class PintorMundo {
     }
 
     /**
+     * La malla de una pieza, buscada por su `cajon`.
+     *
+     * ⚠️ EXISTE PARA QUE NADIE TENGA QUE METER LA MANO EN `_piezas`.
+     *
+     * Hay estado visible que no es forma ni posición y que el pintor no puede
+     * saber: una bombilla que se enciende, un cono de linterna que se estira y
+     * gira. Quien pinta ese mundo tiene que poder alcanzar SU malla entre
+     * fotogramas — y sin esto, la salida era leer el campo privado, que es cómo
+     * una pieza compartida se convierte en un contrato secreto que se rompe al
+     * renombrar algo.
+     *
+     * Devuelve `null` si esa pieza no está dibujada ahora mismo, que es
+     * información válida y no un error: el sustrato manda, y una pieza que
+     * desapareció no tiene malla.
+     */
+    malla(cajon) {
+        return this._piezas.get(`#${cajon}`) ?? null;
+    }
+
+    /**
      * ⚠️ LAS MALLAS SE REUSAN, NO SE RECREAN.
      *
      * Un mundo puede tener cien piezas y sesenta fotogramas por segundo. Crear y

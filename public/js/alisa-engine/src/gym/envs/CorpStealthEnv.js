@@ -29,15 +29,19 @@ import { CorpStealthCore, VERBS_STEALTH } from '../../world/systems/CorpStealthC
  *   🤖 numérica  12 números, acción discreta 0..7
  *   🧠 lenguaje  `describe()` cuenta lo que se ve; `affordances()` sólo ofrece
  *                `buscar` cuando tienes un mueble sin registrar al alcance
- *   🕹️ humana    todavía no — ver el aviso de la cabecera del núcleo
+ *   🕹️ humana    `games/corp_sigilo.html` — A/D andar, W/S plantas, F linterna,
+ *                E interruptor, ESPACIO registrar
  *
- * ⚠️ Y LA PUERTA HUMANA NO ESTÁ, Y SE DICE AQUÍ TAMBIÉN.
+ * ⚠️ Y LA PUERTA HUMANA ES ESTE MISMO NÚCLEO, NO UNA VERSIÓN PARECIDA.
  *
- * `games/croupier_corporate_building.html` juega a algo parecido con su propio
- * edificio dentro de una factoría de THREE. No es este juego, y hasta que se
- * pueda demostrar que lo es, esta ficha no lo promete. Un entorno que dice tener
- * puerta humana y no la tiene es cómo la persona y el agente acaban jugando dos
- * juegos con el mismo nombre.
+ * La página importa `CorpStealthCore` y le pasa teclas: mismas reglas, misma
+ * pila, mismos minuteros, mismo final. Lo único suyo es el dibujo.
+ *
+ * Lo que NO es esta puerta: `games/croupier_corporate_building.html`. Aquella
+ * juega a algo parecido con su propio edificio dentro de una factoría de THREE,
+ * y hasta que se pueda demostrar que juegan a lo mismo, esta ficha no la
+ * nombra. Un entorno que dice tener puerta humana en un sitio donde no la tiene
+ * es cómo la persona y el agente acaban jugando dos juegos con el mismo nombre.
  */
 export class CorpStealthEnv extends GymEnv {
     static id = 'alisa/CorpStealth-v0';

@@ -34,9 +34,17 @@ import { LightFixtureSystem } from './LightFixtureSystem.js';
  * existe para no hacer.
  *
  * Así que aquí hay un cartucho NUEVO, con su plano declarado y su propia huella,
- * y la página se queda como está hasta que se pueda demostrar que juegan a lo
- * mismo. Decir lo contrario sería repetir la avería de ¡Busca!: la persona y el
- * agente jugando dos juegos con el mismo nombre durante semanas.
+ * y aquella página se queda como está hasta que se pueda demostrar que juegan a
+ * lo mismo. Decir lo contrario sería repetir la avería de ¡Busca!: la persona y
+ * el agente jugando dos juegos con el mismo nombre durante semanas.
+ *
+ * ⚠️ ESTE CARTUCHO SÍ TIENE SUS DOS PUERTAS, Y SON EL MISMO OBJETO.
+ *
+ * `games/corp_sigilo.html` importa esta clase —la misma que instancia
+ * `CorpStealthEnv`— y le pasa teclas. No es una versión para personas: es la
+ * partida que mide el banco, con un dibujo delante. Cincuenta y seis líneas
+ * propias frente a las 2.464 de la otra, y no porque se haya recortado nada,
+ * sino porque cuando las piezas existen no hace falta más.
  *
  * LO QUE SÍ COMPARTE, Y ES LO QUE IMPORTA
  *
@@ -211,9 +219,49 @@ export class CorpStealthCore {
         voz: {
             jugador: 'tu',
             texto: {
-                empieza: 'Seis plantas a oscuras. El mapache está en un mueble.',
+                empieza: 'Nueve plantas a oscuras. El mapache está en un mueble.',
                 pierde: 'Te alcanzaron en la oscuridad.',
                 gana: '¡Ahí estaba!',
+            },
+        },
+        /**
+         * ⚠️ EL HUD Y LAS CARTELAS ENTRARON DESPUÉS, CUANDO HUBO QUIEN LOS LEYERA.
+         *
+         * Este cartucho nació sin ellos a propósito y con el motivo escrito:
+         * declarar un HUD que ninguna página pinta es una tabla que no manda
+         * sobre nada, y una tabla que no manda se desincroniza el martes. Ahora
+         * `games/corp_sigilo.html` los lee, así que ya tienen dueño.
+         */
+        hud: {
+            titulo: 'A oscuras', subtitulo: 'Corp Building', acento: '#ffd166',
+            mandos: 'A/D: andar · W/S: subir y bajar (escalera o ascensor) · '
+                  + 'F: linterna · E: interruptor · ESPACIO: registrar el mueble',
+            filas: [
+                { etiqueta: 'Planta', campo: 'planta', de: 'plantas' },
+                { etiqueta: 'Pila', campo: 'pila', barra: true, de: 'pilaLlena' },
+                { etiqueta: 'Muebles', campo: 'registros', de: 'muebles' },
+                { etiqueta: 'A oscuras', campo: 'oscuridad', de: 'aguantaOscuridad' },
+            ],
+        },
+        cartel: {
+            titulo: 'A oscuras — Corp Building',
+            parrafos: [
+                'El mapache está escondido en uno de los muebles del edificio, y el '
+                + 'edificio está apagado.',
+                'Sólo se registra lo que estés alumbrando. La linterna gasta pila; las '
+                + 'bombillas de rellano dan trece segundos y además te protegen.',
+                'Si te quedas sin pila y sin luz, tienes tres segundos para llegar a un '
+                + 'interruptor.',
+            ],
+            ajustes: [
+                { clave: 'seed', etiqueta: 'Semilla', valor: 42 },
+                { clave: 'plantas', etiqueta: 'Plantas', valor: 9, min: 3, max: 12 },
+            ],
+            boton: '▶ ENTRAR',
+            final: {
+                gana: '¡Ahí estaba!', pierde: 'Se acabó',
+                detalleGana: 'Lo encontraste en la planta {planta}, al {registros}º mueble.',
+                detallePierde: 'Registraste {registros} muebles. El mapache estaba en la planta {solucion}.',
             },
         },
     };
@@ -690,15 +738,35 @@ export class CorpStealthCore {
         return obs;
     }
 
+    /**
+     * ⚠️ AQUÍ `y` VALE CERO EN TODO, Y NO ES UN DESCUIDO: ES UN EDIFICIO DE PERFIL.
+     *
+     * En el contrato del sustrato `y` es el SEGUNDO EJE DEL SUELO y `alto` es la
+     * altura, y el pintor de volumen coloca en `(x, alto, y)`. La primera versión
+     * de esto ponía la planta en los dos: `y: planta` **y** `alto: planta *
+     * altoPlanta`. O sea que cada planta se dibujaba además cinco unidades más
+     * al fondo, y nueve plantas salían en diagonal en vez de apiladas.
+     *
+     * Este juego pasa entero en un plano —un pasillo y nueve pisos— así que el
+     * segundo eje del suelo no existe: vale cero. La planta va en `alto`, que es
+     * donde el contrato dice que va la altura, y además en un campo `planta`
+     * para quien la quiera como número sin dividir.
+     *
+     * `CorpBuildingCore` hace lo contrario y también tiene razón: allí no se
+     * anda, se elige, y su vista es un TABLERO de plantas × escondites. Mismo
+     * contrato, dos lecturas, porque son dos juegos.
+     */
     sustrato() {
         const piezas = [];
+        const aAlto = (planta) => planta * this.altoPlanta;
 
         for (const e of this.escondites) {
             const c = this.ecs.getComponent(e.id, 'HidingSpotComponent');
             const visto = !!c.isSearched;
             piezas.push({
                 t: visto && c.hasRaccoon ? 'mapache' : visto ? 'mirado' : 'mueble',
-                x: e.x, y: e.planta, alto: e.planta * this.altoPlanta, de: 0,
+                x: e.x, y: 0, alto: aAlto(e.planta), de: 0,
+                planta: e.planta,
                 cajon: `mueble_${e.planta}_${e.i}`,
                 etiqueta: c.label,
             });
@@ -707,37 +775,39 @@ export class CorpStealthCore {
         for (const p of this.pilas) {
             if (p.cogida) continue;
             piezas.push({
-                t: 'pila', x: p.x, y: p.planta, alto: p.planta * this.altoPlanta, de: 9,
+                t: 'pila', x: p.x, y: 0, alto: aAlto(p.planta), de: 9,
+                planta: p.planta,
                 cajon: `pila_${p.planta}_${Math.round(p.x * 100)}`,
                 alcance: this.pila.radio,
             });
         }
 
         /**
-         * Las bombillas salen con la `y` en unidades de MUNDO —así es como las
-         * lleva el sistema— y aquí se pasan a planta, que es lo que dibuja quien
-         * pinta el edificio. Es la única conversión de este fichero y va escrita
-         * para que nadie la deduzca del revés.
+         * Las bombillas las lleva el sistema con la altura en `y`, porque para él
+         * es una coordenada más. Aquí se traduce al contrato: la altura a `alto`
+         * y el suelo a cero. Es la única conversión del fichero y va escrita para
+         * que nadie la deduzca del revés.
          */
         for (const l of this.bombillas.piezas({ de: 2 })) {
-            piezas.push({ ...l, y: l.y / this.altoPlanta, alto: l.y });
+            piezas.push({ ...l, y: 0, alto: l.y, planta: Math.round(l.y / this.altoPlanta) });
         }
 
         const yo = this._donde();
         piezas.push({
             t: 'escalera', x: this.escaleraX, y: 0, alto: 0, de: 0, cajon: 'escalera',
-            plantas: this.plantas, altoPlanta: this.altoPlanta,
+            plantas: this.plantas, altoPlanta: this.altoPlanta, largo: this.largo,
         });
         piezas.push({
-            t: 'ascensor', x: this.ascensorX, y: this.ascensor.y / this.altoPlanta,
-            alto: this.ascensor.y, de: 0, cajon: 'ascensor', moviendo: this.ascensor.moving,
+            t: 'ascensor', x: this.ascensorX, y: 0, alto: this.ascensor.y, de: 0,
+            cajon: 'ascensor', moviendo: this.ascensor.moving,
+            planta: this.ascensor.currentFloor,
         });
         piezas.push(this.linterna.pieza({
-            x: this.jugador.x, y: this.jugador.planta, alto: yo.y, de: 1, cajon: 'linterna',
+            x: this.jugador.x, y: 0, alto: yo.y, de: 1, cajon: 'linterna',
         }));
         piezas.push({
-            t: 'tu', x: this.jugador.x, y: this.jugador.planta, alto: yo.y, de: 1, cajon: 'tu',
-            mirando: this.jugador.mirando,
+            t: 'tu', x: this.jugador.x, y: 0, alto: yo.y, de: 1, cajon: 'tu',
+            planta: this.jugador.planta, mirando: this.jugador.mirando,
         });
 
         const vozLinterna = this.linterna.vocabulario();
@@ -763,6 +833,10 @@ export class CorpStealthCore {
         return {
             planta: this.jugador.planta + 1,
             plantas: this.plantas,
+            /** Los TOPES también salen, que si no el HUD tiene que saberlos él. */
+            pilaLlena: this.energia.maxEnergy,
+            muebles: this.escondites.length,
+            aguantaOscuridad: this.aguantaOscuridad,
             pila: Math.round(this.energia.currentEnergy * 10) / 10,
             linterna: this.linterna.encendida,
             registros: this.registros,

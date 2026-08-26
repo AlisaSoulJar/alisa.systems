@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- El mapa del motor lo pone `/js/mundo.js`. El título, el estilo, el HUD y
+         las cartelas los ponen la ROM y `montarMundo`. -->
+    <script src="/js/mundo.js"></script>
+</head>
+<body>
+<script type="module">
+import { montarMundo } from '/js/montarMundo.js';
+import { PintorMundo } from '/js/pintor_mundo.mjs';
+import { CorpStealthCore } from '@alisa-engine/src/world/systems/CorpStealthCore.js';
+import { figurasDeSigilo, encuadrarSigilo, alumbrarSigilo } from '/js/figuras_sigilo.mjs';
+import { montarHud, montarPie } from '/js/hud_mundo.mjs';
+import { montarCartel } from '/js/cartelas_mundo.mjs';
+
+/**
+ * ⚠️ LA MISMA PARTIDA QUE MIDE EL BANCO, NO UNA PARECIDA.
+ *
+ * Esta página no sabe a qué se juega: importa `CorpStealthCore` —el mismo objeto
+ * que instancia `CorpStealthEnv`— y le pasa teclas. Ni reglas, ni pila, ni
+ * minuteros, ni cuándo se acaba. Lo único propio es la PIEL, y está en
+ * `figuras_sigilo.mjs` porque el arte cambia sin que el juego cambie.
+ *
+ * Esto es lo que le faltaba al cartucho cuando se selló, y lo que su cabecera
+ * decía que no tenía: puerta humana. `croupier_corporate_building.html` sigue
+ * donde estaba, con su edificio dentro de una factoría de THREE, y sigue sin ser
+ * este juego. Aquella tiene 2.464 líneas; ésta no llega a cien porque no hace
+ * falta más cuando las piezas existen.
+ */
+const ROM = CorpStealthCore.ROM;
+
+const { app: gfx, THREE, arrancar } = await montarMundo({
+    ambiente: 'night',
+    cielo: false,
+    suelo: false,
+    nucleo: { clearColor: 0x05060a, fogColor: 0x05060a, fogDensity: 0.004 },
+});
+
+let nucleo = null, pintor = null, hud = null, acabado = false;
+
+/**
+ * ⚠️ ESTE MANDO NO USA `montarTeclado`, Y EL MOTIVO ESTÁ MEDIDO.
+ *
+ * Esa pieza da cuatro direcciones mantenidas y UNA acción por pulsación. Aquí
+ * hacen falta tres acciones distintas —linterna, interruptor, registrar— y las
+ * tres son golpes, no estados. Meterlas ahí dentro como `extra` las convertiría
+ * en teclas mantenidas y registrarías el mismo mueble sesenta veces por segundo.
+ *
+ * Así que las direcciones sí van al núcleo como estado y los tres golpes van por
+ * `pulsa`. Cuando haya una segunda etapa que necesite lo mismo, eso será una
+ * pieza compartida; una sola vez no es un patrón, es un caso.
+ */
+const anda = { izquierda: false, derecha: false };
+const golpes = { f: (n) => n.linterna.alternar(n.energia), e: (n) => n.pulsar(),
+                 ' ': (n) => n.buscar(), w: (n) => n.cambiarPlanta(+1),
+                 s: (n) => n.cambiarPlanta(-1) };
+
+addEventListener('keydown', (e) => {
+    const k = e.key.toLowerCase();
+    if (k === 'a' || k === 'arrowleft') anda.izquierda = true;
+    if (k === 'd' || k === 'arrowright') anda.derecha = true;
+    if (!nucleo || nucleo.terminado()) return;
+    const golpe = golpes[k] ?? golpes[e.key];
+    if (golpe) { e.preventDefault(); golpe(nucleo); }
+});
+addEventListener('keyup', (e) => {
+    const k = e.key.toLowerCase();
+    if (k === 'a' || k === 'arrowleft') anda.izquierda = false;
+    if (k === 'd' || k === 'arrowright') anda.derecha = false;
+});
+
+const cartel = montarCartel(ROM.cartel, (ajustes) => {
+    nucleo = new CorpStealthCore({ seed: ajustes.seed, plantas: ajustes.plantas });
+    pintor = new PintorMundo(gfx.scene, figurasDeSigilo(THREE), 1);
+    hud = montarHud(ROM.hud);
+    montarPie(ROM.hud.mandos);
+    encuadrarSigilo(gfx, nucleo.plantas, nucleo.altoPlanta, nucleo.largo);
+    /** El mundo, publicado, para que un aviso se pueda REPINTAR. */
+    window.getSustrato = () => { try { return nucleo?.sustrato() ?? null; } catch { return null; } };
+});
+
+arrancar((dt) => {
+    if (!nucleo) return;
+    const paso = Math.min(dt, 0.1);
+    nucleo.tick(paso, anda);
+    const sus = nucleo.sustrato();
+    pintor.pintar(sus);
+    // El pintor COLOCA; lo que se enciende y hacia dónde apunta lo pone esto.
+    alumbrarSigilo(pintor, sus);
+    const info = nucleo.info();
+    hud.pintar(info, nucleo);
+    if (info.terminado && !acabado) { acabado = true; cartel.final(info); }
+});
+
+/** La puerta de los agentes, en la PÁGINA — no dentro del núcleo. */
+window.stepSimulation = (accion, dt = 1 / 60) => {
+    if (!nucleo) return null;
+    const r = nucleo.step(accion, dt);
+    return { done: r.done, info: r.info };
+};
+window.ALISA_STREAM_SIM_NAME = 'corp_sigilo';
+</script>
+
+<!-- El botón de «algo se ve raro»: adjunta el mundo entero porque esta página
+     publica `window.getSustrato()`. -->
+<script type="module" src="/arcade/js/protohub/reportar.js"></script>
+</body>
+</html>

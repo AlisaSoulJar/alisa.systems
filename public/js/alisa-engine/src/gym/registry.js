@@ -219,10 +219,12 @@ const PROPIOS = [
      * que registra sin mirar la luz muere en la oscuridad 52 veces de 60; el que
      * la mira, ninguna.
      *
-     * Y no tiene puerta humana todavía, a propósito. La página de la que salen
-     * sus números genera su edificio dentro de una factoría de THREE; prometer
-     * que juegan a lo mismo sin poder demostrarlo es cómo la persona y el agente
-     * acabaron jugando dos ¡Busca! distintos durante semanas.
+     * Su puerta humana es `games/corp_sigilo.html`, que importa el MISMO núcleo:
+     * cincuenta y seis líneas propias, todo lo demás piezas compartidas. Lo que
+     * NO es su puerta es `croupier_corporate_building.html` —2.464 líneas con su
+     * propio edificio dentro de una factoría de THREE—, y no se nombra hasta
+     * poder demostrar que juegan a lo mismo: prometerlo sin demostrarlo es cómo
+     * la persona y el agente acabaron jugando dos ¡Busca! distintos.
      */
     { id: 'alisa/CorpStealth-v0', titulo: 'Corp Building a oscuras', fichero: 'CorpStealthEnv.js' },
     // El primero cuyo MUNDO sale de la semilla, no sólo el azar dentro del
