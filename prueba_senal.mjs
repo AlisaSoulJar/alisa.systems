@@ -125,6 +125,34 @@ const NO_SEPARAN = {
      * Declarar de más es tan malo como declarar de menos: una lista de
      * excepciones con nombres que no hacen falta deja de leerse.
      */
+    /**
+     * ⚠️ EL EDIFICIO A OSCURAS: LA MISMA PUERTA QUE ¡BUSCA! 6, CON TRES CERROJOS.
+     *
+     * Para que un registro cuente tienen que darse tres cosas a la vez: estar a
+     * menos de dos de un mueble SIN registrar, estar mirando hacia él, y que le
+     * llegue luz —la tuya o la del rellano—. Ninguna política ciega junta las
+     * tres, y por eso las siete sacan cero: ni una llega a abrir un mueble.
+     *
+     * ⚠️ Y ANTES DE DECLARARLO SE ARREGLÓ LO QUE SÍ ESTABA MAL EN MI LADO.
+     *
+     * La recompensa cobraba `-0,02` por mueble abierto, copiando el «cada
+     * intento cuesta» de los juegos con presupuesto de intentos. Aquí el
+     * presupuesto es la PILA y abrirlo ya la gasta: cobrarlo dos veces dejaba a
+     * la política que progresa por debajo de la que se queda quieta. Se cambió a
+     * sumar. No arregló esta vara —siguen las siete a cero, porque el problema
+     * no era la nota sino la puerta— pero estaba mal igual.
+     *
+     * Lo que NO se ha hecho es dar recompensa por acercarse, por el mismo motivo
+     * que está escrito ahí arriba para el mapache: sería cambiar el juego para
+     * contentar al instrumento, y la persona tampoco cobra por acercarse.
+     *
+     * Lo que sí se dice, porque está medido con 60 semillas y tres pilotos:
+     * separa de sobra en cuanto el que juega mira la luz.
+     */
+    'alisa/CorpStealth-v0':
+        'registrar exige estar al lado, mirando y con luz, y ninguna política ciega junta '
+      + 'las tres. Con un piloto que administra la pila gana el 45%, con uno que registra '
+      + 'sin mirar la luz el 7% —y ése muere a oscuras 56 veces de 60',
 };
 /**
  * ⚠️ `sokoban` TAMBIÉN ESTUVO AQUÍ, Y TAMBIÉN ERA MENTIRA MÍA.

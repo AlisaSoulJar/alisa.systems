@@ -79,6 +79,7 @@ const NUCLEOS = [
     'DroneTowerCore.js', 'SatelliteSweepCore.js', 'CorpBuildingCore.js',
     'AsteroidsSystem.js', 'SubmarineCore.js', 'RaccoonSpaceCore.js',
     'MarabuntaSystem.js', 'DefiendeSystem.js', 'ChopperAquariumEngine.js',
+    'CorpStealthCore.js',
 ];
 
 const dir = path.join(RAIZ, SISTEMAS);
@@ -189,7 +190,7 @@ const componen = filas.filter((r) => r.unicas.length >= 2);
  * que entre con toda su física escrita dentro suspende aquí, que es exactamente
  * para lo que se puso.
  */
-const SUELO_COMPONEN = 9;
+const SUELO_COMPONEN = 10;
 
 /**
  * ⚠️ VEINTIDÓS. ÉSA ES LA DEUDA, Y ESTÁ CONTADA, NO ESTIMADA.
@@ -236,7 +237,17 @@ const TECHO_INTEGRADORES = 22;
  * Ésa es toda la prueba de que esto no es papeleo: si la tabla describiera un
  * juego distinto del que se jugaba, la huella lo habría dicho once veces.
  */
-const SUELO_ROMS = 11;
+/**
+ * ⚠️ Y 11 → 12 CON EL PRIMERO QUE NACE DE LAS PIEZAS EN VEZ DE MUDARSE A ELLAS.
+ *
+ * `CorpStealthCore` no es una conversión: es un juego nuevo, y compone SEIS
+ * sistemas sin escribir una sola cuenta de física. Andar incluido — lo cazó esta
+ * misma vara, que subió el techo de integradores a 23 en cuanto el núcleo se
+ * escribió su propio `x -= velocidad * dt`. La pieza que faltaba resultó ser la
+ * que la propia página ya usaba para su jugador, y al enchufarla la huella no se
+ * movió: `bd87b6ef` antes y después.
+ */
+const SUELO_ROMS = 12;
 const conRom = filas.filter((r) => r.cartuchos);
 /** Se cuentan CARTUCHOS, no ficheros: el mueble del mapache sostiene tres. */
 const cartuchos = filas.reduce((s, r) => s + r.cartuchos, 0);

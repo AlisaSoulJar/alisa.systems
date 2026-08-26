@@ -209,6 +209,22 @@ const PROPIOS = [
      * cinco motores completos que llevan su estado a mano.
      */
     { id: 'alisa/Defiende-v0', titulo: 'Sendero', fichero: 'DefiendeEnv.js' },
+    /**
+     * El primero donde el recurso no sólo se acaba: MATA — y donde el mundo tiene
+     * refugios repartidos que paran la cuenta atrás.
+     *
+     * Es lo que le faltaba a la colección: en ¡Busca! quedarte a cero es el final
+     * y la política sólo administra; aquí abre tres segundos en los que todavía
+     * puedes hacer algo, y decidir qué se equivoca. Medido con tres pilotos: el
+     * que registra sin mirar la luz muere en la oscuridad 52 veces de 60; el que
+     * la mira, ninguna.
+     *
+     * Y no tiene puerta humana todavía, a propósito. La página de la que salen
+     * sus números genera su edificio dentro de una factoría de THREE; prometer
+     * que juegan a lo mismo sin poder demostrarlo es cómo la persona y el agente
+     * acabaron jugando dos ¡Busca! distintos durante semanas.
+     */
+    { id: 'alisa/CorpStealth-v0', titulo: 'Corp Building a oscuras', fichero: 'CorpStealthEnv.js' },
     // El primero cuyo MUNDO sale de la semilla, no sólo el azar dentro del
     // mundo. Ver la cabecera de su fichero: es la casilla que no ocupa nadie.
     /**
