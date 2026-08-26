@@ -53,15 +53,12 @@
         #btnStart:hover { filter: brightness(1.1); }
     </style>
 
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "/vendor/three-0.160.0/build/three.module.js",
-            "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
-            "@alisa-engine/": "../js/alisa-engine/"
-        }
-    }
-    </script>
+    <!--
+        El mapa del motor lo pone `/js/mundo.js`, y aquí además CAMBIA LA VERSIÓN:
+        esta página declaraba three 0.160 y la común es la 0.170, que es la que
+        trae los addons modernos —SMAA entre ellos—. Se comprobó abriéndola.
+    -->
+    <script src="/js/mundo.js"></script>
 </head>
 <body>
 
@@ -100,34 +97,40 @@
     </div>
 
     <script type="module">
-        import * as THREE from 'three';
-        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
-        import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+        import { montarMundo } from '/js/montarMundo.js';
         import { InteractionLabEngine } from '@alisa-engine/src/world/systems/InteractionLabEngine.js';
 
         // ─── RENDERER CORE ───
-        const core = new AlisaRenderCore({
-            clearColor: 0x0a0a14, 
-            fogColor: 0x0a0a14,
-            fogDensity: 0.012,
-            cameraPosition: new THREE.Vector3(0, 30, 22)
+        /**
+         * ⚠️ ESTA PÁGINA SE MONTABA SU PROPIO COMPOSER, Y ESE ES EL PATRÓN.
+         *
+         * Tenía a mano `EffectComposer` + `RenderPass` + `UnrealBloomPass` y su
+         * propio `resize`: veintitrés líneas para tener bloom y sólo bloom. Sin
+         * tono fílmico, sin SSAO, sin antialiasing y sin entorno PBR — no porque
+         * se descartaran, sino porque cada uno son otras tantas líneas y quien
+         * copia el andamio copia lo imprescindible.
+         *
+         * `cielo:false` porque es un laboratorio con niebla, no un exterior. Las
+         * luces sí se dejan: `InteractionLabEngine` no trae ninguna propia.
+         *
+         * ⚠️ `suelo:false`, Y ESTO SE VIO EN LA PANTALLA, NO EN EL CÓDIGO.
+         * `montarMundo` llama a `setupDefaultEnvironment()` salvo que se le diga
+         * que no, y esta página nunca lo llamaba: al migrarla aparecieron dos
+         * cuñas marrones enormes atravesando la cámara — el suelo por defecto
+         * metido dentro de una arena que ya trae la suya. Migrar no es sólo
+         * cambiar quién monta el andamio: es mirar qué trae de más.
+         */
+        const { app: core, THREE, arrancar } = await montarMundo({
+            ambiente: 'night',
+            cielo: false,
+            suelo: false,
+            nucleo: { clearColor: 0x0a0a14, fogColor: 0x0a0a14, fogDensity: 0.012 },
         });
+        core.camera.position.set(0, 30, 22);
         core.controls.target.set(0, 0, 0);
         core.controls.maxDistance = 60;
         core.controls.minDistance = 8;
         core.controls.maxPolarAngle = Math.PI / 2.2;
-
-        const renderPass = new RenderPass(core.scene, core.camera);
-        const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.0, 0.4, 0.85);
-        const composer = new EffectComposer(core.renderer);
-        composer.addPass(renderPass);
-        composer.addPass(bloomPass);
-
-        window.addEventListener('resize', () => {
-            composer.setSize(window.innerWidth, window.innerHeight);
-        });
 
         // ─── ENGINE ───
         // basePath relative to /labs/ — was '/colony/overworld/' (pre-reorg absolute path, 404'd every animal GLB)
@@ -171,11 +174,9 @@
         }
 
         // ─── MAIN LOOP ───
-        core.startLoop((dt) => {
+        arrancar((dt) => {
             labEngine.tick(dt, labEngine.elapsedTime);
             updateHUD();
-        }, () => {
-            composer.render();
         });
 
         // ─── RL BRIDGE ───

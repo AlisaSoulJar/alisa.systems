@@ -56,7 +56,15 @@ export class CinematicPipelinePlugin {
         this.renderFn = () => { if (this.composer) this.composer.render(); };
     }
 
-    onInit(core) {
+    /**
+     * ⚠️ ES `async` Y ESO ES SEGURO, PERO CONVIENE SABER POR QUÉ.
+     *
+     * Todo lo que va ANTES del primer `await` corre de forma síncrona, y el
+     * composer se construye ahí. O sea que cuando el bucle empieza a pintar, el
+     * composer ya existe. Lo único que llega un fotograma tarde es la pasada de
+     * antialiasing, que es un adorno y no cambia lo que se ve del juego.
+     */
+    async onInit(core) {
         this.core = core;
         const { scene, camera, renderer } = core;
         const P = this.P;
@@ -66,6 +74,52 @@ export class CinematicPipelinePlugin {
         renderer.toneMappingExposure = P.exposure;
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        /**
+         * ═══════════════════════════════════════════════════════════════════
+         *  1b) ENTORNO PBR — LO QUE SEPARA «METAL» DE «GRIS CLARO»
+         * ═══════════════════════════════════════════════════════════════════
+         *
+         * Un material PBR sin mapa de entorno no tiene NADA que reflejar. Un
+         * casco metálico sale gris plano, una esfera pulida sale mate, y la
+         * rugosidad —que es el parámetro que da la sensación de material— no se
+         * distingue de una textura lisa. Es la diferencia entre un juego que
+         * parece de 2010 y uno que no, y no cuesta un solo polígono.
+         *
+         * Se genera con PMREM desde una escena APARTE, nunca desde la del juego.
+         * `EnvironmentPBRPlugin` ya dejó escrito por qué: usar la escena real
+         * mete dentro el bloom y la niebla y sale un pantallazo blanco.
+         *
+         * Va aquí y no como plugin suelto porque ese plugin existe desde hace
+         * meses y lo usaban CERO páginas de saga. Lo que hay que acordarse de
+         * añadir no se añade — y esta casa lleva el día entero midiendo eso.
+         */
+        if (this.opts.pbr !== false) {
+            try {
+                const pmrem = new THREE.PMREMGenerator(renderer);
+                const cuarto = new THREE.Scene();
+                // Tres focos y un fondo: suficiente para que un metal sepa que
+                // está en un sitio. Sin geometría, así que no cuesta nada.
+                cuarto.background = new THREE.Color(P.envFondo ?? 0x101018);
+                for (const [x, y, z, c, i] of [
+                    [ 5,  5,  5, 0xffffff, 2.0],
+                    [-5,  2, -3, 0x88aaff, 1.2],
+                    [ 0, -4,  4, 0xffaa66, 0.8],
+                ]) {
+                    const l = new THREE.DirectionalLight(c, i);
+                    l.position.set(x, y, z);
+                    cuarto.add(l);
+                }
+                this.envMap = pmrem.fromScene(cuarto, 0.04).texture;
+                scene.environment = this.envMap;
+                if (this.opts.envIntensity !== undefined) {
+                    scene.environmentIntensity = this.opts.envIntensity;
+                }
+                pmrem.dispose();
+            } catch {
+                this.envMap = null;   // sin entorno se ve más plano, no roto
+            }
+        }
 
         // 2) cielo (Rayleigh/Mie) + dirección del sol
         this.sunDir.setFromSphericalCoords(1,
@@ -121,10 +175,46 @@ export class CinematicPipelinePlugin {
         }
         this.composer.addPass(new OutputPass());
 
-        this._onResize = () => this.composer.setSize(innerWidth, innerHeight);
+        /**
+         * ═══════════════════════════════════════════════════════════════════
+         *  5) ANTIALIASING — LA SEÑAL MÁS BARATA DE «ESTO ESTÁ SIN ACABAR»
+         * ═══════════════════════════════════════════════════════════════════
+         *
+         * Con un `EffectComposer` el MSAA del navegador queda apagado: todo se
+         * pinta a un buffer intermedio. Resultado, en las once etapas de saga a
+         * la vez: dientes de sierra en cada borde. Es lo primero que ve alguien
+         * que abre el juego y lo que más barato lo hace parecer, por encima de
+         * cualquier efecto que se le añada encima.
+         *
+         * ⚠️ Y SE CARGA A LA DEFENSIVA, PORQUE NO ESTÁ EN TODAS PARTES.
+         *
+         * Medido: `SMAAPass.js` existe en `vendor/three-0.170.0` y NO en
+         * `three-0.160.0`, y las páginas de esta casa usan las dos versiones. Un
+         * import estático dejaría media saga en pantalla negra por un adorno.
+         *
+         * Así que se intenta y, si no está, se sigue sin él: se ve con dientes,
+         * que es exactamente como se veía antes. Un acabado no puede tumbar un
+         * juego.
+         */
+        if (this.opts.aa !== false) {
+            try {
+                const { SMAAPass } = await import('three/addons/postprocessing/SMAAPass.js');
+                this.smaa = new SMAAPass(innerWidth, innerHeight);
+                this.composer.addPass(this.smaa);
+            } catch {
+                this.smaa = null;   // three viejo: sin AA, y sin drama
+            }
+        }
+
+        this._onResize = () => {
+            this.composer.setSize(innerWidth, innerHeight);
+            this.smaa?.setSize?.(innerWidth, innerHeight);
+        };
         addEventListener('resize', this._onResize);
 
-        console.log(`🎬 [CinematicPipelinePlugin] preset "${this.opts.preset || 'golden_hour'}" · ${this.composer.passes.length} passes`);
+        console.log(`🎬 [CinematicPipelinePlugin] preset "${this.opts.preset || 'golden_hour'}" · `
+                  + `${this.composer.passes.length} passes${this.smaa ? ' · SMAA' : ''}`
+                  + `${this.envMap ? ' · PBR' : ''}`);
     }
 
     /** Cambia de preset en caliente (para un beat dirigido, un ciclo día/noche…) */
@@ -153,5 +243,14 @@ export class CinematicPipelinePlugin {
     dispose() {
         removeEventListener('resize', this._onResize);
         this.composer?.dispose?.();
+        /**
+         * El mapa de entorno es una textura en la GPU y no se recoge sola. Una
+         * página que monta y desmonta mundos —el laboratorio, el repetidor— la
+         * dejaría acumulada cada vez, y eso acaba en tirones que nadie relaciona
+         * con esto porque aparecen mucho después y en otra parte.
+         */
+        if (this.core?.scene?.environment === this.envMap) this.core.scene.environment = null;
+        this.envMap?.dispose?.();
+        this.envMap = null;
     }
 }

@@ -280,6 +280,17 @@ window.initGame = function() {
     });
     CITY_RADIUS = nucleo.tanque / 2;
 
+    /**
+     * El mundo, publicado, para que un aviso se pueda REPINTAR.
+     *
+     * El botón de «algo se ve raro» recoge lo que la persona tenía delante; si
+     * además encuentra esto, adjunta el sustrato y el aviso deja de ser una
+     * anécdota. `RaccoonSpaceCore` ya traía `sustrato()` y las tres etapas del
+     * mapache comparten ese núcleo — pero sólo ¡Busca! 6 lo publicaba. Otra vez
+     * lo mismo: la fuente buena existía y había que acordarse de enchufarla.
+     */
+    window.getSustrato = () => { try { return nucleo?.sustrato() ?? null; } catch { return null; } };
+
     const generation = factory.generateCity(scene, CITY_RADIUS, totalBuildings, {
         planetas: nucleo.planetas,
         asteroides: nucleo.asteroides,

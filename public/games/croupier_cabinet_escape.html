@@ -270,15 +270,23 @@
     <!-- Banner (2D) -->
     <div id="banner"></div>
 
-    <script type="importmap">
-    { 
-        "imports": { 
-            "three": "/vendor/three-0.160.0/build/three.module.js",
-            "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
-            "@alisa-engine/": "../js/alisa-engine/src/" 
-        } 
-    }
-    </script>
+    <!--
+        El mapa del motor lo pone `/js/mundo.js`. Ésta era la última página del
+        sitio anclada a three 0.160.
+
+        ⚠️ Y NO SE LE AÑADE PIPELINE, QUE ES UNA DECISIÓN Y NO UN OLVIDO.
+        `CabinetEscapeGame` se fabrica su propio `WebGLRenderer` con
+        `antialias:true`. Meterle un `EffectComposer` encima APAGARÍA ese MSAA
+        —todo pasaría a pintarse en un buffer intermedio— a cambio de bloom y
+        SSAO. Ahora que está en 0.170 podría llevar SMAA y compensarlo, pero eso
+        es reescribir su render y no se hace de madrugada sin poder contrastarlo.
+        Queda escrito para quien lo retome.
+
+        ⚠️ El alias de este mapa metía `src` dentro (`…/alisa-engine/src/`) y el
+        común no, así que `CabinetEscapeGame.js` —el único fichero del motor que
+        importaba sin `src`— se alineó con el resto. Está anotado allí.
+    -->
+    <script src="/js/mundo.js"></script>
     <script src="../alisa_sim_sdk.js"></script>
 
 <script>
@@ -386,10 +394,25 @@ function show3DBanner(text, duration) {
 <button id="btnBackRoom" onclick="exitCabinetMode()" style="position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); z-index: 100; font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: bold; background: rgba(0,0,0,0.8); color: white; border: 1px solid rgba(255,255,255,0.4); padding: 10px 20px; border-radius: 8px; display: none; cursor: pointer; transition: all 0.2s;">⬅ ROOM VIEW</button>
 
 <script type="module">
-import { CabinetEscapeGame } from '@alisa-engine/world/gym_runners/CabinetEscapeGame.js';
+import { CabinetEscapeGame } from '@alisa-engine/src/world/gym_runners/CabinetEscapeGame.js';
 
 window.game = new CabinetEscapeGame();
 window.game.init();
+
+/**
+ * El mundo, publicado, para que un aviso se pueda REPINTAR.
+ *
+ * El botón de «algo se ve raro» de abajo adjunta el sustrato entero si lo
+ * encuentra aquí. `CabinetEscapeSystem` ya tenía `sustrato()` —lo usa el banco
+ * para medir esta misma etapa— y la página no lo publicaba: la persona y el
+ * agente jugaban al mismo juego y sólo uno de los dos podía enseñar la partida.
+ *
+ * `game.sys` es el sistema de dentro del runner. En try/catch porque un aviso que
+ * revienta al adjuntar el mundo es peor que un aviso sin mundo.
+ */
+window.getSustrato = () => {
+    try { return window.game?.sys?.sustrato() ?? null; } catch { return null; }
+};
 
 window.selectStage = (n) => window.game.selectStage(n);
 window.startSimulation = () => window.game.startSimulation();

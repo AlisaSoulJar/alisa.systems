@@ -1,10 +1,15 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { CabinetBSPEngine } from '@alisa-engine/world/CabinetBSPEngine.js';
-import { CabinetEnvironmentFactory } from '@alisa-engine/world/factories/CabinetEnvironmentFactory.js';
-import { CabinetEscapeSystem } from '@alisa-engine/world/systems/CabinetEscapeSystem.js';
-import { CabinetJumpscareSystem } from '@alisa-engine/world/systems/CabinetJumpscareSystem.js';
+// El alias lleva `src/`, como todo el resto del motor. Estos cuatro imports eran
+// los ÚNICOS de la casa que lo omitían, y funcionaban porque la única página que
+// los carga declaraba un importmap propio donde `@alisa-engine/` ya apuntaba
+// dentro de `src/`. Al pasar esa página al mapa común había que elegir: cambiar
+// el mapa de todos o alinear estos cuatro. Se alinean éstos.
+import { CabinetBSPEngine } from '@alisa-engine/src/world/CabinetBSPEngine.js';
+import { CabinetEnvironmentFactory } from '@alisa-engine/src/world/factories/CabinetEnvironmentFactory.js';
+import { CabinetEscapeSystem } from '@alisa-engine/src/world/systems/CabinetEscapeSystem.js';
+import { CabinetJumpscareSystem } from '@alisa-engine/src/world/systems/CabinetJumpscareSystem.js';
 import { MMOClient } from '../../soma/utils/MMOClient.js';
 // `AssetManager` se usaba como GLOBAL, de cuando era un script suelto en la
 // página. Al pasar el motor a módulos ES dejó de existir en `window` y

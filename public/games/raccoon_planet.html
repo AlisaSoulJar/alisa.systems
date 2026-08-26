@@ -194,6 +194,13 @@ window.initGame = function() {
         fuel: 11, tope: 3600, forma: 'esfera', mando: 'orbita', scanCost: 0.08,
     });
 
+    /**
+     * El mundo, publicado, para que un aviso se pueda REPINTAR. Mismo motivo que
+     * en ¡Busca! 4 y 6: `RaccoonSpaceCore` ya traía `sustrato()` y las tres
+     * etapas del mapache lo comparten, pero sólo una lo estaba publicando.
+     */
+    window.getSustrato = () => { try { return nucleo?.sustrato() ?? null; } catch { return null; } };
+
     // Generate
     planetRig = factory.generatePlanet(scene, 15, totalCities, {
         planetas: nucleo.planetas,

@@ -1771,7 +1771,7 @@
    "ruta": "soma/plugins/CinematicPipelinePlugin.js",
    "nombre": "CinematicPipelinePlugin",
    "familia": "plugins",
-   "kb": 8.1,
+   "kb": 13.6,
    "clase": "apagada",
    "exporta": [
     "CinematicPipelinePlugin"
@@ -3001,7 +3001,7 @@
     "syncKatamariConsumption"
    ],
    "objetos": 54,
-   "mallas": 130,
+   "mallas": 131,
    "luces": 4
   },
   {
@@ -3037,7 +3037,7 @@
    "ruta": "world/factories/InteractionLabFactory.js",
    "nombre": "InteractionLabFactory",
    "familia": "factories",
-   "kb": 20.3,
+   "kb": 22.8,
    "clase": "escena",
    "exporta": [
     "InteractionLabFactory"
@@ -3185,7 +3185,7 @@
    "ruta": "world/factories/ProceduralBuildingFactory.js",
    "nombre": "ProceduralBuildingFactory",
    "familia": "factories",
-   "kb": 46.5,
+   "kb": 49.4,
    "clase": "escena",
    "exporta": [
     "ProceduralBuildingFactory"

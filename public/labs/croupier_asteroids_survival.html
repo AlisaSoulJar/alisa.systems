@@ -4,15 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ALISA — Pedrisco 3D V3</title>
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "/vendor/three-0.170.0/build/three.module.js",
-            "three/addons/": "/vendor/three-0.170.0/examples/jsm/",
-            "@alisa-engine/": "../js/alisa-engine/"
-        }
-    }
-    </script>
+    <!--
+        El mapa del motor NO se declara aquí: lo pone `/js/mundo.js`, que es el
+        único sitio donde vive esa decisión. Esta página tenía el suyo propio, con
+        las mismas rutas — y ese es justo el problema: una copia que coincide hoy
+        es una copia que mañana se queda atrás sola, sin romper nada, sólo fea.
+
+        Clásico y sin `defer` a propósito: un `importmap` no se puede añadir una
+        vez que un módulo ha empezado a cargar, así que tiene que ejecutarse antes
+        que cualquier `<script type="module">`. Lo explica `mundo.js` entero.
+    -->
+    <script src="/js/mundo.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { overflow: hidden; background: #030308; font-family: 'Segoe UI', sans-serif; color: #ccc; }
@@ -172,17 +174,49 @@
 
 <script type="module">
 import * as THREE from 'three';
-import { AlisaRenderCore } from '@alisa-engine/src/soma/AlisaRenderCore.js';
+import { montarMundo } from '/js/montarMundo.js';
 import { AsteroidsEngine, SHIP_GAUGES } from '@alisa-engine/src/world/systems/AsteroidsEngine.js?v=3';
 
 window.THREE = THREE;
 
-// ═══════════════════════════════════════════════════
-// ALISA RENDER CORE INIT
-// ═══════════════════════════════════════════════════
-window.gfx = new AlisaRenderCore();
-let scene = window.gfx.scene;
-let camera = window.gfx.camera;
+/**
+ * ⚠️ EL MUNDO SE MONTA, NO SE ARMA A MANO.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Aquí había `new AlisaRenderCore()` a pelo, y con eso esta etapa se quedaba sin
+ * NADA del acabado que el motor ya tiene hecho: sin tono fílmico, sin bloom, sin
+ * sombras y sin sonido. Medido el 25-08 sobre las once etapas de saga: sólo tres
+ * usaban `montarMundo`, y las otras ocho montaban su andamio a mano y se
+ * quedaban con lo mínimo.
+ *
+ * No es que nadie supiera hacerlo mejor: es que cuando el andamio se copia a
+ * mano, lo que no es imprescindible no se copia. `montarMundo.js` ya lo dice en
+ * su cabecera, y esta página era la prueba.
+ *
+ * ⚠️ Y LA CONFIGURACIÓN DICE LO QUE ES ESTE SITIO.
+ *
+ *   cielo: false   esto es el espacio. Una cúpula atmosférica de Rayleigh aquí
+ *                  sería una mentira bonita, y el sistema ya siembra sus propias
+ *                  estrellas (`spawnStar`).
+ *   suelo: false   no hay suelo en el vacío, y con él vendría el entorno por
+ *                  defecto del núcleo, que es para escenas con planta.
+ *   luces: true    los asteroides son roca: sin luz direccional son siluetas.
+ *   bloom: true    los disparos y las explosiones son lo que da el nervio.
+ *   ssao:  false   la oclusión ambiental necesita geometría cercana que ocluir.
+ *                  En el vacío no ocluye nada y sólo cuesta fotogramas.
+ */
+const { app: gfx, arrancar, sonar } = await montarMundo({
+    ambiente: 'night',
+    cielo: false,
+    suelo: false,
+    bloom: true,
+    ssao: false,
+    nucleo: { clearColor: 0x02030a },
+});
+
+window.gfx = gfx;
+let scene = gfx.scene;
+let camera = gfx.camera;
 window.scene = scene; // Keep global for external interactions
 window.camera = camera;
 
@@ -388,12 +422,29 @@ const onUpdate = (delta) => {
     document.getElementById('vCapsules').textContent = engine.stats.capsules;
 };
 
-const onCustomRender = (delta) => {
-    window.gfx.renderer.render(scene, camera);
-};
+/**
+ * ⚠️ `arrancar` Y NO `startLoop`, Y ESTO NO ES INTERCAMBIABLE.
+ *
+ * `startLoop` pinta con el renderer PELADO. Con el pipeline registrado, eso deja
+ * el post-proceso vivo, consumiendo, y sin llegar nunca a la pantalla: se paga el
+ * coste del bloom y del tono fílmico y se ve exactamente igual que antes.
+ *
+ * Lo avisa `montarMundo.js` en su propia cabecera —«quien tiene pipeline tiene
+ * que pintar con él»— y es justo la clase de fallo que no da error: se ve algo,
+ * se juega, y nadie sabe que el acabado que se pagó no se está usando.
+ */
+arrancar(onUpdate);
 
-// Start AlisaRenderCore Loop
-window.gfx.startLoop(onUpdate, onCustomRender);
+/**
+ * ⚠️ EL SUSTRATO, QUE ESTA ETAPA YA TENÍA Y NO PUBLICABA.
+ *
+ * `AsteroidsSystem` expone `sustrato()` desde siempre. Sin esta línea, un aviso
+ * de un betatester llegaba sin mundo detrás: «se ve raro» y nadie puede repintar
+ * la escena. Con ella, el aviso trae el mundo entero y se puede repetir.
+ *
+ * Una línea, y convierte una anécdota en un fallo que se arregla.
+ */
+window.getSustrato = () => { try { return engine.system?.sustrato() ?? null; } catch { return null; } };
 </script>
 
 <!--

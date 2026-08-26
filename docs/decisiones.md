@@ -15,17 +15,17 @@ contrario. El problema no era que no estuviera escrito: era que no había índic
 Volver a decidir sale barato en el momento y carísimo a la semana, porque la
 segunda decisión casi nunca coincide con la primera y entonces hay dos verdades.
 
-**2239 decisiones** en 364 ficheros.
+**2260 decisiones** en 366 ficheros.
 
 ## Índice
 
-- [Herramientas de medida](#herramientas-de-medida) — 442
+- [Herramientas de medida](#herramientas-de-medida) — 443
 - [Reglas de los juegos](#reglas-de-los-juegos) — 362
 - [Las mesas y los visualizadores](#las-mesas-y-los-visualizadores) — 312
-- [Las comprobaciones](#las-comprobaciones) — 290
+- [Las comprobaciones](#las-comprobaciones) — 291
 - [El ProtoHub y el sustrato](#el-protohub-y-el-sustrato) — 208
-- [Otros](#otros) — 192
-- [El motor](#el-motor) — 108
+- [Otros](#otros) — 206
+- [El motor](#el-motor) — 113
 - [El gym y los entornos](#el-gym-y-los-entornos) — 88
 - [Las páginas de los juegos](#las-páginas-de-los-juegos) — 81
 - [Cómo se dibuja (el pintor)](#cómo-se-dibuja-el-pintor-) — 64
@@ -896,8 +896,10 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Este mapa YA existía, dentro de `prueba_sagas.mjs`, como constantes locales `EN_EL_BANCO` y `SIN_ENTORNO`. Y yo, para montar la puerta de los betas, escribí `gen_sagas.mjs` **parseando el <title> de las páginas** — o sea, me</sub>
 - **MARABUNTA ENTRA EN ¡SOBREVIVE!, Y NO ES POR HUECO LIBRE.** <sub>línea 64</sub>
   <br><sub>`docs/ESTADO_SAGAS.md` define la saga como «no ser lo que se comen», y dice que «le faltan etapas por delante y por detrás». Una marabunta es literalmente el enjambre que devora: eres la presa de una horda que se</sub>
-- **PEDRISCO IBA A ABRIR ¡ESQUIVA! Y NO ENTRA TODAVÍA.** <sub>línea 80</sub>
-  <br><sub>El nombre estaba bien elegido y no por sonoridad: sus propios verbos son `esquivar_izquierda`, `esquivar_derecha`, `subir`, `bajar`, `centrar`, `mantener`, `disparar`. El juego ya se había puesto el nombre. Y no es</sub>
+- **PEDRISCO ABRE ¡ESQUIVA!, Y EL CAMINO HASTA AQUÍ MERECE LEERSE.** <sub>línea 80</sub>
+  <br><sub>El nombre no lo elegí por sonoridad: sus propios verbos son `esquivar_izquierda`, `esquivar_derecha`, `subir`, `bajar`, `centrar`, `mantener`, `disparar`. El juego ya se había puesto el nombre. Y no es</sub>
+- **NOTA HISTÓRICA — LO QUE CREÍ QUE PASABA Y NO PASABA.** <sub>línea 108</sub>
+  <br><sub>En una sola noche juzgué tres veces mal la misma pregunta —«¿juegan la persona y el banco al mismo juego?»— y las tres por mirar deprisa:</sub>
 
 ### `salas.mjs`
 
@@ -3178,11 +3180,13 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Entraron al banco el 24-08 declaradas como partidas, a sabiendas: se medían con `RaccoonSpaceCore` mientras sus páginas corrían `RaccoonCitySystem` y `RaccoonPlanetSystem`. Ese mismo día se unieron, y al unirlas salieron TRES</sub>
 - **LA FONTANERÍA NO CUENTA COMO MOTOR, Y LA PRIMERA VERSIÓN SÍ LA CONTABA.** <sub>línea 143</sub>
   <br><sub>`ECSWorld` lo importan la página y el entorno de Corp Building, así que con él dentro la etapa salía «comparten motor» aunque el juego fuera otro. Lo destapó `prueba_de_las_pruebas.mjs`: el sabotaje cambiaba el motor y la comprobación</sub>
-- **SE SIGUE UN SALTO: LA PÁGINA PUEDE MONTAR EL JUEGO A TRAVÉS DE UN ENVOLTORIO.** <sub>línea 205</sub>
+- **Y LA RUTA PUEDE SER LA DE AL LADO.** <sub>línea 159</sub>
+  <br><sub>El filtro pedía que la ruta del import contuviera `systems`, `Engine`, `Core`, `gym_runners` o `world/`. Vale para las rutas largas, y falla justo en el último salto de la cadena: cuando un motor importa a su HERMANO del mismo</sub>
+- **SE SIGUE UN SALTO: LA PÁGINA PUEDE MONTAR EL JUEGO A TRAVÉS DE UN ENVOLTORIO.** <sub>línea 227</sub>
   <br><sub>`croupier_cabinet_escape.html` importa `CabinetEscapeGame`, y es ÉSE quien usa `CabinetEscapeSystem`. Mirando sólo lo que la página importa a la cara, la etapa salía partida cuando ya estaba unida.</sub>
-- **Y LA PISTA TIENE QUE LLEGAR A LAS TRES PUERTAS, NO A UNA.** <sub>línea 267</sub>
+- **Y LA PISTA TIENE QUE LLEGAR A LAS TRES PUERTAS, NO A UNA.** <sub>línea 289</sub>
   <br><sub>El fallo que esto vigila es el que se encontró el 24-08 al ir a unir Espacio: `raccoon_space.html` le decía a la persona «🟢 HOT (37 LY away)» al descartar un objetivo, y el núcleo del banco no le decía nada al agente. Con eso, la</sub>
-- **`colocarJunto`, y NO escribir `nave.x/y/z` a mano.** <sub>línea 292</sub>
+- **`colocarJunto`, y NO escribir `nave.x/y/z` a mano.** <sub>línea 314</sub>
   <br><sub>Eso último es lo que hacía esta prueba, y con el satélite del planeta dejó de funcionar sin decir por qué: su posición sale de latitud, longitud y altura, y el primer `step` la recalcula y borra el</sub>
 
 ### `prueba_semillas.mjs`
@@ -3964,24 +3968,32 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 
 ### `public/games/croupier_cabinet_escape.html`
 
-- **Aquí había dos envoltorios más:** <sub>línea 396</sub>
+- **Y NO SE LE AÑADE PIPELINE, QUE ES UNA DECISIÓN Y NO UN OLVIDO.** <sub>línea 277</sub>
+  <br><sub>`CabinetEscapeGame` se fabrica su propio `WebGLRenderer` con `antialias:true`. Meterle un `EffectComposer` encima APAGARÍA ese MSAA —todo pasaría a pintarse en un buffer intermedio— a cambio de bloom y</sub>
+- **El alias de este mapa metía `src` dentro (`…/alisa-engine/src/`) y el** <sub>línea 285</sub>
+  <br><sub>común no, así que `CabinetEscapeGame.js` —el único fichero del motor que importaba sin `src`— se alineó con el resto. Está anotado allí. --></sub>
+- **Aquí había dos envoltorios más:** <sub>línea 419</sub>
   <br><sub>window.enterCabinetMode = () => window.game.enterCabinetMode(); window.exitCabinetMode  = () => window.game.exitCabinetMode();</sub>
-- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 415</sub>
+- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 438</sub>
   <br><sub>Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y, si esta página publica `window.getSustrato()`, adjunta el mundo entero — con eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.</sub>
 
 ### `public/games/croupier_corporate_building.html`
 
-- **`@alisa-engine/` apunta a `../js/…`, no a `./js/…`.** <sub>línea 94</sub>
-  <br><sub>recuperó del backup, donde vivía un nivel más arriba; desde /games/ la ruta relativa resolvía a /games/js/… y daba 404 en TODOS los imports. El comentario va AQUÍ FUERA: un import map es JSON estricto, y meterlo</sub>
-- **Antes: `factory.build(...)` directo.** <sub>línea 632</sub>
+- **Antes: `factory.build(...)` directo.** <sub>línea 628</sub>
   <br><sub>quien aplica la corrección de luz — y sin ella la escena sale NEGRA.</sub>
-- **Antes: `factory.build(...)` directo.** <sub>línea 787</sub>
+- **Era ×20, y ×20 no se había VISTO nunca: `buildAll` aplica esta escala** <sub>línea 643</sub>
+  <br><sub>después de que `build()` devuelva, y `build()` reventaba en cada partida («targetFloor is not defined», disfrazado de fallo de carga porque salía por el `onError` del GLTFLoader). De ahí la penumbra de esta etapa.</sub>
+- **Antes: `factory.build(...)` directo.** <sub>línea 791</sub>
   <br><sub>quien aplica la corrección de luz — y sin ella la escena sale NEGRA.</sub>
-- **Antes: `factory.build(...)` directo.** <sub>línea 953</sub>
+- **Era ×20, y ×20 no se había VISTO nunca: `buildAll` aplica esta escala** <sub>línea 806</sub>
+  <br><sub>después de que `build()` devuelva, y `build()` reventaba en cada partida («targetFloor is not defined», disfrazado de fallo de carga porque salía por el `onError` del GLTFLoader). De ahí la penumbra de esta etapa.</sub>
+- **Antes: `factory.build(...)` directo.** <sub>línea 965</sub>
   <br><sub>quien aplica la corrección de luz — y sin ella la escena sale NEGRA.</sub>
-- **El plugin NO tiene interruptor propio: su `renderFn` es simplemente** <sub>línea 2014</sub>
+- **Era ×20, y ×20 no se había VISTO nunca: `buildAll` aplica esta escala** <sub>línea 980</sub>
+  <br><sub>después de que `build()` devuelva, y `build()` reventaba en cada partida («targetFloor is not defined», disfrazado de fallo de carga porque salía por el `onError` del GLTFLoader). De ahí la penumbra de esta etapa.</sub>
+- **El plugin NO tiene interruptor propio: su `renderFn` es simplemente** <sub>línea 2034</sub>
   <br><sub>`() => composer.render()`. Escribí un `cine.enabled` de mi cosecha antes de mirar, y no habría hecho nada. Se alterna eligiendo QUIÉN pinta. let cineEncendido = true;</sub>
-- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 2359</sub>
+- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 2379</sub>
   <br><sub>Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y, si esta página publica `window.getSustrato()`, adjunta el mundo entero — con eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.</sub>
 
 ### `public/games/defiende_sendero.html`
@@ -4009,24 +4021,24 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>Hasta el 24-08 esta página se jugaba sola: la batería la llevaba `RaccoonCitySystem`, el escaneo y el caliente/frío estaban escritos aquí en el HTML, y el banco medía `RaccoonSpaceCore` con otros números. Dos juegos con el</sub>
 - **EL RADIO DE DIBUJO ES EL DEL NÚCLEO, NO UN 80 SUELTO.** <sub>línea 231</sub>
   <br><sub>El núcleo reparte los edificios en rejilla dentro de ±tanque/2. Si aquí se dibujara con otro radio, la persona vería una ciudad de un tamaño y jugaría en otra: el escáner llegaría a sitios que en pantalla parecen lejísimos. Se copia</sub>
-- **LAS BANDAS SALEN DEL NÚCLEO, NO DE UNOS UMBRALES ESCRITOS AQUÍ.** <sub>línea 320</sub>
+- **LAS BANDAS SALEN DEL NÚCLEO, NO DE UNOS UMBRALES ESCRITOS AQUÍ.** <sub>línea 331</sub>
   <br><sub>Esta página tenía sus propios cortes (0,10 · 0,25 · 0,45 · 0,65) sobre una distancia normalizada distinta de la del núcleo, así que un mismo edificio podía salir «WARM» para la persona y «templado» para el modelo. El dato es</sub>
-- **EL CLIC APUNTA; QUIEN ESCANEA ES EL NÚCLEO.** <sub>línea 364</sub>
+- **EL CLIC APUNTA; QUIEN ESCANEA ES EL NÚCLEO.** <sub>línea 375</sub>
   <br><sub>Antes esta función escaneaba ella misma cualquier edificio de la pantalla, y eso hacía el dron decorativo: se ganaba sin despegar. Ahora sólo pide, y el núcleo escanea únicamente lo que tiene a tiro. Si no llega, se dice — que el</sub>
-- **EL PORCENTAJE SE CALCULA; NO ES EL NÚMERO DE LA BATERÍA.** <sub>línea 431</sub>
+- **EL PORCENTAJE SE CALCULA; NO ES EL NÚMERO DE LA BATERÍA.** <sub>línea 442</sub>
   <br><sub>La barra hacía `width = fuel + '%'`, que sólo era correcto porque el depósito viejo empezaba justo en 100. Con el del núcleo —treinta— la barra saldría al 30% con el depósito lleno: la pantalla mintiendo sin un error.</sub>
-- **A TIRO» LO DICE EL NÚCLEO, NO UN 25 ESCRITO AQUÍ.** <sub>línea 485</sub>
+- **A TIRO» LO DICE EL NÚCLEO, NO UN 25 ESCRITO AQUÍ.** <sub>línea 496</sub>
   <br><sub>El HUD ponía `< 25` a ojo mientras el alcance real del escáner es `radio + 25` y cambia con cada edificio. O sea que había edificios que se podían escanear y el HUD decía que no, y al revés. Un indicador que</sub>
-- **EL PUENTE RL ERA UN TERCER JUEGO, Y AHORA ES EL MISMO.** <sub>línea 514</sub>
+- **EL PUENTE RL ERA UN TERCER JUEGO, Y AHORA ES EL MISMO.** <sub>línea 525</sub>
   <br><sub>Tenía su propia observación —cinco números y dos por edificio, normalizados a ojo— y su propio `step` que empujaba el dron a mano y escaneaba con un radio de 25. O sea que esta página ofrecía TRES juegos distintos: el de la persona,</sub>
-- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 567</sub>
+- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 578</sub>
   <br><sub>Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y, si esta página publica `window.getSustrato()`, adjunta el mundo entero — con eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.</sub>
 
 ### `public/games/raccoon_floor_search.html`
 
 - **El juego estaba MUDO, y los 24 juegos de `games/` con él: ni una línea** <sub>línea 101</sub>
   <br><sub>de audio en toda la carpeta. Teníamos al lado `js/sfx.js` — 36 KB, 66 efectos sintetizados con Web Audio, sin un solo .wav — y CERO usuarios. No es un script de módulo: publica `window.SFX`, así que va aquí arriba y</sub>
-- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 383</sub>
+- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 385</sub>
   <br><sub>Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y, si esta página publica `window.getSustrato()`, adjunta el mundo entero — con eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.</sub>
 
 ### `public/games/raccoon_planet.html`
@@ -4037,15 +4049,15 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
   <br><sub>`cielo:false`  — esto se mira desde órbita: el fondo es espacio, y el cielo atmosférico de Rayleigh pintaría un horizonte que aquí no existe.</sub>
 - **AQUÍ MANDA `RaccoonSpaceCore`, Y ANTES NO** <sub>línea 133</sub>
   <br><sub>Hasta el 24-08 el juego estaba escrito en este HTML —escaneo, caliente/frío, victoria— y la batería la llevaba `RaccoonPlanetSystem`, mientras el banco medía `RaccoonSpaceCore` con otros números. Dos juegos con el mismo nombre.</sub>
-- **LAS BANDAS SALEN DEL NÚCLEO, NO DE UNOS UMBRALES ESCRITOS AQUÍ.** <sub>línea 230</sub>
+- **LAS BANDAS SALEN DEL NÚCLEO, NO DE UNOS UMBRALES ESCRITOS AQUÍ.** <sub>línea 237</sub>
   <br><sub>Esta página medía el ángulo entre ciudades sobre la esfera y lo cortaba con sus propios umbrales; el núcleo mide la distancia en línea recta con otros. La misma ciudad podía salir «WARM» para la persona y «fresco» para el modelo. El</sub>
-- **EL CLIC APUNTA; QUIEN ESCANEA ES EL NÚCLEO.** <sub>línea 312</sub>
+- **EL CLIC APUNTA; QUIEN ESCANEA ES EL NÚCLEO.** <sub>línea 319</sub>
   <br><sub>Antes esta función escaneaba cualquier ciudad de la pantalla, y eso hacía la órbita decorativa: se ganaba sin mover el satélite. Ahora sólo pide, y el núcleo escanea únicamente lo que tiene a tiro — que en una esfera significa</sub>
-- **EL PORCENTAJE SE CALCULA; NO ES EL NÚMERO DE LA BATERÍA.** <sub>línea 350</sub>
+- **EL PORCENTAJE SE CALCULA; NO ES EL NÚMERO DE LA BATERÍA.** <sub>línea 357</sub>
   <br><sub>`width = fuel + '%'` sólo funcionaba porque el depósito viejo empezaba en 100. Con el del núcleo —doce— la barra saldría al 12% con el depósito lleno: la pantalla mintiendo sin dar un error.</sub>
-- **EL INDICADOR DE ALCANCE, QUE ANTES NO EXISTÍA.** <sub>línea 386</sub>
+- **EL INDICADOR DE ALCANCE, QUE ANTES NO EXISTÍA.** <sub>línea 393</sub>
   <br><sub>Con el escaneo a distancia libre no hacía falta; ahora bajar la órbita es LA decisión de la etapa, y sin un indicador la persona no sabe si ya está lo bastante cerca — pincharía a ciegas hasta quedarse sin batería.</sub>
-- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 440</sub>
+- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 447</sub>
   <br><sub>Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y, si esta página publica `window.getSustrato()`, adjunta el mundo entero — con eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.</sub>
 
 ### `public/games/raccoon_space.html`
@@ -4113,9 +4125,17 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 
 ### `public/labs/croupier_asteroids_survival.html`
 
-- **Esto era `engine.ship.userData.shields` y reventaba CADA FOTOGRAMA con** <sub>línea 376</sub>
+- **EL MUNDO SE MONTA, NO SE ARMA A MANO.** <sub>línea 183</sub>
+  <br><sub>Aquí había `new AlisaRenderCore()` a pelo, y con eso esta etapa se quedaba sin NADA del acabado que el motor ya tiene hecho: sin tono fílmico, sin bloom, sin sombras y sin sonido. Medido el 25-08 sobre las once etapas de saga: sólo tres</sub>
+- **Y LA CONFIGURACIÓN DICE LO QUE ES ESTE SITIO.** <sub>línea 196</sub>
+  <br><sub>cielo: false   esto es el espacio. Una cúpula atmosférica de Rayleigh aquí sería una mentira bonita, y el sistema ya siembra sus propias estrellas (`spawnStar`).</sub>
+- **Esto era `engine.ship.userData.shields` y reventaba CADA FOTOGRAMA con** <sub>línea 410</sub>
   <br><sub>«Cannot read properties of undefined (reading 'shields')»: `engine.ship` existe pero no es una malla de THREE, así que no tiene `userData`. Los escudos viven en el sistema, no en el objeto de render.</sub>
-- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 400</sub>
+- **`arrancar` Y NO `startLoop`, Y ESTO NO ES INTERCAMBIABLE.** <sub>línea 426</sub>
+  <br><sub>`startLoop` pinta con el renderer PELADO. Con el pipeline registrado, eso deja el post-proceso vivo, consumiendo, y sin llegar nunca a la pantalla: se paga el coste del bloom y del tono fílmico y se ve exactamente igual que antes.</sub>
+- **EL SUSTRATO, QUE ESTA ETAPA YA TENÍA Y NO PUBLICABA.** <sub>línea 439</sub>
+  <br><sub>`AsteroidsSystem` expone `sustrato()` desde siempre. Sin esta línea, un aviso de un betatester llegaba sin mundo detrás: «se ve raro» y nadie puede repintar la escena. Con ella, el aviso trae el mundo entero y se puede repetir.</sub>
+- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 451</sub>
   <br><sub>Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y, si esta página publica `window.getSustrato()`, adjunta el mundo entero — con eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.</sub>
 
 ### `public/labs/croupier_banco_motores.html`
@@ -4125,7 +4145,11 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 
 ### `public/labs/croupier_chopper_aquarium.html`
 
-- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 334</sub>
+- **Y AL QUITAR EL DE AQUÍ HAY QUE TOCAR LOS IMPORTS, PORQUE NO COINCIDÍAN.** <sub>línea 88</sub>
+  <br><sub>El mapa propio de esta página apuntaba `@alisa-engine/` a `…/alisa-engine/src/` —con `src` dentro— y el común apunta a `/js/alisa-engine/` —sin él—. Cambiar sólo el mapa habría dejado la página pidiendo `/js/alisa-engine/soma/…` y</sub>
+- **EL MUNDO, PUBLICADO PARA QUE UN AVISO SE PUEDA REPINTAR.** <sub>línea 353</sub>
+  <br><sub>El botón de «algo se ve raro» de abajo recoge lo que la persona tenía delante; si además encuentra esto, adjunta el sustrato entero y el aviso deja de ser una anécdota para ser una partida que se re-juega.</sub>
+- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 370</sub>
   <br><sub>Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y, si esta página publica `window.getSustrato()`, adjunta el mundo entero — con eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.</sub>
 
 ### `public/labs/croupier_determinism_audit.html`
@@ -4140,12 +4164,20 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 
 ### `public/labs/croupier_interaction_lab.html`
 
-- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 188</sub>
+- **ESTA PÁGINA SE MONTABA SU PROPIO COMPOSER, Y ESE ES EL PATRÓN.** <sub>línea 105</sub>
+  <br><sub>Tenía a mano `EffectComposer` + `RenderPass` + `UnrealBloomPass` y su propio `resize`: veintitrés líneas para tener bloom y sólo bloom. Sin tono fílmico, sin SSAO, sin antialiasing y sin entorno PBR — no porque</sub>
+- **`suelo:false`, Y ESTO SE VIO EN LA PANTALLA, NO EN EL CÓDIGO.** <sub>línea 116</sub>
+  <br><sub>`montarMundo` llama a `setupDefaultEnvironment()` salvo que se le diga que no, y esta página nunca lo llamaba: al migrarla aparecieron dos cuñas marrones enormes atravesando la cámara — el suelo por defecto</sub>
+- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 189</sub>
   <br><sub>Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y, si esta página publica `window.getSustrato()`, adjunta el mundo entero — con eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.</sub>
 
 ### `public/labs/croupier_marabunta.html`
 
-- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 218</sub>
+- **ANTES ESTO ERA ANDAMIO PROPIO, Y SE NOTABA EN LO QUE NO TENÍA.** <sub>línea 76</sub>
+  <br><sub>La página montaba su `AlisaRenderCore` a mano y le enchufaba `AlisaBloomEngine` dentro de un try/catch. Bloom y nada más: sin tono filmico, sin SSAO, sin antialiasing, sin entorno PBR y sin sonido. No porque nadie los quisiera —</sub>
+- **`luces:false`, Y LO APRENDÍ MIRANDO LA PANTALLA, NO EL CÓDIGO.** <sub>línea 95</sub>
+  <br><sub>Con las luces del pipeline puestas, la arena salía gris lavada: un sitio que es una cueva morada con niebla parecía un aparcamiento a mediodía. `MarabuntaEnvironmentFactory` ya trae las suyas —una direccional cálida,</sub>
+- **EL BOTÓN DE «ALGO SE VE RARO», Y ESTA PÁGINA NO LO IMPLEMENTA.** <sub>línea 249</sub>
   <br><sub>Es el MISMO de las mesas del arcade. Recoge lo que la persona tenía delante y, si esta página publica `window.getSustrato()`, adjunta el mundo entero — con eso un aviso deja de ser una anécdota y pasa a ser algo que se puede repintar.</sub>
 
 ### `public/labs/croupier_math_orbital_shmup.html`
@@ -4514,6 +4546,13 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **No GLTF Delegate found.** <sub>línea 62</sub>
   <br><sub>try { const module = await import('./plugins/GLTFPlugin.js'); const tempPlugin = new module.GLTFPlugin();</sub>
 
+### `public/js/alisa-engine/src/soma/plugins/CinematicPipelinePlugin.js`
+
+- **ES `async` Y ESO ES SEGURO, PERO CONVIENE SABER POR QUÉ.** <sub>línea 60</sub>
+  <br><sub>Todo lo que va ANTES del primer `await` corre de forma síncrona, y el composer se construye ahí. O sea que cuando el bucle empieza a pintar, el composer ya existe. Lo único que llega un fotograma tarde es la pasada de</sub>
+- **Y SE CARGA A LA DEFENSIVA, PORQUE NO ESTÁ EN TODAS PARTES.** <sub>línea 189</sub>
+  <br><sub>Medido: `SMAAPass.js` existe en `vendor/three-0.170.0` y NO en `three-0.160.0`, y las páginas de esta casa usan las dos versiones. Un import estático dejaría media saga en pantalla negra por un adorno.</sub>
+
 ### `public/js/alisa-engine/src/soma/plugins/CSS3DHologramPlugin.js`
 
 - **El cajón del cartucho. `CSS3DObject` se APROPIA del <iframe>: lo** <sub>línea 34</sub>
@@ -4577,11 +4616,20 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 - **LA PRIMERA VERSIÓN HACÍA UN PASILLO, NO UN SENDERO.** <sub>línea 23</sub>
   <br><sub>Iba del borde al núcleo sin volver nunca atrás, con «desvíos laterales». Los desvíos no desviaban nada: al ser monótono, cada paso acercaba, así que el camino medía siempre la distancia Manhattan y punto. Medido en 40</sub>
 
+### `public/js/alisa-engine/src/world/factories/InteractionLabFactory.js`
+
+- **QUÉ HABÍA AQUÍ Y POR QUÉ NO PODÍA FUNCIONAR.** <sub>línea 242</sub>
+  <br><sub>Mouse.glb           4.1 de largo   × 0.8  →     3.3 beast_fox.glb     154.7 de largo   × 0.8  →   123.8 Velociraptor.glb 4483.9 de alto    × 1.2  →  5380.7</sub>
+- **Y LAS ALTURAS VAN EN UNIDADES DE LA ARENA, NO EN METROS.** <sub>línea 260</sub>
+  <br><sub>Puestas en metros —ratón 0.35— los bichos salían motas invisibles: esta arena mide unas 60 unidades de lado y no está a escala humana. La medida buena la daba lo único que ya se veía bien: el ratón, que con la escala</sub>
+
 ### `public/js/alisa-engine/src/world/factories/ProceduralBuildingFactory.js`
 
-- **Esta salida temprana devolvía el grupo SIN COLGARLO DE LA ESCENA.** <sub>línea 732</sub>
+- **TRES QUE SE QUEDARON FUERA DE ESA MISMA LISTA, Y NO ERAN INOFENSIVAS.** <sub>línea 78</sub>
+  <br><sub>`targetFloor`, `targetDoor` y `seekerAI` son huérfanas del monolito igual que las de arriba, pero a éstas no se las declaró — y estaban al FINAL de `build()`, en el bloque de la cinemática. Resultado medido en el navegador:</sub>
+- **Esta salida temprana devolvía el grupo SIN COLGARLO DE LA ESCENA.** <sub>línea 756</sub>
   <br><sub>`this.scene.add(this.buildingGroup)` está mucho más abajo, después de crear los personajes, así que por este camino nunca se ejecutaba: la fábrica construía el edificio entero — 183 mallas y 26 luces, todo</sub>
-- **Aquí ponía `window.flashDust = new THREE.Points(...)`, pero arriba (l.73)** <sub>línea 805</sub>
+- **Aquí ponía `window.flashDust = new THREE.Points(...)`, pero arriba (l.73)** <sub>línea 829</sub>
   <br><sub>hay un `let flashDust` LOCAL. Son dos variables distintas: la global se rellenaba y la local seguía a null, así que la línea siguiente reventaba con «Cannot read properties of null (reading 'position')» — y con ella se</sub>
 
 ### `public/js/alisa-engine/src/world/factories/RaccoonEnvironmentFactory.js`
@@ -4607,9 +4655,9 @@ segunda decisión casi nunca coincide con la primera y entonces hay dos verdades
 
 ### `public/js/alisa-engine/src/world/gym_runners/CabinetEscapeGame.js`
 
-- **Esto era `this.sys.episodes + 1` a secas.** <sub>línea 249</sub>
+- **Esto era `this.sys.episodes + 1` a secas.** <sub>línea 254</sub>
   <br><sub>`episodes` aún no existe, así que salía `NaN`, y ese NaN llegaba hasta `fractalPartition` como profundidad. Como `depth >= NaN` es siempre falso, la partición recursaba sin fondo y el juego moría al arrancar</sub>
-- **SNAKE! DODGE (SPACE)!', 500);** <sub>línea 555</sub>
+- **SNAKE! DODGE (SPACE)!', 500);** <sub>línea 560</sub>
   <br><sub>return; }</sub>
 
 ### `public/js/alisa-engine/src/world/systems/AsteroidsEngine.js`

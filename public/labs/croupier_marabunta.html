@@ -62,30 +62,51 @@ canvas{display:block}
 <div id="controls">WASD move · Q sweep · SPACE slam · SHIFT dash</div>
 <div id="badge">powered by alisa-engine</div>
 
-<script type="importmap">{"imports":{"three":"/vendor/three-0.170.0/build/three.module.min.js","three/addons/":"/vendor/three-0.170.0/examples/jsm/"}}</script>
+<script src="/js/mundo.js"></script>
 <script type="module">
 // ═══════════════════════════════════════════════
 //  MARABUNTA CROUPIER — Pure wire, no rendering
 //  System + Factory + Engine = Game
 // ═══════════════════════════════════════════════
-import { AlisaRenderCore } from '../js/alisa-engine/src/soma/AlisaRenderCore.js';
+import { montarMundo } from '/js/montarMundo.js';
 import { MarabuntaSystem } from '../js/alisa-engine/src/world/systems/MarabuntaSystem.js';
 import { MarabuntaEnvironmentFactory } from '../js/alisa-engine/src/world/factories/MarabuntaEnvironmentFactory.js';
-import { AlisaBloomEngine } from '../js/alisa-engine/src/soma/plugins/AlisaBloomEngine.js';
-import * as THREE from 'three';
 
-// ── Engine Core ──
-const core = new AlisaRenderCore({ clearColor: 0x060612, fogColor: 0x060612, fogDensity: 0.006, cameraPosition: new THREE.Vector3(0, 38, 28) });
+/**
+ * ⚠️ ANTES ESTO ERA ANDAMIO PROPIO, Y SE NOTABA EN LO QUE NO TENÍA.
+ *
+ * La página montaba su `AlisaRenderCore` a mano y le enchufaba `AlisaBloomEngine`
+ * dentro de un try/catch. Bloom y nada más: sin tono filmico, sin SSAO, sin
+ * antialiasing, sin entorno PBR y sin sonido. No porque nadie los quisiera —
+ * porque cuando el andamio se copia, lo que no es imprescindible no se copia.
+ *
+ * `montarMundo` trae todo eso puesto, así que `AlisaBloomEngine` sobra: el
+ * pipeline ya lleva su propio bloom y encadenarlos daría dos veces el mismo
+ * efecto sobre la misma imagen.
+ *
+ * `cielo:false` porque esto es una cueva con niebla, no un exterior; el cielo de
+ * Rayleigh le metería un horizonte azul dentro de la niebla morada.
+ */
+const { app: core, THREE, arrancar } = await montarMundo({
+    ambiente: 'night',
+    cielo: false,
+    suelo: false,                 // el suelo lo pone MarabuntaEnvironmentFactory
+    /**
+     * ⚠️ `luces:false`, Y LO APRENDÍ MIRANDO LA PANTALLA, NO EL CÓDIGO.
+     *
+     * Con las luces del pipeline puestas, la arena salía gris lavada: un sitio
+     * que es una cueva morada con niebla parecía un aparcamiento a mediodía.
+     * `MarabuntaEnvironmentFactory` ya trae las suyas —una direccional cálida,
+     * una puntual azul y las de cada bicho— así que las del pipeline se sumaban
+     * encima. Aquí el mundo tiene su propia iluminación de autor y se respeta;
+     * lo que queremos del pipeline es el acabado, no que decida el ambiente.
+     */
+    luces: false,
+    nucleo: { clearColor: 0x060612, fogColor: 0x060612, fogDensity: 0.006 },
+});
+core.camera.position.set(0, 38, 28);
 core.controls.maxDistance = 65;
 core.controls.maxPolarAngle = Math.PI / 2 - 0.05;
-
-// ── Bloom Plugin ──
-let bloomRender = null;
-try { 
-  const bloom = new AlisaBloomEngine(core); 
-  core.registerPlugin(bloom); 
-  bloomRender = bloom.render.bind(bloom);
-} catch(e) { console.warn('Bloom not available:', e.message); }
 
 // ── Game System (math) ──
 const game = new MarabuntaSystem();
@@ -188,7 +209,10 @@ window.resetGame = () => {
 };
 
 // ── GAME LOOP (the only wire) ──
-core.startLoop((dt) => {
+// `arrancar` y no `core.startLoop`: startLoop pinta con el renderer pelado, y un
+// mundo con pipeline registrado pintado así se ve SIN post-proceso y sin dar un
+// solo error. Lo explica `montarMundo.js` entero.
+arrancar((dt) => {
   // 1. Input → System
   let dx = 0, dz = 0;
   if (keys['w'] || keys['arrowup']) dz = -1;
@@ -209,7 +233,14 @@ core.startLoop((dt) => {
   updateHUD(result.state);
   if (result.state.pendingUpgrade && !document.getElementById('up').classList.contains('show')) showUpgrade(result.state.pendingUpgrade.options);
   if (result.done && !document.getElementById('ge').classList.contains('show')) showEnd(result.state);
-}, bloomRender);
+});
+
+/**
+ * El mundo, publicado, para que un aviso se pueda REPINTAR. `sustrato()` vive en
+ * `BulletHeavenEngine`, la clase base, así que lo hereda cualquier juego de la
+ * misma familia sin volver a escribirlo.
+ */
+window.getSustrato = () => { try { return game?.sustrato() ?? null; } catch { return null; } };
 
 console.log('🐔 Marabunta Bullet Heaven — Powered by alisa-engine');
 </script>

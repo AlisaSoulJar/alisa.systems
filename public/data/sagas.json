@@ -12,7 +12,7 @@
           "pagina": "/games/croupier_cabinet_escape.html",
           "existe": true,
           "medida": true,
-          "sustrato": false,
+          "sustrato": true,
           "avisa": true
         },
         {
@@ -42,7 +42,7 @@
           "pagina": "/games/raccoon_city_sector.html",
           "existe": true,
           "medida": true,
-          "sustrato": false,
+          "sustrato": true,
           "avisa": true
         },
         {
@@ -52,7 +52,7 @@
           "pagina": "/games/raccoon_planet.html",
           "existe": true,
           "medida": true,
-          "sustrato": false,
+          "sustrato": true,
           "avisa": true
         },
         {
@@ -66,7 +66,7 @@
           "avisa": true
         }
       ],
-      "conSustrato": 1,
+      "conSustrato": 4,
       "medidas": 5
     },
     {
@@ -89,7 +89,7 @@
           "pagina": "/labs/croupier_chopper_aquarium.html",
           "existe": true,
           "medida": true,
-          "sustrato": false,
+          "sustrato": true,
           "avisa": true
         },
         {
@@ -99,11 +99,11 @@
           "pagina": "/labs/croupier_marabunta.html",
           "existe": true,
           "medida": true,
-          "sustrato": false,
+          "sustrato": true,
           "avisa": true
         }
       ],
-      "conSustrato": 0,
+      "conSustrato": 2,
       "medidas": 2
     },
     {
@@ -133,11 +133,11 @@
           "pagina": "/labs/croupier_asteroids_survival.html",
           "existe": true,
           "medida": true,
-          "sustrato": false,
+          "sustrato": true,
           "avisa": true
         }
       ],
-      "conSustrato": 0,
+      "conSustrato": 1,
       "medidas": 1
     }
   ],

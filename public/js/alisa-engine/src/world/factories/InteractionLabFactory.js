@@ -234,17 +234,55 @@ export class InteractionLabFactory extends BaseEnvironmentFactory {
     //  ENTITY TEMPLATES (GLB loading)
     // ────────────────────────────────────────────────
 
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  LOS BICHOS SE MIDEN, NO SE MULTIPLICAN
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * ⚠️ QUÉ HABÍA AQUÍ Y POR QUÉ NO PODÍA FUNCIONAR. MEDIDO EN EL NAVEGADOR:
+     *
+     *     Mouse.glb           4.1 de largo   × 0.8  →     3.3
+     *     beast_fox.glb     154.7 de largo   × 0.8  →   123.8
+     *     Velociraptor.glb 4483.9 de alto    × 1.2  →  5380.7
+     *
+     * Tres GLB de tres procedencias, cada uno autorizado en sus unidades, y los
+     * tres multiplicados por un número cercano a uno. El zorro salía 37 veces
+     * mayor de lo que toca y el raptor mil seiscientas: en pantalla era una masa
+     * naranja tapando media arena. No es un valor mal elegido — es que un
+     * multiplicador NO PUEDE acertar cuando las fuentes no comparten unidad.
+     *
+     * Así que aquí se declara lo único que un humano sabe de verdad —cuánto mide
+     * el bicho— y la escala se calcula midiendo la caja del modelo. Un GLB nuevo
+     * que alguien suelte mañana entra bien sin tocar una línea, venga de donde
+     * venga. Y de paso se apoyan en el suelo: se baja el modelo por su propio
+     * `min.y`, que es la diferencia entre estar de pie y estar enterrado.
+     *
+     * ⚠️ Y LAS ALTURAS VAN EN UNIDADES DE LA ARENA, NO EN METROS.
+     * Puestas en metros —ratón 0.35— los bichos salían motas invisibles: esta
+     * arena mide unas 60 unidades de lado y no está a escala humana. La medida
+     * buena la daba lo único que ya se veía bien: el ratón, que con la escala
+     * vieja quedaba en 1.1 de alto. De ahí salen las tres, en proporción.
+     */
     _loadEntityTemplates() {
         const models = {
-            mouse: { file: 'Mouse.glb', scale: 0.8, fallbackColor: 0xcccccc },
-            fox: { file: 'beast_fox.glb', scale: 0.8, fallbackColor: 0xff6600 },
-            raptor: { file: 'Velociraptor.glb', scale: 1.2, fallbackColor: 0x338833 }
+            mouse: { file: 'Mouse.glb', alto: 1.1, fallbackColor: 0xcccccc },
+            fox: { file: 'beast_fox.glb', alto: 2.4, fallbackColor: 0xff6600 },
+            raptor: { file: 'Velociraptor.glb', alto: 4.2, fallbackColor: 0x338833 }
         };
 
         for (const [key, cfg] of Object.entries(models)) {
             GLTFModelPool.get(`${this.basePath}props/models/${cfg.file}`).then((gltf) => {
                 const model = gltf.scene.clone();
-                model.scale.set(cfg.scale, cfg.scale, cfg.scale);
+
+                const caja = new THREE.Box3().setFromObject(model);
+                const tam = caja.getSize(new THREE.Vector3());
+                // Si la caja sale vacía —un GLB sin geometría, o todo en skinning
+                // sin pose— no hay nada que medir: se deja a escala 1 y se ve raro,
+                // que es mejor que dividir por cero y desaparecer del mundo.
+                const escala = tam.y > 1e-6 ? cfg.alto / tam.y : 1;
+                model.scale.setScalar(escala);
+                model.position.y = -caja.min.y * escala;
+
                 model.traverse(n => {
                     if (n.isMesh) { n.castShadow = true; n.receiveShadow = true; }
                 });

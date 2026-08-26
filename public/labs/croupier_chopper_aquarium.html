@@ -82,15 +82,19 @@
         #btnStart:hover { transform: scale(1.02); }
     </style>
 
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "/vendor/three-0.170.0/build/three.module.js",
-            "three/addons/": "/vendor/three-0.170.0/examples/jsm/",
-            "@alisa-engine/": "../js/alisa-engine/src/"
-        }
-    }
-    </script>
+    <!--
+        El mapa del motor lo pone `/js/mundo.js`, que es donde vive esa decisión.
+
+        ⚠️ Y AL QUITAR EL DE AQUÍ HAY QUE TOCAR LOS IMPORTS, PORQUE NO COINCIDÍAN.
+        El mapa propio de esta página apuntaba `@alisa-engine/` a `…/alisa-engine/src/`
+        —con `src` dentro— y el común apunta a `/js/alisa-engine/` —sin él—. Cambiar
+        sólo el mapa habría dejado la página pidiendo `/js/alisa-engine/soma/…` y
+        cobrando 404 en todos los imports. Por eso abajo llevan `src/` a la vista.
+
+        Es el precio exacto de haber tenido dos declaraciones: coincidían en la
+        versión de three y diferían en lo otro, y nada lo delataba.
+    -->
+    <script src="/js/mundo.js"></script>
 </head>
 <body>
 
@@ -137,15 +141,28 @@
     </div>
 
     <script type="module">
-        import * as THREE from 'three';
-        import { AlisaRenderCore } from '@alisa-engine/soma/AlisaRenderCore.js';
+        import { montarMundo } from '/js/montarMundo.js';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-        import { AquariumEnvironmentFactory } from '@alisa-engine/world/factories/AquariumEnvironmentFactory.js';
-        import { ChopperAquariumEngine } from '@alisa-engine/world/systems/ChopperAquariumEngine.js';
-        import { RLGymBridge } from '@alisa-engine/world/systems/RLGymBridge.js';
+        import { AquariumEnvironmentFactory } from '@alisa-engine/src/world/factories/AquariumEnvironmentFactory.js';
+        import { ChopperAquariumEngine } from '@alisa-engine/src/world/systems/ChopperAquariumEngine.js';
+        import { RLGymBridge } from '@alisa-engine/src/world/systems/RLGymBridge.js';
 
         // ─── RENDERER ───
-        const core = new AlisaRenderCore({ clearColor: 0x020510, fogColor: 0x020510, fogDensity: 0.005 });
+        /**
+         * `cielo:false` y `luces:false`: esto es el fondo del mar. El cielo de
+         * Rayleigh no pinta nada bajo el agua, y `AquariumEnvironmentFactory` ya
+         * trae su iluminación entera —ambiente azul, luz cenital, dos lavados de
+         * color y el foco del sumergible—. Del pipeline queremos el acabado
+         * (tono fílmico, bloom, SSAO, antialiasing y entorno PBR), no que decida
+         * cómo está iluminado un sitio que ya tiene dirección de fotografía.
+         */
+        const { app: core, THREE, arrancar } = await montarMundo({
+            ambiente: 'night',
+            cielo: false,
+            luces: false,
+            suelo: false,
+            nucleo: { clearColor: 0x020510, fogColor: 0x020510, fogDensity: 0.005 },
+        });
         core.controls.maxDistance = 500;
         core.controls.minDistance = 30;
 
@@ -307,7 +324,10 @@
         }
 
         // ─── MAIN LOOP ───
-        core.startLoop((dt) => {
+        // `arrancar` y no `core.startLoop`: startLoop pinta con el renderer pelado
+        // y el post-proceso se quedaría registrado, funcionando y sin llegar a la
+        // pantalla, sin dar un solo error. Lo explica `montarMundo.js`.
+        arrancar((dt) => {
             if (engine.gameState.playing || engine.gameState.ended) {
                 engine.executeLogicTick(dt);
 
@@ -328,6 +348,22 @@
 
         // ─── RL BRIDGE ───
         const rlBridge = new RLGymBridge(engine);
+
+        /**
+         * ⚠️ EL MUNDO, PUBLICADO PARA QUE UN AVISO SE PUEDA REPINTAR.
+         *
+         * El botón de «algo se ve raro» de abajo recoge lo que la persona tenía
+         * delante; si además encuentra esto, adjunta el sustrato entero y el
+         * aviso deja de ser una anécdota para ser una partida que se re-juega.
+         *
+         * `ChopperAquariumEngine` ya tenía `sustrato()` —línea 140— y esta página
+         * llevaba el botón puesto sin publicarlo: el pescado estaba pescado y
+         * faltaba el plato. Envuelto en try/catch porque un aviso que revienta al
+         * intentar adjuntar el mundo es peor que un aviso sin mundo.
+         */
+        window.getSustrato = () => {
+            try { return engine.sustrato() ?? null; } catch { return null; }
+        };
     </script>
 
 <!--

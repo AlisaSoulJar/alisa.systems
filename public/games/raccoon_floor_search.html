@@ -105,15 +105,17 @@
      se usa con `SFX?.play()`, que no rompe nada si algún día no está. -->
 <script src="../js/sfx.js"></script>
 
-<script type="importmap">
-{
-  "imports": {
-    "three": "/vendor/three-0.160.0/build/three.module.js",
-    "three/addons/": "/vendor/three-0.160.0/examples/jsm/",
-    "@alisa-engine/": "../js/alisa-engine/"
-  }
-}
-</script>
+<!--
+    El mapa del motor lo pone `/js/mundo.js`. Esta página NO pasa a `montarMundo`
+    y es a propósito: tiene su propio `pintar()` con interruptor de cine y un
+    `css3dRenderer` encima, y eso no cabe en el `arrancar()` común. Lo que sí
+    sobra es declarar dónde vive three.
+
+    Y el cambio no es cosmético: declaraba la 0.160 y la común es la 0.170, que
+    es la única cuyo `vendor` trae `SMAAPass`. O sea que esta página gana
+    antialiasing y entorno PBR sin tocar una línea de su lógica.
+-->
+<script src="/js/mundo.js"></script>
 
 <script type="module">
 import * as THREE from 'three';
