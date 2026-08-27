@@ -1,0 +1,21 @@
+[
+    {
+        "_": "La lista de la compra de `traer_modelos.mjs`. Cada entrada dice qué se busca en poly.pizza y con qué clave entra al catálogo de props. Sólo CC0 mientras no haya página de créditos publicada: el CC-BY exige atribución visible, y publicarla sin ella incumple la licencia.",
+        "clave": "silla",
+        "busca": "wooden chair",
+        "licencias": ["CC0"],
+        "variantes": 2
+    },
+    {
+        "clave": "lampara",
+        "busca": "ceiling lamp",
+        "licencias": ["CC0"],
+        "variantes": 2
+    },
+    {
+        "clave": "taburete",
+        "busca": "bar stool",
+        "licencias": ["CC0"],
+        "variantes": 2
+    }
+]

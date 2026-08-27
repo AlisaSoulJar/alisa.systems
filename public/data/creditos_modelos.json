@@ -1,0 +1,62 @@
+{
+    "silla_1.glb": {
+        "titulo": "Chair",
+        "autor": "Quaternius",
+        "licencia": "CC0 1.0",
+        "atribucion": "\"Chair\" by Quaternius, https://poly.pizza/m/iMNqRzPwwe. Licence at https://creativecommons.org/publicdomain/zero/1.0/",
+        "origen": "https://poly.pizza/m/iMNqRzPwwe",
+        "triangulos": 216,
+        "animado": false,
+        "bytes": 13360
+    },
+    "silla_2.glb": {
+        "titulo": "Chair",
+        "autor": "Quaternius",
+        "licencia": "CC0 1.0",
+        "atribucion": "\"Chair\" by Quaternius, https://poly.pizza/m/zMmKNm8w4a. Licence at https://creativecommons.org/publicdomain/zero/1.0/",
+        "origen": "https://poly.pizza/m/zMmKNm8w4a",
+        "triangulos": 1298,
+        "animado": false,
+        "bytes": 69244
+    },
+    "lampara_1.glb": {
+        "titulo": "Ceiling Light",
+        "autor": "Quaternius",
+        "licencia": "CC0 1.0",
+        "atribucion": "\"Ceiling Light\" by Quaternius, https://poly.pizza/m/sRNcgQFbLB. Licence at https://creativecommons.org/publicdomain/zero/1.0/",
+        "origen": "https://poly.pizza/m/sRNcgQFbLB",
+        "triangulos": 196,
+        "animado": false,
+        "bytes": 8840
+    },
+    "lampara_2.glb": {
+        "titulo": "Light Ceiling",
+        "autor": "Quaternius",
+        "licencia": "CC0 1.0",
+        "atribucion": "\"Light Ceiling\" by Quaternius, https://poly.pizza/m/S3HkX8iTl2. Licence at https://creativecommons.org/publicdomain/zero/1.0/",
+        "origen": "https://poly.pizza/m/S3HkX8iTl2",
+        "triangulos": 269,
+        "animado": false,
+        "bytes": 10312
+    },
+    "taburete_1.glb": {
+        "titulo": "Bar Stool",
+        "autor": "Kenney",
+        "licencia": "CC0 1.0",
+        "atribucion": "\"Bar Stool\" by Kenney, https://poly.pizza/m/2do92chR2k. Licence at https://creativecommons.org/publicdomain/zero/1.0/",
+        "origen": "https://poly.pizza/m/2do92chR2k",
+        "triangulos": 352,
+        "animado": false,
+        "bytes": 22180
+    },
+    "taburete_2.glb": {
+        "titulo": "Stool",
+        "autor": "Quaternius",
+        "licencia": "CC0 1.0",
+        "atribucion": "\"Stool\" by Quaternius, https://poly.pizza/m/TvaOenUAni. Licence at https://creativecommons.org/publicdomain/zero/1.0/",
+        "origen": "https://poly.pizza/m/TvaOenUAni",
+        "triangulos": 452,
+        "animado": false,
+        "bytes": 18068
+    }
+}

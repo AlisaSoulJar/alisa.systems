@@ -46,6 +46,32 @@ export const CATALOGO = {
     roca:        { rutas: [3, 4, 5, 6, 7].map(n => `${RAIZ}/models/Rock_${n}.glb`) },
     roca_musgo:  { rutas: [1, 2, 3, 4, 5].map(n => `${RAIZ}/models/Rock_Moss_${n}.glb`) },
     roca_nieve:  { rutas: [1, 2, 3].map(n => `${RAIZ}/models/Rock_Snow_${n}.glb`) },
+
+    /**
+     * ⚠️ LOS PRIMEROS TRAÍDOS DE FUERA, Y TODAVÍA NO LOS PIDE NADIE.
+     *
+     * Los baja `traer_modelos.mjs` de poly.pizza al empaquetar —nunca en el
+     * navegador— y cada uno deja su ficha en `creditos_modelos.json`. `preflight`
+     * suspende si aparece uno sin ficha o con una licencia que exija atribución
+     * mientras no haya página que la publique, así que por ahora sólo entra CC0.
+     *
+     * Están aquí y no en un cajón porque un modelo que no se puede PEDIR es un
+     * modelo que no existe: eso es lo que le pasó a los 122 props de esta casa
+     * hasta que alguien escribió las tres líneas de arriba.
+     *
+     * Que ninguna sala los use todavía es una decisión de aspecto, no de
+     * fontanería: la mesa de cartas ya tiene su habitación (`habitacion.js`, con
+     * suelo, paredes y dos luces) y lo que le falta es poder cambiar de sitio
+     * según el juego, igual que los tableros cambian de `ambiente`.
+     *
+     * ⚠️ Y OJO CON LAS MALLAS: `geometriasDeProp` se queda con la PRIMERA de cada
+     * GLB, porque su trabajo es alimentar un `InstancedMesh`. Un prop de varias
+     * mallas saldrá incompleto y hay que cargarlo como objeto suelto. Se dice
+     * aquí porque estos vienen de fuera y nadie ha mirado uno por uno.
+     */
+    silla:       { rutas: [1, 2].map(n => `${RAIZ}/polypizza/silla_${n}.glb`) },
+    lampara:     { rutas: [1, 2].map(n => `${RAIZ}/polypizza/lampara_${n}.glb`) },
+    taburete:    { rutas: [1, 2].map(n => `${RAIZ}/polypizza/taburete_${n}.glb`) },
 };
 
 const cache = new Map();      // clave → Promise<{geometria, material}[]>

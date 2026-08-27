@@ -284,6 +284,35 @@ prohibidos = [p for p in ficheros if "Lowpoly Animals eng" in str(p)]
 comprobar("sin recursos que prohíban redistribuirse", not prohibidos,
           f"{len(prohibidos)} ficheros de Seaeees — su licencia no lo permite")
 
+# ⚠️ Y LO QUE VIENE DE FUERA VIAJA CON SU FICHA, O NO VIAJA.
+#
+# `traer_modelos.mjs` baja modelos de poly.pizza al empaquetar y deja la ficha de
+# cada uno en `creditos_modelos.json`: título, autor, licencia y enlace. Los CC0
+# no piden nada; los CC-BY piden ATRIBUCIÓN, y publicar uno sin ella es incumplir
+# la licencia — la misma clase de cosa por la que los recursos de Seaeees se
+# quedan fuera, dos líneas más arriba.
+#
+# Un fichero se copia en un segundo y una ficha se olvida en el mismo segundo, así
+# que se comprueba aquí y no se confía en acordarse. Y se mira lo que hay EN EL
+# PAQUETE, que es lo que se publica, no lo que hay en el repositorio.
+traidos = [p for p in ficheros if "polypizza" in str(p).lower() and p.suffix.lower() == ".glb"]
+if traidos:
+    ficha_f = medido / "data" / "creditos_modelos.json"
+    try:
+        fichas = json.loads(ficha_f.read_text(encoding="utf-8"))
+    except Exception:
+        fichas = {}
+    sin_ficha = sorted({p.name for p in traidos if p.name not in fichas})
+    comprobar("los modelos traídos de fuera llevan su ficha", not sin_ficha,
+              f"{len(sin_ficha)} sin crédito: " + ", ".join(sin_ficha[:3]))
+    # CC-BY exige que la atribución se PUBLIQUE, no sólo que se guarde. Mientras
+    # no haya una página que la enseñe, sólo se acepta CC0.
+    cc_by = sorted({n for n, f in fichas.items()
+                    if n in {p.name for p in traidos}
+                    and not str(f.get("licencia", "")).upper().startswith("CC0")})
+    comprobar("ningún modelo exige atribución sin página que la publique", not cc_by,
+              f"{len(cc_by)} con licencia CC-BY: " + ", ".join(cc_by[:3]))
+
 # Y las páginas no pueden depender de un tercero: la puerta de la descarga
 # sólo es verdad si el paquete funciona sin conexión.
 cdn = []

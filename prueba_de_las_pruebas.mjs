@@ -1040,6 +1040,28 @@ const SABOTAJES = [
         vigila: 'que ninguna página del PAQUETE cargue código desde un CDN',
     },
     {
+        /**
+         * ⚠️ LA OTRA MITAD DE `preflight`: LAS LICENCIAS DE LO QUE VIENE DE FUERA.
+         *
+         * `traer_modelos.mjs` baja modelos de poly.pizza. Los CC0 no piden nada; los
+         * CC-BY piden ATRIBUCIÓN, y publicar uno sin ella incumple la licencia — la
+         * misma clase de cosa por la que los recursos de Seaeees se quedan fuera del
+         * paquete.
+         *
+         * El sabotaje cambia la licencia de un modelo a CC-BY sin que exista página
+         * de créditos, que es exactamente el caso que no puede colarse. Va sobre el
+         * PAQUETE por el mismo motivo que el de arriba: `preflight` mide
+         * `dist_publico` en cuanto existe.
+         */
+        nombre: 'preflight-licencias',
+        corre: 'python preflight.py',
+        corre_solo_si: 'dist_publico',
+        fichero: 'dist_publico/data/creditos_modelos.json',
+        de: '"licencia": "CC0 1.0"',
+        a: '"licencia": "CC-BY 4.0"',
+        vigila: 'que un modelo de fuera no se publique sin cumplir su licencia',
+    },
+    {
         nombre: 'contrato',
         corre: 'node prueba_contrato.mjs',
         fichero: 'public/js/alisa-engine/src/world/systems/AsteroidsSystem.js',
