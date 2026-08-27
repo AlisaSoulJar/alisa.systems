@@ -189,7 +189,7 @@ for (const [nombre, ruta, Env] of ETAPAS) {
         /**
          * ⚠️ Y HAY DISCRETOS CUYO `names` ES UNA LEYENDA, NO UNA ENUMERACIÓN.
          *
-         * `alisa/Defiende-v0` tiene 433 acciones —una por torreta y celda— y
+         * `alisa/Defiende-v1` tiene 433 acciones —una por torreta y celda— y
          * cuatro nombres, porque enumerar «construir guijarro en (7,3)» 432 veces
          * no ayuda a nadie. Comparar sus verbos contra esa lista de cuatro lo
          * suspendía sin que hubiera nada roto.

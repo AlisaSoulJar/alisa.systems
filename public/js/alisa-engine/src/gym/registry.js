@@ -208,7 +208,7 @@ const PROPIOS = [
      * piloto de la arquitectura: lo que se aprenda aquí decide si se migran los
      * cinco motores completos que llevan su estado a mano.
      */
-    { id: 'alisa/Defiende-v0', titulo: 'Sendero', fichero: 'DefiendeEnv.js' },
+    { id: 'alisa/Defiende-v1', titulo: 'Sendero', fichero: 'DefiendeEnv.js' },
     /**
      * El primero donde el recurso no sólo se acaba: MATA — y donde el mundo tiene
      * refugios repartidos que paran la cuenta atrás.

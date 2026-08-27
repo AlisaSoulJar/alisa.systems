@@ -25,7 +25,7 @@ import { DefiendeSystem, TORRETAS, TIPOS, CELDA, OLEADAS }
  * Lo que se aprenda aquí decide si se migra el resto.
  */
 export class DefiendeEnv extends GymEnv {
-    static id = 'alisa/Defiende-v0';
+    static id = 'alisa/Defiende-v1';
     /** El nucleo, expuesto: es por donde se llega a la `familia` del cartucho. */
     static Core = DefiendeSystem;
 
@@ -72,7 +72,7 @@ export class DefiendeEnv extends GymEnv {
      * una política discreta es mucho pero es EL problema.
      *
      * `esperar` es la acción 0, y es una jugada de verdad: ahorrar para una
-     * pértiga en vez de gastar en dos guijarros es la decisión más fina que tiene
+     * tirador en vez de gastar en dos repetidoras es la decisión más fina que tiene
      * esta etapa.
      */
     static get actionSpace() {
@@ -84,7 +84,7 @@ export class DefiendeEnv extends GymEnv {
              * ⚠️ `names` AQUÍ ES UNA LEYENDA, NO LA LISTA DE LAS 433 ACCIONES.
              *
              * En los demás entornos discretos hay un nombre por acción y coinciden
-             * uno a uno. Aquí no cabe: enumerar «construir guijarro en (7,3)» 432
+             * uno a uno. Aquí no cabe: enumerar «construir repetidora en (7,3)» 432
              * veces no ayuda a nadie. Así que `names.length !== n`, y quien
              * compruebe verbos contra esta lista tiene que saberlo — de hecho
              * `prueba_puertas_busca.mjs` me suspendió por esto, con razón.
@@ -262,7 +262,7 @@ export class DefiendeEnv extends GymEnv {
                     /**
                      * ⚠️ AQUÍ EL MUNDO SÍ SABE DÓNDE ACABA SU MÉTODO, Y LO DICE.
                      *
-                     * `construir_guijarro` parece partible por el guión bajo, pero
+                     * `construir_repetidora` parece partible por el guión bajo, pero
                      * `ir_a_planta` —del edificio— es UN método entero. Nadie puede
                      * distinguirlos desde fuera, así que quien lo sabe lo declara y
                      * la gramática no adivina. Adivinar es lo que produjo las seis.
@@ -281,7 +281,7 @@ export class DefiendeEnv extends GymEnv {
     }
 
     /**
-     * Un verbo con coordenadas: `construir_pertiga` con `{x, z}`. Sin esto, la
+     * Un verbo con coordenadas: `construir_tirador` con `{x, z}`. Sin esto, la
      * puerta de lenguaje tendría que elegir entre cientos de entradas del menú
      * que sólo se diferencian en dos números.
      */

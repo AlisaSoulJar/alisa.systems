@@ -53,9 +53,9 @@ export { CELDA };
  * Los tres tiers de torreta. La decisión de la partida es cuál pones y dónde,
  * y por eso los tres son buenos en cosas distintas y no uno mejor que otro:
  *
- *   guijarro  barata y corta — muchas, pegadas al camino
- *   pértiga   cara y larga   — pocas, cubren curvas enteras
- *   yunque    lenta y fuerte — mata lo gordo, deja pasar lo rápido
+ *   repetidora  barata y corta — muchas, pegadas al camino
+ *   tirador     cara y larga   — pocas, cubren curvas enteras
+ *   demoledora  lenta y fuerte — mata lo gordo, deja pasar lo rápido
  */
 /**
  * ⚠️ LOS NOMBRES DICEN EL ALCANCE, Y ESO NO ES DECORACIÓN: ES DIAGNÓSTICO.
@@ -69,22 +69,71 @@ export { CELDA };
  * Con el rango en el nombre, la pregunta «¿por qué siempre gano poniendo lo más
  * barato?» se hace sola al leer la tabla.
  *
- * ⚠️ SÓLO CAMBIA `nombre`, QUE ES PIEL. Los `id` se quedan: el sustrato publica
- * `t: t.id`, o sea que el id de una torreta ES el tipo de pieza que cuenta la
- * huella. Renombrarlos movería `77bef3c2` y retiraría las notas del sendero —
- * eso va junto con arreglar el desequilibrio, en un solo `-v1`, no en dos.
+ * ⚠️ Y EN EL -v1 CAMBIAN TAMBIÉN LOS `id`, QUE NO SON PIEL.
+ *
+ * El sustrato publica `t: t.id`, o sea que el id de una torreta ES el tipo de
+ * pieza que cuenta la huella. Por eso esto va con la subida de versión y no
+ * antes: renombrar retira las notas del sendero, igual que arreglar el
+ * desequilibrio. Las dos cosas juntas cuestan UNA versión; separadas, dos.
+ */
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ EL -v1: SE ARREGLA LA OPCIÓN DOMINANTE, Y LA CUENTA ESTÁ AQUÍ
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * `dps / oro` a secas no basta para comparar dos torretas: una de largo alcance
+ * cubre más trozo de camino, así que puede permitirse rendir menos por moneda.
+ * Lo que hay que igualar es **dps por oro × celdas que cubre** — lo que llega a
+ * hacer, por lo que cuesta.
+ *
+ *     torreta      coste  alcance    dps   dps/oro  celdas   VALOR
+ *     Repetidora     20      2,5   6,67     0,333       5    1,67  ← dominaba
+ *     Tirador        45      5,0   4,55     0,101      10    1,01
+ *     Demoledora     70      2,0  10,00     0,143       4    0,57
+ *     Mortero        60      2,6   3,75     0,063       5    0,33
+ *
+ * **La mejor rendía 5,13 veces la peor.** Por eso alfombrar de repetidoras
+ * ganaba el 100% de las partidas y ninguna otra idea —ni el laberinto, ni el
+ * área, ni un tablero tallado— podía competir: cada moneda gastada en otra cosa
+ * era una repetidora menos.
+ *
+ * Se toca SÓLO el daño. El coste y el alcance son el carácter de cada una y no
+ * se mueven: quien quiera cubrir una curva entera sigue pagando 45, y quien
+ * quiera pegarse al camino sigue teniendo la barata.
+ *
+ * ⚠️ Y EL MORTERO YA ESTABA BIEN, QUE FUE LA SORPRESA.
+ *
+ * Su valor se multiplica por los blancos que tenga dentro del radio: con uno
+ * rinde 0,33 —un tercio que las demás, un mal negocio— y con tres, 1,0. O sea
+ * que sólo paga si apiñas a los bichos. Y apiñar es exactamente lo que hace un
+ * laberinto. El desequilibrio y el laberinto resultaron ser el mismo arreglo.
+ */
+/**
+ * ⚠️ SE IGUALA SUBIENDO A LAS FLOJAS, NO BAJANDO A LA FUERTE. LO APRENDÍ MAL.
+ *
+ * El primer intento puso las tres en valor 1,0 —bajando la repetidora de 1,67—
+ * y el resultado fue que **no ganaba nadie**: 5% el mejor piloto, y el tirador
+ * y la demoledora ni llegaban a construirse. Igualar hacia abajo no quita la
+ * opción dominante: quita el juego.
+ *
+ * Y tenía una pista delante: la dificultad del sendero estaba CALIBRADA —75%
+ * con un piloto competente, medido con los premios ×0,4— contra el nivel de la
+ * repetidora. Bajarla movía la referencia entera.
+ *
+ * Así que las tres se ponen en 1,67, que es donde estaba la que dominaba. La
+ * repetidora vuelve a su daño de siempre y las otras dos suben hasta ella.
  */
 export const TORRETAS = [
-    { id: 'guijarro', nombre: '🔫 Repetidora · corto', coste: 20, alcance: 2.5, dmg: 4,  cadencia: 0.6 },
-    { id: 'pertiga',  nombre: '🎯 Tirador · largo',    coste: 45, alcance: 5.0, dmg: 5,  cadencia: 1.1 },
-    { id: 'yunque',   nombre: '🔨 Demoledora · pegada', coste: 70, alcance: 2.0, dmg: 22, cadencia: 2.2 },
+    { id: 'repetidora', nombre: '🔫 Repetidora · corto',  coste: 20, alcance: 2.5, dmg: 4,  cadencia: 0.6 },
+    { id: 'tirador',    nombre: '🎯 Tirador · largo',     coste: 45, alcance: 5.0, dmg: 8.25, cadencia: 1.1 },
+    { id: 'demoledora', nombre: '🔨 Demoledora · pegada', coste: 70, alcance: 2.0, dmg: 64, cadencia: 2.2 },
 ];
 
 /**
  * Las oleadas, en tabla declarativa como las de `AsteroidsSystem`. Cada una dice
  * qué manda y cada cuánto; el motor no sabe nada más de ellas.
  *
- * `rapido` existe para que el yunque no sea la respuesta a todo: pega fuerte pero
+ * `rapido` existe para que la demoledora no sea la respuesta a todo: pega fuerte pero
  * dispara cada 2,2 s, así que un enjambre veloz se le cuela entre disparo y
  * disparo. Sin algo así, la elección de tier no sería una elección.
  */
@@ -167,7 +216,7 @@ export const MURO = {
  * la respuesta a todo y volveríamos a no medir nada.
  */
 export const MORTERO = {
-    id: 'mortero', nombre: '💥 Mortero · área', coste: 60, alcance: 2.6, dmg: 6,
+    id: 'mortero', nombre: '💥 Mortero · área', coste: 60, alcance: 2.6, dmg: 10,
     cadencia: 1.6, area: true,
 };
 
@@ -188,7 +237,7 @@ export class DefiendeSystem {
      *
      * En un ECS el orden de registro decide la partida —si `bajas` corriera antes
      * que `balas`, dos disparos irían al mismo muerto— y no da ningún error. Va
-     * en el cartucho porque es tan parte del juego como el precio del yunque, y
+     * en el cartucho porque es tan parte del juego como el precio de la demoledora, y
      * `prueba_defiende.mjs` comprueba que el mundo se registra en este orden.
      *
      * ⚠️ SIN `hud` NI `cartel`, Y ES A PROPÓSITO.
@@ -229,8 +278,8 @@ export class DefiendeSystem {
      * detrás de un `if` que en ese modo no entra.
      */
     static ROMS = {
-        'alisa/Defiende-v0': {
-            id: 'alisa/Defiende-v0',
+        'alisa/Defiende-v1': {
+            id: 'alisa/Defiende-v1',
             familia: 'tiempo_real',
             modo: 'sendero',
             verbos: ['esperar', ...TORRETAS.map((t) => `construir_${t.id}`)],
@@ -277,12 +326,12 @@ export class DefiendeSystem {
          * fase de obra— y la quinta era una división que tenía que haber hecho el
          * primer día. Daño por segundo dividido por lo que cuesta:
          *
-         *     🪨 guijarro   6,67 dps / 20  =  0,333   ← el triple que nadie
-         *     🔨 yunque    10,00 dps / 70  =  0,143
-         *     🎣 pértiga    4,55 dps / 45  =  0,101
+         *     🔫 repetidora 6,67 dps / 20  =  0,333   ← el triple que nadie
+         *     🔨 demoledora 10,00 dps / 70  =  0,143
+         *     🎯 tirador    4,55 dps / 45  =  0,101
          *     💥 mortero    3,75 dps / 60  =  0,063 por blanco
          *
-         * **El guijarro domina.** Alfombrar de guijarros gana el 100% de las
+         * **La repetidora domina.** Alfombrar de repetidoras gana el 100% de las
          * partidas en cualquier configuración, y cada muro que pones es oro que
          * no se convierte en la torreta dominante. Ningún laberinto puede
          * competir con eso, y tampoco puede el mortero: necesitaría CINCO blancos
@@ -363,7 +412,7 @@ export class DefiendeSystem {
     };
 
     /** El cartucho por defecto: el sendero, que es lo que este núcleo era. */
-    static ROM = DefiendeSystem.ROMS['alisa/Defiende-v0'];
+    static ROM = DefiendeSystem.ROMS['alisa/Defiende-v1'];
 
     /** Los números con los que un cartucho llama a una pieza. */
     static params(pieza, cartucho = DefiendeSystem.ROM) {
@@ -394,7 +443,7 @@ export class DefiendeSystem {
         const a = { ...cartucho.mundo, ...opts };
         this.lado = a.lado;                       // matriz lado × lado
         this.vidasIniciales = a.vidas;
-        // 40 y no 60: poder comprar el yunque de entrada resulta ser una TRAMPA.
+        // 40 y no 60: poder comprar la demoledora de entrada resulta ser una TRAMPA.
         // Medido, con premios x0,4: con 60 de salida se gana el 63% y con 40 el 75%.
         this.presupuestoInicial = a.presupuesto;
         /** Oro por segundo. Cero en el sendero, que sólo cobra matando. */
@@ -919,6 +968,20 @@ export class DefiendeSystem {
              */
             piezas.push({ x: c.x, y: c.z, t: t.id, de: 0, alcance: t.alcance });
         }
+        /**
+         * ⚠️ LAS BALAS, QUE HASTA EL -v1 NO EXISTÍAN PARA NADIE DE FUERA.
+         *
+         * El juego disparaba y el sustrato no lo decía: ni un pintor podía
+         * dibujar un disparo ni un agente veía uno venir. Y no era que faltara
+         * un sistema —`ProjectileSystem` ya trae su `piezas()`— era que nadie
+         * publicaba lo que ya tenía. A Pedrisco le pasa lo mismo, y queda dicho.
+         *
+         * Van con `de: 3` para quedar por encima de torretas y bichos.
+         */
+        for (const id of w.query(['Punto', 'Bala'])) {
+            const p = w.getComponent(id, 'Punto'), b = w.getComponent(id, 'Bala');
+            piezas.push({ x: p.x, y: p.z, t: 'bala', de: 3, cajon: `bala_${id}`, dmg: b.dmg });
+        }
         for (const id of w.query(['Celda', 'Atacante'])) {
             const c = w.getComponent(id, 'Celda'), a = w.getComponent(id, 'Atacante');
             piezas.push({ x: c.x, y: c.z, t: a.tipo, de: 1, vida: a.hp / a.hpMax });
@@ -958,12 +1021,18 @@ export class DefiendeSystem {
              * torretas y los bichos, que es lo único que ocupa una celda encima.
              */
             leyenda: {
-                guijarro: 'torreta corta', pertiga: 'torreta larga', yunque: 'torreta lenta y fuerte',
+                repetidora: 'torreta de corto alcance, rápida',
+                tirador: 'torreta de largo alcance',
+                demoledora: 'torreta pegada, lenta y demoledora',
+                muro: 'muro: no dispara, sólo estorba',
+                mortero: 'mortero: golpea a todos los que tenga al lado',
+                bala: 'un disparo en el aire',
                 peon: 'bicho normal', rapido: 'bicho veloz', gordo: 'bicho duro',
             },
             simbolos: {
-                guijarro: 'g', pertiga: 'p', yunque: 'y',
-                peon: 'a', rapido: 'r', gordo: 'G',
+                repetidora: 'r', tirador: 't', demoledora: 'd', muro: '#', mortero: 'M',
+                bala: '·',
+                peon: 'a', rapido: 'v', gordo: 'G',
             },
         };
     }

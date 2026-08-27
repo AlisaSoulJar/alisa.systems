@@ -254,7 +254,7 @@ if (direcciones.length) {
  * jugada legal que no era la que se pidió es la peor forma de equivocarse.
  */
 {
-    const e = CATALOGO.find(x => x.id === 'alisa/Defiende-v0');
+    const e = CATALOGO.find(x => x.id === 'alisa/Defiende-v1');
     const C = await e.cargar();
     const env = new C();
     env.reset(7);

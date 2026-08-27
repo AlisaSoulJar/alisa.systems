@@ -48,14 +48,14 @@ function lienzoFalso(w = 600, h = 600) {
 console.log('\n¿Pinta el pintor plano desde el sustrato?\n');
 
 {
-    const e = CATALOGO.find(x => x.id === 'alisa/Defiende-v0');
+    const e = CATALOGO.find(x => x.id === 'alisa/Defiende-v1');
     const C = await e.cargar();
     const env = new C();
     env.reset(7);
 
     const { lienzo, apuntes } = lienzoFalso();
     const pintor = new PintorMatriz(lienzo, {
-        guijarro: { emoji: '🪨' }, peon: { color: '#8ad' },
+        repetidora: { emoji: '🔫' }, peon: { color: '#8ad' },
     });
 
     const sus0 = env.sys.sustrato();
@@ -71,15 +71,15 @@ console.log('\n¿Pinta el pintor plano desde el sustrato?\n');
 
     // Ahora con torretas y bichos: tiene que pintar una figura por pieza.
     const libres = env.sys.celdasLibres();
-    env.sys.construir('guijarro', libres[0].x, libres[0].z);
+    env.sys.construir('repetidora', libres[0].x, libres[0].z);
     for (let i = 0; i < 600; i++) env.sys.step(1 / 60);
 
     const sus1 = env.sys.sustrato();
     const { lienzo: l2, apuntes: a2 } = lienzoFalso();
-    const pintor2 = new PintorMatriz(l2, { guijarro: { emoji: '🪨' }, peon: { color: '#8ad' } });
+    const pintor2 = new PintorMatriz(l2, { repetidora: { emoji: '🔫' }, peon: { color: '#8ad' } });
     pintor2.pintar(sus1);
 
-    const conEmoji = sus1.piezas.filter(p => p.t === 'guijarro').length;
+    const conEmoji = sus1.piezas.filter(p => p.t === 'repetidora').length;
     const conAlcance = sus1.piezas.filter(p => p.alcance).length;
     if (a2.textos.length !== conEmoji) {
         mal(`${conEmoji} pieza(s) con emoji declarado y se pintaron ${a2.textos.length} textos`);
