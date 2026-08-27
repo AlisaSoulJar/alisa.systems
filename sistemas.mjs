@@ -290,7 +290,17 @@ const TECHO_INTEGRADORES = 20;
  * que la propia página ya usaba para su jugador, y al enchufarla la huella no se
  * movió: `bd87b6ef` antes y después.
  */
-const SUELO_ROMS = 13;
+/**
+ * ⚠️ Y 13 → 14 CON ¡IMPULSO!, QUE LLEVABA DÍAS SIN RECOGERSE.
+ *
+ * El aviso salía en verde —«↑ sube a 14»— y por eso nadie lo leyó. Un suelo por
+ * debajo de la realidad no protege lo ganado: durante esos días se podía haber
+ * perdido un cartucho sin que esta vara dijera una palabra, porque seguía
+ * midiendo contra un número viejo.
+ *
+ * Un aviso en verde no es un aviso. Recogido el 27-08.
+ */
+const SUELO_ROMS = 14;
 const conRom = filas.filter((r) => r.cartuchos);
 /** Se cuentan CARTUCHOS, no ficheros: el mueble del mapache sostiene tres. */
 const cartuchos = filas.reduce((s, r) => s + r.cartuchos, 0);

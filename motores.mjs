@@ -331,7 +331,10 @@ console.log(`\n  con las CUATRO piezas: ${completos.length ? completos.join(', '
  * instrumento dejó de mentir. Vale la pena distinguirlo.
  */
 // 24-08 (tarde): cinco. Entro RaccoonSpaceCore al unificar ¡Busca! 6.
-const SUELO_COMPLETOS = 7;
+// 27-08: ocho. Se recoge un desfase que llevaba días saliendo en verde — la
+// vara medía contra siete mientras había ocho, así que uno de los completos se
+// podía haber caído sin que esto fallara.
+const SUELO_COMPLETOS = 8;
 if (completos.length < SUELO_COMPLETOS) {
     console.log(`\n  ✗ eran ${SUELO_COMPLETOS} juegos completos y ahora hay ${completos.length}.`);
     console.log('    A alguno le falta una pieza que tenía: se podrá jugar y no medir,');

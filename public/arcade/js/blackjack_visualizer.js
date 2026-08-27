@@ -1,32 +1,35 @@
 // blackjack_visualizer.js — ALISA Sovereign Arena
 
 /**
- * ⚠️ SÓLO SE NOMBRA LO QUE `sustrato.js` PUBLICA, Y HOY ES SÓLO `player_hand`.
+ * ⚠️ AHORA SÍ SE NOMBRA LA BANCA, Y ANTES NO SE PODÍA.
  *
- * `sustratoDe()` (en `protohub/sustrato.js`) mira `st.mano ?? st.player_hand`
- * para la zona `mano`, y NO tiene ninguna rama para `dealer_hand` — se
- * comprobó leyendo el fichero entero, no adivinando. Con la semilla 7 la
- * matriz da 2 piezas (las dos cartas del jugador); la banca reparte otras dos
- * que la vista SÍ dibuja pero que la matriz no cuenta.
+ * Esta cabecera decía —con razón, entonces— que sólo se nombraba `player_hand`:
+ * `sustratoDe()` miraba `st.mano ?? st.player_hand` y no tenía ninguna rama para
+ * `dealer_hand`, así que la matriz contaba 2 piezas y la vista dibujaba 4.
+ * Nombrar la banca habría convertido «no comprobable» en «discrepa», que es peor.
+ * El hueco era del adaptador y se dijo así, remitiendo a otro fichero.
  *
- * Nombrar las cartas de la banca como `p:` haría que la vista dibujara más
- * piezas de las que dice el sustrato: la prueba pasaría de «no comprobable» a
- * «discrepa», que es peor —es el mismo error que nombrar las 64 casillas del
- * ajedrez como piezas—. Así que aquí sólo se nombra la mano del jugador. El
- * hueco es del adaptador (`sustrato.js`, fuera de este encargo), no de este
- * visualizador.
+ * El 27-08 blackjack publica su PROPIO sustrato con la mano de la casa dentro, o
+ * sea que la premisa caducó — y como caducan siempre estas cosas, en silencio:
+ * `prueba_vistas` se puso en rojo con «sustrato 3 · dibujadas 2» sin que nadie
+ * tocara este fichero.
+ *
+ * Se nombran las tres zonas con el contrato de siempre: `p:carta:<dueño>` lo que
+ * se ve, `oculta` lo que está boca abajo. La tapada NO lleva prefijo de pieza a
+ * propósito — vive en `ocultas` del sustrato, no en `items`, y contarla como
+ * pieza volvería a descuadrar la cuenta por el otro lado.
  *
  * Repite la fórmula EXACTA de `drawZone()` en `SovereignCardEngine.js` para
  * encontrar la malla ya creada (`${zona}_${baseId}_${idx}`, la rama que no es
  * `grid`): una copia de esa cuenta que no coincidiera sería un nombre que
  * apunta a ninguna malla.
  */
-function nombrarCartas(engine, cartas, zona, dueño) {
+function nombrarCartas(engine, cartas, zona, dueño, ocultas = false) {
     cartas.forEach((carta, idx) => {
         const baseId = typeof carta === 'string' ? carta
                      : (carta.id || (carta.rank + carta.suit) || `c_${idx}`);
         const mesh = engine.cardMeshes[`${zona}_${baseId}_${idx}`];
-        if (mesh) mesh.name = `p:carta:${dueño}`;
+        if (mesh) mesh.name = ocultas ? 'oculta' : `p:carta:${dueño}`;
     });
 }
 
@@ -98,8 +101,13 @@ const engine = new SovereignCardEngine({
             if (hideFirst) {
                 this.drawZone([dealerHand[0]], 'dealer_hole', -0.5, -1.5, { layout: 'line', hidden: true });
                 this.drawZone([dealerHand[1]], 'dealer_up', 0.5, -1.5, { layout: 'line', hidden: false });
+                // La tapada va como `oculta`: se dibuja, pero no cuenta como pieza —
+                // en el sustrato vive en `ocultas`, no en `items`.
+                nombrarCartas(this, [dealerHand[0]], 'dealer_hole', 1, true);
+                nombrarCartas(this, [dealerHand[1]], 'dealer_up', 1);
             } else {
                 this.drawZone(dealerHand, 'dealer', -((dealerHand.length-1)*0.9)/2, -1.5, { layout: 'line', hidden: false });
+                nombrarCartas(this, dealerHand, 'dealer', 1);
             }
         }
         

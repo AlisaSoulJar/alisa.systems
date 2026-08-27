@@ -207,7 +207,15 @@ console.log(`  ${filas.filter(r => r.peso === 0).length} de ${filas.length} pág
  * líneas propias y CERO señales. Es lo que esta vara lleva pidiendo desde que
  * existe, así que sube.
  */
-const SUELO_SUSTRATO = 8;
+/**
+ * ⚠️ 8 → 9 CON `impulso.html`, POR LA MISMA RAZÓN Y CON LA MISMA PEREZA.
+ *
+ * Otra página nacida sobre las piezas compartidas: 47 líneas propias. Llevaba
+ * días avisando en verde de que el suelo iba por debajo, y en verde no se lee
+ * nada. Recogido el 27-08 junto con los otros dos que iban igual
+ * (`SUELO_ROMS` y `SUELO_COMPLETOS`).
+ */
+const SUELO_SUSTRATO = 9;
 const juegos = filas.filter(r => r.esJuego);
 const conSustrato = juegos.filter(r => r.sustrato);
 console.log(`\n  juegos que enseñan el sustrato: ${conSustrato.length} de ${juegos.length} (suelo: ${SUELO_SUSTRATO})`);
