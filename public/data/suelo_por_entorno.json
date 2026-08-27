@@ -182,16 +182,16 @@
       "separa": true,
       "suelo": [
         0.02,
+        -0.5,
         0,
-        0,
-        0.1,
-        0.1,
-        0.14,
-        0
+        0.18,
+        0.18,
+        0.2,
+        -0.5
       ],
-      "mejorCiega": 0.14,
-      "peorCiega": 0,
-      "pasos": 3000,
+      "mejorCiega": 0.19999999999999998,
+      "peorCiega": -0.5,
+      "pasos": 7200,
       "semilla": 1234,
       "forma": "action"
     },
@@ -257,17 +257,17 @@
       "familia": "propio",
       "separa": true,
       "suelo": [
-        42,
+        326,
         -300,
         -300,
-        49,
-        -134,
-        51,
-        42
+        268,
+        -284,
+        272,
+        778
       ],
-      "mejorCiega": 51,
+      "mejorCiega": 778,
       "peorCiega": -300,
-      "pasos": 3000,
+      "pasos": 7200,
       "semilla": 1234,
       "forma": "action"
     },
@@ -295,17 +295,17 @@
       "familia": "propio",
       "separa": true,
       "suelo": [
-        -5.5,
-        -5,
-        -5.5,
-        -7,
-        -6,
-        -6.5,
+        -56.833,
+        -56.667,
+        -56.833,
+        -57.333,
+        -57.167,
+        -57.167,
         -57.833
       ],
-      "mejorCiega": -4.999999999999968,
+      "mejorCiega": -56.66666666666689,
       "peorCiega": -57.83333333333355,
-      "pasos": 3000,
+      "pasos": 7200,
       "semilla": 1234,
       "forma": "action"
     },
@@ -495,7 +495,7 @@
       ],
       "mejorCiega": -1,
       "peorCiega": -1,
-      "pasos": 3000,
+      "pasos": 7200,
       "semilla": 1234,
       "forma": "action"
     },
@@ -723,7 +723,7 @@
       ],
       "mejorCiega": -100,
       "peorCiega": -100,
-      "pasos": 3000,
+      "pasos": 3600,
       "semilla": 1234,
       "forma": "action"
     },
@@ -742,7 +742,7 @@
       ],
       "mejorCiega": -100,
       "peorCiega": -100,
-      "pasos": 3000,
+      "pasos": 5400,
       "semilla": 1234,
       "forma": "action"
     },
@@ -837,7 +837,7 @@
       ],
       "mejorCiega": -54.54666666666656,
       "peorCiega": -55.68833333333323,
-      "pasos": 3000,
+      "pasos": 7200,
       "semilla": 1234,
       "forma": "action"
     },
@@ -941,17 +941,17 @@
       "familia": "propio",
       "separa": true,
       "suelo": [
-        25,
-        25,
-        25,
-        25,
+        -8.325,
+        -8.325,
+        -8.325,
+        -8.325,
         -44.025,
-        25,
-        25
+        -8.325,
+        -8.325
       ],
-      "mejorCiega": 24.999999999999222,
+      "mejorCiega": -8.325000000001722,
       "peorCiega": -44.02499999999991,
-      "pasos": 3000,
+      "pasos": 7200,
       "semilla": 1234,
       "forma": "action"
     },

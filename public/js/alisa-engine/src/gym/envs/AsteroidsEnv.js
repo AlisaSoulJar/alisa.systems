@@ -37,6 +37,8 @@ const NOMBRES_OBS = [
 
 export class AsteroidsEnv extends GymEnv {
     static id = 'alisa/Pedrisco-v0';
+    /** El nucleo, expuesto: es por donde se llega a la `familia` del cartucho. */
+    static Core = AsteroidsSystem;
     static observationSpace = {
         shape: [NOMBRES_OBS.length],
         names: NOMBRES_OBS,

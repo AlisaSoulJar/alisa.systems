@@ -54,6 +54,8 @@ const PREMIO_PLANTA = 5;        // cada planta nueva escaneada
 
 export class ChopperAquariumEnv extends GymEnv {
     static id = 'alisa/ChopperAquarium-v0';
+    /** El nucleo, expuesto: es por donde se llega a la `familia` del cartucho. */
+    static Core = ChopperAquariumEngine;
     static observationSpace = { shape: [0], names: ['combustible', 'x', 'y', 'z', '…'] };
     static actionSpace = { type: 'discrete', n: 9, names: ACCIONES.map(a => a.verb) };
     static meta = {

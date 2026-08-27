@@ -26,6 +26,8 @@ import { DefiendeSystem, TORRETAS, TIPOS, CELDA, OLEADAS }
  */
 export class DefiendeEnv extends GymEnv {
     static id = 'alisa/Defiende-v0';
+    /** El nucleo, expuesto: es por donde se llega a la `familia` del cartucho. */
+    static Core = DefiendeSystem;
 
     /** Los números del juego los pone el cartucho; aquí sólo se dice cuál. */
     static ajustes = DefiendeSystem.ROM.mundo;

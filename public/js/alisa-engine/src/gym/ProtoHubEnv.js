@@ -75,6 +75,21 @@ export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
             tags: ['protohub', 'verificable', ...(meta.tags ?? [])],
         };
 
+        /**
+         * ⚠️ LA FAMILIA, QUE AQUÍ ES LA MISMA PARA LOS TREINTA.
+         *
+         * Un mueble con treinta cartuchos y todos de turnos: se juega cuando te
+         * toca y el reloj no corre solo. Los trece cartuchos de mundo la declaran
+         * cada uno en su `static ROM`; aquí basta con decirlo una vez, porque el
+         * adaptador ES lo que tienen en común.
+         *
+         * Y no es una etiqueta: decide con cuántos pasos se les mide. Un juego de
+         * turnos se acaba en cuarenta y uno de tiempo real necesita siete mil, y
+         * medirlos con el mismo número es preguntarle a un maratón cómo va a los
+         * cien metros. Ver `prueba_senal.mjs`.
+         */
+        static familia = meta.familia ?? 'turnos';
+
         /** El juego, por si alguien quiere el recibo o las reglas crudas. */
         static juego = juego;
         static reglas = reglas;

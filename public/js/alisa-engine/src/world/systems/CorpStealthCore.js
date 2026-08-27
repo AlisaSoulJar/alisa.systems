@@ -4,6 +4,7 @@ import { EnergySystem, EnergyComponent } from './EnergySystem.js';
 import { ElevatorSystem, ElevatorComponent } from './ElevatorSystem.js';
 import { HidingSpotSystem, HidingSpotComponent } from './HidingSpotSystem.js';
 import { LinearNavAgentSystem, LinearNavAgentComponent } from './LinearNavAgentSystem.js';
+import { RechargeSystem } from './RechargeSystem.js';
 import { FlashlightSystem } from './FlashlightSystem.js';
 import { LightFixtureSystem } from './LightFixtureSystem.js';
 
@@ -213,9 +214,22 @@ export class CorpStealthCore {
              * llamar sin navegador no sirve para un núcleo sin pantalla.
              */
             ['LinearNavAgentSystem', { arrivalRadius: 0.05 }],
+            /**
+             * ⚠️ ESTO ESTABA ESCRITO A MANO AQUÍ DENTRO, Y ERA DEUDA MÍA.
+             *
+             * Las pilas del suelo tenían su propio array, su propio radio, su
+             * propio bucle de recogida y su propia suma a la energía — treinta
+             * líneas— teniendo `RechargeSystem` a un import de distancia, que
+             * hace exactamente eso y que ya usaban `RaccoonSpaceCore` y
+             * `SearchInVolumeCore`.
+             *
+             * O sea que el día que escribí este núcleo cometí la avería que
+             * llevo tres días denunciando en el resto de la casa: la pieza
+             * canónica existía y me escribí la mía. Queda dicho aquí y no en el
+             * mensaje de un commit, que es donde se lee.
+             */
+            ['RechargeSystem', { piel: 'pila', da: 60, alcance: 1.5 }],
         ],
-        /** Las pilas del suelo no son un sistema: son un objeto con dos números. */
-        pilas: { da: 60, radio: 1.5 },
         voz: {
             jugador: 'tu',
             texto: {
@@ -282,7 +296,7 @@ export class CorpStealthCore {
         this.tope = m.tope;
         this.aguantaOscuridad = m.aguantaOscuridad;
         this.andar = { ...R.jugador, ...cfg.jugador };
-        this.pila = { ...R.pilas, ...cfg.pilas };
+        this.recargas = new RechargeSystem(CorpStealthCore.params('RechargeSystem'));
 
         /**
          * Las dos puntas del pasillo. La escalera a la izquierda y el ascensor a
@@ -404,15 +418,26 @@ export class CorpStealthCore {
         this.mapache = this.escondites.find((e) => e.planta === plantaBuena && e.i === huecoBueno);
         this.ecs.getComponent(this.mapache.id, 'HidingSpotComponent').hasRaccoon = true;
 
-        // ─── las pilas sueltas ───
-        this.pilas = [];
+        /**
+         * ─── las pilas sueltas ───
+         *
+         * El REPARTO sigue siendo del núcleo —dos tiradas por pila, en este
+         * orden— y lo único que se va a la pieza es llevar la cuenta. Es la regla
+         * que `RechargeSystem` tiene escrita en su `sembrar`: «si esto tirara del
+         * azar por su cuenta, el mundo dibujado y el que el juego cree tener
+         * serían dos partidas distintas».
+         *
+         * Las posiciones van en coordenadas de MUNDO, con la planta metida en la
+         * altura. Así el alcance esférico de la pieza hace por sí solo lo que
+         * antes hacía un `if` de planta más un valor absoluto: con 1,5 de alcance
+         * y 5 de separación entre plantas, una pila de arriba nunca queda a tiro.
+         */
+        const sitiosPila = [];
         for (let i = 0; i < this.nPilas; i++) {
-            this.pilas.push({
-                planta: Math.floor(rnd() * this.plantas),
-                x: (rnd() - 0.5) * (this.largo - 8),
-                cogida: false,
-            });
+            const planta = Math.floor(rnd() * this.plantas);
+            sitiosPila.push({ x: (rnd() - 0.5) * (this.largo - 8), y: planta * this.altoPlanta, z: 0 });
         }
+        this.recargas.sembrar(sitiosPila);
 
         /**
          * ⚠️ LAS BOMBILLAS: UNA POR RELLANO Y UNA QUE VIAJA.
@@ -503,14 +528,17 @@ export class CorpStealthCore {
 
         // ─── las pilas del suelo ───
         const yo = this._donde();
-        for (const p of this.pilas) {
-            if (p.cogida || p.planta !== this.jugador.planta) continue;
-            if (Math.abs(p.x - this.jugador.x) > this.pila.radio) continue;
-            p.cogida = true;
-            this.energia.currentEnergy = Math.min(
-                this.energia.maxEnergy, this.energia.currentEnergy + this.pila.da);
-            this.ultimo = 'pila';
-        }
+        if (this.recargas.tick(yo, this.energia, dt)) this.ultimo = 'pila';
+        /**
+         * ⚠️ Y SE VUELVE A DECIR QUIÉN MANDA SOBRE `isOn`.
+         *
+         * `RechargeSystem` enciende el aparato al recargarlo, y en los juegos
+         * donde la pila ES el interruptor eso está bien. Aquí no: aquí manda la
+         * linterna, y `EnergySystem` gasta mirando `isOn`. Sin esta línea, coger
+         * una pila con la linterna apagada la dejaría gastando a oscuras — el
+         * mismo doble drenaje que costó medir 2,5/s donde ponía 1,5.
+         */
+        this.energia.isOn = this.linterna.encendida;
 
         // ─── la oscuridad ───
         /**
@@ -730,7 +758,8 @@ export class CorpStealthCore {
             ? Math.min(...sinVer.map((e) => Math.abs(e.x - this.jugador.x))) / this.largo
             : 1);
         /** La pila suelta más cercana de tu planta, si queda alguna. */
-        const pilas = this.pilas.filter((p) => !p.cogida && p.planta === this.jugador.planta);
+        const miAlto = this.jugador.planta * this.altoPlanta;
+        const pilas = this.recargas.disponibles().filter((p) => p.y === miAlto);
         obs.push(pilas.length
             ? Math.min(...pilas.map((p) => Math.abs(p.x - this.jugador.x))) / this.largo
             : 1);
@@ -772,14 +801,12 @@ export class CorpStealthCore {
             });
         }
 
-        for (const p of this.pilas) {
-            if (p.cogida) continue;
-            piezas.push({
-                t: 'pila', x: p.x, y: 0, alto: aAlto(p.planta), de: 9,
-                planta: p.planta,
-                cajon: `pila_${p.planta}_${Math.round(p.x * 100)}`,
-                alcance: this.pila.radio,
-            });
+        /**
+         * Las pilas las publica la pieza, con su `alcance` y su `cajon` puestos.
+         * Aquí sólo se le añade la planta, que es la conversión de este núcleo.
+         */
+        for (const p of this.recargas.piezas({ de: 9 })) {
+            piezas.push({ ...p, planta: Math.round(p.alto / this.altoPlanta) });
         }
 
         /**

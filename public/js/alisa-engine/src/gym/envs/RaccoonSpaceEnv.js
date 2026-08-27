@@ -26,6 +26,8 @@ import { RaccoonSpaceCore, VERBS_SPACE, VERBS_DRONE, VERBS_ORBIT }
  */
 export class RaccoonSpaceEnv extends GymEnv {
     static id = 'alisa/RaccoonSpace-v1';
+    /** El nucleo, expuesto: es por donde se llega a la `familia` del cartucho. */
+    static Core = RaccoonSpaceCore;
 
     static observationSpace = {
         shape: [24],

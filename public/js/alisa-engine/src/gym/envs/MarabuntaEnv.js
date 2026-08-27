@@ -51,6 +51,8 @@ const VERBS = [
 
 export class MarabuntaEnv extends GymEnv {
     static id = 'alisa/Marabunta-v0';
+    /** El nucleo, expuesto: es por donde se llega a la `familia` del cartucho. */
+    static Core = MarabuntaSystem;
 
     /**
      * La observación es LA DEL MOTOR, no una mía.

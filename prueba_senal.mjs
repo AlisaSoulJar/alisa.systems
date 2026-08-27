@@ -199,8 +199,46 @@ const ENTORNOS = Object.fromEntries(CATALOGO.map(e => [e.id, e.cargar]));
  * metros. El tope existe sólo para que la prueba no tarde una eternidad, y
  * cuando corta, se dice — cortar en silencio sería la mentira de siempre.
  */
-const TOPE_PASOS = 3000;
-const horizonteDe = (Clase) => Math.min(Number(Clase.meta?.horizon) || 600, TOPE_PASOS);
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ Y EL TOPE LO DECIDE LA FAMILIA, QUE HASTA HOY NO LA LEÍA NADIE
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Había un solo tope, 3.000, y esta misma prueba llevaba días avisando de que
+ * **ocho entornos se medían cortados**. El aviso era correcto y el arreglo no
+ * era subir el número a ojo: es que 3.000 no significa lo mismo en un juego de
+ * turnos que en uno de tiempo real. CorpBuilding declara 40 y ¡Impulso! 7.200.
+ *
+ * La distinción ya estaba declarada —cada cartucho tiene su `familia` en la
+ * `static ROM` y los treinta del ProtoHub la traen del adaptador— y **no la
+ * consumía ni una línea de código**. Un campo que se escribe y no se lee acaba
+ * mintiendo, porque nadie se entera cuando se equivoca.
+ *
+ * Ahora manda aquí:
+ *
+ *     turnos       400   una partida de tablero cabe de sobra
+ *     tiempo_real 7200   dos minutos a 60 Hz, que es lo que declaran los largos
+ *
+ * El tope sigue existiendo para que la prueba no tarde una eternidad, y cuando
+ * corta se sigue diciendo.
+ */
+const TOPES = { turnos: 400, tiempo_real: 7200 };
+const TOPE_SIN_FAMILIA = 3000;
+
+/**
+ * La familia de un entorno: la suya propia si la declara, y si no la del
+ * cartucho que monta. Devuelve `null` cuando nadie lo ha dicho — y eso se
+ * cuenta, en vez de adivinarlo: inferir «esto parece de turnos» es cómo se
+ * fabrica una etiqueta que nadie ha verificado.
+ */
+export function familiaDe(Clase) {
+    return Clase?.familia ?? Clase?.Core?.ROM?.familia ?? null;
+}
+
+const horizonteDe = (Clase) => {
+    const tope = TOPES[familiaDe(Clase)] ?? TOPE_SIN_FAMILIA;
+    return Math.min(Number(Clase.meta?.horizon) || 600, tope);
+};
 
 /** Un azar barato y sembrado: la misma política da siempre la misma partida. */
 /**
@@ -257,14 +295,17 @@ console.log('\n¿Le da este entorno la misma nota a todo el mundo?\n');
 const fallos = [];
 const planos = [], vivos = [];
 let cortados = 0;
+const sinFamilia = [];
 
 for (const e of CATALOGO) {
     let Clase;
     try { Clase = await ENTORNOS[e.id](); }
     catch (err) { fallos.push(`${e.id}: no se pudo cargar (${err.message.slice(0, 50)})`); continue; }
 
+    const familia = familiaDe(Clase);
+    if (!familia) sinFamilia.push(e.id);
     const pasos = horizonteDe(Clase);
-    if ((Number(Clase.meta?.horizon) || 0) > TOPE_PASOS) cortados++;
+    if ((Number(Clase.meta?.horizon) || 0) > pasos) cortados++;
 
     let mejor = null;
     for (const [nombre, f] of FORMAS) {
@@ -365,8 +406,25 @@ for (const [id, m] of planos) {
 console.log(`\n  ${vivos.length}/${CATALOGO.length} entornos dan notas distintas a políticas distintas`);
 console.log(`  ${planos.length} no separan (declarados: ${Object.keys(NO_SEPARAN).length})`);
 if (cortados) {
-    console.log(`  ⚠️ ${cortados} entorno(s) declaran un horizonte mayor que el tope de ${TOPE_PASOS}`
+    console.log(`  ⚠️ ${cortados} entorno(s) declaran un horizonte mayor que el tope de su familia`
               + ' y se han medido cortados');
+}
+
+/**
+ * ⚠️ TRINQUETE: LOS QUE NO DICEN DE QUÉ FAMILIA SON. **SÓLO PUEDE BAJAR.**
+ *
+ * Un entorno sin familia se mide con el tope genérico, que es el que llevaba
+ * cortando a ocho. No es un fallo —hay entornos viejos que nacieron antes de que
+ * existiera el campo— pero es deuda, y la deuda que no se cuenta no se paga.
+ *
+ * Medido el 27-08 al enchufar la familia por primera vez.
+ */
+const TECHO_SIN_FAMILIA = 1;
+console.log(`\n  entornos que no declaran familia: ${sinFamilia.length} (techo: ${TECHO_SIN_FAMILIA})`);
+if (sinFamilia.length) console.log(`    ${sinFamilia.join(', ')}`);
+if (sinFamilia.length > TECHO_SIN_FAMILIA) {
+    fallos.push(`${sinFamilia.length} entorno(s) no declaran familia y se miden con el tope genérico: `
+              + sinFamilia.join(', '));
 }
 
 const sobran = Object.keys(NO_SEPARAN).filter(id => !planos.some(([p]) => p === id));

@@ -141,7 +141,8 @@ export class CorpStealthEnv extends GymEnv {
             partes.push(`Llevas ${i.oscuridad.toFixed(1)} segundos a oscuras de los ${n.aguantaOscuridad} que aguantas.`);
         }
 
-        const pila = n.pilas.find((p) => !p.cogida && p.planta === n.jugador.planta);
+        const miAlto = n.jugador.planta * n.altoPlanta;
+        const pila = n.recargas.disponibles().find((p) => p.y === miAlto);
         if (pila) partes.push(`Hay una pila suelta en esta planta, a ${Math.abs(pila.x - n.jugador.x).toFixed(1)}.`);
 
         const dInt = Math.abs(n.jugador.x - n.interruptorX);
