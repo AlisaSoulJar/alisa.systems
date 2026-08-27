@@ -89,4 +89,48 @@ export class DefiendeMapaFactory {
 
         return { rejilla: g, camino, entrada, nucleo: { x: cx, z: cz } };
     }
+
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  EL TABLERO ABIERTO — para el laberinto
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Aquí no se traza nada: **el suelo entero es andable y construible**, y el
+     * camino lo dibuja quien juega poniendo torretas. Es la diferencia entera
+     * entre las dos familias de tower defense:
+     *
+     *     sendero    el mapa trae la carretera y tú pones torres al lado
+     *     laberinto  el mapa está vacío y tú DOBLAS la carretera con las torres
+     *
+     * Y por eso este método es tan corto y el de arriba tan largo: cuando el
+     * jugador es quien construye el recorrido, el generador no tiene nada que
+     * decidir salvo dónde se entra y dónde está lo que hay que proteger.
+     *
+     * ⚠️ LA ENTRADA Y EL NÚCLEO EN ESQUINAS OPUESTAS, Y NO ES DECORACIÓN.
+     *
+     * Es la distancia máxima que cabe en la matriz, o sea el mayor margen para
+     * doblar. Si estuvieran cerca no habría sitio donde plegar la ruta, y el
+     * juego se quedaría sin su única pregunta.
+     *
+     * `camino` sale vacío a propósito: en este modo la ruta no es del mapa, es
+     * de cada bicho y se recalcula. Devolverlo aquí sería una verdad que caduca
+     * en cuanto alguien construya.
+     */
+    abierto(lado, rnd) {
+        const L = lado;
+        const g = Array.from({ length: L }, () => new Array(L).fill(CELDA.LIBRE));
+
+        /** Se sortea la esquina de entrada; el núcleo va en la de enfrente. */
+        const esquina = Math.floor(rnd() * 4);
+        const entrada = esquina === 0 ? { x: 0, z: 0 }
+            : esquina === 1 ? { x: L - 1, z: 0 }
+                : esquina === 2 ? { x: 0, z: L - 1 }
+                    : { x: L - 1, z: L - 1 };
+        const nucleo = { x: L - 1 - entrada.x, z: L - 1 - entrada.z };
+
+        g[entrada.z][entrada.x] = CELDA.ENTRADA;
+        g[nucleo.z][nucleo.x] = CELDA.NUCLEO;
+
+        return { rejilla: g, camino: [], entrada, nucleo };
+    }
 }

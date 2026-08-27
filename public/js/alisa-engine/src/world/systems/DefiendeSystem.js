@@ -2,6 +2,7 @@ import { ECSWorld } from '../OverworldECS.js';
 import { SpawnWaveSystem } from './SpawnWaveSystem.js';
 import { mulberry32 } from '../core/DeterministicScope.js';
 import { DefiendeMapaFactory, CELDA } from '../factories/DefiendeMapaFactory.js';
+import { Pathfinding } from './PathfindingSystem.js';
 
 /**
  * ¡DEFIENDE! — TOWER DEFENSE SOBRE MATRIZ PLANA, EN ECS
@@ -117,6 +118,25 @@ export const OLEADAS = [
  * Se declara aquí, en un sitio, y `prueba_defiende.mjs` comprueba que el mundo
  * los tiene registrados en este orden exacto.
  */
+/**
+ * ⚠️ EL MURO: LA PIEZA QUE SÓLO EXISTE EN EL LABERINTO, Y ESTÁ MEDIDA.
+ *
+ * No dispara —`alcance: 0`, `dmg: 0`— y sólo sirve para estorbar. Parece una
+ * torreta inútil y es lo contrario: es la pieza con la que se juega.
+ *
+ * Medido antes de ponerla: un peine sobre una matriz de 12 **triplica** el
+ * camino —de 22 celdas a 66, sin que la regla anti-sellado rechace ni una— y
+ * cuesta 55 piezas. Con las torretas de ¡Defiende! eso son 1.100 de oro, y el
+ * presupuesto de la partida son 70. O sea que la mecánica funcionaba y no había
+ * con qué pagarla: doblar la carretera costaba dieciséis partidas enteras.
+ *
+ * A 5 el muro, el peine sale por 275 — caro pero alcanzable, y esa es justo la
+ * tensión que se quiere: cada pared que pones es un disparo que no compras.
+ */
+export const MURO = {
+    id: 'muro', nombre: '🧱 Muro', coste: 5, alcance: 0, dmg: 0, cadencia: 999,
+};
+
 export const ORDEN_SISTEMAS = ['oleadas', 'ruta', 'torretas', 'balas', 'bajas'];
 
 export class DefiendeSystem {
@@ -144,24 +164,138 @@ export class DefiendeSystem {
      * adorno del que este fichero se ha pasado el día quejándose: una tabla que
      * no manda sobre nada se desincroniza el martes y nadie se entera.
      */
-    static ROM = {
-        id: 'alisa/Defiende-v0',
-        familia: 'tiempo_real',
-        verbos: ['esperar', ...TORRETAS.map((t) => `construir_${t.id}`)],
-        mundo: { lado: 12, vidas: 10, presupuesto: 40, tope: 7200 },
-        sistemas: [
-            ['SpawnWaveSystem', { oleadas: OLEADAS }],
-            ['DefiendeMapaFactory', {}],
-        ],
-        orden: ORDEN_SISTEMAS,
-        /** Las tres tablas que SON el juego: qué compras, a qué te enfrentas. */
-        torretas: TORRETAS,
-        atacantes: TIPOS,
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  DOS CARTUCHOS EN EL MISMO MUEBLE — LAS DOS FAMILIAS DEL GÉNERO
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Al mirar cómo se juega de verdad a esto —los mapas de defensa fueron la
+     * categoría más jugada de Brood War, por encima de los DOTA— salió que bajo
+     * los cincuenta nombres distintos hay **dos mecánicas** y no una:
+     *
+     *     sendero    los bichos van por un camino que trae el mapa, y tú pones
+     *                torretas al lado. Es lo que este núcleo hacía.
+     *     laberinto  el suelo está vacío y es todo construible: las torretas
+     *                BLOQUEAN, la ruta se recalcula, y **no puedes cerrarla**.
+     *
+     * Y la segunda es la que sostiene el género. La guía de la comunidad lo dice
+     * sin rodeos: *«tower placement can double your effective damage before you
+     * have upgraded anything»*. Un bicho que cruzaría en dos segundos pasa doce
+     * bajo las mismas torretas si le doblas la carretera.
+     *
+     * ⚠️ Y ES UN CARTUCHO, NO UN NÚCLEO NUEVO, PORQUE COMPARTEN TODO LO DEMÁS.
+     *
+     * Las mismas torretas, los mismos bichos, las mismas oleadas, el mismo ECS
+     * con el mismo orden, la misma economía. Lo único que cambia es **quién
+     * decide por dónde se anda**, y eso cabe en una bandera. Es el mismo caso
+     * que los tres vehículos del mapache: un mueble, tres cartuchos.
+     *
+     * ⚠️ EL DE SENDERO NO SE TOCA. Su huella `77bef3c2` está sellada y sus
+     * números no se mueven: la bandera nace en `sendero` y todo lo nuevo va
+     * detrás de un `if` que en ese modo no entra.
+     */
+    static ROMS = {
+        'alisa/Defiende-v0': {
+            id: 'alisa/Defiende-v0',
+            familia: 'tiempo_real',
+            modo: 'sendero',
+            verbos: ['esperar', ...TORRETAS.map((t) => `construir_${t.id}`)],
+            mundo: { lado: 12, vidas: 10, presupuesto: 40, tope: 7200 },
+            sistemas: [
+                ['SpawnWaveSystem', { oleadas: OLEADAS }],
+                ['DefiendeMapaFactory', { trazado: 'trazar' }],
+            ],
+            orden: ORDEN_SISTEMAS,
+            /** Las dos tablas que SON el juego: qué compras, a qué te enfrentas. */
+            torretas: TORRETAS,
+            atacantes: TIPOS,
+        },
+
+        /**
+         * ═══════════════════════════════════════════════════════════════════
+         *  ⚠️ ESTE CARTUCHO NO ESTÁ EN EL BANCO TODAVÍA, Y NO ES UN OLVIDO
+         * ═══════════════════════════════════════════════════════════════════
+         *
+         * La máquina funciona y está medida: el suelo abierto, la ruta que se
+         * recalcula, la ruta propia de cada bicho, y la regla anti-sellado
+         * —incluida la parte fea, no dejar encerrado a uno que ya está dentro—.
+         * Un peine sobre la matriz de 12 lleva el camino de 22 celdas a 66 y no
+         * rechaza ni una colocación.
+         *
+         * Lo que NO funciona es que doblar la carretera PAGUE. Barrido de
+         * presupuesto × renta, tres constructores, diez semillas:
+         *
+         *     presup renta   dobla y dispara   sólo dispara pegado
+         *         90     2      0%  (44 celdas)      100%  (22)
+         *        150     4     70%  (44)             100%  (22)
+         *        220     8     70%  (44)             100%  (22)
+         *
+         * El que ignora el laberinto y pone armas junto al camino recto gana
+         * SIEMPRE. Y el motivo no es la máquina: son las torretas. Su alcance
+         * (2,5 a 5 celdas) y su daño están calibrados para un sendero de 22
+         * celdas; en un recorrido doblado el mismo oro compra menos armas para
+         * cubrir el doble de carretera, y el tiempo extra bajo fuego no lo
+         * compensa porque la cadencia no cambia.
+         *
+         * Para que este cartucho mida algo hay que recalibrar SUS tablas —menos
+         * alcance, más vida en los bichos, otro precio— y eso es un barrido
+         * entero, no un número. Hasta entonces no se registra en el gimnasio ni
+         * en las sagas: publicar un juego cuyo mecanismo central no paga sería
+         * exactamente el «entorno que no mide a nadie» que `prueba_senal` existe
+         * para cazar, sólo que colado por la puerta de delante.
+         */
+        'alisa/DefiendeLaberinto-v0': {
+            id: 'alisa/DefiendeLaberinto-v0',
+            familia: 'tiempo_real',
+            modo: 'laberinto',
+            verbos: ['esperar', ...[MURO, ...TORRETAS].map((t) => `construir_${t.id}`)],
+            /**
+             * ⚠️ MÁS PRESUPUESTO Y MENOS VIDAS QUE EL SENDERO, Y ESTÁ MEDIDO.
+             *
+             * Aquí construir hace DOS trabajos —disparar y estorbar— y el peine
+             * que triplica el camino cuesta 275 en muros. Con los 70 del sendero
+             * no se puede doblar nada: la mecánica estaba y no había con qué
+             * pagarla. Menos vidas porque el que dobla bien no las necesita.
+             */
+            /**
+             * ⚠️ `renta` — Y ESTE NÚMERO NO EXISTÍA EN ¡DEFIENDE! HASTA HOY.
+             *
+             * El sendero gana presupuesto **sólo matando**, y eso funciona
+             * porque desde el primer segundo tienes torretas disparando. En el
+             * laberinto no: te gastas el dinero en muros, que no matan a nadie,
+             * y entonces no hay bajas, y sin bajas no hay dinero, y sin dinero
+             * no hay armas. Medido: el que dobla bien la carretera —51 celdas
+             * contra 22— perdía el 100% de las partidas con CERO bajas.
+             *
+             * La renta por segundo rompe ese círculo, y es lo que hacen los dos
+             * juegos de los que sale esta idea: en Legion TD gastar en una moneda
+             * sube la renta de la otra, y en Plants vs Zombies el sol cae solo.
+             * Invertir en carretera ahora para poder comprar armas luego ES el
+             * juego; sin renta, invertir es suicidarse.
+             */
+            mundo: { lado: 12, vidas: 6, presupuesto: 90, renta: 4.0, tope: 7200 },
+            sistemas: [
+                ['SpawnWaveSystem', { oleadas: OLEADAS }],
+                ['DefiendeMapaFactory', { trazado: 'abierto' }],
+                /**
+                 * La pieza que hace posible este cartucho: A* sobre la matriz y
+                 * la regla anti-sellado. Sin ella, poner una pared sería ganar.
+                 */
+                ['Pathfinding', { diagonales: false }],
+            ],
+            orden: ORDEN_SISTEMAS,
+            /** El muro primero: es lo que más se pone y lo que más barato sale. */
+            torretas: [MURO, ...TORRETAS],
+            atacantes: TIPOS,
+        },
     };
 
-    /** Los números con los que este cartucho llama a una pieza. */
-    static params(pieza) {
-        return DefiendeSystem.ROM.sistemas.find(([n]) => n === pieza)?.[1] ?? {};
+    /** El cartucho por defecto: el sendero, que es lo que este núcleo era. */
+    static ROM = DefiendeSystem.ROMS['alisa/Defiende-v0'];
+
+    /** Los números con los que un cartucho llama a una pieza. */
+    static params(pieza, cartucho = DefiendeSystem.ROM) {
+        return cartucho.sistemas.find(([n]) => n === pieza)?.[1] ?? {};
     }
 
     constructor(opts = {}) {
@@ -170,13 +304,25 @@ export class DefiendeSystem {
          * juego —qué manda cada ola y cada cuánto—; el reloj que la recorre es un
          * átomo que ahora puede usar cualquier ROM de «aguanta oleadas».
          */
-        this.olas = new SpawnWaveSystem(DefiendeSystem.params('SpawnWaveSystem'));
-        const a = { ...DefiendeSystem.ROM.mundo, ...opts };
+        const cartucho = DefiendeSystem.ROMS[opts.rom] ?? DefiendeSystem.ROM;
+        this.cartucho = cartucho;
+        this.modo = opts.modo ?? cartucho.modo;
+        /**
+         * La tabla de lo que se puede construir es DEL CARTUCHO, no del módulo.
+         * El laberinto añade el muro y el sendero no lo tiene — y no es un
+         * detalle: el tamaño de esta lista decide el espacio de acciones del
+         * entorno, así que compartirla habría cambiado la puerta del sendero.
+         */
+        this.torretas = cartucho.torretas;
+        this.olas = new SpawnWaveSystem(DefiendeSystem.params('SpawnWaveSystem', cartucho));
+        const a = { ...cartucho.mundo, ...opts };
         this.lado = a.lado;                       // matriz lado × lado
         this.vidasIniciales = a.vidas;
         // 40 y no 60: poder comprar el yunque de entrada resulta ser una TRAMPA.
         // Medido, con premios x0,4: con 60 de salida se gana el 63% y con 40 el 75%.
         this.presupuestoInicial = a.presupuesto;
+        /** Oro por segundo. Cero en el sendero, que sólo cobra matando. */
+        this.renta = a.renta ?? 0;
         this.tope = a.tope;                       // 120 s a 60 Hz
 
         /**
@@ -220,11 +366,17 @@ export class DefiendeSystem {
         this.eventos = [];
         this._idBala = 0;
 
-        const mapa = this.fabrica.trazar(this.lado, rnd);
+        /**
+         * El trazado lo dice el cartucho: `trazar` dibuja una carretera y
+         * `abierto` deja el suelo vacío para que la dibujes tú con las torretas.
+         */
+        const comoTrazar = DefiendeSystem.params('DefiendeMapaFactory', this.cartucho).trazado ?? 'trazar';
+        const mapa = this.fabrica[comoTrazar](this.lado, rnd);
         this.rejilla = mapa.rejilla;
         this.camino = mapa.camino;
         this.entrada = mapa.entrada;
         this.nucleo = mapa.nucleo;
+        if (this.modo === 'laberinto') this.camino = this._rutaDesde(this.entrada);
         this._registrarSistemas();
         return this.observacion();
     }
@@ -251,7 +403,7 @@ export class DefiendeSystem {
      * que nadie ve.
      */
     construir(idTorreta, x, z) {
-        const t = TORRETAS.find(t => t.id === idTorreta);
+        const t = this.torretas.find(t => t.id === idTorreta);
         if (!t) return { ok: false, motivo: `no existe la torreta "${idTorreta}"` };
         if (this.terminada) return { ok: false, motivo: 'la partida ha terminado' };
         if (x < 0 || x >= this.lado || z < 0 || z >= this.lado) {
@@ -266,20 +418,100 @@ export class DefiendeSystem {
         if (this.presupuesto < t.coste) {
             return { ok: false, motivo: `cuesta ${t.coste} y tienes ${Math.floor(this.presupuesto)}` };
         }
+        /**
+         * En el laberinto, además, no puede cerrar el paso. Se comprueba ANTES
+         * de cobrar: que te quiten el dinero por una jugada que no se hace es la
+         * clase de fallo que la gente recuerda más que el juego.
+         */
+        if (this.modo === 'laberinto' && this._sellaria(x, z)) {
+            return { ok: false, motivo: 'ahí cerrarías el paso del todo' };
+        }
 
         this.presupuesto -= t.coste;
         this.rejilla[z][x] = CELDA.TORRETA;
         const e = this.mundo.createEntity();
         this.mundo.addComponent(e, 'Celda', { x, z });
         this.mundo.addComponent(e, 'Torreta', { ...t, timer: 0 });
+        if (this.modo === 'laberinto') {
+            this.camino = this._rutaDesde(this.entrada);
+            this._replantear();
+        }
         this.eventos.push({ tipo: 'CONSTRUIDA', torreta: t.id, x, z });
         return { ok: true, entidad: e };
+    }
+
+    // ─── LO QUE SÓLO EXISTE EN EL LABERINTO ───────────────────────────────
+
+    /** ¿Se puede andar por esta celda? Una torreta bloquea; lo demás, no. */
+    _andable(x, z) {
+        return this.rejilla[z][x] !== CELDA.TORRETA;
+    }
+
+    /**
+     * El camino desde una celda hasta el núcleo, recalculado ahora mismo.
+     *
+     * ⚠️ SIN DIAGONALES, Y ES UNA REGLA DEL JUEGO.
+     *
+     * `Pathfinding` sabe andar en ocho direcciones, pero aquí se le pide cuatro:
+     * con diagonales un bicho se cuela por la esquina entre dos torretas puestas
+     * en diagonal, y entonces «bloquear» deja de significar nada. Es la
+     * diferencia entre un laberinto y un adorno, y por eso el número está
+     * declarado en el cartucho y no escondido aquí.
+     */
+    _rutaDesde(celda) {
+        const p = DefiendeSystem.params('Pathfinding', this.cartucho);
+        return Pathfinding.buscar({
+            filas: this.lado, cols: this.lado,
+            pasable: (r, c) => this._andable(c, r),
+            desde: { r: celda.z, c: celda.x },
+            hasta: { r: this.nucleo.z, c: this.nucleo.x },
+            diagonales: p.diagonales ?? false,
+        }).map(({ r, c }) => ({ x: c, z: r }));
+    }
+
+    /**
+     * ⚠️ LA REGLA ANTI-SELLADO, Y NO BASTA CON MIRAR LA ENTRADA.
+     *
+     * Lo obvio es comprobar que sigue habiendo camino desde la entrada. Pero eso
+     * deja un hueco que en los mapas de la comunidad tiene nombre —encerrar— y
+     * es la jugada más sucia del género: pones la última pared **detrás** de los
+     * bichos que ya están dentro y los dejas sin salida.
+     *
+     * Así que se comprueba la entrada Y cada bicho vivo. Si alguno se quedaría
+     * encerrado, no se puede construir ahí.
+     */
+    _sellaria(x, z) {
+        const antes = this.rejilla[z][x];
+        this.rejilla[z][x] = CELDA.TORRETA;
+        let sella = this._rutaDesde(this.entrada).length === 0;
+        if (!sella) {
+            for (const id of this.mundo.query(['Celda', 'Atacante'])) {
+                const c = this.mundo.getComponent(id, 'Celda');
+                const desde = { x: Math.round(c.x), z: Math.round(c.z) };
+                if (!this._andable(desde.x, desde.z)) { sella = true; break; }
+                if (this._rutaDesde(desde).length === 0) { sella = true; break; }
+            }
+        }
+        this.rejilla[z][x] = antes;
+        return sella;
+    }
+
+    /**
+     * Al construir, todos los bichos tienen que volver a pensar por dónde iban.
+     * No se les recalcula la ruta aquí: se les BORRA, y cada uno la rehace en su
+     * siguiente paso. Recalcular ochenta rutas dentro de un clic es un tirón que
+     * se nota; rehacerlas de una en una, no.
+     */
+    _replantear() {
+        for (const id of this.mundo.query(['Ruta'])) {
+            this.mundo.getComponent(id, 'Ruta').camino = null;
+        }
     }
 
     /** Lo que se puede construir AHORA: cabe en el presupuesto y hay dónde. */
     construibles() {
         if (this.terminada) return [];
-        return TORRETAS.filter(t => t.coste <= this.presupuesto).map(t => t.id);
+        return this.torretas.filter(t => t.coste <= this.presupuesto).map(t => t.id);
     }
 
     /** Las celdas donde cabe una torreta. Es la matriz, filtrada. */
@@ -348,11 +580,30 @@ export class DefiendeSystem {
             const r = w.getComponent(id, 'Ruta');
             const a = w.getComponent(id, 'Atacante');
             const c = w.getComponent(id, 'Celda');
+
+            /**
+             * ⚠️ EN EL LABERINTO CADA BICHO LLEVA SU PROPIO CAMINO.
+             *
+             * En el sendero la ruta es del MAPA y todos comparten el mismo array
+             * con un índice. Aquí no puede ser: al construir cambia el recorrido,
+             * y un índice sobre una lista que acaba de cambiar apunta a otro
+             * sitio. Así que cada uno guarda el suyo desde donde está, y al
+             * construir se les borra para que lo rehagan.
+             */
+            let camino = this.camino;
+            if (this.modo === 'laberinto') {
+                if (!r.camino) {
+                    r.camino = this._rutaDesde({ x: Math.round(c.x), z: Math.round(c.z) });
+                    r.paso = -1;
+                }
+                camino = r.camino;
+            }
+
             r.avance += a.vel * dt;
             while (r.avance >= 1) {
                 r.avance -= 1;
                 r.paso++;
-                if (r.paso >= this.camino.length) {
+                if (r.paso >= camino.length) {
                     // Ha llegado al núcleo: cuesta una vida y desaparece.
                     this.vidas--;
                     this.coladas++;
@@ -361,7 +612,7 @@ export class DefiendeSystem {
                     if (this.vidas <= 0) { this.terminada = true; }
                     break;
                 }
-                const p = this.camino[r.paso];
+                const p = camino[r.paso];
                 c.x = p.x; c.z = p.z;
             }
         }
@@ -443,6 +694,12 @@ export class DefiendeSystem {
 
         this.mundo.tick(dt);
         this.t += dt;
+        /**
+         * La renta. En el sendero vale 0 y esta línea no hace nada — por eso su
+         * huella `77bef3c2` no se mueve. En el laberinto es lo que permite
+         * invertir en carretera antes de tener con qué disparar.
+         */
+        if (this.renta) this.presupuesto += this.renta * dt;
 
         // Se gana sobreviviendo a todas las oleadas y limpiando lo que quede.
         if (this.oleada >= OLEADAS.length && this.mundo.query(['Atacante']).length === 0) {
