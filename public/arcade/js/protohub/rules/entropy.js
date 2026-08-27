@@ -247,6 +247,52 @@ export async function crearEntropy({ url = RUTA_BIBLIOTECA, jugadores = 2, baraj
         // los demás —las cartas tapadas ya salen como `null` incluso las propias—
         // pero igual de rota: el segundo jugador veía la caja del primero como si
         // fuera la suya. Ver la nota larga en `bazas.js`.
+        /**
+         * Las cajas con sus casillas, la robada y los dos montones.
+         *
+         * ⚠️ LAS TAPADAS SE TAPAN AQUI CON LA MISMA REGLA QUE EN `estado`, y las dos
+         * reglas de este juego son de esconder:
+         *
+         *   · una carta de tu propia caja que no has destapado NO se ve — tambien la
+         *     tuya, que es todo el juego: si el sustrato la enseñara, el entorno
+         *     dejaria de medir memoria para medir lectura;
+         *   · y la robada DEL MAZO es privada de quien la roba. La del descarte la ha
+         *     visto la mesa entera.
+         *
+         * `casillas` conserva el hueco con `null` donde hay carta boca abajo, porque
+         * aqui las casillas SON el juego: `cambiar:5` nombra un hueco fijo y la regla
+         * que lo hace interesante —dos iguales en la misma columna se anulan— solo se
+         * puede pensar viendo la rejilla.
+         */
+        sustrato(p, asiento = 0) {
+            const yo = Number.isInteger(asiento) && p.cajas[asiento] ? asiento : 0;
+            const pid = p.turno;
+            const ver = (caja) => caja.map(h => (h.visible ? h.carta : null));
+            const zonaCaja = (caja, de) => ({
+                id: 'caja', de,
+                items: ver(caja).filter(Boolean),
+                ocultas: caja.filter(h => !h.visible).length,
+                casillas: ver(caja),
+                columnas: COLUMNAS,
+            });
+            const zonas = [zonaCaja(p.cajas[yo], yo)];
+            for (let i = 0; i < p.cajas.length; i++) {
+                if (i !== yo) zonas.push(zonaCaja(p.cajas[i], i));
+            }
+            const robada = (yo === pid || p.robadaDe === 'descarte') ? p.robada : null;
+            if (robada) zonas.push({ id: 'robada', de: pid, items: [robada], ocultas: 0 });
+            else if (p.robada) zonas.push({ id: 'robada', de: pid, items: [], ocultas: 1 });
+            if (p.descarte.length) {
+                zonas.push({ id: 'descarte', de: null,
+                             items: [p.descarte[p.descarte.length - 1]],
+                             ocultas: p.descarte.length - 1 });
+            }
+            if (p.mazo.length) {
+                zonas.push({ id: 'mazo', de: null, items: [], ocultas: p.mazo.length });
+            }
+            return { rejilla: null, piezas: [], zonas };
+        },
+
         estado(p, asiento = 0) {
             const yo = Number.isInteger(asiento) && p.cajas[asiento] ? asiento : 0;
             if (!p.fin && p.turnos >= HORIZONTE) resolver(p);

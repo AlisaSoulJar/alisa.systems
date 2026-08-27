@@ -171,6 +171,47 @@ export async function crearUnit({ url = RUTA_BIBLIOTECA, jugadores = 4, mano = 7
         // `asiento` = desde qué silla se mira. Ver la nota larga en `bazas.js`:
         // sin esto, en una mesa compartida el segundo jugador veía la mano del
         // primero. Opcional, para no cambiarle nada al verificador ni al gym.
+        /**
+         * ⚠️ EL COLOR ACTIVO NO SE DEDUCE DE LA CIMA, Y ERA LO UNICO QUE FALTABA.
+         *
+         * Casi siempre el color en juego es el de la carta de encima… salvo despues de
+         * un comodin, que es cuando quien lo tiro ELIGE color. Ahi la cima es un
+         * `W_WILD` sin color y el color de verdad vive en `p.color`.
+         *
+         * El adaptador publicaba la cima y nada mas, asi que justo en la jugada mas
+         * decisiva del juego el sustrato no decia a que se esta jugando. Y el `sentido`
+         * igual: con una carta de cambio en la mano, saber hacia donde gira la ronda es
+         * la mitad de la decision.
+         *
+         * Y ninguno de los dos cabe todavía: no son montones de cartas, y `asientos`
+         * pide casilla porque es un hueco de tablero. Ver la nota larga de `poker.js`
+         * — mismo hueco del contrato que el triunfo de la brisca. Se leen en
+         * `estado(p)`, que publica `color` y `sentido`.
+         *
+         * Lo que sí gana el sustrato aquí es el DESCARTE con su fondo: la de encima a
+         * la vista y las de debajo contadas, que el adaptador daba como un solo naipe.
+         */
+        sustrato(p, asiento = 0) {
+            const yo = Number.isInteger(asiento) && p.manos[asiento] ? asiento : 0;
+            const zonas = [{ id: 'mano', de: yo, items: [...p.manos[yo]], ocultas: 0 }];
+            for (let i = 0; i < p.manos.length; i++) {
+                if (i === yo) continue;
+                zonas.push({ id: 'mano', de: i, items: [], ocultas: p.manos[i].length });
+            }
+            const arriba = cima(p);
+            if (arriba) {
+                // La de encima se lee; las de debajo se vieron al caer y ya no se leen.
+                zonas.push({ id: 'descarte', de: null, items: [arriba],
+                             ocultas: Math.max(0, p.descarte.length - 1) });
+            }
+            if (p.mazo.length) {
+                zonas.push({ id: 'mazo', de: null, items: [], ocultas: p.mazo.length });
+            }
+            return {
+                rejilla: null, piezas: [], zonas,
+            };
+        },
+
         estado(p, asiento = 0) {
             const yo = Number.isInteger(asiento) && p.manos[asiento] ? asiento : 0;
             if (!p.fin && p.turnos >= HORIZONTE) cerrarBloqueada(p);

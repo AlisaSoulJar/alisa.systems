@@ -433,6 +433,10 @@ export const ajedrez = {
             zonas: [],
             leyenda: { p: 'peón', n: 'caballo', b: 'alfil', r: 'torre',
                        q: 'dama', k: 'rey' },
+            // Sin esto el mapa se rotula «# muro, o destino, . libre», que en un
+            // tablero de ajedrez no significa nada. Aquí sólo hay casillas.
+            terreno: { 0: '.' },
+            leyendaTerreno: { 0: 'casilla vacía' },
         };
     },
 

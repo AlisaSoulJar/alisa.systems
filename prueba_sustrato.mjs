@@ -49,11 +49,23 @@ globalThis.fetch = async (e, i) => {
  * TECHO_DERIVADOS a 17»— y nadie lo hacía, porque salía en verde y un aviso en verde
  * no lo lee nadie. Un trinquete que no se aprieta cuando avanza no aprieta.
  */
-// 27-08: ajedrez, go, xiangqi, snake, fagocito y peatón publican el suyo. Antes 15.
-// Los 9 que quedan son EXACTAMENTE los de cartas: blackjack, poker, las cuatro de
-// baza, gofish, unit y entropy. O sea que la deuda ya no está repartida — es una
-// familia entera, y se salda de una vez o no se salda.
-const TECHO_DERIVADOS = 9;    // 23-08: guerra publica el suyo. Antes 16.
+/**
+ * ⚠️ CERO. LA DEUDA SE ACABÓ, Y ESTE TECHO PASA A SER UNA PUERTA CERRADA.
+ *
+ * 27-08, en dos pasos: primero los seis de tablero (ajedrez, go, xiangqi, snake,
+ * fagocito, peatón) y después los nueve de cartas (blackjack, poker, las cuatro
+ * de baza, gofish, unit, entropy). De 15 a 0.
+ *
+ * Lo que este número medía era una avería concreta: `sustratoDe()` DERIVA el
+ * sustrato adivinando desde el estado publicado, así que era una segunda fuente
+ * de verdad — y las dos fuentes se separan el día que una cambia. Ya pasó con
+ * remigio. Los cuarenta lo publican ahora ellos mismos.
+ *
+ * `sustratoDe` no se retira: sigue siendo el respaldo del hub y de las dos mesas
+ * para lo que llegue sin sustrato. Con el techo en 0, lo que llegue así ya no
+ * puede colarse en silencio.
+ */
+const TECHO_DERIVADOS = 0;    // 23-08: guerra publica el suyo. Antes 16, 15 y 9.
 
 let fallos = 0;
 const mal = (m) => { fallos++; console.log(`  ✗ ${m}`); };

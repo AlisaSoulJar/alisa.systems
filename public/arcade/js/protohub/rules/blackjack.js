@@ -190,6 +190,34 @@ export async function crearBlackjack({ url = RUTA_BIBLIOTECA } = {}) {
          * y es un final acotado, con marcador, y reproducible desde UNA semilla.
          * El verificador no se toca: su invariante era correcta.
          */
+        /**
+         * ⚠️ LA CASA NO SALIA EN NINGUNA PARTE, Y ES LA MITAD DEL JUEGO.
+         *
+         * `sustratoDe` sabe leer `mano`/`player_hand` y `opponent_hand`; blackjack
+         * publica sus cartas como `dealer_hand`, un nombre que el adaptador no conoce.
+         * Resultado: el sustrato derivado tenia TU mano y el mazo, y del crupier nada.
+         * O sea que quien juegue leyendo el sustrato no ve la carta descubierta de la
+         * casa — que es literalmente la unica entrada de toda decision de blackjack.
+         *
+         * No daba error. Daba un jugador que decide a ciegas y una tabla que dice que
+         * juega mal.
+         *
+         * La tapada se tapa con la MISMA regla que usa `estado`, que puntua
+         * `p.casa.slice(1)` mientras la mano esta viva: la de abajo es la boca abajo.
+         */
+        sustrato(p) {
+            const jugando = p.estado === 'Playing';
+            const zonas = [{ id: 'mano', de: 0, items: [...p.jugador], ocultas: 0 }];
+            if (p.casa.length) {
+                const tapadas = jugando ? 1 : 0;
+                zonas.push({ id: 'mano', de: 1, items: p.casa.slice(tapadas), ocultas: tapadas });
+            }
+            if (p.mazo.length) {
+                zonas.push({ id: 'mazo', de: null, items: [], ocultas: p.mazo.length });
+            }
+            return { rejilla: null, piezas: [], zonas };
+        },
+
         estado(p) {
             const jugando = p.estado === 'Playing';
             const zapatoAgotado = p.mazo.length < CARTAS_MINIMAS;

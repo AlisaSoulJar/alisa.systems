@@ -228,6 +228,8 @@ export const go = {
             piezas,
             zonas: [],
             leyenda: { n: 'piedra negra', b: 'piedra blanca' },
+            terreno: { 0: '.' },
+            leyendaTerreno: { 0: 'intersección libre' },
         };
     },
 

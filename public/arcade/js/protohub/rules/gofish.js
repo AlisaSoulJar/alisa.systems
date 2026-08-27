@@ -133,6 +133,37 @@ export async function crearGoFish({ url = RUTA_BIBLIOTECA, jugadores = 3, mano =
         // `asiento` = desde qué silla se mira. Sin él, todo el mundo veía la
         // mano del asiento 0 — en una mesa compartida, la del rival. Ver la nota
         // larga en `bazas.js`. Opcional para no tocar al verificador ni al gym.
+        /**
+         * ⚠️ LOS LIBROS SON EL MARCADOR, Y NO ESTABAN.
+         *
+         * En go fish no se gana con cartas en la mano: se gana juntando cuartetos y
+         * dejandolos en la mesa. El adaptador publicaba las manos y el mazo, o sea todo
+         * lo que NO decide la partida, y los libros —que son publicos y estan a la
+         * vista de los tres— no llegaban al sustrato.
+         *
+         * Y siguen sin caber, que es lo honesto de decir: un libro se guarda por su
+         * RANGO y no como cuatro cartas concretas, así que meterlo en `items` haría
+         * que la mesa intentara dibujar un `5` como si fuera una carta. Y `asientos`
+         * pide casilla —es un hueco de tablero— y aquí no hay tablero. Ver la nota
+         * larga de `poker.js`: es el mismo hueco del contrato. `estado(p).libros` los
+         * publica y ahí se leen.
+         *
+         * Lo que se ha pedido en voz alta —la memoria que gana este juego— ya viaja por
+         * `dichos`, que el hub engancha solo. Aqui no se repite.
+         */
+        sustrato(p, asiento = 0) {
+            const yo = Number.isInteger(asiento) && p.manos[asiento] ? asiento : 0;
+            const zonas = [{ id: 'mano', de: yo, items: [...p.manos[yo]], ocultas: 0 }];
+            for (let i = 0; i < p.manos.length; i++) {
+                if (i === yo) continue;
+                zonas.push({ id: 'mano', de: i, items: [], ocultas: p.manos[i].length });
+            }
+            if (p.mazo.length) {
+                zonas.push({ id: 'mazo', de: null, items: [], ocultas: p.mazo.length });
+            }
+            return { rejilla: null, piezas: [], zonas };
+        },
+
         estado(p, asiento = 0) {
             const yo = Number.isInteger(asiento) && p.manos[asiento] ? asiento : 0;
             const pid = p.turno;

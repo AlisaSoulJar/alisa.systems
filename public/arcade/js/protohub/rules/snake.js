@@ -110,6 +110,32 @@ export const snake = {
             zonas: [],
             leyenda: { cabeza: 'tu cabeza', cuerpo: 'tu cuerpo, no lo choques',
                        comida: 'cómetela para crecer' },
+            /**
+             * ⚠️ SIN ESTO, LAS TRES SE DIBUJABAN CON LA MISMA LETRA.
+             *
+             * El mapa de texto usa `simbolos[t]` y, si no hay, la INICIAL del
+             * tipo en mayúscula. Cabeza, cuerpo y comida empiezan las tres por
+             * C: el mapa entero salía sembrado de `C` y no se distinguía por
+             * dónde va la serpiente ni dónde está la comida. O sea, ninguna de
+             * las dos cosas que hay que saber para jugar.
+             *
+             * Venía del adaptador, que tampoco declaraba símbolos, así que
+             * llevaba así desde el principio sin dar un solo error.
+             */
+            simbolos: { cabeza: '@', cuerpo: 'o', comida: '*' },
+            /**
+             * ⚠️ Y EL SUELO TAMBIÉN, O LA LEYENDA SE CONTRADICE SOLA.
+             *
+             * Sin `terreno`, el mapa se rotula con la leyenda de toda la vida
+             * —«# muro, o destino, . libre»— y debajo añade la del juego. En la
+             * misma línea salía «o destino» y «o tu cuerpo»: el mismo carácter
+             * explicado dos veces y de dos maneras distintas.
+             *
+             * Aquí no hay muros ni destinos: hay suelo, y las paredes son el
+             * borde del tablero.
+             */
+            terreno: { 0: '.' },
+            leyendaTerreno: { 0: 'suelo libre; las paredes son el borde' },
         };
     },
 

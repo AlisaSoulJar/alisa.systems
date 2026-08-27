@@ -132,7 +132,19 @@ export const peaton = {
             leyenda: { jugador: 'tu ficha, cruza de abajo arriba',
                        coche_der: 'coche que avanza hacia la derecha',
                        coche_izq: 'coche que avanza hacia la izquierda' },
-            terreno: { 0: '.', 1: '>', 2: '<' },
+            /**
+             * ⚠️ LOS DOS SENTIDOS SE DIBUJABAN CON LA MISMA LETRA.
+             *
+             * Sin símbolos declarados, el mapa usa la inicial del tipo: `coche_der`
+             * y `coche_izq` salían las dos como `C`, o sea que el mapa enseñaba
+             * dónde hay coches y no hacia dónde van. Cruzar es esperar el hueco,
+             * así que el sentido no es un detalle: es la decisión.
+             *
+             * La flecha se la queda el COCHE, que es lo que se mueve, y el carril
+             * usa otro par para que no se confundan sobre la misma casilla.
+             */
+            simbolos: { jugador: '@', coche_der: '>', coche_izq: '<' },
+            terreno: { 0: '.', 1: '-', 2: '=' },
             leyendaTerreno: { 0: 'acera: aquí no atropellan',
                               1: 'carril con tráfico hacia la derecha',
                               2: 'carril con tráfico hacia la izquierda' },

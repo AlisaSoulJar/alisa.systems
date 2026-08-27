@@ -140,11 +140,22 @@ export const fagocito = {
             rejilla: { ancho, alto, celdas },
             piezas,
             zonas: [],
-            leyenda: { 1: 'muro, no se puede cruzar', bolita: 'comida por recoger',
+            /**
+             * ⚠️ EL MURO SE FUE DE `leyenda` A `leyendaTerreno`, QUE ES SU SITIO.
+             *
+             * El adaptador lo metía como `1: 'muro…'` dentro de la leyenda de
+             * PIEZAS, y no es una pieza: es el suelo. No es cosmético — la
+             * observación numérica del gimnasio construye su vocabulario de tipos
+             * con `Object.keys(leyenda)`, así que un valor de terreno colado ahí
+             * añadía un tipo fantasma que ninguna pieza usa jamás.
+             */
+            leyenda: { bolita: 'comida por recoger',
                        jugador: 'tu ficha',
                        cazador: 'fantasma que viene directo a por ti',
                        flanco: 'fantasma que corta por donde vas a estar',
                        errante: 'fantasma que se mueve al azar' },
+            terreno: { 0: '.', 1: '#' },
+            leyendaTerreno: { 0: 'pasillo', 1: 'muro, no se puede cruzar' },
         };
     },
 

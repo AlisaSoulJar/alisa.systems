@@ -161,6 +161,42 @@ export function crearBazas(cfg) {
          * `legal_moves` no depende del asiento sino del TURNO, y eso ya estaba
          * bien: son las jugadas de quien mueve, mire quien mire.
          */
+        /**
+         * Las cuatro manos, la baza en curso y el mazo.
+         *
+         * ⚠️ LAS MANOS DE LOS RIVALES VAN CON SU NÚMERO DE SILLA.
+         *
+         * El adaptador las numeraba por el orden en que quedan al quitar la tuya, así
+         * que desde la silla 2 llamaba `1` a la silla 0. El reparto era correcto y
+         * las etiquetas mentían — el peor tipo de fallo, porque cuadra.
+         *
+         * ⚠️ Y EL TRIUNFO NO ESTÁ AQUÍ, AUNQUE SIN TRIUNFO NO HAY BRISCA.
+         *
+         * El palo de triunfo no es un montón de cartas: es un HECHO de la mesa, y en
+         * tres de estos cuatro juegos decide quién gana cada baza. Lo puse como
+         * `asiento` y `prueba_asientos.mjs` lo suspendió con razón: un asiento lleva
+         * casilla porque es un hueco de un tablero, y un palo de triunfo no está en
+         * ninguna. Ver la nota larga en `poker.js`, que es el mismo hueco del
+         * contrato. Se lee en `estado(p).triunfo`, que lo publica desde siempre.
+         */
+        sustrato(p, asiento = 0) {
+            const yo = Number.isInteger(asiento) && p.manos[asiento] ? asiento : 0;
+            const zonas = [{ id: 'mano', de: yo, items: [...p.manos[yo]], ocultas: 0 }];
+            for (let i = 0; i < p.manos.length; i++) {
+                if (i === yo) continue;
+                zonas.push({ id: 'mano', de: i, items: [], ocultas: p.manos[i].length });
+            }
+            if (p.baza.length) {
+                zonas.push({ id: 'baza', de: null, items: p.baza.map(j => j.carta), ocultas: 0 });
+            }
+            if (p.mazo.length) {
+                zonas.push({ id: 'mazo', de: null, items: [], ocultas: p.mazo.length });
+            }
+            return {
+                rejilla: null, piezas: [], zonas,
+            };
+        },
+
         estado(p, asiento = 0) {
             const yo = Number.isInteger(asiento) && p.manos[asiento] ? asiento : 0;
             const terminada = p.manos.every(m => m.length === 0);

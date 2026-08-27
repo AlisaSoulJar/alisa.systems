@@ -353,6 +353,43 @@ export async function crearPoker({ url = RUTA_BIBLIOTECA } = {}) {
             return true;
         },
 
+        /**
+         * Las dos manos y las comunes, con la del rival tapada hasta el showdown
+         * — que es cuando la destapa `estado`, o sea cuando hay `p.resultado`.
+         *
+         * ⚠️ Y EL BOTE NO ESTÁ AQUÍ, A PROPÓSITO.
+         *
+         * Lo intenté: en poker apostar ES el juego, así que un sustrato sin el bote
+         * ni las pilas de fichas no basta para decidir una jugada. Lo puse como
+         * `asientos`, la estructura que usa mancala para sus catorce hoyos.
+         *
+         * `prueba_asientos.mjs` lo suspendió, y tenía razón: un asiento lleva `x` e
+         * `y` porque es un hueco SOBRE UN TABLERO, y un bote no está en ninguna
+         * casilla. Inventarle coordenadas para que pasara habría sido meter un dato
+         * falso; aflojar la prueba habría convertido `asientos` en un cajón de
+         * sastre.
+         *
+         * Así que se queda donde ya estaba —`estado(p)` publica `pot`,
+         * `player_stack` y `opponent_stack`— y el hueco del contrato se dice en voz
+         * alta en vez de taparse: el sustrato sabe describir montones (`zonas`) y
+         * huecos de tablero (`asientos`), y no tiene dónde poner un HECHO de la mesa
+         * que no es ninguna de las dos cosas. Le pasa igual al triunfo de la brisca
+         * y al color en juego de UNIT.
+         */
+        sustrato(p) {
+            const abierto = !!p.resultado;
+            const zonas = [{ id: 'mano', de: 0, items: [...p.jugador], ocultas: 0 }];
+            if (p.casa.length) {
+                zonas.push({ id: 'mano', de: 1,
+                             items: abierto ? [...p.casa] : [],
+                             ocultas: abierto ? 0 : p.casa.length });
+            }
+            if (p.comunes.length) {
+                zonas.push({ id: 'comunes', de: null, items: [...p.comunes], ocultas: 0 });
+            }
+            return { rejilla: null, piezas: [], zonas };
+        },
+
         estado(p) {
             const jugando = p.estado === 'jugando' && !p.resultado;
             const acciones = p.estado !== 'jugando' ? []
