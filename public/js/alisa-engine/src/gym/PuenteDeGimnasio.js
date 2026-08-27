@@ -112,9 +112,11 @@ export class PuenteDeGimnasio {
      * que el mundo no le deje hacerla.
      */
     aplicar(decision, dt = 1 / 60) {
-        if (!decision?.verb) return { obs: this.entorno.getObservation(), reward: 0,
-                                      done: this.entorno.done, info: { error: decision?.error } };
-        return this.entorno.stepVerb(decision.verb, decision.args, dt);
+        const e = this.entorno;
+        const fin = () => ({ terminated: e.terminated, truncated: e.truncated });
+        if (!decision?.verb) return { obs: e.getObservation(), reward: 0,
+                                      done: e.done, ...fin(), info: { error: decision?.error } };
+        return { ...e.stepVerb(decision.verb, decision.args, dt), ...fin() };
     }
 }
 
@@ -144,6 +146,10 @@ export async function jugarComoSer(ser, entorno, decidir, { pasos = 600, dt = 1 
     return {
         pasos: dados, recompensa, rechazados,
         nota: entorno.getScore?.().score ?? null,
+        // Igual que en `runEpisode`: quien trunca aquí es el `pasos` de este bucle,
+        // no el juego. Si sale sin que las reglas hayan terminado, fue el tope.
+        terminated: entorno.terminated,
+        truncated: entorno.truncated || !entorno.done,
         historial: puente.historial,
     };
 }

@@ -282,7 +282,22 @@ for (const juego of juegos) {
      * Y arreglarlo importa más desde que esto vive en `npm test`: una prueba que
      * parpadea enseña a mirar el rojo y seguir, que es peor que no tenerla.
      */
-    if (escondidos.length && segundaLectura) {
+    /**
+     * ⚠️ UNA SOLA REPETICIÓN NO BASTÓ, Y VOLVIÓ A PARPADEAR.
+     *
+     * Esto miraba otra vez UNA vez, 1200 ms después. El 28-08 la brisca salió roja
+     * dentro de la suite —«triunfo, puntos»— y verde corriéndola sola, con esos dos
+     * campos perfectamente escritos en el panel de la captura. O sea el mismo
+     * síntoma de siempre con un reintento ya puesto: la máquina iba más cargada y
+     * 1200 ms tampoco llegaron.
+     *
+     * Se insiste hasta cuatro veces, y sólo cuando algo salió escondido: un juego
+     * verde no paga ni un milisegundo por esto. Y no puede inventar un aprobado,
+     * que es lo que lo hace seguro — la cabecera ya lo dice: la información aparece
+     * o no aparece, y esperar no la inventa. Si el campo no se pinta, no se pintará
+     * por mirar cuatro veces.
+     */
+    for (let intento = 0; escondidos.length && segundaLectura && intento < 4; intento++) {
         await p.waitForTimeout(1200);
         const otra = await segundaLectura().catch(() => null);
         if (otra) escondidos = buscarEscondidos(otra);

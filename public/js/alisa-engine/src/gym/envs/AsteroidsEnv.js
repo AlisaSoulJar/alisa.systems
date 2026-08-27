@@ -113,9 +113,27 @@ export class AsteroidsEnv extends GymEnv {
         this._prevScore = sc; this._lastScore = sc;
         if (s.stats.deaths > 0) { reward -= 10; this.done = true; }
         if (this.steps >= AsteroidsEnv.meta.horizon) this.done = true;
+        /**
+         * ⚠️ EL ÚNICO ENTORNO DEL BANCO QUE TRUNCA POR SÍ MISMO, Y HAY QUE DECIRLO.
+         *
+         * Las dos líneas de arriba ponen el MISMO `done` por dos motivos que no
+         * significan lo mismo: te han matado (las reglas) o has llegado al
+         * horizonte (un tope de fuera). El porqué importa está entero en
+         * `GymEnv.razonDelFin()`; aquí sólo hace falta contestar cuál fue.
+         *
+         * Y la muerte manda sobre el tope aunque caigan en el mismo paso: si la
+         * nave está destruida, el futuro después de ese estado no existe — que el
+         * contador llegara a 1800 a la vez es una coincidencia, no la causa.
+         */
 
         return { obs: this.getObservation(), reward, done: this.done,
                  info: { t: +this.t.toFixed(2), score: sc, deaths: s.stats.deaths } };
+    }
+
+    razonDelFin() {
+        if (!this.done) return null;
+        if ((this.sys?.stats?.deaths ?? 0) > 0) return 'terminado';
+        return this.steps >= AsteroidsEnv.meta.horizon ? 'truncado' : 'terminado';
     }
 
     /** Los NEAR asteroides más cercanos, en coordenadas relativas a la nave. */

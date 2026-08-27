@@ -150,6 +150,47 @@ export class GymEnv {
         return this.stepVerb(legal.verb, legal.args ?? {}, dt);
     }
 
+    /**
+     * ─── POR QUÉ SE ACABÓ, NO SÓLO QUE SE ACABÓ ──────────────────────
+     *
+     * ⚠️ ESTO NO ES CUMPLIR UN ESTÁNDAR POR CUMPLIRLO: `done` A SECAS MIENTE.
+     *
+     * Gymnasium partió su viejo `done` en dos en 2022 y el motivo es de fondo. Un
+     * episodio puede acabar por DOS razones que no significan lo mismo:
+     *
+     *   terminado   las reglas dijeron que se acabó — jaque mate, te mataron, no
+     *               quedan cartas. El futuro después de ese estado NO EXISTE.
+     *   truncado    alguien de fuera cortó — el tope de pasos, un reloj, una
+     *               cuota. El juego seguía; sólo dejamos de mirar.
+     *
+     * A una persona le da igual. A un algoritmo de refuerzo NO: al terminar se
+     * aprende que el valor futuro es cero, y al truncar hay que seguir estimándolo.
+     * Confundirlos enseña a un agente que sobrevivir hasta el tope es tan malo como
+     * morirse, que es exactamente al revés de lo que queremos medir aquí — donde
+     * hay juegos de supervivencia y el bueno es el que DURA.
+     *
+     * ⚠️ ES UN MÉTODO Y NO UN CAMPO, A PROPÓSITO.
+     *
+     * La forma obvia era un `this.truncado = false` al lado de `this.done`. Malo:
+     * `done` se pone a mano en unos cincuenta `reset()` repartidos por los
+     * entornos, y cualquiera que olvidara limpiar el nuevo campo arrastraría un
+     * «truncado» del episodio anterior. Un fallo silencioso y de los que sólo
+     * aparecen en la segunda partida. Preguntando en vez de recordando, no hay
+     * nada que limpiar.
+     *
+     * Por defecto, si `done` está puesto lo pusieron las reglas: es lo que hacen
+     * los cincuenta y dos. El único que corta por tope es `AsteroidsEnv`, y lo
+     * dice sobrescribiendo esto.
+     *
+     * @returns {'terminado'|'truncado'|null}
+     */
+    razonDelFin() { return this.done ? 'terminado' : null; }
+
+    /** Las reglas dieron el episodio por acabado. */
+    get terminated() { return this.razonDelFin() === 'terminado'; }
+    /** Un tope de fuera lo cortó; el juego seguía. */
+    get truncated() { return this.razonDelFin() === 'truncado'; }
+
     // ─── PUNTUACIÓN COMPARABLE ───────────────────────────────────
     /** { score, metrics{...} } — el eje común de los tres tipos de agente. */
     getScore() { return { score: this._lastScore, metrics: {} }; }
@@ -186,7 +227,20 @@ export class GymEnv {
                 obs = r.obs; total += r.reward;
                 if (this.recorder) this.recorder.record({ action, reward: r.reward, t: this.t });
             }
+            /**
+             * ⚠️ AQUÍ ES DONDE SE PERDÍA EL DATO, Y NO DENTRO DE LOS ENTORNOS.
+             *
+             * Cincuenta y dos de los cincuenta y tres no truncan nunca: acaban
+             * cuando las reglas lo dicen. Quien trunca es ESTE BUCLE, con su
+             * `maxSteps` — y salía por la puerta sin decirlo, así que desde fuera
+             * un episodio cortado por el tope y uno acabado por jaque mate eran
+             * el mismo `done`. La distinción no faltaba en los juegos: se perdía
+             * en el runner.
+             */
+            const cortadoPorElTope = !this.done;
             return { seed, steps: this.steps, totalReward: total, ...this.getScore(),
+                     terminated: this.terminated,
+                     truncated: this.truncated || cortadoPorElTope,
                      draws: DeterministicScope.draws,   // nº de azares consumidos: huella del episodio
                      receipts: this.recorder ? this.recorder.receipts : [] };
         });

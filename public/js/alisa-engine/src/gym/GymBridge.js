@@ -78,9 +78,20 @@ export class GymBridge {
                 // "reset(1234)" no garantizaría nada (470 llamadas sin semilla).
                 return DeterministicScope.run(seed, () => { env.reset(seed); return env.getObservation(); });
             },
+            /**
+             * ⚠️ `done` SE QUEDA, Y `terminated`/`truncated` SE AÑADEN AL LADO.
+             *
+             * Es el mismo criterio que se usó con la tripleta AIO: el banco lleva
+             * semanas midiendo contra este contrato y las huellas de comportamiento
+             * están selladas contra él. Quitar `done` sería cambiar el juego
+             * conservando el nombre. Se añade el porqué —ver `GymEnv.razonDelFin()`—
+             * y quien sepa leerlo lo lee.
+             */
             step: (action, dt = 1 / 60) => {
                 const r = env.step(action, dt);
-                return { obs: r.obs, reward: r.reward, done: r.done, info: r.info ?? {} };
+                return { obs: r.obs, reward: r.reward, done: r.done,
+                         terminated: env.terminated, truncated: env.truncated,
+                         info: r.info ?? {} };
             },
             observation: () => env.getObservation(),
             score: () => env.getScore(),
@@ -90,7 +101,9 @@ export class GymBridge {
             affordances: () => env.affordances(),
             stepVerb: (verb, args = {}, dt = 1 / 60) => {
                 const r = env.stepVerb(verb, args, dt);
-                return { obs: r.obs, reward: r.reward, done: r.done, info: r.info ?? {} };
+                return { obs: r.obs, reward: r.reward, done: r.done,
+                         terminated: env.terminated, truncated: env.truncated,
+                         info: r.info ?? {} };
             },
 
             // ── 🕹️ PUERTA HUMANA ─────────────────────────────────────

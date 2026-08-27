@@ -1014,6 +1014,49 @@ const SABOTAJES = [
         vigila: 'que los sistemas del motor usen su semilla y no `Math.random`',
     },
     {
+        nombre: 'fin',
+        corre: 'node prueba_fin.mjs',
+        fichero: 'public/js/alisa-engine/src/gym/GymEnv.js',
+        /**
+         * El fallo REAL, tal cual estaba hasta el 28-08-2026: el episodio salía
+         * diciendo sólo `done`, y quien truncaba —este mismo bucle, con su
+         * `maxSteps`— no lo confesaba. Volver a quitar las dos líneas deja el
+         * banco exactamente como estaba: cincuenta y tres entornos donde un
+         * jaque mate y un corte por tope son indistinguibles desde fuera.
+         *
+         * Se sabotea el RUNNER y no un entorno a propósito: si se rompiera
+         * `AsteroidsEnv.razonDelFin`, sólo caería uno de los cincuenta y tres y
+         * la prueba podría aprobar por mayoría. Aquí caen los cincuenta y tres.
+         */
+        /**
+         * ⚠️ DE UNA SOLA LÍNEA, Y NO POR GUSTO.
+         *
+         * Mi primera versión buscaba las DOS líneas juntas, unidas por `\n`. No
+         * encajó nunca: estos ficheros están en disco con finales `\r\n` —git lo
+         * avisa al añadirlos— así que un `\n` a pelo no casa con nada. La prueba
+         * dijo «el sabotaje ya no encaja» y tenía toda la razón.
+         */
+        de: 'terminated: this.terminated,',
+        a: '',
+        vigila: 'que un episodio diga POR QUÉ se acabó, y no sólo que se acabó',
+    },
+    {
+        nombre: 'tras-el-final',
+        corre: 'node prueba_tras_el_final.mjs',
+        fichero: 'public/arcade/js/protohub/rules/go.js',
+        /**
+         * El fallo REAL, tal cual estuvo hasta el 28-08-2026: `mover` no miraba los
+         * dos pases, así que una piedra puesta después del final colaba Y ponía
+         * `pasesSeguidos = 0` — la partida terminada volvía a estar viva.
+         *
+         * Se elige el go y no el dominó porque es el caso grave: el dominó acepta
+         * un `pasar` que no cambia nada, y el go deja continuar la partida.
+         */
+        de: 'if (p.pasesSeguidos >= 2) return false;',
+        a: '',
+        vigila: 'que un juego terminado no se pueda seguir jugando',
+    },
+    {
         nombre: 'preflight',
         corre: 'python preflight.py',
         /**

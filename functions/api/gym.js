@@ -81,14 +81,59 @@ const accionesDe = (st) =>
  * nada. Un gym que ignora una acción inválida deja al agente creyendo que hizo
  * algo, y el siguiente estado que recibe no cuadra con nada de lo que decidió.
  */
+/**
+ * ⚠️ EL `estado()` DE CADA JUGADA ERA EL 99 % DEL COSTE, Y MATABA LA PUERTA.
+ *
+ * Esto llamaba a `reglas.estado(p)` en TODAS las jugadas re-simuladas, sólo para
+ * mirar `is_game_over`. Y `estado()` no es barato: en el go calcula las ~360
+ * jugadas legales de esa posición. Multiplicado por las jugadas de la partida, y
+ * eso a su vez por cada llamada —la puerta re-simula desde cero— sale un cubo.
+ *
+ * No es teoría. Medido en producción, la puerta contesta **HTTP 503 con la página
+ * de error de Cloudflare** —`Error 1102: Worker exceeded resource limits`— a
+ * mitad de una partida normal de go y de ajedrez. Y no como JSON: como HTML, así
+ * que un cliente que espera JSON revienta con `Unexpected token '<'`. Me pasó a
+ * mí sondeándola.
+ *
+ * Medido en local, el coste de la última llamada de una partida completa:
+ *
+ *     juego       jugadas   como estaba   así    límite del Worker: 10 ms
+ *     go              664      263,7 ms   9,0
+ *     xiangqi         412       72,5 ms  43,9    ← éste sigue sin caber
+ *     ajedrez         271       41,8 ms   3,6
+ *     remigio          61       18,1 ms   0,2
+ *     chinchón         65       10,2 ms   0,1
+ *
+ * Cinco de los cuarenta no se podían terminar por la puerta pública. Con esto,
+ * cuatro caben; el xiangqi no, y su coste está en el propio `mover`, que es otro
+ * arreglo y en otro sitio.
+ *
+ * ⚠️ Y NO SE PODÍA QUITAR ANTES, QUE ES LA PARTE INTERESANTE.
+ *
+ * Esa llamada no sobraba: era lo ÚNICO que impedía seguir jugando después del
+ * final, porque el go aceptaba una piedra tras dos pases —y encima reseteaba el
+ * contador, resucitando la partida— y el dominó aceptaba un `pasar`. O sea que
+ * la integridad de la puntuación se apoyaba en que el llamante se acordara, y de
+ * paso costaba el triple de CPU del que hay.
+ *
+ * Los dos juegos ya se defienden solos, con `prueba_tras_el_final.mjs` mirando
+ * los cuarenta. Ahora `mover()` es la autoridad sobre lo que es legal —incluido
+ * «ya no hay partida»— y `estado()` se llama sólo cuando hay que EXPLICAR un
+ * rechazo, que es una vez por petición como mucho.
+ *
+ * El verificador (`Verificador.js`) sigue mirándolo todo en cada jugada, y así se
+ * queda: comprueba además que cada jugada estuviera en `legal_moves`, que es
+ * justo lo que se paga por verificar. Aquí no se verifica, se juega.
+ */
 function reproducir(reglas, semilla, jugadas) {
     const p = reglas.nuevaPartida({ semilla, seed: semilla });
     for (let i = 0; i < jugadas.length; i++) {
-        const st = reglas.estado(p);
-        if (st.is_game_over) {
-            return { p, rechazada: { indice: i, jugada: jugadas[i], motivo: 'la partida ya había terminado' } };
-        }
         if (!reglas.mover(p, jugadas[i])) {
+            // Ahora sí: hay que decir por qué, y para eso hace falta el estado.
+            const st = reglas.estado(p);
+            if (st.is_game_over) {
+                return { p, rechazada: { indice: i, jugada: jugadas[i], motivo: 'la partida ya había terminado' } };
+            }
             return {
                 p,
                 rechazada: {

@@ -266,6 +266,23 @@ export const go = {
     },
 
     mover(p, jugada) {
+        /**
+         * ⚠️ DESPUÉS DE DOS PASES NO SE JUEGA, Y ANTES SÍ SE PODÍA — RESUCITANDO LA PARTIDA.
+         *
+         * `estado()` da la partida por terminada con `pasesSeguidos >= 2`, pero aquí
+         * no se miraba: una piedra puesta después colaba, y como más abajo se pone
+         * `p.pasesSeguidos = 0`, la partida VOLVÍA A ESTAR VIVA. Un go terminado se
+         * podía continuar hasta dejar el tablero como uno quisiera.
+         *
+         * Hoy no se cuela por la puerta pública ni por el verificador porque los dos
+         * comprueban `is_game_over` ANTES de cada jugada. O sea que la integridad de
+         * la puntuación dependía de que dos llamantes se acordaran, y no de la regla.
+         * Eso es lo que se arregla aquí: quien defiende el final es el juego.
+         *
+         * Medido sobre los cuarenta (`prueba_tras_el_final.mjs`): treinta y ocho ya
+         * refutaban por su cuenta. Los dos que no eran éste y el dominó.
+         */
+        if (p.pasesSeguidos >= 2) return false;
         if (jugada === 'pass') {
             p.historial.push({ tablero: p.tablero.map(f => f.slice()), turno: p.turno,
                                ko: p.ko, pases: p.pasesSeguidos, capturas: { ...p.capturas } });

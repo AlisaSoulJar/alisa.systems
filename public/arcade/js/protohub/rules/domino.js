@@ -206,6 +206,16 @@ export async function crearDomino({ jugadores = 2, mano = 7 } = {}) {
         mover(p, jugada) {
             const j = String(jugada ?? '');
             if (j === 'nueva' || j === 'reset') return false;   // lo maneja el hub
+            /**
+             * ⚠️ Y TAMPOCO SE JUEGA DESPUÉS DEL FINAL. LA MISMA CUENTA QUE `estado()`.
+             *
+             * Allí `terminada = alguien sin fichas || trancado`, y aquí no se miraba:
+             * un `pasar` colaba con la partida acabada y seguía subiendo
+             * `pasesSeguidos`. Menos grave que en el go —no revive nada— pero es el
+             * mismo agujero, y se tapa igual: quien defiende el final es el juego, no
+             * el que lo llama.
+             */
+            if (p.manos.some(m => m.length === 0) || p.pasesSeguidos >= p.jugadores) return false;
             const quien = p.turno;
 
             if (j === 'pasar') {
