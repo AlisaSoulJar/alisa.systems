@@ -1797,7 +1797,28 @@ class SovereignCardEngine {
         if (!cardList) return;
         
         const layout = options.layout || (options === true ? 'line' : 'line');
-        const faceDown = typeof options === 'object' ? (options.faceDown || false) : false;
+        /**
+         * ⚠️ `hidden` TAMBIÉN, PORQUE ES LO QUE PASAN TODOS LOS QUE LLAMAN AQUÍ.
+         *
+         * Esto sólo leía `faceDown`, y ninguno de los cinco visualizadores propios
+         * lo escribe: todos pasan `hidden`. O sea que la opción se caía al suelo y
+         * las cartas que tenían que ir tapadas se dibujaban BOCA ARRIBA. Tres sitios,
+         * y uno de ellos es grave:
+         *
+         *   · blackjack, la carta tapada del crupier — que es el juego entero;
+         *   · entropy, el mazo, en un juego cuya gracia es la memoria;
+         *   · póker, la mano del rival (ahí no filtra nada porque el juego ya la
+         *     manda enmascarada como `??`, pero se dibujaba un naipe raro de cara).
+         *
+         * Y no daba ningún error. El póker hasta lleva un comentario al lado que
+         * dice «hidden=true ensures they render as backs»: se escribió la intención,
+         * se creyó, y nadie miró si el nombre existía de este lado.
+         *
+         * Se arregla aquí, en el único sitio donde se lee, y no en los cinco que
+         * llaman: cambiar los cinco deja el mismo agujero abierto para el sexto.
+         */
+        const faceDown = typeof options === 'object'
+            ? !!(options.faceDown ?? options.hidden) : false;
         const spacing = options.spacing || 1.35;
 
         cardList.forEach((card, idx) => {

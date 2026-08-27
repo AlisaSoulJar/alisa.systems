@@ -229,7 +229,27 @@ export async function crearBlackjack({ url = RUTA_BIBLIOTECA } = {}) {
                 : (zapatoAgotado ? ['nueva'] : ['deal']);
             return {
                 player_hand: p.jugador,
-                dealer_hand: p.casa,
+                /**
+                 * ⚠️ LA TAPADA IBA TAPADA PARA LA PERSONA Y DESTAPADA PARA EL AGENTE.
+                 *
+                 * `dealer_score` de aquí abajo la esconde con cuidado —puntúa
+                 * `p.casa.slice(1)` mientras la mano está viva— así que la intención
+                 * estaba escrita. Y luego `dealer_hand` salía entero, con la carta de
+                 * abajo dentro. La mesa la dibuja boca abajo; quien lee el estado por
+                 * la puerta de texto la veía.
+                 *
+                 * Un blackjack con la tapada a la vista no es blackjack: la estrategia
+                 * básica entera cuelga de no saberla. O sea que el banco no estaba
+                 * midiendo lo que dice medir, y la persona y el agente no estaban
+                 * jugando al mismo juego — que es justo lo único que este proyecto
+                 * promete.
+                 *
+                 * Se enmascara como ya lo hace el póker con `opponent_hand`: la carta
+                 * sigue ocupando su sitio, marcada como `??`. Así el dibujo conserva
+                 * el reparto y nadie tiene que adivinar cuántas cartas hay.
+                 */
+                dealer_hand: jugando && p.casa.length
+                    ? ['??', ...p.casa.slice(1)] : p.casa,
                 player_score: puntuar(p.jugador, F),
                 dealer_score: jugando ? puntuar(p.casa.slice(1), F) : puntuar(p.casa, F),
                 status: p.estado,
