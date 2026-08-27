@@ -261,6 +261,40 @@ export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
         _estado() { return reglas.estado(this.p, this.asientoReal) ?? {}; }
 
         /**
+         * ═══════════════════════════════════════════════════════════════════
+         *  ⚠️ EL SUSTRATO ESTABA ESCRITO Y ESTE ADAPTADOR NO LO REENVIABA
+         * ═══════════════════════════════════════════════════════════════════
+         *
+         * Dieciséis de los veintinueve juegos del ProtoHub publican `sustrato(p)`
+         * en sus reglas —con rejilla, piezas, leyenda y símbolos completos— y el
+         * banco los contaba como «sin sustrato», porque nadie preguntaba. El
+         * censo daba **13 entornos de 53**; con esta línea pasan a 29.
+         *
+         * Es la avería de siempre —la pieza canónica existe y está enterrada
+         * donde no se puede llamar— sólo que a escala de dieciséis juegos.
+         *
+         * ⚠️ Y POR QUÉ IMPORTA MÁS QUE UN NÚMERO EN UNA TABLA.
+         *
+         * El sustrato es el registro plano de lo que está pasando, y es el mismo
+         * objeto que pinta el dibujante, que lee el agente, que describe el texto
+         * y que **sella la huella**. Un juego sin sustrato no se puede pintar en
+         * 3D, ni contar en palabras, ni verificar volviéndolo a jugar: es un
+         * minijuego con reglas, no una etapa de un mundo.
+         *
+         * ⚠️ DEVUELVE `null` CUANDO NO LO HAY, Y ESO NO ES PEREZA.
+         *
+         * Los trece que no lo tienen —ajedrez, go, snake, las cartas…— siguen
+         * devolviendo `null`, que es exactamente lo que devolvían antes. Así su
+         * huella no se mueve por un cambio que no les afecta, y los que ganan
+         * sustrato son sólo los que de verdad ganan algo.
+         */
+        sustrato() {
+            if (typeof reglas.sustrato !== 'function') return null;
+            try { return reglas.sustrato(this.p, this.asientoReal) ?? null; }
+            catch { return null; }
+        }
+
+        /**
          * PARA MIRAR NO HACE FALTA HABER EMPEZADO.
          *
          * `describe()` y `affordances()` son las dos puertas por las que se ASOMA
