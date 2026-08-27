@@ -57,10 +57,27 @@ export { CELDA };
  *   pértiga   cara y larga   — pocas, cubren curvas enteras
  *   yunque    lenta y fuerte — mata lo gordo, deja pasar lo rápido
  */
+/**
+ * ⚠️ LOS NOMBRES DICEN EL ALCANCE, Y ESO NO ES DECORACIÓN: ES DIAGNÓSTICO.
+ *
+ * Se llamaban Guijarro, Pértiga y Yunque. Bonito, y **escondía el juego**: el
+ * guijarro es una repetidora de corto alcance con 6,67 de daño por segundo por
+ * 20 de coste, o sea 0,333 de daño por oro contra el 0,143 del siguiente. Es la
+ * opción dominante del juego y estuvo tres días sin que nadie la viera, porque
+ * para verla había que dividir a mano dos números que la tabla no ponía juntos.
+ *
+ * Con el rango en el nombre, la pregunta «¿por qué siempre gano poniendo lo más
+ * barato?» se hace sola al leer la tabla.
+ *
+ * ⚠️ SÓLO CAMBIA `nombre`, QUE ES PIEL. Los `id` se quedan: el sustrato publica
+ * `t: t.id`, o sea que el id de una torreta ES el tipo de pieza que cuenta la
+ * huella. Renombrarlos movería `77bef3c2` y retiraría las notas del sendero —
+ * eso va junto con arreglar el desequilibrio, en un solo `-v1`, no en dos.
+ */
 export const TORRETAS = [
-    { id: 'guijarro', nombre: '🪨 Guijarro', coste: 20, alcance: 2.5, dmg: 4,  cadencia: 0.6 },
-    { id: 'pertiga',  nombre: '🎣 Pértiga',  coste: 45, alcance: 5.0, dmg: 5,  cadencia: 1.1 },
-    { id: 'yunque',   nombre: '🔨 Yunque',   coste: 70, alcance: 2.0, dmg: 22, cadencia: 2.2 },
+    { id: 'guijarro', nombre: '🔫 Repetidora · corto', coste: 20, alcance: 2.5, dmg: 4,  cadencia: 0.6 },
+    { id: 'pertiga',  nombre: '🎯 Tirador · largo',    coste: 45, alcance: 5.0, dmg: 5,  cadencia: 1.1 },
+    { id: 'yunque',   nombre: '🔨 Demoledora · pegada', coste: 70, alcance: 2.0, dmg: 22, cadencia: 2.2 },
 ];
 
 /**
@@ -135,7 +152,7 @@ export const OLEADAS = [
  * tensión que se quiere: cada pared que pones es un disparo que no compras.
  */
 export const MURO = {
-    id: 'muro', nombre: '🧱 Muro', coste: 5, alcance: 0, dmg: 0, cadencia: 999,
+    id: 'muro', nombre: '🧱 Muro · no dispara', coste: 5, alcance: 0, dmg: 0, cadencia: 999,
 };
 
 /**
@@ -150,7 +167,7 @@ export const MURO = {
  * la respuesta a todo y volveríamos a no medir nada.
  */
 export const MORTERO = {
-    id: 'mortero', nombre: '💥 Mortero', coste: 60, alcance: 2.6, dmg: 6,
+    id: 'mortero', nombre: '💥 Mortero · área', coste: 60, alcance: 2.6, dmg: 6,
     cadencia: 1.6, area: true,
 };
 
