@@ -406,6 +406,23 @@ export function politicaFSM() {
  * función pura de (semilla, semilla del episodio, paso): sin memoria que
  * arrastrar entre partidas.
  */
+/**
+ * ⚠️ NO LE PASES LA MISMA SEMILLA DEL EPISODIO. SE CANCELA CONSIGO MISMA.
+ *
+ * La mezcla empieza con `semilla ^ K` y sigue con `^ env.seed`. Si las dos son el
+ * mismo número, `(s ^ K) ^ s` vale `K` para cualquier `s`: la semilla desaparece y
+ * TODOS los episodios juegan exactamente la misma partida.
+ *
+ * No muerde a nadie hoy —los cuatro sitios que la usan pasan una constante (7, 11)
+ * distinta de la del episodio— pero se dice porque cuesta caro descubrirlo: el
+ * 27-08 medí con `randomPolicy(s)` y `reset(s)`, y go, reversi y mancala salieron
+ * con exactamente un tercio de posiciones distintas. Parecía un fallo del vector
+ * nuevo y era esta línea. Los juegos con azar propio lo disimulan, porque al menos
+ * el reparto cambia; los deterministas lo enseñan entero.
+ *
+ * Se deja la mezcla como está —cambiarla movería toda partida ya medida con ella—
+ * y se pone el aviso donde se lee antes de usarla.
+ */
 export function randomPolicy(semilla = 1) {
     return (obs, env) => {
         const opciones = env.affordances();

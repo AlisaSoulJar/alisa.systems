@@ -24,13 +24,25 @@
  * agente LLM— sale gratis, y además sale EXACTA: un agente no puede alucinar
  * una jugada ilegal porque solo se le ofrecen las legales.
  *
- * LO QUE ESTO NO ES
- * -----------------
- * La observación numérica genérica es **pobre a propósito**: puntos, número de
- * jugadas legales, turno y fin. No sabe qué es un alfil. Un módulo de reglas
- * que quiera una puerta numérica de verdad implementa `observacion(p) → number[]`
- * y este adaptador la usa. Prefiero declarar la limitación a fingir que un
- * vector de cuatro números enseña ajedrez.
+ * LO QUE ESTO ERA Y YA NO ES
+ * --------------------------
+ * ⚠️ Aquí ponía: «la observación numérica genérica es POBRE A PROPÓSITO: puntos,
+ * número de jugadas legales, turno y fin. No sabe qué es un alfil. Prefiero
+ * declarar la limitación a fingir que un vector de cuatro números enseña ajedrez».
+ *
+ * Era honesto y era cierto — durante meses. Caducó el 27-08, cuando el vector pasó
+ * a salir del SUSTRATO: el tablero entero casilla a casilla, los montones, los
+ * hechos de la mesa y las cartas que tienes en la mano. Sigue sin saber qué es un
+ * alfil, y esa es justo la gracia: no hace falta: sabe qué hay en cada casilla y
+ * el juego dice el resto.
+ *
+ * Se deja escrito lo que decía antes porque la frase era buena y la decisión de
+ * declarar una limitación en vez de disimularla es la que hizo que se arreglara.
+ * Ver la nota larga sobre `opcionesDe`, más abajo.
+ *
+ * Un módulo de reglas que quiera su propia puerta numérica sigue pudiendo
+ * implementar `observacion(p) → number[]`, y este adaptador la usa antes que la
+ * suya.
  *
  * LO QUE SÍ ES, Y ES LO IMPORTANTE
  * --------------------------------
@@ -47,9 +59,61 @@ import { partir } from './Grammar.js';
 // partida legítima no cuadraría — y eso pasó de verdad, ver `_puntosDe`.
 import { puntuacionDe } from '../../../../arcade/js/protohub/Verificador.js';
 import { describirEstado } from '../../../../arcade/js/protohub/descripcion.js';
+import { substrateObservation, observationLength } from './SubstrateObservation.js';
+import { VOCABULARIO } from '../../../../data/vocabulario_observacion.js';
 
 /** Un tope para que la casa no pueda encadenar turnos hasta colgar la pestaña. */
 const MAX_TURNOS_CASA = 64;
+
+/**
+ * ⚠️ LA OBSERVACIÓN NUMÉRICA DE LOS CUARENTA ERAN CUATRO NÚMEROS.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Puntos, cuántas jugadas legales hay, si es tu turno y si acabó. O sea: el
+ * MARCADOR. Ni una casilla, ni una carta. Con eso un agente numérico no puede
+ * jugar al ajedrez ni a la brisca — puede aprender a pulsar la primera opción y
+ * poco más, y la nota que saque no mide el juego.
+ *
+ * Y la pieza para arreglarlo llevaba meses escrita: `SubstrateObservation`
+ * convierte un sustrato en números, y su propia cabecera decía para qué existía
+ * —«demostrar que el sustrato basta»— y que no reemplazaba a ninguna observación
+ * publicada. Nadie la había enchufado a nada: la usaba UNA prueba y ningún
+ * entorno. Es la misma avería de siempre en esta casa, la pieza canónica
+ * enterrada donde no se puede llamar, y van cuatro esta semana.
+ *
+ * Aquí sí se enchufa, y aquí sí toca cambiar la forma: estos cuarenta NO tienen
+ * huella sellada —las trece huellas son las de los mundos— así que no se retira
+ * ninguna nota publicada al ampliarles el vector. Los trece que sí están sellados
+ * no se tocan: las secciones nuevas son opcionales y sólo las pide este adaptador.
+ *
+ * El vector que sale ahora, por secciones:
+ *
+ *     4        el marcador de siempre, que no está en el sustrato
+ *     164      el armazón de `substrateObservation` (tamaño y piezas sueltas)
+ *     2·casillas  EL TABLERO ENTERO: un plano de suelo y otro de quién lo ocupa
+ *     4·montón    manos, mazos y descartes: cuál, de quién, visto y tapado
+ *     4·hecho     el triunfo, el bote, el color en juego
+ *     1·carta     una casilla por carta de la baraja: las que tienes en la mano
+ *
+ * Las listas cerradas que eso necesita no se adivinan mirando la partida —el
+ * descarte no existe al repartir y el triunfo puede ser cualquiera de cuatro—:
+ * se miden jugando con `gen_vocabulario.mjs` y se guardan en un fichero que se
+ * puede abrir y leer. Lo que no esté declarado sale como 0, que significa «no lo
+ * tengo en el vocabulario» y no puede confundirse con otra cosa.
+ */
+function opcionesDe(juego) {
+    const v = VOCABULARIO[juego] ?? {};
+    return {
+        maxPiezas: v.maxPiezas ?? 0,
+        tipos: v.tipos ?? [],
+        ...(v.rejilla ? { rejilla: v.rejilla } : {}),
+        ...(v.zonas?.length
+            ? { zonas: { ids: v.zonas, max: Math.max(4, v.zonas.length) } } : {}),
+        ...(v.hechos?.length
+            ? { hechos: { ids: v.hechos, valores: v.valores ?? {}, max: Math.max(4, v.hechos.length) } } : {}),
+        ...(v.cartas?.length ? { mano: { cartas: v.cartas } } : {}),
+    };
+}
 
 /**
  * Fabrica una clase de entorno a partir de un módulo de reglas del ProtoHub.
@@ -61,11 +125,25 @@ const MAX_TURNOS_CASA = 64;
  * @returns {typeof GymEnv}
  */
 export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
+    const OPTS = opcionesDe(juego);
+    const LARGO = 4 + observationLength(OPTS.maxPiezas, OPTS);
+
     return class extends GymEnv {
         static id = `alisa/${juego}-protohub-v0`;
         static observationSpace = {
-            shape: [4],
+            shape: [LARGO],
+            // Los cuatro primeros tienen nombre; el resto son secciones enteras y
+            // se describen por lo que son, no número a número — un tablero de
+            // fagocito son 784 casillas y nombrarlas una a una no ayuda a nadie.
             names: ['puntos', 'jugadas_legales', 'turno_es_mio', 'terminada'],
+            secciones: [
+                { desde: 0, largo: 4, que: 'marcador' },
+                { desde: 4, largo: observationLength(OPTS.maxPiezas, {}), que: 'tamaño y piezas sueltas' },
+                ...(OPTS.rejilla ? [{ largo: OPTS.rejilla.ancho * OPTS.rejilla.alto * 2, que: 'tablero: suelo y ocupante' }] : []),
+                ...(OPTS.zonas ? [{ largo: OPTS.zonas.max * 4, que: 'montones' }] : []),
+                ...(OPTS.hechos ? [{ largo: OPTS.hechos.max * 4, que: 'hechos de la mesa' }] : []),
+                ...(OPTS.mano ? [{ largo: OPTS.mano.cartas.length, que: 'tu mano, una casilla por carta' }] : []),
+            ],
         };
         static actionSpace = { type: 'discrete', from: 'affordances()' };
         static meta = {
@@ -418,12 +496,34 @@ export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
             // Si las reglas saben describirse en números, mandan ellas.
             if (reglas.observacion) return reglas.observacion(this.p);
             const e = this._estado();
-            return [
+            const marcador = [
                 this._puntosDe(e),
                 (e.legal_moves ?? []).length,
                 this.turnoAgente === null || e.turn === this.turnoAgente ? 1 : 0,
                 e.is_game_over ? 1 : 0,
             ];
+
+            /**
+             * ⚠️ Y EL RESTO SALE DEL SUSTRATO, DESDE LA SILLA QUE MIRA.
+             *
+             * `mano.asiento` es lo que hace que este vector sea de QUIEN JUEGA y no
+             * de la silla 0. Es el mismo cable que ya estaba suelto una vez en este
+             * fichero —`estado(p)` sin asiento, y el agente de la silla 2 recibía la
+             * mano de la 0— así que aquí se pasa explícito.
+             *
+             * Si el sustrato falla, se devuelve el marcador con ceros detrás: la
+             * forma del vector no puede cambiar a mitad de una partida, y una
+             * excepción aquí dejaría al arnés comparando vectores de dos largos.
+             */
+            const sus = this.sustrato();
+            if (!sus) return marcador.concat(new Array(LARGO - 4).fill(0));
+            const opts = OPTS.mano
+                ? { ...OPTS, mano: { ...OPTS.mano, asiento: this.asiento ?? 0 } }
+                : OPTS;
+            let cuerpo;
+            try { cuerpo = substrateObservation(sus, opts); }
+            catch { cuerpo = new Array(LARGO - 4).fill(0); }
+            return marcador.concat(cuerpo);
         }
 
         // El texto vive en `protohub/descripcion.js` y no aquí: un LLM sentado a

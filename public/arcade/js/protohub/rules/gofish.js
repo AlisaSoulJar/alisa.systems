@@ -159,14 +159,47 @@ export async function crearGoFish({ url = RUTA_BIBLIOTECA, jugadores = 3, mano =
             if (p.mazo.length) {
                 zonas.push({ id: 'mazo', de: null, items: [], ocultas: p.mazo.length });
             }
-            // Los libros son el MARCADOR y son públicos: están en la mesa a la vista
-            // de los tres. Se guardan por RANGO y no como cuatro cartas concretas,
-            // así que no son un montón — son un hecho de cada silla.
+            /**
+             * Los libros son el MARCADOR y son públicos: están en la mesa a la vista
+             * de los tres. Se guardan por RANGO y no como cuatro cartas concretas,
+             * así que no son un montón — son hechos de cada silla.
+             *
+             * ⚠️ UN HECHO POR LIBRO, Y NO UNO CON LA LISTA DENTRO. ME LO CAZÓ MI
+             * PROPIA REGLA, PUESTA EL MISMO DÍA.
+             *
+             * La primera versión era `{ id: 'libros', valor: l.join('+') }`, o sea
+             * `'2+3+5'`. `prueba_sustrato` prohíbe que el valor de un hecho sea una
+             * lista —«eso es una estructura, no un hecho»— y yo me salté mi propia
+             * prohibición juntando con un `+`: el tipo pasaba a ser texto y la regla
+             * no lo veía.
+             *
+             * No es purismo. Lo denunció `prueba_observacion` por el otro lado: para
+             * convertir un hecho de texto en un número hace falta una lista CERRADA
+             * de valores posibles, y `'2+3'`, `'2+3+5'`, `'2+3+5+10'`… son
+             * combinaciones — infinitas en la práctica. El vocabulario salió corto a
+             * la primera partida con una semilla nueva.
+             *
+             * ⚠️ Y EL SEGUNDO INTENTO TAMPOCO VALIÓ, POR UN PELO.
+             *
+             * Numeré el libro dentro de su silla —`libro0`, `libro1`— con el rango
+             * como valor. El identificador ya era cerrado, pero el VALOR no: el
+             * primer libro de una partida puede ser cualquiera de los trece rangos, y
+             * medir ocho semillas no ve los trece en cada hueco. Volvió a quedarse
+             * corto con semillas nuevas.
+             *
+             * Con el rango DENTRO del identificador se acaba: hay trece libros en el
+             * juego y una partida entera los cierra todos, así que una sola partida
+             * completa el vocabulario. El valor es un uno —«sí, está cerrado»— porque
+             * quién lo tiene ya lo dice `de`.
+             *
+             * La lección, que es la de siempre en este repositorio: un vocabulario que
+             * hay que MEDIR es frágil; uno que la estructura garantiza, no. Si puedes
+             * elegir la forma para que salga cerrada sola, elígela.
+             */
             return {
                 rejilla: null, piezas: [], zonas,
-                hechos: p.libros
-                    .map((l, i) => ({ id: 'libros', de: i, valor: l.join('+') }))
-                    .filter(h => h.valor),
+                hechos: p.libros.flatMap((l, i) =>
+                    l.map(r => ({ id: `libro_${r}`, nombre: `libro de ${r}`, de: i, valor: 1 }))),
             };
         },
 

@@ -115,6 +115,86 @@ for (const e of CATALOGO) {
 }
 
 console.log(`  ${vistos} mundos revisados`);
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ Y EL VOCABULARIO DE LOS CUARENTA, CON SEMILLAS QUE NO LO MIDIERON
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Desde el 27-08 los cuarenta juegos del arcade tienen vector de verdad —antes
+ * eran cuatro números, el marcador— y para eso `substrateObservation` necesita
+ * listas cerradas: qué montones existen, qué hechos, qué valores toma un triunfo,
+ * qué cartas tiene la baraja. Se miden jugando con `gen_vocabulario.mjs` y se
+ * guardan en `public/data/vocabulario_observacion.js`.
+ *
+ * Un vocabulario corto NO da error: lo que falta se codifica como 0, que significa
+ * «no lo tengo en la lista». Es el sentinela correcto y es exactamente por eso que
+ * hay que vigilarlo — un descarte que aparece a la tercera jugada y no está
+ * declarado sale como cero para siempre, indistinguible de «no hay montón».
+ *
+ * Así que se juega con semillas DISTINTAS de las que lo generaron (1, 2, 3, 5, 8,
+ * 13, 21, 34) y se exige que no asome ni un identificador desconocido.
+ */
+const { VOCABULARIO } = await import('./public/data/vocabulario_observacion.js');
+const { JUEGOS, SILLAS, cargarReglas } =
+    await import('./public/arcade/js/protohub/rules/index.js');
+
+const SEMILLAS_NUEVAS = [101, 137, 211, 307];
+let desconocidos = 0, mirados = 0;
+
+for (const juego of JUEGOS) {
+    const v = VOCABULARIO[juego];
+    if (!v) { mal(`${juego}: no tiene vocabulario. Corre \`node gen_vocabulario.mjs\`.`); continue; }
+    let reglas;
+    try { reglas = await cargarReglas(juego, {}); } catch { continue; }
+    if (typeof reglas.sustrato !== 'function') continue;
+    mirados++;
+
+    const sillas = Number(SILLAS?.[juego]) || Number(reglas.ASIENTOS) || 1;
+    const fuera = new Set();
+    for (const s of SEMILLAS_NUEVAS) {
+        let p;
+        try { p = reglas.nuevaPartida({ semilla: s, seed: s }); } catch { continue; }
+        for (let k = 0; k < 160; k++) {
+            for (let a = 0; a < sillas; a++) {
+                let sus;
+                try { sus = reglas.sustrato(p, a); } catch { continue; }
+                if (!sus) continue;
+                for (const z of (sus.zonas ?? [])) {
+                    if (!v.zonas.includes(String(z.id))) fuera.add(`montón '${z.id}'`);
+                    for (const c of [...(z.items ?? []), ...(z.casillas ?? [])]) {
+                        if (typeof c === 'string' && !v.cartas.includes(c)) fuera.add(`carta '${c}'`);
+                    }
+                }
+                for (const h of (sus.hechos ?? [])) {
+                    if (!v.hechos.includes(String(h.id))) fuera.add(`hecho '${h.id}'`);
+                    else if (typeof h.valor !== 'number'
+                             && !(v.valores?.[h.id] ?? []).includes(String(h.valor))) {
+                        fuera.add(`valor '${h.valor}' de '${h.id}'`);
+                    }
+                }
+                for (const pz of (sus.piezas ?? [])) {
+                    if (!v.tipos.includes(String(pz.t))) fuera.add(`tipo '${pz.t}'`);
+                }
+            }
+            let st;
+            try { st = reglas.estado(p, 0); } catch { break; }
+            const m = (st.legal_moves ?? []).filter(x => x !== 'nueva' && x !== 'reset');
+            if (!m.length) break;
+            let ok = false;
+            try { ok = reglas.mover(p, reglas.sugerencia?.(p) ?? m[0]); } catch { break; }
+            if (!ok) break;
+        }
+    }
+    if (fuera.size) {
+        desconocidos++;
+        mal(`${juego}: el vocabulario se queda corto — ${[...fuera].slice(0, 4).join(', ')}`
+          + `${fuera.size > 4 ? ` y ${fuera.size - 4} más` : ''}. Corre \`node gen_vocabulario.mjs\`.`);
+    }
+}
+console.log(`  ${mirados} juegos del arcade con vocabulario · `
+    + `${desconocidos ? `${desconocidos} se quedan cortos` : 'ninguno se queda corto con semillas nuevas'}`);
+
 console.log('');
 if (fallos) { console.log(`  ✗ ${fallos} fallo(s): el sustrato no basta en algún mundo\n`); process.exit(1); }
-console.log('  ✓ de los nueve sustratos sale un vector jugable, sin una línea por juego\n');
+console.log('  ✓ de los sustratos sale un vector jugable, sin una línea por juego\n');
