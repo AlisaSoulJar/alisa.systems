@@ -43,6 +43,25 @@
  * sale con error: es preferible un susto a dejar un sabotaje puesto.
  *
  * Y todo esto es recuperable con git, que es la red de debajo.
+ *
+ * ⚠️ NO LA MATES A MEDIAS. Y ESTO IMPORTA MÁS DESDE QUE ESTÁ EN `npm test`.
+ *
+ * El `finally` que restaura no corre si al proceso lo matan: un Ctrl-C, un tope de
+ * tiempo del arnés que lo llame, una terminal que se cierra. Entonces el sabotaje
+ * se queda PUESTO en el árbol de trabajo, y lo peor es lo que viene después — la
+ * siguiente pasada dirá «el sabotaje ya no encaja» para ese cable, porque el texto
+ * que busca ya no está: lo cambió ella misma. Se lee como un sabotaje caducado y no
+ * lo es.
+ *
+ * Pasó el 27-08, y lo hice yo: maté un `npm test` a los diez minutos mientras esto
+ * corría, y `visualizadores.js` se quedó sin su alias `ajedrez: 'chess'`. La pista
+ * es que `git status` enseña un fichero del proyecto tocado que tú no tocaste.
+ *
+ *     git status                 ¿hay algo modificado que no sea tuyo?
+ *     git checkout -- <fichero>  devuélvelo antes de creerte ningún resultado
+ *
+ * Desde que vive dentro de `npm test` va la última de la lista, así que interrumpir
+ * la suite por impaciencia cae justo aquí.
  */
 import { readFile, writeFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
@@ -65,16 +84,32 @@ const SABOTAJES = [
     {
         nombre: 'sistemas',
         corre: 'node sistemas.mjs',
-        fichero: 'public/js/alisa-engine/src/world/systems/SubmarineCore.js',
-        // El fallo REAL contra el que existe la vara: un núcleo deja de componer
-        // y se escribe la pieza dentro. Aquí se le quita al submarino el átomo de
-        // movimiento; el suelo de composición baja de 4 a 3 y tiene que saltar.
-        //
-        // Se sabotea el SUELO y no el TECHO a propósito: para subir el techo
-        // habría que escribir un integrador entero, y un sabotaje que añade
-        // cuarenta líneas prueba menos que uno que quita una.
-        de: "import { VolumeVehicleSystem } from './VolumeVehicleSystem.js';",
-        a: "const VolumeVehicleSystem = null; // el núcleo se lo escribe él",
+        /**
+         * ⚠️ ESTE SABOTAJE ESTABA CADUCADO, Y ES EL PEOR SITIO PARA QUE PASE.
+         *
+         * Cortaba el `import { VolumeVehicleSystem }` de `SubmarineCore` esperando
+         * que el suelo de composición bajase. Y `sistemas.mjs` ya no mide los
+         * imports: desde que los núcleos declaran `static ROM`, lee la DECLARACIÓN
+         * — lo dice su propio comentario, «medir por los import es medir la
+         * sombra». O sea que el sabotaje cortaba un cable que ya no daba luz, y la
+         * vara aprobaba tan tranquila.
+         *
+         * Es exactamente lo que este fichero existe para cazar, cometido dentro de
+         * este fichero. Y también la tercera nota correcta que caduca en silencio
+         * esta semana: ninguna de las tres avisó al quedarse vieja.
+         *
+         * Se sabotea el SUELO y no el TECHO a propósito: para subir el techo habría
+         * que escribir un integrador entero, y un sabotaje que añade cuarenta líneas
+         * prueba menos que uno que quita una.
+         *
+         * Y el objetivo cambia a `CorpBuildingCore` por aritmética: la vara cuenta
+         * núcleos con DOS O MÁS piezas, y el submarino tiene tres — quitarle una lo
+         * deja en dos y sigue contando. El edificio tiene exactamente dos, así que
+         * quitarle una lo baja de la raya y el suelo cae de 11 a 10.
+         */
+        fichero: 'public/js/alisa-engine/src/world/systems/CorpBuildingCore.js',
+        de: "['Bandas', { cortes: [[1, 'caliente'], [3, 'fresco'], [Infinity, 'helado']] }],",
+        a: "// el núcleo se escribe las bandas dentro",
         vigila: 'que un núcleo componga piezas del motor en vez de reimplementarlas',
     },
     {
@@ -556,9 +591,22 @@ const SABOTAJES = [
          */
         nombre: 'puertas-busca',
         corre: 'node prueba_puertas_busca.mjs',
-        fichero: 'public/js/alisa-engine/src/gym/envs/RaccoonSpaceEnv.js',
-        de: 'asteroids: 0, fuel: 11, tope: 3600',
-        a: 'asteroids: 0, fuel: 99, tope: 3600',
+        /**
+         * ⚠️ TAMBIÉN CADUCADO, Y POR EL MISMO MOTIVO QUE EL DE `sistemas`.
+         *
+         * Apuntaba a `RaccoonSpaceEnv.js`, donde los ajustes estaban escritos a
+         * mano. Al convertir ¡Busca! en ROMs, los números se mudaron a las tablas
+         * de `RaccoonSpaceCore` y el entorno pasó a leerlos con `this.rom`. El
+         * sabotaje se quedó buscando un texto que ya no existe en ese fichero:
+         * ni siquiera fallaba, decía «el sabotaje ya no encaja».
+         *
+         * Ésa es la señal buena — esta prueba distingue «no encaja» de «aprueba
+         * con el cable cortado», y sin esa distinción los dos casos se leerían como
+         * un verde.
+         */
+        fichero: 'public/js/alisa-engine/src/world/systems/RaccoonSpaceCore.js',
+        de: 'tankSize: 260, planets: 8, asteroids: 0, fuel: 11, tope: 3600,',
+        a: 'tankSize: 260, planets: 8, asteroids: 0, fuel: 99, tope: 3600,',
         vigila: 'que la página y el banco monten el núcleo de ¡Busca! con los mismos ajustes',
     },
     {
@@ -851,11 +899,21 @@ const SABOTAJES = [
          * El sabotaje cambia el combustible de ¡Busca! 4 en una unidad: suficiente
          * para que el juego se comporte distinto, poco para que se note a ojo.
          */
+        /**
+         * ⚠️ Y EL TERCERO CADUCADO POR LA MISMA MUDANZA. Como el de `puertas-busca`
+         * y el de `sistemas`: los ajustes de ¡Busca! se fueron del entorno a las
+         * tablas ROM de `RaccoonSpaceCore` y los sabotajes se quedaron apuntando al
+         * sitio viejo. Tres de sesenta, todos por el mismo cambio, y ninguno avisó.
+         *
+         * Es el argumento más fuerte que hay para meter esta prueba en `npm test`:
+         * refactorizar mueve texto, y un sabotaje es texto que tiene que seguir
+         * encajando. Sin correrla, la red se deshilacha por donde se trabaja.
+         */
         nombre: 'huella',
         corre: 'node --import ./resolver_three.mjs prueba_huella.mjs',
-        fichero: 'public/js/alisa-engine/src/gym/envs/RaccoonSpaceEnv.js',
-        de: 'asteroids: 0, fuel: 30, tope: 3000',
-        a: 'asteroids: 0, fuel: 31, tope: 3000',
+        fichero: 'public/js/alisa-engine/src/world/systems/RaccoonSpaceCore.js',
+        de: 'tankSize: 180, planets: 10, asteroids: 0, fuel: 30, tope: 3000,',
+        a: 'tankSize: 180, planets: 10, asteroids: 0, fuel: 31, tope: 3000,',
         vigila: 'que un juego no cambie de comportamiento conservando su nombre',
     },
     {
@@ -1028,6 +1086,33 @@ console.log(gris('  se rompe a propósito lo que cada una vigila, y tiene que su
 
 let malas = 0, sinRestaurar = [];
 
+/**
+ * ⚠️ EL DAÑO COLATERAL QUE ESTE FICHERO NO SE MIRABA: LO QUE ESCRIBEN LAS PRUEBAS.
+ *
+ * Se protege el fichero saboteado con mucho cuidado —se guarda, se restaura pase
+ * lo que pase y se verifica—, y no se miraba lo OTRO: varias comprobaciones
+ * PUBLICAN datos al correr. `prueba_senal.mjs` reescribe
+ * `public/data/suelo_por_entorno.json` cada vez, y aquí se la hace correr con un
+ * sabotaje puesto.
+ *
+ * O sea que esta prueba dejaba en el repositorio un fichero de datos generado con
+ * el motor averiado, y el sabotaje —que sí se restauraba— se llevaba toda la
+ * atención. Medido: 732 líneas cambiadas después de una pasada limpia.
+ *
+ * No da error, y el fichero sirve una página. Es la forma de siempre: el estropicio
+ * no está donde miras.
+ *
+ * Se fotografía `public/data/` entero antes de empezar y se devuelve al final.
+ */
+const CARPETA_DATOS = new URL('./public/data/', import.meta.url);
+const { readdir: leerCarpeta } = await import('node:fs/promises');
+const foto = new Map();
+for (const f of await leerCarpeta(CARPETA_DATOS).catch(() => [])) {
+    if (!f.endsWith('.json')) continue;
+    const u = new URL(f, CARPETA_DATOS);
+    foto.set(f, await readFile(u, 'utf8').catch(() => null));
+}
+
 for (const s of lista) {
     const original = await readFile(s.fichero, 'utf8').catch(() => null);
     if (original === null) {
@@ -1072,6 +1157,21 @@ for (const s of lista) {
         const ahora = await readFile(s.fichero, 'utf8').catch(() => null);
         if (ahora !== original) sinRestaurar.push(s.fichero);
     }
+}
+
+// Y los datos que alguna comprobación haya publicado mientras estaba averiada.
+const rehechos = [];
+for (const [f, antes] of foto) {
+    if (antes === null) continue;
+    const u = new URL(f, CARPETA_DATOS);
+    const ahora = await readFile(u, 'utf8').catch(() => null);
+    if (ahora === null || ahora === antes) continue;
+    await writeFile(u, antes).catch(() => sinRestaurar.push(`public/data/${f}`));
+    rehechos.push(f);
+}
+if (rehechos.length) {
+    console.log(gris(`\n  ↩ datos devueltos a su sitio: ${rehechos.join(', ')}`));
+    console.log(gris('    los publicó una prueba mientras corría con el cable cortado.'));
 }
 
 if (sinRestaurar.length) {
@@ -1127,7 +1227,28 @@ const { readdir } = await import('node:fs/promises');
  */
 const APARTE = new Set([
     'prueba_de_las_pruebas.mjs',   // es esto mismo: se corre con `npm run pruebas`
-    'prueba_vistas.mjs',           // abre los 35 en un navegador: `npm run vistas`
+    /**
+     * ⚠️ `prueba_vistas` Y `prueba_asimetria` YA SÍ ESTÁN EN `npm test` (27-08), Y
+     * SIGUEN AQUÍ SÓLO POR EL PRECIO.
+     *
+     * Entraron a la suite porque son las DOS únicas que miran si la persona y el
+     * agente juegan al mismo juego, y estaban fuera. Sabotearlas además costaría
+     * otros ocho minutos de navegador por pasada, así que se quedan exentas — pero
+     * la exención cambia de motivo y conviene decirlo: antes era «no las corre
+     * nadie por defecto»; ahora es «cuestan demasiado para sabotearlas encima».
+     *
+     * Y de la duda que deja —¿saben fallar?— hay evidencia del mismo día, que es
+     * mejor que un sabotaje simulado porque fue real:
+     *
+     *   · `prueba_vistas` suspendió con «blackjack: sustrato 3 · dibujadas 2» en
+     *     cuanto la mano del crupier entró en la matriz y el visualizador no la
+     *     nombraba;
+     *   · `prueba_asimetria` suspendió con «remigio, chinchón: descartes» y luego
+     *     con «entropy: robada», las tres asimetrías de verdad.
+     *
+     * Las dos suspendieron solas, sin que nadie les cortara un cable.
+     */
+    'prueba_vistas.mjs',           // en npm test desde el 27-08; exenta por coste
     'prueba_verbos.mjs',           // abre los 35 en un navegador: `npm run verbos`
     'prueba_portal.mjs',           // abre las 35 fichas en un navegador: `npm run portal`
     // ⚠️ 20-08: estas dos salían denunciadas como «no las corre nadie» y era FALSO —
@@ -1137,7 +1258,7 @@ const APARTE = new Set([
     // navegador y ése es el motivo real de no estar en `npm test`.
     'prueba_figuras.mjs',          // abre mesas de cartas: `npm run figuras`
     'prueba_invitados.mjs',        // monta juegos dentro de otra escena: `npm run invitados`
-    'prueba_asimetria.mjs',        // abre los 38 y lee sus paneles: `npm run asimetria`
+    'prueba_asimetria.mjs',        // en npm test desde el 27-08; exenta por coste — ver la nota de arriba
     // Mide, no comprueba: juega cada juego con topes crecientes para averiguar cuántas
     // decisiones necesita y lo escribe en `topes.json`. No tiene veredicto que sabotear
     // —su salida es un número—, y tarda lo que tarda jugar 480 partidas: `npm run topes`.

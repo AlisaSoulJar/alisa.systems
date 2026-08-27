@@ -1,3 +1,24 @@
+/**
+ * ⚠️ ESTO NO ESTÁ DORMIDO: ESTÁ ROTO, Y EN SILENCIO.
+ *
+ * `motores.mjs` lo cuenta entre los cuatro motores dormidos —«no lo llama
+ * nadie»— y eso se lee como «funciona y está sin estrenar». No es el caso.
+ * Medido el 27-08:
+ *
+ *   · importa `@tensorflow/tfjs`, que NO está en las dependencias del proyecto
+ *     (son cuatro: playwright-core, three, vite, wrangler) ni en `node_modules`.
+ *     O sea que este fichero no se puede ni cargar;
+ *   · y no exporta NADA, así que aunque se cargara no habría por dónde llamarlo.
+ *
+ * No se tira: la idea —un DQN aprendiendo a conducir sobre `IDMSystem`— es justo
+ * la clase de asiento que le falta al banco, que hoy tiene políticas escritas a
+ * mano, una FSM y modelos de lenguaje, pero ningún agente ENTRENADO.
+ *
+ * Para despertarlo hacen falta tres cosas, y conviene decirlas: la dependencia
+ * declarada, algo exportado, y un arnés que lo siente en un entorno del gym en
+ * vez de en su propio bucle. Mientras tanto queda escrito que no arranca, para
+ * que nadie cuente con él.
+ */
 import * as tf from '@tensorflow/tfjs';
 import { IDMSystem } from './IDMSystem.js'; // was './IDMEngine.js' — renamed Engine→System in the migration
 

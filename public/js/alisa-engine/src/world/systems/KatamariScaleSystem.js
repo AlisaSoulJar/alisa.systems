@@ -1,3 +1,18 @@
+/**
+ * ⚠️ DORMIDO, Y ES EL ÚNICO DE LOS CUATRO QUE DUERME CON RAZÓN.
+ *
+ * `motores.mjs` lo cuenta entre los cuatro motores sin llamadores. De los otros
+ * tres, dos podrían despertar y uno está roto; éste no: medido el 27-08, hace 38
+ * usos de THREE y son geometrías, materiales, sprites, aristas y un GridHelper.
+ *
+ * O sea que no es un sistema al que le sobre el dibujo: **es dibujo**. Llamarlo
+ * `System` lo pone en la misma lista que `BallisticSystem` o `HitboxSystem`, que
+ * son leyes sin pantalla, y eso hace que el inventario prometa una pieza
+ * componible donde hay un escaparate de escalas.
+ *
+ * No se tira —la escalera de tamaños del katamari es trabajo hecho y bonito— pero
+ * queda dicho: si algún día vuelve, vuelve como visualizador.
+ */
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 

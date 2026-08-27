@@ -6,6 +6,27 @@ import * as THREE from 'three';
  * Takes deterministic input state from an InputControllerEngine and applies
  * movement physics (Thrust, Drag, Gravity) to a specific mesh target.
  * Replaces hardcoded movement logic in sim_chopper, sim_predator, sim_asteroids.
+ *
+ * ⚠️ ESA ÚLTIMA FRASE ES UNA PROMESA QUE NUNCA SE CUMPLIÓ, Y HAY DOS MOTIVOS.
+ *
+ * `sistemas.mjs` lo declara ÁTOMO DE MOVIMIENTO —está en la lista, junto a Boids,
+ * IDM y los demás— y `motores.mjs` lo cuenta entre los dormidos: cero llamadores.
+ * Un átomo anunciado que no usa nadie. Medido el 27-08, por qué:
+ *
+ *   · IMPORTA THREE, cinco usos y los cinco de `Vector3`. Los núcleos que podrían
+ *     adoptarlo corren sin pantalla, así que hoy no pueden — y ése es el mismo
+ *     muro que tienen los otros ocho motores no-headless del inventario.
+ *
+ *   · Y TIENE CUATRO MODOS DENTRO (`AERIAL_6DOF`, `SHMUP_2D`, `KATAMARI_ROLL`,
+ *     `FPS_WALK`). Eso choca de frente con la regla de extracción de esta casa:
+ *     se separa una pieza cuando la diferencia cabe en un número o una bandera
+ *     SIN que ningún llamador cambie de conducta; volar en seis grados y andar
+ *     por el suelo son leyes distintas, no dos valores del mismo parámetro. Por
+ *     eso `BallisticSystem` y `KinematicRageSystem` son dos y no uno.
+ *
+ * O sea que despertarlo no es quitarle el THREE: es decidir si se parte en las
+ * leyes que lleva dentro. Escrito aquí para que la próxima que lo mire no empiece
+ * por el `Vector3` creyendo que es lo único.
  */
 export class KinematicControllerSystem {
     constructor() {

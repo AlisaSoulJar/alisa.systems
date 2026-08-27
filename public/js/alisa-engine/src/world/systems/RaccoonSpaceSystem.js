@@ -3,6 +3,21 @@ import * as THREE from 'three';
 /**
  * RaccoonSpaceSystem
  * Headless ECS engine for the ¡Busca! saga's orbit kinematics, fuel drain, and collisions.
+ *
+ * ⚠️ DORMIDO, Y CON DOS COSAS QUE DECIR — LA SEGUNDA ES SUYA.
+ *
+ * 1. LO SUSTITUYÓ `RaccoonSpaceCore`, que es el que juegan las tres etapas de
+ *    ¡Busca! (espacio, ciudad y planeta) y el que tiene entorno y huella. Éste es
+ *    su antecesor y no lo llama nadie. No se tira porque aquí no se tira nada,
+ *    pero que quede claro cuál es el vivo: mirar `motores.mjs`, que lo dice.
+ *
+ * 2. Y ESA PRIMERA LÍNEA DE ARRIBA ES FALSA. Dice «headless» e importa THREE.
+ *    Son tres usos y los tres de `Vector3`, así que headless de verdad está a un
+ *    rato de trabajo — pero mientras diga lo que no es, cualquiera que busque una
+ *    pieza sin pantalla se la lleva y descubre el problema al arrancar.
+ *
+ *    Es la misma clase de mentira que perseguimos en los sustratos: no da error,
+ *    y por eso dura.
  */
 export class RaccoonSpaceSystem {
     constructor(params = {}) {
