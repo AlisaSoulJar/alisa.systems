@@ -245,25 +245,45 @@ export function amueblar(scene, { radio = 24, alto = 15, hondo = 7 } = {}) {
     // ── El sitio ──────────────────────────────────────────────────────────
     // Un cilindro en vez de cuatro paredes: una esquina obliga a decidir hacia
     // dónde mira la sala, y aquí se mira desde cualquier silla.
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  ⚠️ NI PARED NI TECHO. LA SALA DEL HUEVO NO LOS TIENE, Y ESO ERA EL FALLO
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Aquí había un cilindro cerrado: suelo, muro y tapa. Y el sitio del que te
+     * abducen NO ES ASÍ. Lo miré, y luego lo comprobé en su código —
+     * `room_sala_del_huevo.html` monta EXACTAMENTE esto y nada más:
+     *
+     *     escena.fog = new THREE.FogExp2(0xe6ebf0, 0.0062)
+     *     suelo      = CircleGeometry(320, 96), 0xffffff roughness 0.82
+     *     rejilla    = GridHelper(320, 160, 0x9fb0c0, 0xd4dee6), opacidad 0.5
+     *
+     * Ni una pared. Ni un techo. Es un espacio ABIERTO y luminoso donde lo único
+     * oscuro son los objetos —las máquinas, la lámpara— y el horizonte se deshace
+     * en niebla. Por eso no parece una caja.
+     *
+     * Yo había repintado el cilindro de blanco, que es otra cosa: un cuarto claro
+     * sigue siendo un cuarto. Cambiar el color no cambia la clase de sitio.
+     *
+     * ⚠️ Y LA ESCALA NO SE COPIA, SE CONVIERTE.
+     *
+     * El hall está en metros —cámara a 1,62, mesa de 2 de ancho— y esta escena
+     * mide en «unidades de tapete»: la mesa son 20. O sea ×10. Copiar los números
+     * tal cual dejaría una rejilla de celdas diminutas y una niebla que no llega.
+     * Así que la densidad se divide por diez y la celda se hace del tamaño de la
+     * mesa, que es la proporción que tiene el hall: allí una casilla es una mesa.
+     */
     const suelo = añadir(new THREE.Mesh(
-        new THREE.CircleGeometry(radio, 48),
-        new THREE.MeshStandardMaterial({ color: SUELO, roughness: 0.95 })
+        new THREE.CircleGeometry(radio * 14, 96),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.82, metalness: 0.02 })
     ));
     suelo.rotation.x = -Math.PI / 2;
     suelo.position.y = ySuelo;
 
-    const muro = añadir(new THREE.Mesh(
-        new THREE.CylinderGeometry(radio, radio, alto, 48, 1, true),
-        new THREE.MeshStandardMaterial({ color: PARED, roughness: 1, side: THREE.BackSide })
-    ));
-    muro.position.y = ySuelo + alto / 2;
-
-    const techo = añadir(new THREE.Mesh(
-        new THREE.CircleGeometry(radio, 48),
-        new THREE.MeshStandardMaterial({ color: TECHO, roughness: 1 })
-    ));
-    techo.rotation.x = Math.PI / 2;
-    techo.position.y = ySuelo + alto;
+    const rejilla = añadir(new THREE.GridHelper(radio * 28, 42, 0x9fb0c0, 0xd4dee6));
+    rejilla.material.transparent = true;
+    rejilla.material.opacity = 0.5;
+    rejilla.position.y = ySuelo + 0.02;
 
     // ── La luz ────────────────────────────────────────────────────────────
     // La lámpara se ve, y eso importa: una luz que cae de ninguna parte deja la
@@ -304,7 +324,21 @@ export function amueblar(scene, { radio = 24, alto = 15, hondo = 7 } = {}) {
      * quitar, es dejar otra cosa.
      */
     const nieblaPrevia = scene.fog;
-    scene.fog = new THREE.Fog(PARED, radio * 0.75, radio * 2.1);
+    const fondoPrevio = scene.background;
+    /**
+     * ⚠️ NIEBLA EXPONENCIAL Y NO LINEAL, Y EL FONDO TAMBIÉN.
+     *
+     * La lineal necesita un «desde» y un «hasta», que se calculaban con el radio
+     * de la pared. Sin pared no hay hasta: el suelo se va a trescientas unidades y
+     * lo que lo cierra es la niebla, no una superficie. Es la misma `FogExp2` del
+     * hall con la densidad convertida a esta escala.
+     *
+     * Y el FONDO importa tanto como la niebla: sin él, por encima del horizonte se
+     * ve el vacío del motor —negro— y la sala parecería flotar en la nada. El hall
+     * pinta los dos del mismo color justo para que no haya línea.
+     */
+    scene.fog = new THREE.FogExp2(0xe6ebf0, 0.00062);
+    scene.background = new THREE.Color(0xe6ebf0);
 
     return {
         piezas,
@@ -316,6 +350,7 @@ export function amueblar(scene, { radio = 24, alto = 15, hondo = 7 } = {}) {
             }
             piezas.length = 0;
             scene.fog = nieblaPrevia;
+            scene.background = fondoPrevio;
         },
     };
 }

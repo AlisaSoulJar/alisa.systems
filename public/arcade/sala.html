@@ -82,7 +82,24 @@ document.title = `ALISA — ${window.ALISA_TITULO}`;
 
 // ── La sala ───────────────────────────────────────────────────────────────
 const escena = new THREE.Scene();
-escena.fog = new THREE.Fog(0x0d0b12, 6, 22);
+escena.background = new THREE.Color(0xe6ebf0);
+
+/**
+ * ⚠️ LA NIEBLA ES LA DE LA SALA DEL HUEVO EN COLOR, PERO NO EN FÓRMULA, Y HAY MOTIVO.
+ *
+ * Allí es `FogExp2(0xe6ebf0, 0.0062)`, que va bien porque allí se ANDA: la cámara
+ * se aleja doscientos metros y la niebla tiene que crecer sola con la distancia.
+ * Aquí la cámara está clavada a 2,15 m de la mesa y `maxDistance` la deja llegar
+ * a 6,5. Con la exponencial, a 6,5 m ya hay un 12 % de blanco encima de las cartas
+ * — un velo sobre lo único que hay que leer, para ganar nada, porque a esa
+ * distancia no hay horizonte que disolver.
+ *
+ * Lineal desde 12 hasta 50: dentro del sitio donde se juega, CERO niebla; el borde
+ * del suelo (55) queda completamente comido antes del plano lejano de la cámara
+ * (60), que es todo lo que la niebla tiene que hacer aquí. Mismo color, mismo
+ * resultado a la vista, elegida para ESTA cámara.
+ */
+escena.fog = new THREE.Fog(0xe6ebf0, 12, 50);
 
 const camara = new THREE.PerspectiveCamera(
     50,
@@ -101,6 +118,60 @@ render.setSize(innerWidth, innerHeight);
 render.setPixelRatio(Math.min(devicePixelRatio, 2));
 render.shadowMap.enabled = true;
 render.shadowMap.type = THREE.PCFSoftShadowMap;
+/**
+ * ⚠️ EL MAPEO DE TONO NO ES UN ADORNO: SIN ÉL LA LUZ DE ABAJO QUEMA LA SALA.
+ *
+ * El hemisférico de la Sala del Huevo va a 3,1, que es una barbaridad hasta que
+ * se ve con qué lo mira: `ACESFilmic` con exposición 1,02. Copiar la luz sin
+ * copiar el revelado deja las cartas blancas contra un suelo blanco, las dos a
+ * tope, y ahí ya no hay contraste que medir. Van juntos o no va ninguno.
+ */
+render.toneMapping = THREE.ACESFilmicToneMapping;
+render.toneMappingExposure = 1.02;
+
+/**
+ * ⚠️ EL ENTORNO QUE SE REFLEJA, Y ES LO QUE HACE QUE LA MESA SIGA SIENDO UNA MESA.
+ *
+ * Esto no estaba, y en la sala oscura no hacía falta: una tapa `#ffffff` sobre un
+ * suelo `#2b211c` se recorta sola. Al pasar el suelo a blanco —que es lo que hay
+ * allí— la mesa DESAPARECIÓ: tapa blanca sobre suelo blanco, misma luz plana en
+ * las dos, y lo que quedaba en pantalla era un tapete flotando en la nada. Lo vi
+ * ampliando el borde izquierdo: campo blanco uniforme donde tenía que haber un
+ * canto de once centímetros.
+ *
+ * Y el comentario del encuadre, de hace semanas, ya lo decía sin saberlo: «lo que
+ * convierte una superficie en un mueble es verle el canto». El encuadre se lo
+ * enseñaba; el color se lo borró.
+ *
+ * La Sala del Huevo no tiene este problema y no es por suerte: monta un `environment`
+ * PMREM a partir de un degradado vertical de blanco a `#c3ced9`. Con él, una cara
+ * horizontal refleja el techo del degradado y una cara vertical —el canto— refleja
+ * la parte baja, más oscura. El canto se dibuja solo, sin una sola luz más.
+ *
+ * Los cuatro topes son los suyos, copiados; el API no, porque aquí three es r128 y
+ * allí es posterior (`encoding` contra `colorSpace`). Copiar la línea en vez del
+ * degradado habría dado una textura en el espacio de color equivocado.
+ */
+{
+    const c = document.createElement('canvas');
+    c.width = 16; c.height = 256;
+    const g = c.getContext('2d');
+    const grad = g.createLinearGradient(0, 0, 0, 256);
+    grad.addColorStop(0.00, '#ffffff');
+    grad.addColorStop(0.45, '#eef3f8');
+    grad.addColorStop(0.55, '#dde5ee');
+    grad.addColorStop(1.00, '#c3ced9');
+    g.fillStyle = grad; g.fillRect(0, 0, 16, 256);
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.mapping = THREE.EquirectangularReflectionMapping;
+    tex.encoding = THREE.sRGBEncoding;
+
+    const pmrem = new THREE.PMREMGenerator(render);
+    pmrem.compileEquirectangularShader();
+    escena.environment = pmrem.fromEquirectangular(tex).texture;
+    tex.dispose(); pmrem.dispose();
+}
 document.getElementById('canvas-container').appendChild(render.domElement);
 
 const controles = new THREE.OrbitControls(camara, render.domElement);
@@ -108,40 +179,54 @@ controles.target.set(0, 0.95, 0);
 controles.maxPolarAngle = Math.PI / 2.05;   // no meter la cámara bajo el suelo
 controles.minDistance = 0.9;
 // 4,5 se quedaba corto en un teléfono en vertical: ahí la partida necesita 6 m
-// para caber de lado a lado. Sigue estando dentro de la sala (el muro está a 11).
+// para caber de lado a lado. El tope ya no lo pone ningún muro —no hay— sino la
+// niebla, que no empieza hasta los 12: a 6,5 la mesa sigue sin velo encima.
 controles.maxDistance = 6.5;
 controles.update();
 
 /**
- * ⚠️ LOS MISMOS COLORES QUE LA SALA DEL HUEVO, MEDIDOS DE ELLA.
+ * ⚠️ EL SITIO: NI MURO NI TECHO, PORQUE LA SALA DEL HUEVO NO LOS TIENE.
  *
- * Esta mesa decía estar copiada de allí «mismos números a propósito», y los
- * números lo estaban: Ø3,0 × 0,11 a 0,92 de alto, pie Ø0,68, tres taburetes Ø0,6.
- * Todo cuadra. Lo que no se copió fueron los colores — tapa `#d8d4e0` contra
- * `#ffffff`, pie `#241f2b` contra `#1b232e` — y eso basta para que al sentarte
- * notes que has cambiado de sitio, que es justo lo que esta sala existe para
- * evitar. Se comprobó recorriendo las dos escenas y comparando malla a malla.
+ * Aquí había un cilindro `#191521` a 11 m y una tapa `#120f18` a 5 m sobre un
+ * suelo `#2b211c`. Una taberna sin ventanas. Y esta página es EXACTAMENTE lo que
+ * se abre al sentarse a una mesa de la Sala del Huevo (`pocketCartridge.src =
+ * '../arcade/sala.html?juego=…'`, a pantalla completa), así que ese cambio de
+ * mundo ocurría en el mismo gesto que la sala grande existe para que no se note.
+ *
+ * Lo de arriba —el mueble, el tapete, la altura de los ojos— ya se había igualado
+ * malla a malla. Faltaba lo de alrededor, que es lo que de verdad dice en qué
+ * clase de sitio estás. Medido en `rooms/room_sala_del_huevo.html`:
+ *
+ *     fondo + niebla   0xe6ebf0                       azul-gris muy claro
+ *     suelo            CircleGeometry(320), #ffffff   roughness .82 · metal .02
+ *     rejilla          GridHelper(320, 160)           #9fb0c0 / #d4dee6 · op .5
+ *     muro y techo     — NO HAY —
+ *     lo oscuro        los OBJETOS: las máquinas, el mobiliario
+ *
+ * Y no basta con repintar la caja de blanco: un cuarto claro sigue siendo un
+ * cuarto. Lo que hace que la sala grande no parezca una caja es que el suelo se
+ * va hasta deshacerse en la niebla y no hay borde en ninguna parte.
+ *
+ * Las DOS medidas de aquí salen de esa tabla y no de mi gusto:
+ *   · radio 55 y no 320 — el plano lejano de esta cámara es 60. Un suelo de 320
+ *     se cortaría en seco a 60 m con un tajo recto en mitad del aire. Subir el
+ *     plano lejano a 400 pagaría precisión de profundidad justo donde no sobra:
+ *     las cartas viven entre 0,98 y 0,99, a cinco milímetros unas de otras.
+ *   · 55/110 divisiones — la casilla mide 2 m, la misma que allí (320/160). Que
+ *     el suelo llegue menos lejos no puede cambiar el tamaño de la baldosa: eso
+ *     sí se nota al pasar de una sala a otra.
  */
-const matClara = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85 });
-const matOscura = new THREE.MeshStandardMaterial({ color: 0x1b232e, roughness: 0.9 });
-
-// Suelo, muro y techo — el sitio.
-const suelo = new THREE.Mesh(new THREE.CircleGeometry(11, 48),
-    new THREE.MeshStandardMaterial({ color: 0x2b211c, roughness: 0.95 }));
+const suelo = new THREE.Mesh(new THREE.CircleGeometry(55, 96),
+    new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.82, metalness: 0.02 }));
 suelo.rotation.x = -Math.PI / 2;
+suelo.position.y = -0.02;   // igual que allí: deja sitio a la rejilla sin pelearse por el mismo píxel
 suelo.receiveShadow = true;
 escena.add(suelo);
 
-const muro = new THREE.Mesh(new THREE.CylinderGeometry(11, 11, 5, 48, 1, true),
-    new THREE.MeshStandardMaterial({ color: 0x191521, roughness: 1, side: THREE.BackSide }));
-muro.position.y = 2.5;
-escena.add(muro);
-
-const techo = new THREE.Mesh(new THREE.CircleGeometry(11, 48),
-    new THREE.MeshStandardMaterial({ color: 0x120f18, roughness: 1 }));
-techo.rotation.x = Math.PI / 2;
-techo.position.y = 5;
-escena.add(techo);
+const rejilla = new THREE.GridHelper(110, 55, 0x9fb0c0, 0xd4dee6);
+rejilla.material.transparent = true;
+rejilla.material.opacity = 0.5;
+escena.add(rejilla);
 
 /**
  * ⚠️ LA MESA YA NO SE COPIA: SE PIDE.
@@ -203,18 +288,96 @@ tapete.position.y = 0.98;
 tapete.receiveShadow = true;
 escena.add(tapete);
 
-// ── La luz ────────────────────────────────────────────────────────────────
-escena.add(new THREE.HemisphereLight(0xbfd4e6, 0x1a1420, 0.55));
-const foco = new THREE.SpotLight(0xfff2d0, 1.1, 12, Math.PI / 4.2, 0.5, 1.2);
-foco.position.set(0, 3.2, 0);
-foco.target.position.set(0, 0.98, 0);
-foco.castShadow = true;
-escena.add(foco, foco.target);
+/**
+ * ── La luz ────────────────────────────────────────────────────────────────
+ *
+ * La misma que allí, con los mismos números: hemisférico blanco sobre suelo
+ * `#dfe6ec` a 3,1 y una cenital a 1,5 desde muy arriba. Va con el `ACESFilmic`
+ * de arriba; sin él, quema.
+ *
+ * ⚠️ Y SE VA LA PANTALLA DE LA LÁMPARA, QUE ERA EL ÚLTIMO RESTO DE LA TABERNA.
+ *
+ * Colgaba un cono `#2a2233` a 3,2 m. Colgaba DEL TECHO, y el techo ya no está:
+ * quedaba flotando en mitad del cielo sin nada que lo sujetara. Y lo comprobé
+ * antes de quitarlo, porque yo mismo le había dicho a Oscar que la Sala del Huevo
+ * tiene una lámpara sobre la mesa de cartas: no la tiene. No hay un solo
+ * `ConeGeometry` ni un `SpotLight` en toda esa página — sus mesas las ilumina la
+ * sala y nada más. Lo que yo vi en la captura era la pantalla de una máquina.
+ *
+ * El FOCO sí se queda, y bajado de 1,1 a 0,55. No para iluminar —de eso ya se
+ * encarga el hemisférico— sino porque es la única luz que proyecta sombra, y la
+ * sombra es lo que distingue una carta PUESTA sobre el fieltro de una carta
+ * pintada en él. Allí las cartas son decoración y pueden vivir sin ella; aquí
+ * llevan la partida.
+ */
+escena.add(new THREE.HemisphereLight(0xffffff, 0xdfe6ec, 2.4));
 
-const pantalla = new THREE.Mesh(new THREE.ConeGeometry(0.55, 0.32, 20, 1, true),
-    new THREE.MeshStandardMaterial({ color: 0x2a2233, roughness: 0.8, side: THREE.DoubleSide }));
-pantalla.position.y = 3.2;
-escena.add(pantalla);
+/**
+ * ⚠️ LA TAPA DE LA MESA Y EL SUELO SON EL MISMO PÍXEL, Y NO TIENE ARREGLO DE LUZ.
+ *
+ * Al pasar el suelo a blanco medí el borde de la tapa con `canto.mjs`, que mira a
+ * seis píxeles de la silueta a un lado y a otro. Once bordes en cuadro:
+ *
+ *     246,246,246  ·  246,246,246   →  0     (nueve de once)
+ *
+ * Cero. No «poco»: el MISMO valor. Y es coherente: las dos caras miran hacia
+ * arriba, las dos reciben el mismo polo claro del `environment` y el mismo
+ * hemisférico. Lo único que las separa es que una está 94 cm por encima de la
+ * otra, y eso sólo se ve de dos maneras — por la silueta contra algo distinto, o
+ * por la sombra.
+ *
+ * ⚠️ Y PROBÉ LA SOMBRA CREYENDO QUE ERA LA SOLUCIÓN. NO LO ES, DESDE LA SILLA.
+ *
+ * Con la cámara sentada —2,25 m de alto, mirando hacia abajo a 2 m— el suelo más
+ * cercano que se ve queda a z ≈ -3,9: la propia tapa tapa los dos metros y medio
+ * de suelo que la rodean. O sea que la sombra cae ENTERA en suelo que no está en
+ * cuadro. Medido otra vez con la sombra puesta: los mismos nueve ceros.
+ *
+ * En la Sala del Huevo esto no pasa y tampoco es por la luz —allí no hay ni una
+ * sombra en toda la página—: es por el ÁNGULO. De pie a 1,62 m se miran las mesas
+ * casi de lado y se les ve el pie oscuro. Sentado se miran desde arriba, y desde
+ * arriba una mesa blanca sobre suelo blanco no se distingue tampoco allí.
+ *
+ * Y ese ángulo no se puede aplanar: unas cartas puestas sobre la mesa vistas de
+ * canto no se leen, que es un fallo que esta sala ya tuvo. Así que la tensión es
+ * real y se resuelve a favor de la partida, que es lo que se viene a hacer.
+ *
+ * ⚠️ ENTONCES ¿POR QUÉ SE QUEDA LA SOMBRA? PORQUE EN CUANTO ORBITAS, APARECE.
+ *
+ * Alejando la cámara a 3,8 m —dentro de lo que permite la rueda— la sombra entra
+ * en cuadro y es lo único que dice que la mesa está POSADA y no flotando. No
+ * arregla la silla, pero arregla todo lo demás, y no cuesta luz: 3,1 de
+ * hemisférico + 1,5 de cenital y 2,4 + 2,2 suman lo mismo; sólo cambia cuánta de
+ * esa luz es capaz de proyectar.
+ *
+ * Viene de (-2,5 · 8 · 6) y no del cenit: desde arriba del todo la sombra queda
+ * debajo de la mesa. Desde ahí cae hacia el fondo-derecha, que es suelo despejado
+ * — la esquina de la izquierda la tapa el panel.
+ */
+const cenital = new THREE.DirectionalLight(0xffffff, 2.2);
+cenital.position.set(-2.5, 8, 6);
+cenital.castShadow = true;
+cenital.shadow.mapSize.set(2048, 2048);
+Object.assign(cenital.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6, near: 0.5, far: 26 });
+cenital.shadow.camera.updateProjectionMatrix();
+cenital.shadow.bias = -0.0008;
+escena.add(cenital);
+
+/**
+ * ⚠️ Y SE VA LA PANTALLA DE LA LÁMPARA, QUE ERA EL ÚLTIMO RESTO DE LA TABERNA.
+ *
+ * Colgaba un cono `#2a2233` a 3,2 m. Colgaba DEL TECHO, y el techo ya no está:
+ * quedaba flotando en mitad del cielo sin nada que lo sujetara. Y lo comprobé
+ * antes de quitarlo, porque yo mismo le había dicho a Oscar que la Sala del Huevo
+ * tiene una lámpara sobre la mesa de cartas: no la tiene. No hay un solo
+ * `ConeGeometry` ni un `SpotLight` en toda esa página — sus mesas las ilumina la
+ * sala y nada más. Lo que yo vi en la captura era la pantalla de una máquina.
+ *
+ * El foco se va con él, por lo mismo: era la bombilla de esa pantalla. La sombra
+ * que daba —la de las cartas sobre el fieltro— la da ahora la cenital, que además
+ * la echa en la misma dirección que la de la mesa. Dos luces con sombra tirando
+ * cada una para su lado es lo que delata que una de las dos no existe.
+ */
 
 // ── El juego, dentro de la mesa ───────────────────────────────────────────
 const grupo = new THREE.Group();
