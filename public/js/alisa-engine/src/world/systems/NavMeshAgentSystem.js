@@ -4,6 +4,8 @@
  * Part of the OverworldECS pipeline.
  */
 
+import { Pathfinding } from './PathfindingSystem.js';
+
 // ECS Component Definition
 export const NavMeshAgentComponent = (speed = 4.0, turnSpeed = 8.0) => ({
     speed,
@@ -34,7 +36,17 @@ export class NavMeshAgentSystem {
     }
 
     /**
-     * Precalculates an A* path over the NavMesh
+     * ⚠️ EL A* SE FUE A `PathfindingSystem`, Y AQUÍ QUEDA LA TRADUCCIÓN.
+     *
+     * El algoritmo estaba escrito aquí dentro, bien hecho y headless, y no se
+     * podía llamar desde ningún otro sitio: pedía un `navMesh` con su forma
+     * —`metadata.bounds`, `data[r][c].w`— y devolvía metros. Un tower defense de
+     * laberinto no tiene navmesh, tiene una matriz de celdas.
+     *
+     * Ahora este método hace lo que de verdad es suyo: pasar de metros a celdas,
+     * preguntar, y pasar de celdas a metros. El camino más corto lo busca la
+     * pieza. Comprobado con treinta caminos sobre una rejilla con muros: mismo
+     * resumen `26da19bc` antes y después.
      */
     _calculatePath(startW, endW, navMesh) {
         if (!navMesh || !navMesh.data) return [];
@@ -45,99 +57,26 @@ export class NavMeshAgentSystem {
         if (!startIdx || !endIdx) return [];
 
         const matrix = navMesh.data;
-        const rows = navMesh.metadata.rows;
-        const cols = navMesh.metadata.cols;
-        
-        // Target unreachable
-        if (matrix[endIdx.r][endIdx.c].w === 0) return [];
-
-        const openList = [];
-        const openSetKeys = new Set();
-        const closedList = new Set();
-        const cameFrom = new Map();
-
-        const gScore = new Map();
-        const fScore = new Map();
-
-        const nodeKey = (r, c) => `${r},${c}`;
-
-        const startKey = nodeKey(startIdx.r, startIdx.c);
-        gScore.set(startKey, 0);
-        fScore.set(startKey, this._heuristic(startIdx, endIdx));
-
-        openList.push({ r: startIdx.r, c: startIdx.c, f: fScore.get(startKey) });
-        openSetKeys.add(startKey);
-
-        // Preallocate neighbors to avoid gc
-        const neighbors = [
-            { dr: -1, dc: 0, cost: 1 }, { dr: 1, dc: 0, cost: 1 },
-            { dr: 0, dc: -1, cost: 1 }, { dr: 0, dc: 1, cost: 1 },
-            { dr: -1, dc: -1, cost: 1.414 }, { dr: -1, dc: 1, cost: 1.414 },
-            { dr: 1, dc: -1, cost: 1.414 }, { dr: 1, dc: 1, cost: 1.414 }
-        ];
-
-        while (openList.length > 0) {
-            // Get node with lowest fScore
-            openList.sort((a, b) => a.f - b.f);
-            const current = openList.shift();
-            const currentKey = nodeKey(current.r, current.c);
-            openSetKeys.delete(currentKey);
-
-            if (current.r === endIdx.r && current.c === endIdx.c) {
-                // Reconstruct path
-                return this._reconstructPath(cameFrom, currentKey, matrix);
-            }
-
-            closedList.add(currentKey);
-
-            for (let n of neighbors) {
-                const nr = current.r + n.dr;
-                const nc = current.c + n.dc;
-
-                if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
-                if (matrix[nr][nc].w === 0) continue; // Obstacle
-
-                const nKey = nodeKey(nr, nc);
-                if (closedList.has(nKey)) continue;
-
-                const tentative_gScore = gScore.get(currentKey) + n.cost;
-
-                if (!gScore.has(nKey) || tentative_gScore < gScore.get(nKey)) {
-                    cameFrom.set(nKey, currentKey);
-                    gScore.set(nKey, tentative_gScore);
-                    const h = this._heuristic({ r: nr, c: nc }, endIdx);
-                    const f = tentative_gScore + h;
-                    fScore.set(nKey, f);
-                    
-                    if (!openSetKeys.has(nKey)) {
-                        openList.push({ r: nr, c: nc, f: f });
-                        openSetKeys.add(nKey);
-                    }
-                }
-            }
-        }
-
-        return []; // No path found
+        const celdas = Pathfinding.buscar({
+            filas: navMesh.metadata.rows,
+            cols: navMesh.metadata.cols,
+            pasable: (r, c) => matrix[r][c].w !== 0,
+            desde: startIdx,
+            hasta: endIdx,
+        });
+        return celdas.map(({ r, c }) => ({ x: matrix[r][c].x, z: matrix[r][c].z }));
     }
 
-    _heuristic(posA, posB) {
-        // Octile distance heuristic for 8-way movement
-        const dx = Math.abs(posA.c - posB.c);
-        const dy = Math.abs(posA.r - posB.r);
-        return Math.max(dx, dy) + 0.414 * Math.min(dx, dy);
-    }
-
-    _reconstructPath(cameFrom, currentKey, matrix) {
-        const path = [];
-        let curr = currentKey;
-        while (cameFrom.has(curr)) {
-            const [r, c] = curr.split(',').map(Number);
-            const wPos = matrix[r][c];
-            path.unshift({ x: wPos.x, z: wPos.z });
-            curr = cameFrom.get(curr);
-        }
-        return path;
-    }
+    /**
+     * ⚠️ AQUÍ VIVÍA EL A*, Y SE HA IDO ENTERO A `PathfindingSystem`.
+     *
+     * Ciento dos lineas: el buscador, la heuristica octil y la
+     * reconstruccion del camino. No se dejan «por si acaso» porque dejar dos
+     * algoritmos escritos es justo lo que la extraccion venia a quitar: el
+     * dia que alguien afine uno, el otro se queda atras y nadie se entera.
+     *
+     * Si hace falta mirarlo, esta en git.
+     */
 
     update(world, entities, dt) {
         const navMesh = window.globalNavMesh || null;
