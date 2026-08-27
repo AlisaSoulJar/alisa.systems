@@ -126,33 +126,46 @@ const NO_SEPARAN = {
      * excepciones con nombres que no hacen falta deja de leerse.
      */
     /**
-     * ⚠️ EL EDIFICIO A OSCURAS: LA MISMA PUERTA QUE ¡BUSCA! 6, CON TRES CERROJOS.
+     * ⚠️ AQUÍ ESTUVO `alisa/CorpStealth-v0` UN DÍA, Y SE VA PORQUE YA SEPARA.
      *
-     * Para que un registro cuente tienen que darse tres cosas a la vez: estar a
-     * menos de dos de un mueble SIN registrar, estar mirando hacia él, y que le
-     * llegue luz —la tuya o la del rellano—. Ninguna política ciega junta las
-     * tres, y por eso las siete sacan cero: ni una llega a abrir un mueble.
+     * Entró el 26-08 con las siete políticas a cero: registrar exige estar al
+     * lado, mirando y con luz, y ninguna política ciega junta las tres. Al día
+     * siguiente esta prueba avisó —«ya separan y siguen declarados»— y tenía
+     * razón. Lo que cambió en medio: la recompensa dejó de cobrar por abrir un
+     * mueble y pasó a sumar, así que las políticas que tropiezan con uno ya no
+     * empatan con las que se quedan quietas.
      *
-     * ⚠️ Y ANTES DE DECLARARLO SE ARREGLÓ LO QUE SÍ ESTABA MAL EN MI LADO.
+     * Se quita el mismo día que lo dice. Una lista de excepciones que no se
+     * limpia deja de leerse, y entonces protege lo que no debe.
      *
-     * La recompensa cobraba `-0,02` por mueble abierto, copiando el «cada
-     * intento cuesta» de los juegos con presupuesto de intentos. Aquí el
-     * presupuesto es la PILA y abrirlo ya la gasta: cobrarlo dos veces dejaba a
-     * la política que progresa por debajo de la que se queda quieta. Se cambió a
-     * sumar. No arregló esta vara —siguen las siete a cero, porque el problema
-     * no era la nota sino la puerta— pero estaba mal igual.
+     * ⚠️ EL DE UN BOTÓN: NO HAY NADA QUE DEDUCIR, Y AUN ASÍ NINGUNA CIEGA PASA UN MURO.
      *
-     * Lo que NO se ha hecho es dar recompensa por acercarse, por el mismo motivo
-     * que está escrito ahí arriba para el mapache: sería cambiar el juego para
-     * contentar al instrumento, y la persona tampoco cobra por acercarse.
+     * Es el caso más raro de esta lista y por eso conviene contarlo. En los del
+     * mapache la recompensa está detrás de NAVEGAR, y se entiende que una
+     * política ciega no llegue. Aquí está a la vista: dos verbos, seis números, y
+     * el primer muro llega a los cuatro segundos.
      *
-     * Lo que sí se dice, porque está medido con 60 semillas y tres pilotos:
-     * separa de sobra en cuanto el que juega mira la luz.
+     * Y aun así las siete sacan -1,0, porque **ninguna aguanta un segundo**: la
+     * que siempre aletea se estrella contra el techo en 0,9 s y la que nunca
+     * aletea contra el suelo en 0,8. Las partidas SÍ salen distintas —la prueba
+     * cuenta siete— pero morir en 0,8 o en 0,9 no es una diferencia de destreza,
+     * es ruido.
+     *
+     * Lo que separa aquí está medido y no es reflejo bruto: es saberse la propia
+     * física. Un aleteo sube siempre `impulso² / 2g` = 2,40, así que quien apunta
+     * al CENTRO del hueco se sale por arriba justo esa cantidad.
+     *
+     *     conoce su aleteo y apunta medio por debajo   42,3 muros
+     *     apunta al centro del hueco                    0,9 muros
+     *     se mantiene a media altura                    0,4 muros
+     *
+     * De 0,9 a 42 con un cambio de 1,2 unidades en el objetivo. Eso es lo que
+     * mide, y no lo alcanza nadie sin mirar dónde está el hueco.
      */
-    'alisa/CorpStealth-v0':
-        'registrar exige estar al lado, mirando y con luz, y ninguna política ciega junta '
-      + 'las tres. Con un piloto que administra la pila gana el 45%, con uno que registra '
-      + 'sin mirar la luz el 7% —y ése muere a oscuras 56 veces de 60',
+    'alisa/Flappy-v0':
+        'ninguna política ciega aguanta un segundo —la que aletea siempre se estrella contra '
+      + 'el techo en 0,9 s— así que las siete mueren antes del primer muro. Con un piloto que '
+      + 'apunta medio aleteo por debajo del hueco pasa 42,3 muros; apuntando al centro, 0,9',
 };
 /**
  * ⚠️ `sokoban` TAMBIÉN ESTUVO AQUÍ, Y TAMBIÉN ERA MENTIRA MÍA.

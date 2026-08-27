@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- El mapa del motor lo pone `/js/mundo.js`. El título, el estilo, el HUD y
+         las cartelas los ponen la ROM y `montarMundo`. -->
+    <script src="/js/mundo.js"></script>
+</head>
+<body>
+<script type="module">
+import { montarMundo } from '/js/montarMundo.js';
+import { PintorMundo } from '/js/pintor_mundo.mjs';
+import { FlappyCore } from '@alisa-engine/src/world/systems/FlappyCore.js';
+import { figurasDeAletea, encuadrarAletea, inclinarPajaro } from '/js/figuras_aletea.mjs';
+import { montarHud, montarPie } from '/js/hud_mundo.mjs';
+import { montarCartel } from '/js/cartelas_mundo.mjs';
+
+/**
+ * ⚠️ EL JUEGO MÁS PEQUEÑO DE LA CASA, Y LA PÁGINA TAMBIÉN.
+ *
+ * Un botón. La página no sabe qué es la gravedad, ni dónde está el hueco, ni
+ * cuándo se acaba: importa `FlappyCore` —el mismo objeto que instancia el
+ * banco— y le dice cuándo se ha pulsado.
+ *
+ * Y el núcleo tampoco sabe de física: la compone. Caer es `BallisticSystem`, la
+ * vía es `ScrollTrackSystem`, los muros los reparte `SpawnWaveSystem` y los
+ * choques los resuelve `Hitbox`. Dos de esas cuatro salieron de ¡Esquiva! 1 el
+ * mismo día, con su huella sin moverse — así que este juego no se PARECE a
+ * Pedrisco: corre literalmente sus piezas.
+ */
+const ROM = FlappyCore.ROM;
+
+const { app: gfx, THREE, arrancar } = await montarMundo({
+    ambiente: 'night',
+    cielo: false,
+    suelo: false,
+    nucleo: { clearColor: 0x0a0c18, fogColor: 0x0a0c18, fogDensity: 0.0025 },
+});
+
+let nucleo = null, pintor = null, hud = null, acabado = false;
+
+/**
+ * ⚠️ UN GOLPE, NO UNA TECLA MANTENIDA — Y ESO ES UNA REGLA DEL JUEGO.
+ *
+ * Si el aleteo fuera estado, tener la barra pulsada sería volar, y el juego
+ * dejaría de tener dentro la única pregunta que tiene: cuándo. Por eso se
+ * escucha `keydown` sin repetición y el clic, y no hay `keyup` que valga.
+ */
+const aletea = (e) => {
+    if (e.repeat) return;
+    if (!nucleo || nucleo.terminado()) return;
+    e.preventDefault();
+    nucleo.aletear();
+};
+addEventListener('keydown', (e) => { if (e.key === ' ' || e.key === 'ArrowUp') aletea(e); });
+addEventListener('pointerdown', (e) => aletea(e));
+
+const cartel = montarCartel(ROM.cartel, (ajustes) => {
+    nucleo = new FlappyCore({ seed: ajustes.seed, hueco: ajustes.hueco });
+    pintor = new PintorMundo(gfx.scene, figurasDeAletea(THREE), 1);
+    hud = montarHud(ROM.hud);
+    montarPie(ROM.hud.mandos);
+    encuadrarAletea(gfx, nucleo.alto, nucleo.via.visible);
+    /** El mundo, publicado, para que un aviso se pueda REPINTAR. */
+    window.getSustrato = () => { try { return nucleo?.sustrato() ?? null; } catch { return null; } };
+});
+
+arrancar((dt) => {
+    if (!nucleo) return;
+    const paso = Math.min(dt, 0.1);
+    nucleo.tick(paso);
+    const sus = nucleo.sustrato();
+    pintor.pintar(sus);
+    // El pintor COLOCA; el morro hacia arriba o hacia abajo lo pone esto.
+    inclinarPajaro(pintor, sus);
+    const info = nucleo.info();
+    hud.pintar(info, nucleo);
+    if (info.terminado && !acabado) { acabado = true; cartel.final(info); }
+});
+
+/** La puerta de los agentes, en la PÁGINA — no dentro del núcleo. */
+window.stepSimulation = (accion, dt = 1 / 60) => {
+    if (!nucleo) return null;
+    const r = nucleo.step(accion, dt);
+    return { done: r.done, info: r.info };
+};
+window.ALISA_STREAM_SIM_NAME = 'aletea';
+</script>
+
+<!-- El botón de «algo se ve raro»: adjunta el mundo entero porque esta página
+     publica `window.getSustrato()`. -->
+<script type="module" src="/arcade/js/protohub/reportar.js"></script>
+</body>
+</html>

@@ -137,6 +137,33 @@
       "medidas": 2
     },
     {
+      "nombre": "Esquiva",
+      "etapas": [
+        {
+          "saga": "Esquiva",
+          "etapa": 1,
+          "nombre": "Pedrisco",
+          "pagina": "/labs/croupier_asteroids_survival.html",
+          "existe": true,
+          "medida": true,
+          "sustrato": true,
+          "avisa": true
+        },
+        {
+          "saga": "Esquiva",
+          "etapa": 2,
+          "nombre": "¡Aletea!",
+          "pagina": "/games/aletea.html",
+          "existe": true,
+          "medida": true,
+          "sustrato": true,
+          "avisa": true
+        }
+      ],
+      "conSustrato": 2,
+      "medidas": 2
+    },
+    {
       "nombre": "Defiende",
       "etapas": [
         {
@@ -152,24 +179,7 @@
       ],
       "conSustrato": 1,
       "medidas": 1
-    },
-    {
-      "nombre": "Esquiva",
-      "etapas": [
-        {
-          "saga": "Esquiva",
-          "etapa": 1,
-          "nombre": "Pedrisco",
-          "pagina": "/labs/croupier_asteroids_survival.html",
-          "existe": true,
-          "medida": true,
-          "sustrato": true,
-          "avisa": true
-        }
-      ],
-      "conSustrato": 1,
-      "medidas": 1
     }
   ],
-  "total": 14
+  "total": 15
 }

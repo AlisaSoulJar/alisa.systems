@@ -11,50 +11,54 @@
   },
   "alisa/Pedrisco-v0": {
     "huella": "fd061509",
-    "sellada": "2026-08-26"
+    "sellada": "2026-08-27"
   },
   "alisa/CabinetEscape-v0": {
     "huella": "d63d3cba",
-    "sellada": "2026-08-26"
+    "sellada": "2026-08-27"
   },
   "alisa/Marabunta-v0": {
     "huella": "856713aa",
-    "sellada": "2026-08-26"
+    "sellada": "2026-08-27"
   },
   "alisa/RaccoonSpace-v1": {
     "huella": "7d54197b",
-    "sellada": "2026-08-26"
+    "sellada": "2026-08-27"
   },
   "alisa/RaccoonCity-v1": {
     "huella": "66d24069",
-    "sellada": "2026-08-26"
+    "sellada": "2026-08-27"
   },
   "alisa/RaccoonPlanet-v1": {
     "huella": "82936c95",
-    "sellada": "2026-08-26"
+    "sellada": "2026-08-27"
   },
   "alisa/CorpBuilding-v0": {
     "huella": "14eead53",
-    "sellada": "2026-08-26"
+    "sellada": "2026-08-27"
   },
   "alisa/DroneTower-v0": {
     "huella": "f43669e8",
-    "sellada": "2026-08-26"
+    "sellada": "2026-08-27"
   },
   "alisa/SatelliteSweep-v0": {
     "huella": "23eb7c13",
-    "sellada": "2026-08-26"
+    "sellada": "2026-08-27"
   },
   "alisa/Defiende-v0": {
     "huella": "77bef3c2",
-    "sellada": "2026-08-26"
+    "sellada": "2026-08-27"
   },
   "alisa/CorpStealth-v0": {
     "huella": "66dbc706",
-    "sellada": "2026-08-26"
+    "sellada": "2026-08-27"
+  },
+  "alisa/Flappy-v0": {
+    "huella": "37366283",
+    "sellada": "2026-08-27"
   },
   "alisa/Submarine-v0": {
     "huella": "8701514f",
-    "sellada": "2026-08-26"
+    "sellada": "2026-08-27"
   }
 }

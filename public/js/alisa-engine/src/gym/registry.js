@@ -227,6 +227,21 @@ const PROPIOS = [
      * la persona y el agente acabaron jugando dos ¡Busca! distintos.
      */
     { id: 'alisa/CorpStealth-v0', titulo: 'Corp Building a oscuras', fichero: 'CorpStealthEnv.js' },
+    /**
+     * El más pequeño de la colección y el que mide lo que no medía ninguno.
+     *
+     * Dos verbos, seis números, nada que deducir: se ve todo. Lo único difícil es
+     * cuándo. Y lo que separa a un piloto de otro está medido y no es reflejo
+     * bruto — es saberse la propia física: un aleteo sube siempre lo mismo, así
+     * que apuntar al centro del hueco se sale por arriba exactamente eso. Quien
+     * lo sabe pasa 43 muros; quien apunta al centro, 0,7.
+     *
+     * Salió de componer piezas y no de escribir motor: la vía y los choques son
+     * literalmente los de ¡Esquiva! 1, sacados de allí el mismo día con su huella
+     * `fd061509` sin moverse. Es la mejor prueba que hay de que esto es una
+     * consola y no una carpeta con juegos dentro.
+     */
+    { id: 'alisa/Flappy-v0', titulo: '¡Aletea!', fichero: 'FlappyEnv.js' },
     // El primero cuyo MUNDO sale de la semilla, no sólo el azar dentro del
     // mundo. Ver la cabecera de su fichero: es la casilla que no ocupa nadie.
     /**

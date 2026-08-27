@@ -2,8 +2,8 @@
   "_que_es": "Contra qué suelo se mide cada entorno. Una nota sólo significa algo comparada con estas siete políticas ciegas, en el mismo mundo, con la misma semilla y el mismo horizonte. Ver acreditar.mjs.",
   "_suelo": "alisa-engine/src/gym/baseline.js — ciclo, primera, ultima, azar1, azar7, azar99, bandido",
   "_medido_por": "prueba_senal.mjs, en cada npm test. Publica quien mide, para que no se separen.",
-  "propios": 12,
-  "total": 52,
+  "propios": 13,
+  "total": 53,
   "entornos": [
     {
       "id": "alisa/ajedrez-protohub-v0",
@@ -344,6 +344,25 @@
       "mejorCiega": 250,
       "peorCiega": 10,
       "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/Flappy-v0",
+      "familia": "propio",
+      "separa": false,
+      "suelo": [
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "mejorCiega": -1,
+      "peorCiega": -1,
+      "pasos": 3000,
       "semilla": 1234,
       "forma": "action"
     },
