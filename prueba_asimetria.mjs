@@ -172,6 +172,9 @@ for (const juego of juegos) {
     const ruta = String(pag.pagina ?? `${juego}.html`).replace(/^\/?(arcade\/)?/, '');
     const p = await nav.newPage({ viewport: { width: 1280, height: 800 } });
     let r = null;
+    // Se guarda para poder volver a leer si sale algo escondido — ver la nota de
+    // más abajo. La página se cierra DESPUÉS de esa segunda mirada, no antes.
+    let segundaLectura = null;
     try {
         await p.goto(`${base}/arcade/${ruta}?semilla=7`, { waitUntil: 'load', timeout: 30000 });
         await p.waitForTimeout(2600);
@@ -216,10 +219,14 @@ for (const juego of juegos) {
             await p.waitForTimeout(1600);
             r = (await leer()) ?? r;
         }
+        segundaLectura = leer;                 // por si hay que repetir, más abajo
     } catch (e) { r = null; }
-    await p.close();
 
-    if (!r) { console.log(`  ${gris('·')} ${juego.padEnd(12)} ${gris('no se pudo leer')}`); continue; }
+    if (!r) {
+        await p.close();
+        console.log(`  ${gris('·')} ${juego.padEnd(12)} ${gris('no se pudo leer')}`);
+        continue;
+    }
 
     /**
      * ⚠️ SE COMPARAN VALORES, NO NOMBRES DE CAMPO.
@@ -228,28 +235,59 @@ for (const juego of juegos) {
      * buscar la palabra `triunfo` daría un falso negativo. Lo que tiene que estar en
      * los dos sitios es el DATO: un número, o una cadena corta que signifique algo.
      */
-    const escondidos = [];
-    for (const [campo, valor] of Object.entries(r.st)) {
-        if (EN_LA_MESA[campo]) { usadas.add(campo); continue; }
-        if (valor === null || valor === undefined) continue;
-        if (typeof valor === 'object' && !Array.isArray(valor)) continue;   // se mira aparte
-        if (Array.isArray(valor) && !valor.length) continue;
-        if (typeof valor === 'boolean') continue;
+    const buscarEscondidos = (lectura) => {
+        const fuera = [];
+        for (const [campo, valor] of Object.entries(lectura.st)) {
+            if (EN_LA_MESA[campo]) { usadas.add(campo); continue; }
+            if (valor === null || valor === undefined) continue;
+            if (typeof valor === 'object' && !Array.isArray(valor)) continue;   // se mira aparte
+            if (Array.isArray(valor) && !valor.length) continue;
+            if (typeof valor === 'boolean') continue;
 
-        // El valor, hecho una lista de cosas buscables.
-        const trozos = (Array.isArray(valor) ? valor : [valor])
-            .flat(2)
-            .filter(v => typeof v === 'number' || typeof v === 'string')
-            .map(String)
-            .filter(v => v.length >= 1 && v.length <= 24);
-        if (!trozos.length) continue;
+            // El valor, hecho una lista de cosas buscables.
+            const trozos = (Array.isArray(valor) ? valor : [valor])
+                .flat(2)
+                .filter(v => typeof v === 'number' || typeof v === 'string')
+                .map(String)
+                .filter(v => v.length >= 1 && v.length <= 24);
+            if (!trozos.length) continue;
 
-        const vistos = trozos.filter(t => r.visible.includes(t)).length;
-        // Se denuncia sólo si NO SE VE NADA del campo: con que asome un trozo, la
-        // persona tiene por dónde tirar. Medir «se ve entero» daría cien avisos por
-        // juego y esto se leería una vez.
-        if (vistos === 0) escondidos.push(campo);
+            const vistos = trozos.filter(t => lectura.visible.includes(t)).length;
+            // Se denuncia sólo si NO SE VE NADA del campo: con que asome un trozo, la
+            // persona tiene por dónde tirar. Medir «se ve entero» daría cien avisos por
+            // juego y esto se leería una vez.
+            if (vistos === 0) fuera.push(campo);
+        }
+        return fuera;
+    };
+
+    let escondidos = buscarEscondidos(r);
+
+    /**
+     * ⚠️ SI SALE ALGO, SE MIRA OTRA VEZ ANTES DE DENUNCIAR.
+     *
+     * La cabecera de esta prueba ya avisaba: el panel lo refresca un vigía cada
+     * 400 ms, así que leer una vez mide la CARRERA y no el juego — y lo decía con
+     * el caso de entropy, que pasaba solo y fallaba dentro de la tanda porque el
+     * navegador iba más cargado. El remedio que había miraba si el panel «había
+     * crecido» (más de 400 caracteres), y eso no cubre el caso feo: un panel
+     * grande y VIEJO. El 27-08 el ajedrez salió rojo con `puntos` y `score` dentro
+     * de la suite y verde corriéndolo solo, que es el síntoma exacto.
+     *
+     * Reintentar aquí no puede inventar un aprobado, y esa es la razón de que sea
+     * seguro: la propia cabecera lo dice —«la información aparece o no aparece;
+     * esperar no la inventa»—. Si el campo de verdad no se pinta, no se va a pintar
+     * por esperar otra vuelta de reloj.
+     *
+     * Y arreglarlo importa más desde que esto vive en `npm test`: una prueba que
+     * parpadea enseña a mirar el rojo y seguir, que es peor que no tenerla.
+     */
+    if (escondidos.length && segundaLectura) {
+        await p.waitForTimeout(1200);
+        const otra = await segundaLectura().catch(() => null);
+        if (otra) escondidos = buscarEscondidos(otra);
     }
+    await p.close();
 
     if (escondidos.length) {
         fallos++;

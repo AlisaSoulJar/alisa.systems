@@ -357,24 +357,20 @@ export async function crearPoker({ url = RUTA_BIBLIOTECA } = {}) {
          * Las dos manos y las comunes, con la del rival tapada hasta el showdown
          * — que es cuando la destapa `estado`, o sea cuando hay `p.resultado`.
          *
-         * ⚠️ Y EL BOTE NO ESTÁ AQUÍ, A PROPÓSITO.
+         * ⚠️ Y EL BOTE SÍ ESTÁ AQUÍ, QUE COSTÓ DOS INTENTOS.
          *
-         * Lo intenté: en poker apostar ES el juego, así que un sustrato sin el bote
-         * ni las pilas de fichas no basta para decidir una jugada. Lo puse como
-         * `asientos`, la estructura que usa mancala para sus catorce hoyos.
+         * En póker apostar ES el juego: un sustrato sin el bote ni las pilas de
+         * fichas no basta para decidir una jugada. El primer intento los metió como
+         * `asientos` —la estructura de los catorce hoyos de mancala— y
+         * `prueba_asientos.mjs` lo suspendió con razón: un asiento lleva `x` e `y`
+         * porque ESTÁ EN UNA CASILLA, y un bote no está en ninguna. Inventarle
+         * coordenadas habría sido meter un dato falso para callar una prueba.
          *
-         * `prueba_asientos.mjs` lo suspendió, y tenía razón: un asiento lleva `x` e
-         * `y` porque es un hueco SOBRE UN TABLERO, y un bote no está en ninguna
-         * casilla. Inventarle coordenadas para que pasara habría sido meter un dato
-         * falso; aflojar la prueba habría convertido `asientos` en un cajón de
-         * sastre.
-         *
-         * Así que se queda donde ya estaba —`estado(p)` publica `pot`,
-         * `player_stack` y `opponent_stack`— y el hueco del contrato se dice en voz
-         * alta en vez de taparse: el sustrato sabe describir montones (`zonas`) y
-         * huecos de tablero (`asientos`), y no tiene dónde poner un HECHO de la mesa
-         * que no es ninguna de las dos cosas. Le pasa igual al triunfo de la brisca
-         * y al color en juego de UNIT.
+         * Se dejó dicho en voz alta como hueco del contrato, y Oscar decidió lo que
+         * había que decidir: si el bote hace falta para jugar, va en el registro. De
+         * ahí sale `hechos`, la cuarta estructura — ver la nota larga en
+         * `descripcion.js`. La usan también el triunfo de la brisca y el color en
+         * juego de UNIT.
          */
         sustrato(p) {
             const abierto = !!p.resultado;
@@ -387,7 +383,14 @@ export async function crearPoker({ url = RUTA_BIBLIOTECA } = {}) {
             if (p.comunes.length) {
                 zonas.push({ id: 'comunes', de: null, items: [...p.comunes], ocultas: 0 });
             }
-            return { rejilla: null, piezas: [], zonas };
+            return {
+                rejilla: null, piezas: [], zonas,
+                hechos: [
+                    { id: 'bote', de: null, valor: p.bote },
+                    { id: 'fichas', de: 0, valor: p.fichasJugador },
+                    { id: 'fichas', de: 1, valor: p.fichasCasa },
+                ],
+            };
         },
 
         estado(p) {

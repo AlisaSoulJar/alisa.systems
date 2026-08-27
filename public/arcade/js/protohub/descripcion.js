@@ -666,6 +666,49 @@ export function describirSustrato(sus) {
     }
 
     /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  ⚠️ LOS HECHOS DE LA MESA: LA CUARTA ESTRUCTURA, Y FALTABA
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * El sustrato sabía decir tres cosas: casillas (`rejilla`), cosas sobre las
+     * casillas (`piezas`) y montones fuera del tablero (`zonas`). Y hay una
+     * cuarta que no es ninguna de las tres:
+     *
+     *     el TRIUNFO de la brisca      un palo, y decide quién gana cada baza
+     *     el BOTE del póker            un número, y apostar es el juego entero
+     *     las FICHAS de cada jugador   un número por silla
+     *     el COLOR en juego de UNIT    tras un comodín NO se deduce de la cima
+     *     el SENTIDO de la ronda       con una carta de cambio en la mano, media decisión
+     *
+     * Ninguno es un montón de cartas ni un hueco de tablero. Lo intenté con
+     * `asientos` —que es la estructura de los catorce hoyos de mancala— y
+     * `prueba_asientos.mjs` lo suspendió con razón: un asiento lleva `x` e `y`
+     * porque ESTÁ EN UNA CASILLA, y un bote no está en ninguna. Inventarle
+     * coordenadas habría sido meter un dato falso para callar una prueba.
+     *
+     * Así que se declaran como lo que son. La forma es la mínima que sirve:
+     *
+     *     hechos: [{ id, de, valor, nombre? }]
+     *
+     * `de` es la silla dueña, o `null` si el hecho es de la mesa. `nombre` sólo
+     * cuando el `id` no se lee solo.
+     *
+     * Hasta hoy vivían únicamente en `estado(p)`, así que el sustrato —que la
+     * casa llama «el registro plano de lo que está pasando»— describía la MESA y
+     * no la PARTIDA. Con esto ya no hace falta leer dos objetos para jugar.
+     */
+    const hechos = (sus.hechos ?? []).filter(h => h && h.id !== undefined);
+    if (hechos.length) {
+        const dellos = new Map();
+        for (const h of hechos) {
+            const k = h.de === null || h.de === undefined ? 'mesa' : `de ${h.de}`;
+            if (!dellos.has(k)) dellos.set(k, []);
+            dellos.get(k).push(`${h.nombre ?? h.id}: ${h.valor}`);
+        }
+        for (const [k, lista] of dellos) t.push(`${k} — ${lista.join(' · ')}`);
+    }
+
+    /**
      * ⚠️ Y LO QUE SE HA DICHO, QUE EN CUATRO JUEGOS ES EL TABLERO ENTERO.
      *
      * En gofish la partida se gana recordando quién pidió qué; en spades se apuesta

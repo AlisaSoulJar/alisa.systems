@@ -183,13 +183,17 @@ export async function crearUnit({ url = RUTA_BIBLIOTECA, jugadores = 4, mano = 7
          * igual: con una carta de cambio en la mano, saber hacia donde gira la ronda es
          * la mitad de la decision.
          *
-         * Y ninguno de los dos cabe todavía: no son montones de cartas, y `asientos`
-         * pide casilla porque es un hueco de tablero. Ver la nota larga de `poker.js`
-         * — mismo hueco del contrato que el triunfo de la brisca. Se leen en
-         * `estado(p)`, que publica `color` y `sentido`.
+         * Los dos van en `hechos`, la cuarta estructura del sustrato: no son montones
+         * de cartas ni huecos de tablero. Ver la nota larga en `descripcion.js`.
          *
-         * Lo que sí gana el sustrato aquí es el DESCARTE con su fondo: la de encima a
-         * la vista y las de debajo contadas, que el adaptador daba como un solo naipe.
+         * ⚠️ EL COLOR ES UNA VARIABLE Y NO UNA PROPIEDAD DE LA CIMA, y por eso hay
+         * que decirlo: en cualquier otra jugada coinciden, así que quien mire una
+         * partida normal creerá que sobra — hasta que alguien tire un comodín, elija
+         * color y la cima se quede siendo un `W_WILD` sin ninguno.
+         *
+         * Lo que también gana el sustrato aquí es el DESCARTE con su fondo: la de
+         * encima a la vista y las de debajo contadas, que el adaptador daba como un
+         * solo naipe.
          */
         sustrato(p, asiento = 0) {
             const yo = Number.isInteger(asiento) && p.manos[asiento] ? asiento : 0;
@@ -209,6 +213,11 @@ export async function crearUnit({ url = RUTA_BIBLIOTECA, jugadores = 4, mano = 7
             }
             return {
                 rejilla: null, piezas: [], zonas,
+                hechos: [
+                    { id: 'color', nombre: 'color en juego', de: null, valor: p.color },
+                    { id: 'sentido', de: null,
+                      valor: p.sentido > 0 ? 'horario' : 'antihorario' },
+                ],
             };
         },
 

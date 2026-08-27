@@ -126,6 +126,35 @@ for (const juego of JUEGOS) {
             }
         }
     }
+    /**
+     * ⚠️ LA CUARTA ESTRUCTURA NACE CON REGLA, QUE ES LO QUE LE FALTÓ A LAS OTRAS.
+     *
+     * `hechos` lleva lo que no es ni montón ni casilla: el triunfo, el bote, las
+     * fichas, el color en juego. Es exactamente el sitio donde acaba metiéndose
+     * todo si nadie mira — que es lo que le pasó a `asientos`, y por eso su prueba
+     * exige `x` e `y`.
+     *
+     * Tres cosas, y las tres son de haberme equivocado antes:
+     *   · un hecho sin `valor` no dice nada, y `undefined` se cuela sin ruido;
+     *   · dos hechos con el mismo `id` para la misma silla son dos verdades sobre
+     *     lo mismo, que es la avería que este repositorio persigue desde agosto;
+     *   · y un hecho cuyo valor sea un objeto o una lista NO es un hecho: es una
+     *     estructura disfrazada, y ahí empieza el cajón de sastre.
+     */
+    const vistos = new Set();
+    for (const h of (sus.hechos ?? [])) {
+        if (h.id === undefined) mal(`${juego}: un hecho sin id`);
+        if (h.valor === undefined || h.valor === null) {
+            mal(`${juego}: el hecho '${h.id}' no trae valor`);
+        } else if (typeof h.valor === 'object') {
+            mal(`${juego}: el hecho '${h.id}' trae un ${Array.isArray(h.valor) ? 'array' : 'objeto'} `
+              + 'por valor — eso es una estructura, no un hecho');
+        }
+        const clave = `${h.id}|${h.de ?? 'mesa'}`;
+        if (vistos.has(clave)) mal(`${juego}: dos hechos '${h.id}' para ${h.de ?? 'la mesa'}`);
+        vistos.add(clave);
+    }
+
     for (const pz of sus.piezas) {
         if (!Number.isFinite(pz.x) || !Number.isFinite(pz.y)) mal(`${juego}: pieza sin posición`);
     }

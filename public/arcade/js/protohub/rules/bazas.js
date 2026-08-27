@@ -170,14 +170,13 @@ export function crearBazas(cfg) {
          * que desde la silla 2 llamaba `1` a la silla 0. El reparto era correcto y
          * las etiquetas mentían — el peor tipo de fallo, porque cuadra.
          *
-         * ⚠️ Y EL TRIUNFO NO ESTÁ AQUÍ, AUNQUE SIN TRIUNFO NO HAY BRISCA.
+         * ⚠️ Y EL TRIUNFO, QUE SIN ÉL NO HAY BRISCA.
          *
-         * El palo de triunfo no es un montón de cartas: es un HECHO de la mesa, y en
-         * tres de estos cuatro juegos decide quién gana cada baza. Lo puse como
-         * `asiento` y `prueba_asientos.mjs` lo suspendió con razón: un asiento lleva
-         * casilla porque es un hueco de un tablero, y un palo de triunfo no está en
-         * ninguna. Ver la nota larga en `poker.js`, que es el mismo hueco del
-         * contrato. Se lee en `estado(p).triunfo`, que lo publica desde siempre.
+         * El palo de triunfo no es un montón de cartas ni un hueco de tablero: es un
+         * HECHO de la mesa, y en tres de estos cuatro juegos decide quién gana cada
+         * baza. Va en `hechos`, la cuarta estructura del sustrato — la nota larga
+         * está en `descripcion.js`, y la historia de por qué NO cabía en `asientos`,
+         * en `poker.js`.
          */
         sustrato(p, asiento = 0) {
             const yo = Number.isInteger(asiento) && p.manos[asiento] ? asiento : 0;
@@ -194,6 +193,9 @@ export function crearBazas(cfg) {
             }
             return {
                 rejilla: null, piezas: [], zonas,
+                // En hearts no hay triunfo, y entonces no se publica: mejor callarse
+                // que decir «ninguno», que es un valor más que interpretar.
+                hechos: p.triunfo ? [{ id: 'triunfo', de: null, valor: p.triunfo }] : [],
             };
         },
 

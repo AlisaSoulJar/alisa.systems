@@ -141,12 +141,10 @@ export async function crearGoFish({ url = RUTA_BIBLIOTECA, jugadores = 3, mano =
          * lo que NO decide la partida, y los libros —que son publicos y estan a la
          * vista de los tres— no llegaban al sustrato.
          *
-         * Y siguen sin caber, que es lo honesto de decir: un libro se guarda por su
-         * RANGO y no como cuatro cartas concretas, así que meterlo en `items` haría
-         * que la mesa intentara dibujar un `5` como si fuera una carta. Y `asientos`
-         * pide casilla —es un hueco de tablero— y aquí no hay tablero. Ver la nota
-         * larga de `poker.js`: es el mismo hueco del contrato. `estado(p).libros` los
-         * publica y ahí se leen.
+         * Van en `hechos` y no en `zonas`: un libro se guarda por su RANGO y no como
+         * cuatro cartas concretas, así que meterlo en `items` haría que la mesa
+         * intentara dibujar un `5` como si fuera un naipe. Ver la nota larga en
+         * `descripcion.js`.
          *
          * Lo que se ha pedido en voz alta —la memoria que gana este juego— ya viaja por
          * `dichos`, que el hub engancha solo. Aqui no se repite.
@@ -161,7 +159,15 @@ export async function crearGoFish({ url = RUTA_BIBLIOTECA, jugadores = 3, mano =
             if (p.mazo.length) {
                 zonas.push({ id: 'mazo', de: null, items: [], ocultas: p.mazo.length });
             }
-            return { rejilla: null, piezas: [], zonas };
+            // Los libros son el MARCADOR y son públicos: están en la mesa a la vista
+            // de los tres. Se guardan por RANGO y no como cuatro cartas concretas,
+            // así que no son un montón — son un hecho de cada silla.
+            return {
+                rejilla: null, piezas: [], zonas,
+                hechos: p.libros
+                    .map((l, i) => ({ id: 'libros', de: i, valor: l.join('+') }))
+                    .filter(h => h.valor),
+            };
         },
 
         estado(p, asiento = 0) {
