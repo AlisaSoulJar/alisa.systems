@@ -1,8 +1,8 @@
 import { GymEnv } from '../GymEnv.js';
-import { FlappyCore, VERBS_FLAPPY } from '../../world/systems/FlappyCore.js';
+import { ImpulsoCore, VERBS_IMPULSO } from '../../world/systems/ImpulsoCore.js';
 
 /**
- * FlappyEnv — LA PUERTA DEL BANCO PARA EL JUEGO DE UN BOTÓN
+ * ImpulsoEnv — LA PUERTA DEL BANCO PARA EL JUEGO DE UN BOTÓN
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * Caes siempre, subes al pulsar, y hay muros con un hueco.
@@ -15,11 +15,11 @@ import { FlappyCore, VERBS_FLAPPY } from '../../world/systems/FlappyCore.js';
  * tener un juego: dos.
  *
  * Y lo que separa a un piloto de otro está medido, y no es reflejo bruto: es
- * saberse la propia física. Un aleteo sube siempre `impulso² / 2g` = 2,40, así
+ * saberse la propia física. Un empujon sube siempre `impulso² / 2g` = 2,40, así
  * que quien apunta al centro del hueco se sale por arriba exactamente esa
  * cantidad. Con 40 semillas:
  *
- *     conoce su aleteo y apunta medio por debajo   43,2 muros
+ *     conoce su empujon y apunta medio por debajo   43,2 muros
  *     apunta al centro del hueco                    0,7 muros
  *     se mantiene a media altura                    0,3 muros
  *
@@ -28,21 +28,21 @@ import { FlappyCore, VERBS_FLAPPY } from '../../world/systems/FlappyCore.js';
  * ⚠️ AVISO HONESTO: UNA POLÍTICA DE LENGUAJE NO VA A JUGAR A ESTO.
  *
  * Decidir a 60 Hz no es lo suyo, y `affordances()` aquí siempre dice lo mismo
- * —«aletea» o «no»— porque el juego no tiene más. Es un banco de REFLEJOS, y
+ * —«impulso» o «no»— porque el juego no tiene más. Es un banco de REFLEJOS, y
  * eso es una propiedad y no un defecto: la colección necesita al menos uno donde
  * el momento exacto mande, o el «banco» sólo mide una manera de pensar.
  *
  * TRES PUERTAS SOBRE EL MISMO NÚCLEO
  *   🤖 numérica  6 números, acción discreta 0..1
  *   🧠 lenguaje  `describe()` dice dónde está el hueco y a qué distancia
- *   🕹️ humana    `games/aletea.html` — ESPACIO o clic
+ *   🕹️ humana    `games/impulso.html` — ESPACIO o clic
  */
-export class FlappyEnv extends GymEnv {
-    static id = 'alisa/Flappy-v0';
-    static Core = FlappyCore;
+export class ImpulsoEnv extends GymEnv {
+    static id = 'alisa/Impulso-v0';
+    static Core = ImpulsoCore;
 
     /** Los números los pone la ROM; aquí sólo se dice cuál. */
-    static ajustes = FlappyCore.ROM.mundo;
+    static ajustes = ImpulsoCore.ROM.mundo;
 
     static observationSpace = {
         shape: [6],
@@ -52,17 +52,17 @@ export class FlappyEnv extends GymEnv {
 
     static actionSpace = {
         type: 'discrete',
-        n: VERBS_FLAPPY.length,
-        names: VERBS_FLAPPY,
-        decodifica: '0 = dejarse caer · 1 = aletear',
+        n: VERBS_IMPULSO.length,
+        names: VERBS_IMPULSO,
+        decodifica: '0 = dejarse caer · 1 = impulsar',
     };
 
     static meta = {
-        title: '¡Aletea!',
+        title: '¡Impulso!',
         summary: 'Un botón. Caes siempre y subes al pulsar, y hay muros con un hueco que '
                + 'cambia de sitio. No hay nada que deducir: se ve todo. Lo único difícil '
                + 'es cuándo, y lo que separa a un piloto de otro es saberse su propio '
-               + 'aleteo — sube siempre lo mismo, así que apuntar al centro del hueco se '
+               + 'empujon — sube siempre lo mismo, así que apuntar al centro del hueco se '
                + 'sale por arriba justo esa cantidad.',
         horizon: 7200,
         tags: ['reflejos', 'fisica', 'un-boton', 'continuo', 'scroll'],
@@ -71,14 +71,14 @@ export class FlappyEnv extends GymEnv {
     constructor(opts = {}) {
         super(opts);
         this.opts = { ...new.target.ajustes, ...opts };
-        this.nucleo = new FlappyCore(this.opts);
+        this.nucleo = new ImpulsoCore(this.opts);
         this.steps = 0;
         this.done = false;
     }
 
     reset(seed = 0) {
         this.seed = seed >>> 0;
-        this.nucleo = new FlappyCore({ ...this.opts, seed: this.seed });
+        this.nucleo = new ImpulsoCore({ ...this.opts, seed: this.seed });
         this.steps = 0;
         this.done = false;
         return this.getObservation();
@@ -121,7 +121,7 @@ export class FlappyEnv extends GymEnv {
      *
      * En los otros entornos esta lista recorta —`buscar` no aparece si no tienes
      * nada al alcance— porque ofrecer lo que no sirve manda al piloto a gastar
-     * pasos en el vacío. Aquí no hay nada que recortar: aletear siempre es legal
+     * pasos en el vacío. Aquí no hay nada que recortar: impulsar siempre es legal
      * y siempre hace lo mismo. Que la lista sea corta y constante ES el juego.
      */
     affordances() {
@@ -129,12 +129,12 @@ export class FlappyEnv extends GymEnv {
         if (n.terminado()) return [{ verb: 'nada', label: 'Se acabó', action: 0 }];
         return [
             { verb: 'nada', label: 'Dejarte caer', action: 0 },
-            { verb: 'aletear', label: 'Aletear (subes de golpe)', action: 1 },
+            { verb: 'impulsar', label: 'Impulsar (subes de golpe)', action: 1 },
         ];
     }
 
     actFromVerb(verb) {
-        const i = VERBS_FLAPPY.indexOf(verb);
+        const i = VERBS_IMPULSO.indexOf(verb);
         return i < 0 ? 0 : i;
     }
 
@@ -150,4 +150,4 @@ export class FlappyEnv extends GymEnv {
     }
 }
 
-export default FlappyEnv;
+export default ImpulsoEnv;

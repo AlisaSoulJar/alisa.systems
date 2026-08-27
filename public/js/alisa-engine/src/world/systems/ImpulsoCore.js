@@ -5,7 +5,7 @@ import { Hitbox } from './HitboxSystem.js';
 import { SpawnWaveSystem } from './SpawnWaveSystem.js';
 
 /**
- * FlappyCore — UN SOLO BOTÓN
+ * ImpulsoCore — UN SOLO BOTÓN
  * ═══════════════════════════════════════════════════════════════════════════
  *
  * Caes siempre. Al pulsar subes. Entre medias hay muros con un hueco, y el
@@ -17,7 +17,7 @@ import { SpawnWaveSystem } from './SpawnWaveSystem.js';
  *
  * Es la tesis de la consola puesta a prueba con un juego que todo el mundo sabe
  * de memoria: si «un juego es una lista de piezas y los números con los que se
- * las llama» es verdad, un flappy tiene que salir sin escribir motor.
+ * las llama» es verdad, un juego de un boton tiene que salir sin escribir motor.
  *
  *     caer y saltar        → `BallisticSystem`
  *     el mundo que avanza  → `ScrollTrackSystem`
@@ -48,9 +48,9 @@ import { SpawnWaveSystem } from './SpawnWaveSystem.js';
  */
 
 /** Los verbos. Dos. */
-export const VERBS_FLAPPY = ['nada', 'aletear'];
+export const VERBS_IMPULSO = ['nada', 'impulsar'];
 
-export class FlappyCore {
+export class ImpulsoCore {
     /**
      * ═══════════════════════════════════════════════════════════════════════
      *  EL CARTUCHO
@@ -60,9 +60,9 @@ export class FlappyCore {
      * `mundo`, que cuenta el barrido.
      */
     static ROM = {
-        id: 'alisa/Flappy-v0',
+        id: 'alisa/Impulso-v0',
         familia: 'tiempo_real',
-        verbos: VERBS_FLAPPY,
+        verbos: VERBS_IMPULSO,
 
         /**
          * ═══════════════════════════════════════════════════════════════════
@@ -88,17 +88,17 @@ export class FlappyCore {
          *    ERA DEL JUEGO: ERA DE MI PILOTO.
          *
          * De hueco 6 a hueco 5 la nota caía de 39,9 muros a 0,7, y eso no es una
-         * curva de dificultad, es un muro. El motivo: **un aleteo sube siempre lo
+         * curva de dificultad, es un muro. El motivo: **un empujon sube siempre lo
          * mismo** —`impulso² / 2g` = 2,40— así que quien apunta al CENTRO del
          * hueco se sale por arriba justo esa cantidad. Con hueco 6 cabe por los
          * pelos; con 5 no cabe.
          *
-         * O sea que hueco 5 no era imposible: exigía apuntar medio aleteo por
+         * O sea que hueco 5 no era imposible: exigía apuntar medio empujon por
          * debajo. Calibrar contra el piloto malo habría dejado el juego en 6 —
          * fácil— para tapar que mi baseline no sabía volar. Es la misma trampa de
          * los detectores que acusan a código sano, sólo que del otro lado.
          *
-         * ⚠️ Y LA GRAVEDAD VA AL REVÉS DE LO QUE PARECE. Con el mismo aleteo de
+         * ⚠️ Y LA GRAVEDAD VA AL REVÉS DE LO QUE PARECE. Con el mismo empujon de
          * 2,40, más gravedad es MÁS FÁCIL (-50 → 61 muros, 88%) y menos gravedad
          * es más difícil (-24 → 18,5 muros, 3%): cuanto más rápido oscilas, más
          * veces corriges en el mismo trozo de pasillo. -38 deja el punto medio.
@@ -111,7 +111,7 @@ export class FlappyCore {
 
         sistemas: [
             /**
-             * La gravedad y el aleteo. `velMax` no es adorno: sin tope de caída,
+             * La gravedad y el empujon. `velMax` no es adorno: sin tope de caída,
              * a los tres segundos bajas tan rápido que ya no se puede corregir y
              * la partida se decide antes de que la persona vea qué pasó.
              */
@@ -128,16 +128,16 @@ export class FlappyCore {
              */
             ['SpawnWaveSystem', { oleadas: [{ n: 1, dura: Infinity, cada: 1.75, mezcla: { muro: 1.0 } }] }],
             /**
-             * Los choques. El pájaro es una esfera pequeña; los muros son cajas
+             * Los choques. La nave es una esfera pequeña; los muros son cajas
              * infinitas hacia el fondo, que es lo que hace falta en un juego de
              * perfil. Y `roza` es lo que ya hacía Pedrisco con su graze: la banda
              * de fuera no mata, puntúa.
              */
-            ['Hitbox', { radioPajaro: 0.6, anchoMuro: 2.2 }],
+            ['Hitbox', { radioNave: 0.6, anchoMuro: 2.2 }],
         ],
 
         voz: {
-            jugador: 'pajaro',
+            jugador: 'nave',
             texto: {
                 empieza: 'Un botón. Cae siempre.',
                 pierde: 'Te lo comiste.',
@@ -145,8 +145,8 @@ export class FlappyCore {
         },
 
         hud: {
-            titulo: '¡Aletea!', subtitulo: 'Un botón', acento: '#ffd166',
-            mandos: 'ESPACIO o clic: aletear · eso es todo',
+            titulo: '¡Impulso!', subtitulo: 'Un botón', acento: '#ffd166',
+            mandos: 'ESPACIO o clic: impulsar · eso es todo',
             filas: [
                 { etiqueta: 'Muros pasados', campo: 'pasados' },
                 { etiqueta: 'Altura', campo: 'altura', de: 'alto' },
@@ -155,10 +155,10 @@ export class FlappyCore {
         },
 
         cartel: {
-            titulo: '¡Aletea! — un botón',
+            titulo: '¡Impulso! — un botón',
             parrafos: [
                 'Caes siempre. Al pulsar, subes de golpe. No hay nada más.',
-                'Aporrear no sirve: cada aleteo vale lo mismo y lo único que decide '
+                'Aporrear no sirve: cada empujon vale lo mismo y lo único que decide '
                 + 'es cuándo.',
             ],
             ajustes: [
@@ -177,23 +177,23 @@ export class FlappyCore {
 
     /** Los números con los que este cartucho llama a una pieza. */
     static params(pieza) {
-        return FlappyCore.ROM.sistemas.find(([n]) => n === pieza)?.[1] ?? {};
+        return ImpulsoCore.ROM.sistemas.find(([n]) => n === pieza)?.[1] ?? {};
     }
 
     constructor(cfg = {}) {
-        const R = FlappyCore.ROM;
+        const R = ImpulsoCore.ROM;
         const m = { ...R.mundo, ...cfg };
         this.alto = m.alto;
         this.hueco = m.hueco;
         this.tope = m.tope;
 
-        const pb = FlappyCore.params('BallisticSystem');
+        const pb = ImpulsoCore.params('BallisticSystem');
         this.caida = new BallisticSystem(pb);
         this.fuerzaAleteo = pb.impulso;
 
-        this.via = new ScrollTrackSystem(FlappyCore.params('ScrollTrackSystem'));
-        this.muros = new SpawnWaveSystem(FlappyCore.params('SpawnWaveSystem'));
-        this.choque = FlappyCore.params('Hitbox');
+        this.via = new ScrollTrackSystem(ImpulsoCore.params('ScrollTrackSystem'));
+        this.muros = new SpawnWaveSystem(ImpulsoCore.params('SpawnWaveSystem'));
+        this.choque = ImpulsoCore.params('Hitbox');
 
         this.reset(cfg.seed ?? 42);
     }
@@ -209,7 +209,7 @@ export class FlappyCore {
         this.muros.reset?.();
 
         /**
-         * El pájaro vuela siempre en el mismo sitio y lo que se mueve es el
+         * La nave vuela siempre en el mismo sitio y lo que se mueve es el
          * mundo — que es como está hecho el original y como está hecho Pedrisco.
          * Su `x` es la de la vía; lo suyo es la altura.
          */
@@ -228,9 +228,9 @@ export class FlappyCore {
          * por jugar mal.
          */
         const margen = this.alto * 0.25;
-        this.pajaro = {
+        this.nave = {
             x: 0, y: margen + this._rnd() * (this.alto - margen * 2),
-            vy: 0, radius: this.choque.radioPajaro,
+            vy: 0, radius: this.choque.radioNave,
         };
         this.paredes = [];
     }
@@ -239,21 +239,21 @@ export class FlappyCore {
     //  EL PASO
     // ═══════════════════════════════════════════════════════════════════════
 
-    aletear() {
+    impulsar() {
         if (this.estado.terminado) return false;
-        this.caida.impulso(this.pajaro, this.fuerzaAleteo);
+        this.caida.impulso(this.nave, this.fuerzaAleteo);
         return true;
     }
 
     tick(dt = 1 / 60, pulsa = false) {
         if (this.estado.terminado) return;
-        if (pulsa) this.aletear();
+        if (pulsa) this.impulsar();
         this.t += dt;
 
-        this.caida.caer(this.pajaro, dt);
+        this.caida.caer(this.nave, dt);
         this.via.avanzar(dt);
         /**
-         * El pájaro va montado en la vía: su `x` ES el recorrido. Es lo mismo que
+         * La nave va montada en la vía: su `x` ES el recorrido. Es lo mismo que
          * hace la nave de Pedrisco (`ship.z = globalZ`), y es lo que permite que
          * los muros tengan posición absoluta y `quedaAtras` funcione sin restas
          * por ninguna parte.
@@ -261,7 +261,7 @@ export class FlappyCore {
          * En pantalla no se mueve —el sustrato lo publica relativo— que es como
          * se ve el original: parece que vuela y en realidad viene el mundo.
          */
-        this.pajaro.x = this.via.recorrido;
+        this.nave.x = this.via.recorrido;
 
         /**
          * ⚠️ EL RELOJ DE MUROS ES EL CALENDARIO DE ¡DEFIENDE!, SIN TOCARLO.
@@ -274,7 +274,7 @@ export class FlappyCore {
         this.muros.tick(dt, this._rnd, () => this._soltarMuro());
 
         for (const p of this.paredes) {
-            if (p.pasado || p.x > this.pajaro.x) continue;
+            if (p.pasado || p.x > this.nave.x) continue;
             p.pasado = true;
             this.pasados++;
         }
@@ -286,7 +286,7 @@ export class FlappyCore {
 
     step(accion = 0, dt = 1 / 60) {
         const antes = this.pasados;
-        this.tick(dt, VERBS_FLAPPY[accion] === 'aletear');
+        this.tick(dt, VERBS_IMPULSO[accion] === 'impulsar');
         return {
             obs: this.observacion(),
             reward: this.pasados > antes ? 1 : (this.estado.terminado && !this.estado.ganado ? -1 : 0),
@@ -319,10 +319,10 @@ export class FlappyCore {
      * La tentación era `if (y < 0 || y > alto) morir` en dos líneas. Pero
      * entonces el juego tendría dos maneras distintas de matarte y sólo una
      * pasaría por la pieza de choques — y el día que se afine el radio del
-     * pájaro, una de las dos se quedaría atrás.
+     * la nave, una de las dos se quedaría atrás.
      */
     _mirarChoques() {
-        const p = this.pajaro;
+        const p = this.nave;
         if (p.y - p.radius <= 0) return this._acabar(false, 'al suelo');
         if (p.y + p.radius >= this.alto) return this._acabar(false, 'contra el techo');
 
@@ -349,7 +349,7 @@ export class FlappyCore {
     _siguiente() {
         let mejor = null;
         for (const m of this.paredes) {
-            if (m.x + this.choque.anchoMuro / 2 < this.pajaro.x) continue;
+            if (m.x + this.choque.anchoMuro / 2 < this.nave.x) continue;
             if (!mejor || m.x < mejor.x) mejor = m;
         }
         return mejor;
@@ -357,7 +357,7 @@ export class FlappyCore {
 
     observacion() {
         const m = this._siguiente();
-        const p = this.pajaro;
+        const p = this.nave;
         return [
             p.y / this.alto,
             p.vy / (this.caida.velMax || 1),
@@ -405,8 +405,8 @@ export class FlappyCore {
             ancho: this.via.visible, largo: this.alto,
         });
         piezas.push({
-            t: 'pajaro', x: this.pajaro.x - this.via.recorrido, y: 0, alto: this.pajaro.y,
-            de: 1, cajon: 'pajaro', alcance: this.pajaro.radius, vy: this.pajaro.vy,
+            t: 'nave', x: this.nave.x - this.via.recorrido, y: 0, alto: this.nave.y,
+            de: 1, cajon: 'nave', alcance: this.nave.radius, vy: this.nave.vy,
         });
         return {
             piezas,
@@ -414,9 +414,9 @@ export class FlappyCore {
             limite: { forma: 'caja', ancho: this.via.visible, alto: this.alto, largo: 4 },
             leyenda: {
                 muro: 'muro: por el hueco', muro_pasado: 'ya lo pasaste',
-                pajaro: 'tú, cayendo', marco: 'el suelo y el techo: también matan',
+                nave: 'tú, cayendo', marco: 'el suelo y el techo: también matan',
             },
-            simbolos: { muro: '#', muro_pasado: '.', pajaro: '@', marco: '=' },
+            simbolos: { muro: '#', muro_pasado: '.', nave: '@', marco: '=' },
         };
     }
 
@@ -424,11 +424,11 @@ export class FlappyCore {
         const m = this._siguiente();
         return {
             pasados: this.pasados,
-            altura: Math.round(this.pajaro.y * 10) / 10,
+            altura: Math.round(this.nave.y * 10) / 10,
             alto: this.alto,
-            subiendo: this.pajaro.vy > 0,
-            hueco: m ? Math.round((m.centro - this.pajaro.y) * 10) / 10 : null,
-            lejos: m ? Math.round((m.x - this.pajaro.x) * 10) / 10 : null,
+            subiendo: this.nave.vy > 0,
+            hueco: m ? Math.round((m.centro - this.nave.y) * 10) / 10 : null,
+            lejos: m ? Math.round((m.x - this.nave.x) * 10) / 10 : null,
             t: Math.round(this.t * 10) / 10,
             tope: this.tope,
             terminado: this.estado.terminado,
@@ -438,4 +438,4 @@ export class FlappyCore {
     }
 }
 
-export default FlappyCore;
+export default ImpulsoCore;

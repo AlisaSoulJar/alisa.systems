@@ -348,25 +348,6 @@
       "forma": "action"
     },
     {
-      "id": "alisa/Flappy-v0",
-      "familia": "propio",
-      "separa": false,
-      "suelo": [
-        -1,
-        -1,
-        -1,
-        -1,
-        -1,
-        -1,
-        -1
-      ],
-      "mejorCiega": -1,
-      "peorCiega": -1,
-      "pasos": 3000,
-      "semilla": 1234,
-      "forma": "action"
-    },
-    {
       "id": "alisa/flota-protohub-v0",
       "familia": "protohub",
       "separa": true,
@@ -496,6 +477,25 @@
       "mejorCiega": -8,
       "peorCiega": -11,
       "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/Impulso-v0",
+      "familia": "propio",
+      "separa": false,
+      "suelo": [
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "mejorCiega": -1,
+      "peorCiega": -1,
+      "pasos": 3000,
       "semilla": 1234,
       "forma": "action"
     },

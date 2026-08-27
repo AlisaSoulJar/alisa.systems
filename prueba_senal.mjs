@@ -146,26 +146,26 @@ const NO_SEPARAN = {
      * el primer muro llega a los cuatro segundos.
      *
      * Y aun así las siete sacan -1,0, porque **ninguna aguanta un segundo**: la
-     * que siempre aletea se estrella contra el techo en 0,9 s y la que nunca
-     * aletea contra el suelo en 0,8. Las partidas SÍ salen distintas —la prueba
+     * que siempre impulso se estrella contra el techo en 0,9 s y la que nunca
+     * impulso contra el suelo en 0,8. Las partidas SÍ salen distintas —la prueba
      * cuenta siete— pero morir en 0,8 o en 0,9 no es una diferencia de destreza,
      * es ruido.
      *
      * Lo que separa aquí está medido y no es reflejo bruto: es saberse la propia
-     * física. Un aleteo sube siempre `impulso² / 2g` = 2,40, así que quien apunta
+     * física. Un empujon sube siempre `impulso² / 2g` = 2,40, así que quien apunta
      * al CENTRO del hueco se sale por arriba justo esa cantidad.
      *
-     *     conoce su aleteo y apunta medio por debajo   42,3 muros
+     *     conoce su empujon y apunta medio por debajo   42,3 muros
      *     apunta al centro del hueco                    0,9 muros
      *     se mantiene a media altura                    0,4 muros
      *
      * De 0,9 a 42 con un cambio de 1,2 unidades en el objetivo. Eso es lo que
      * mide, y no lo alcanza nadie sin mirar dónde está el hueco.
      */
-    'alisa/Flappy-v0':
-        'ninguna política ciega aguanta un segundo —la que aletea siempre se estrella contra '
+    'alisa/Impulso-v0':
+        'ninguna política ciega aguanta un segundo —la que impulso siempre se estrella contra '
       + 'el techo en 0,9 s— así que las siete mueren antes del primer muro. Con un piloto que '
-      + 'apunta medio aleteo por debajo del hueco pasa 42,3 muros; apuntando al centro, 0,9',
+      + 'apunta medio empujon por debajo del hueco pasa 42,3 muros; apuntando al centro, 0,9',
 };
 /**
  * ⚠️ `sokoban` TAMBIÉN ESTUVO AQUÍ, Y TAMBIÉN ERA MENTIRA MÍA.

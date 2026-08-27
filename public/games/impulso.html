@@ -11,8 +11,8 @@
 <script type="module">
 import { montarMundo } from '/js/montarMundo.js';
 import { PintorMundo } from '/js/pintor_mundo.mjs';
-import { FlappyCore } from '@alisa-engine/src/world/systems/FlappyCore.js';
-import { figurasDeAletea, encuadrarAletea, inclinarPajaro } from '/js/figuras_aletea.mjs';
+import { ImpulsoCore } from '@alisa-engine/src/world/systems/ImpulsoCore.js';
+import { figurasDeImpulso, encuadrarImpulso, inclinarNave } from '/js/figuras_impulso.mjs';
 import { montarHud, montarPie } from '/js/hud_mundo.mjs';
 import { montarCartel } from '/js/cartelas_mundo.mjs';
 
@@ -20,7 +20,7 @@ import { montarCartel } from '/js/cartelas_mundo.mjs';
  * ⚠️ EL JUEGO MÁS PEQUEÑO DE LA CASA, Y LA PÁGINA TAMBIÉN.
  *
  * Un botón. La página no sabe qué es la gravedad, ni dónde está el hueco, ni
- * cuándo se acaba: importa `FlappyCore` —el mismo objeto que instancia el
+ * cuándo se acaba: importa `ImpulsoCore` —el mismo objeto que instancia el
  * banco— y le dice cuándo se ha pulsado.
  *
  * Y el núcleo tampoco sabe de física: la compone. Caer es `BallisticSystem`, la
@@ -29,7 +29,7 @@ import { montarCartel } from '/js/cartelas_mundo.mjs';
  * mismo día, con su huella sin moverse — así que este juego no se PARECE a
  * Pedrisco: corre literalmente sus piezas.
  */
-const ROM = FlappyCore.ROM;
+const ROM = ImpulsoCore.ROM;
 
 const { app: gfx, THREE, arrancar } = await montarMundo({
     ambiente: 'night',
@@ -43,25 +43,25 @@ let nucleo = null, pintor = null, hud = null, acabado = false;
 /**
  * ⚠️ UN GOLPE, NO UNA TECLA MANTENIDA — Y ESO ES UNA REGLA DEL JUEGO.
  *
- * Si el aleteo fuera estado, tener la barra pulsada sería volar, y el juego
+ * Si el empujon fuera estado, tener la barra pulsada sería volar, y el juego
  * dejaría de tener dentro la única pregunta que tiene: cuándo. Por eso se
  * escucha `keydown` sin repetición y el clic, y no hay `keyup` que valga.
  */
-const aletea = (e) => {
+const impulso = (e) => {
     if (e.repeat) return;
     if (!nucleo || nucleo.terminado()) return;
     e.preventDefault();
-    nucleo.aletear();
+    nucleo.impulsar();
 };
-addEventListener('keydown', (e) => { if (e.key === ' ' || e.key === 'ArrowUp') aletea(e); });
-addEventListener('pointerdown', (e) => aletea(e));
+addEventListener('keydown', (e) => { if (e.key === ' ' || e.key === 'ArrowUp') impulso(e); });
+addEventListener('pointerdown', (e) => impulso(e));
 
 const cartel = montarCartel(ROM.cartel, (ajustes) => {
-    nucleo = new FlappyCore({ seed: ajustes.seed, hueco: ajustes.hueco });
-    pintor = new PintorMundo(gfx.scene, figurasDeAletea(THREE), 1);
+    nucleo = new ImpulsoCore({ seed: ajustes.seed, hueco: ajustes.hueco });
+    pintor = new PintorMundo(gfx.scene, figurasDeImpulso(THREE), 1);
     hud = montarHud(ROM.hud);
     montarPie(ROM.hud.mandos);
-    encuadrarAletea(gfx, nucleo.alto, nucleo.via.visible);
+    encuadrarImpulso(gfx, nucleo.alto, nucleo.via.visible);
     /** El mundo, publicado, para que un aviso se pueda REPINTAR. */
     window.getSustrato = () => { try { return nucleo?.sustrato() ?? null; } catch { return null; } };
 });
@@ -73,7 +73,7 @@ arrancar((dt) => {
     const sus = nucleo.sustrato();
     pintor.pintar(sus);
     // El pintor COLOCA; el morro hacia arriba o hacia abajo lo pone esto.
-    inclinarPajaro(pintor, sus);
+    inclinarNave(pintor, sus);
     const info = nucleo.info();
     hud.pintar(info, nucleo);
     if (info.terminado && !acabado) { acabado = true; cartel.final(info); }
@@ -85,7 +85,7 @@ window.stepSimulation = (accion, dt = 1 / 60) => {
     const r = nucleo.step(accion, dt);
     return { done: r.done, info: r.info };
 };
-window.ALISA_STREAM_SIM_NAME = 'aletea';
+window.ALISA_STREAM_SIM_NAME = 'impulso';
 </script>
 
 <!-- El botón de «algo se ve raro»: adjunta el mundo entero porque esta página

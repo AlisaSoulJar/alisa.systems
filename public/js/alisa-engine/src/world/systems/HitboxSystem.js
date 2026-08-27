@@ -114,8 +114,8 @@ export class Hitbox {
      *
      * Todo lo de arriba salió de un juego sellado y se comprobó con su huella:
      * si hubiera cambiado un bit, `prueba_huella` lo habría dicho. Esto no —
-     * Pedrisco sólo choca por esferas—. Lo estrena el flappy, y quien lo prueba
-     * es la huella del flappy, que es una prueba más floja porque el juego nace
+     * Pedrisco sólo choca por esferas—. Lo estrena ¡Impulso!, y quien lo prueba
+     * es la huella de ¡Impulso!, que es una prueba más floja porque el juego nace
      * con ella. Marcarlo es más honesto que dejar que se confunda con lo otro.
      *
      * Un eje sin medida no acota: una caja con `fondo` sin definir es una pared

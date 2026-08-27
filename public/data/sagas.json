@@ -152,8 +152,8 @@
         {
           "saga": "Esquiva",
           "etapa": 2,
-          "nombre": "¡Aletea!",
-          "pagina": "/games/aletea.html",
+          "nombre": "¡Impulso!",
+          "pagina": "/games/impulso.html",
           "existe": true,
           "medida": true,
           "sustrato": true,

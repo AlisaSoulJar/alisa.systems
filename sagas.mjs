@@ -175,7 +175,7 @@ export const EN_EL_BANCO = [
     /**
      * ⚠️ ¡ESQUIVA! 2, Y ENTRA POR LA PUERTA DE ATRÁS: NACIÓ DE LAS PIEZAS DE LA 1.
      *
-     * Al componer un flappy hicieron falta cuatro mecánicas y dos estaban
+     * Al componer este juego hicieron falta cuatro mecánicas y dos estaban
      * escritas dentro de Pedrisco —la vía y los choques—. Salieron con su huella
      * `fd061509` quieta y ahora las corren los dos. Así que estas dos etapas no
      * se parecen: comparten motor de verdad, que es lo que esta saga quería decir
@@ -184,9 +184,9 @@ export const EN_EL_BANCO = [
      * Y hasta el aspecto: el muro es el monolito negro de ¡Esquiva! 1, el bloque
      * irrompible, con su mismo acabado.
      */
-    { saga: 'Esquiva', etapa: 2, nombre: '¡Aletea!',
-      pagina: 'public/games/aletea.html',
-      env: 'public/js/alisa-engine/src/gym/envs/FlappyEnv.js' },
+    { saga: 'Esquiva', etapa: 2, nombre: '¡Impulso!',
+      pagina: 'public/games/impulso.html',
+      env: 'public/js/alisa-engine/src/gym/envs/ImpulsoEnv.js' },
     { saga: 'Esquiva', etapa: 1, nombre: 'Pedrisco',
       pagina: 'public/labs/croupier_asteroids_survival.html',
       env: 'public/js/alisa-engine/src/gym/envs/AsteroidsEnv.js' },

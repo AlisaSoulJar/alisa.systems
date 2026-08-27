@@ -1,8 +1,8 @@
 /**
- * figuras_aletea.mjs — EL ASPECTO DEL JUEGO DE UN BOTÓN
+ * figuras_impulso.mjs — EL ASPECTO DEL JUEGO DE UN BOTÓN
  * ═══════════════════════════════════════════════════════════════════════════
  *
- *     const pintor = new PintorMundo(escena, figurasDeAletea(THREE), 1);
+ *     const pintor = new PintorMundo(escena, figurasDeImpulso(THREE), 1);
  *
  * ⚠️ EL MURO ES EL MONOLITO DE PEDRISCO, Y NO POR AHORRAR TRABAJO.
  *
@@ -41,7 +41,7 @@
  * En una cámara en perspectiva el `fov` es VERTICAL, así que el ancho visible
  * depende del `aspect`. Se calculan las dos distancias y se coge la mayor.
  */
-export function encuadrarAletea(gfx, alto = 24, ancho = 34) {
+export function encuadrarImpulso(gfx, alto = 24, ancho = 34) {
     const cam = gfx.camera;
     /** El mundo que hay que ver: del pájaro (x=0) hasta donde nacen los muros. */
     const xMin = -4, xMax = ancho + 2;
@@ -59,19 +59,28 @@ export function encuadrarAletea(gfx, alto = 24, ancho = 34) {
 }
 
 /**
- * Inclina al pájaro según si sube o baja. Es lo único que se anima por
- * fotograma, y no cambia ninguna regla: es la misma información que ya lleva el
- * HUD, dicha con la forma en vez de con un número.
+ * Inclina la nave según si sube o baja, y enciende la llama cuando empuja.
+ *
+ * Es lo único que se anima por fotograma y no cambia ninguna regla: sale todo de
+ * `vy`, que ya viaja en el sustrato. La llama importa más de lo que parece —
+ * este juego tiene UNA decisión y hasta ahora no se veía cuándo se había
+ * tomado—, pero sigue siendo aspecto: quien juega ya lo sabía porque acababa de
+ * pulsar; el que mira, no.
  */
-export function inclinarPajaro(pintor, sustrato) {
-    const p = (sustrato?.piezas ?? []).find((q) => q.t === 'pajaro');
-    const m = pintor?.malla?.('pajaro');
+export function inclinarNave(pintor, sustrato) {
+    const p = (sustrato?.piezas ?? []).find((q) => q.t === 'nave');
+    const m = pintor?.malla?.('nave');
     if (!p || !m) return;
     const objetivo = Math.max(-0.9, Math.min(0.7, (p.vy ?? 0) * 0.05));
     m.rotation.z += (objetivo - m.rotation.z) * 0.25;
+    const llama = m.getObjectByName('llama');
+    if (llama) {
+        llama.visible = (p.vy ?? 0) > 1;
+        llama.scale.setScalar(0.6 + Math.min(1.2, Math.max(0, (p.vy ?? 0) / 12)));
+    }
 }
 
-export function figurasDeAletea(THREE) {
+export function figurasDeImpulso(THREE) {
     /**
      * El acabado del monolito de Pedrisco, letra por letra. No se importa
      * `AST_TYPES` porque de allí sólo saldría el color y aquí hace falta también
@@ -120,24 +129,50 @@ export function figurasDeAletea(THREE) {
         /** Ya pasado: el mismo bloque apagado, para que se vea lo que llevas. */
         muro_pasado: { malla: muro(0.35, 0.15) },
 
-        pajaro: {
+        /**
+         * ⚠️ LA MISMA NAVE DE ¡ESQUIVA! 1, Y ES LO MÁS BARATO QUE HE HECHO HOY.
+         *
+         * Era una bola amarilla con un pico —un pájaro— y dejó de tener sentido
+         * en cuanto el juego dejó de llamarse como se llamaba. La sustituye el
+         * cono de `figuras_pedrisco`: mismo color, mismo brillo, misma luz.
+         *
+         * Y no es sólo ahorro. Las dos etapas de la saga pasan a enseñar **la
+         * misma nave esquivando los mismos monolitos negros**: en la 1 vuelas
+         * libre por un túnel, en la 2 sólo tienes empuje. Que se vea que es la
+         * misma nave es exactamente lo que una saga tiene que contar, y sale
+         * gratis por reusar la figura en vez de dibujar otra.
+         *
+         * El cono nace apuntando a +Y y aquí se recuesta sobre +X, porque este
+         * juego avanza en horizontal y no en profundidad.
+         */
+        nave: {
             malla: () => {
                 const g = new THREE.Group();
+                const color = 0x7fd1ff;
                 const cuerpo = new THREE.Mesh(
-                    new THREE.SphereGeometry(0.6, 14, 12),
+                    new THREE.ConeGeometry(0.55, 1.8, 8),
                     new THREE.MeshStandardMaterial({
-                        color: 0xffd166, emissive: 0xff9f1c, emissiveIntensity: 1.1,
-                        roughness: 0.4, metalness: 0.2,
+                        color, emissive: color, emissiveIntensity: 0.9,
+                        roughness: 0.35, metalness: 0.7,
                     }));
+                cuerpo.rotation.z = -Math.PI / 2;
                 g.add(cuerpo);
-                /** Un pico, para que la inclinación se vea. */
-                const pico = new THREE.Mesh(
-                    new THREE.ConeGeometry(0.22, 0.55, 6),
-                    new THREE.MeshStandardMaterial({ color: 0xff6b35, emissive: 0x8a2f10 }));
-                pico.rotation.z = -Math.PI / 2;
-                pico.position.x = 0.7;
-                g.add(pico);
-                g.add(new THREE.PointLight(0xffd166, 6, 16, 2));
+                /**
+                 * La llama del empuje. Se enciende sólo cuando la nave sube, así
+                 * que quien mire ve CUÁNDO se ha pulsado — que es la única
+                 * decisión que tiene este juego, y hasta ahora no se veía.
+                 */
+                const llama = new THREE.Mesh(
+                    new THREE.ConeGeometry(0.3, 1.1, 7),
+                    new THREE.MeshBasicMaterial({
+                        color: 0xffb347, transparent: true, opacity: 0.85,
+                    }));
+                llama.name = 'llama';
+                llama.rotation.z = Math.PI / 2;
+                llama.position.x = -1.0;
+                llama.visible = false;
+                g.add(llama);
+                g.add(new THREE.PointLight(color, 4, 18, 2));
                 return g;
             },
         },

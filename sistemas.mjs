@@ -94,7 +94,7 @@ const NUCLEOS = [
     'DroneTowerCore.js', 'SatelliteSweepCore.js', 'CorpBuildingCore.js',
     'AsteroidsSystem.js', 'SubmarineCore.js', 'RaccoonSpaceCore.js',
     'MarabuntaSystem.js', 'DefiendeSystem.js', 'ChopperAquariumEngine.js',
-    'CorpStealthCore.js',
+    'CorpStealthCore.js', 'ImpulsoCore.js',
 ];
 
 const dir = path.join(RAIZ, SISTEMAS);
@@ -205,7 +205,7 @@ const componen = filas.filter((r) => r.unicas.length >= 2);
  * que entre con toda su física escrita dentro suspende aquí, que es exactamente
  * para lo que se puso.
  */
-const SUELO_COMPONEN = 10;
+const SUELO_COMPONEN = 11;
 
 /**
  * ⚠️ VEINTIDÓS. ÉSA ES LA DEUDA, Y ESTÁ CONTADA, NO ESTIMADA.
@@ -231,7 +231,7 @@ const SUELO_COMPONEN = 10;
  * 240 pasos: mismo resumen antes y después, `0fa3c20e`.
  *
  * Y merece decirse cómo se llegó: no fue una campaña de limpieza, fue **hacer un
- * juego nuevo**. Al ir a componer un flappy hicieron falta tres piezas; dos
+ * juego nuevo**. Al ir a componer un juego de un botón hicieron falta tres piezas; dos
  * estaban escondidas dentro de Pedrisco y salieron con su huella `fd061509`
  * quieta, y la tercera no existía en ninguna parte. La deuda se paga un juego
  * por vez, y el juego nuevo es el que dice qué falta.
@@ -276,7 +276,7 @@ const TECHO_INTEGRADORES = 21;
  * que la propia página ya usaba para su jugador, y al enchufarla la huella no se
  * movió: `bd87b6ef` antes y después.
  */
-const SUELO_ROMS = 12;
+const SUELO_ROMS = 13;
 const conRom = filas.filter((r) => r.cartuchos);
 /** Se cuentan CARTUCHOS, no ficheros: el mueble del mapache sostiene tres. */
 const cartuchos = filas.reduce((s, r) => s + r.cartuchos, 0);

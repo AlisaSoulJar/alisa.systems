@@ -232,7 +232,7 @@ const PROPIOS = [
      *
      * Dos verbos, seis números, nada que deducir: se ve todo. Lo único difícil es
      * cuándo. Y lo que separa a un piloto de otro está medido y no es reflejo
-     * bruto — es saberse la propia física: un aleteo sube siempre lo mismo, así
+     * bruto — es saberse la propia física: un empujon sube siempre lo mismo, así
      * que apuntar al centro del hueco se sale por arriba exactamente eso. Quien
      * lo sabe pasa 43 muros; quien apunta al centro, 0,7.
      *
@@ -241,7 +241,7 @@ const PROPIOS = [
      * `fd061509` sin moverse. Es la mejor prueba que hay de que esto es una
      * consola y no una carpeta con juegos dentro.
      */
-    { id: 'alisa/Flappy-v0', titulo: '¡Aletea!', fichero: 'FlappyEnv.js' },
+    { id: 'alisa/Impulso-v0', titulo: '¡Impulso!', fichero: 'ImpulsoEnv.js' },
     // El primero cuyo MUNDO sale de la semilla, no sólo el azar dentro del
     // mundo. Ver la cabecera de su fichero: es la casilla que no ocupa nadie.
     /**
