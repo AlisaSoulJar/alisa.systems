@@ -341,7 +341,32 @@ export const xiangqi = {
     },
 
     mover(p, jugada) {
-        if (!legales(p.grid, p.rojoJuega).includes(jugada)) return false;
+        /**
+         * ⚠️ AQUÍ SE GENERABAN TODAS LAS JUGADAS LEGALES PARA VALIDAR UNA.
+         *
+         * `legales()` es `pseudolegales().filter(m => !enJaque(aplica(g, m)))`, y
+         * `enJaque` a su vez genera las pseudolegales del rival. O sea que
+         * comprobar UNA jugada costaba una generación por cada jugada posible —
+         * unas cuarenta en la apertura.
+         *
+         * No es teoría: la puerta pública (`functions/api/gym.js`) re-simula la
+         * partida entera en cada llamada, y con esto el xiangqi era el juego más
+         * caro del banco con diferencia — 43,9 ms para 412 jugadas, cuando el
+         * ajedrez, que hace lo mismo pero con más piezas, gasta 3,6 en 271. El
+         * presupuesto de CPU de un Worker son 10 ms, así que era el único juego
+         * que seguía sin caber después de arreglar la puerta.
+         *
+         * La definición se aplica a esta jugada y ya está, y es EXACTAMENTE la
+         * misma condición: `legales.includes(j)` ⟺ `pseudolegales.includes(j)` y
+         * además `j` no deja al general en jaque. Dos generaciones en vez de
+         * cuarenta.
+         *
+         * `estado()` sigue llamando a `legales()` entero, y debe: ahí sí hace falta
+         * la lista completa —es `legal_moves`, el menú que se le ofrece a quien
+         * juega— y además de ahí salen el mate y el ahogado.
+         */
+        if (!pseudolegales(p.grid, p.rojoJuega).includes(jugada)) return false;
+        if (enJaque(aplica(p.grid, jugada), p.rojoJuega)) return false;
         p.historial.push({ grid: p.grid.map(f => f.slice()), rojoJuega: p.rojoJuega,
                            sinCapturas: p.sinCapturas ?? 0 });
         // Si el destino estaba ocupado, ha habido captura. Se mira ANTES de aplicar la
