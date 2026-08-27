@@ -51,7 +51,22 @@ const ATOMOS = new Set([
     'IDMSystem.js',                 // coche que sigue a otro coche
     'KinematicControllerSystem.js', // andar y saltar, sin inercia
     'OrbitalKinematicsSystem.js',   // balística y órbitas
+    'BallisticSystem.js',           // caer con gravedad, y saltar
+    'ScrollTrackSystem.js',         // la vía: un mundo que avanza y no vuelve
 ]);
+
+/**
+ * ⚠️ Y UNA ADVERTENCIA SOBRE ESTA LISTA, QUE ME COSTÓ MEDIA HORA EL 27-08.
+ *
+ * `KinematicControllerSystem` lleva aquí desde el principio como «andar y
+ * saltar». Al ir a componer un juego que salta, resultó que **no se puede
+ * llamar**: pide una malla de THREE y su modo `FPS_WALK` ni está implementado.
+ * O sea que la lista decía que teníamos un átomo de andar y no lo teníamos.
+ *
+ * Estar declarado como átomo no prueba que sirva. Se queda —sigue moviendo lo
+ * que mueve en las páginas— pero que conste que un núcleo sin pantalla no puede
+ * usarlo, y que por eso hubo que escribir `BallisticSystem` en vez de reutilizar.
+ */
 
 /**
  * Los núcleos que declaran contrato, por nombre de fichero.
@@ -207,7 +222,21 @@ const SUELO_COMPONEN = 10;
  * se movió; lo mismo acaba de pasar sacando la bandada a `FlockingSystem`. Sin
  * ese arnés esto no sería refactor, sería fe.
  */
-const TECHO_INTEGRADORES = 22;
+/**
+ * ⚠️ 22 → 21 EL 27-08. LA PRIMERA VEZ QUE ESTE NÚMERO BAJA DESDE QUE SE MIDIÓ.
+ *
+ * `KinematicRageSystem` sale de la lista: su caída —gravedad a la velocidad,
+ * velocidad a la posición— se fue a `BallisticSystem` y él se queda con lo suyo,
+ * que es el estropicio. Se comprobó con una huella de mano de doce escombros y
+ * 240 pasos: mismo resumen antes y después, `0fa3c20e`.
+ *
+ * Y merece decirse cómo se llegó: no fue una campaña de limpieza, fue **hacer un
+ * juego nuevo**. Al ir a componer un flappy hicieron falta tres piezas; dos
+ * estaban escondidas dentro de Pedrisco y salieron con su huella `fd061509`
+ * quieta, y la tercera no existía en ninguna parte. La deuda se paga un juego
+ * por vez, y el juego nuevo es el que dice qué falta.
+ */
+const TECHO_INTEGRADORES = 21;
 
 /**
  * ⚠️ CUÁNTOS JUEGOS SE DECLARAN COMO DATOS. SÓLO SUBE.

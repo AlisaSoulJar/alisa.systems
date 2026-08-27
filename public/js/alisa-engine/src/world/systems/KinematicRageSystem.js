@@ -1,4 +1,5 @@
 // KinematicRageSystem.js — física de cuerpo rígido para volcar la mesa
+import { BallisticSystem } from './BallisticSystem.js';
 
 /**
  * ⚠️ PONÍA «DETERMINISTIC» EN LA PRIMERA LÍNEA Y NO LO ERA.
@@ -86,13 +87,28 @@ export class KinematicRageSystem {
             if (!entity.rageState) return { ...entity };
 
             const state = entity.rageState;
-            
-            // Gravity
-            state.velocity.y += this.gravity * dt;
+
+            /**
+             * ⚠️ LA CAÍDA YA NO SE ESCRIBE AQUÍ: ES `BallisticSystem`.
+             *
+             * Eran dos líneas —gravedad a la velocidad, velocidad a la posición—
+             * y siguen siendo las mismas dos operaciones en el mismo orden. Lo
+             * que cambia es que ahora hay UN sitio donde está escrito qué es
+             * caer, y este fichero se queda con lo suyo, que es el estropicio:
+             * el estallido, el rebote, la fricción y el giro.
+             *
+             * Comprobado antes y después con doce escombros y 240 pasos: mismo
+             * resumen, `0fa3c20e`. Se adopta desde la forma pura (`paso`) porque
+             * este sistema guarda su estado en `position`/`rageState` y no en un
+             * `{y, vy}`; obligarle a cambiarlo para que la pieza luciera más
+             * usada habría sido tocar un juego para contentar a una pieza.
+             */
+            const caida = BallisticSystem.paso(entity.position.y, state.velocity.y, dt, this.gravity);
+            state.velocity.y = caida.vy;
 
             // Integration
             const px = entity.position.x + (state.velocity.x * dt);
-            const py = entity.position.y + (state.velocity.y * dt);
+            const py = caida.y;
             const pz = entity.position.z + (state.velocity.z * dt);
             
             const rx = entity.rotation.x + state.rotVelocity.x;

@@ -1,4 +1,6 @@
 import { mulberry32 } from '../core/DeterministicScope.js';
+import { Hitbox } from './HitboxSystem.js';
+import { ScrollTrackSystem } from './ScrollTrackSystem.js';
 
 export const SHIP_GAUGES = {
     'VIPER': [
@@ -42,10 +44,15 @@ export const WAVES = [
 
 function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 function lerp(a, b, t) { return a + (b - a) * t; }
-function dist3(p1, p2) {
-    let dx = p1.x - p2.x, dy = p1.y - p2.y, dz = p1.z - p2.z;
-    return Math.sqrt(dx*dx + dy*dy + dz*dz);
-}
+/**
+ * ⚠️ ERA UNA FUNCIÓN SUELTA CON SIETE LLAMADORES AQUÍ DENTRO. AHORA ES UNA PIEZA.
+ *
+ * La cuenta es la misma letra por letra —`Math.sqrt` y no `Math.hypot`, que dan
+ * números distintos en el último bit— y por eso la huella `fd061509` no se movió
+ * al cambiarla. Se deja el nombre local para no tocar siete sitios de golpe: lo
+ * que se ha ido de este fichero es la ARITMÉTICA, no la costumbre.
+ */
+const dist3 = (p1, p2) => Hitbox.distancia(p1, p2);
 /**
  * ⚠️ RECIBE EL AZAR, NO LO BUSCA. Es una función SUELTA, no un método: al
  * enrutar los `Math.random()` de golpe, ésta quedó con un `this.rng()` que en un
@@ -95,6 +102,13 @@ export class AsteroidsSystem {
         sistemas: [
             ['AsteroidsEngine', { tablaOleadas: 'WAVES', ciclo: WAVE_CYCLE }],
             ['AsteroidTypes', { tabla: 'AST_TYPES' }],
+            /**
+             * Los dos radios de este juego, declarados donde se leen. Salieron de
+             * dos números sueltos en medio del bucle de choques —`+ 1.2` y `+ 4`—
+             * que decidían si mueres o si puntúas y no estaban en ninguna tabla.
+             */
+            ['Hitbox', { roce: [[1.2, 'toca'], [4, 'roza']] }],
+            ['ScrollTrackSystem', { velocidad: 20, visible: 130, cola: 30, eje: 'z' }],
         ],
 
         voz: {
@@ -166,6 +180,13 @@ export class AsteroidsSystem {
      * una semilla del reloj; el entorno del banco pasa la suya. El System no
      * conoce ni el reloj ni el azar del sistema.
      */
+    /** Los cortes del roce, leídos del cartucho para no escribirlos dos veces. */
+    static CORTES_ROCE = AsteroidsSystem.ROM.sistemas.find(([n]) => n === 'Hitbox')[1].roce;
+
+    /** La ventana a la vía: dónde estamos en el túnel. */
+    get globalZ() { return this.via.recorrido; }
+    set globalZ(v) { this.via.recorrido = v; }
+
     constructor(config = {}) {
         /**
          * ⚠️ SE GUARDA CÓMO SE FABRICA EL AZAR, NO SÓLO EL AZAR.
@@ -187,8 +208,23 @@ export class AsteroidsSystem {
         this.ARENA_H = 25;
         this.VISIBLE_Z = 130;
         this.lastWallZ = 0;
-        
-        this.globalZ = 0;
+
+        /**
+         * ⚠️ `globalZ` YA NO ES UN CAMPO: ES LA VÍA, MIRADA POR UNA VENTANA.
+         *
+         * Diecisiete de sus veinte usos son LECTURAS —«¿a qué altura del túnel
+         * estamos?»— y cambiarlas todas sería mover código de sitio y llamarlo
+         * arquitectura. Lo que se ha ido a `ScrollTrackSystem` es lo que de
+         * verdad se repetía: avanzar, saber dónde nace lo que aún no se ve, y
+         * preguntar si algo se ha quedado atrás.
+         *
+         * El truco de la ventana es el mismo que le puse al jugador de
+         * `CorpStealthCore`: un `get`/`set` sobre la pieza, para que no haya dos
+         * sitios donde esté escrito dónde estamos.
+         */
+        this.via = new ScrollTrackSystem({
+            velocidad: 20, visible: this.VISIBLE_Z, cola: 30, eje: 'z',
+        });
         this.scrollSpeed = 20;
         this.baseScrollSpeed = 20;
         this.maxEnemies = 0;
@@ -378,7 +414,7 @@ export class AsteroidsSystem {
         if(this.decorStars.length < 300) this.spawnStar();
         for(let i=this.decorStars.length-1; i>=0; i--) {
             let s = this.decorStars[i];
-            if(s.z < this.globalZ - 20) {
+            if(this.via.quedaAtras(s, 20)) {
                 s.z = this.globalZ + this.VISIBLE_Z*1.5 + this.rng()*20;
                 s.x = (this.rng()-0.5)*this.ARENA_W*3;
                 s.y = (this.rng()-0.5)*this.ARENA_H*3;
@@ -666,7 +702,7 @@ export class AsteroidsSystem {
             let p = this.projectiles[i]; let hit=false;
             if(p.isPlayer) {
                 for(let it of this.items) {
-                    if(it.iType==='BELL' && dist3(p, it) < it.radius + p.radius) {
+                    if(it.iType==='BELL' && Hitbox.tocan(p, it)) {
                         it.bColor = (it.bColor + 1) % BELL_COLORS.length;
                         hit=true; break;
                     }
@@ -674,7 +710,7 @@ export class AsteroidsSystem {
                 if(hit){ p.dead = true; continue; }
 
                 for(let a of this.asteroids) {
-                    if(dist3(p, a) < a.radius + p.radius) {
+                    if(Hitbox.tocan(p, a)) {
                         if(a.type !== 'MONO') {
                             a.hp -= (p.type==='rocket'?50:20);
                             if(a.hp<=0) this.breakAsteroid(a); else this.spawnParticles(p, 0xffaa00, 5);
@@ -684,7 +720,7 @@ export class AsteroidsSystem {
                 }
                 if(!hit) {
                     for(let e of this.enemies) {
-                        if(dist3(p, e) < e.radius + p.radius) {
+                        if(Hitbox.tocan(p, e)) {
                             e.hp -= 20; hit=true; break;
                         }
                     }
@@ -695,13 +731,28 @@ export class AsteroidsSystem {
             if(hit) p.dead = true;
         }
 
+        /**
+         * ⚠️ DOS RADIOS SOBRE EL MISMO ASTEROIDE: UNO MATA Y EL OTRO PUNTÚA.
+         *
+         * Ésta es la mecánica que se ha ido a `Hitbox.zona`, y no por ahorrar dos
+         * líneas: **pasar rozando es lo que da puntos en este juego**, y pasar
+         * entre dos tuberías sin tocar ninguna es la misma regla contada de otra
+         * forma. Dos juegos con la misma ley es lo que convierte una cuenta en
+         * una pieza.
+         *
+         * Y se conserva una rareza que parecía un descuido y no lo es: el `else`
+         * hace que, mientras eres invulnerable, meterte en el radio que mata
+         * cuente como ROCE. Es lo que hacía antes; cambiarlo habría subido las
+         * puntuaciones sin que nadie lo pidiera.
+         */
         for(let a of this.asteroids) {
             let d = dist3(this.ship, a);
-            if(this.ship.invuln<=0 && d < a.radius + 1.2) { 
-                this.hitShip(a.type==='MONO'); 
-                break; 
+            const zona = Hitbox.zona(this.ship, a, AsteroidsSystem.CORTES_ROCE, d);
+            if(this.ship.invuln<=0 && zona === 'toca') {
+                this.hitShip(a.type==='MONO');
+                break;
             }
-            else if(d < a.radius + 4 && !a.grazed) {
+            else if(zona && !a.grazed) {
                 a.grazed=true; this.stats.graze++; this.stats.streak++; this.stats.score+=10*Math.max(1,this.stats.streak);
                 this.energy = Math.min(100, this.energy+5); this.rank+=1.5; 
                 this.events.push({ type: 'FLASH', flashType: 'graze' });
@@ -716,8 +767,7 @@ export class AsteroidsSystem {
     tick(dt) {
         this.events = [];
         this.stats.time += dt;
-        let dZ = this.scrollSpeed * dt;
-        this.globalZ += dZ;
+        let dZ = this.via.avanzar(dt, this.scrollSpeed);
 
         this.updateWaveLogic(dt);
         this.updateStars();
@@ -745,7 +795,7 @@ export class AsteroidsSystem {
             a.x += a.vx*dt; a.y += a.vy*dt; a.z -= a.vz*dt;
             a.rotX += a.rv.x*dt; a.rotY += a.rv.y*dt; a.rotZ += a.rv.z*dt;
             
-            if(a.z < this.globalZ - 30) a.dead = true;
+            if(this.via.quedaAtras(a, 30)) a.dead = true;
             if(a.dead) this.asteroids.splice(i,1);
         }
 
@@ -756,14 +806,14 @@ export class AsteroidsSystem {
                 if(e.t==='LINER') e.z -= e.sp*dt;
                 if(e.t==='TRACKER' && this.ship) { e.x += (this.ship.x-e.x)*e.sp*dt*0.1; e.y += (this.ship.y-e.y)*e.sp*dt*0.1; e.z -= e.sp*dt*0.5;}
                 if(e.t==='SNIPER') e.z = Math.max(e.z - e.sp*dt, this.globalZ+40);
-                if(e.z < this.globalZ-30) e.dead = true;
+                if(this.via.quedaAtras(e, 30)) e.dead = true;
             }
             if(e.dead) this.enemies.splice(i,1);
         }
 
         for(let i=this.items.length-1; i>=0; i--) {
             let it = this.items[i]; it.rotX+=dt; it.rotY+=dt; it.z -= 5*dt;
-            if(it.z < this.globalZ-20) it.dead = true;
+            if(this.via.quedaAtras(it, 20)) it.dead = true;
             if(it.dead) this.items.splice(i,1);
         }
 
