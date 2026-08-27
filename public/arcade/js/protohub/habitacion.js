@@ -32,10 +32,39 @@
  * comparte por el móvil.
  */
 
-/** Suelo de madera oscura, paredes en penumbra: que la mesa sea lo que se ve. */
-const SUELO = 0x2b211c;
-const PARED = 0x191521;
-const TECHO = 0x120f18;
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  LA PALETA ES LA DE LA SALA DEL HUEVO, Y NO ES UNA ELECCIÓN DE GUSTO
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Encargo de Oscar, en una frase: «la idea es que CUELE que estás en la sala del
+ * huevo y te sientas en una mesa». Esa sala es por donde se entra: se anda por
+ * ella, se pincha una mesa y te abduce a pantalla completa. Si al sentarte
+ * cambias de mundo, el truco se rompe en el mismo momento en que empieza.
+ *
+ * Y se estaba rompiendo. Aquí ponía «suelo de madera oscura, paredes en penumbra»
+ * — una taberna. Medido en `room_sala_del_huevo.html`, la sala de al lado es lo
+ * contrario:
+ *
+ *     niebla        FogExp2(0xe6ebf0)      azul-gris muy claro
+ *     luz           Hemisphere(0xffffff, 0xdfe6ec, 3.1) + direccional 1.5
+ *     superficies   0xffffff con roughness 0.82
+ *     lo oscuro     0x1b232e — las máquinas, no las paredes
+ *     acentos       0x4fd0ff cian y 0xffaa00 ámbar
+ *
+ * O sea: blanca, fría y muy iluminada, con lo oscuro reservado a los objetos. Al
+ * sentarte a una mesa aterrizabas en un cuarto marrón sin ventanas.
+ *
+ * Estos tres colores salen de esa medida, no de mi gusto. El techo se pinta del
+ * color de la niebla a propósito, para que se deshaga en ella en vez de cerrar
+ * una tapa — que es lo que hace la sala grande y por lo que no parece una caja.
+ *
+ * ⚠️ Y LA NIEBLA VIENE GRATIS: más abajo se monta con `PARED`, así que aclarar la
+ * pared aclara la niebla sin tocar una línea más. Eso ya estaba bien pensado.
+ */
+const SUELO = 0xd4dee6;   // el gris azulado claro de la sala
+const PARED = 0xe6ebf0;   // el color de su niebla: la pared se funde con el fondo
+const TECHO = 0xf4f6f8;   // el blanco de sus paneles
 
 /**
  * Amuebla una escena alrededor del origen.
@@ -247,13 +276,13 @@ export function amueblar(scene, { radio = 24, alto = 15, hondo = 7 } = {}) {
 
     const lampara = añadir(new THREE.Mesh(
         new THREE.ConeGeometry(3.2, 1.8, 24, 1, true),
-        new THREE.MeshStandardMaterial({ color: 0x2a2233, roughness: 0.8, side: THREE.DoubleSide })
+        new THREE.MeshStandardMaterial({ color: 0x1b232e, roughness: 0.8, side: THREE.DoubleSide })
     ));
     lampara.position.y = alturaLampara;
 
     const cable = añadir(new THREE.Mesh(
         new THREE.CylinderGeometry(0.04, 0.04, alto - alturaLampara, 8),
-        new THREE.MeshBasicMaterial({ color: 0x2a2233 })
+        new THREE.MeshBasicMaterial({ color: 0x1b232e })
     ));
     cable.position.y = alturaLampara + (alto - alturaLampara) / 2;
 

@@ -407,5 +407,58 @@ if (copias.length) {
     console.log(`  ✓ sin copias de ${COMPARTIDAS.join(' ni ')} en las reglas`);
 }
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ Y UNA MEZCLA QUE SE BORRABA A SÍ MISMA
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * `randomPolicy(semilla)` empezaba con `semilla ^ K` y seguía con `^ env.seed`.
+ * Con las dos semillas iguales eso es `(s ^ K) ^ s`, que vale `K` para cualquier
+ * `s`: la semilla se borraba y TODOS los episodios jugaban la misma partida.
+ *
+ * Y pasarle la misma semilla del episodio es lo primero que escribe cualquiera.
+ * Los juegos con azar propio lo disimulan —al menos cambia el reparto— y los
+ * deterministas lo enseñan entero: go, reversi y mancala salían con exactamente
+ * un tercio de posiciones distintas en tres semillas, o sea una partida repetida
+ * tres veces. Lo encontré midiendo otra cosa, y parecía un fallo de lo que estaba
+ * midiendo.
+ *
+ * Encaja aquí porque es exactamente lo que este fichero vigila: algo que no se
+ * puede medir porque su azar no obedece a la semilla. Sólo que el azar de esta
+ * no venía de `Math.random`, sino de una identidad de álgebra de bits.
+ *
+ * Se comprueba con un juego DETERMINISTA a propósito: si el juego trae su propio
+ * azar, el reparto tapa el fallo y la comprobación aprobaría con el cable cortado.
+ */
+{
+    const { CATALOGO, randomPolicy } = await import('./public/js/alisa-engine/src/gym/registry.js');
+    const entrada = CATALOGO.find(e => e.juego === 'reversi');
+    const Clase = entrada && await entrada.cargar().catch(() => null);
+    if (!Clase) {
+        console.log('  · no se pudo cargar reversi para medir la mezcla de `randomPolicy`');
+    } else {
+        const traza = (s) => {
+            const env = new Clase();
+            env.reset(s);
+            const pol = randomPolicy(s);           // ⚠️ LA MISMA: es el caso que falla
+            const pasos = [];
+            for (let k = 0; k < 12 && !env.done; k++) {
+                const obs = env.getObservation();
+                pasos.push(String(pol(obs, env)));
+                env.step(pasos[pasos.length - 1]);
+            }
+            return pasos.join('|');
+        };
+        if (traza(3) === traza(11)) {
+            fallos++;
+            console.log('  ✗ `randomPolicy(s)` con `reset(s)` juega la MISMA partida con dos semillas.');
+            console.log('    La mezcla se está cancelando: `(s ^ K) ^ s` vale K para cualquier s.');
+            console.log('    Multiplica antes de meter `env.seed`, para difundir la semilla.');
+        } else {
+            console.log('  ✓ `randomPolicy` no se cancela cuando le pasan la semilla del episodio');
+        }
+    }
+}
+
 console.log(fallos ? '\n  ✗ semillas: hay algo que no se puede medir\n' : '\n  ✓ semillas: la deuda no crece, los entornos usan su semilla y no hay copias\n');
 process.exit(fallos ? 1 : 0);

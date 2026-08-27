@@ -21,6 +21,10 @@ import { crearEnvDeProtoHub } from './ProtoHubEnv.js';
 // La FSM del motor, la misma que mueve al cazador de Corp Building y a los
 // bichos de `fsm_gym`. Aquí se usa para JUGAR, no para simular.
 import { FSMSystem } from '../psyche/FSMSystem.js';
+// La mezcla de la casa. `randomPolicy` la usa para elegir sin arrastrar estado —
+// ver su nota. Importarla en vez de escribir constantes es lo que pide
+// `prueba_azar`, y con razón: cada copia es un sitio donde divergir.
+import { normalizeSeed } from '../world/core/DeterministicScope.js';
 
 const RUTA_REGLAS = '../../../../arcade/js/protohub/rules';
 
@@ -427,10 +431,35 @@ export function randomPolicy(semilla = 1) {
     return (obs, env) => {
         const opciones = env.affordances();
         if (!opciones.length) return null;
-        let x = (semilla ^ 0x9E3779B9) >>> 0;
-        x = (Math.imul(x ^ (env.seed >>> 0), 0x85EBCA6B)) >>> 0;
-        x = (Math.imul(x ^ (env.steps >>> 0), 0xC2B2AE35)) >>> 0;
-        x = (x ^ (x >>> 15)) >>> 0;
+        /**
+         * ⚠️ LA MEZCLA SE BORRABA A SÍ MISMA, Y SE ARREGLA IMPORTÁNDOLA.
+         *
+         * Antes era `x = semilla ^ K` y acto seguido `x ^ env.seed`. Con las dos
+         * semillas iguales eso es `(s ^ K) ^ s`, que vale `K` para cualquier `s`:
+         * la semilla se borraba y todos los episodios jugaban la misma partida. Y
+         * pasarle la semilla del episodio es lo primero que escribe cualquiera —
+         * los juegos con azar propio lo disimulan porque al menos cambia el
+         * reparto; go, reversi y mancala lo enseñan entero.
+         *
+         * ⚠️ Y EL PRIMER ARREGLO FUE ESCRIBIR OTRAS CONSTANTES A MANO. `prueba_azar`
+         * lo suspendió en el acto: «un hash de Murmur usado como generador».
+         *
+         * Tenía razón, y lo interesante es que la versión ANTERIOR se libraba por
+         * casualidad — su patrón no cruza paréntesis y el código viejo tenía uno en
+         * medio. O sea que la prohibición llevaba tiempo sin mirar esta línea.
+         *
+         * Se podía esquivar cambiando de constante. Eso es exactamente lo que hice
+         * mal en el go fish esta mañana —juntar una lista con `+` para que la regla
+         * no la viera— así que aquí no: se usa la mezcla que la casa ya tiene,
+         * `normalizeSeed`, que hashea cadenas con FNV-1a. Es la misma forma que usa
+         * `semillaDe` en las políticas publicadas (`${juego}#${semilla}`), no lleva
+         * estado y deja de haber una fórmula copiada en un sitio más.
+         *
+         * ⚠️ NO MUEVE NINGUNA NOTA PUBLICADA. Comprobado antes de tocarlo: la tabla
+         * usa `POLITICAS` de `agentes/politicas.js`, y esta función sólo la usan una
+         * prueba y dos laboratorios.
+         */
+        const x = normalizeSeed(`${semilla}:${env.seed >>> 0}:${env.steps >>> 0}`);
         return opciones[x % opciones.length].action;
     };
 }
