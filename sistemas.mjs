@@ -53,6 +53,7 @@ const ATOMOS = new Set([
     'OrbitalKinematicsSystem.js',   // balística y órbitas
     'BallisticSystem.js',           // caer con gravedad, y saltar
     'ScrollTrackSystem.js',         // la vía: un mundo que avanza y no vuelve
+    'ProjectileSystem.js',          // lo que sale disparado y vuela en recta
 ]);
 
 /**
@@ -236,7 +237,20 @@ const SUELO_COMPONEN = 11;
  * quieta, y la tercera no existía en ninguna parte. La deuda se paga un juego
  * por vez, y el juego nuevo es el que dice qué falta.
  */
-const TECHO_INTEGRADORES = 21;
+/**
+ * ⚠️ 21 → 20 EL 27-08, Y ESTA VEZ SIN ESCRIBIR NINGUNA PIEZA NUEVA.
+ *
+ * `TurretCombatSystem` sale de la lista: su vuelo de balas —posición más
+ * velocidad por dt, cuatro veces entre dos listas— se fue a `ProjectileSystem`,
+ * que es un átomo declarado y tiene derecho a integrar.
+ *
+ * Y salió de un sitio que no me esperaba: ese fichero era el 90% de un sistema
+ * de disparo, headless y bien hecho, escondido dentro de un juego **que no juega
+ * nadie** —su único llamador es una prueba que además lleva rota desde antes,
+ * en un Katamari, y que `npm test` ni siquiera corre—. Comprobado con una huella
+ * de mano de 900 pasos: `c621a176` antes y después.
+ */
+const TECHO_INTEGRADORES = 20;
 
 /**
  * ⚠️ CUÁNTOS JUEGOS SE DECLARAN COMO DATOS. SÓLO SUBE.

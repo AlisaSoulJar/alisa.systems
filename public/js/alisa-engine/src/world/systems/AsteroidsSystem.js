@@ -1,6 +1,8 @@
 import { mulberry32 } from '../core/DeterministicScope.js';
 import { Hitbox } from './HitboxSystem.js';
 import { ScrollTrackSystem } from './ScrollTrackSystem.js';
+import { ProjectileSystem } from './ProjectileSystem.js';
+import { WeaponSystem } from './WeaponSystem.js';
 
 export const SHIP_GAUGES = {
     'VIPER': [
@@ -24,6 +26,22 @@ export const SHIP_GAUGES = {
 // Se EXPORTA: el aspecto de cada roca —su color— sale de aqui, no de una copia
 // en el fichero de figuras. hp y col viven juntos porque son la misma cosa
 // dicha para dos publicos: la regla y el ojo.
+/**
+ * ⚠️ LOS TIPOS DE BALA, QUE ESTABAN EN DOS TERNARIOS Y NO EN NINGUNA TABLA.
+ *
+ * El radio salía de `type === 'rocket' ? 1.2 : 0.5` al crearla, y el daño de
+ * `p.type === 'rocket' ? 50 : 20` al impactar — en dos sitios distintos, a
+ * cuatrocientas líneas de distancia. Los números no cambian; lo que cambia es
+ * que ahora se leen juntos y se pueden comparar con los de otro juego.
+ *
+ * `vel` no está: este juego calcula la velocidad de cada disparo según el arma
+ * —abanico, cola, doble— y se la pasa hecha a `spawnProj`.
+ */
+export const TIPOS_BALA = {
+    bala:   { vel: 0, vida: 10, radio: 0.5, dmg: 20 },
+    rocket: { vel: 0, vida: 10, radio: 1.2, dmg: 50 },
+};
+
 export const AST_TYPES = {
     BASIC: { hp: 20, col: 0x887766 },
     FAST:  { hp: 10, col: 0x3366ff },
@@ -109,6 +127,13 @@ export class AsteroidsSystem {
              */
             ['Hitbox', { roce: [[1.2, 'toca'], [4, 'roza']] }],
             ['ScrollTrackSystem', { velocidad: 20, visible: 130, cola: 30, eje: 'z' }],
+            /**
+             * El arma de la nave y sus balas. La cadencia base son 0,3 s y la
+             * multiplica el potenciador OPTION; los tipos son `TIPOS_BALA`, que
+             * hasta hoy eran dos ternarios en dos sitios distintos del fichero.
+             */
+            ['WeaponSystem', { cadencia: 0.3 }],
+            ['ProjectileSystem', { tabla: 'TIPOS_BALA' }],
         ],
 
         voz: {
@@ -187,6 +212,13 @@ export class AsteroidsSystem {
     get globalZ() { return this.via.recorrido; }
     set globalZ(v) { this.via.recorrido = v; }
 
+    /**
+     * Y la ventana a las balas. `projectiles` lo leen el bucle de impactos, la
+     * IA de la nave, el sustrato y la página; cambiarles el nombre a todos de
+     * golpe habría sido una mudanza, no una extracción.
+     */
+    get projectiles() { return this.balas.balas; }
+
     constructor(config = {}) {
         /**
          * ⚠️ SE GUARDA CÓMO SE FABRICA EL AZAR, NO SÓLO EL AZAR.
@@ -225,6 +257,15 @@ export class AsteroidsSystem {
         this.via = new ScrollTrackSystem({
             velocidad: 20, visible: this.VISIBLE_Z, cola: 30, eje: 'z',
         });
+        /**
+         * ⚠️ LAS BALAS SE MONTAN EN EL CONSTRUCTOR Y SÓLO SE RESETEAN.
+         *
+         * `reset()` se llama también al empezar cada partida, y si la pieza
+         * naciera ahí se perdería el contador de identificadores entre partidas
+         * — que aquí no importa porque el id lo pisa `uuid`, pero el día que no
+         * lo pisara sería un fallo mudo.
+         */
+        this.balas = new ProjectileSystem({ piel: 'disparo', tipos: TIPOS_BALA });
         this.scrollSpeed = 20;
         this.baseScrollSpeed = 20;
         this.maxEnemies = 0;
@@ -242,7 +283,7 @@ export class AsteroidsSystem {
         this.ship = null;
         this.asteroids = [];
         this.enemies = [];
-        this.projectiles = [];
+        this.balas.reset();
         this.items = [];
         this.particles = [];
         this.decorStars = [];
@@ -296,7 +337,7 @@ export class AsteroidsSystem {
         this.ship = null;
         this.asteroids = [];
         this.enemies = [];
-        this.projectiles = [];
+        this.balas.reset();
         this.items = [];
         this.particles = [];
         this.decorStars = [];
@@ -471,8 +512,20 @@ export class AsteroidsSystem {
             tx: 0, ty: 0, dead: false, deathT: 0, invuln: 2.0,
             shields: 0, speedMult: 1.0, fireRateMult: 1.0, 
             weaponMain: 'NONE', weaponAlt: null,
-            fireCooldown: 0, owns: {}
+            /**
+             * El arma de la nave. `fireCooldown` sigue siendo el nombre por el
+             * que se lee —la página y la IA lo miran— y debajo es un
+             * `WeaponSystem`. Su cadencia no es fija: el potenciador OPTION la
+             * multiplica por 0,7, así que se pone al gastarla.
+             */
+            arma: WeaponSystem.crear({ cadencia: 0.3 }),
+            owns: {}
         };
+        Object.defineProperty(this.ship, 'fireCooldown', {
+            get: () => this.ship.arma.reloj,
+            set: (v) => { this.ship.arma.reloj = v; },
+            enumerable: true,
+        });
     }
 
     shipAI(dt) {
@@ -539,8 +592,7 @@ export class AsteroidsSystem {
         this.ship.rotZ = lerp(this.ship.rotZ, -fx*0.03, 5*dt);
         this.ship.rotX = lerp(this.ship.rotX, fy*0.03, 5*dt);
 
-        this.ship.fireCooldown -= dt;
-        if(this.ship.fireCooldown <= 0) {
+        if(WeaponSystem.listo(this.ship.arma, dt)) {
             let wantFire = false;
             if (this.externalControl) {
                 // El agente (humano / FSM / LLM) decide CUÁNDO disparar.
@@ -563,7 +615,8 @@ export class AsteroidsSystem {
                 if(this.ship.weaponAlt === 'MISSILE') this.spawnProj({x:this.ship.x, y:this.ship.y-1, z:this.ship.z+2}, 0,-10,40, 'missile', 0xff8800);
                 if(this.ship.weaponAlt === 'ROCKET') this.spawnProj({x:this.ship.x, y:this.ship.y, z:this.ship.z+2}, 0,0,50, 'rocket', 0xffcc00);
                 
-                this.ship.fireCooldown = 0.3 * this.ship.fireRateMult;
+                this.ship.arma.cadencia = 0.3 * this.ship.fireRateMult;
+            WeaponSystem.gastar(this.ship.arma);
             }
         }
 
@@ -662,10 +715,37 @@ export class AsteroidsSystem {
         i.dead = true;
     }
 
+    /**
+     * ⚠️ LOS TIPOS DE BALA ESTABAN A FUEGO EN MEDIO DE LA LÍNEA. AHORA SON TABLA.
+     *
+     * `radius: type==='rocket'?1.2:0.5` aquí, y `p.type==='rocket'?50:20` en el
+     * bucle de impactos: dos ternarios en dos sitios distintos decidiendo lo
+     * mismo. Es exactamente lo que `AST_TYPES` arregló para los asteroides.
+     *
+     * ⚠️ Y EL `uuid(this.rng)` SE QUEDA, AUNQUE `ProjectileSystem` YA PONE ID.
+     *
+     * Esa llamada GASTA UNA TIRADA del generador sembrado. Quitarla correría la
+     * secuencia entera y el campo de asteroides de la misma semilla caería en
+     * otro sitio: la huella `fd061509` se movería por culpa de un nombre. Así que
+     * se sigue gastando y se pisa el id que trae la pieza.
+     */
     spawnProj(pos, vx, vy, vz, type, col) {
-        this.projectiles.push({
-            id: uuid(this.rng), x: pos.x, y: pos.y, z: pos.z,
-            isPlayer: true, vx, vy, vz, type, life: 10, radius: type==='rocket'?1.2:0.5, color: col, dead: false
+        const b = this.balas.soltar({
+            desde: pos,
+            velocidad: { x: vx, y: vy, z: vz },
+            tipo: TIPOS_BALA[type] ? type : 'bala',
+            extra: { isPlayer: true, type, color: col },
+        });
+        b.id = uuid(this.rng);
+        /**
+         * Los nombres de antes. Este fichero llama `life` y `dead` a lo que la
+         * pieza guarda como `vida` y `muerta`, y lo hace en cinco sitios del
+         * bucle de impactos. Dos ventanas cuestan menos que cinco renombrados en
+         * un fichero con la huella sellada.
+         */
+        Object.defineProperties(b, {
+            life: { get: () => b.vida, set: (v) => { b.vida = v; }, enumerable: false },
+            dead: { get: () => b.muerta, set: (v) => { b.muerta = v; }, enumerable: false },
         });
     }
 
@@ -712,7 +792,7 @@ export class AsteroidsSystem {
                 for(let a of this.asteroids) {
                     if(Hitbox.tocan(p, a)) {
                         if(a.type !== 'MONO') {
-                            a.hp -= (p.type==='rocket'?50:20);
+                            a.hp -= p.dmg;   // de `TIPOS_BALA`, no de un ternario suelto
                             if(a.hp<=0) this.breakAsteroid(a); else this.spawnParticles(p, 0xffaa00, 5);
                         }
                         hit=true; break;
@@ -817,12 +897,18 @@ export class AsteroidsSystem {
             if(it.dead) this.items.splice(i,1);
         }
 
-        for(let i=this.projectiles.length-1; i>=0; i--) {
-            let p = this.projectiles[i]; p.life -= dt;
-            p.x+=p.vx*dt; p.y+=p.vy*dt; p.z+=p.vz*dt;
-            if(p.life<=0) p.dead = true;
-            if(p.dead) this.projectiles.splice(i,1);
-        }
+        /**
+         * ⚠️ ENVEJECÍA ANTES DE MOVERSE Y AHORA SE MUEVE ANTES DE ENVEJECER, Y DA
+         *    EL MISMO NÚMERO. Conviene decir por qué, que si no parece un riesgo.
+         *
+         * Las dos operaciones son independientes: la posición no depende de la
+         * vida ni al revés. Al acabar el paso la bala ha avanzado `v*dt` y ha
+         * perdido `dt` de vida, se haga en el orden que se haga. Lo que sí habría
+         * cambiado es mover DOS veces o comprobar la vida en medio, y no se hace
+         * ninguna de las dos.
+         */
+        this.balas.tick(dt);
+        this.balas.barrer();
 
         this.processCollisions();
     }
