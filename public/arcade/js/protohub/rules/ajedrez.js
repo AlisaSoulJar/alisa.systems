@@ -402,6 +402,40 @@ export const ajedrez = {
         return p;
     },
 
+
+    /**
+     * El tablero en el idioma comun: rejilla, piezas y leyenda.
+     *
+     * Los tipos son LA LETRA DEL FEN en minuscula y el dueno sale de la caja
+     * —mayuscula es el primero—, que es lo que `sustratoDe` deriva hoy leyendo
+     * el FEN. Se repite aqui a proposito: publicarlo nativo no es una ocasion
+     * para renombrar nada, es quitar de en medio al intermediario que adivina.
+     *
+     * `casillas` va de 0 = a8 a 63 = h1, el mismo orden en que se lee un FEN,
+     * asi que la fila es `i / 8` y la columna `i % 8` sin traducir nada.
+     *
+     * La rejilla va entera a cero: en el ajedrez el color de la casilla no es
+     * terreno, no cambia ninguna regla, y meterlo como celda distinta de cero
+     * lo pintaria de muro en el mapa de texto. Un modelo leeria muros donde
+     * hay tablero.
+     */
+    sustrato(p) {
+        const piezas = [];
+        for (let i = 0; i < 64; i++) {
+            const c = p.casillas[i];
+            if (!c) continue;
+            piezas.push({ x: i % 8, y: Math.floor(i / 8), t: c.toLowerCase(),
+                          de: c === c.toUpperCase() ? 0 : 1 });
+        }
+        return {
+            rejilla: { ancho: 8, alto: 8, celdas: new Array(64).fill(0) },
+            piezas,
+            zonas: [],
+            leyenda: { p: 'peón', n: 'caballo', b: 'alfil', r: 'torre',
+                       q: 'dama', k: 'rey' },
+        };
+    },
+
     estado(p, asiento = 0) {
         const movs = legales(p);
         const jaque = enJaque(p);

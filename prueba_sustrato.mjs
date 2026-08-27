@@ -49,7 +49,11 @@ globalThis.fetch = async (e, i) => {
  * TECHO_DERIVADOS a 17»— y nadie lo hacía, porque salía en verde y un aviso en verde
  * no lo lee nadie. Un trinquete que no se aprieta cuando avanza no aprieta.
  */
-const TECHO_DERIVADOS = 15;   // 23-08: guerra publica el suyo. Antes 16.
+// 27-08: ajedrez, go, xiangqi, snake, fagocito y peatón publican el suyo. Antes 15.
+// Los 9 que quedan son EXACTAMENTE los de cartas: blackjack, poker, las cuatro de
+// baza, gofish, unit y entropy. O sea que la deuda ya no está repartida — es una
+// familia entera, y se salda de una vez o no se salda.
+const TECHO_DERIVADOS = 9;    // 23-08: guerra publica el suyo. Antes 16.
 
 let fallos = 0;
 const mal = (m) => { fallos++; console.log(`  ✗ ${m}`); };
@@ -500,7 +504,10 @@ if (conMesa.length < SUELO_MESA_CARTAS) {
  * funcionan y nadie los ha comparado con la mesa compartida todavía. Ese es el
  * hueco, y está aquí escrito en vez de en la cabeza de alguien.
  */
-const SUELO_PAGINAS_MESA = 9;
+// 27-08: eran 11 y el suelo seguía en 9, así que dos páginas podían caerse sin que
+// nadie se enterara. Comprobado que el desfase NO lo trae este cambio: con los seis
+// sustratos nuevos quitados sale 11 igual. Un aviso en verde no lo lee nadie.
+const SUELO_PAGINAS_MESA = 11;
 const montanMesa = [];
 for (const juego of conMesa) {
     let html;

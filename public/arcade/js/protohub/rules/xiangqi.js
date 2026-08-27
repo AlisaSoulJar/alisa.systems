@@ -247,6 +247,51 @@ export const xiangqi = {
         return { grid: tableroInicial(), rojoJuega: true, historial: [], sinCapturas: 0 };
     },
 
+
+    /**
+     * El tablero: 9 columnas por 10 filas. Piezas con la letra del FEN, igual
+     * que el adaptador.
+     *
+     * ⚠️ Y AQUI SI HAY TERRENO, QUE ES LO QUE EL ADAPTADOR NO PUEDE SABER.
+     *
+     * `sustratoDe` lee un FEN, y un FEN dice donde estan las piezas y nada mas:
+     * su rejilla sale entera a cero. Pero este tablero NO es uniforme —el rio
+     * cambia lo que puede hacer un soldado y un elefante no lo cruza; el
+     * palacio encierra al general y al consejero— y esas dos reglas no se
+     * deducen de ninguna casilla ocupada.
+     *
+     * O sea que el mapa derivado dice «todo igual» de un tablero cuyas dos
+     * reglas mas propias son de sitio. Publicarlo nativo es lo que lo arregla,
+     * y es la unica razon honesta para escribir este metodo a mano.
+     */
+    sustrato(p) {
+        const alto = p.grid.length, ancho = p.grid[0].length;
+        const piezas = [];
+        for (let f = 0; f < alto; f++) {
+            for (let c = 0; c < ancho; c++) {
+                const x = p.grid[f][c];
+                if (!x) continue;
+                piezas.push({ x: c, y: f, t: String(x).toLowerCase(),
+                              de: x === String(x).toUpperCase() ? 0 : 1 });
+            }
+        }
+        const celdas = new Array(ancho * alto).fill(0);
+        for (let c = 0; c < ancho; c++) { celdas[4 * ancho + c] = 1; celdas[5 * ancho + c] = 1; }
+        for (const f of [0, 1, 2, 7, 8, 9]) {
+            for (const c of [3, 4, 5]) celdas[f * ancho + c] = 2;
+        }
+        return {
+            rejilla: { ancho, alto, celdas },
+            piezas,
+            zonas: [],
+            leyenda: { p: 'soldado', c: 'cañón', r: 'carro', n: 'caballo',
+                       b: 'elefante', a: 'consejero', k: 'general' },
+            terreno: { 0: '.', 1: '~', 2: '+' },
+            leyendaTerreno: { 0: 'libre', 1: 'el río: el elefante no lo cruza y el soldado cambia al pasarlo',
+                              2: 'el palacio: el general y el consejero no salen de aquí' },
+        };
+    },
+
     estado(p, asiento = 0) {
         const movs = legales(p.grid, p.rojoJuega);
         const jaque = enJaque(p.grid, p.rojoJuega);

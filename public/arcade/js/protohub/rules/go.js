@@ -204,6 +204,33 @@ export const go = {
         };
     },
 
+
+    /**
+     * El goban. `n` es negra y `b` blanca, igual que deriva hoy el adaptador
+     * leyendo la matriz: el 1 es negra y el dueno 0.
+     *
+     * La rejilla va a cero porque en el go no hay terreno — todas las
+     * intersecciones son iguales— y lo que cambia son las piedras. Decirlo con
+     * ceros es mas honesto que inventar un dibujo del suelo.
+     */
+    sustrato(p) {
+        const N = p.tablero.length;
+        const piezas = [];
+        for (let f = 0; f < N; f++) {
+            for (let c = 0; c < N; c++) {
+                const v = p.tablero[f][c];
+                if (!v) continue;
+                piezas.push({ x: c, y: f, t: v === 1 ? 'n' : 'b', de: v === 1 ? 0 : 1 });
+            }
+        }
+        return {
+            rejilla: { ancho: N, alto: N, celdas: new Array(N * N).fill(0) },
+            piezas,
+            zonas: [],
+            leyenda: { n: 'piedra negra', b: 'piedra blanca' },
+        };
+    },
+
     estado(p, asiento = 0) {
         const fin = p.pasesSeguidos >= 2;
         const area = puntuar(p.tablero);

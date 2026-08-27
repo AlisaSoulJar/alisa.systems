@@ -116,6 +116,38 @@ export const fagocito = {
         return p;
     },
 
+
+    /**
+     * El laberinto, la comida y los tres fantasmas.
+     *
+     * Misma division que en la mazmorra de cripta: lo que no cambia va en la
+     * rejilla —el muro es `1`— y lo que cambia va como pieza. Los fantasmas
+     * salen con SU tipo de pieza (`cazador`, `flanco`, `errante`) y no como
+     * tres bichos iguales, porque lo que hace cada uno es la partida entera.
+     */
+    sustrato(p) {
+        const alto = p.muro.length, ancho = p.muro[0].length;
+        const celdas = new Array(ancho * alto).fill(0);
+        for (let f = 0; f < alto; f++) {
+            for (let c = 0; c < ancho; c++) if (p.muro[f][c]) celdas[f * ancho + c] = 1;
+        }
+        const piezas = [
+            ...(p.pellets ?? []).map(g => ({ x: g.x, y: g.y, t: 'bolita', de: null })),
+            ...(p.ghosts ?? []).map(b => ({ x: b.x, y: b.y, t: b.type ?? 'fantasma', de: 1 })),
+        ];
+        if (p.pos) piezas.push({ x: p.pos.x, y: p.pos.y, t: 'jugador', de: 0 });
+        return {
+            rejilla: { ancho, alto, celdas },
+            piezas,
+            zonas: [],
+            leyenda: { 1: 'muro, no se puede cruzar', bolita: 'comida por recoger',
+                       jugador: 'tu ficha',
+                       cazador: 'fantasma que viene directo a por ti',
+                       flanco: 'fantasma que corta por donde vas a estar',
+                       errante: 'fantasma que se mueve al azar' },
+        };
+    },
+
     estado(p) {
         const muros = [];
         for (let y = 0; y < N; y++)

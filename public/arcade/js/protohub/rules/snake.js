@@ -83,6 +83,36 @@ export const snake = {
         return p;
     },
 
+
+    /**
+     * ⚠️ EL TABLERO MIDE `N`, Y EL DERIVADO SE LO INVENTABA.
+     *
+     * `estado(p)` publica la serpiente y la comida y NO publica el tamano, asi
+     * que `sustratoDe` cae en su rama de ultimo recurso: encajar una rejilla
+     * alrededor de las cosas que ve. Al empezar eso da 11x11 en un tablero de
+     * 20x20 — y con la cabeza en (10,10), o sea que el mapa dice que estas
+     * pegado a la esquina cuando te queda medio tablero.
+     *
+     * Y crece segun juegas, asi que la pared se mueve. Un agente que lea ese
+     * mapa gira para no chocar con un muro que no existe.
+     *
+     * No da error y se ve bien. Aqui el tamano se dice, que es lo unico que
+     * hacia falta.
+     */
+    sustrato(p) {
+        const piezas = p.snake.map((s, i) => ({
+            x: s.x, y: s.y, t: i === 0 ? 'cabeza' : 'cuerpo', de: 0,
+        }));
+        if (p.food) piezas.push({ x: p.food.x, y: p.food.y, t: 'comida', de: null });
+        return {
+            rejilla: { ancho: N, alto: N, celdas: new Array(N * N).fill(0) },
+            piezas,
+            zonas: [],
+            leyenda: { cabeza: 'tu cabeza', cuerpo: 'tu cuerpo, no lo choques',
+                       comida: 'cómetela para crecer' },
+        };
+    },
+
     estado(p) {
         return {
             snake: p.snake.map(s => ({ ...s })),

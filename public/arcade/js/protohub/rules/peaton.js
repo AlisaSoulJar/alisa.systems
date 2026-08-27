@@ -92,6 +92,53 @@ export const peaton = {
         };
     },
 
+
+    /**
+     * Los carriles, los coches y tu.
+     *
+     * ⚠️ EL CARRIL VACIO TAMBIEN DICE ALGO, Y EL DERIVADO LO CALLABA.
+     *
+     * `sustratoDe` saca los coches de `hazards` y deja la rejilla a cero, asi
+     * que un carril sin coches a la vista sale igual que la acera. Y no es
+     * igual: por ese carril viene trafico, y en un sentido concreto. La
+     * decision del juego es CUANDO cruzar, o sea que saber por donde va a venir
+     * el coche que todavia no esta es justo la mitad del problema.
+     *
+     * El sentido de cada carril no se deduce de los coches que hay ahora
+     * —puede no haber ninguno—, sale de `p.carriles`, y por eso esto solo se
+     * puede publicar desde dentro.
+     */
+    sustrato(p) {
+        const celdas = new Array(W * H).fill(0);
+        for (let y = 0; y < H; y++) {
+            const carril = p.carriles[y];
+            if (!carril) continue;
+            const v = carril.dir > 0 ? 1 : 2;
+            for (let x = 0; x < W; x++) celdas[y * W + x] = v;
+        }
+        const piezas = [];
+        for (let y = 0; y < H; y++) {
+            const carril = p.carriles[y];
+            if (!carril) continue;
+            for (const x of cochesEn(carril, p.t)) {
+                piezas.push({ x, y, t: carril.dir > 0 ? 'coche_der' : 'coche_izq', de: 1 });
+            }
+        }
+        if (p.pos) piezas.push({ x: p.pos.x, y: p.pos.y, t: 'jugador', de: 0 });
+        return {
+            rejilla: { ancho: W, alto: H, celdas },
+            piezas,
+            zonas: [],
+            leyenda: { jugador: 'tu ficha, cruza de abajo arriba',
+                       coche_der: 'coche que avanza hacia la derecha',
+                       coche_izq: 'coche que avanza hacia la izquierda' },
+            terreno: { 0: '.', 1: '>', 2: '<' },
+            leyendaTerreno: { 0: 'acera: aquí no atropellan',
+                              1: 'carril con tráfico hacia la derecha',
+                              2: 'carril con tráfico hacia la izquierda' },
+        };
+    },
+
     estado(p) {
         const hazards = p.carriles.map(c =>
             cochesEn(c, p.t).map(x => ({ x, dir: c ? c.dir : 0 })));
