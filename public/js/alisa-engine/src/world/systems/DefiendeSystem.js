@@ -3,6 +3,7 @@ import { SpawnWaveSystem } from './SpawnWaveSystem.js';
 import { mulberry32 } from '../core/DeterministicScope.js';
 import { DefiendeMapaFactory, CELDA } from '../factories/DefiendeMapaFactory.js';
 import { Pathfinding } from './PathfindingSystem.js';
+import { CarverSystem } from './CarverSystem.js';
 
 /**
  * ¡DEFIENDE! — TOWER DEFENSE SOBRE MATRIZ PLANA, EN ECS
@@ -370,6 +371,8 @@ export class DefiendeSystem {
         this.torretas = cartucho.torretas;
         /** Y los bichos, por el mismo motivo: el laberinto los quiere más duros. */
         this.atacantes = opts.atacantes ?? cartucho.atacantes;
+        /** Se puede pisar el trazado desde fuera, para poder MEDIR dos tableros. */
+        this.trazado = opts.trazado ?? null;
         this.olas = new SpawnWaveSystem(DefiendeSystem.params('SpawnWaveSystem', cartucho));
         const a = { ...cartucho.mundo, ...opts };
         this.lado = a.lado;                       // matriz lado × lado
@@ -428,8 +431,13 @@ export class DefiendeSystem {
          * El trazado lo dice el cartucho: `trazar` dibuja una carretera y
          * `abierto` deja el suelo vacío para que la dibujes tú con las torretas.
          */
-        const comoTrazar = DefiendeSystem.params('DefiendeMapaFactory', this.cartucho).trazado ?? 'trazar';
-        const mapa = this.fabrica[comoTrazar](this.lado, rnd);
+        const comoTrazar = this.trazado
+            ?? DefiendeSystem.params('DefiendeMapaFactory', this.cartucho).trazado ?? 'trazar';
+        /**
+         * `ciudad` necesita el tallador. Se le pasa en vez de que la factoría lo
+         * importe, para que un mapa no arrastre medio motor al cargarse.
+         */
+        const mapa = this.fabrica[comoTrazar](this.lado, rnd, CarverSystem);
         this.rejilla = mapa.rejilla;
         this.camino = mapa.camino;
         this.entrada = mapa.entrada;

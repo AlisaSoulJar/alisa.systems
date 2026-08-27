@@ -133,4 +133,96 @@ export class DefiendeMapaFactory {
 
         return { rejilla: g, camino: [], entrada, nucleo };
     }
+
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  EL TABLERO TALLADO — la ciudad de `CarverSystem`, usada de mapa
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * ⚠️ ESTO NO ES UN GENERADOR NUEVO: ES UNO QUE LLEVABA AÑOS AHÍ.
+     *
+     * `CarverSystem` reparte una ciudad sobre una rejilla con avenidas, calles,
+     * plazas y barrios, sembrada y headless. Y su salida es, literalmente,
+     * `1 = bloque construible · 0 = calle` — o sea **el tablero de un tower
+     * defense**, escrito para otra cosa y esperando desde entonces.
+     *
+     * ⚠️ Y POR QUÉ IMPORTA PARA EL LABERINTO, QUE ES LO QUE SE MIDE.
+     *
+     * El tablero abierto está vacío, y medido resultó que sobre un tablero vacío
+     * alfombrar de torretas baratas junto a la línea recta gana siempre: doblar
+     * la carretera cuesta paredes que compras tú, y no hay nada que aproveches.
+     *
+     * Una ciudad tallada trae los muros puestos. La hipótesis era que la ruta
+     * naciera doblada y que cada pared comprada sumara sobre lo que el mapa ya
+     * te dio.
+     *
+     * ═══════════════════════════════════════════════════════════════════════
+     *  ⚠️ Y LA HIPÓTESIS ERA FALSA. MEDIDA, PARA QUE NADIE LA REPITA.
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     *     lado  libres  conectados   camino  distancia recta
+     *       12    38%       5 de 10      14        14
+     *       16    35%       0 de 10       —         —
+     *       24    42%       6 de 10      42        42
+     *       32    41%       0 de 10       —         —
+     *
+     * **El camino de la ciudad mide EXACTAMENTE la distancia recta.** Y tiene
+     * sentido en cuanto se ve: las calles de `CarverSystem` son avenidas rectas
+     * que se cruzan, o sea una cuadrícula — y en una cuadrícula el camino más
+     * corto entre dos puntos ya es el mínimo posible. Un tablero de manzanas no
+     * dobla nada: sólo quita sitio donde construir.
+     *
+     * Y encima conecta la mitad de las veces. `CarverSystem` se escribió para una
+     * ciudad grande, y a estos tamaños sus avenidas no llegan a tocarse: la
+     * entrada y el núcleo caen en bolsas de calle separadas.
+     *
+     * Así que ningún cartucho usa esto hoy. Se conserva porque es el único puente
+     * entre el tallador y esta familia de juegos y alguien va a querer un tablero
+     * de ciudad — pero que lo lea antes de contar con que doble la ruta.
+     *
+     * Las manzanas de la ciudad pasan a `CELDA.TORRETA`: son bloques que ni se
+     * andan ni se construyen, que es exactamente lo que un edificio es aquí.
+     */
+    ciudad(lado, rnd, CarverSystem) {
+        const L = lado;
+        /**
+         * La ciudad se siembra con una tirada del azar del núcleo, no con el
+         * suyo: quien reparte el mundo es quien lleva la semilla de la partida.
+         */
+        const ciudad = new CarverSystem(L, L);
+        ciudad.generate(Math.floor(rnd() * 2 ** 31));
+
+        const g = Array.from({ length: L }, (_, z) =>
+            Array.from({ length: L }, (_, x) => (ciudad.grid[z][x] ? CELDA.TORRETA : CELDA.LIBRE)));
+
+        /**
+         * La entrada y el núcleo van en calle, no dentro de una manzana. Se
+         * busca la celda libre más cercana a cada esquina; si no hubiera
+         * ninguna —una ciudad maciza— se abre a la fuerza, que es mejor que
+         * devolver un mapa injugable.
+         */
+        const masCercaDe = (ex, ez) => {
+            let mejor = null, mejorD = Infinity;
+            for (let z = 0; z < L; z++) {
+                for (let x = 0; x < L; x++) {
+                    if (g[z][x] !== CELDA.LIBRE) continue;
+                    const d = Math.abs(x - ex) + Math.abs(z - ez);
+                    if (d < mejorD) { mejorD = d; mejor = { x, z }; }
+                }
+            }
+            if (!mejor) { g[ez][ex] = CELDA.LIBRE; mejor = { x: ex, z: ez }; }
+            return mejor;
+        };
+
+        const esquina = Math.floor(rnd() * 4);
+        const eA = esquina === 0 ? { x: 0, z: 0 } : esquina === 1 ? { x: L - 1, z: 0 }
+            : esquina === 2 ? { x: 0, z: L - 1 } : { x: L - 1, z: L - 1 };
+        const entrada = masCercaDe(eA.x, eA.z);
+        const nucleo = masCercaDe(L - 1 - eA.x, L - 1 - eA.z);
+
+        g[entrada.z][entrada.x] = CELDA.ENTRADA;
+        g[nucleo.z][nucleo.x] = CELDA.NUCLEO;
+
+        return { rejilla: g, camino: [], entrada, nucleo };
+    }
 }
