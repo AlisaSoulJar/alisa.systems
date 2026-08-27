@@ -137,6 +137,22 @@ export const MURO = {
     id: 'muro', nombre: '🧱 Muro', coste: 5, alcance: 0, dmg: 0, cadencia: 999,
 };
 
+/**
+ * ⚠️ EL MORTERO: LA PIEZA QUE HACE QUE DOBLAR LA CARRETERA VALGA LA PENA.
+ *
+ * Golpea a TODO lo que tenga dentro del radio, no a uno. Y ésa es exactamente
+ * la diferencia que el laberinto necesitaba: con una torreta normal el daño por
+ * segundo está topado —una bala, un blanco— así que plegar el recorrido no le da
+ * más disparos. Con área, tres carriles dentro del radio son tres veces el daño.
+ *
+ * Caro y lento a propósito: si fuera barato, alfombrar el mapa de morteros sería
+ * la respuesta a todo y volveríamos a no medir nada.
+ */
+export const MORTERO = {
+    id: 'mortero', nombre: '💥 Mortero', coste: 60, alcance: 2.6, dmg: 6,
+    cadencia: 1.6, area: true,
+};
+
 export const ORDEN_SISTEMAS = ['oleadas', 'ruta', 'torretas', 'balas', 'bajas'];
 
 export class DefiendeSystem {
@@ -237,10 +253,34 @@ export class DefiendeSystem {
          * cubrir el doble de carretera, y el tiempo extra bajo fuego no lo
          * compensa porque la cadencia no cambia.
          *
-         * Para que este cartucho mida algo hay que recalibrar SUS tablas —menos
-         * alcance, más vida en los bichos, otro precio— y eso es un barrido
-         * entero, no un número. Hasta entonces no se registra en el gimnasio ni
-         * en las sagas: publicar un juego cuyo mecanismo central no paga sería
+         * ⚠️ Y AL FINAL EL CULPABLE NO ERA EL LABERINTO: ES LA TABLA DE TORRETAS.
+         *
+         * Cuatro hipótesis descartadas —vida de los bichos, presupuesto, renta,
+         * fase de obra— y la quinta era una división que tenía que haber hecho el
+         * primer día. Daño por segundo dividido por lo que cuesta:
+         *
+         *     🪨 guijarro   6,67 dps / 20  =  0,333   ← el triple que nadie
+         *     🔨 yunque    10,00 dps / 70  =  0,143
+         *     🎣 pértiga    4,55 dps / 45  =  0,101
+         *     💥 mortero    3,75 dps / 60  =  0,063 por blanco
+         *
+         * **El guijarro domina.** Alfombrar de guijarros gana el 100% de las
+         * partidas en cualquier configuración, y cada muro que pones es oro que
+         * no se convierte en la torreta dominante. Ningún laberinto puede
+         * competir con eso, y tampoco puede el mortero: necesitaría CINCO blancos
+         * dentro del radio sólo para empatar.
+         *
+         * Y eso NO es un problema del laberinto: es que `TORRETAS` tiene una
+         * opción dominante desde siempre. En el sendero se nota menos porque allí
+         * la colocación pesa más que la eficiencia, pero está.
+         *
+         * Arreglarlo obliga a tocar la tabla que comparten los dos cartuchos, y
+         * eso mueve la huella sellada del sendero —`77bef3c2`— y retira sus notas.
+         * Eso es una decisión de quien diseña el banco, no de quien escribe el
+         * código, así que aquí se deja medido y no se toca.
+         *
+         * Hasta entonces este cartucho no se registra en el gimnasio ni en las
+         * sagas: publicar un juego cuyo mecanismo central no paga sería
          * exactamente el «entorno que no mide a nadie» que `prueba_senal` existe
          * para cazar, sólo que colado por la puerta de delante.
          */
@@ -248,7 +288,7 @@ export class DefiendeSystem {
             id: 'alisa/DefiendeLaberinto-v0',
             familia: 'tiempo_real',
             modo: 'laberinto',
-            verbos: ['esperar', ...[MURO, ...TORRETAS].map((t) => `construir_${t.id}`)],
+            verbos: ['esperar', ...[MURO, ...TORRETAS, MORTERO].map((t) => `construir_${t.id}`)],
             /**
              * ⚠️ MÁS PRESUPUESTO Y MENOS VIDAS QUE EL SENDERO, Y ESTÁ MEDIDO.
              *
@@ -273,7 +313,21 @@ export class DefiendeSystem {
              * Invertir en carretera ahora para poder comprar armas luego ES el
              * juego; sin renta, invertir es suicidarse.
              */
-            mundo: { lado: 12, vidas: 6, presupuesto: 90, renta: 4.0, tope: 7200 },
+            /**
+             * ⚠️ EL TOPE TIENE QUE CABER LA OBRA **MÁS** LAS OLEADAS.
+             *
+             * Con 20 s de obra y 110 s de oleadas, el reloj de 7.200 pasos —120 s—
+             * se paraba en la cuarta oleada **con las seis vidas intactas**, y las
+             * dos estrategias salían perdiendo. Estuve un rato buscando eso en el
+             * balance, y no era balance: era una cuenta.
+             *
+             * 9.000 pasos son 150 s: 20 de obra, 110 de oleadas y 20 de margen
+             * para rematar lo que quede vivo.
+             */
+            mundo: {
+                lado: 12, vidas: 6, presupuesto: 90, renta: 4.0,
+                pausaInicial: 20, tope: 9000,
+            },
             sistemas: [
                 ['SpawnWaveSystem', { oleadas: OLEADAS }],
                 ['DefiendeMapaFactory', { trazado: 'abierto' }],
@@ -285,7 +339,7 @@ export class DefiendeSystem {
             ],
             orden: ORDEN_SISTEMAS,
             /** El muro primero: es lo que más se pone y lo que más barato sale. */
-            torretas: [MURO, ...TORRETAS],
+            torretas: [MURO, ...TORRETAS, MORTERO],
             atacantes: TIPOS,
         },
     };
@@ -314,6 +368,8 @@ export class DefiendeSystem {
          * entorno, así que compartirla habría cambiado la puerta del sendero.
          */
         this.torretas = cartucho.torretas;
+        /** Y los bichos, por el mismo motivo: el laberinto los quiere más duros. */
+        this.atacantes = opts.atacantes ?? cartucho.atacantes;
         this.olas = new SpawnWaveSystem(DefiendeSystem.params('SpawnWaveSystem', cartucho));
         const a = { ...cartucho.mundo, ...opts };
         this.lado = a.lado;                       // matriz lado × lado
@@ -323,6 +379,8 @@ export class DefiendeSystem {
         this.presupuestoInicial = a.presupuesto;
         /** Oro por segundo. Cero en el sendero, que sólo cobra matando. */
         this.renta = a.renta ?? 0;
+        /** Segundos de obra antes de la primera oleada. Cero en el sendero. */
+        this.pausaInicial = a.pausaInicial ?? 0;
         this.tope = a.tope;                       // 120 s a 60 Hz
 
         /**
@@ -559,6 +617,24 @@ export class DefiendeSystem {
      * victoria y el HUD; la verdad está en el sistema.
      */
     _sisOleadas(w, dt) {
+        /**
+         * ⚠️ LA FASE DE OBRA, Y SIN ELLA EL LABERINTO NO PODÍA GANAR NUNCA.
+         *
+         * Medido: doblar la carretera cuesta 275 de oro EN MUROS, que no
+         * disparan. El que dobla llega a la primera oleada sin una sola arma y
+         * pierde vidas mientras construye; el que pone armas junto al camino
+         * recto las tiene desde el segundo uno. O sea que no era un problema de
+         * valor —doblar da más del doble de tiempo bajo fuego por torreta— sino
+         * de TEMPO: paga a la larga y te mata a la corta.
+         *
+         * El género entero resuelve esto igual: Legion TD es por turnos y
+         * construyes antes de que venga la ronda; Plants vs Zombies te regala una
+         * primera oleada lenta. Aquí son unos segundos de obra.
+         *
+         * En el sendero vale 0 y esta línea no hace nada — por eso `77bef3c2`
+         * sigue quieta.
+         */
+        if (this.t < this.pausaInicial) return;
         const eventos = this.olas.tick(dt, () => this.rng(), (tipo, ola) => this._soltarAtacante(tipo, ola));
         this.oleada = this.olas.oleada;
         this.tOleada = this.olas.tOleada;
@@ -567,7 +643,7 @@ export class DefiendeSystem {
     }
 
     _soltarAtacante(tipo, ola) {
-        const t = TIPOS[tipo];
+        const t = this.atacantes[tipo];
         const e = this.mundo.createEntity();
         this.mundo.addComponent(e, 'Celda', { x: this.entrada.x, z: this.entrada.z });
         this.mundo.addComponent(e, 'Ruta', { paso: 0, avance: 0 });
@@ -636,6 +712,35 @@ export class DefiendeSystem {
                 const paso = w.getComponent(a, 'Ruta').paso;
                 if (paso > mejorPaso) { mejorPaso = paso; objetivo = a; }
             }
+            /**
+             * ⚠️ LAS DE ÁREA GOLPEAN A TODOS Y NO GASTAN BALA. Y ES LO QUE HACE
+             *    QUE UN LABERINTO SIRVA PARA ALGO.
+             *
+             * Medido, y me costó cuatro hipótesis descartadas: una torreta normal
+             * dispara UNA bala a UN objetivo por recarga, así que su daño por
+             * segundo está topado. Junto a un camino recto ya tiene blanco el
+             * 100% del tiempo — doblar la carretera no le da más disparos, sólo
+             * reparte los mismos sobre el doble de recorrido. Por eso doblar
+             * perdía siempre, y no era el balance: era la aritmética.
+             *
+             * Con daño de área, tres carriles dentro del radio son tres veces el
+             * daño. Ahí sí paga plegar. Es la razón de que los tower defense de
+             * laberinto estén llenos de torres de salpicadura, y no un adorno.
+             */
+            if (t.area) {
+                let tocados = 0;
+                for (const a of atacantes) {
+                    const ca = w.getComponent(a, 'Celda');
+                    if (Math.hypot(ca.x - c.x, ca.z - c.z) > t.alcance) continue;
+                    const at = w.getComponent(a, 'Atacante');
+                    if (at) { at.hp -= t.dmg; tocados++; }
+                }
+                if (!tocados) continue;
+                t.timer = t.cadencia;
+                this.eventos.push({ tipo: 'AREA', x: c.x, z: c.z, tocados });
+                continue;
+            }
+
             if (objetivo === null) continue;
 
             t.timer = t.cadencia;
