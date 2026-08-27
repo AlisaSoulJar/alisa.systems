@@ -37,9 +37,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '20' }
+        with: { node-version: '20', cache: 'npm' }
       - uses: actions/setup-python@v5
         with: { python-version: '3.11' }
+
+      # ⚠️ ESTE PASO NO ESTABA, Y TENÍA EL SITIO CONGELADO DESDE EL 15 DE AGOSTO.
+      #
+      # `setup-node` instala node; NO instala las dependencias. Sin `node_modules`,
+      # `npm test` recorre bien los seis primeros ficheros —sólo usan builtins— y
+      # revienta en el séptimo, `prueba_vistas.mjs`, que es el primero que importa
+      # `playwright-core`. Trece segundos exactos, medido en el propio CI.
+      #
+      # Y de ahí para abajo se cae todo en cascada, en silencio: el trabajo de
+      # despliegue tiene `needs: pruebas`, así que se SALTA — no falla, se salta— y
+      # alisa.systems se queda sirviendo lo de antes mientras el repositorio avanza.
+      # CINCUENTA ejecuciones seguidas en rojo en `main`, casi dos semanas.
+      #
+      # Lo tapaba una coincidencia: en local hay `node_modules` desde siempre, así
+      # que la MISMA orden pasa aquí y muere allí. Es literalmente el fallo que este
+      # mismo fichero ya cuenta veinte líneas más abajo —«el mismo comando, dos
+      # entornos distintos, y el que falla es el que nadie mira»— repetido un piso
+      # más arriba.
+      #
+      # `npm ci` y no `npm install`: instala EXACTAMENTE lo del `package-lock.json`.
+      # Un CI que resuelve versiones por su cuenta puede aprobar con dependencias que
+      # nadie ha probado, que es otra forma de medir algo distinto de lo que se cree.
+      - name: instalar dependencias
+        run: npm ci
 
       # `preflight.py` mide EL PAQUETE, no el taller. Sin construirlo antes,
       # estaría midiendo otra cosa y diciendo que todo va bien.
