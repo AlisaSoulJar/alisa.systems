@@ -205,7 +205,29 @@ export const DIBUJADO = new Set([
     // ⚠️ Y lo que el CANADIENSE repetía: su panel salía con la mano, el descarte y
     // una matriz de -1 que es, literalmente, el tablero escrito en números. Lo vi
     // abriendo la captura — quince filas de las que cinco eran el dibujo otra vez.
-    'posiciones', 'mis_fichas', 'fichas', 'manos_rivales', 'descarte', 'descartes',
+    'posiciones', 'mis_fichas', 'fichas', 'manos_rivales', 'descarte',
+    /**
+     * ⚠️ `descartes` SALIÓ DE ESTA LISTA, Y NO ES UN DETALLE DE PANEL.
+     *
+     * Esta lista esconde lo que LA MESA YA DIBUJA, para que el panel no repita el
+     * dibujo. `descartes` entró aquí de arrastre junto a `descarte` cuando se
+     * limpió el panel del canadiense — y el canadiense no lo publica. Sólo lo
+     * publican el remigio y el chinchón, y en ésos la mesa dibuja la carta de
+     * encima y un montón de espaldas: el CONTENIDO del montón no se dibuja.
+     *
+     * Resultado medido: el estado publicaba las 24 cartas del descarte en orden y
+     * la persona no las veía por ninguna parte. `prueba_lenguaje` ya tenía escrito
+     * —y defendido— que ese montón es público «porque cada una la puso alguien
+     * boca arriba sobre la mesa». Público, sí; visible, no. El agente tenía
+     * memoria perfecta del descarte y la persona tenía que acordarse.
+     *
+     * En un juego cuya gracia medida es justo la memoria, eso no es un detalle:
+     * es que las dos filas de la tabla no jugaban a lo mismo.
+     *
+     * Dibujarlas todas era la otra salida, y está medida y descartada: el montón
+     * llega a 24 cartas, y veinticuatro naipes desplegados sobre el tapete es
+     * peor mesa para todos.
+     */
     'cadena', 'puntas', 'guardados', 'hojas', 'mi_hoja', 'caja',
 ]);
 

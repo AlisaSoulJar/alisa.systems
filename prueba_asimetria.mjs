@@ -94,7 +94,20 @@ const EN_LA_MESA = {
     mi_hoja:   'la hoja de la generala se dibuja entera',
     hojas:     'ídem, la de cada uno',
     descarte:  'el montón de descarte está en la mesa, boca arriba',
-    descartes: 'ídem',
+    /**
+     * ⚠️ AQUÍ HABÍA UNA EXCUSA CASI CIERTA, Y UNA CASI CIERTA ES LA PEOR.
+     *
+     * Decía `descartes: 'ídem'` — o sea, «el montón está en la mesa boca arriba».
+     * El MONTÓN sí; su CONTENIDO no: la mesa dibuja la carta de encima y unas
+     * espaldas. Y el estado publicaba las hasta 24 cartas del descarte en orden,
+     * así que el agente tenía memoria perfecta del montón y la persona tenía que
+     * acordarse — en el remigio y el chinchón, cuya gracia medida es justo ésa.
+     *
+     * Esta prueba existe para cazar exactamente eso, y estaba desarmada por una
+     * línea suya. Se quita la excusa; el arreglo está en `protohub/panel.js`, que
+     * ya no esconde el campo.
+     */
+
     descarte_restante: 'el montón se ve, y su altura es su tamaño',
     pozo_restante: 'el pozo es un montón dibujado, y crece y mengua',
     mazo_restante: 'ídem con el mazo',
@@ -106,6 +119,14 @@ const EN_LA_MESA = {
     manos_rivales: 'se ven las cartas tapadas de cada rival, y cuántas son',
     guardados: 'los dados guardados están apartados en la mesa',
     caja:      'la caja propia sale en la fila de puntos',
+    /**
+     * La carta que acabas de robar SÍ está sobre la mesa, y esta vez comprobado
+     * antes de escribirlo, no supuesto: `entropy.html` monta `mesa_cartas.mjs`
+     * —no el `entropy_visualizer.js`, que no lo carga nadie— y esa mesa dibuja
+     * TODAS las zonas del sustrato, `robada` incluida. Es la zona que se añadió
+     * precisamente porque «robabas y no se dibujaba en ninguna parte».
+     */
+    robada:    'la carta recién robada está sobre el tapete, delante de ti',
 
     // ── Los visualizadores propios (blackjack, póker, entropy…) usan nombres en
     //    inglés para las mismas cosas. Las cartas están repartidas en la mesa.

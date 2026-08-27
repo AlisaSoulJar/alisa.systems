@@ -1,4 +1,23 @@
 // entropy_visualizer.js — ALISA Sovereign Arena
+
+/**
+ * ⚠️ ESTE FICHERO NO LO CARGA NADIE. NO ES LA MESA DE ENTROPY.
+ *
+ * `entropy.html` monta `mesa_cartas.mjs` —lo dice su propia cabecera: «montarMesa
+ * exige un visualizador y entropy no tenía»— y este fichero se quedó de la época
+ * anterior. Medido el 27-08: CERO referencias fuera de sí mismo, contra las tres
+ * que tienen el de blackjack y el de póker.
+ *
+ * Se conserva porque aquí no se tira nada: tiene una mesa ovalada y un reparto de
+ * huecos que puede servir. Pero se dice en voz alta, porque **yo misma lo arreglé
+ * creyendo que estaba vivo**: al cazar que `drawZone` leía `faceDown` y todos los
+ * visualizadores pasaban `hidden`, conté el mazo de aquí como una de las tres
+ * cartas que se dibujaban boca arriba, «en un juego cuya gracia es la memoria».
+ * No era cierto para la mesa que se juega. Las dos que sí estaban vivas eran la
+ * tapada del crupier y la mano del rival del póker.
+ *
+ * Antes de tocar un visualizador, mirar quién lo carga.
+ */
 const engine = new SovereignCardEngine({
     gameId: 'entropy',
     onInit3D: function(scene, camera, renderer) {

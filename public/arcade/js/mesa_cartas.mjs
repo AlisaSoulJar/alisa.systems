@@ -1808,7 +1808,12 @@ const engine = new SovereignCardEngine({
            * el triunfo, las ligadas— para no decir dos veces lo mismo.
            */
           + filasDeEstado(data, {
-                fuera: [...zonas.map(z => z.id), 'mano', 'mi_mano', 'descarte', 'descartes',
+                // ⚠️ `descartes` YA NO SE ESCONDE. Esta lista es «lo que la mesa ya
+                // dibuja», y el CONTENIDO del montón de descarte no se dibuja: se
+                // dibuja la de encima y unas espaldas. Escondiéndolo, el estado
+                // publicaba las 24 cartas en orden para el agente y la persona no
+                // las veía en ninguna parte. Ver la nota larga en `protohub/panel.js`.
+                fuera: [...zonas.map(z => z.id), 'mano', 'mi_mano', 'descarte',
                         'mazo', 'baza', 'cartas', 'comunes', 'jugador', 'crupier',
                         'manos_rivales', 'mazo_restante', 'descarte_restante'],
             }).map(f => fila(f.nombre, f.valor)).join('')
