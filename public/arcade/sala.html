@@ -99,7 +99,7 @@ escena.background = new THREE.Color(0xe6ebf0);
  * (60), que es todo lo que la niebla tiene que hacer aquí. Mismo color, mismo
  * resultado a la vista, elegida para ESTA cámara.
  */
-escena.fog = new THREE.Fog(0xe6ebf0, 12, 50);
+
 
 const camara = new THREE.PerspectiveCamera(
     50,
@@ -118,60 +118,7 @@ render.setSize(innerWidth, innerHeight);
 render.setPixelRatio(Math.min(devicePixelRatio, 2));
 render.shadowMap.enabled = true;
 render.shadowMap.type = THREE.PCFSoftShadowMap;
-/**
- * ⚠️ EL MAPEO DE TONO NO ES UN ADORNO: SIN ÉL LA LUZ DE ABAJO QUEMA LA SALA.
- *
- * El hemisférico de la Sala del Huevo va a 3,1, que es una barbaridad hasta que
- * se ve con qué lo mira: `ACESFilmic` con exposición 1,02. Copiar la luz sin
- * copiar el revelado deja las cartas blancas contra un suelo blanco, las dos a
- * tope, y ahí ya no hay contraste que medir. Van juntos o no va ninguno.
- */
-render.toneMapping = THREE.ACESFilmicToneMapping;
-render.toneMappingExposure = 1.02;
 
-/**
- * ⚠️ EL ENTORNO QUE SE REFLEJA, Y ES LO QUE HACE QUE LA MESA SIGA SIENDO UNA MESA.
- *
- * Esto no estaba, y en la sala oscura no hacía falta: una tapa `#ffffff` sobre un
- * suelo `#2b211c` se recorta sola. Al pasar el suelo a blanco —que es lo que hay
- * allí— la mesa DESAPARECIÓ: tapa blanca sobre suelo blanco, misma luz plana en
- * las dos, y lo que quedaba en pantalla era un tapete flotando en la nada. Lo vi
- * ampliando el borde izquierdo: campo blanco uniforme donde tenía que haber un
- * canto de once centímetros.
- *
- * Y el comentario del encuadre, de hace semanas, ya lo decía sin saberlo: «lo que
- * convierte una superficie en un mueble es verle el canto». El encuadre se lo
- * enseñaba; el color se lo borró.
- *
- * La Sala del Huevo no tiene este problema y no es por suerte: monta un `environment`
- * PMREM a partir de un degradado vertical de blanco a `#c3ced9`. Con él, una cara
- * horizontal refleja el techo del degradado y una cara vertical —el canto— refleja
- * la parte baja, más oscura. El canto se dibuja solo, sin una sola luz más.
- *
- * Los cuatro topes son los suyos, copiados; el API no, porque aquí three es r128 y
- * allí es posterior (`encoding` contra `colorSpace`). Copiar la línea en vez del
- * degradado habría dado una textura en el espacio de color equivocado.
- */
-{
-    const c = document.createElement('canvas');
-    c.width = 16; c.height = 256;
-    const g = c.getContext('2d');
-    const grad = g.createLinearGradient(0, 0, 0, 256);
-    grad.addColorStop(0.00, '#ffffff');
-    grad.addColorStop(0.45, '#eef3f8');
-    grad.addColorStop(0.55, '#dde5ee');
-    grad.addColorStop(1.00, '#c3ced9');
-    g.fillStyle = grad; g.fillRect(0, 0, 16, 256);
-
-    const tex = new THREE.CanvasTexture(c);
-    tex.mapping = THREE.EquirectangularReflectionMapping;
-    tex.encoding = THREE.sRGBEncoding;
-
-    const pmrem = new THREE.PMREMGenerator(render);
-    pmrem.compileEquirectangularShader();
-    escena.environment = pmrem.fromEquirectangular(tex).texture;
-    tex.dispose(); pmrem.dispose();
-}
 document.getElementById('canvas-container').appendChild(render.domElement);
 
 const controles = new THREE.OrbitControls(camara, render.domElement);
@@ -216,17 +163,26 @@ controles.update();
  *     el suelo llegue menos lejos no puede cambiar el tamaño de la baldosa: eso
  *     sí se nota al pasar de una sala a otra.
  */
-const suelo = new THREE.Mesh(new THREE.CircleGeometry(55, 96),
-    new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.82, metalness: 0.02 }));
-suelo.rotation.x = -Math.PI / 2;
-suelo.position.y = -0.02;   // igual que allí: deja sitio a la rejilla sin pelearse por el mismo píxel
-suelo.receiveShadow = true;
-escena.add(suelo);
-
-const rejilla = new THREE.GridHelper(110, 55, 0x9fb0c0, 0xd4dee6);
-rejilla.material.transparent = true;
-rejilla.material.opacity = 0.5;
-escena.add(rejilla);
+/**
+ * ⚠️ AQUÍ HABÍA UNA SEGUNDA HABITACIÓN, ESCRITA A MANO Y CASI IGUAL QUE LA OTRA.
+ *
+ * Suelo, rejilla, niebla, luz, revelado y entorno reflejado: seis cosas que
+ * `protohub/habitacion.js` ya montaba para las páginas sueltas de cartas. Dos
+ * copias de la misma sala, y ya se habían separado una vez — la baldosa de allí
+ * medía 1,60 m y la de aquí 2,00.
+ *
+ * Ahora las dos piden el MISMO manifiesto, con distintos números. Y lo que se
+ * quedó de cada una es lo que cada una tenía mejor: de aquí la niebla lineal
+ * —medida, porque con la cámara clavada la exponencial cobra un velo sobre las
+ * cartas sin disolver ningún horizonte— y de allí que todo se derive en vez de ir
+ * suelto.
+ *
+ * El manifiesto está en `habitacion.js` como `manifiestoDeBolsillo()`, con el
+ * porqué de cada número al lado.
+ */
+const { manifiestoDeBolsillo } = await import('./js/protohub/habitacion.js');
+const { montarSitio } = await import('./js/protohub/render/sitio.js');
+montarSitio(THREE, escena, manifiestoDeBolsillo(), { render });
 
 /**
  * ⚠️ LA MESA YA NO SE COPIA: SE PIDE.
@@ -310,7 +266,7 @@ escena.add(tapete);
  * pintada en él. Allí las cartas son decoración y pueden vivir sin ella; aquí
  * llevan la partida.
  */
-escena.add(new THREE.HemisphereLight(0xffffff, 0xdfe6ec, 2.4));
+
 
 /**
  * ⚠️ LA TAPA DE LA MESA Y EL SUELO SON EL MISMO PÍXEL, Y NO TIENE ARREGLO DE LUZ.
@@ -354,14 +310,7 @@ escena.add(new THREE.HemisphereLight(0xffffff, 0xdfe6ec, 2.4));
  * debajo de la mesa. Desde ahí cae hacia el fondo-derecha, que es suelo despejado
  * — la esquina de la izquierda la tapa el panel.
  */
-const cenital = new THREE.DirectionalLight(0xffffff, 2.2);
-cenital.position.set(-2.5, 8, 6);
-cenital.castShadow = true;
-cenital.shadow.mapSize.set(2048, 2048);
-Object.assign(cenital.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6, near: 0.5, far: 26 });
-cenital.shadow.camera.updateProjectionMatrix();
-cenital.shadow.bias = -0.0008;
-escena.add(cenital);
+
 
 /**
  * ⚠️ Y SE VA LA PANTALLA DE LA LÁMPARA, QUE ERA EL ÚLTIMO RESTO DE LA TABERNA.

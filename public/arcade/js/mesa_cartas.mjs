@@ -478,6 +478,28 @@ const CABEN = 9;
  * ganchos (`onInit3D`, `onStateSync`, `onResize`): cualquier otra cosa puesta
  * ahí se pierde en silencio. Ya me pasó con `pintarJugadas`.
  */
+/**
+ * La luz de la mesa a solas: la de una mesa flotando en negro, que es de donde
+ * viene esta página. Sólo se enciende cuando NO hay sala; la sala trae la suya,
+ * que es la de la Sala del Huevo, y sumarlas era lo que tiraba el paño a verde
+ * botella mientras la sala de bolsillo lo enseñaba en salvia.
+ */
+function ponerLuzDeMesa(motor) {
+    if (motor.luzDeMesa) return;
+    const foco = new THREE.SpotLight(0xffffff, 0.9, 0, Math.PI / 4, 0.5, 1);
+    foco.position.set(0, 6.5, 0);
+    foco.castShadow = true;
+    const hemi = new THREE.HemisphereLight(0xbfd4e6, 0x0a2a14, 0.55);
+    motor.scene.add(foco, hemi);
+    motor.luzDeMesa = [foco, hemi];
+}
+
+function quitarLuzDeMesa(motor) {
+    if (!motor.luzDeMesa) return;
+    for (const l of motor.luzDeMesa) motor.scene.remove(l);
+    motor.luzDeMesa = null;
+}
+
 function encuadrar(motor) {
     /**
      * ⚠️ DE INVITADO NO SE TOCA LA CÁMARA NI SE AMUEBLA NADA.
@@ -502,11 +524,23 @@ function encuadrar(motor) {
     // Girar el teléfono cambia qué se ve: en horizontal cabe la habitación, en
     // vertical no. Se quita y se pone de verdad —no se esconde— para que la
     // niebla vuelva a ser la del motor, que es distinta de la de la sala.
+    /**
+     * ⚠️ Y LA LUZ VA CON LA SALA, EN LOS DOS SENTIDOS.
+     *
+     * La sala trae la luz del hall. La mesa a solas trae la suya. Si al girar el
+     * teléfono se quita una y no se pone la otra, la partida se queda a oscuras o
+     * con luz doble — que es lo que pasaba al montar la sala sin tocar esto.
+     * Se guardan las mallas de luz propias para poder deshacer el intercambio.
+     */
     const quiereSitio = new URLSearchParams(location.search).get('sitio') !== 'no';
-    if (quiereSitio && !estrecha && !motor.habitacion) motor.habitacion = amueblar(motor.scene);
+    if (quiereSitio && !estrecha && !motor.habitacion) {
+        motor.habitacion = amueblar(motor.scene, { render: motor.renderer });
+        quitarLuzDeMesa(motor);
+    }
     if ((estrecha || !quiereSitio) && motor.habitacion) {
         motor.habitacion.quitar();
         motor.habitacion = null;
+        ponerLuzDeMesa(motor);
     }
 
     if (estrecha) {
@@ -1252,7 +1286,7 @@ const engine = new SovereignCardEngine({
      */
     anfitrion: window.ALISA_ANFITRION ?? null,
 
-    onInit3D(scene, camera) {
+    onInit3D(scene, camera, renderer) {
         /**
          * ⚠️ DE INVITADO NO SE CONSTRUYE EL MUEBLE. NI SIQUIERA OCULTO.
          *
@@ -1396,15 +1430,31 @@ const engine = new SovereignCardEngine({
          * comparar las dos versiones sin recompilar nada cuando algo se vea raro.
          */
         const quiere = new URLSearchParams(location.search).get('sitio') !== 'no';
-        if (quiere && !this.esPantallaEstrecha()) this.habitacion = amueblar(scene);
+        if (quiere && !this.esPantallaEstrecha()) {
+            this.habitacion = amueblar(scene, { render: renderer ?? this.renderer });
+        }
 
         encuadrar(this);
 
-        const foco = new THREE.SpotLight(0xffffff, 0.9, 0, Math.PI / 4, 0.5, 1);
-        foco.position.set(0, 6.5, 0);
-        foco.castShadow = true;
-        scene.add(foco);
-        scene.add(new THREE.HemisphereLight(0xbfd4e6, 0x0a2a14, 0.55));
+        /**
+         * ⚠️ LA LUZ DE LA MESA SÓLO SE PONE SI NO HAY SALA, Y ESO ES LO QUE
+         *    HACÍA QUE LA MISMA BRISCA SE VIERA DE DOS COLORES.
+         *
+         * Aquí iban siempre un foco a 0,9 y un hemisférico `0xbfd4e6/0x0a2a14` a
+         * 0,55 — la luz de una mesa flotando en negro, que es de donde venía esta
+         * página. Desde que `amueblar()` trae la sala del hall, con SU luz, las
+         * dos se sumaban: el hemisférico oscuro tiraba el paño a verde botella y
+         * el canto de la mesa a granate, mientras la sala de bolsillo enseñaba el
+         * mismo paño en salvia.
+         *
+         * Oscar lo vio de reojo y tenía razón: «que tengan el mismo diseño que las
+         * pocket dimension». No eran muebles distintos — el paño de aquí es
+         * `0x073b18` y el de allí `0x14352a`, casi el mismo verde. Era la luz.
+         *
+         * Sin sala (`?sitio=no`, o un teléfono en vertical) la mesa sigue
+         * necesitando su propia luz, y sigue siendo ésta.
+         */
+        if (!this.habitacion) ponerLuzDeMesa(this);
 
         this.preloadCourtImages('/arcade/assets/cards/courts');
         reversoDeLaBaraja(this);

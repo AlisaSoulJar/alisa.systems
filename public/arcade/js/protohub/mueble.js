@@ -37,13 +37,46 @@
  * Tragarse una sala entera para sacarle una mesa es peor que tener la mesa aparte.
  */
 
-/** El original vive en la Sala del Huevo; estos son sus números, medidos de allí. */
+import { aspectoDe } from './render/aspecto.js';
+import { materialDe } from './render/material.js';
+
+/**
+ * El acabado de un rol, con los nombres que espera `MeshStandardMaterial`.
+ *
+ * `aspectoDe` habla en castellano (`rugosidad`, `metal`) porque describe cosas, no
+ * una biblioteca; THREE habla en inglés. La traducción va en una línea y en un
+ * sitio, que es más barato que tener el vocabulario a medio traducir.
+ */
+const acabado = (rol) => {
+    const a = aspectoDe(rol);
+    return { color: a.color, roughness: a.rugosidad, metalness: a.metal };
+};
+
+/**
+ * El original vive en la Sala del Huevo; estos son sus números, medidos de allí.
+ *
+ * ⚠️ `claro` Y `oscuro` YA NO SE DECLARAN AQUÍ: SE PIDEN.
+ *
+ * Salen de los roles `mesa-tapa` y `mesa-pie` de `render/aspecto.js`, que es donde
+ * vive ahora el color y donde una piel puede cambiarlo. Los números no se han
+ * movido —siguen siendo `0xffffff / 0.55 / 0.06` y `0x1b232e / 0.42 / 0.22`, los
+ * de la Sala del Huevo— pero ya no son de este fichero.
+ *
+ * Las medidas SÍ se quedan: un radio de 1,5 no es una cuestión de aspecto, es
+ * dónde puedes apoyar las manos. `aspecto.js` describe cómo se ve una cosa, no
+ * cómo de grande es, y meter la geometría ahí convertiría una piel en algo que
+ * puede mover la mesa debajo de una partida.
+ *
+ * Y se resuelven al cargar el módulo, con la piel de la casa: son la referencia
+ * para quien lea `MESA`, no el camino por el que se pinta. Ese es `materialDe`,
+ * abajo, que sí acepta piel.
+ */
 export const MESA = {
     tapa:      { radio: 1.5,  alto: 0.11, y: 0.92, lados: 40 },
     pie:       { arriba: 0.16, abajo: 0.34, alto: 0.92, y: 0.46, lados: 20 },
     taburete:  { radio: 0.3,  alto: 0.5,  y: 0.25, lados: 16, distancia: 2.5, cuantos: 3 },
-    claro:     { color: 0xffffff, roughness: 0.55, metalness: 0.06 },
-    oscuro:    { color: 0x1b232e, roughness: 0.42, metalness: 0.22 },
+    claro:     acabado('mesa-tapa'),
+    oscuro:    acabado('mesa-pie'),
 };
 
 /**
@@ -55,14 +88,30 @@ export const MESA = {
  * @param {number} [opts.angulo] desfase de los taburetes, en radianes. La Sala del
  *                 Huevo los reparte con su propio azar sembrado para que dos mesas no
  *                 salgan calcadas; la de bolsillo no tiene por qué.
+ * @param {object} [opts.piel] la piel con la que vestir el mueble; por defecto la de
+ *                 la casa. La mesa es ESCENOGRAFÍA —se pinta con la luz de la sala y
+ *                 se puede vestir libremente—, así que aquí una piel es una piel y no
+ *                 hay nada que proteger: lo que no se deja vestir son las lecturas.
  * @returns {object} un `THREE.Group` con la tapa, el pie y los taburetes.
  */
 export function crearMesaRedonda(THREE, opts = {}) {
     const g = new THREE.Group();
     g.name = 'mesa-redonda';
 
-    const claro = new THREE.MeshStandardMaterial(MESA.claro);
-    const oscuro = new THREE.MeshStandardMaterial(MESA.oscuro);
+    const { piel } = opts;
+    /**
+     * Tres materiales y no dos, y es a propósito.
+     *
+     * Antes el taburete compartía material con la tapa porque compartía número. Con
+     * la piel de la casa siguen siendo idénticos —`0xffffff / 0.55 / 0.06` los dos, y
+     * lo pintado no cambia ni un bit—, pero `mesa-taburete` es un rol propio, y un
+     * rol propio existe justo para que una piel pueda separarlos. Compartir el
+     * material se los volvería a pegar, y sería la misma avería que trajo esta pieza
+     * al mundo: dos cosas iguales por casualidad tratadas como una sola.
+     */
+    const claro = materialDe(THREE, 'mesa-tapa', { piel });
+    const oscuro = materialDe(THREE, 'mesa-pie', { piel });
+    const asiento = materialDe(THREE, 'mesa-taburete', { piel });
 
     const t = MESA.tapa;
     const tapa = new THREE.Mesh(
@@ -86,7 +135,7 @@ export function crearMesaRedonda(THREE, opts = {}) {
     for (let i = 0; i < s.cuantos; i++) {
         const a = (i / s.cuantos) * Math.PI * 2 + desfase;
         const tab = new THREE.Mesh(
-            new THREE.CylinderGeometry(s.radio, s.radio, s.alto, s.lados), claro);
+            new THREE.CylinderGeometry(s.radio, s.radio, s.alto, s.lados), asiento);
         tab.position.set(Math.cos(a) * s.distancia, s.y, Math.sin(a) * s.distancia);
         tab.castShadow = true;
         tab.name = `mesa-taburete-${i}`;

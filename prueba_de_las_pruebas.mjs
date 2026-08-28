@@ -1057,6 +1057,43 @@ const SABOTAJES = [
         vigila: 'que un juego terminado no se pueda seguir jugando',
     },
     {
+        nombre: 'aspecto',
+        corre: 'node prueba_aspecto.mjs',
+        fichero: 'public/arcade/js/protohub/render/aspecto.js',
+        /**
+         * LA LEY, cortada. `sinLuz` se decide DESPUÉS de aplicar la piel, y ése
+         * orden es lo único que impide que una piel apague la cara de una carta.
+         * Dejando que la piel mande, «configúralo todo» pasa a incluir «déjalo
+         * ilegible» — y sería un permiso concedido sin que nadie lo escribiera.
+         *
+         * Comprobado a mano antes de declararlo: con el cable cortado,
+         * `prueba_aspecto` sale 1 y nombra las dos lecturas que se apagaron.
+         */
+        de: 'sinLuz: clase === LECTURA',
+        a: 'sinLuz: encima.sinLuz ?? (clase === LECTURA)',
+        vigila: 'que una piel pueda pintar una carta pero no apagarla',
+    },
+    {
+        nombre: 'patron-sala',
+        corre: 'node --import ./resolver_three.mjs prueba_patron_sala.mjs',
+        fichero: 'public/arcade/js/protohub/habitacion.js',
+        /**
+         * La baldosa, movida. Es el número que ya mintió una vez —1,60 m donde las
+         * otras dos salas tienen 2,00— y el que esta comprobación existe para
+         * congelar.
+         *
+         * ⚠️ Y ES EL SABOTAJE QUE LA PRUEBA NO SABÍA VER HASTA HOY. `GridHelper`
+         * construye su geometría sin `parameters`, así que el patrón guardaba su
+         * color y su altura y NO su tamaño: cambiar las divisiones pasaba en verde.
+         * Se arregló midiendo la caja envolvente y los vértices, que los tiene
+         * cualquier malla. Si algún día vuelve a aprobar con esto puesto, es que
+         * alguien le volvió a recortar el universo.
+         */
+        de: "casilla: 20,                    // 2 m",
+        a: "casilla: 16,                    // 2 m",
+        vigila: 'que la sala no cambie de tamaño sin que nadie lo diga',
+    },
+    {
         nombre: 'preflight',
         corre: 'python preflight.py',
         /**

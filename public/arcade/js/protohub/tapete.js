@@ -25,10 +25,39 @@
  * con una carta, ha ganado la parte equivocada.
  */
 
-/** El morado del HUD (`--glow-chess`). La marca de la casa, no un color al azar. */
-export const MORADO = '#a180ff';
-/** El verde del paño, el mismo `0x14352a` que ya usaban las dos salas. */
-export const VERDE = '#14352a';
+import { aspectoDe } from './render/aspecto.js';
+
+/**
+ * De `0xa180ff` a `'#a180ff'`. El lienzo 2D quiere una cadena CSS y `aspectoDe`
+ * devuelve un número, que es lo que quiere THREE y lo que se puede comparar sin
+ * discutir mayúsculas ni formato. La traducción va aquí, en el único sitio que
+ * pinta con `fillStyle`.
+ *
+ * El `padStart` no es paranoia: `0x14352a` cabe en seis dígitos por poco, pero un
+ * verde más oscuro —`0x0a3b2c`— saldría como `#a3b2c`, que el navegador ignora en
+ * silencio y deja el paño transparente. Un fallo que se ve como «no se ha
+ * dibujado nada», que es la peor pista posible.
+ */
+const css = (n) => `#${n.toString(16).padStart(6, '0')}`;
+
+/**
+ * El morado del HUD (`--glow-chess`). La marca de la casa, no un color al azar.
+ *
+ * ⚠️ ESTAS DOS CONSTANTES YA NO SON LA FUENTE DEL COLOR: SON UNA COPIA DERIVADA.
+ *
+ * El valor vive ahora en `render/aspecto.js`, en los roles `paño` y `paño-ribete`,
+ * que es el único sitio donde una piel puede cambiarlo. Aquí se siguen exportando
+ * porque alguien las importa y romperle el `import` a un fichero para mover un
+ * número es cobrarle a otro una limpieza que no ha pedido — pero si quieres
+ * cambiar el verde, NO ES AQUÍ.
+ *
+ * Y ojo con leerlas como si fueran configurables: se resuelven UNA VEZ, al cargar
+ * el módulo, siempre con la piel de la casa. Quien quiera el paño de otra piel
+ * tiene que pasar `verde`/`ribete` a `crearTapete`, no esperar que estas cambien.
+ */
+export const MORADO = css(aspectoDe('paño-ribete').color);
+/** El verde del paño, el mismo `0x14352a` que ya usaban las dos salas. Derivado del rol `paño`. */
+export const VERDE = css(aspectoDe('paño').color);
 
 /**
  * @param {object} THREE   el three de quien llama — esta pieza no importa el suyo,

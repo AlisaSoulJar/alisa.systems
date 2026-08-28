@@ -1,3 +1,5 @@
+import { montarSitio } from './render/sitio.js';
+
 /**
  * habitacion.js — poner la mesa DENTRO de un sitio
  * ═══════════════════════════════════════════════════════════════════════════
@@ -213,144 +215,181 @@ export async function ponerMesaDeVerdad(scene, { ancho = 20, largo = 12, y = -0.
     return modelo;
 }
 
-export function amueblar(scene, { radio = 24, alto = 15, hondo = 7 } = {}) {
-    const piezas = [];
-    const añadir = (m) => { scene.add(m); piezas.push(m); return m; };
-
-    /**
-     * ⚠️ EL SUELO VA POR DEBAJO DE LA MESA. AQUÍ ESTABA EL «TAPETE HACE COSAS
-     * RARAS», Y LLEVABA MESES.
-     *
-     * El suelo estaba en `y = 0`. La tapa del fieltro está en `y = 0` TAMBIÉN. Dos
-     * superficies exactamente coplanares: la tarjeta gráfica no puede decidir cuál
-     * va delante y elige distinto en cada trozo. Y como este suelo es un
-     * `CircleGeometry(radio, 48)`, sus trozos son cuarenta y ocho triángulos que
-     * salen del centro — así que el desastre sale con forma de abanico.
-     *
-     * Eso es exactamente lo que Oscar reportó dos veces, en brisca y en entropy:
-     * «el tapete hace cosas raras». Cuñas verdes y marrones alternándose desde el
-     * centro. El marrón era ESTE suelo, `0x2b211c`, asomando a través del fieltro.
-     *
-     * Lo busqué antes en la mesa, en las normales del cilindro y en las sombras del
-     * foco — tres hipótesis, tres arreglos, cero cambios en la captura. Lo encontró
-     * abrir la misma página con `?sitio=no`: sin habitación se ve perfecta. No era
-     * la mesa; era el cuarto donde la habíamos metido.
-     *
-     * `hondo` es cuánto queda la mesa por encima del suelo, que es lo que hace una
-     * mesa. Y la habitación entera baja con él: las paredes tienen que arrancar del
-     * suelo, no de donde estaban.
-     */
-    const ySuelo = -hondo;
-
-    // ── El sitio ──────────────────────────────────────────────────────────
-    // Un cilindro en vez de cuatro paredes: una esquina obliga a decidir hacia
-    // dónde mira la sala, y aquí se mira desde cualquier silla.
-    /**
-     * ═══════════════════════════════════════════════════════════════════════
-     *  ⚠️ NI PARED NI TECHO. LA SALA DEL HUEVO NO LOS TIENE, Y ESO ERA EL FALLO
-     * ═══════════════════════════════════════════════════════════════════════
-     *
-     * Aquí había un cilindro cerrado: suelo, muro y tapa. Y el sitio del que te
-     * abducen NO ES ASÍ. Lo miré, y luego lo comprobé en su código —
-     * `room_sala_del_huevo.html` monta EXACTAMENTE esto y nada más:
-     *
-     *     escena.fog = new THREE.FogExp2(0xe6ebf0, 0.0062)
-     *     suelo      = CircleGeometry(320, 96), 0xffffff roughness 0.82
-     *     rejilla    = GridHelper(320, 160, 0x9fb0c0, 0xd4dee6), opacidad 0.5
-     *
-     * Ni una pared. Ni un techo. Es un espacio ABIERTO y luminoso donde lo único
-     * oscuro son los objetos —las máquinas, la lámpara— y el horizonte se deshace
-     * en niebla. Por eso no parece una caja.
-     *
-     * Yo había repintado el cilindro de blanco, que es otra cosa: un cuarto claro
-     * sigue siendo un cuarto. Cambiar el color no cambia la clase de sitio.
-     *
-     * ⚠️ Y LA ESCALA NO SE COPIA, SE CONVIERTE.
-     *
-     * El hall está en metros —cámara a 1,62, mesa de 2 de ancho— y esta escena
-     * mide en «unidades de tapete»: la mesa son 20. O sea ×10. Copiar los números
-     * tal cual dejaría una rejilla de celdas diminutas y una niebla que no llega.
-     * Así que la densidad se divide por diez y la celda se hace del tamaño de la
-     * mesa, que es la proporción que tiene el hall: allí una casilla es una mesa.
-     */
-    const suelo = añadir(new THREE.Mesh(
-        new THREE.CircleGeometry(radio * 14, 96),
-        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.82, metalness: 0.02 })
-    ));
-    suelo.rotation.x = -Math.PI / 2;
-    suelo.position.y = ySuelo;
-
-    const rejilla = añadir(new THREE.GridHelper(radio * 28, 42, 0x9fb0c0, 0xd4dee6));
-    rejilla.material.transparent = true;
-    rejilla.material.opacity = 0.5;
-    rejilla.position.y = ySuelo + 0.02;
-
-    // ── La luz ────────────────────────────────────────────────────────────
-    // La lámpara se ve, y eso importa: una luz que cae de ninguna parte deja la
-    // escena con aspecto de maqueta. Con la pantalla colgando, el ojo entiende
-    // de dónde viene la sombra que hay sobre la mesa.
-    // Cuelga BAJO, sobre la mesa — no pegada al techo. Con la sala alta, una
-    // lámpara arriba del todo queda fuera del encuadre y no ilumina nada que se
-    // vea. Ésta baja hasta justo encima de la cámara.
-    const alturaLampara = 11.5;
-
-    const lampara = añadir(new THREE.Mesh(
-        new THREE.ConeGeometry(3.2, 1.8, 24, 1, true),
-        new THREE.MeshStandardMaterial({ color: 0x1b232e, roughness: 0.8, side: THREE.DoubleSide })
-    ));
-    lampara.position.y = alturaLampara;
-
-    const cable = añadir(new THREE.Mesh(
-        new THREE.CylinderGeometry(0.04, 0.04, alto - alturaLampara, 8),
-        new THREE.MeshBasicMaterial({ color: 0x1b232e })
-    ));
-    cable.position.y = alturaLampara + (alto - alturaLampara) / 2;
-
-    // El bombillo, visible bajo la pantalla: el foco de la mesa sale de aquí.
-    añadir(new THREE.Mesh(
-        new THREE.SphereGeometry(0.26, 12, 10),
-        new THREE.MeshBasicMaterial({ color: 0xfff2d0 })
-    )).position.y = alturaLampara - 0.75;
-
-    /**
-     * ⚠️ Y LA NIEBLA SE PONE AQUÍ, PERO SE GUARDA LA DE ANTES.
-     *
-     * El motor de cartas trae su propia niebla, calibrada para una mesa
-     * flotando en negro: con paredes a quince unidades se las come enteras y la
-     * sala vuelve a parecer el vacío del que veníamos.
-     *
-     * Se sustituye por una que llega hasta la pared, y se devuelve cómo
-     * deshacerlo — porque `quitar()` que no deja la escena como estaba no es
-     * quitar, es dejar otra cosa.
-     */
-    const nieblaPrevia = scene.fog;
-    const fondoPrevio = scene.background;
-    /**
-     * ⚠️ NIEBLA EXPONENCIAL Y NO LINEAL, Y EL FONDO TAMBIÉN.
-     *
-     * La lineal necesita un «desde» y un «hasta», que se calculaban con el radio
-     * de la pared. Sin pared no hay hasta: el suelo se va a trescientas unidades y
-     * lo que lo cierra es la niebla, no una superficie. Es la misma `FogExp2` del
-     * hall con la densidad convertida a esta escala.
-     *
-     * Y el FONDO importa tanto como la niebla: sin él, por encima del horizonte se
-     * ve el vacío del motor —negro— y la sala parecería flotar en la nada. El hall
-     * pinta los dos del mismo color justo para que no haya línea.
-     */
-    scene.fog = new THREE.FogExp2(0xe6ebf0, 0.00062);
-    scene.background = new THREE.Color(0xe6ebf0);
-
+/**
+ * EL MANIFIESTO DE LA MESA DE CARTAS.
+ *
+ * ⚠️ ESTA FUNCIÓN ERA CIENTO CINCUENTA LÍNEAS QUE CONSTRUÍAN LA SALA A MANO.
+ *    AHORA LA DECLARA, Y ESA ES TODA LA DIFERENCIA.
+ *
+ * Lo que había aquí montaba suelo, rejilla, luz, niebla y revelado con los
+ * números escritos dentro. Funcionaba, y no se podía hacer nada con ello: para
+ * un ambiente nuevo había que escribir otra función igual.
+ *
+ * Ahora esto devuelve una LISTA DE PIEZAS y quien las monta es
+ * `render/sitio.js`. La consecuencia es la que buscábamos: **un sitio nuevo
+ * cuesta un fichero, no una función** — si sus piezas ya existen, no se toca
+ * código.
+ *
+ * ⚠️ Y LOS NÚMEROS SIGUEN SALIENDO DE `radio`, QUE NO ES PEREZA.
+ *
+ * Podría escribir 336 y 672 directamente. Pero la relación entre ellos es lo que
+ * hace que la sala se sienta la misma que el hall: allí una casilla de rejilla
+ * mide lo que una mesa, y aquí `radio * 28 / 42` da exactamente eso. Escribir los
+ * números sueltos perdería el motivo, y un número sin motivo es el que alguien
+ * cambia el mes que viene sin saber qué rompe.
+ *
+ * El paso siguiente —cuando el editor exista— es que este objeto se lea de un
+ * JSON en vez de calcularse. La forma ya es la buena; sólo cambia de dónde viene.
+ */
+/**
+ * ⚠️ ESTA FUNCIÓN SIRVE A LAS DOS SALAS, Y ES EL «TERCER CICLO» DE LAS DOS QUE
+ *    HABÍA. CADA UNA TRAÍA ALGO MEJOR.
+ *
+ * Había dos habitaciones escritas por separado y casi iguales: ésta, y otra a
+ * mano dentro de `arcade/sala.html`. Comparadas pieza a pieza:
+ *
+ *                    sala.html (a mano)        habitacion.js (manifiesto)
+ *     suelo          CircleGeometry(55)        radio × 14
+ *     rejilla        110/55 → 2 m              casilla 20 → 2 m
+ *     hemisférico    2,4                       2,4
+ *     cenital        2,2 desde (-2,5·8·6)      2,2, misma dirección
+ *     revelado       ACES 1,02 + PMREM         ACES 1,02 + PMREM
+ *     NIEBLA         lineal 12 → 50            exponencial 0,00062
+ *
+ * Todo coincidía menos la niebla, y ahí la de `sala.html` estaba MEJOR RAZONADA,
+ * con la medida escrita al lado: con la exponencial, a 6,5 m —el tope de la
+ * rueda— ya hay un 12 % de blanco encima de las cartas, para no disolver ningún
+ * horizonte, porque a esa distancia no hay horizonte que disolver. La lineal deja
+ * cero niebla donde se juega y se come el borde del suelo antes del plano lejano.
+ *
+ * Y de aquí lo bueno era lo contrario: que todo salga de un parámetro, así que la
+ * sala escala sola en vez de tener los números sueltos.
+ *
+ * El tercero se queda con las dos cosas: la forma de la niebla se DECLARA —con su
+ * motivo— y todo lo demás se deriva. Y de paso desaparece la segunda habitación:
+ * las dos salas piden ahora el mismo manifiesto con distintos números.
+ *
+ * @param {object} [o]
+ *   suelo       radio del suelo, en unidades de ESTA escena
+ *   y           altura del suelo; negativa deja la mesa por encima
+ *   casilla     lado de la baldosa. 2 m en las unidades que use la escena
+ *   niebla      `{densidad}` para exponencial, `{cerca, lejos}` para lineal
+ *   luz         `{desde, caja, lejos}` — posiciones, que sí dependen de la escala
+ *   exposicion  del revelado ACES
+ */
+export function manifiestoDeSala({
+    sitio = 'sala',
+    suelo = 336,
+    y = 0,
+    casilla = 20,
+    lado = suelo * 2,
+    niebla = { densidad: 0.00062 },
+    luz = {},
+    exposicion = 1.02,
+} = {}) {
+    const ySuelo = y;
     return {
-        piezas,
-        quitar() {
-            for (const p of piezas) {
-                scene.remove(p);
-                p.geometry?.dispose?.();
-                p.material?.dispose?.();
-            }
-            piezas.length = 0;
-            scene.fog = nieblaPrevia;
-            scene.background = fondoPrevio;
-        },
+        sitio,
+        porque: 'la Sala del Huevo: espacio abierto, sin muro ni techo',
+        piezas: [
+            // El suelo va por DEBAJO de la mesa. Con los dos en y=0 la tarjeta no
+            // podía decidir cuál va delante y salían cuñas alternándose desde el
+            // centro — el «tapete hace cosas raras» que se reportó dos veces.
+            { pieza: 'suelo', radio: suelo, lados: 96, y: ySuelo },
+
+            /**
+             * ⚠️ AQUÍ PONÍA `divisiones: 42` Y LA BALDOSA SALÍA UN 20 % PEQUEÑA.
+             *
+             * 672/42 = 16 unidades = 1,60 m a esta escala, cuando la Sala del Huevo
+             * y la sala de bolsillo tienen las dos 2,00 m. Y el comentario que había
+             * aquí decía que era «la misma proporción que el hall». No lo era: lo
+             * escribí yo anteanoche y nadie —yo el primero— lo miró, porque un
+             * cociente escondido dentro de una llamada no se lee.
+             *
+             * Se declara la CASILLA, que es la medida con significado, y las
+             * divisiones se derivan. 20 unidades = 2 m, la del hall.
+             */
+            { pieza: 'rejilla', lado, casilla, y: ySuelo + casilla * 0.001 },
+
+            // La luz del hall, con los números de allí sin convertir: la
+            // intensidad no depende de la escala. Las posiciones sí, y por eso
+            // vienen de fuera.
+            {
+                pieza: 'luz-sala',
+                ambiente: 2.4, cenital: 2.2,
+                desde: luz.desde ?? [-suelo * 0.043, suelo * 0.157, suelo * 0.1],
+                caja: luz.caja ?? suelo * 0.114, lejos: luz.lejos ?? suelo * 0.43,
+            },
+
+            /**
+             * La niebla, en la forma que pida quien monta la sala.
+             *
+             * ⚠️ NO ES UNA PREFERENCIA: DEPENDE DE SI LA CÁMARA SE MUEVE.
+             *
+             * Exponencial donde se ANDA —crece sola con la distancia y disuelve un
+             * horizonte que está lejos— y lineal donde la cámara está clavada, que
+             * es donde la exponencial cobra un velo sobre lo único que hay que
+             * leer sin disolver nada a cambio.
+             */
+            niebla.densidad !== undefined
+                ? { pieza: 'niebla', densidad: niebla.densidad }
+                : { pieza: 'niebla', cerca: niebla.cerca, lejos: niebla.lejos },
+
+            // Va el último a propósito: necesita el renderizador y avisa si no lo
+            // tiene, y ese aviso se lee mejor al final de la lista que en medio.
+            { pieza: 'revelado', exposicion },
+        ],
     };
+}
+
+/**
+ * @param {object} scene
+ * @param {object} opciones
+ *   radio   el tamaño de la sala, en unidades de ESTA escena
+ *   hondo   cuánto queda la mesa por encima del suelo
+ *   piel    con qué se viste; por defecto la de la casa
+ *   render  el renderizador. Opcional, pero sin él la luz no es la del hall:
+ *           el revelado ACES y el entorno reflejado viven ahí.
+ *
+ * `alto` se acepta y se ignora: era la altura de la pared, y no hay pared. Se
+ * deja para no romper a quien lo pasa, y se dice aquí para que nadie lo busque.
+ */
+export function amueblar(scene, { radio = 24, alto = 15, hondo = 7, piel, render = null } = {}) {
+    return montarSitio(THREE, scene, manifiestoDeSala({
+        sitio: 'mesa-de-cartas',
+        suelo: radio * 14,
+        y: -hondo,
+        casilla: 20,                    // 2 m: la mesa mide 20 unidades y allí 2
+        lado: radio * 28,
+        niebla: { densidad: 0.00062 },  // aquí se ORBITA, así que exponencial
+        luz: {
+            desde: [-radio * 0.6, radio * 2.2, radio * 1.4],
+            caja: radio * 1.6, lejos: radio * 6,
+        },
+    }), { piel, render });
+}
+
+/**
+ * La sala de bolsillo: la misma, a escala de persona.
+ *
+ * Es lo que se abre al sentarse a una mesa de la Sala del Huevo, y estaba escrita
+ * a mano dentro de `arcade/sala.html` — la misma habitación, por segunda vez.
+ * Ahora es este puñado de números.
+ *
+ * ⚠️ EL RADIO DEL SUELO NO ES UN GUSTO: EL PLANO LEJANO DE ESA CÁMARA ES 60.
+ * Un suelo de 320 —el del hall— se cortaría en seco a 60 m con un tajo recto en
+ * mitad del aire. Y subir el plano lejano pagaría precisión de profundidad justo
+ * donde no sobra: las cartas viven entre 0,98 y 0,99, a cinco milímetros unas de
+ * otras. 55 cabe, y la niebla se lo come antes.
+ */
+export function manifiestoDeBolsillo() {
+    return manifiestoDeSala({
+        sitio: 'sala-de-bolsillo',
+        suelo: 55, y: -0.02,
+        casilla: 2, lado: 110,
+        // Aquí la cámara está clavada a 2,15 m de la mesa: lineal, y sin niebla
+        // ninguna dentro de lo que alcanza la rueda.
+        niebla: { cerca: 12, lejos: 50 },
+        luz: { desde: [-2.5, 8, 6], caja: 6, lejos: 26 },
+    });
 }

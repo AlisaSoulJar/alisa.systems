@@ -1601,15 +1601,54 @@ class SovereignCardEngine {
         return (100 * n) / (c.width * c.height);
     }
 
+    /**
+     * ⚠️ LA CARA DE UNA CARTA NO OBEDECE A LA LUZ DE LA SALA. ES DE LECTURA.
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Esto era `MeshLambertMaterial`: difuso puro, o sea que multiplica su textura
+     * por la luz que haya. Con la luz de una mesa flotando en negro salía bien; al
+     * traer la sala de la Sala del Huevo —hemisférico a 2,4 más cenital a 2,2— el
+     * blanco de la carta satura y el número y el palo se van con él.
+     *
+     * Medido, el contraste DENTRO de la mano:
+     *
+     *     página suelta, luz vieja        177
+     *     sala de bolsillo (siempre)       50   ← llevaba lavada desde el primer día
+     *     con la luz del hall              57
+     *     con la cara sin luz             133   ← esto
+     *
+     * Y se descartó lo demás una por una: quitar el entorno reflejado deja 57,
+     * quitar el revelado ACES deja 53, apagar los reflejos de la carta deja 57.
+     * No era ninguna de las tres. Era que la carta se come la luz.
+     *
+     * ⚠️ Y LA REGLA QUE SALE DE AHÍ, QUE VALE PARA TODO LO DEMÁS.
+     *
+     * Hay dos clases de superficie y hasta hoy nadie las distinguía:
+     *
+     *   ESCENOGRAFÍA  suelo, mesa, paño, muebles. La ilumina la sala y se puede
+     *                 vestir libremente: ahí es donde una piel es una piel.
+     *   LECTURA       la cara de una carta, una casilla, una pieza. Su trabajo es
+     *                 leerse IGUAL EN CUALQUIER SALA. Si depende de la luz,
+     *                 cambiar de sitio cambia la partida.
+     *
+     * Por eso va sin luz y con `toneMapped: false`: la carta se dibuja como está
+     * dibujada, y da lo mismo dónde te sientes. Es lo mismo que hace cualquier
+     * juego de cartas con su interfaz — sólo que aquí la interfaz está en 3D y se
+     * nos había colado en la escenografía.
+     *
+     * El CANTO de la carta sigue siendo `cardMatFront`, con luz: es lo que hace
+     * que se vea como un objeto apoyado y no como una pegatina. Se ilumina el
+     * objeto; no se ilumina lo que hay que leer.
+     */
     getProceduralMaterial(cardId) {
         if (!this.cachedMaterials) this.cachedMaterials = {};
         if (this.cachedMaterials[cardId]) return this.cachedMaterials[cardId];
-        
+
         // Generate the procedural canvas (works for fronts AND backs now)
         const canvas = this.getCardCanvas(cardId);
         const texture = new THREE.CanvasTexture(canvas);
         if (this.renderer) texture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
-        const faceMat = new THREE.MeshLambertMaterial({ map: texture });
+        const faceMat = new THREE.MeshBasicMaterial({ map: texture, toneMapped: false });
 
         // For backs: both sides show the back pattern
         if (cardId.startsWith("back")) {
@@ -1626,7 +1665,9 @@ class SovereignCardEngine {
         const backCanvas = this.getCardCanvas('back_' + (this.activeDeckBack || 'classic_red'));
         const backTex = new THREE.CanvasTexture(backCanvas);
         if (this.renderer) backTex.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
-        const backMat = new THREE.MeshLambertMaterial({ map: backTex });
+        // El reverso también es de lectura: es lo que distingue un mazo de otro y
+        // lo que dice cuántas cartas hay tapadas. Ver la nota de arriba.
+        const backMat = new THREE.MeshBasicMaterial({ map: backTex, toneMapped: false });
 
         const matArray = [
             this.cardMatFront, this.cardMatFront,

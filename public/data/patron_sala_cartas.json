@@ -1,0 +1,63 @@
+{
+  "niebla": {
+    "clase": "FogExp2",
+    "color": "e6ebf0",
+    "densidad": 0.00062
+  },
+  "fondo": "e6ebf0",
+  "piezas": [
+    {
+      "tipo": "DirectionalLight",
+      "y": 52.8,
+      "x": -14.4,
+      "z": 33.6,
+      "intensidad": 2.2,
+      "color": "ffffff",
+      "sombra": true
+    },
+    {
+      "tipo": "GridHelper",
+      "y": -6.98,
+      "x": 0,
+      "z": 0,
+      "geometria": "BufferGeometry",
+      "caja": [
+        680,
+        0,
+        680
+      ],
+      "vertices": 140,
+      "color": "ffffff",
+      "opacidad": 0.5,
+      "rotX": 0
+    },
+    {
+      "tipo": "HemisphereLight",
+      "y": 1,
+      "x": 0,
+      "z": 0,
+      "intensidad": 2.4,
+      "color": "ffffff",
+      "suelo": "dfe6ec"
+    },
+    {
+      "tipo": "Mesh",
+      "y": -7,
+      "x": 0,
+      "z": 0,
+      "geometria": "CircleGeometry",
+      "radius": 336,
+      "segments": 96,
+      "caja": [
+        672,
+        672,
+        0
+      ],
+      "vertices": 98,
+      "color": "ffffff",
+      "rugosidad": 0.82,
+      "metal": 0.02,
+      "rotX": -1.5708
+    }
+  ]
+}
