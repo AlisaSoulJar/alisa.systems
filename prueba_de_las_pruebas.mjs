@@ -1132,6 +1132,29 @@ const SABOTAJES = [
         vigila: 'que las cuatro formas del catálogo se dibujen, y no tres',
     },
     {
+        nombre: 'montaje',
+        corre: 'node prueba_montaje.mjs',
+        fichero: 'public/arcade/js/protohub/render/montaje.js',
+        /**
+         * ⚠️ EL FALLO QUE NINGUNA REJILLA PUEDE VER.
+         *
+         * El léxico cuenta las celdas desde ARRIBA, como la pantalla; `setViewport`
+         * cuenta desde ABAJO, como OpenGL. Sin voltear, `split_2h` sale del revés
+         * y la ventanita del `pip` se va a la esquina contraria.
+         *
+         * Y lo bonito —o lo peligroso— es que `grid_4` y `cctv_2x2` son SIMÉTRICOS
+         * arriba-abajo: volteados dan exactamente el mismo conjunto de celdas. Una
+         * prueba escrita sobre la rejilla, que es la disposición más vistosa y la
+         * que uno elige sin pensar, aprobaría con el eje invertido.
+         *
+         * Por eso la prueba se apoya en `split_2h` y `pip`, y lleva un control
+         * positivo que comprueba que la rejilla efectivamente NO sirve para esto.
+         */
+        de: 'return { x: izq, y: alto - abajo, w: der - izq, h: abajo - arriba };',
+        a: 'return { x: izq, y: arriba, w: der - izq, h: abajo - arriba };',
+        vigila: 'que el eje del léxico y el del renderizador no se den la vuelta en silencio',
+    },
+    {
         nombre: 'realizacion',
         corre: 'node --import ./resolver_three.mjs prueba_realizacion.mjs',
         fichero: 'public/arcade/js/protohub/render/realizacion.js',
