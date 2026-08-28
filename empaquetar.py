@@ -55,7 +55,32 @@ TALLER = {".blend", ".blend1", ".fbx", ".obj", ".mtl", ".psd", ".ma", ".max",
           ".exe", ".bak", ".pyc", ".zip", ".7z", ".rar"}
 
 #: carpetas que no viajan
+#:
+#: ⚠️ `legacy` NO ESTÁ AQUÍ, Y ESTUVO A PUNTO. LA NOTA ES PARA EL SIGUIENTE.
+#:
+#: El 28-08 iba a sacarla del paquete: diez páginas antiguas, medio MB, servidas.
+#: Antes de terminar leí por qué están publicadas, en `gen_lab_index.py:30`:
+#:
+#:     «de 153 paginas en public/, 34 no las enlazaba nadie … diez paginas en
+#:      legacy/, de las que SEIS FUNCIONAN, incluida room_empty_table_games_node:
+#:      el selector de mesas con brisca, tute, mus y go fish que dabamos por
+#:      perdido»
+#:
+#: O sea que no están ahí por descuido: alguien las sacó a propósito, comprobó
+#: cuáles arrancan y dejó fuera las dos rotas. Quitarlas habría desandado una
+#: decisión medida y vuelto a perder ese selector.
+#:
+#: Lo que sí es cierto es que una sala del huevo de la v1 a un clic de la nueva
+#: confunde a quien llega. Pero eso es un problema de PRESENTACIÓN —falta el
+#: estante que diga «esto es historia, lo vivo es aquello»— y no de empaquetado.
+#: Borrar lo que estorba en la vitrina es más fácil que colocarlo, y no es lo
+#: mismo.
 FUERA_CARPETA = ("node_modules", "__pycache__", ".vite", ".wrangler")
+
+#: Un respaldo hecho a mano antes de un cambio grande: `algo_BACKUP_20260420…`,
+#: `algo_old`, `copia de algo`. Se reconoce por la marca, no por una lista de
+#: nombres — una lista hay que mantenerla y el siguiente respaldo no estará en ella.
+RE_RESPALDO = re.compile(r"(?:_|\b)(BACKUP|backup|_old|_viejo|copia|copy)\b|_\d{8}_\d{4}", re.I)
 
 #: ⚠️ LICENCIA: prohíben la redistribución. No es negociable.
 FUERA_LICENCIA = {
@@ -279,6 +304,25 @@ def main():
         # de pruebas. Los datos y la configuracion no entran en ella.
         if p.name.startswith("_") and p.suffix.lower() == ".html":
             dejados["taller"].append((p, "banco de pruebas"))
+            continue
+
+        # ⚠️ UN RESPALDO CON FECHA NO ES UNA PAGINA, Y ESTABAN LOS CUATRO EN VIVO.
+        #
+        # `rooms/room_art_direction_BACKUP_20260420_0121_21archetypes.html` y sus
+        # tres hermanos: 459 KB de copias del 20 de abril, que nadie enlaza y que
+        # el dominio servia igual. Comprobado antes de tocar nada — la de 132 KB
+        # contestaba 200 en `alisa.systems`.
+        #
+        # Y ahi esta la trampa de la que salen: hasta hoy «esconder» en este sitio
+        # queria decir «no enlazar», y no enlazar NO es esconder. Una pagina sin
+        # enlaces sigue servida, sigue indexable y sigue siendo algo que mantener.
+        # La unica forma de esconder algo es no empaquetarlo.
+        #
+        # El patron es de fecha porque asi es como nacen: alguien duplica un
+        # fichero antes de un cambio grande y le pega la marca de tiempo. Eso es un
+        # gesto de taller, y el taller no viaja.
+        if RE_RESPALDO.search(p.name):
+            dejados["taller"].append((p, "respaldo fechado"))
             continue
 
         ext = p.suffix.lower()
