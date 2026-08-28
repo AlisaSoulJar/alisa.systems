@@ -1132,6 +1132,29 @@ const SABOTAJES = [
         vigila: 'que las cuatro formas del catálogo se dibujen, y no tres',
     },
     {
+        nombre: 'realizacion',
+        corre: 'node --import ./resolver_three.mjs prueba_realizacion.mjs',
+        fichero: 'public/arcade/js/protohub/render/realizacion.js',
+        /**
+         * ⚠️ EL PECADO DE LA SEMANA, EN UNA LÍNEA.
+         *
+         * Vaciar `huecos` deja al director mudo: sigue repartiendo trabajo a los
+         * cinco departamentos y ya no dice cuándo no ha sabido. Es exactamente la
+         * avería que llevo días persiguiendo en otras formas —`options` que
+         * llegaban y no se guardaban, cuñas que no se dibujaban y desaparecían sin
+         * error— y aquí duele más, porque OCHO de los once momentos no tienen
+         * ambiente de luz asignado todavía. Callarlo significa que ocho planos
+         * saldrían con la luz de otro y nadie se enteraría.
+         *
+         * Esos ocho no son un fallo del código: son ocho decisiones de dirección
+         * que le tocan a Oscar. Lo que este sabotaje protege es que sigan
+         * VISIBLES hasta que las tome.
+         */
+        de: '        huecos,',
+        a: '        huecos: [],',
+        vigila: 'que los huecos del vocabulario se digan en voz alta y no se rellenen en silencio',
+    },
+    {
         nombre: 'camara',
         corre: 'node --import ./resolver_three.mjs prueba_camara.mjs',
         fichero: 'public/arcade/js/protohub/render/camara.js',
