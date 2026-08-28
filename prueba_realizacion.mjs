@@ -140,7 +140,39 @@ for (const sujeto of [{ centro: [0, 0.85, 0], altura: 1.7 }, { centro: [0, 110, 
     if (!g.quejas.every((q) => /^compás \d+:/.test(q))) mal('las quejas no dicen de qué compás son');
 }
 
-// ── 8. LA COSTURA, CON TECHO QUE BAJA EN LOS DOS SENTIDOS ───────────────────
+// ── 8. La voz viaja con el compás, sin léxico ───────────────────────────────
+/**
+ * ⚠️ ESTO SALIÓ DE LEER UN PROTOTIPO QUE NO SABÍA QUE EXISTÍA.
+ *
+ * `window.__direct`, en `labs/croupier_confessional.html`, es este mismo director
+ * escrito antes que el mío. Su compás lleva `voice: { line }`. El mío no llevaba
+ * nada, y no me había dado cuenta hasta leerlo.
+ *
+ * Se aceptan cadena y objeto: el prototipo usaba objeto y escribir la frase a
+ * pelo es lo que hará cualquiera. Admitir las dos formas cuesta una línea;
+ * obligar a recordar cuál era cuesta un fallo silencioso cada vez.
+ */
+{
+    const conCadena = compasDe({ momento: 'revelacion', voz: 'No fui yo.' }, { lexicos });
+    const conObjeto = compasDe({ momento: 'revelacion', voz: { linea: 'No fui yo.' } }, { lexicos });
+    comprobaciones += 4;
+    if (conCadena.voz?.linea !== 'No fui yo.') mal('una voz escrita como cadena se pierde');
+    if (conObjeto.voz?.linea !== 'No fui yo.') mal('una voz escrita como objeto se pierde');
+    if (conCadena.huecos.length) mal('llevar voz no debería generar quejas');
+    if (compasDe({ momento: 'revelacion' }, { lexicos }).voz !== null) {
+        mal('un compás sin voz debería dejarla en null, no fabricarla');
+    }
+    // Y una frase no puede mover la cámara ni la cara: es un eje aparte.
+    comprobaciones++;
+    const sin = compasDe({ momento: 'duda', emocion: 'unease' }, { lexicos });
+    const con = compasDe({ momento: 'duda', emocion: 'unease', voz: 'algo' }, { lexicos });
+    if (JSON.stringify(sin.camara) !== JSON.stringify(con.camara)
+        || JSON.stringify(sin.cara) !== JSON.stringify(con.cara)) {
+        mal('poner una frase ha cambiado la cámara o la cara');
+    }
+}
+
+// ── 9. LA COSTURA, CON TECHO QUE BAJA EN LOS DOS SENTIDOS ───────────────────
 /**
  * ⚠️ Ocho de los once momentos no tienen ambiente de luz. Eso NO es un fallo del
  *    código: es una decisión de dirección que le toca a Oscar, y son ocho líneas

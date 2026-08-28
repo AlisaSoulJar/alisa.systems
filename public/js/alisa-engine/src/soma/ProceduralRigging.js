@@ -345,6 +345,76 @@ export class ProceduralRigging {
                 addBone([shoulderW, 1.5, 1.2], [0.5, 0.8, 1.0], 'R_Humerus', 'R_Radius');
                 addBone([0.5, 0.8, 1.0], [0.5, 0.3, 1.2], 'R_Radius', 'R_Hand');
                 addBone([0.5, 0.3, 1.2], [0.5, 0.0, 1.3], 'R_Hand', 'R_Finger');
+            } else if (type === 'equine') {
+                // ⚠️ RESCATE (2026-08-28): esta rama faltaba por completo. `data/ontology.json`
+                // declara `equine` en `taxonomy.biological` y `data/skeletons.json` /
+                // `data/kinematics.json` ya traían la geometría y el gait, pero esta cadena de
+                // `else if` se caía directo a `arachnid` sin pasar por caballos/cebras: el
+                // clasificador etiquetaba, los datos declaraban, y nadie construía el hueso.
+                // Injertado desde `_archivo/proceduralrigging/ProceduralRigging_pre_topo.js`
+                // (versión anterior a `TopologyExtractor`/`bindSkin`), adaptado tal cual porque
+                // esa rama ya usaba `addBone(p1, p2)` sin nombres semánticos — igual que
+                // arachnid/serpentine/etc. aquí abajo, así que no hacía falta tocar nada más.
+                // === COLUMNA VERTEBRAL (con Cruz/Withers) ===
+                addBone([0, 3.5, -2.0], [0, 3.6, -0.5]);  // pelvis → lomo (ligero arco)
+                addBone([0, 3.6, -0.5], [0, 3.9, 1.0]);   // lomo → cruz (WITHERS - punto más alto)
+                addBone([0, 3.9, 1.0], [0, 3.5, 1.5]);    // cruz → base cuello (cae un poco)
+                // === CUELLO Y CABEZA ===
+                addBone([0, 3.5, 1.5], [0, 4.5, 2.2]);    // base cuello → cuello alto
+                addBone([0, 4.5, 2.2], [0, 4.4, 3.0]);    // cuello alto → hocico
+                // === OREJAS (bifurcan desde la cima del cráneo) ===
+                addBone([0, 4.5, 2.2], [-0.15, 4.9, 2.3]); // oreja izquierda
+                addBone([0, 4.5, 2.2], [0.15, 4.9, 2.3]);  // oreja derecha
+                // === MANDÍBULA (colgando del hocico) ===
+                addBone([0, 4.4, 3.0], [0, 4.0, 2.8]);     // mandíbula inferior
+                // === ESTERNÓN (define caja torácica) ===
+                addBone([0, 3.9, 1.0], [0, 2.8, 0.5]);     // esternón colgando de la cruz
+                // === COLA (3 segmentos cascada desde la pelvis) ===
+                addBone([0, 3.5, -2.0], [0, 3.3, -2.8]);   // cola segmento 1
+                addBone([0, 3.3, -2.8], [0, 2.8, -3.4]);   // cola segmento 2
+                addBone([0, 2.8, -3.4], [0, 2.2, -3.8]);   // cola segmento 3 (punta)
+                // === CADERAS: desde la ESPINA hacia cada lado ===
+                addBone([0, 3.5, -2.0], [-0.6, 3.5, -2.0]); // spine → L hip
+                addBone([0, 3.5, -2.0], [0.6, 3.5, -2.0]);  // spine → R hip
+                // === HOMBROS: desde la base del cuello hacia cada lado ===
+                addBone([0, 3.5, 1.5], [-0.6, 3.5, 1.5]);   // spine → L shoulder
+                addBone([0, 3.5, 1.5], [0.6, 3.5, 1.5]);    // spine → R shoulder
+                // Patas traseras (4 segmentos: femur → stifle → cannon → fetlock/hoof)
+                addBone([-0.6, 3.5, -2.0], [-0.6, 2.5, -1.2]); // RL femur → stifle
+                addBone([-0.6, 2.5, -1.2], [-0.5, 1.8, -2.2]); // RL stifle → hock
+                addBone([-0.5, 1.8, -2.2], [-0.5, 0.5, -2.0]); // RL cannon
+                addBone([-0.5, 0.5, -2.0], [-0.5, 0, -1.8]);   // RL fetlock → hoof (ÚNGULA)
+                addBone([0.6, 3.5, -2.0], [0.6, 2.5, -1.2]); // RR femur → stifle
+                addBone([0.6, 2.5, -1.2], [0.5, 1.8, -2.2]); // RR stifle → hock
+                addBone([0.5, 1.8, -2.2], [0.5, 0.5, -2.0]); // RR cannon
+                addBone([0.5, 0.5, -2.0], [0.5, 0, -1.8]);   // RR fetlock → hoof (ÚNGULA)
+                // Patas delanteras (4 seg - ESPEJO de traseras: húmero vertical largo)
+                addBone([-0.6, 3.5, 1.5], [-0.6, 2.0, 1.5]);   // FL húmero → codo (VERTICAL, largo)
+                addBone([-0.6, 2.0, 1.5], [-0.5, 1.2, 1.8]);   // FL codo → carpus (abajo y ligeramente adelante)
+                addBone([-0.5, 1.2, 1.8], [-0.5, 0.5, 1.6]);   // FL cannon
+                addBone([-0.5, 0.5, 1.6], [-0.5, 0, 1.5]);     // FL fetlock → hoof (ÚNGULA)
+                addBone([0.6, 3.5, 1.5], [0.6, 2.0, 1.5]);     // FR húmero → codo (VERTICAL, largo)
+                addBone([0.6, 2.0, 1.5], [0.5, 1.2, 1.8]);     // FR codo → carpus
+                addBone([0.5, 1.2, 1.8], [0.5, 0.5, 1.6]);     // FR cannon
+                addBone([0.5, 0.5, 1.6], [0.5, 0, 1.5]);       // FR fetlock → hoof (ÚNGULA)
+            } else if (type === 'theropod') {
+                // ⚠️ RESCATE (2026-08-28): mismo hueco que `equine`, ver el comentario de arriba.
+                // Injertado sin cambios desde la versión pre-topología del mismo fichero.
+                addBone([0, 1.5, -4.0], [0, 2.8, -2.0]); // tail tip -> base
+                addBone([0, 2.8, -2.0], [0, 3.0, 0]);    // tail base -> pelvis
+                addBone([0, 3.0, 0], [0, 3.2, 2.0]);     // pelvis -> chest (forward lean)
+                addBone([0, 3.2, 2.0], [0, 3.8, 3.0]);   // neck/head
+                addBone([-0.8, 3.0, 0], [0.8, 3.0, 0]);  // heavy hips
+                addBone([-0.8, 3.0, 0], [-1.0, 1.8, 0.8]); // L thigh
+                addBone([-1.0, 1.8, 0.8], [-0.8, 1.0, -0.5]); // L hock
+                addBone([-0.8, 1.0, -0.5], [-0.8, 0, 0.5]); // L foot
+                addBone([0.8, 3.0, 0], [1.0, 1.8, 0.8]); // R thigh
+                addBone([1.0, 1.8, 0.8], [0.8, 1.0, -0.5]); // R hock
+                addBone([0.8, 1.0, -0.5], [0.8, 0, 0.5]); // R foot
+                addBone([-0.6, 3.0, 1.8], [-0.8, 2.2, 2.0]); // L arm (tiny)
+                addBone([-0.8, 2.2, 2.0], [-0.6, 1.8, 2.2]); // L claw
+                addBone([0.6, 3.0, 1.8], [0.8, 2.2, 2.0]); // R arm (tiny)
+                addBone([0.8, 2.2, 2.0], [0.6, 1.8, 2.2]); // R claw
             } else if (type === 'arachnid') {
                 addBone([0, 1.8, -1.5], [0, 1.5, 0]);    // abdomen -> thorax
                 addBone([0, 1.5, 0], [0, 1.4, 1.0]);     // thorax -> head

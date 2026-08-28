@@ -2361,14 +2361,46 @@ window.stepSimulation = function(actionIdx, dt) {
         return { obs: window.getObservationVector(), reward: 0, done: true };
     }
     
-    // RL Action Mapping to targetWalkSpot for simple WASD ML overriding
-    if(typeof seeker !== 'undefined') {
-        if (actionIdx === 1) targetWalkSpot = { x: seeker.x, z: seeker.z - 4 }; // North
-        if (actionIdx === 2) targetWalkSpot = { x: seeker.x, z: seeker.z + 4 }; // South
-        if (actionIdx === 3) targetWalkSpot = { x: seeker.x - 4, z: seeker.z }; // West
-        if (actionIdx === 4) targetWalkSpot = { x: seeker.x + 4, z: seeker.z }; // East
+    /**
+     * ⚠️ ESTA PUERTA ESTABA ESCRITA Y NO CONDUCÍA A NINGUNA PARTE.
+     *
+     * Las cuatro líneas de abajo asignaban a `targetWalkSpot`, una variable que
+     * NO se declara en ningún punto del fichero y que no lee nadie. Así que la
+     * acción del agente entraba, se guardaba en un sitio que no existe y el
+     * bicho seguía moviéndose por su cuenta con su propia FSM. La interfaz
+     * devolvía observación y recompensa con toda formalidad, y la acción no
+     * llegaba nunca.
+     *
+     * Es la peor forma de estar roto: no da error, devuelve datos con buena
+     * pinta, y un agente entrenando contra esto aprendería exactamente nada
+     * mientras las cifras suben y bajan de forma convincente.
+     *
+     * Quien mueve al buscador de verdad es `seekerAI.moveTarget` — lo lee
+     * `aiMovement()` más abajo, que toma su `.x` y su `.z`. Ahí es donde tiene
+     * que aterrizar la acción.
+     */
+    if (typeof seeker !== 'undefined' && seeker && typeof seekerAI !== 'undefined' && seekerAI) {
+        const PASO = 4;   // en unidades del edificio: algo menos que el ancho de un pasillo
+        if (actionIdx === 1) seekerAI.moveTarget = { x: seeker.x, z: seeker.z - PASO }; // Norte
+        if (actionIdx === 2) seekerAI.moveTarget = { x: seeker.x, z: seeker.z + PASO }; // Sur
+        if (actionIdx === 3) seekerAI.moveTarget = { x: seeker.x - PASO, z: seeker.z }; // Oeste
+        if (actionIdx === 4) seekerAI.moveTarget = { x: seeker.x + PASO, z: seeker.z }; // Este
     }
-    
+
+    /**
+     * ⚠️ Y SI NADIE HA ENCENDIDO EL MODO AGENTE, SE ENCIENDE SOLO AL PRIMER PASO.
+     *
+     * `setRLMode(true)` existía y no lo llamaba nadie. Sin él, el bucle de dibujo
+     * sigue haciendo su propio tick (línea ~2755, `if (!window.RLMode)`), así que
+     * quien llamara a `stepSimulation` desde fuera estaría metiendo un tick de
+     * más: el mundo avanzaría dos veces por acción y el agente vería un mundo que
+     * se mueve solo entre sus decisiones.
+     *
+     * Pedirle a quien conduce que se acuerde de encenderlo antes es exactamente
+     * la clase de requisito que nadie lee. Dar un paso ES declarar que conduces.
+     */
+    if (!window.RLMode && typeof window.setRLMode === 'function') window.setRLMode(true);
+
     if(typeof executeLogicTick === 'function') executeLogicTick(dt);
     
     let reward = -0.01;

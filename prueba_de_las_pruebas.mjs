@@ -1132,6 +1132,64 @@ const SABOTAJES = [
         vigila: 'que las cuatro formas del catálogo se dibujen, y no tres',
     },
     {
+        nombre: 'cara',
+        corre: 'node prueba_cara.mjs',
+        fichero: 'public/js/tools/AvatarCalibrationTool.js',
+        /**
+         * ⚠️ ESTO NO ES UNA AVERÍA IMAGINADA: ES EL ESTADO DEL QUE VENIMOS.
+         *
+         * Hasta el 28-08-2026, `setExpression` NO EXISTÍA. Dos páginas lo
+         * llamaban —`labs/croupier_avatar_face_lab.html` y
+         * `labs/croupier_confessional.html`— y estaban rotas por eso: la primera
+         * reventaba dentro del callback del cargador de GLB y se quedaba en
+         * «booting…» para siempre; la segunda lo envolvía en un `try/catch` y
+         * escribía «face init failed» en la consola, o sea que fallaba en
+         * silencio, que es peor.
+         *
+         * Lo que había pintaba dos rectángulos cian: ojos abiertos y ojos
+         * cerrados. Parpadeaba, y nada más.
+         *
+         * Se buscó el código perdido en tres unidades de disco, 36 GB de copias de
+         * seguridad y siete versiones antiguas de este mismo fichero. En ninguna
+         * estaba. Se reescribió desde lo que sí sobrevivió: `face_anchors.json` y
+         * las ocho expresiones del léxico con su símbolo de anime.
+         *
+         * Ignorar la expresión elegida devuelve el fichero a aquel estado: la cara
+         * sigue ahí, sigue parpadeando, y ya no dice nada. La prueba lo ve porque
+         * compara PÍXELES entre las 28 parejas, no nombres.
+         */
+        de: '        this.currentExpression = elegido;',
+        a: "        this.currentExpression = 'neutral';",
+        vigila: 'que las ocho expresiones se distingan en la cara y no sólo en el léxico',
+    },
+    {
+        nombre: 'esqueletos',
+        corre: 'node --import ./resolver_three.mjs prueba_esqueletos.mjs',
+        fichero: 'public/js/alisa-engine/src/soma/ProceduralRigging.js',
+        /**
+         * ⚠️ ESTE SABOTAJE REPRODUCE UN HUECO QUE ESTUVO ABIERTO DE VERDAD.
+         *
+         * Tres ficheros de datos vivos —`ontology.json`, `skeletons.json` y
+         * `kinematics.json`— declaraban los arquetipos `equine` y `theropod`, y la
+         * cadena de `else if` que construye esqueletos no los mencionaba ni una
+         * vez. El clasificador sabía etiquetar caballos y dinosaurios, y el rigger
+         * no sabía montarlos: se caía por el final de la cadena sin rama y sin
+         * error.
+         *
+         * El código estaba en `_archivo/proceduralrigging/ProceduralRigging_pre_topo.js`
+         * —33 huesos para el caballo, 15 para el dinosaurio— y se injertó, que no
+         * es lo mismo que copiar el fichero: el apartado es una versión ANTERIOR y
+         * le falta `bindSkin`. Su nombre vecino, `_BACKUP_PERFECT_BACK`, promete
+         * ser el bueno y es peor que el vivo.
+         *
+         * La prueba recorre TODOS los arquetipos de la ontología, no sólo estos
+         * dos, para que el hueco no pueda reabrirse con el siguiente que se añada.
+         */
+        de: "            } else if (type === 'equine') {",
+        a: "            } else if (type === '__sabotaje_equine__') {",
+        vigila: 'que todo arquetipo que la ontología declara tenga quien le monte el esqueleto',
+    },
+    {
         nombre: 'montaje',
         corre: 'node prueba_montaje.mjs',
         fichero: 'public/arcade/js/protohub/render/montaje.js',

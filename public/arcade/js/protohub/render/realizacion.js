@@ -117,10 +117,30 @@ export function compasDe(compas, { lexicos } = {}) {
         huecos.push(`el compás dura ${duracion} ms y el mínimo del léxico son ${minimo} ms: no da tiempo a leerlo`);
     }
 
+    /**
+     * ⚠️ LA VOZ NO SALE DE NINGÚN LÉXICO, Y ES A PROPÓSITO.
+     *
+     * Este hueco lo encontré leyendo `window.__direct` en
+     * `labs/croupier_confessional.html`, que resultó ser un prototipo de este
+     * mismo director escrito antes y que yo no sabía que existía. Su compás lleva
+     * `voice: { line }` y el mío no llevaba nada.
+     *
+     * Y no lleva léxico porque no debe: un encuadre, un ambiente o un gesto son
+     * vocabulario cerrado y compartido —siete, seis, diez— pero lo que alguien
+     * DICE es de esa escena y de ninguna otra. Meterlo en un fichero de datos
+     * compartido sería inventar un catálogo de frases, que es justo lo que no
+     * queremos. Va con el compás, como la duración.
+     *
+     * Aquí pasa tal cual: quien la diga decide si la lee en voz alta, la escribe
+     * en un bocadillo o las dos cosas.
+     */
+    const voz = c.voz ?? c.voice ?? null;
+
     return {
         momento: c.momento ?? null,
         emocion: c.emocion ?? null,
         duracion,
+        voz: typeof voz === 'string' ? { linea: voz } : voz,
         camara, luz, cara, gesto,
         montaje: lay ? { layout: nombreLayout, celdas: lay.cells } : null,
         transicion: trans ? { nombre: nombreTrans, ...trans } : null,

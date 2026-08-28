@@ -603,9 +603,15 @@
             requestAnimationFrame(loop);
         }
 
+        let recolocando = null;
         function resize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            // Arrastrar una ventana dispara `resize` decenas de veces por segundo.
+            // Se recoloca UNA vez por fotograma, que es lo único que se ve.
+            if (recolocando === null) {
+                recolocando = requestAnimationFrame(() => { recolocando = null; colocarNodos(); });
+            }
         }
 
         function setLoad(pct, txt) {
@@ -614,6 +620,28 @@
         }
 
         // ═══ NODE LAYOUT ═════════════════════════════════════════════
+        /**
+         * ⚠️ LA COLOCACIÓN SE QUEDABA CLAVADA AL TAMAÑO DE PANTALLA DE LA CARGA.
+         *
+         * `buildNodeCaches()` calculaba `startX` y `startY` contra `canvas.width`
+         * y `canvas.height` del instante en que se llamaba, y sólo se llamaba una
+         * vez, desde `init()`. `resize()` cambiaba el lienzo y no volvía a
+         * colocar. Resultado: al redimensionar la ventana, los nodos se seguían
+         * DIBUJANDO en las coordenadas viejas —descentrados— y, peor, el
+         * `onClick` los buscaba ahí, así que había que pinchar donde ya no se
+         * veían.
+         *
+         * Fallo de betatester puro: nadie lo nota abriendo la página, sólo quien
+         * gira el móvil o arrastra la ventana.
+         *
+         * Se arregla separando las dos cosas que estaban juntas: TRAER (pide a la
+         * API, una vez) y COLOCAR (cuentas contra el lienzo actual, cada vez que
+         * cambie). Llamar a `buildNodeCaches()` entero en cada `resize` habría
+         * arreglado el dibujo y ametrallado la API con una petición por mundo y
+         * por píxel arrastrado.
+         */
+        const detalleCache = new Map();
+
         async function buildNodeCaches() {
             for (let i = 0; i < worlds.length; i++) {
                 const w = worlds[i];
@@ -624,7 +652,15 @@
                 } catch (e) {
                     detail = { dirs: [], files: [] };
                 }
+                detalleCache.set(i, detail);
+            }
+            colocarNodos();
+        }
 
+        /** Sólo cuentas: dónde cae cada nodo en el lienzo que hay AHORA. */
+        function colocarNodos() {
+            for (let i = 0; i < worlds.length; i++) {
+                const detail = detalleCache.get(i) || { dirs: [], files: [] };
                 const dirs = detail.dirs || [];
                 const nodes = [];
                 const cw = canvas.width;
