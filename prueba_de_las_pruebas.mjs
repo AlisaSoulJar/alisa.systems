@@ -1112,6 +1112,46 @@ const SABOTAJES = [
         vigila: 'que el mapa de texto diga de quién es cada pieza',
     },
     {
+        nombre: 'props',
+        corre: 'node --import ./resolver_three.mjs prueba_props.mjs',
+        fichero: 'public/arcade/js/protohub/render/sitio.js',
+        /**
+         * ⚠️ ESTE SABOTAJE NO ES INVENTADO: ES EL FALLO QUE HABÍA.
+         *
+         * `generators/gen_semantic_props.html` —el único que leía el catálogo—
+         * tiene una cadena de `if` con `box`, `cylinder` y `sphere` y SIN `wedge`.
+         * La geometría se quedaba en `undefined` y la pieza desaparecía: sin
+         * error, sin aviso, sin hueco visible.
+         *
+         * Medido: 63 cuñas repartidas en 50 de los 234 props, uno de cada cinco.
+         * Quitar aquí ese mismo caso reproduce el estado del que venimos, y la
+         * prueba tiene que verlo.
+         */
+        de: "case 'wedge':    return cuña(THREE, s[0] ?? 1, s[1] ?? 1, s[2] ?? 1);",
+        a: '',
+        vigila: 'que las cuatro formas del catálogo se dibujen, y no tres',
+    },
+    {
+        nombre: 'plano',
+        corre: 'node --import ./resolver_three.mjs prueba_plano.mjs',
+        fichero: 'public/js/alisa-engine/src/world/factories/ArcadeTableRoomFactory.js',
+        /**
+         * El fallo REAL, tal cual estuvo hasta el 28-08-2026: el manejador del
+         * clic llevaba las coordenadas escritas otra vez —cuatro `if` con ±2,5—
+         * mientras el constructor las escribía por su cuenta. Dos listas del mismo
+         * plano que no se hablaban.
+         *
+         * Y el síntoma no es una excepción: es que mueves una mesa, te olvidas de
+         * este bloque, y **el clic te sienta donde ya no hay mesa**. En silencio.
+         *
+         * Devolver aquí una coordenada literal reproduce esa duplicación, y la
+         * prueba la caza leyendo la propia función — que es donde se ve.
+         */
+        de: 'if (suyos.some(o => this.raycaster.intersectObject(o, true).length > 0)) targetX = sitio.x;',
+        a: 'if (suyos.some(o => this.raycaster.intersectObject(o, true).length > 0)) targetX = -2.5;',
+        vigila: 'que el plano de la sala esté en un solo sitio y el clic le pregunte',
+    },
+    {
         nombre: 'preflight',
         corre: 'python preflight.py',
         /**

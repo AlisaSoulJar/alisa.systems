@@ -187,6 +187,40 @@ export async function onRequestGet({ request }) {
             'la puntuación que recibes es siempre la recalculada, nunca la que digas',
             'las mismas reglas que corren en el navegador de una persona',
         ],
+        /**
+         * ⚠️ ESTO NO ES DOCUMENTACIÓN DE CORTESÍA: ES EL AVISO EN EL SITIO DONDE
+         *    SE VA A NECESITAR.
+         *
+         * Un cliente de Python escrito con la biblioteca estándar recibe **403**
+         * antes de tocar un solo juego. Cloudflare tiene la firma `Python-urllib`
+         * en el Browser Integrity Check y contesta su error 1010 — «the site owner
+         * has blocked access based on your browser's signature»— con un cuerpo que
+         * NO es JSON. O sea que el fallo llega disfrazado de error de parseo.
+         *
+         * Medido el 28-08-2026 sobre once firmas: bloquea EXACTAMENTE una.
+         *
+         *     Python-urllib/3.12       403
+         *     python-requests · curl · Go · Java · node-fetch · axios · okhttp   200
+         *     sin User-Agent           200
+         *
+         * O sea que ni siquiera hace falta mandar uno: hace falta no mandar ÉSE. Y
+         * es el camino sin dependencias, que es justo el que elige quien quiere un
+         * ejemplo de diez líneas.
+         *
+         * Se dice aquí porque este endpoint ES el manual —lo que lee quien acaba
+         * de llegar— y porque es lo único que se puede hacer desde el código: el
+         * 1010 lo contesta el borde de Cloudflare antes de que esta función exista,
+         * así que no hay forma de interceptarlo y explicarlo. El arreglo de verdad
+         * es una regla WAF que salte esa comprobación en `/api/*`, y eso vive en el
+         * panel, no en el repositorio.
+         */
+        si_algo_falla: {
+            '403_desde_python': 'Si usas `urllib` de la biblioteca estándar recibirás 403 con '
+                + 'HTML, no JSON: Cloudflare veta esa firma. Manda cualquier otro User-Agent '
+                + '(el tuyo propio vale) o usa `requests`, que pasa sin tocar nada.',
+            respuesta_no_json: 'Si el cuerpo no empieza por `{`, no es nuestra: es una página de '
+                + 'error del borde. Mira el código HTTP antes de parsear.',
+        },
         entornos,
     });
 }

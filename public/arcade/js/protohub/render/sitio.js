@@ -43,6 +43,61 @@
  */
 
 import { aspectoDe } from './aspecto.js';
+import { materialDe } from './material.js';
+
+/**
+ * La geometría de una pieza del catálogo.
+ *
+ * ⚠️ LAS CUATRO FORMAS, Y LA CUARTA NO LA DIBUJA NADIE HOY.
+ *
+ * Contadas en las 754 piezas: `box` 406, `cylinder` 225, **`wedge` 63** y
+ * `sphere` 60. El único lector del catálogo —`gen_semantic_props.html`— maneja
+ * las tres primeras y **no la cuña**: su cadena de `if` no la contempla, así que
+ * la malla se queda sin geometría y desaparece sin decir nada.
+ *
+ * No es un detalle: **50 de los 234 props llevan alguna cuña**, uno de cada
+ * cinco. Son los parabrisas de los coches, las solapas de las cajas, las rampas.
+ * Se dibujan a medias desde siempre y nadie lo ha visto porque falta en silencio.
+ *
+ * ⚠️ Y HACIA DÓNDE CAE LA PENDIENTE NO ESTÁ EN LOS DATOS. ES UNA DECISIÓN.
+ *
+ * Una cuña trae `size: [ancho, alto, fondo]` como una caja, y nada más. Ni el
+ * dato ni el lector actual dicen por qué cara baja. Así que se elige —una rampa
+ * que arranca a la altura completa en −z y muere en el suelo en +z— y se dice
+ * aquí, en vez de que parezca deducido. `rot` la gira, que para eso lo traen
+ * ciento cincuenta y siete piezas.
+ */
+export function geometriaDe(THREE, parte) {
+    const s = parte.size ?? [];
+    switch (parte.shape) {
+        case 'box':      return new THREE.BoxGeometry(...s);
+        case 'cylinder': return new THREE.CylinderGeometry(...s);
+        case 'sphere':   return new THREE.SphereGeometry(...s);
+        case 'wedge':    return cuña(THREE, s[0] ?? 1, s[1] ?? 1, s[2] ?? 1);
+        default:         return null;
+    }
+}
+
+/** Un prisma triangular: la caja con una cara caída. Centrado, como las demás. */
+function cuña(THREE, ancho, alto, fondo) {
+    const x = ancho / 2, y = alto / 2, z = fondo / 2;
+    // Seis vértices: la cara alta en −z y la arista baja en +z.
+    const v = new Float32Array([
+        -x, -y, -z,   x, -y, -z,   x,  y, -z,  -x,  y, -z,   // cara trasera, completa
+        -x, -y,  z,   x, -y,  z,                              // arista delantera, a ras
+    ]);
+    const cara = [
+        0, 1, 2,  0, 2, 3,      // trasera
+        4, 5, 1,  4, 1, 0,      // suelo
+        0, 3, 4,  3, 5, 4,      // laterales — se cierran contra la arista
+        1, 5, 2,  2, 5, 3,      // la pendiente
+    ];
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(v, 3));
+    g.setIndex(cara);
+    g.computeVertexNormals();
+    return g;
+}
 
 /**
  * LOS CONSTRUCTORES DE PIEZA.
@@ -143,6 +198,71 @@ export const PIEZAS = {
             cenital.shadow.bias = -0.0008;
         }
         ctx.luz(cenital);
+    },
+
+    /**
+     * ═══════════════════════════════════════════════════════════════════
+     *  UN PROP DEL CATÁLOGO
+     * ═══════════════════════════════════════════════════════════════════
+     *
+     *     { pieza: 'prop', catalogo: 'urban', nombre: 'bench_park',
+     *       en: [x, y, z], gira: [0, 1.57, 0], escala: 1 }
+     *
+     * ⚠️ LOS 87 KB QUE YA ESTABAN ESCRITOS Y NO LEÍA NADIE.
+     *
+     * `public/props/*.json` son dieciséis catálogos con **234 props y 754
+     * piezas**, cada una con su forma, su tamaño en METROS, su posición y su
+     * material declarado POR NOMBRE. Contado, no estimado.
+     *
+     * Los lee una sola página —`generators/gen_semantic_props.html`— y ningún
+     * juego, ninguna sala y ninguna de las 26 fábricas del motor. Son un
+     * mobiliario completo esperando a que alguien lo pida.
+     *
+     * ⚠️ EL CATÁLOGO ENTRA POR PARÁMETRO. Este fichero no lee disco ni red, que
+     * es lo que lo mantiene puro y probable en Node sin navegador. Cargarlo es
+     * del que llama, igual que THREE.
+     */
+    prop(THREE, p, ctx) {
+        const cat = ctx.catalogos?.[p.catalogo];
+        if (!cat) {
+            console.warn(`[sitio] no tengo el catálogo «${p.catalogo}»: el prop «${p.nombre}» no se monta. ` +
+                         `Pásalo en { catalogos: { ${p.catalogo}: … } }.`);
+            return;
+        }
+        const receta = cat[p.nombre];
+        if (!receta) {
+            console.warn(`[sitio] «${p.nombre}» no está en el catálogo «${p.catalogo}».`);
+            return;
+        }
+        const partes = Array.isArray(receta) ? receta : (receta.partes ?? receta.parts ?? []);
+        if (!partes.length) {
+            // Cinco props del catálogo no son una lista sino una RECETA
+            // (`generator: bsp_shelf` / `grid_lockers`), y esas las construye
+            // `BspPropSystem`, que vive en el motor nuevo. Se dice en vez de
+            // devolver un hueco silencioso.
+            console.warn(`[sitio] «${p.nombre}» no es una lista de piezas` +
+                         `${receta.generator ? ` sino una receta «${receta.generator}»` : ''}: no se monta.`);
+            return;
+        }
+
+        const grupo = new THREE.Group();
+        for (const parte of partes) {
+            const g = geometriaDe(THREE, parte);
+            if (!g) {
+                console.warn(`[sitio] forma desconocida «${parte.shape}» en «${p.nombre}»: esa pieza falta.`);
+                continue;
+            }
+            const m = new THREE.Mesh(g, materialDe(THREE, `prop:${parte.type ?? 'base'}`, { piel: ctx.piel }));
+            if (parte.pos) m.position.set(...parte.pos);
+            if (parte.rot) m.rotation.set(...parte.rot);
+            if (parte.scale) m.scale.setScalar(parte.scale);
+            m.castShadow = m.receiveShadow = true;
+            grupo.add(m);
+        }
+        if (p.en) grupo.position.set(...p.en);
+        if (p.gira) grupo.rotation.set(...p.gira);
+        if (p.escala) grupo.scale.setScalar(p.escala);
+        ctx.añadir(grupo);
     },
 
     /**

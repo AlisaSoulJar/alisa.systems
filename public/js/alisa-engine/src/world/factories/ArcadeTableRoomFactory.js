@@ -5,6 +5,28 @@ import { AssetManager } from '../../soma/AssetManager.js';
 import * as TWEEN from 'three/addons/libs/tween.module.js';
 
 export class ArcadeTableRoomFactory {
+    /**
+     * EL PLANO DE LA SALA, QUE AHORA ES UN DATO.
+     *
+     * Dos mesas, la de tablero y la de cartas. Es exactamente lo que había —los
+     * mismos ±2,5 y la baraja a 0,3 de su mesa— pero dicho una vez en vez de
+     * seis, y en un sitio donde se puede cambiar sin tocar código.
+     *
+     * ⚠️ SE PASA POR `options.plano`, Y ESO ES TODA LA GRACIA.
+     *
+     * Un salón con tres mesas, con una, o con las mesas en otro sitio, deja de
+     * ser una fábrica nueva y pasa a ser una lista distinta. Que es literalmente
+     * lo que `protohub/habitacion.js` necesitaba y no podía pedir: su comentario
+     * dice que no la reutiliza porque «pone DOS mesas fijas en x=±2.5».
+     *
+     * `id` no es decorativo: nombra la malla (`mesa:cartas`) y es lo que hace que
+     * el clic pueda preguntar por ella en vez de repetir su coordenada.
+     */
+    static PLANO_DE_CASA = [
+        { id: 'tablero', x: -2.5 },
+        { id: 'cartas',  x:  2.5, baraja: 0.3 },
+    ];
+
     constructor(scene, camera, controls, options = {}) {
         this.scene = scene;
         this.camera = camera;
@@ -25,6 +47,18 @@ export class ArcadeTableRoomFactory {
         // Hooks for UI syncing
         this.onSit = options.onSit || (() => {});
         this.onStand = options.onStand || (() => {});
+
+        /**
+         * ⚠️ `options` LLEGABA Y NO SE GUARDABA. Sólo se sacaban los dos ganchos
+         * y el resto se perdía en el constructor.
+         *
+         * Se ve al añadir la primera opción nueva: puse `options.plano` y habría
+         * sido `undefined` siempre. No habría reventado — la sala se habría
+         * montado con el plano de casa y yo habría creído que el parámetro
+         * funcionaba. Un ajuste que se ignora en silencio es peor que uno que no
+         * existe, porque el que no existe se nota al escribirlo.
+         */
+        this.options = options;
     }
 
     async init() {
@@ -62,14 +96,48 @@ export class ArcadeTableRoomFactory {
                 }
             });
             
-            // Main Board Games Table
-            this.tableObj.position.x = -2.5;
-            this.scene.add(this.tableObj);
-            
-            // Second Casino Table
-            this.tableCards = this.tableObj.clone();
-            this.tableCards.position.x = 2.5;
-            this.scene.add(this.tableCards);
+            /**
+             * ═══════════════════════════════════════════════════════════════
+             *  ⚠️ EL PLANO DE LA SALA ERA UN NÚMERO REPETIDO EN SEIS SITIOS
+             * ═══════════════════════════════════════════════════════════════
+             *
+             * `-2.5` y `2.5` estaban escritos a mano seis veces, y —esto es lo
+             * grave— **en dos preocupaciones que no se hablan**:
+             *
+             *     construir      la mesa de tablero a −2,5, la de cartas a 2,5,
+             *                    el tapete a 2,5, la baraja a 2,8
+             *     el CLIC        cuatro `if` que devuelven ±2,5 según qué tocas
+             *
+             * Mover una mesa exigía cambiar seis números en dos sitios distintos.
+             * Y si te dejabas uno, no reventaba: **el clic te sentaba donde ya no
+             * hay mesa**, en silencio. Eso no es «los números están a fuego», es
+             * un plano duplicado — y los planos duplicados se separan, que es la
+             * avería que este proyecto lleva pagando toda la semana.
+             *
+             * Ahora el plano es DATOS y hay uno solo. `onClick` no repite las
+             * coordenadas: pregunta a esta misma lista cuál de sus objetos has
+             * tocado. Lo que hace imposible la discrepancia no es el cuidado: es
+             * que ya no hay dos sitios donde escribirla.
+             *
+             * ⚠️ Y ESTO QUITA LA OBJECIÓN QUE YO MISMA ESCRIBÍ ANTEAYER.
+             *
+             * `protohub/habitacion.js` dice por qué no reutiliza esta fábrica:
+             * «carga Table.glb y pone DOS mesas fijas en x=±2.5, porque su trabajo
+             * es montar un salón entero. Aquí ya hay una mesa dibujada por el
+             * juego». Era cierto. Con el plano en datos, la sala se pide con las
+             * mesas que haga falta — o con ninguna.
+             */
+            this.plano = (this.options?.plano ?? ArcadeTableRoomFactory.PLANO_DE_CASA)
+                .map(p => ({ ...p }));
+
+            for (const sitio of this.plano) {
+                const mesa = sitio.id === 'tablero' ? this.tableObj : this.tableObj.clone();
+                mesa.position.x = sitio.x;
+                mesa.name = `mesa:${sitio.id}`;
+                this.scene.add(mesa);
+                sitio.mesa = mesa;
+                if (sitio.id === 'cartas') this.tableCards = mesa;   // el nombre viejo, para quien lo use
+            }
             
             // Green Casino Mat
             const tSize = adjustedBbox.getSize(new THREE.Vector3());
@@ -79,14 +147,23 @@ export class ArcadeTableRoomFactory {
             this.tableCards.scale.z *= 0.8;
             
             const scaledTx = tSize.x * 0.8;
-            this.matMesh = ArcadeTableRoomFactory.crearTapete(scaledTx * 0.96);
-            this.matMesh.position.set(2.5, 0.75 + 0.0025, 0);
-            this.scene.add(this.matMesh);
+            const cartas = this.plano.find(p => p.id === 'cartas');
+            if (cartas) {
+                // El tapete y la baraja van SOBRE su mesa, así que salen de la
+                // misma `x`. Antes eran dos literales más que había que acordarse
+                // de mover con ella; ahora no se pueden quedar atrás.
+                this.matMesh = ArcadeTableRoomFactory.crearTapete(scaledTx * 0.96);
+                this.matMesh.position.set(cartas.x, 0.75 + 0.0025, 0);
+                this.matMesh.name = 'tapete:cartas';
+                this.scene.add(this.matMesh);
+                cartas.encima = [this.matMesh];
 
-            // Physical Procedural Deck (52 cards)
-            this.deckGroup = ArcadeTableRoomFactory.crearBaraja();
-            this.deckGroup.position.set(2.8, 0.75 + 0.02, 0);
-            this.scene.add(this.deckGroup);
+                this.deckGroup = ArcadeTableRoomFactory.crearBaraja();
+                this.deckGroup.position.set(cartas.x + (cartas.baraja ?? 0.3), 0.75 + 0.02, 0);
+                this.deckGroup.name = 'baraja:cartas';
+                this.scene.add(this.deckGroup);
+                cartas.encima.push(this.deckGroup);
+            }
 
             // Bind click raycaster
             window.addEventListener('click', this.onClick.bind(this));
@@ -123,11 +200,24 @@ export class ArcadeTableRoomFactory {
 
         this.raycaster.setFromCamera(this.mouse, this.camera);
 
+        /**
+         * ⚠️ AQUÍ HABÍA CUATRO `if` CON LAS COORDENADAS OTRA VEZ.
+         *
+         * Cada uno decía a qué `x` sentarte según qué objeto tocabas, con los
+         * ±2,5 escritos de nuevo. Dos listas del mismo plano, y la de aquí no
+         * sabía nada de la de allí: mover una mesa y olvidar este bloque te
+         * sentaba en el aire, sin error.
+         *
+         * Ahora se recorre el plano y se pregunta por sus objetos. Si mañana hay
+         * tres mesas, este código no cambia — que es la diferencia entre un plano
+         * y una copia del plano.
+         */
         let targetX = null;
-        if (this.currentGameSet && this.raycaster.intersectObject(this.currentGameSet, true).length > 0) targetX = -2.5;
-        if (this.tableObj && this.raycaster.intersectObject(this.tableObj, true).length > 0) targetX = -2.5;
-        if (this.tableCards && this.raycaster.intersectObject(this.tableCards, true).length > 0) targetX = 2.5;
-        if (this.matMesh && this.raycaster.intersectObject(this.matMesh, true).length > 0) targetX = 2.5;
+        for (const sitio of this.plano ?? []) {
+            const suyos = [sitio.mesa, ...(sitio.encima ?? [])].filter(Boolean);
+            if (sitio.id === 'tablero' && this.currentGameSet) suyos.push(this.currentGameSet);
+            if (suyos.some(o => this.raycaster.intersectObject(o, true).length > 0)) targetX = sitio.x;
+        }
 
         if (targetX !== null) {
             this.sitAtTable(targetX);
