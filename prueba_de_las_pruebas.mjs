@@ -1132,6 +1132,34 @@ const SABOTAJES = [
         vigila: 'que las cuatro formas del catálogo se dibujen, y no tres',
     },
     {
+        nombre: 'camara',
+        corre: 'node --import ./resolver_three.mjs prueba_camara.mjs',
+        fichero: 'public/arcade/js/protohub/render/camara.js',
+        /**
+         * ⚠️ ESTE SABOTAJE ES UN AGUJERO QUE LA PRUEBA TUVO DE VERDAD, NO UNA
+         *    AVERÍA IMAGINADA.
+         *
+         * `prueba_camara.mjs` dio verde a la primera. Antes de fiarme rompí el
+         * módulo de cinco maneras a propósito, y DOS aprobaron igual: ignorar el
+         * `fov_bias` del ángulo, y mirar al centro del sujeto en vez de a su
+         * `y_target`.
+         *
+         * Las dos son gordas. Sin `fov_bias`, un ojo de pez deja de deformar y se
+         * queda en un primer plano cualquiera: el léxico le da +42° y sin ellos es
+         * otro plano. Y pasaba porque la prueba medía el cuadro RELATIVO al `fov`
+         * que devolvía el propio módulo: si el `fov` baja, la distancia baja con
+         * él y el cuadro vuelve a cuadrar. Comprobaba coherencia consigo mismo, no
+         * fidelidad al léxico.
+         *
+         * Se tapó midiendo la CONSECUENCIA en vez de repetir la suma: un objetivo
+         * más abierto para el mismo encuadre obliga a acercarse. Quitar el sesgo
+         * rompe ese orden y ahora se ve.
+         */
+        de: 'const fov = enc.fov + (ang.fov_bias ?? 0);',
+        a: 'const fov = enc.fov;',
+        vigila: 'que el ángulo cambie el objetivo y no sólo el sitio de la cámara',
+    },
+    {
         nombre: 'plano',
         corre: 'node --import ./resolver_three.mjs prueba_plano.mjs',
         fichero: 'public/js/alisa-engine/src/world/factories/ArcadeTableRoomFactory.js',

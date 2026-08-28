@@ -433,6 +433,83 @@
             }
         ];
 
+        /**
+         * ─── 6. EL LÉXICO COMPARTIDO ────────────────────────────────────────────
+         *
+         * ⚠️ ESTA PÁGINA ERA LA ÚNICA IMPLEMENTACIÓN QUE SOBREVIVÍA.
+         *
+         * `data/realizacion/camera_lexicon.json` dice de sí mismo que está
+         * «distilled from camera_slerp_director_studio.html» —de aquí— y que «tanto
+         * el motor de Python como las escenas del navegador leen ESTE fichero: no
+         * cableéis planos por escena». El 28-08-2026 las dos mitades eran falsas:
+         * `World/Synthesis/Engines/Camera.py` está hueco (recuperado de un .pyc, con
+         * los cuerpos perdidos) y en el navegador no lo leía nadie. Aquí seguían los
+         * planos a mano.
+         *
+         * Este grupo cierra el círculo. Los planos salen del fichero compartido y
+         * los resuelve `camara.js`, que es el `resolve()` que Camera.py perdió.
+         *
+         * ⚠️ Y NO ES SÓLO ORDEN: LOS DE ARRIBA ESTÁN ATADOS A UNA ESCALA.
+         *
+         *   · Los del grupo 3 y 4 llevan la posición en metros — `pos: [0, 150, 400]`
+         *     encuadra la torre y deja al avatar como un punto.
+         *   · Los del grupo 5 ya calculan contra la caja del sujeto, que fue el buen
+         *     hallazgo de esta página, pero rematan con un `z_offset` en metros
+         *     (10, 8, 5, 2) que vuelve a atarlos a la escala, y con `fov: 45` para
+         *     los cuatro. Un primer plano y un plano general con el mismo objetivo
+         *     no es cómo se filma: el léxico le da a cada encuadre el suyo (40, 38,
+         *     32, 28) y sustituye el `z_offset` por un `z_pad` en proporción.
+         *
+         * Por eso los de este grupo funcionan igual en ROOM, BUILDING y CITY sin
+         * tocar un número.
+         */
+        const RUTA_LEXICO = '../data/realizacion/camera_lexicon.json';
+
+        async function añadirGrupoDelLexico() {
+            let lexico, camaraDe;
+            try {
+                [lexico, { camaraDe }] = await Promise.all([
+                    fetch(RUTA_LEXICO).then((r) => {
+                        if (!r.ok) throw new Error(`${r.status} en ${RUTA_LEXICO}`);
+                        return r.json();
+                    }),
+                    import('../arcade/js/protohub/render/camara.js'),
+                ]);
+            } catch (e) {
+                // Sin léxico la página sigue siendo la de siempre: los otros cinco
+                // grupos no dependen de él. Se avisa y no se rompe nada.
+                console.warn('[director] sin léxico compartido:', e.message);
+                return null;
+            }
+            resolverPlano = (plano) => camaraDe(sujetoActual(), plano, { lexico });
+            return {
+                group: "6. LÉXICO COMPARTIDO ▴", color: "#7fffd4",
+                items: Object.entries(lexico.presets ?? {}).map(([id, p]) => ({
+                    id: `lex-${id}`, label: id.replace(/_/g, ' ').toUpperCase(),
+                    engine: 'lexico', preset: id,
+                    title: `LÉXICO // ${id}`,
+                    desc: `${p.desc ?? ''} — ${p.framing}/${p.angle}/${p.move}, relativo al sujeto.`,
+                })),
+            };
+        }
+
+        /**
+         * El sujeto que se está filmando, medido y no supuesto. `camara.js` sólo
+         * pide dónde está y cuánto mide; con eso el mismo plano vale para un avatar
+         * y para una torre.
+         */
+        function sujetoActual() {
+            const caja = new THREE.Box3().setFromObject(actorGroup);
+            const centro = caja.getCenter(new THREE.Vector3());
+            const tam = caja.getSize(new THREE.Vector3());
+            // Una caja vacía da tamaño 0 y una altura 0 no encuadra nada: el módulo
+            // lo rechaza a gritos, así que aquí se le da un sujeto de un metro.
+            const altura = Number.isFinite(tam.y) && tam.y > 1e-6 ? tam.y : 1;
+            return { centro: [centro.x, centro.y, centro.z], altura };
+        }
+
+        let resolverPlano = null;
+
         function buildUIFromJson() {
             const dock = document.getElementById('director-dock');
             CAMERA_LEXICON.forEach(category => {
@@ -457,7 +534,19 @@
                 dock.appendChild(dropup);
             });
         }
+        /**
+         * El menú se monta ya, con los cinco grupos de siempre, y el sexto se añade
+         * cuando llega el léxico. Al revés —esperar al `fetch` para pintar nada— la
+         * página se quedaría en negro si el fichero falla, y los otros cinco grupos
+         * no tienen la culpa de eso.
+         */
         buildUIFromJson();
+        añadirGrupoDelLexico().then((grupo) => {
+            if (!grupo?.items.length) return;
+            CAMERA_LEXICON.push(grupo);
+            document.getElementById('director-dock').innerHTML = '';
+            buildUIFromJson();
+        });
 
         function dispatchAction(node, btnClass, btnElement) {
             // UI Toggle
@@ -484,6 +573,19 @@
                 if (node.look) targetLook.set(node.look[0], node.look[1], node.look[2]);
                 if (node.fov) targetFov = node.fov;
             } 
+            else if (node.engine === 'lexico') {
+                if (!resolverPlano) return;   // el léxico no cargó; ya se avisó
+                const p = resolverPlano(node.preset);
+                targetPos.set(p.pos[0], p.pos[1], p.pos[2]);
+                targetLook.set(p.look[0], p.look[1], p.look[2]);
+                targetFov = p.fov;
+                // ⚠️ El módulo devuelve grados —lo dice en el nombre, `rollGrados`—
+                //    y esta página anima en radianes. La conversión va aquí, en el
+                //    adaptador, que es su sitio.
+                targetRoll = THREE.MathUtils.degToRad(p.rollGrados);
+                isOrbiting = p.movimiento?.nombre === 'orbit';
+                desc.innerText = `${node.desc} · ${p.dist.toFixed(2)} m del sujeto`;
+            }
             else if (node.engine === 'box') {
                 const box = new THREE.Box3().setFromObject(actorGroup);
                 const size = new THREE.Vector3(); box.getSize(size);
