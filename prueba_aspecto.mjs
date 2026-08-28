@@ -62,6 +62,7 @@
  */
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
+import { readFile } from 'node:fs/promises';
 
 const AQUI = path.dirname(fileURLToPath(import.meta.url));
 const RENDER = path.join(AQUI, 'public', 'arcade', 'js', 'protohub', 'render');
@@ -198,6 +199,48 @@ console.log(gris(`  ${escenas.length} roles de escenografía · ${lecturas.lengt
     } else if (!qMala.some((q) => q.includes('sofá-de-la-abuela'))) {
         mal('revisarPiel caza el rol inventado', `dejó pasar «sofá-de-la-abuela»: ${JSON.stringify(qMala)}`);
     } else bien('revisarPiel caza el rol inventado', `piel legal 0 quejas · piel con rol inventado: ${qMala.join(', ')}`);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 6 · la paleta copiada NO se ha separado de su original
+// ═══════════════════════════════════════════════════════════════════════════
+/**
+ * ⚠️ ESTO VIGILA UNA COPIA, Y LAS COPIAS SON LA AVERÍA DE ESTA CASA.
+ *
+ * `aspecto.js` no lee disco ni red —es lo que lo hace puro y utilizable desde
+ * three r128 y desde 0.160 a la vez— así que la paleta `concrete`, que es la que
+ * viste los props por defecto, está copiada dentro como `PALETA_CONCRETE`.
+ *
+ * Una copia sin guardia se separa. Ya pasó dos veces con el acabado de la mesa:
+ * «la geometría idéntica y el acabado distinto en las tres», y la segunda vez con
+ * un comentario al lado diciendo que se habían igualado a mano. Con esto, el día
+ * que alguien retoque `palettes.json` se entera aquí en vez de dentro de un mes
+ * mirando por qué un banco de parque es de otro gris.
+ *
+ * Una copia con guardia no es una copia: es una caché.
+ */
+{
+    const { PALETA_CONCRETE } = await imp('aspecto.js');
+    const ruta = path.join(AQUI, 'public', 'props', 'palettes.json');
+    let original = null;
+    try {
+        original = JSON.parse(await readFile(ruta, 'utf8')).concrete;
+    } catch (e) {
+        mal('la paleta copiada sigue igual', `no pude leer palettes.json: ${e.message}`);
+    }
+    if (original) {
+        const dif = [];
+        const igual = (k) => JSON.stringify(original[k]) === JSON.stringify(PALETA_CONCRETE[k]);
+        for (const k of ['colors', 'accents', 'roughness']) if (!igual(k)) dif.push(k);
+        if (dif.length) {
+            mal('la paleta copiada sigue igual',
+                `«concrete» cambió en palettes.json y no aquí: ${dif.join(', ')}. ` +
+                `original ${JSON.stringify(original.colors)} · copia ${JSON.stringify(PALETA_CONCRETE.colors)}`);
+        } else {
+            bien('la paleta copiada sigue igual',
+                 `${original.colors.length} colores y ${original.accents.length} acento(s) idénticos a palettes.json`);
+        }
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════

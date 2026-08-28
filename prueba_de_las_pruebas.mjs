@@ -1094,6 +1094,24 @@ const SABOTAJES = [
         vigila: 'que la sala no cambie de tamaño sin que nadie lo diga',
     },
     {
+        nombre: 'bandos',
+        corre: 'node prueba_bandos.mjs',
+        fichero: 'public/arcade/js/protohub/descripcion.js',
+        /**
+         * El fallo REAL, tal cual estuvo hasta el 28-08-2026: el glifo del mapa
+         * salía del TIPO de pieza y el dueño no se miraba, así que el ajedrez
+         * enseñaba las dos bandas en mayúsculas idénticas y el reversi un tablero
+         * de círculos iguales. Un agente de lenguaje no podía saber cuáles eran
+         * suyas.
+         *
+         * Lo encontró un cliente de Python escrito desde fuera — lo primero que
+         * hace alguien que llega es leer lo que le mandas.
+         */
+        de: 'if (!ambiguo(t) || de === null || de === undefined) return base;',
+        a: 'return base;',
+        vigila: 'que el mapa de texto diga de quién es cada pieza',
+    },
+    {
         nombre: 'preflight',
         corre: 'python preflight.py',
         /**

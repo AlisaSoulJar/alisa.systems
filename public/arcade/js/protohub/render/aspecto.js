@@ -106,6 +106,41 @@ export const ROLES = {
     'carta-cara':     LECTURA,
     'carta-reverso':  LECTURA,
     'carta-canto':    ESCENOGRAFIA,
+
+    /**
+     * ── Los props del catálogo ────────────────────────────────────────
+     *
+     * ⚠️ ESTOS NUEVE NOMBRES NO ME LOS HE INVENTADO: LOS CONTÉ.
+     *
+     * `public/props/*.json` son dieciséis catálogos con 234 props y 754 piezas,
+     * cada una con sus medidas en metros y —esto es lo bueno— **su material
+     * declarado por NOMBRE**, no por hex. Contados:
+     *
+     *     365  dark        51  container      17  sprite
+     *     196  base        35  l3_screen      15  red_neo
+     *      29  glass       33  cyan_neo       13  vehicle
+     *
+     * O sea que el catálogo ya cumplía la ley de `paleta.js` —declarar por
+     * nombre— desde antes de que existiera este fichero. Sólo le faltaba alguien
+     * a quien preguntarle qué significa cada nombre. Van con prefijo `prop:` para
+     * no chocar con los roles de la sala.
+     *
+     * ⚠️ Y LAS PANTALLAS Y LOS NEONES SON LECTURA, NO DECORACIÓN.
+     *
+     * `l3_screen`, `cyan_neo` y `red_neo` son pantallas y rótulos: llevan
+     * INFORMACIÓN. Un cartel que se apaga porque la sala cambió de luz es el
+     * mismo fallo que la carta lavada, y en un editor abierto sería el primero
+     * que alguien provocaría sin querer.
+     */
+    'prop:base':       ESCENOGRAFIA,
+    'prop:dark':       ESCENOGRAFIA,
+    'prop:container':  ESCENOGRAFIA,
+    'prop:glass':      ESCENOGRAFIA,
+    'prop:sprite':     ESCENOGRAFIA,
+    'prop:vehicle':    ESCENOGRAFIA,
+    'prop:l3_screen':  LECTURA,
+    'prop:cyan_neo':   LECTURA,
+    'prop:red_neo':    LECTURA,
 };
 
 /**
@@ -141,8 +176,134 @@ export const PIEL_CASA = {
         'carta-cara':     { color: 0xffffff },
         'carta-reverso':  { color: 0xffffff },
         'carta-canto':    { color: 0xe8ecef, rugosidad: 0.70, metal: 0.00 },
+
+        // Los nueve del catálogo entran abajo, desde la paleta `concrete`.
     },
 };
+
+/**
+ * ⚠️ LA PALETA `concrete`, COPIADA DE `palettes.json` — Y VIGILADA.
+ *
+ * Los props del catálogo no tienen color propio: lo pone la paleta. Así que la
+ * piel de la casa les da la NEUTRA de las diez, que es la que existe para eso.
+ *
+ * Está copiada aquí porque este fichero no lee disco ni red —es lo que lo hace
+ * puro y utilizable desde los dos motores— y una copia se separa: eso ya nos ha
+ * pasado con el acabado de la mesa, dos veces. Por eso `prueba_aspecto.mjs`
+ * compara estos cinco colores contra `public/props/palettes.json` y suspende si
+ * dejan de coincidir. Una copia con guardia no es una copia: es una caché.
+ *
+ * ⚠️ Y NO ELEGÍ YO ESTOS GRISES. La única decisión mía es CUÁL de las diez
+ * paletas es la de por defecto, y `concrete` es la única sin carácter — las
+ * otras nueve pintan un sitio (industrial, médico, abandonado…), y un color por
+ * defecto que ya cuenta una historia no es un valor por defecto.
+ */
+export const PALETA_CONCRETE = {
+    colors: ['#808080', '#909090', '#707070', '#999999', '#686868'],
+    accents: ['#505050'],
+    overlays: ['ov_concrete', 'ov_dirt'],
+    textures: [],
+    roughness: [0.85, 1],
+};
+
+Object.assign(PIEL_CASA.roles, pielDePaleta('concrete', PALETA_CONCRETE).roles);
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  UNA PALETA DEL CATÁLOGO, CONVERTIDA EN PIEL
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ⚠️ YA TENEMOS DIEZ PIELES ESCRITAS Y NADIE LO SABÍA.
+ *
+ * `public/props/palettes.json` guarda diez paletas con nombre —industrial,
+ * organic, luxury, abandoned, military, medical, cyber, nautical, residential,
+ * concrete— y cada una trae exactamente lo que una piel necesita:
+ *
+ *     colors[]     el cuerpo             accents[]   lo que llama la atención
+ *     roughness    [min, max]            overlays[]  el grano
+ *
+ * Las carga `AssetManager`, que resuelve categoría → paleta → semilla → color. Y
+ * `AssetManager.spawn()` no lo llama NADIE: comprobado, cero llamantes fuera de
+ * su propio fichero. Así que la biblioteca de pieles del Maker no hay que
+ * escribirla; hay que enchufarla.
+ *
+ * ⚠️ LA PALETA ENTRA POR PARÁMETRO: ESTE FICHERO NO LEE DISCO NI RED.
+ * Es lo que lo mantiene puro, probable en Node sin navegador y utilizable desde
+ * los dos motores. Cargar el JSON es del que llama.
+ *
+ * ⚠️ Y LOS ACENTOS VAN A LAS PANTALLAS, QUE NO ES UNA DECISIÓN ESTÉTICA.
+ * En la paleta `cyber` los acentos son `#00ffff`, `#ff00ff`, `#39ff14` — cian,
+ * magenta y verde neón. Son literalmente los colores de un rótulo encendido, y
+ * los roles que los reciben son los tres de LECTURA. Cuadra porque el catálogo
+ * ya estaba pensado así; yo sólo he unido las dos mitades.
+ *
+ * @param {string} nombre   cómo se llama la paleta, para poder decirlo
+ * @param {object} paleta   la entrada de `palettes.json`
+ * @param {object} [opts]   `semilla` — la misma da siempre la misma piel
+ */
+export function pielDePaleta(nombre, paleta, { semilla = 0 } = {}) {
+    const hex = (s) => parseInt(String(s).replace('#', ''), 16);
+    const colores = paleta?.colors?.length ? paleta.colors : ['#808080'];
+    const acentos = paleta?.accents?.length ? paleta.accents : colores;
+    const [rMin = 0.8, rMax = 0.9] = paleta?.roughness ?? [];
+
+    // Un reparto determinista: la misma semilla da siempre la misma piel, que es
+    // lo que permite que dos personas en la misma sala vean lo mismo.
+    const elige = (lista, i) => hex(lista[(semilla + i) % lista.length]);
+    const rug = (i) => +(rMin + ((rMax - rMin) * ((semilla + i) % 5)) / 4).toFixed(3);
+
+    return {
+        nombre: `paleta:${nombre}`,
+        roles: {
+            'prop:base':      { color: elige(colores, 0), rugosidad: rug(0), metal: 0.02 },
+            'prop:dark':      { color: elige(colores, 4), rugosidad: rug(1), metal: 0.05 },
+            'prop:container': { color: elige(colores, 2), rugosidad: rug(2), metal: 0.10 },
+            'prop:vehicle':   { color: elige(colores, 3), rugosidad: rug(3), metal: 0.25 },
+            'prop:sprite':    { color: elige(colores, 1), rugosidad: rug(4), metal: 0.00 },
+            // El cristal no sale de la paleta: es cristal en todas ellas.
+            'prop:glass':     { color: 0x9fb0c0, rugosidad: 0.08, metal: 0.00, opacidad: 0.35 },
+            // Los tres de lectura, con los acentos.
+            'prop:l3_screen': { color: elige(acentos, 0) },
+            'prop:cyan_neo':  { color: elige(acentos, 1) },
+            'prop:red_neo':   { color: elige(acentos, 2) },
+        },
+    };
+}
+
+/**
+ * El desgaste, que es el segundo eje que la paleta ya traía.
+ *
+ * `palettes.json._wear_effects` declara cinco estados —`pristine`, `used`,
+ * `worn`, `damaged`, `ruined`— con cuánto oscurecen, cuánta rugosidad añaden y
+ * cuánta saturación quitan. Es una piel aplicada sobre otra piel, y por eso se
+ * escribe como una función y no como una tabla más.
+ *
+ * ⚠️ NO TOCA LOS ROLES DE LECTURA. Una pantalla desgastada sigue teniendo que
+ * leerse: envejecer un cartel hasta que no se distingue es cambiar el juego, no
+ * el aspecto. Es la misma ley de arriba, aplicada al segundo eje — y si no
+ * estuviera aquí, el desgaste sería la puerta de atrás para apagar una lectura.
+ */
+export function gastar(piel, efecto) {
+    if (!efecto) return piel;
+    const { darken = 0, roughnessBoost = 0, saturationMult = 1 } = efecto;
+    const roles = {};
+    for (const [rol, v] of Object.entries(piel?.roles ?? {})) {
+        if (ROLES[rol] === LECTURA) { roles[rol] = v; continue; }
+        const r = Math.max(0, Math.min(255, (v.color >> 16) & 255));
+        const g = Math.max(0, Math.min(255, (v.color >> 8) & 255));
+        const b = Math.max(0, Math.min(255, v.color & 255));
+        const media = (r + g + b) / 3;
+        const ajusta = (c) => Math.round(
+            Math.max(0, Math.min(255, (media + (c - media) * saturationMult) * (1 - darken))));
+        roles[rol] = {
+            ...v,
+            color: (ajusta(r) << 16) | (ajusta(g) << 8) | ajusta(b),
+            rugosidad: v.rugosidad === undefined
+                ? undefined : Math.min(1, v.rugosidad + roughnessBoost),
+        };
+    }
+    return { nombre: `${piel?.nombre ?? 'piel'}+${efecto.nombre ?? 'gastada'}`, roles };
+}
 
 const POR_DEFECTO = { color: 0xff00ff, rugosidad: 0.8, metal: 0.0 };
 

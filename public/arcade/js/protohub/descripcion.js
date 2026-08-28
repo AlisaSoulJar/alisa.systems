@@ -606,12 +606,119 @@ export function describirSustrato(sus) {
          * inventado por nosotros.
          */
         const simbolos = sus.simbolos ?? {};
+
+        /**
+         * ═══════════════════════════════════════════════════════════════════
+         *  ⚠️ EL MAPA NO DECÍA DE QUIÉN ERA CADA PIEZA. SEIS JUEGOS.
+         * ═══════════════════════════════════════════════════════════════════
+         *
+         * El glifo salía del TIPO de pieza y el dueño no se miraba. En el ajedrez
+         * eso deja las dos bandas idénticas:
+         *
+         *     RNBQKBNR      ← negras
+         *     PPPPPPPP
+         *     ........
+         *     PPPPPPPP
+         *     RNBQKBNR      ← blancas
+         *
+         * y la leyenda —«P=peón, N=caballo…»— no menciona el color en ningún
+         * sitio. Un agente de lenguaje que lea el mapa NO PUEDE SABER cuáles son
+         * suyas. Lo encontró escribiendo el cliente de Python: lo primero que hace
+         * alguien de fuera es leer lo que le mandas.
+         *
+         * Medido sobre los cuarenta, no supuesto — ajedrez, reversi, damas,
+         * xiangqi, defensa y alisapolis. Y los dos peores no son los evidentes:
+         * **reversi y damas**, donde de quién es cada ficha ES el juego entero, y
+         * el mapa era un tablero de círculos iguales.
+         *
+         * ⚠️ LA CONVENCIÓN NO ME LA INVENTO: ES LA DEL FEN.
+         *
+         * Mayúscula el dueño 0, minúscula el otro. Comprobado que encaja: en el
+         * ajedrez `de:0` son las blancas, que es exactamente lo que el FEN escribe
+         * en mayúsculas desde siempre. Se habla el idioma del juego, que es lo que
+         * este mismo fichero argumenta dos comentarios más arriba con sokoban.
+         *
+         * Y sólo se aplica cuando HACE FALTA: si todas las piezas son del mismo
+         * dueño no hay ambigüedad que romper, y veintiuno de los juegos no cambian
+         * ni un carácter. Lo mejor sigue siendo que el juego lo declare —
+         * `simbolos['ficha:0']`— y eso manda sobre todo lo demás.
+         *
+         * ⚠️ ESTO CAMBIA EL PROMPT DE SEIS JUEGOS, Y HAY QUE DECIRLO.
+         *
+         * La cabecera de este fichero avisa: «hay números publicados medidos con
+         * ESTE texto». Cierto, y por eso se dice en voz alta: las notas de agente
+         * de lenguaje de esos seis se midieron por una puerta que no sabía expresar
+         * de quién era cada pieza. O sea que no las invalida hacia abajo — las
+         * midió con un jugador ciego a la mitad del tablero.
+         */
+        /**
+         * ⚠️ SÓLO CUENTAN LOS DUEÑOS DE VERDAD. Con `null` dentro del conjunto,
+         * sokoban y cripta —de un solo jugador, con piezas sin dueño y una del
+         * jugador— salían con dos «dueños» y la leyenda les prometía una distinción
+         * de mayúsculas que su mapa no hace. Una leyenda que anuncia una regla que
+         * no se aplica es peor que no tenerla.
+         */
+        /**
+         * ⚠️ LA CONDICIÓN ES POR TIPO, NO POR TABLERO. Y MI PRIMERA VERSIÓN NO.
+         *
+         * Empecé mirando si en el tablero había dos dueños distintos, y con eso
+         * cambiaba TODOS los glifos. Sokoban y cripta lo rompieron enseñando algo
+         * que yo no sabía: **`de` no siempre es un dueño**. Allí es una categoría —
+         * `caja` lleva `de:1`, `tesoro` lleva `de:2`, el jugador `de:0`— así que
+         * había dos «dueños» sin que nadie compitiera por nada, y les convertía el
+         * bicho `B` en `b` mientras la leyenda seguía diciendo `B`. Un mapa y su
+         * leyenda discrepando, causado por el arreglo de un mapa que discrepaba.
+         *
+         * La ambigüedad de verdad es más estrecha: **el MISMO TIPO de pieza
+         * apareciendo con dos dueños**. Eso es el peón blanco y el peón negro, y no
+         * lo es una caja y un tesoro. Con esa condición, sokoban y cripta no
+         * cambian ni un carácter y el ajedrez sí.
+         */
+        const duenosPorTipo = new Map();
+        for (const p of (sus.piezas ?? [])) {
+            const d = p.de ?? p.bando;
+            if (d === null || d === undefined) continue;
+            if (!duenosPorTipo.has(p.t)) duenosPorTipo.set(p.t, new Set());
+            duenosPorTipo.get(p.t).add(d);
+        }
+        const ambiguo = (t) => (duenosPorTipo.get(t)?.size ?? 0) > 1;
+        const variosDuenos = [...duenosPorTipo.keys()].some(ambiguo);
+
+        /**
+         * El terreno que de verdad se ve, TOMADO ANTES DE PINTAR LAS PIEZAS.
+         *
+         * ⚠️ Y AQUÍ ME EQUIVOQUÉ A LA PRIMERA. Lo calculé del mapa ya terminado, así
+         * que los glifos de las PIEZAS contaban como terreno: la `o` del rival en
+         * reversi hacía que la leyenda siguiera diciendo «o destino». El filtro
+         * estaba bien; miraba el mapa en el momento equivocado.
+         */
+        const terrenoVisible = new Set(mapa.flat());
+
+        const glifoDe = (t, de) => {
+            const declarado = de === null || de === undefined ? null : simbolos[`${t}:${de}`];
+            if (declarado) return declarado;
+            const base = simbolos[t] ?? String(t ?? '?')[0].toUpperCase();
+            if (!ambiguo(t) || de === null || de === undefined) return base;
+            // Sin distinción de caja —un `#`, un dígito, un emoji— no se puede
+            // separar por mayúsculas y se deja como está: mejor un mapa ambiguo
+            // que uno que finge distinguir.
+            if (base.toUpperCase() === base.toLowerCase()) return base;
+            return de === 0 ? base.toUpperCase() : base.toLowerCase();
+        };
+
         for (const p of (sus.piezas ?? [])) {
             if (p.y < 0 || p.y >= alto || p.x < 0 || p.x >= ancho) continue;
-            mapa[p.y][p.x] = simbolos[p.t] ?? String(p.t ?? '?')[0].toUpperCase();
+            mapa[p.y][p.x] = glifoDe(p.t, p.de ?? p.bando ?? null);
         }
+
+        // La leyenda pide el glifo del dueño 0 sólo para los tipos ambiguos; para
+        // el resto pide el de siempre, que es el que su mapa dibuja.
         const clave = Object.entries(sus.leyenda ?? {})
-            .map(([k, v]) => `${simbolos[k] ?? String(k)[0].toUpperCase()}=${v}`).join(', ');
+            .map(([k, v]) => `${glifoDe(k, ambiguo(k) ? 0 : null)}=${v}`).join(', ');
+        // Y la leyenda tiene que EXPLICAR la convención, porque un mapa que
+        // distingue por la caja de la letra sin decirlo no distingue nada.
+        const claveDuenos = variosDuenos
+            ? ' · MAYÚSCULA = jugador 0, minúscula = el rival' : '';
         /**
          * ⚠️ Y LA LEYENDA TIENE QUE DESCRIBIR EL MAPA QUE HAY, NO EL DE SIEMPRE.
          *
@@ -620,13 +727,29 @@ export function describirSustrato(sus) {
          * primero es mentira. Cuando el juego declara `terreno`, la leyenda sale
          * de sus nombres; si no, se queda la de toda la vida.
          */
+        /**
+         * ⚠️ Y LA LEYENDA POR DEFECTO NOMBRABA SÍMBOLOS QUE NO ESTÁN EN EL MAPA.
+         *
+         * Decía «# muro, o destino, . libre» en todo juego que no declarara su
+         * terreno. En un reversi no hay muros ni destinos — y desde que las piezas
+         * distinguen dueño por la caja de la letra, esa `o` de «destino» CHOCA con
+         * la ficha del jugador 1. La leyenda contradecía al mapa que acompañaba.
+         *
+         * El comentario de dos líneas más abajo ya defendía esto —«la leyenda tiene
+         * que describir el mapa que hay, no el de siempre»— y sólo lo aplicaba al
+         * caso del terreno declarado. Aquí se termina: se nombran únicamente los
+         * símbolos que de verdad aparecen en la rejilla.
+         */
+        const usados = terrenoVisible;
         const claveTerreno = sus.terreno
             ? Object.entries(sus.terreno)
                 .map(([v, s]) => `${s}=${sus.leyendaTerreno?.[v] ?? `celda ${v}`}`).join(', ')
-            : '# muro, o destino, . libre';
+            : Object.entries({ '#': 'muro', 'o': 'destino', '.': 'libre' })
+                .filter(([s]) => usados.has(s))
+                .map(([s, n]) => `${s} ${n}`).join(', ');
         t.push(`Mapa (${claveTerreno}${niebla ? ', ? sin explorar' : ''}`
              + `${sinVista ? ', , fuera de tu vista' : ''}`
-             + `${clave ? `, ${clave}` : ''}):\n`
+             + `${clave ? `, ${clave}` : ''}${claveDuenos}):\n`
              + mapa.map(f => f.join('')).join('\n'));
     }
 
