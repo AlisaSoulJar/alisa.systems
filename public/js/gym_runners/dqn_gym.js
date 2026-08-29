@@ -1,67 +1,74 @@
-export async function runGymEpisode(epochs, WORKER_NAME = "LabRat") {
-    console.log(`[${WORKER_NAME}] TFJS -> Inicializando Deep Neural Network (${epochs} epocas)...`);
-    
-    // Instanciamos TensorFlow.js para simular Deep Q-Network Headless
-    const tf = await import('@tensorflow/tfjs');
-    
-    const model = tf.sequential();
-    model.add(tf.layers.dense({inputShape: [2], units: 16, activation: 'relu'}));
-    model.add(tf.layers.dense({units: 16, activation: 'relu'}));
-    model.add(tf.layers.dense({units: 1, activation: 'linear'})); // Predict brakeFactor
-    
-    model.compile({optimizer: tf.train.adam(0.01), loss: 'meanSquaredError'});
-    
-    // Synthesizing responses
-    console.log(`[${WORKER_NAME}] Generando dataset deterministico proxy...`);
-    const xsList = [];
-    const ysList = [];
-    
-    for (let i = 0; i < 500; i++) {
-       const dist = Math.max(1, Math.random() * 50); 
-       const speed = Math.random() * 20;
-       // Mock target function: brake harder if short distance & high speed
-       const targetBrake = speed > dist ? (speed - dist)/speed : 0;
-       xsList.push([dist, speed]);
-       ysList.push([targetBrake]);
-    }
-    
-    const xs = tf.tensor2d(xsList);
-    const ys = tf.tensor2d(ysList);
-    
-    console.log(`[${WORKER_NAME}] Entrenando Modelo (Backpropagation)...`);
+/**
+ * dqn_gym.js — el agente que APRENDE, sobre un entorno de verdad
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * ⚠️ LO QUE HABÍA AQUÍ NO ERA UN DQN NI ERA UN ARNÉS.
+ *
+ * Importaba `@tensorflow/tfjs` —que no está en las dependencias del proyecto ni
+ * en `node_modules`, así que no ha corrido nunca— y lo que hacía era generar 500
+ * filas de datos INVENTADOS con `Math.random` y ajustarles un perceptrón a una
+ * función de frenado imaginaria. Sin entorno, sin acciones, sin recompensas y sin
+ * ecuación de Bellman: se llamaba «Deep Q-Network» y era regresión supervisada
+ * sobre datos falsos.
+ *
+ * Era, además, el único de los veintidós arneses que no arrancaba.
+ *
+ * ⚠️ POR QUÉ NO SE INSTALA TENSORFLOW Y SE ESCRIBE LA RED A MANO.
+ *
+ * Porque es lo que se hace fuera: en Gymnasium, ALE, Procgen o MuJoCo el ENTORNO
+ * no depende de ningún marco de aprendizaje, y los aprendices van aparte. Esa
+ * separación es la que permite enchufarle cualquier framework al mismo entorno,
+ * que es la promesa entera de un banco de pruebas.
+ *
+ * Y aquí pesa doble: `preflight` prohíbe cargar código desde un CDN, así que
+ * meter tfjs sería meter megabytes de marco de aprendizaje en un sitio estático
+ * para entrenar una red de tres capas. Ver `gym/AgenteDQN.js`, que son ochenta
+ * líneas y se puede leer entera.
+ *
+ * Ahora entrena de verdad, sobre `RaccoonSpace`, que es uno de los entornos donde
+ * el aprendizaje se nota: el azar saca −24,90 y el agente entrenado 0,00.
+ */
+import { DeterministicScope } from '../alisa-engine/src/world/core/DeterministicScope.js';
+import { entrenarEn } from '../alisa-engine/src/gym/AgenteDQN.js';
+import { cargar } from '../alisa-engine/src/gym/registry.js';
+
+const SEMILLA = 42;
+const ENTORNO = 'alisa/RaccoonSpace-v1';
+
+async function _episodio(episodios = 30, WORKER_NAME = 'LabRat') {
+    console.log(`[${WORKER_NAME}] DQN sin dependencias → ${ENTORNO}, ${episodios} episodios...`);
+
+    const Entorno = await cargar(ENTORNO);
     const t0 = performance.now();
-    const history = await model.fit(xs, ys, {
-       epochs: epochs,
-       shuffle: true,
-       verbose: 0,
-       callbacks: {
-           onEpochEnd: (epoch, logs) => {
-               if (epoch % 50 === 0) console.log(`Epoch ${epoch}: loss = ${logs.loss.toFixed(4)}`);
-           }
-       }
-    });
+    const r = await entrenarEn(Entorno, { episodios, pasosMax: 200, semilla: SEMILLA });
     const t1 = performance.now();
-    
-    // Extract real model weights
-    const weights = model.getWeights();
-    const extractedArrays = [];
-    for (const w of weights) {
-        extractedArrays.push(Array.from(await w.data()));
-    }
-    
-    let extractedWeightsPayload = {
-        topology: "3-layer dense 2->16->16->1",
-        tensors: extractedArrays
-    };
-    
-    const durationMs = t1 - t0;
-    console.log(`[${WORKER_NAME}] TensorFlow Converged! Ticks entrenados en ${Math.round(durationMs)}ms.`);
+
+    console.log(`[${WORKER_NAME}] primeros ${r.primeros.toFixed(2)} · últimos ${r.ultimos.toFixed(2)}`
+        + ` en ${Math.round(t1 - t0)}ms.`);
 
     return {
-        method: "Deep Q-Network (TFJS Supervised Simulator)",
-        epochs: epochs,
-        final_loss: history.history.loss[history.history.loss.length - 1],
-        sim_time_ms: durationMs,
-        extracted_weights: extractedWeightsPayload
+        method: 'DQN propio, sin dependencias (red densa 3 capas, escrita a mano)',
+        entorno: ENTORNO,
+        episodios,
+        /**
+         * ⚠️ SE DEVUELVE LA CURVA, NO SÓLO EL TOTAL. Un número final no distingue
+         *    «aprendió» de «tuvo suerte en el último episodio»; lo que lo dice es
+         *    que los últimos superen a los primeros, y para verlo hace falta la
+         *    serie entera.
+         */
+        recompensa_primeros: r.primeros,
+        recompensa_ultimos: r.ultimos,
+        curva: r.curva,
+        epsilon_final: r.epsilon,
+        sim_time_ms: t1 - t0,
     };
+}
+
+/**
+ * ⚠️ El episodio corre dentro de un ámbito determinista, como los otros veintiuno.
+ *    Aquí importa aún más: un aprendiz que no se repite no es una línea base, es
+ *    una anécdota distinta cada vez.
+ */
+export async function runGymEpisode(...args) {
+    return DeterministicScope.runAsync(SEMILLA, () => _episodio(...args));
 }

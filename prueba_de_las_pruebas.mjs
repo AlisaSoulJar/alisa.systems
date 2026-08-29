@@ -1134,32 +1134,34 @@ const SABOTAJES = [
     {
         nombre: 'arneses',
         corre: 'node --import ./resolver_three.mjs prueba_arneses.mjs',
-        fichero: 'prueba_arneses.mjs',
+        fichero: 'public/js/gym_runners/boids_gym.js',
         /**
-         * ⚠️ ESTE SABOTAJE HUBO QUE CAMBIARLO, Y EL MOTIVO MERECE ESTAR ESCRITO.
+         * ⚠️ ESTE SABOTAJE HUBO QUE CAMBIARLO DOS VECES EN LA MISMA NOCHE, Y EL
+         *    MOTIVO ES UNA LECCIÓN SOBRE LOS SABOTAJES EN GENERAL.
          *
          * El primero quitaba `llamadas++` de la sonda, para que dejara de contar
          * quién llama a `Math.random`. Mordía perfectamente… mientras doce arneses
-         * lo llamaban. Al sembrarlos esa misma noche, el contador pasó a valer
-         * cero de todas formas y el sabotaje dejó de cambiar nada: la meta-prueba
-         * lo cazó al momento con «APRUEBA CON EL CABLE CORTADO».
+         * lo llamaban. Al sembrarlos, el contador pasó a valer cero de todas formas
+         * y el sabotaje dejó de cambiar nada.
          *
-         * Es un aviso que conviene recordar: **un sabotaje puede caducar cuando se
-         * arregla la avería que reproducía**. Sigue en el fichero, sigue pareciendo
-         * que vigila, y ya no vigila nada.
+         * El segundo silenciaba a `mal()`, el que anota los fallos. También mordía…
+         * mientras quedara algún fallo que anotar. Al arreglar el último arnés y
+         * bajar el techo a CERO, silenciar al delator dejó de cambiar nada otra vez:
+         * no hay nada que callar.
          *
-         * Éste ataca algo que no caduca: que el delator ANOTE. Si `mal()` deja de
-         * apuntar, la prueba recorre los veintidós, no encuentra nada que decir y
-         * canta victoria — con la puerta cerrada de `dqn_gym` intacta y con
-         * cualquier arnés que se rompa mañana. Un vigilante ciego es peor que
-         * ninguno, porque además tranquiliza.
+         * Las dos veces la meta-prueba lo cazó con «APRUEBA CON EL CABLE CORTADO»,
+         * que es exactamente para lo que está. Pero la lección es general: **un
+         * sabotaje que ataca al INSTRUMENTO caduca cuando el mundo mejora.** Sigue
+         * en el fichero, sigue pareciendo que vigila, y ya no vigila nada.
          *
-         * Y se ve porque el techo baja en los dos sentidos: sin anotar, la cuenta
-         * cae de uno a cero, y eso suspende igual que si subiera.
+         * El bueno ataca al MUNDO: se le quita el ámbito determinista a un arnés,
+         * que es literalmente la avería que tenían doce de los veintidós. Ése no
+         * puede caducar mientras la prueba tenga sentido, porque reproduce el fallo
+         * que la prueba existe para encontrar.
          */
-        de: 'const mal = (m) => fallos.push(m);',
-        a: 'const mal = (m) => { };',
-        vigila: 'que las puertas de agente rotas se sigan anotando',
+        de: '    return DeterministicScope.runAsync(SEMILLA, () => _episodio(...args));',
+        a: '    return _episodio(...args);',
+        vigila: 'que un arnés sin sembrar no pase por bueno',
     },
     {
         nombre: 'mecha',

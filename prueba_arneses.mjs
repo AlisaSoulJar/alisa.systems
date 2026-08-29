@@ -259,35 +259,35 @@ if (corridos < MINIMO) {
     process.exit(2);
 }
 /**
- * ⚠️ UN TECHO, NO UN APROBADO. EMPEZÓ EN TRECE Y BAJÓ A UNO LA MISMA NOCHE.
+ * ⚠️ UN TECHO, NO UN APROBADO. EMPEZÓ EN TRECE Y ACABÓ EN CERO LA MISMA NOCHE.
  *
  * La primera medida: doce de los veintidós arneses llamaban a `Math.random` sin
  * sembrar —de 30 llamadas (`turret_combat_gym`) a 45.414 (`stealth_gym`)— y uno
  * no arrancaba. Escribí aquí que arreglarlo era «tocar doce motores compartidos,
- * un cambio de forma», y **estaba equivocada**.
+ * un cambio de forma», y **estaba equivocada las dos veces**.
  *
- * Al mirar de verdad: los motores ya aceptan un generador —`this.rng = config.rng
- * || (() => Math.random())`— y `prueba_semillas.mjs` lleva ese trabajo hecho, con
- * su propio techo en 2 de 54 sistemas. Los que no sembraban eran LOS ARNESES, que
- * no pasaban ninguno. Y el motor tiene desde hace tiempo `DeterministicScope`,
- * escrito exactamente para esto y usado por otros veintiséis ficheros. Los
- * veintidós arneses eran los únicos que no lo usaban.
+ *   · LOS DOCE DEL AZAR. Los motores ya aceptan un generador —`this.rng =
+ *     config.rng || (() => Math.random())`— y `prueba_semillas.mjs` lleva ese
+ *     trabajo hecho, con su propio techo en 2 de 54 sistemas. Los que no sembraban
+ *     eran LOS ARNESES. Y el motor tiene `DeterministicScope`, escrito justo para
+ *     esto y usado por otros veintiséis ficheros: los arneses eran los únicos que
+ *     no lo usaban. Cada episodio se envolvió en `DeterministicScope.runAsync(42,
+ *     …)`, sin tocar el cuerpo de ninguno ni una línea de los sistemas de debajo.
+ *   · EL QUE NO ARRANCABA. `dqn_gym` importaba `@tensorflow/tfjs`, que no está en
+ *     las dependencias ni podría estarlo sin un CDN —que `preflight` prohíbe con
+ *     razón—. Y no era un DQN: ajustaba un perceptrón a 500 filas de datos
+ *     inventados, sin entorno ni recompensas. Se reescribió contra un entorno de
+ *     verdad usando `gym/AgenteDQN.js`, una red densa escrita a mano, sin
+ *     dependencias y sembrada. Ver su cabecera para qué hace y qué no.
  *
- * Así que cada episodio se envuelve en `DeterministicScope.runAsync(42, …)`, sin
- * tocar el cuerpo de ninguno ni una línea de los sistemas de debajo. Doce puertas
- * de agente pasaron de irreproducibles a reproducibles.
+ * ⚠️ CERO NO ES UN APROBADO PERPETUO: EL TECHO BAJA EN LOS DOS SENTIDOS.
  *
- *   · QUEDA UNO: `dqn_gym` importa `@tensorflow/tfjs`, que no está instalado. En
- *     el navegador tampoco lo estaría sin un CDN, y `preflight` los prohíbe con
- *     razón. Ése no es un arnés lento: es una puerta cerrada, y arreglarlo es
- *     decidir si ese entorno entra en el paquete o sale del catálogo.
- *
- * ⚠️ Y EL TECHO BAJA EN LOS DOS SENTIDOS.
- *
- * Si alguien arregla el que queda y no baja el número, esto suspende. Un límite
- * que se queda por encima de la realidad deja de vigilar sin que nadie se entere.
+ * Si mañana alguien añade un arnés que tira del azar del sistema, esto sube y
+ * suspende. Y si el número bajara —cosa que ya no puede— habría que bajarlo aquí.
+ * Un límite que va por detrás de la realidad deja de vigilar sin que nadie se
+ * entere.
  */
-const TECHO = 1;
+const TECHO = 0;
 
 if (fallos.length > TECHO) {
     for (const f of fallos) console.log(rojo(`  ✗ ${f}`));
@@ -304,6 +304,6 @@ if (fallos.length < TECHO) {
     process.exit(1);
 }
 for (const f of fallos) console.log(gris(`  · ${f}`));
-console.log(gris(`\n  ${fallos.length} sin arrancar, justo el techo — `
-    + `los otros 21 corren dentro de un ámbito determinista`));
-console.log(verde('✓ los 22 se cargan en un navegador y 21 arrancan y se repiten\n'));
+console.log(gris(`\n  ${fallos.length} rotos, justo el techo — `
+    + `los ${corridos} corren dentro de un ámbito determinista`));
+console.log(verde('✓ los 22 se cargan en un navegador, arrancan y se repiten\n'));
