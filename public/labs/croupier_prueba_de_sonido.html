@@ -1,0 +1,226 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA — Prueba de sonido</title>
+<!--
+  La pantalla de PRUEBA DE SONIDO, como las de las consolas.
+
+  ⚠️ NO ES NOSTALGIA: ES UN INSTRUMENTO.
+
+  `prueba_sonidos.mjs` renderiza las 53 recetas en Node y les mide la energía, así
+  que caza un sonido MUDO. Lo que ninguna prueba automática puede decir es si un
+  sonido suena BIEN — si el láser parece un láser y no una tos. Eso sólo se oye, y
+  hasta hoy había que abrir un juego y provocar la jugada.
+
+  ⚠️ Y SUENA POR EL MISMO CAMINO QUE LOS JUEGOS.
+
+  Podría sintetizar aquí las recetas con `sonido.js` y sonaría parecido. Sería
+  medir otra cosa: la pregunta es si lo que oye un jugador está bien, así que esto
+  llama a `SFX.play(nombre)`, exactamente igual que `sonido_mesa.js`. Si un día el
+  léxico y `sfx.js` se separan, aquí se oye el silencio de verdad, no el de mentira.
+
+  Es la misma regla que ya aprendimos con los tableros: medir lo pintado, no lo
+  regenerado.
+-->
+<style>
+:root {
+    --fondo:   #0e1316;
+    --panel:   #161d21;
+    --alto:    #1e272c;
+    --linea:   #2a353b;
+    --tinta:   #dfe7e9;
+    --tenue:   #8fa1a7;
+    --acento:  #4fd6c1;
+    --codigo:  #e8a33d;
+    --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0; background: var(--fondo); color: var(--tinta);
+    font-family: var(--mono); font-size: 14px; line-height: 1.5;
+    padding: 2rem 1.25rem 5rem;
+}
+.hoja { max-width: 68rem; margin: 0 auto; display: flex; flex-direction: column; gap: 2rem; }
+header { display: flex; flex-direction: column; gap: .6rem; }
+h1 { font-size: 1.5rem; margin: 0; letter-spacing: .12em; text-transform: uppercase; }
+.sub { color: var(--tenue); max-width: 46rem; margin: 0; }
+#estado { color: var(--acento); }
+
+.familia { display: flex; flex-direction: column; gap: .7rem; }
+.familia h2 {
+    font-size: .78rem; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--tenue); margin: 0; padding-bottom: .4rem; border-bottom: 1px solid var(--linea);
+    display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;
+}
+.familia h2 span { color: var(--acento); }
+
+.rejilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: .55rem; }
+
+button.sonido {
+    font: inherit; text-align: left; cursor: pointer;
+    background: var(--panel); color: var(--tinta);
+    border: 1px solid var(--linea); border-radius: 3px;
+    padding: .6rem .7rem; display: flex; flex-direction: column; gap: .28rem;
+    transition: border-color .12s, background .12s;
+}
+button.sonido:hover, button.sonido:focus-visible {
+    border-color: var(--acento); background: var(--alto); outline: none;
+}
+button.sonido.sonando { border-color: var(--acento); background: var(--alto); }
+button.sonido b { font-weight: 700; letter-spacing: .02em; }
+button.sonido .receta { color: var(--tenue); font-size: .76rem; line-height: 1.45; }
+button.sonido .intencion { color: var(--tenue); font-size: .78rem; font-style: italic; }
+button.sonido.escrito b::after {
+    content: " · código"; color: var(--codigo); font-weight: 400; font-size: .72rem; letter-spacing: .06em;
+}
+
+.barra { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.barra button {
+    font: inherit; cursor: pointer; background: var(--alto); color: var(--tinta);
+    border: 1px solid var(--linea); border-radius: 3px; padding: .45rem .8rem;
+}
+.barra button:hover, .barra button:focus-visible { border-color: var(--acento); outline: none; }
+
+footer { color: var(--tenue); font-size: .78rem; border-top: 1px solid var(--linea); padding-top: 1rem; line-height: 1.7; }
+a { color: var(--acento); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="hoja">
+    <header>
+        <h1>Prueba de sonido</h1>
+        <p class="sub">Los sonidos del banco, todos, para oírlos sin abrir un juego. Suenan por el mismo camino que usan las cuarenta y una mesas — <code>SFX.play</code> — así que lo que oigas aquí es exactamente lo que oye un jugador.</p>
+        <p id="estado">tocá cualquier tecla o botón para despertar el audio…</p>
+        <div class="barra">
+            <button id="todos">sonar todos, en orden</button>
+            <button id="parar">parar</button>
+        </div>
+    </header>
+
+    <div id="familias"></div>
+
+    <footer>
+        <b>53</b> sonidos salen de <code>/data/sonidos.json</code> como recetas —capas de tres primitivas—
+        y <b>10</b> están escritos como código en <code>sfx.js</code>, marcados arriba: usan Web Audio a pelo,
+        arpegios y temporizadores, y no encajan en el vocabulario. La ausencia está declarada en el léxico.<br>
+        Una prueba automática (<code>prueba_sonidos.mjs</code>) ya comprueba que ninguno sea silencio y que
+        ninguno suene igual que otro. Lo que sólo se puede juzgar aquí es si suenan <em>bien</em>.
+    </footer>
+</div>
+
+<script src="/js/sfx.js"></script>
+<script>
+(async function () {
+    const $ = (id) => document.getElementById(id);
+    const estado = $('estado');
+
+    // El navegador no deja sonar hasta el primer gesto. Se avisa en vez de callar.
+    let despierto = false;
+    const despertar = () => {
+        if (despierto) return;
+        despierto = true;
+        try { window.SFX?.init?.(); } catch { /* sin audio se mira igual */ }
+        estado.textContent = 'audio listo · pulsa cualquier sonido';
+    };
+    addEventListener('pointerdown', despertar, { once: true, capture: true });
+    addEventListener('keydown', despertar, { once: true, capture: true });
+
+    let lexico;
+    try {
+        const r = await fetch('/data/sonidos.json');
+        if (!r.ok) throw new Error(r.status);
+        lexico = await r.json();
+    } catch (e) {
+        estado.textContent = 'no se pudo leer /data/sonidos.json: ' + e.message;
+        return;
+    }
+
+    /** La receta, dicha en una línea, para poder leerla mientras suena. */
+    const enUnaLinea = (capas) => capas.map((c) =>
+        c.tipo === 'barrido' ? `barrido ${c.desde}→${c.hasta} Hz ${c.forma ?? 'sine'} ${c.dur}s`
+        : c.tipo === 'ruido' ? `ruido ${c.filtro ?? 'highpass'} ${c.hz ?? 1000} Hz ${c.dur}s`
+        : `onda ${c.forma} ${c.hz} Hz ${c.dur}s`).join('  ·  ');
+
+    // Se agrupa por la familia que declara el léxico. Los de código van al final,
+    // juntos, porque lo que tienen en común es cómo están hechos, no dónde suenan.
+    const grupos = new Map();
+    for (const [nombre, s] of Object.entries(lexico.sonidos ?? {})) {
+        const fam = s.familia ?? 'sin familia';
+        if (!grupos.has(fam)) grupos.set(fam, []);
+        grupos.get(fam).push({ nombre, ...s });
+    }
+    grupos.set('escritos como código', (lexico.soloCodigo ?? []).map((nombre) => ({ nombre, escrito: true })));
+
+    const cont = $('familias');
+    const todos = [];
+    for (const [fam, lista] of grupos) {
+        if (!lista.length) continue;
+        const sec = document.createElement('section');
+        sec.className = 'familia';
+        const h = document.createElement('h2');
+        h.innerHTML = `${fam} <span>${lista.length}</span>`;
+        sec.appendChild(h);
+
+        const rej = document.createElement('div');
+        rej.className = 'rejilla';
+        for (const s of lista) {
+            const b = document.createElement('button');
+            b.className = 'sonido' + (s.escrito ? ' escrito' : '');
+            b.type = 'button';
+            const nombre = document.createElement('b');
+            nombre.textContent = s.nombre;
+            b.appendChild(nombre);
+            if (s.intencion) {
+                const i = document.createElement('div');
+                i.className = 'intencion';
+                i.textContent = s.intencion;
+                b.appendChild(i);
+            }
+            if (s.capas) {
+                const r = document.createElement('div');
+                r.className = 'receta';
+                r.textContent = enUnaLinea(s.capas);
+                b.appendChild(r);
+            }
+            b.addEventListener('click', () => {
+                despertar();
+                tocar(s.nombre, b);
+            });
+            rej.appendChild(b);
+            todos.push({ nombre: s.nombre, boton: b });
+        }
+        sec.appendChild(rej);
+        cont.appendChild(sec);
+    }
+
+    function tocar(nombre, boton) {
+        try { window.SFX?.play?.(nombre); }
+        catch (e) { estado.textContent = `«${nombre}» reventó: ${e.message}`; return; }
+        if (!boton) return;
+        boton.classList.add('sonando');
+        setTimeout(() => boton.classList.remove('sonando'), 260);
+    }
+
+    /**
+     * ⚠️ Sonarlos todos seguidos es la forma más rápida de oír un mudo: en una
+     *    tanda, el que falta se nota como un hueco en el ritmo.
+     */
+    let tanda = null;
+    $('todos').addEventListener('click', () => {
+        despertar();
+        if (tanda) return;
+        let i = 0;
+        estado.textContent = `sonando los ${todos.length}…`;
+        tanda = setInterval(() => {
+            if (i >= todos.length) { clearInterval(tanda); tanda = null; estado.textContent = 'listo'; return; }
+            const s = todos[i++];
+            s.boton.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            tocar(s.nombre, s.boton);
+        }, 420);
+    });
+    $('parar').addEventListener('click', () => {
+        if (tanda) { clearInterval(tanda); tanda = null; }
+        estado.textContent = 'parado';
+    });
+})();
+</script>

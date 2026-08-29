@@ -122,28 +122,43 @@ for (const nombre of conReceta) {
     }
 }
 
-// ── 4. El léxico y sfx.js dicen lo mismo ────────────────────────────────────
+// ── 4. UNA SOLA FUENTE: sfx.js declara los diez, y ni uno más ───────────────
 /**
- * ⚠️ MIENTRAS `sfx.js` SIGA TENIENDO SUS PROPIAS COPIAS, HAY DOS FUENTES.
+ * ⚠️ ESTA COMPROBACIÓN CAMBIÓ AL SALDAR LA DEUDA, Y AHORA ES MÁS FUERTE.
  *
- * El léxico es la fuente de verdad, pero `sfx.js` es una IIFE clásica que no
- * puede importar un módulo, así que de momento conserva sus sesenta y tres
- * funciones. Eso es una deuda declarada, no un descuido — y hasta que se salde,
- * esto vigila que las dos listas no se separen: un sonido nuevo en `sfx.js` que
- * no llegue al léxico dejaría al mundo 3D sin él, en silencio.
+ * Antes `sfx.js` tenía sus propias copias de los sesenta y tres, así que esto
+ * sólo podía vigilar que las dos listas no se separaran: había dos fuentes y lo
+ * único que cabía era que estuvieran de acuerdo.
+ *
+ * Ya no. `sfx.js` monta los 53 desde el léxico y se queda únicamente con los diez
+ * que son código de verdad. Así que la invariante buena es exacta: **lo que
+ * declara `sfx.js` tiene que ser EXACTAMENTE `soloCodigo`**.
+ *
+ * Y eso caza algo que la versión anterior no podía: alguien que escriba un sonido
+ * nuevo a mano en `sfx.js` en vez de como receta. Sonaría plano en el arcade y el
+ * mundo 3D se quedaría sin él, en silencio — que es la avería que había.
  */
 {
     const sfx = await readFile('./public/js/sfx.js', 'utf8');
     const cuerpo = sfx.match(/const sounds = \{([\s\S]*?)\n {4}\};/)?.[1] ?? '';
     const declarados = new Set([...cuerpo.matchAll(/\n {8}(\w+)\(\)/g)].map((m) => m[1]));
-    const cubiertos = new Set(nombresDe(LEX));
+    const codigo = new Set(soloCodigo);
 
-    comprobaciones += 2;
-    if (declarados.size < 30) mal(`sólo encuentro ${declarados.size} sonidos en sfx.js: la lectura falla`);
-    const faltan = [...declarados].filter((n) => !cubiertos.has(n));
-    const sobran = [...cubiertos].filter((n) => !declarados.has(n));
-    if (faltan.length) mal(`en sfx.js y no en el léxico: ${faltan.join(', ')}`);
-    if (sobran.length) mal(`en el léxico y no en sfx.js: ${sobran.join(', ')}`);
+    comprobaciones += 3;
+    if (!declarados.size) mal('no encuentro ningún sonido en sfx.js: la lectura falla');
+    const deMas = [...declarados].filter((n) => !codigo.has(n));
+    const deMenos = [...codigo].filter((n) => !declarados.has(n));
+    if (deMas.length) {
+        mal(`escritos a mano en sfx.js y no declarados en soloCodigo: ${deMas.join(', ')} `
+            + `— o son recetas, o hay que declararlos`);
+    }
+    if (deMenos.length) mal(`declarados en soloCodigo y ausentes de sfx.js: ${deMenos.join(', ')}`);
+
+    // Y que el cargador siga ahí: sin él, los 53 no llegan y nadie se entera.
+    comprobaciones++;
+    if (!/fetch\(['"]\/data\/sonidos\.json['"]\)/.test(sfx)) {
+        mal('sfx.js ya no pide el léxico: los 53 sonidos de receta no llegarían');
+    }
 }
 
 // ── veredicto ────────────────────────────────────────────────────────────────

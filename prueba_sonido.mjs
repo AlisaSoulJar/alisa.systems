@@ -85,13 +85,32 @@ function llamadas(texto, fichero, pedidos, dinamicas) {
 
 console.log('\nUn sonido que no existe no suena, y no se queja\n');
 
+/**
+ * ⚠️ EL CATÁLOGO YA NO ESTÁ TODO EN `sfx.js`, Y ESTA PRUEBA LO SABE.
+ *
+ * Hasta el 29-08-2026 los sesenta y tres sonidos estaban escritos ahí dentro y
+ * bastaba con leer ese fichero. Ahora 53 son RECETAS en `public/data/sonidos.json`
+ * y `sfx.js` sólo conserva los diez que usan Web Audio a pelo.
+ *
+ * Así que el catálogo es la UNIÓN de los dos, y hay que mirar los dos. Si esta
+ * prueba hubiera seguido leyendo sólo `sfx.js`, habría declarado huérfanos a los
+ * cincuenta y tres que sí existen — un rojo enorme y falso, que es la otra forma
+ * de que una prueba deje de servir.
+ */
 const RUTA = path.join('public', 'js', 'sfx.js');
 const fuente = await readFile(RUTA, 'utf-8');
-const tiene = sonidosDeclarados(fuente);
+const RUTA_LEXICO = path.join('public', 'data', 'sonidos.json');
+const lexico = JSON.parse(await readFile(RUTA_LEXICO, 'utf-8'));
+
+const tiene = new Set([
+    ...(sonidosDeclarados(fuente) ?? []),
+    ...Object.keys(lexico.sonidos ?? {}),
+]);
 const fallos = [];
 
-if (!tiene || tiene.size === 0) {
-    console.log(rojo(`\n✗ no se pudo leer el catálogo de ${RUTA}: la forma del fichero ha cambiado\n`));
+if (tiene.size === 0) {
+    console.log(rojo(`\n✗ no se pudo leer el catálogo de ${RUTA} ni de ${RUTA_LEXICO}: `
+        + `la forma de los ficheros ha cambiado\n`));
     process.exit(1);
 }
 

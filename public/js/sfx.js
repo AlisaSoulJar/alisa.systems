@@ -101,93 +101,37 @@ const SFX = (() => {
     // ── SOUND LIBRARY ──
     // Each sound is a function that creates the synthesis in real-time
 
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  ⚠️ AQUÍ HABÍA SESENTA Y TRES SONIDOS ESCRITOS A MANO. QUEDAN DIEZ.
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Los otros 53 viven en `public/data/sonidos.json` como RECETAS —capas de
+     * las tres primitivas de abajo— y se montan al vuelo en `montarRecetas`.
+     * No es un ahorro de líneas: es que ahora **hay una sola definición**, y el
+     * mundo 3D puede tocar exactamente el mismo sonido colocándolo en el
+     * espacio (`SpatialAudioPlugin.registrarLexicoDeSonidos`).
+     *
+     * Mientras estuvieron aquí, había dos fuentes: un sonido nuevo escrito en
+     * este fichero no llegaba nunca a la sala, y en silencio.
+     *
+     * ⚠️ ESTOS DIEZ SE QUEDAN, Y ESTÁ DECLARADO EN EL LÉXICO (`soloCodigo`).
+     *
+     * Usan Web Audio a pelo, arpegios y temporizadores. Inventarse un
+     * vocabulario de secuencias y esperas para diez casos sería meter a
+     * martillazos en el formato lo que no encaja. La ausencia es un dato.
+     */
     const sounds = {
 
-        // ═══ ASTEROIDS ═══
-
-        laser() {
-            // Classic pew-pew: high sine sweep down
-            sweep(1200, 200, 0.08, 'square', 0.15);
-        },
-
-        laser_heavy() {
-            // Power laser: deeper, longer
-            sweep(800, 100, 0.15, 'sawtooth', 0.2);
-            sweep(600, 80, 0.18, 'square', 0.1);
-        },
-
-        rocket() {
-            // Whoosh + rumble
-            sweep(300, 1500, 0.1, 'sawtooth', 0.15);
-            noise(0.15, 0.1, 'bandpass', 800);
-        },
-
-        explosion() {
-            // Big boom: noise burst + low freq shake
-            noise(0.4, 0.35, 'lowpass', 600);
-            osc('sine', 60, 0.3, 0.4);
-            osc('sine', 40, 0.5, 0.2);
-        },
-
-        explosion_small() {
-            // Asteroid break
-            noise(0.2, 0.2, 'lowpass', 800);
-            osc('sine', 80, 0.15, 0.2);
-        },
-
-        hit_armor() {
-            // Metallic clang — deflect off boss armor
-            osc('square', 800, 0.05, 0.15);
-            osc('square', 1200, 0.03, 0.1);
-            noise(0.05, 0.08, 'highpass', 4000);
-        },
-
-        hit_core() {
-            // Critical hit — satisfying crunch
-            osc('sawtooth', 400, 0.1, 0.25);
-            osc('sine', 200, 0.15, 0.2);
-            noise(0.1, 0.15, 'bandpass', 1000);
-        },
-
-        shield_hit() {
-            // Shield absorb — buzzy deflect
-            sweep(2000, 500, 0.12, 'sine', 0.15);
-            osc('triangle', 300, 0.08, 0.1);
-        },
-
-        powerup() {
-            // Classic ascending arpeggio
+        boss_death() {
+            // Chain explosions
             const t = ctx.currentTime;
-            [523, 659, 784, 1047].forEach((f, i) => {
-                const o = ctx.createOscillator();
-                const g = ctx.createGain();
-                o.type = 'sine';
-                o.frequency.value = f;
-                g.gain.setValueAtTime(0.15, t + i * 0.08);
-                g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.08 + 0.15);
-                o.connect(g); g.connect(masterGain);
-                o.start(t + i * 0.08);
-                o.stop(t + i * 0.08 + 0.2);
-            });
-        },
-
-        capsule_collect() {
-            // Quick pickup — bright blip
-            sweep(600, 1400, 0.08, 'sine', 0.2);
-            osc('sine', 1200, 0.06, 0.1);
-        },
-
-        orb_collect() {
-            // Valuable catch — shimmering collect
-            sweep(400, 2000, 0.15, 'sine', 0.25);
-            sweep(500, 2500, 0.2, 'triangle', 0.15);
-            osc('sine', 1800, 0.1, 0.1);
-        },
-
-        bell_cycle() {
-            // Bell color change — quick ting
-            osc('sine', 2000, 0.06, 0.1);
-            osc('triangle', 3000, 0.04, 0.08);
+            for (let i = 0; i < 6; i++) {
+                setTimeout(() => {
+                    noise(0.3, 0.3 - i * 0.03, 'lowpass', 400 + i * 100);
+                    osc('sine', 50 + i * 10, 0.3, 0.25);
+                }, i * 200);
+            }
         },
 
         boss_enter() {
@@ -210,200 +154,25 @@ const SFX = (() => {
             }
         },
 
-        boss_phase() {
-            // Phase transition — deep impact + alarm
-            osc('sine', 40, 0.6, 0.4);
-            noise(0.3, 0.25, 'lowpass', 300);
-            sweep(1500, 200, 0.4, 'sawtooth', 0.2);
+        dado() {
+            // Tres golpes desiguales: un dado que rueda no hace un solo ruido.
+            noise(0.03, 0.07, 'bandpass', 1800);
+            setTimeout(() => noise(0.025, 0.05, 'bandpass', 2300), 70);
+            setTimeout(() => noise(0.04, 0.06, 'bandpass', 1500), 150);
         },
 
-        boss_death() {
-            // Chain explosions
+        game_over() {
+            // Descending sad tones
             const t = ctx.currentTime;
-            for (let i = 0; i < 6; i++) {
-                setTimeout(() => {
-                    noise(0.3, 0.3 - i * 0.03, 'lowpass', 400 + i * 100);
-                    osc('sine', 50 + i * 10, 0.3, 0.25);
-                }, i * 200);
-            }
-        },
-
-        boss_charge() {
-            // Charging up whoosh
-            sweep(100, 800, 0.8, 'sawtooth', 0.15);
-            noise(0.5, 0.1, 'bandpass', 500);
-        },
-
-        boss_sweep() {
-            // Laser beam hum
-            osc('sawtooth', 150, 0.3, 0.12);
-            osc('square', 152, 0.3, 0.08); // Beat frequency for hum
-        },
-
-        // Lo pide `countdown()` en el «GO!», y nunca existio: la cuenta atras
-        // entera —tres numeros y la salida, a 150px— corria muda. Es el disparo
-        // gordo del jefe, asi que `laser_heavy` con mas cuerpo y mas cola.
-        boss_laser() {
-            sweep(600, 60, 0.35, 'sawtooth', 0.22);
-            sweep(400, 40, 0.4, 'square', 0.12);
-            noise(0.2, 0.1, 'lowpass', 400);
-        },
-
-        armor_open() {
-            // Mechanical panels opening — hydraulic hiss
-            noise(0.3, 0.12, 'highpass', 3000);
-            sweep(200, 400, 0.2, 'square', 0.08);
-        },
-
-        armor_close() {
-            // Mechanical panels closing — clank
-            sweep(400, 200, 0.15, 'square', 0.08);
-            noise(0.1, 0.15, 'lowpass', 500);
-            osc('square', 150, 0.05, 0.15);
-        },
-
-        ship_death() {
-            // Player death — descending buzz + explosion
-            sweep(1000, 50, 0.5, 'sawtooth', 0.3);
-            noise(0.6, 0.3, 'lowpass', 500);
-            osc('sine', 40, 0.8, 0.3);
-        },
-
-        turret_die() {
-            // Sub-explosion + sparks
-            noise(0.25, 0.25, 'bandpass', 1200);
-            osc('sine', 70, 0.2, 0.2);
-            sweep(3000, 800, 0.15, 'sine', 0.1);
-        },
-
-        energy_low() {
-            // Warning beep — low energy
-            osc('square', 440, 0.1, 0.1);
-            osc('square', 440, 0.1, 0.08);
-        },
-
-        combo() {
-            // Quick rising note for combo increment
-            sweep(800, 1600, 0.06, 'sine', 0.12);
-        },
-
-        graze() {
-            // High pitched quick whoosh for near miss
-            sweep(300, 1500, 0.1, 'sine', 0.1);
-            noise(0.1, 0.05, 'highpass', 2000);
-        },
-
-        car_pass() {
-            // Doppler whoosh
-            sweep(400, 100, 0.4, 'sine', 0.15);
-            noise(0.4, 0.2, 'lowpass', 600);
-        },
-
-        frog_hop() {
-            // Boing
-            sweep(200, 500, 0.1, 'sine', 0.15);
-        },
-
-        squish() {
-            // Splat
-            noise(0.2, 0.3, 'lowpass', 800);
-            sweep(200, 50, 0.2, 'sawtooth', 0.2);
-        },
-
-        crash() {
-            // Metal crunch
-            noise(0.3, 0.4, 'bandpass', 600);
-            osc('sawtooth', 70, 0.4, 0.25);
-        },
-
-        bomb_use() {
-            // Screen-clearing bomb — massive sweep + noise
-            sweep(2000, 30, 0.8, 'sawtooth', 0.4);
-            noise(0.6, 0.35, 'lowpass', 200);
-            osc('sine', 30, 1.0, 0.3);
-        },
-
-        barrier_deploy() {
-            // Force field activate — electric buzz
-            osc('sawtooth', 200, 0.3, 0.15);
-            osc('square', 205, 0.3, 0.1); // Beat frequency
-            sweep(500, 2000, 0.2, 'sine', 0.1);
-        },
-
-        // ═══ AQUARIUM ═══
-
-        splash() {
-            // Water splash
-            noise(0.3, 0.2, 'bandpass', 2000);
-            sweep(400, 200, 0.15, 'sine', 0.1);
-        },
-
-        fish_eat() {
-            // Quick chomp
-            osc('sine', 300, 0.05, 0.2);
-            osc('sine', 150, 0.08, 0.15);
-            noise(0.03, 0.1, 'highpass', 3000);
-        },
-
-        fish_spawn() {
-            // Bubble pop
-            sweep(800, 1500, 0.06, 'sine', 0.12);
-            osc('sine', 1200, 0.04, 0.08);
-        },
-
-        predator_alert() {
-            // Danger proximity — low pulse
-            osc('sine', 80, 0.2, 0.15);
-            osc('sine', 120, 0.15, 0.1);
-        },
-
-        bubble() {
-            // Rising bubble — quick sine blip
-            sweep(600, 1800, 0.1, 'sine', 0.06);
-        },
-
-        school_form() {
-            // Fish schooling — soft shimmer
-            osc('triangle', 800, 0.2, 0.05);
-            osc('triangle', 1200, 0.15, 0.04);
-            osc('triangle', 600, 0.2, 0.03);
-        },
-
-        // ═══ PEATON ═══
-
-        jump() {
-            // Classic frog hop — rising blip
-            sweep(200, 600, 0.08, 'square', 0.15);
-        },
-
-        land() {
-            // Landing thud
-            osc('sine', 100, 0.06, 0.15);
-            noise(0.04, 0.08, 'lowpass', 400);
-        },
-
-        car_pass() {
-            // Doppler-like car whoosh
-            sweep(300, 150, 0.3, 'sawtooth', 0.06);
-        },
-
-        drown() {
-            // Sinking — descending bubbles
-            sweep(800, 200, 0.4, 'sine', 0.15);
-            noise(0.3, 0.1, 'bandpass', 1500);
-        },
-
-        safe_zone() {
-            // Reached safe zone — victory chime
-            osc('sine', 523, 0.1, 0.15);
-            const t = ctx.currentTime;
-            const o = ctx.createOscillator();
-            const g = ctx.createGain();
-            o.type = 'sine'; o.frequency.value = 784;
-            g.gain.setValueAtTime(0.15, t + 0.1);
-            g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-            o.connect(g); g.connect(masterGain);
-            o.start(t + 0.1); o.stop(t + 0.35);
+            [523, 494, 440, 392, 349].forEach((f, i) => {
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.type = 'triangle'; o.frequency.value = f;
+                g.gain.setValueAtTime(0.15, t + i * 0.2);
+                g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.2 + 0.4);
+                o.connect(g); g.connect(masterGain);
+                o.start(t + i * 0.2); o.stop(t + i * 0.2 + 0.5);
+            });
         },
 
         level_complete() {
@@ -420,103 +189,6 @@ const SFX = (() => {
             });
         },
 
-        ferret_catch() {
-            // Predator catches prey — satisfying snap
-            osc('square', 600, 0.05, 0.2);
-            osc('sine', 400, 0.08, 0.15);
-            sweep(1000, 2000, 0.06, 'sine', 0.1);
-        },
-
-        // ═══ INTERACTION / OVERWORLD ═══
-
-        /**
-         * ── MESA: cartas, fichas y dados ──────────────────────────────────
-         *
-         * La familia que le faltaba al catálogo. Estaban el shmup, el acuático,
-         * las plataformas y la interfaz, y no estaba el género del que el
-         * proyecto tiene CUARENTA juegos. Se nota en que los de mesa eran los
-         * únicos que no tenían a qué sonar.
-         *
-         * Cuál de los tres suena no hace falta declararlo por juego: el motor de
-         * cartas pone `carta` y el de tablero `ficha`, y quién es cada uno ya lo
-         * decide el sustrato (zonas sin rejilla = cartas). El dato ya existía.
-         */
-        carta() {
-            // El roce del papel al salir de la mano: aire, no tono.
-            noise(0.05, 0.09, 'highpass', 2600);
-            osc('triangle', 520, 0.02, 0.03);
-        },
-
-        ficha() {
-            // Madera sobre madera: golpe corto y grave, sin cola.
-            osc('triangle', 190, 0.045, 0.11);
-            noise(0.025, 0.05, 'lowpass', 1400);
-        },
-
-        dado() {
-            // Tres golpes desiguales: un dado que rueda no hace un solo ruido.
-            noise(0.03, 0.07, 'bandpass', 1800);
-            setTimeout(() => noise(0.025, 0.05, 'bandpass', 2300), 70);
-            setTimeout(() => noise(0.04, 0.06, 'bandpass', 1500), 150);
-        },
-
-        click() {
-            osc('sine', 1000, 0.03, 0.1);
-        },
-
-        hover() {
-            osc('sine', 1500, 0.02, 0.05);
-        },
-
-        menu_open() {
-            sweep(400, 800, 0.1, 'sine', 0.1);
-        },
-
-        menu_close() {
-            sweep(800, 400, 0.08, 'sine', 0.08);
-        },
-
-        // Lo pide `autoWireUI` en cada mousedown y nunca existio: `play` comprueba
-        // `if (sounds[name])` y se va callando, asi que el sonido de pulsar llevaba
-        // mudo desde siempre sin dar un solo error. Mas seco que `click`, que es
-        // confirmacion; esto es el golpe de tecla.
-        menu_select() {
-            osc('square', 660, 0.04, 0.07);
-        },
-
-        footstep() {
-            noise(0.04, 0.06, 'lowpass', 500);
-            osc('sine', 80, 0.03, 0.05);
-        },
-
-        // Los otros dos que se pedian sin existir. `radar` lo llama `countdown()`
-        // en cada numero y la camara FPS al fijar blanco: un ping seco y agudo.
-        // `toggle` es el interruptor —lo pide la linterna de la busqueda por la
-        // planta— y suena a chasquido, no a confirmacion.
-        radar() {
-            osc('sine', 1400, 0.14, 0.16);
-            osc('sine', 2100, 0.06, 0.05);
-        },
-
-        toggle() {
-            noise(0.02, 0.08, 'highpass', 4000);
-            osc('square', 320, 0.03, 0.06);
-        },
-
-        door_open() {
-            sweep(200, 500, 0.2, 'triangle', 0.1);
-            noise(0.15, 0.05, 'highpass', 2000);
-        },
-
-        npc_talk() {
-            // Undertale-style character blip
-            osc('square', 300 + Math.random() * 200, 0.04, 0.08);
-        },
-
-        item_pickup() {
-            sweep(500, 1200, 0.1, 'sine', 0.15);
-        },
-
         notification() {
             // System notification — two-tone
             osc('sine', 880, 0.1, 0.12);
@@ -530,26 +202,38 @@ const SFX = (() => {
             o.start(t + 0.12); o.stop(t + 0.3);
         },
 
-        error() {
-            // Error buzz
-            osc('square', 200, 0.15, 0.15);
-            osc('square', 150, 0.2, 0.1);
+        npc_talk() {
+            // Undertale-style character blip
+            osc('square', 300 + Math.random() * 200, 0.04, 0.08);
         },
 
-        // ═══ UNIVERSAL ═══
-
-        game_over() {
-            // Descending sad tones
+        powerup() {
+            // Classic ascending arpeggio
             const t = ctx.currentTime;
-            [523, 494, 440, 392, 349].forEach((f, i) => {
+            [523, 659, 784, 1047].forEach((f, i) => {
                 const o = ctx.createOscillator();
                 const g = ctx.createGain();
-                o.type = 'triangle'; o.frequency.value = f;
-                g.gain.setValueAtTime(0.15, t + i * 0.2);
-                g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.2 + 0.4);
+                o.type = 'sine';
+                o.frequency.value = f;
+                g.gain.setValueAtTime(0.15, t + i * 0.08);
+                g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.08 + 0.15);
                 o.connect(g); g.connect(masterGain);
-                o.start(t + i * 0.2); o.stop(t + i * 0.2 + 0.5);
+                o.start(t + i * 0.08);
+                o.stop(t + i * 0.08 + 0.2);
             });
+        },
+
+        safe_zone() {
+            // Reached safe zone — victory chime
+            osc('sine', 523, 0.1, 0.15);
+            const t = ctx.currentTime;
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            o.type = 'sine'; o.frequency.value = 784;
+            g.gain.setValueAtTime(0.15, t + 0.1);
+            g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+            o.connect(g); g.connect(masterGain);
+            o.start(t + 0.1); o.stop(t + 0.35);
         },
 
         victory() {
@@ -566,17 +250,49 @@ const SFX = (() => {
                 o.start(t + i * 0.12); o.stop(t + i * 0.12 + dur + 0.15);
             });
         },
-
-        tick() {
-            // Timer/counter tick
-            osc('sine', 1000, 0.02, 0.06);
-        },
-
-        score() {
-            // Score increment
-            sweep(800, 1200, 0.04, 'sine', 0.08);
-        },
     };
+
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  EL LÉXICO: LA ÚNICA DEFINICIÓN DE LOS OTROS 53
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Se pide al cargar el script, no en `init()`: así ha llegado mucho antes de
+     * que nadie toque la página, que es cuando el navegador deja sonar.
+     *
+     * ⚠️ Y SI NO HA LLEGADO, SE AVISA. NO SE CALLA.
+     *
+     * El fallo original de este fichero era `if (sounds[name])` sin `else`: un
+     * nombre que no estaba no sonaba y no se quejaba, y la única señal de que
+     * faltaba un sonido es un silencio — que es exactamente lo que hace un
+     * sonido flojo. El fallo y el acierto sonaban igual.
+     */
+    let lexico = null;
+    const avisados = new Set();
+
+    function montarRecetas(lex) {
+        lexico = lex;
+        for (const [nombre, receta] of Object.entries(lex.sonidos || {})) {
+            if (sounds[nombre]) continue;          // los diez de código mandan
+            sounds[nombre] = () => {
+                for (const c of receta.capas) {
+                    if (c.tipo === 'barrido') sweep(c.desde, c.hasta, c.dur, c.forma, c.vol);
+                    else if (c.tipo === 'ruido') noise(c.dur, c.vol, c.filtro, c.hz);
+                    else if (c.tipo === 'onda') osc(c.forma, c.hz, c.dur, c.vol, c.detune);
+                }
+            };
+        }
+    }
+
+    const listo = fetch('/data/sonidos.json')
+        .then((r) => { if (!r.ok) throw new Error(r.status + ' en /data/sonidos.json'); return r.json(); })
+        .then((lex) => { montarRecetas(lex); return Object.keys(lex.sonidos || {}).length; })
+        .catch((e) => {
+            console.warn('[SFX] sin léxico de sonidos: ' + e.message
+                + ' — sólo sonarán los diez que van en código.');
+            return 0;
+        });
+
 
     // ── PROCEDURAL AMBIENT FALLBACK ──
     const music = {
@@ -753,9 +469,17 @@ const SFX = (() => {
     // ── PUBLIC API ──
     return {
         init,
+        /** La promesa del léxico, por si alguien quiere esperar a que esté. */
+        listo,
+
         play(name, vol) {
             if (!ensureCtx()) return;
             if (muted) return;
+            if (!sounds[name] && !avisados.has(name)) {
+                avisados.add(name);
+                console.warn(`[SFX] «${name}» no existe`
+                    + (lexico ? '' : ' y el léxico aún no ha llegado'));
+            }
             if (sounds[name]) {
                 try {
                     if (vol !== undefined) {

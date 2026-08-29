@@ -141,7 +141,7 @@ const SABOTAJES = [
     {
         nombre: 'sonido',
         corre: 'node prueba_sonido.mjs',
-        fichero: 'public/js/sfx.js',
+        fichero: 'public/data/sonidos.json',
         // El fallo REAL, y estaba puesto: `autoWireUI` pedía `menu_select` en cada
         // mousedown y ese sonido no existía. `play` empieza por `if (sounds[name])`,
         // así que se iba callando — sin error, sin aviso, sin nada. Un sonido que
@@ -153,8 +153,24 @@ const SABOTAJES = [
         // El sabotaje quita el sonido, no la llamada: es la dirección en que pasa
         // de verdad —se renombra o se borra una entrada del catálogo y las páginas
         // que la pedían enmudecen— y es la que ningún error de consola delata.
-        de: '        menu_select() {',
-        a: '        menu_select_renombrado() {',
+        /**
+         * ⚠️ ESTE SABOTAJE SE MUDÓ DE FICHERO EL 29-08-2026, Y ES LA TERCERA VEZ
+         *    EN DOS DÍAS QUE UNO CADUCA PORQUE EL MUNDO MEJORA.
+         *
+         * Rompía `menu_select` dentro de `sfx.js`, que es donde vivía. Al pasar los
+         * 53 sonidos de receta al léxico, `menu_select` dejó de estar ahí y el
+         * sabotaje ya no encajaba: la meta-prueba lo cantó con «el sabotaje ya no
+         * encaja: falta …», que es exactamente para lo que está.
+         *
+         * La avería que reproduce es la MISMA —renombrar una entrada del catálogo
+         * y dejar mudas a las páginas que la pedían— y sigue sin delatarla ningún
+         * error de consola. Lo único que cambió es dónde vive el catálogo.
+         *
+         * La regla que se lleva: **cuando algo se muda, sus vigilantes se mudan
+         * con él.** Y el que avisa de que no lo hiciste es este fichero.
+         */
+        de: '    "menu_select": {',
+        a: '    "menu_select_renombrado": {',
         vigila: 'que ningún play() apunte a un sonido que no existe',
     },
     {
