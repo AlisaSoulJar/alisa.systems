@@ -148,9 +148,12 @@ export const VOCABULARIO = {
         },
         "maxPiezas": 0,
         "tipos": [
+            "aviso_huron",
             "coche_der",
             "coche_izq",
-            "jugador"
+            "huron",
+            "jugador",
+            "tronco"
         ],
         "zonas": [],
         "hechos": [],

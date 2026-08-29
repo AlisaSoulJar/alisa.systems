@@ -561,7 +561,26 @@ export function crearEnvDeProtoHub({ juego, reglas, meta = {} }) {
             this._asegurarPartida();
             const meta = reglas.OBJETIVO ? `${reglas.OBJETIVO} ` : '';
             if (reglas.describir) return meta + reglas.describir(this.p);
-            return describirEstado(juego, { objetivo: reglas.OBJETIVO, ...this._estado() });
+            /**
+             * ⚠️ EL SUSTRATO TAMBIÉN VA POR LA PUERTA DE TEXTO, Y NO IBA.
+             *
+             * Este entorno ya saca el vector NUMÉRICO del sustrato desde el
+             * 27-08 —`substrateObservation(sus)`, veinte líneas más arriba— y su
+             * propia cabecera cuenta que aquella pieza también llevaba meses
+             * escrita sin usarse. La de texto se quedó sin enchufar.
+             *
+             * Consecuencia, medida el 29-08: en el MISMO entorno, un agente con
+             * vector veía el tablero y uno de lenguaje no. Diecisiete de los
+             * veintiséis juegos de rejilla le llegaban a un LLM como «t: 0.
+             * rotasPorJugador: [0,0]». Motoko lo dijo jugando cuatro días antes:
+             * «sin contexto espacial, un LLM jugará igual que una política al
+             * azar» — y esa frase describe exactamente lo que medían sus notas.
+             *
+             * Es el cuarto «arreglado en un extremo y no en el otro» de la
+             * semana, y va justo debajo de la nota que dice eso mismo.
+             */
+            return describirEstado(juego, { objetivo: reglas.OBJETIVO, ...this._estado() },
+                                   this.sustrato());
         }
 
         /**

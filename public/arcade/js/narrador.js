@@ -138,7 +138,17 @@
          * nada. Ver la cabecera de `descripcion.js`.
          */
         if (descrito && typeof window.describirMesa === 'function') {
-            try { descrito.textContent = window.describirMesa(juego, st); }
+            /**
+             * El sustrato va también, si el hub de esta página lo tiene: es lo
+             * que convierte «t: 0. rotasPorJugador: [0,0]» en un mapa de la mesa.
+             * Sin él la descripción sigue saliendo, sólo que más pobre — igual
+             * que le salía a un agente de lenguaje hasta hoy.
+             */
+            const sus = (() => {
+                try { return window.ALISA_PROTOHUB?.sustrato?.(juego) ?? undefined; }
+                catch { return undefined; }
+            })();
+            try { descrito.textContent = window.describirMesa(juego, st, sus); }
             catch { /* sin descripción se sigue jugando: el aviso corto va aparte */ }
         }
 

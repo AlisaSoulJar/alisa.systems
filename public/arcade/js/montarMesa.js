@@ -66,7 +66,7 @@ if (typeof window !== 'undefined') window.describirMesa = describirEstado;
  * `prueba_version.mjs` comprueba que corresponde a lo que hay en disco y, si no,
  * dice el valor que toca. No hay que acordarse: hay que hacer caso a la prueba.
  */
-const VERSION = '9631fc92';
+const VERSION = 'd6106237';
 
 /**
  * Lo que toda página de tablero necesitaba y repetía. En orden.

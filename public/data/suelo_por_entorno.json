@@ -638,14 +638,14 @@
       "separa": true,
       "suelo": [
         10,
-        20,
+        50,
         0,
         20,
+        50,
         20,
-        20,
-        20
+        50
       ],
-      "mejorCiega": 20,
+      "mejorCiega": 50,
       "peorCiega": 0,
       "pasos": 400,
       "semilla": 1234,

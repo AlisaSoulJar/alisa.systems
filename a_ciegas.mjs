@@ -36,6 +36,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { JUEGOS, cargarReglas } from './public/arcade/js/protohub/rules/index.js';
 import { describirEstado } from './public/arcade/js/protohub/descripcion.js';
+import { obtenerSustrato } from './public/arcade/js/protohub/sustrato.js';
 
 // Las reglas de cartas leen `card_library.json` con fetch; en Node eso es file://
 const fetchReal = globalThis.fetch;
@@ -79,5 +80,5 @@ for (const j of jugadas) {
 
 const st = reglas.estado(p);
 console.log(`\n[${juego} · semilla ${semilla} · ${hechas} jugada(s) hechas]\n`);
-console.log(describirEstado(juego, st));
+console.log(describirEstado(juego, st, obtenerSustrato(juego, reglas, p, st)));
 console.log('');

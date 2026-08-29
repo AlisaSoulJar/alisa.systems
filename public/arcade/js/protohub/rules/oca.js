@@ -531,6 +531,7 @@ export function crearOca({ jugadores = 2, fichas = 2 } = {}) {
                 // La leyenda es un diccionario de NOMBRES, no un trozo de estado:
                 // los nombres de ficha salen de cuántas hay, no de un `f1`/`f2`
                 // escrito aquí que se quedaría corto con tres.
+                simbolos: { f1: 'A', f2: 'B' },
                 leyenda: { ...LEYENDA, ...Object.fromEntries(
                     Array.from({ length: fichas }, (_, k) => [`f${k + 1}`, `ficha ${k + 1}`])) },
             };

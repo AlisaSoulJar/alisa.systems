@@ -1,36 +1,8 @@
-/**
- * peaton.js — cruzar la calle, para el ProtoHub
- * ═══════════════════════════════════════════════════════════════════════════
- * Devuelve lo que ya esperaba el visualizador:
- *
- *     { width, height, frog:{x,y}, hazards: [ [ {x,dir}, … ], … ], score }
- *
- * Rejilla 11×11. Jugadas: "arriba" · "abajo" · "izquierda" · "derecha" · "esperar".
- * Estás abajo (y = 0) y hay que llegar arriba (y = height-1).
- *
- * POR QUÉ ESTÁ EN LA SUITE
- * ------------------------
- * Completa el trío de acción y aporta lo que los otros dos no tienen:
- * **esperar es una jugada**. En snake y fagocito siempre te mueves; aquí la
- * decisión más difícil suele ser quedarse quieto un tick y dejar pasar el
- * coche. Un agente que no sepa no hacer nada, no cruza.
- *
- * Es el mismo problema que en los bancos clásicos de RL: recompensa muy
- * separada del riesgo, y un tope de tiempo que castiga la parálisis.
- *
- * DETERMINISTA
- * ------------
- * Los carriles se generan con semilla y **avanzan por reloj de la partida**, no
- * por tiempo real: `t` cuenta ticks. Así la misma semilla y las mismas jugadas
- * dan exactamente la misma partida — que es lo que exige el benchmark.
- * ═══════════════════════════════════════════════════════════════════════════
- */
-
 const W = 11, H = 11;
 
 const DIRS = {
-    arriba:    { x: 0,  y: 1 },
-    abajo:     { x: 0,  y: -1 },
+    arriba:    { x: 0,  y: -1 },
+    abajo:     { x: 0,  y: 1 },
     izquierda: { x: -1, y: 0 },
     derecha:   { x: 1,  y: 0 },
     esperar:   { x: 0,  y: 0 },
@@ -38,40 +10,43 @@ const DIRS = {
 
 import { mulberry32 } from './azar.js';
 
-/**
- * Los carriles. La fila 0 (salida) y la última (meta) están siempre despejadas:
- * si no, se puede morir sin haber jugado, y eso no mide nada.
- */
 function generarCarriles(seed) {
     const rnd = mulberry32(seed);
     const carriles = [];
     for (let y = 0; y < H; y++) {
-        if (y === 0 || y === H - 1) { carriles.push(null); continue; }
-        carriles.push({
-            dir: rnd() < 0.5 ? 1 : -1,
-            velocidad: 1 + Math.floor(rnd() * 3),        // ticks por casilla
-            coches: Array.from({ length: 2 + Math.floor(rnd() * 2) },
-                               () => Math.floor(rnd() * W)),
-        });
+        if (y === 0 || y === H - 1) { carriles.push({ tipo: 'orilla', dir: 0, velocidad: 1, objetos: [] }); continue; }
+        
+        let r = rnd();
+        let tipo = 'calzada';
+        if (r < 0.2) tipo = 'orilla';
+        else if (r < 0.5) tipo = 'agua';
+        
+        let dir = rnd() < 0.5 ? 1 : -1;
+        let velocidad = 1 + Math.floor(rnd() * 3);        // ticks por casilla
+        let n = (tipo === 'orilla') ? 0 : 2 + Math.floor(rnd() * 2);
+        let objetos = Array.from({ length: n }, () => Math.floor(rnd() * W));
+        
+        carriles.push({ tipo, dir, velocidad, objetos });
     }
     return carriles;
 }
 
-/** Dónde está cada coche en el tick `t`. Se calcula, no se guarda. */
 function cochesEn(carril, t) {
-    if (!carril) return [];
+    if (!carril || carril.tipo === 'orilla') return [];
     const avance = Math.floor(t / carril.velocidad) * carril.dir;
-    return carril.coches.map(x0 => ((x0 + avance) % W + W) % W);
+    let occ = new Set();
+    for (let x0 of carril.objetos) {
+        let x = ((x0 + avance) % W + W) % W;
+        occ.add(x);
+        if (carril.tipo === 'agua') {
+            occ.add((x + 1) % W);
+        }
+    }
+    return Array.from(occ);
 }
 
-const atropellado = (p) => {
-    const c = p.carriles[p.pos.y];
-    return !!c && cochesEn(c, p.t).includes(p.pos.x);
-};
-
-export const peaton = {
+const peaton = {
     OBJETIVO: 'Objetivo: llegar hasta arriba del todo cruzando los carriles sin que te atropellen. Esperar a que pase el hueco también es una jugada.',
-    // CUÁNTAS SILLAS TIENE LA MESA: una. Los coches son el entorno, no rival.
     ASIENTOS: 1,
     id: 'peaton',
     nombre: 'Peatón',
@@ -81,10 +56,11 @@ export const peaton = {
         return {
             seed,
             carriles: generarCarriles(seed),
-            pos: { x: Math.floor(W / 2), y: 0 },
+            pos: { x: Math.floor(W / 2), y: H - 1 },
+            huron: { x: Math.floor(W / 2), y: H, activo: false, aviso: false, target: null },
             t: 0,
             score: 0,
-            maxY: 0,
+            maxY: H - 1,
             muerto: false,
             llegado: false,
             historial: [],
@@ -92,75 +68,88 @@ export const peaton = {
         };
     },
 
-
-    /**
-     * Los carriles, los coches y tu.
-     *
-     * ⚠️ EL CARRIL VACIO TAMBIEN DICE ALGO, Y EL DERIVADO LO CALLABA.
-     *
-     * `sustratoDe` saca los coches de `hazards` y deja la rejilla a cero, asi
-     * que un carril sin coches a la vista sale igual que la acera. Y no es
-     * igual: por ese carril viene trafico, y en un sentido concreto. La
-     * decision del juego es CUANDO cruzar, o sea que saber por donde va a venir
-     * el coche que todavia no esta es justo la mitad del problema.
-     *
-     * El sentido de cada carril no se deduce de los coches que hay ahora
-     * —puede no haber ninguno—, sale de `p.carriles`, y por eso esto solo se
-     * puede publicar desde dentro.
-     */
     sustrato(p) {
         const celdas = new Array(W * H).fill(0);
         for (let y = 0; y < H; y++) {
-            const carril = p.carriles[y];
-            if (!carril) continue;
-            const v = carril.dir > 0 ? 1 : 2;
+            const c = p.carriles[y];
+            let v = 0;
+            if (c.tipo === 'calzada') v = c.dir > 0 ? 1 : 2;
+            else if (c.tipo === 'agua') v = c.dir > 0 ? 3 : 4;
+            else if (c.tipo === 'orilla') v = 5;
             for (let x = 0; x < W; x++) celdas[y * W + x] = v;
         }
+        
         const piezas = [];
         for (let y = 0; y < H; y++) {
-            const carril = p.carriles[y];
-            if (!carril) continue;
-            for (const x of cochesEn(carril, p.t)) {
-                piezas.push({ x, y, t: carril.dir > 0 ? 'coche_der' : 'coche_izq', de: 1 });
+            const c = p.carriles[y];
+            if (!c || c.tipo === 'orilla') continue;
+            for (const x of cochesEn(c, p.t)) {
+                let t_str = '';
+                if (c.tipo === 'calzada') t_str = c.dir > 0 ? 'coche_der' : 'coche_izq';
+                else if (c.tipo === 'agua') t_str = 'tronco';
+                piezas.push({ x, y, t: t_str, de: 1 });
             }
         }
+        
         if (p.pos) piezas.push({ x: p.pos.x, y: p.pos.y, t: 'jugador', de: 0 });
+        
+        if (p.huron && p.huron.activo) {
+            piezas.push({ x: p.huron.x, y: p.huron.y, t: 'huron', de: 1 });
+            if (p.huron.aviso && p.huron.target) {
+                piezas.push({ x: p.huron.target.x, y: p.huron.target.y, t: 'aviso_huron', de: 1 });
+            }
+        }
+
         return {
             rejilla: { ancho: W, alto: H, celdas },
             piezas,
             zonas: [],
             leyenda: { jugador: 'tu ficha, cruza de abajo arriba',
                        coche_der: 'coche que avanza hacia la derecha',
-                       coche_izq: 'coche que avanza hacia la izquierda' },
-            /**
-             * ⚠️ LOS DOS SENTIDOS SE DIBUJABAN CON LA MISMA LETRA.
-             *
-             * Sin símbolos declarados, el mapa usa la inicial del tipo: `coche_der`
-             * y `coche_izq` salían las dos como `C`, o sea que el mapa enseñaba
-             * dónde hay coches y no hacia dónde van. Cruzar es esperar el hueco,
-             * así que el sentido no es un detalle: es la decisión.
-             *
-             * La flecha se la queda el COCHE, que es lo que se mueve, y el carril
-             * usa otro par para que no se confundan sobre la misma casilla.
-             */
-            simbolos: { jugador: '@', coche_der: '>', coche_izq: '<' },
-            terreno: { 0: '.', 1: '-', 2: '=' },
+                       coche_izq: 'coche que avanza hacia la izquierda',
+                       tronco: 'plataforma segura sobre el agua',
+                       huron: 'cazador que te persigue',
+                       aviso_huron: 'punto donde atacará el hurón el próximo turno' },
+            simbolos: { jugador: '@', coche_der: '>', coche_izq: '<', tronco: 'O', huron: 'H', aviso_huron: '!' },
+            terreno: { 0: '.', 1: '-', 2: '=', 3: '~', 4: '≈', 5: '+' },
             leyendaTerreno: { 0: 'acera: aquí no atropellan',
-                              1: 'carril con tráfico hacia la derecha',
-                              2: 'carril con tráfico hacia la izquierda' },
+                              1: 'calzada con tráfico hacia la derecha',
+                              2: 'calzada con tráfico hacia la izquierda',
+                              3: 'río con corriente hacia la derecha (ahoga)',
+                              4: 'río con corriente hacia la izquierda (ahoga)',
+                              5: 'orilla de descanso' },
+            /**
+             * SONIDOS
+             * Para el paso "sonidos que causa el mundo":
+             * drown         : te ahogas si caes en agua sin tronco
+             * ferret_catch  : te come el hurón
+             * predator_alert: el hurón te marca con el aviso (!)
+             * safe_zone     : llegas a la orilla
+             * land          : coger orilla general
+             */
+            sonidos: { jugada: { arriba: 'jump', abajo: 'jump', izquierda: 'jump', derecha: 'jump', esperar: null } }
         };
     },
 
     estado(p) {
-        const hazards = p.carriles.map(c =>
-            cochesEn(c, p.t).map(x => ({ x, dir: c ? c.dir : 0 })));
-
+        const hazards = p.carriles.map(c => 
+            cochesEn(c, p.t).map(x => ({ x, dir: c ? c.dir : 0, tipo: c ? c.tipo : 'orilla' }))
+        );
         const fin = p.muerto || p.llegado || p.t >= p.tope;
+        const carriles_resumen = p.carriles.map((c, i) => {
+            if (c.tipo === 'orilla') return `${i} orilla`;
+            const flecha = c.dir > 0 ? '→' : '←';
+            const tipo = c.tipo === 'agua' ? 'rio' : 'calzada';
+            return `${i} ${tipo} ${flecha}${c.velocidad}`;
+        }).join(' · ');
+
         return {
-            state: { width: W, height: H, frog: { ...p.pos }, hazards, score: p.score },
+            state: { width: W, height: H, peaton: { ...p.pos }, carriles_resumen, score: p.score },
             width: W, height: H,
-            frog: { ...p.pos },
+            peaton: { ...p.pos },
+            carriles_resumen,
             hazards,
+            huron: p.huron ? { ...p.huron, target: p.huron.target ? {...p.huron.target} : null } : null,
             score: p.score,
             turn: 'white',
             legal_moves: fin ? [] : Object.keys(DIRS),
@@ -177,24 +166,77 @@ export const peaton = {
         const d = DIRS[jugada];
         if (!d) return false;
 
+        let huron_copy = p.huron ? { ...p.huron, target: p.huron.target ? { ...p.huron.target } : null } : null;
+
         p.historial.push({
             pos: { ...p.pos }, t: p.t, score: p.score,
             maxY: p.maxY, muerto: p.muerto, llegado: p.llegado,
+            huron: huron_copy,
         });
 
-        const nx = Math.max(0, Math.min(W - 1, p.pos.x + d.x));
-        const ny = Math.max(0, Math.min(H - 1, p.pos.y + d.y));
-        p.pos = { x: nx, y: ny };
+        // Drag on water
+        let cur_c = p.carriles[p.pos.y];
+        if (cur_c && cur_c.tipo === 'agua') {
+            let objs = cochesEn(cur_c, p.t);
+            if (objs.includes(p.pos.x)) {
+                let t_old = Math.floor(p.t / cur_c.velocidad);
+                let t_new = Math.floor((p.t + 1) / cur_c.velocidad);
+                if (t_old !== t_new) {
+                    p.pos.x += cur_c.dir;
+                    if (p.pos.x < 0 || p.pos.x >= W) { 
+                        p.muerto = true; 
+                        p.t++; 
+                        return true; 
+                    }
+                }
+            }
+        }
+
+        p.pos.x = Math.max(0, Math.min(W - 1, p.pos.x + d.x));
+        p.pos.y = Math.max(0, Math.min(H - 1, p.pos.y + d.y));
         p.t++;
 
-        // Avanzar puntúa una sola vez por fila: así no se puede farmear
-        // subiendo y bajando en la misma casilla.
-        if (ny > p.maxY) { p.score += 10; p.maxY = ny; }
+        if (p.pos.y < p.maxY) { p.score += 10; p.maxY = p.pos.y; }
 
-        // Se comprueba DESPUÉS de mover y DESPUÉS de que avancen los coches:
-        // te puede atropellar el que llega, no solo aquel al que te acercas.
-        if (atropellado(p)) { p.muerto = true; return true; }
-        if (ny === H - 1) { p.llegado = true; p.score += 100; }
+        if (p.huron) {
+            if (!p.huron.activo) {
+                if (p.t >= 5) p.huron.activo = true;
+            } else {
+                if (p.huron.aviso) {
+                    p.huron.x = p.huron.target.x;
+                    p.huron.y = p.huron.target.y;
+                    p.huron.aviso = false;
+                    p.huron.target = null;
+                } else {
+                    let dx = p.pos.x - p.huron.x;
+                    let dy = p.pos.y - p.huron.y;
+                    let dist = Math.abs(dx) + Math.abs(dy);
+                    if (dist === 1 || dist === 2) {
+                        p.huron.aviso = true;
+                        p.huron.target = { x: p.pos.x, y: p.pos.y };
+                    } else if (dist > 0) {
+                        if (Math.abs(dx) > Math.abs(dy)) p.huron.x += Math.sign(dx);
+                        else p.huron.y += Math.sign(dy);
+                    }
+                }
+            }
+        }
+
+        if (p.huron && p.huron.activo && p.huron.x === p.pos.x && p.huron.y === p.pos.y) {
+            p.muerto = true;
+            return true;
+        }
+
+        let new_c = p.carriles[p.pos.y];
+        let objs = cochesEn(new_c, p.t);
+
+        if (new_c.tipo === 'agua') {
+            if (!objs.includes(p.pos.x)) p.muerto = true;
+        } else if (new_c.tipo === 'calzada') {
+            if (objs.includes(p.pos.x)) p.muerto = true;
+        }
+
+        if (p.pos.y === 0 && !p.muerto) { p.llegado = true; p.score += 100; }
         return true;
     },
 
@@ -205,29 +247,30 @@ export const peaton = {
         return true;
     },
 
-    /**
-     * Rival de casa: sube si el hueco de arriba está despejado en el siguiente
-     * tick; si no, **espera**. Esa es la lección del juego.
-     */
     sugerencia(p) {
         if (p.muerto || p.llegado) return null;
         const siguiente = p.t + 1;
 
         const libre = (x, y) => {
             if (y < 0 || y >= H || x < 0 || x >= W) return false;
+            if (p.huron && p.huron.aviso && p.huron.target && p.huron.target.x === x && p.huron.target.y === y) return false;
+            
             const c = p.carriles[y];
-            return !c || !cochesEn(c, siguiente).includes(x);
+            if (!c || c.tipo === 'orilla') return true;
+            
+            const objs = cochesEn(c, siguiente);
+            if (c.tipo === 'calzada') return !objs.includes(x);
+            if (c.tipo === 'agua') return objs.includes(x);
+            return true;
         };
 
-        if (libre(p.pos.x, p.pos.y + 1)) return 'arriba';
-        // Si arriba está tomado, buscar un hueco al lado desde el que sí se suba.
+        if (libre(p.pos.x, p.pos.y - 1)) return 'arriba';
         for (const lado of ['izquierda', 'derecha']) {
             const d = DIRS[lado];
-            if (libre(p.pos.x + d.x, p.pos.y) && libre(p.pos.x + d.x, p.pos.y + 1)) return lado;
+            if (libre(p.pos.x + d.x, p.pos.y) && libre(p.pos.x + d.x, p.pos.y - 1)) return lado;
         }
-        // Quedarse quieto SOLO si aquí se sigue estando a salvo.
         return libre(p.pos.x, p.pos.y) ? 'esperar' : 'abajo';
     },
 };
 
-export { W, H, DIRS, generarCarriles, cochesEn };
+export { W, H, DIRS, generarCarriles, cochesEn, peaton };

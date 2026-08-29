@@ -87,31 +87,32 @@ function init3D() {
 }
 
 let boardBuilt = false;
-function buildBaseBoard(w, h) {
+function buildBaseBoard(w, h, carriles) {
     if (boardBuilt) return;
     gridW = w; gridH = h;
     
-    // Colores subidos junto con el ambiente de arriba: en negro de fábrica ninguna
-    // luz los saca del vacío. Siguen siendo los más oscuros del tablero —la acera
-    // clara y la carretera oscura— sólo que ahora AMBAS se distinguen del fondo.
     const matSafe = new THREE.MeshStandardMaterial({ color: 0x1c3a5c, roughness: 0.9, wireframe: true });
     const matRoad = new THREE.MeshStandardMaterial({ color: 0x0d1a2c, roughness: 1.0 });
+    const matWater = new THREE.MeshStandardMaterial({ color: 0x003366, roughness: 0.1 });
 
     for (let y = 0; y < h; y++) {
-        const isSafe = (y === 0 || y === h - 1);
+        let mat = matRoad;
+        if (carriles && carriles[y]) {
+            if (carriles[y].tipo === 'orilla') mat = matSafe;
+            else if (carriles[y].tipo === 'agua') mat = matWater;
+        } else if (y === 0 || y === h - 1) {
+            mat = matSafe;
+        }
+
         const rowGeo = new THREE.BoxGeometry(w, 0.2, 1);
-        const rowMesh = new THREE.Mesh(rowGeo, isSafe ? matSafe : matRoad);
-        rowMesh.position.set(0, -0.1, -y + (h / 2));
+        const rowMesh = new THREE.Mesh(rowGeo, mat);
+        rowMesh.position.set(0, -0.1, y - (h / 2));
         boardGroup.add(rowMesh);
     }
     
-    // Frog Material
     const frogGeo = new THREE.BoxGeometry(0.8, 0.8, 0.8);
     const frogMat = new THREE.MeshStandardMaterial({ color: 0x00ffc8, roughness: 0.2, emissive: 0x005544 });
     frogMesh = new THREE.Mesh(frogGeo, frogMat);
-    // Mismo campo que publica `sustratoDe` para `st.frog`: `{t:'jugador', de:0}`.
-    // Se pone una vez, aquí, porque `frogMesh` no se recrea entre sondeos —lo
-    // mueve un `TWEEN`— así que si no se nombra al crearlo no se nombra nunca.
     frogMesh.name = 'p:jugador:0';
     boardGroup.add(frogMesh);
     
@@ -137,7 +138,7 @@ function coordToPhys(x, y) {
     // x: 0 to W-1
     // y: 0 to H-1
     const pX = x - (gridW / 2) + 0.5;
-    const pZ = -y + (gridH / 2);
+    const pZ = y - (gridH / 2);
     return { x: pX, y: 0.5, z: pZ };
 }
 
@@ -148,10 +149,10 @@ function createHazard() {
 }
 
 function syncStateToBoard(state) {
-    buildBaseBoard(state.width, state.height);
+    buildBaseBoard(state.width, state.height, state.carriles);
     
     // Move Frog
-    const p = coordToPhys(state.frog.x, state.frog.y);
+    const p = coordToPhys(state.peaton.x, state.peaton.y);
     new TWEEN.Tween(frogMesh.position)
         .to({ x: p.x, z: p.z }, 150)
         .easing(TWEEN.Easing.Quadratic.Out)
@@ -166,21 +167,33 @@ function syncStateToBoard(state) {
         if (!rowCars) continue;
         
         for (const coche of rowCars) {
-            // Las reglas mandan `{x, dir}`, no un número suelto. Tratándolo
-            // como número, `coordToPhys` devolvía NaN y los coches se pintaban
-            // en ninguna parte: el carril parecía despejado siempre.
             const cx = (typeof coche === 'object') ? coche.x : coche;
             const dir = (typeof coche === 'object') ? coche.dir : 1;
+            const tipo = (typeof coche === 'object') ? (coche.tipo || 'calzada') : 'calzada';
             const hPos = coordToPhys(cx, y);
-            const hz = createHazard();
-            hz.position.set(hPos.x, hPos.y, hPos.z);
-            // Mismo criterio que `sustratoDe` (`h.dir > 0 ? 'coche_der' :
-            // 'coche_izq'`, con `de:1` porque el coche es del rival): repetir la
-            // cuenta en vez de inventar otra es lo que hace que la vista y la
-            // matriz puedan cruzarse.
-            hz.name = `p:${dir > 0 ? 'coche_der' : 'coche_izq'}:1`;
+            const hz = createHazard(tipo);
+            hz.position.set(hPos.x, tipo === 'agua' ? -0.1 : hPos.y, hPos.z);
+            hz.name = `p:${tipo === 'agua' ? 'tronco' : (dir > 0 ? 'coche_der' : 'coche_izq')}:1`;
             boardGroup.add(hz);
             hazardMeshes.push(hz);
+        }
+    }
+
+    if (state.huron && state.huron.activo) {
+        const hPos = coordToPhys(state.huron.x, state.huron.y);
+        const hz = createHazard('huron');
+        hz.position.set(hPos.x, hPos.y, hPos.z);
+        hz.name = 'p:huron:1';
+        boardGroup.add(hz);
+        hazardMeshes.push(hz);
+
+        if (state.huron.aviso && state.huron.target) {
+            const aPos = coordToPhys(state.huron.target.x, state.huron.target.y);
+            const hzA = createHazard('huron_aviso');
+            hzA.position.set(aPos.x, 0.05, aPos.z);
+            hzA.name = 'p:aviso_huron:1';
+            boardGroup.add(hzA);
+            hazardMeshes.push(hzA);
         }
     }
 }
@@ -418,8 +431,8 @@ function evaluateHeuristic(state) {
     const ocupado = (fila, x) =>
         (state.hazards[fila] || []).some(c => (typeof c === 'object' ? c.x : c) === x);
 
-    const fX = state.frog.x;
-    const fY = state.frog.y;
+    const fX = state.peaton.x;
+    const fY = state.peaton.y;
 
     const arriba = fY + 1;
     if (arriba >= state.height) return 'arriba';       // la otra acera

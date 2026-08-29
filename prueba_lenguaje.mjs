@@ -210,19 +210,37 @@ for (const juego of JUEGOS) {
  */
 {
     const { obtenerSustrato } = await import('./public/arcade/js/protohub/sustrato.js');
-    const CON_RAMA = new Set(['mancala', 'snake', 'fagocito', 'peaton']);
     const conTablero = [], ciegos = [];
     for (const juego of JUEGOS) {
-        let sus, st;
+        let sus, st, texto;
         try {
             const reglas = await cargarReglas(juego, {});
             const p = reglas.nuevaPartida({ semilla: 7, seed: 7 });
             st = reglas.estado(p);
             sus = obtenerSustrato(juego, reglas, p, st) ?? {};
+            texto = describirEstado(juego, st, sus);
         } catch { continue; }
         if (!sus.rejilla) continue;              // los de cartas se cuentan solos
-        const publica = !!(st.fen || st.tablero || st.board || st.state?.board) || CON_RAMA.has(juego);
-        (publica ? conTablero : ciegos).push(juego);
+
+        /**
+         * ⚠️ AHORA SE MIRA EL TEXTO QUE SALE, NO DE DÓNDE SALE.
+         *
+         * La primera versión preguntaba «¿tiene rama en `contarEspacial` o
+         * publica fen/board?». Eso era una lista de nombres —de las que esta casa
+         * ha arreglado seis veces— y ademas dejó de ser cierta en cuanto el
+         * sustrato empezó a dibujarse solo: los diecisiete que se encendieron no
+         * tienen rama ninguna y ahora sacan su mapa.
+         *
+         * Lo que de verdad importa es si en el texto hay un DIBUJO o una posición:
+         * varias líneas, un FEN, coordenadas, o la frase con la que cada juego
+         * cuenta lo suyo. Eso no depende de por qué camino llegó.
+         */
+        const cuerpo = texto.replace(/^.*?Turno: [^.]*\.\s*/s, '').replace(/\s*Puedes:.*$/s, '');
+        const dibuja = /\n/.test(cuerpo)              // un mapa de varias líneas
+            || /\(\d+,\s*\d+\)/.test(cuerpo)          // «cabeza en (10,10)»
+            || /\//.test(cuerpo)                      // un FEN
+            || /hoyos/.test(cuerpo);                  // el mancala, que cuenta los suyos
+        (dibuja ? conTablero : ciegos).push(juego);
     }
     const total = conTablero.length + ciegos.length;
 
@@ -233,7 +251,7 @@ for (const juego of JUEGOS) {
      *    subir; el día que suba, hay que subir este número a mano, que es lo que
      *    obliga a mirarlo.
      */
-    const SUELO_CON_TABLERO = 9;
+    const SUELO_CON_TABLERO = 26;
     console.log(`\n  ${conTablero.length} de ${total} juegos de rejilla publican su tablero en texto`);
     if (ciegos.length) {
         console.log(`  a ciegas: ${ciegos.join(', ')}`);

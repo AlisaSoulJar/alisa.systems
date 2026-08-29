@@ -359,6 +359,7 @@ export function crearParchis({ jugadores = 4, fichas = 4 } = {}) {
                 rejilla: { ancho: LADO, alto: LADO, celdas },
                 piezas,
                 zonas,
+                simbolos: { ficha: 'x' },
                 leyenda: { ficha: 'ficha', 0: 'pista', 1: 'fuera', 2: 'seguro' },
             };
         },

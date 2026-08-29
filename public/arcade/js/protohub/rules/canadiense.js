@@ -732,6 +732,7 @@ export async function crearCanadiense({ url = RUTA_BIBLIOTECA, jugadores = 4,
                 rejilla: { ancho: LADO, alto: LADO, celdas },
                 piezas,
                 zonas,
+                simbolos: { ficha: 'x' },
                 leyenda: { ficha: 'ficha', 0: 'pista', 1: 'fuera', 2: 'seguro' },
             };
         },

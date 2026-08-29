@@ -716,6 +716,7 @@ export async function crearAlisapolis({ jugadores = 2, vueltas = 12 } = {}) {
                 rejilla: { ancho: LADO, alto: LADO, celdas, nombres, etiquetas: true },
                 piezas,
                 zonas,
+                simbolos: { peon: 'p' },
                 leyenda: {
                     0: 'casilla del anillo',
                     1: 'fuera del tablero',

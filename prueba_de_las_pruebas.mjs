@@ -1309,6 +1309,32 @@ const SABOTAJES = [
         vigila: 'que un ratio no se quede congelado cuando su prueba deja de medirlo',
     },
     {
+        nombre: 'tablero_en_texto',
+        corre: 'node prueba_lenguaje.mjs',
+        fichero: 'public/arcade/js/protohub/descripcion.js',
+        /**
+         * ⚠️ ESTE ES EL ESTADO EN EL QUE ESTUVO EL PROYECTO HASTA EL 29-08-2026, Y
+         *    LO DENUNCIÓ MOTOKO CUATRO DÍAS ANTES SIN QUE NADIE LE CONTESTARA.
+         *
+         *     «En Sokoban no puedo jugar razonando… ¡NO ME MUESTRA EL MAPA! Si el
+         *     contrato de la API no me da el contexto espacial del puzzle, un LLM
+         *     jugará igual que una política al azar.»
+         *
+         * Tenía razón: 17 de los 26 juegos de rejilla le llegaban a un agente de
+         * lenguaje como «t: 0. rotasPorJugador: [0,0]». Y la pieza para arreglarlo
+         * —`describirSustrato`— llevaba meses escrita, exportada y sin un solo
+         * llamador. Quitar esta línea la vuelve a desenchufar.
+         *
+         * Y no da error: los juegos siguen jugándose, las páginas siguen
+         * pintándose, y lo único que pasa es que los agentes de lenguaje juegan
+         * peor y sus notas hablan de la puerta en vez de ellos. Por eso hace falta
+         * una prueba: es la avería que no se ve desde dentro.
+         */
+        de: '    if (!espacial && sus) {',
+        a: '    if (false && sus) {',
+        vigila: 'que un agente sin visión siga viendo el tablero de los 26',
+    },
+    {
         nombre: 'arneses',
         corre: 'node --import ./resolver_three.mjs prueba_arneses.mjs',
         fichero: 'public/js/gym_runners/boids_gym.js',

@@ -137,7 +137,23 @@ for (const juego of juegos) {
     try {
         await pg.goto(`http://127.0.0.1:${P}/arcade/${paginas[juego].pagina}?semilla=7`,
                       { waitUntil: 'load', timeout: 25000 });
-        await pg.waitForTimeout(4200);
+        /**
+         * ⚠️ SE ESPERA A QUE HAYA ESCENA, NO UN RATO FIJO.
+         *
+         * Eran 4,2 s a pelo, y con la máquina cargada no bastan: el 29-08, con
+         * Motoko corriendo sus propias pruebas de navegador a la vez, `reversi`
+         * salió dos veces como «no se puede comprobar» y a la tercera pasó. Eso es
+         * un instrumento que mide la CARGA DE LA MÁQUINA y lo cuenta como un fallo
+         * del juego — y encima en la dirección que asusta, porque el trinquete de
+         * los no comprobables está en cero.
+         *
+         * Sondear hasta que aparezca `window.__escena` no ablanda nada: una página
+         * que de verdad no dibuja sigue agotando el plazo y sigue saliendo roja.
+         * Lo único que se quita es el falso rojo.
+         */
+        await pg.waitForFunction(() => !!window.__escena, { timeout: 20000 })
+                .catch(() => {});
+        await pg.waitForTimeout(2000);   // y un respiro para que pinte lo suyo
         vista = await pg.evaluate(() => {
             const esc = window.__escena;
             if (!esc) return null;

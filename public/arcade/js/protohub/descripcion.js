@@ -53,7 +53,54 @@ export const nombreLegible = (juego) => juego.charAt(0).toUpperCase() + juego.sl
  */
 const TOPE_JUGADAS = 24;
 
-export function describirEstado(juego, st) {
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ EL TERCER ARGUMENTO: EL SUSTRATO. Y POR QUÉ LLEGA TAN TARDE.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Motoko lo dijo el 25-08-2026, jugando en el gimnasio, y nadie le contestó:
+ *
+ *     «En Sokoban no puedo jugar razonando porque el estado que me devuelve la
+ *     API es puramente numérico. ¡NO ME MUESTRA EL MAPA! … Si el contrato de la
+ *     API no me da el contexto espacial del puzzle, un LLM jugará igual que una
+ *     política al azar.»
+ *
+ * Tenía razón, y no era un caso: medido el 29-08, de los 26 juegos de rejilla
+ * **9 publicaban su tablero en texto y 17 no**. Los nueve son los que tienen una
+ * rama escrita a mano en `contarEspacial` o publican `fen`/`board`. Los otros
+ * diecisiete caían al volcado de escalares —«t: 0. rotasPorJugador: [0,0]»— que
+ * basta para no hacer una jugada ilegal y no basta para elegir.
+ *
+ * ⚠️ Y LA PIEZA PARA ARREGLARLO LLEVABA MESES ESCRITA, SIN UN SOLO LLAMADOR.
+ *
+ * `describirSustrato(sus)`, más abajo en este mismo fichero: dibuja la rejilla,
+ * lista las piezas y cuenta los montones. Su propia cabecera dice para qué nació
+ * —«esto es lo que hace que un género nuevo no cueste nada»— y estaba exportada
+ * y muerta. Es el patrón que Oscar nombró esta semana: el proyecto tiene mejor
+ * maquinaria de la que ejecuta, y lo caro es que no se parece a código muerto.
+ *
+ * ⚠️ POR QUÉ UN ARGUMENTO NUEVO Y NO CALCULARLO AQUÍ.
+ *
+ * El sustrato bueno sale de `reglas.sustrato(p)`, y para eso hacen falta las
+ * reglas y la partida, que esta función no tiene ni debe tener: describe un
+ * ESTADO, y eso es lo que la hace valer igual en el navegador, en un worker que
+ * ha re-simulado y en una mesa compartida que sólo recibió un JSON. Se lo pasa
+ * quien lo tenga; quien no, se queda exactamente como estaba.
+ *
+ * ⚠️ Y ESTO CAMBIA EL PROMPT DE ESOS DIECISIETE, O SEA SUS NÚMEROS.
+ *
+ * La cabecera de este fichero avisa de que el texto no se mejora de tapadillo
+ * porque hay medidas publicadas hechas con él. Se cumple: los nueve que ya
+ * contaban su tablero no cambian ni una palabra —siguen entrando por su rama de
+ * `contarEspacial`, que manda—. Cambian los diecisiete que jugaban a ciegas, y
+ * sus números había que rehacerlos de todas formas: medían la puerta, no al
+ * jugador.
+ *
+ * @param {string} juego
+ * @param {object} st    lo que devuelve `reglas.estado(p)`
+ * @param {object} [sus] el sustrato, si quien llama lo tiene
+ */
+export function describirEstado(juego, st, sus) {
     const todas = st.legal_moves ?? [];
     const puedes = todas.length > TOPE_JUGADAS
         ? `${todas.slice(0, TOPE_JUGADAS).join(', ')} … y ${todas.length - TOPE_JUGADAS} más (${todas.length} en total)`
@@ -72,7 +119,7 @@ export function describirEstado(juego, st) {
     const meta = st.objetivo ? ` ${st.objetivo}` : '';
     return `${nombreLegible(juego)}.${meta}${normasEnPalabras(st)} Puntos: ${puntuacionDe(st)}.`
          + ` Turno: ${st.turn ?? 'único'}.`
-         + contarLaMesa(st, juego)
+         + contarLaMesa(st, juego, sus)
          + (st.is_game_over ? ' La partida ha terminado.'
                             : ` Puedes: ${puedes || '(nada)'}.`);
 }
@@ -199,6 +246,27 @@ function dibujarRejilla({ ancho, alto, capas, vacio = ' ' }) {
 const tope = (pts, eje) => Math.max(0, ...(pts ?? []).map(p => p?.[eje] ?? 0)) + 1;
 
 /**
+ * Une una rejilla de celdas en un mapa de texto, con TODAS LAS COLUMNAS DEL MISMO
+ * ANCHO.
+ *
+ * ⚠️ POR QUÉ ESTO NO ES COSMÉTICA.
+ *
+ * Casi todas las celdas son un carácter, así que juntarlas a pelo bastaba. Deja
+ * de bastar en cuanto una celda lleva etiqueta: `marea` escribe «4» donde hay una
+ * ficha y «.» donde no, y una fila salía `4 ...` — cuatro casillas dibujadas con
+ * cinco columnas. Un mapa monoespaciado desalineado no es un mapa feo: es un mapa
+ * FALSO, porque quien lo lee cuenta columnas para saber dónde está cada cosa.
+ *
+ * Si todas miden uno, esto devuelve exactamente lo de siempre y los cuarenta
+ * juegos que ya lo usaban no cambian ni un byte.
+ */
+function enColumnas(mapa) {
+    const ancho = Math.max(1, ...mapa.flat().map((c) => String(c).length));
+    if (ancho === 1) return mapa.map((f) => f.join('')).join('\n');
+    return mapa.map((f) => f.map((c) => String(c).padEnd(ancho, ' ')).join('')).join('\n');
+}
+
+/**
  * ⚠️ LOS ESPACIALES, CONTADOS COMO SE CUENTAN ELLOS.
  *
  * `mancala`, `snake`, `fagocito` y `peaton` publican listas de coordenadas. El
@@ -254,31 +322,64 @@ function contarEspacial(juego, st) {
              + `Quedan ${st.restantes ?? '?'} bolitas`;
     }
 
-    // Peatón: las filas de peligros con su sentido de marcha. `<` y `>` dicen
-    // hacia dónde viene cada coche, que es lo único que decide si cruzas.
-    if (st.frog && Array.isArray(st.hazards)) {
-        const coches = st.hazards.flatMap((fila, y) =>
-            (fila ?? []).map(h => ({ x: h.x, y, dir: h.dir })));
-        const dibujo = dibujarRejilla({
-            ancho: st.width, alto: st.height, vacio: '.',
-            capas: [
-                { puntos: coches, simbolo: (p) => (p.dir > 0 ? '>' : '<') },
-                { puntos: [st.frog], simbolo: 'F' },
-            ],
-        });
-        return (dibujo ? `Calle (F tú, > y < coches según su sentido, . libre):\n${dibujo}\n` : '')
-             + `Estás en (${st.frog.x},${st.frog.y}) de ${st.width}x${st.height}. `
-             + `Tu fila más avanzada: ${st.avanceMaximo ?? 0}`;
-    }
+    /**
+     * ⚠️ AQUÍ HABÍA UNA RAMA PARA `peaton` Y SE HA QUITADO. NO POR LIMPIEZA.
+     *
+     * Dibujaba la calle a mano —coches con `<` y `>`, la rana con `F`— y era de las
+     * cuatro escritas una por una que hacían que un juego nuevo naciera ciego.
+     *
+     * El 29-08-2026, al crecer el juego con agua, troncos, orillas y un cazador,
+     * ninguna de esas cosas cabía en aquel dibujo: la rama sabía pintar coches y
+     * nada más. `peaton` pasó a dibujarse desde su SUSTRATO, como los otros
+     * veinticinco, y con eso salen los ríos con su corriente, las plataformas y la
+     * casilla que el hurón marca antes de saltar — sin escribir una línea de
+     * dibujo para ninguno.
+     *
+     * ⚠️ Y SE BORRA EN VEZ DE DEJARLA «POR SI ACASO», que es lo que costaría caro.
+     *
+     * Su condición era `st.frog`, y ese campo ya no existe: el `if` no se cumple
+     * nunca. Un bloque que no se puede ejecutar y que sigue documentado como si
+     * funcionara es exactamente la avería que este proyecto ha pasado el día
+     * midiendo — «mejor maquinaria de la que ejecuta»—, sólo que en pequeño. Lo
+     * único que haría es mentirle al siguiente que venga a leer cómo se cuenta un
+     * peatón.
+     *
+     * Las otras tres se quedan porque siguen diciendo algo que el mapa genérico no
+     * dice: al mancala sus catorce hoyos en una frase, al snake la comida en
+     * posición RELATIVA —«4 a la derecha y 2 arriba», que es accionable— y al
+     * fagocito su laberinto. Ésas no sobran; ésta sí.
+     */
     return null;
 }
 
-function contarLaMesa(st, juego) {
+function contarLaMesa(st, juego, sus) {
     const t = [];
     const lista = (v) => Array.isArray(v) ? v.join(' ') : String(v);
 
     const espacial = contarEspacial(juego, st);
     if (espacial) t.push(espacial);
+
+    /**
+     * ⚠️ EL SUSTRATO, SI QUIEN LLAMA LO TRAE — Y SÓLO SI NADIE MÁS LO HA CONTADO.
+     *
+     * Las ramas de `contarEspacial` mandan, y no es cortesía: son el idioma
+     * propio de cada uno. Al mancala se le cuentan sus catorce hoyos en una
+     * frase, al snake se le dice la comida en posición RELATIVA —«4 a la derecha
+     * y 2 arriba», que es accionable, frente a «(14,8)», que exige saber dónde
+     * estás—. Un mapa genérico encima de eso sería peor y más largo.
+     *
+     * Lo que arregla esto es lo otro: los diecisiete que no tenían rama y caían
+     * al volcado de escalares. Ahora se dibujan solos desde lo que ya publican.
+     *
+     * ⚠️ Y ES ADITIVO POR CONSTRUCCIÓN: quien no pase `sus` —una mesa compartida
+     *    que sólo recibió un JSON, un worker que re-simuló— no cambia ni una
+     *    palabra. Esta puerta tiene que decir lo mismo desde los cuatro sitios
+     *    desde los que se entra, o la comparación del banco deja de valer.
+     */
+    if (!espacial && sus) {
+        const delSustrato = describirSustrato(sus);
+        if (delSustrato) t.push(delSustrato.trim());
+    }
 
     // Tablero completo, si el juego lo publica. El FEN es denso pero es el
     // lenguaje que un modelo tiene más visto para un tablero.
@@ -590,6 +691,27 @@ export function describirSustrato(sus) {
                  * conoce de sobra, y como despejado uno que no está mirando.
                  */
                 if (sinVista?.[y * ancho + x] && v === 0) return ',';
+                /**
+                 * ⚠️ SI LA CELDA TIENE NOMBRE, MANDA EL NOMBRE.
+                 *
+                 * `marea` publica `rejilla.nombres` con el valor de cada ficha
+                 * —«2», «4», «1024»— y `etiquetas: true` para pedir que se
+                 * escriban. Sin mirarlo, sus niveles caían en la tabla de terreno
+                 * de siempre: **el nivel 1 salía dibujado como `#` muro y el 2
+                 * como `o` destino**. Un 2048 contado como un laberinto.
+                 *
+                 * No es un caso raro con nombre propio: es el dato que el sustrato
+                 * ya declaraba y que este dibujante no leía. `flota` y
+                 * `alisapolis` lo declaran también.
+                 *
+                 * Se recorta a dos caracteres porque la rejilla es monoespaciada
+                 * y una columna de ancho variable deja de ser un mapa; el nombre
+                 * entero sigue estando en la leyenda, que va justo encima.
+                 */
+                const etiqueta = sus.rejilla.nombres?.[y * ancho + x];
+                if (etiqueta !== null && etiqueta !== undefined && etiqueta !== '') {
+                    return String(etiqueta).slice(0, 4);
+                }
                 // Una celda con número grande es una CUENTA (mancala), no terreno.
                 return SUELO[v] ?? (v > 2 ? String(v % 10) : '.');
             }));
@@ -711,10 +833,24 @@ export function describirSustrato(sus) {
             mapa[p.y][p.x] = glifoDe(p.t, p.de ?? p.bando ?? null);
         }
 
-        // La leyenda pide el glifo del dueño 0 sólo para los tipos ambiguos; para
-        // el resto pide el de siempre, que es el que su mapa dibuja.
+        /**
+         * La leyenda pide el glifo del dueño 0 sólo para los tipos ambiguos; para
+         * el resto pide el de siempre, que es el que su mapa dibuja.
+         *
+         * ⚠️ Y `glifoDe` ES PARA TIPOS DE PIEZA, NO PARA VALORES DE CELDA.
+         *
+         * La leyenda de `marea` va por valor de casilla —`{10:'1024', 11:'2048'}`—
+         * y `glifoDe` sin símbolo declarado devuelve la PRIMERA LETRA del tipo. Con
+         * claves de dos dígitos eso daba «1=1024, 1=2048, 1=4096»: tres entradas
+         * distintas con la misma clave, en una leyenda cuyo trabajo es justamente
+         * distinguirlas. Cuando la clave no es un tipo de pieza se escribe entera.
+         */
+        const tiposDePieza = new Set([...(sus.piezas ?? []).map((p) => String(p.t)),
+                                      ...Object.keys(simbolos)]);
         const clave = Object.entries(sus.leyenda ?? {})
-            .map(([k, v]) => `${glifoDe(k, ambiguo(k) ? 0 : null)}=${v}`).join(', ');
+            .map(([k, v]) => (tiposDePieza.has(String(k))
+                ? `${glifoDe(k, ambiguo(k) ? 0 : null)}=${v}`
+                : `${k}=${v}`)).join(', ');
         // Y la leyenda tiene que EXPLICAR la convención, porque un mapa que
         // distingue por la caja de la letra sin decirlo no distingue nada.
         const claveDuenos = variosDuenos
@@ -750,7 +886,7 @@ export function describirSustrato(sus) {
         t.push(`Mapa (${claveTerreno}${niebla ? ', ? sin explorar' : ''}`
              + `${sinVista ? ', , fuera de tu vista' : ''}`
              + `${clave ? `, ${clave}` : ''}${claveDuenos}):\n`
-             + mapa.map(f => f.join('')).join('\n'));
+             + enColumnas(mapa));
     }
 
     /**
