@@ -420,7 +420,23 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
         ultimo = { sus, dx, dz };
         grupos = new Map();
         for (const p of (sus.piezas ?? [])) {
-            const alto = ALTO[p.t] ?? 0.25;
+            /**
+             * ⚠️ LA ALTURA LA PUEDE DECLARAR EL JUEGO, Y HASTA HOY NO PODÍA.
+             *
+             * `ALTO` es una tabla de este fichero con ocho tipos dentro, y todo lo
+             * que no esté en ella cae a 0,25 — o sea a disco. Un tipo nuevo nace
+             * plano, y con la forma decidiéndose por la altura (`>= 0.4` es cubo),
+             * eso significa que un juego nuevo no puede tener un bulto.
+             *
+             * Lo encontró `mecha` al estrenarse: sus cajas, sus bombas y sus
+             * llamas salían las tres como el mismo disco, y una caja que se rompe
+             * y una llama que mata tienen que distinguirse a la primera.
+             *
+             * Es el mismo trato que ya tienen `simbolos`, `terreno` y `leyenda`:
+             * lo declara el juego, no lo adivina el pintor. Aditivo — quien no
+             * declara `alturas` sigue exactamente igual que antes.
+             */
+            const alto = sus.alturas?.[p.t] ?? ALTO[p.t] ?? 0.25;
             const forma = (p.t === 'bolita' || p.t === 'comida') ? 'punto'
                         : alto >= 0.4 ? 'cubo' : 'disco';
             const clave = `p:${forma}:${p.de}`;

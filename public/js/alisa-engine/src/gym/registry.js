@@ -76,6 +76,19 @@ const PROTOHUB = [
     // un visualizador. No lleva `crear` porque su módulo exporta el objeto de
     // reglas directamente, sin fábrica: no necesita leer el catálogo de cartas.
     { juego: 'sokoban', titulo: 'Sokoban', nombre: 'sokoban' },
+    /**
+     * Mecha es el único entorno donde EL PELIGRO LO PONE EL AGENTE y tarda en
+     * llegar. En los demás la amenaza es del entorno (peatón) o del rival
+     * (ajedrez), y en los dos casos es inmediata o esquivable mirando el tablero
+     * de ahora. Aquí la bomba estalla ocho jugadas después, no distingue de quién
+     * es, y tapa la salida de quien la puso.
+     *
+     * Eso obliga a razonar sobre un estado que todavía no existe. Y es lo que la
+     * observación NO regala: las jugadas legales dicen a dónde se puede ir, no
+     * cuáles de esas casillas estarán ardiendo al llegar. Un agente que sólo mire
+     * lo legal se mata solo, y por eso este entorno separa.
+     */
+    { juego: 'mecha', titulo: 'Mecha', nombre: 'mecha' },
     // Cripta es el primer entorno del gym con OBSERVABILIDAD PARCIAL: la
     // observación no es el estado, es lo que el agente ha visto. Los veinte
     // anteriores entregan el tablero entero, así que un agente sin memoria no

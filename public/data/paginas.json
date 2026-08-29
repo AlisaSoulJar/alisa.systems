@@ -125,6 +125,12 @@
     "titulo": "Marea",
     "sillas": 1
   },
+  "mecha": {
+    "pagina": "mecha.html",
+    "propia": true,
+    "titulo": "Mecha",
+    "sillas": 2
+  },
   "cripta": {
     "pagina": "cripta.html",
     "propia": true,

@@ -1132,6 +1132,36 @@ const SABOTAJES = [
         vigila: 'que las cuatro formas del catálogo se dibujen, y no tres',
     },
     {
+        nombre: 'mecha',
+        corre: 'node prueba_mecha.mjs',
+        fichero: 'public/arcade/js/protohub/rules/mecha.js',
+        /**
+         * ⚠️ ES LA AVERÍA QUE TUVO, NO UNA INVENTADA — Y ES DE LAS QUE NO DAN ERROR.
+         *
+         * El rival de casa recorría las direcciones en orden absoluto: arriba,
+         * abajo, izquierda, derecha. En una arena simétrica girada 180°, el
+         * «arriba» de un jugador es el «abajo» del otro, así que al empatar dos
+         * opciones los dos preferían la misma dirección DEL MUNDO — que para uno
+         * apunta hacia su rival y para el otro hacia su pared.
+         *
+         * Resultado medido: el asiento 0 ganaba el 61 % sobre un mapa
+         * demostrablemente simétrico. Ninguna partida fallaba, ninguna consola
+         * decía nada, y el juego era injusto. En un banco donde se comparan
+         * personas contra agentes, un asiento que gana solo invalida la medida
+         * entera sin que nadie se entere.
+         *
+         * ⚠️ Y OJO CON LA MÉTRICA, QUE AQUÍ ESTÁ LA TRAMPA.
+         *
+         * La primera versión de la prueba contaba «gana quien empieza» y APROBABA
+         * con este sabotaje puesto: como cada semilla se juega con los dos órdenes
+         * de salida, el sesgo de asiento se reparte entre las dos mitades y se
+         * promedia hasta desaparecer. Hace falta contar TAMBIÉN por asiento.
+         */
+        de: 'const dirsDe = (asiento) => ORDEN[asiento % 2].map((m) => [m, DIRS[m]]);',
+        a: 'const dirsDe = (asiento) => ORDEN[0].map((m) => [m, DIRS[m]]);',
+        vigila: 'que los dos asientos de la arena sean el mismo asiento',
+    },
+    {
         nombre: 'cara',
         corre: 'node prueba_cara.mjs',
         fichero: 'public/js/tools/AvatarCalibrationTool.js',

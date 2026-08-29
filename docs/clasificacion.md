@@ -1,13 +1,13 @@
 # Clasificación
 
-Generada por `tabla.mjs` el 2026-08-24.
-2 semillas por juego, tope 25 decisiones.
+Generada por `tabla.mjs` el 2026-08-28.
+15 semillas por juego, tope 200 decisiones.
 
 **0,00** = tan bueno como elegir siempre la primera opción legal.
 **1,00** = tan bueno como el rival de casa del juego.
 Las dos referencias se miden en la misma tanda que los modelos.
 
-Los modelos juegan 2 semillas por juego; las líneas base, 60.
+Los modelos juegan 15 semillas por juego; las líneas base, 120.
 Las base no cuestan tokens, así que el metro se mide con muchas más partidas
 que lo que se mide con él. El ± es la incertidumbre real de cada fila.
 
@@ -18,22 +18,17 @@ hay un juego mandando. Es por lo que los bancos de Atari publican mediana.
 
 | participante | mediana | media | ± | forzadas | tokens | recibos verificados |
 |---|---|---|---|---|---|---|
-| primera (suelo) | **0.00** | 0.00 | ±0.09 | 0/0 | 0.0k | 3840/3840 |
-| azar | **0.09** | -0.54 | ±0.12 | 0/0 | 0.0k | 3840/3840 |
-| casa (techo blando) | **1.00** | 1.00 | ±0.06 | 0/0 | 0.0k | 3840/3840 |
-| gemma2:2b | **0.00** | -1.76 | ±0.85 | 0/5242 | 2630.3k | 96/96 |
-| llama3.2:3b | **0.00** | -1.70 | ±2.64 | 37/5301 | 2779.9k | 96/96 |
-| qwen2.5:7b | **0.04** | -0.82 | ±2.81 | 0/5249 | 2593.2k | 96/96 |
+| primera (suelo) | **0.00** | 0.00 | ±0.04 | 0/0 | 0.0k | 4200/4200 |
+| azar | **0.03** | 0.27 | ±0.09 | 0/0 | 0.0k | 4200/4200 |
+| casa (techo blando) | **1.00** | 1.00 | ±0.03 | 0/0 | 0.0k | 4200/4200 |
 
-Juegos que puntúan: ajedrez, go, reversi, damas, xiangqi, mancala, snake, fagocito, peaton, blackjack, poker, brisca, tute, hearts, spades, gofish, unit, entropy, flota, defensa, frentes, relevo, cabina, rebano, pradera, marea, remigio, generala, oca, canadiense, domino, alisapolis..
+Juegos que puntúan: ajedrez, go, reversi, damas, xiangqi, mancala, peaton, blackjack, poker, brisca, tute, hearts, spades, gofish, unit, entropy, sokoban, mecha, cripta, flota, defensa, sigilo, frentes, relevo, cabina, rebano, pradera, nave, marea, remigio, generala, oca, canadiense, domino, alisapolis.
 
 Fuera de la media, y por qué:
 
+- **snake** — el tope de 800 decisiones corta la partida (sólo termina el 94% de las de referencia)
+- **fagocito** — el tope de 240 decisiones corta la partida (sólo termina el 94% de las de referencia)
 - **guerra** — la casa no supera al suelo: la escala se invertiría
-- **sokoban** — el tope de 200 decisiones corta la partida (sólo termina el 13% de las de referencia)
-- **cripta** — el tope de 200 decisiones corta la partida (sólo termina el 0% de las de referencia)
-- **sigilo** — no se puede poner la escala: en las 3 semillas que juegan los modelos el suelo y la casa se cruzan (hueco -43.7). El juego sí separa en el promedio largo; sube --semillas.
-- **nave** — no se puede poner la escala: en las 3 semillas que juegan los modelos el suelo y la casa se cruzan (hueco -50.0). El juego sí separa en el promedio largo; sube --semillas.
 - **shinigami** — la casa no supera al suelo: la escala se invertiría
 - **parchis** — la casa no supera al suelo: la escala se invertiría
 - **chinchon** — el hueco (1.2) no supera al ruido de la medida (±1.9)

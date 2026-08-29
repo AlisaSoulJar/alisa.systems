@@ -888,6 +888,26 @@ export const VOCABULARIO = {
         "valores": {},
         "cartas": []
     },
+    "mecha": {
+        "rejilla": {
+            "ancho": 13,
+            "alto": 11
+        },
+        "maxPiezas": 0,
+        "tipos": [
+            "bomba",
+            "bomba_ya",
+            "caja",
+            "jugador",
+            "llama",
+            "mejora_alcance",
+            "mejora_bomba"
+        ],
+        "zonas": [],
+        "hechos": [],
+        "valores": {},
+        "cartas": []
+    },
     "cripta": {
         "rejilla": {
             "ancho": 24,

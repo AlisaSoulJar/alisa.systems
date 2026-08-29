@@ -1,0 +1,31 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA Arcade — Mecha</title>
+<!--
+  Mecha NO tiene visualizador propio, y ésta es la prueba de que no le hace falta.
+
+  Lo que se ve sale entero del SUSTRATO que publica `rules/mecha.js`: la rejilla
+  con su suelo, sus pilares y sus cajas; y las piezas con su tipo y su dueño —
+  jugador, bomba, bomba a punto, llama, mejora—. `mesa_tablero.mjs` las dibuja sin
+  saber a qué se juega, igual que dibuja el go y el sokoban.
+
+  Es decir: se escribieron las REGLAS y el juego apareció dibujado, jugable con el
+  dedo y con el ratón, y abierto por `/api/gym` para un agente. Cero líneas de
+  dibujo propias. Si algún día hace falta escribirlas, será para adornar — nunca
+  para que se entienda, porque entenderlo ya es asunto del sustrato.
+
+  ⚠️ Y HAY UNA COSA QUE ESTE JUEGO PUBLICA Y CASI NINGÚN OTRO NECESITA: el TIEMPO.
+
+  Una bomba recién puesta y otra a punto de estallar ocupan la misma casilla y son
+  dos situaciones opuestas. Por eso el sustrato las distingue en el TIPO —`bomba`
+  y `bomba_ya`— y no en un campo aparte: así el dibujo, el mapa de texto y la
+  observación del agente se enteran los tres a la vez, sin que ninguno tenga que
+  saber nada de mechas.
+
+      ?semilla=7   fija la partida
+-->
+<script type="module">
+  import { montarMesa } from './js/montarMesa.js';
+  montarMesa({ juego: 'mecha' });
+</script>

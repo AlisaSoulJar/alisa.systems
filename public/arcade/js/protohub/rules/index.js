@@ -85,6 +85,7 @@ export const REGLAS = {
      * lo que salió; aquí decides y entonces el mundo mete una ficha donde quiera.
      */
     marea: () => import('./marea.js').then(m => m.marea),
+    mecha: () => import('./mecha.js').then(m => m.mecha),
     // Y el segundo: OBSERVABILIDAD PARCIAL, lo que ninguno de los veintiuno
     // anteriores tenía — aquí no se ve el estado, se descubre. Es el género que
     // separa a un agente con memoria de uno sin ella, y el primero que se apoya
@@ -261,6 +262,8 @@ export const SILLAS = {
     // Un solitario, y el rival es el azar que rellena la rejilla detrás de ti.
     marea: 1,
     flota: 2, defensa: 2, sigilo: 2, frentes: 2, relevo: 2, cabina: 2,
+    // Dos sillas simétricas: el arma es la misma para los dos y no distingue dueño.
+    mecha: 2,
     nave: 4,
     /**
      * Ocho, y el número lo eligió una medida con DOS varas —jugable y medible—
