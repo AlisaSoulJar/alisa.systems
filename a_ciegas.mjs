@@ -46,7 +46,45 @@ globalThis.fetch = async (e, i) => {
     return new Response(await readFile(fileURLToPath(u), 'utf-8'), { status: 200 });
 };
 
-const [juego, semilla = '7', lista = ''] = process.argv.slice(2);
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ LA CASA JUEGA LOS OTROS ASIENTOS. LA PRIMERA VERSIÓN NO, Y ERA GRAVE.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Esta herramienta nació el 29-08 aplicando las jugadas que le dieras, sin más.
+ * En un juego de un solo asiento da igual; en uno de dos, significa que **juegas
+ * también por el rival**, y entonces la partida no mide jugar: mide construir una
+ * línea a tu favor.
+ *
+ * Lo destapó Motoko usándola: hizo el mate del loco en el ajedrez eligiendo ella
+ * las dos peores jugadas de las negras —f7f6 y g7g5— y sacó 1000 puntos. Y lo dijo
+ * ella misma, con una frase que da el diagnóstico exacto: «el entorno no mide mi
+ * capacidad de jugar a los barquitos, mide que soy dios en ese tablero».
+ *
+ * ⚠️ Y EL ARREGLO YA ESTABA ESCRITO, EN EL SITIO QUE MÁS DUELE.
+ *
+ * `ProtoHubEnv` —el entorno de gym, el que usan los agentes de verdad— hace que
+ * responda la casa desde siempre, con este comentario al lado:
+ *
+ *     «Que responda la casa, si el juego tiene turnos y trae rival. Sin esto un
+ *      agente jugaría al ajedrez contra sí mismo y la puntuación no significaría
+ *      nada.»
+ *
+ * O sea que el motivo estaba escrito, la pieza estaba escrita, y yo monté una
+ * puerta nueva sin ella. Van siete esta semana.
+ *
+ * ⚠️ LA JUGADA DE LA CASA CUENTA EN EL RECIBO, igual que en el entorno: si
+ *    faltara, al re-simular la partida saldría otro tablero.
+ *
+ * Con `--dios` se recupera el comportamiento viejo —tú mueves todos los asientos—,
+ * que sirve para explorar un juego y NO sirve para medir nada. Se dice en la
+ * cabecera de la salida, para que ningún número salga de aquí sin su condición.
+ */
+const CASA_MAX = 64;
+
+const argv = process.argv.slice(2);
+const dios = argv.includes('--dios');
+const [juego, semilla = '7', lista = ''] = argv.filter((a) => !a.startsWith('--'));
 
 if (!juego) {
     console.log(`\nnode a_ciegas.mjs <juego> [semilla] [jugada,jugada,…]\n`);
@@ -62,6 +100,30 @@ const jugadas = lista ? lista.split(',').map(s => s.trim()).filter(Boolean) : []
 const reglas = await cargarReglas(juego, {});
 const p = reglas.nuevaPartida({ semilla: Number(semilla), seed: Number(semilla) });
 
+/**
+ * De quién es la mesa. Se toma del primer estado y no se vuelve a preguntar: es
+ * TU asiento durante toda la partida, igual que en una mesa de verdad.
+ */
+const miTurno = reglas.estado(p).turn;
+
+/** Deja jugar a la casa mientras no te toque. Devuelve las jugadas que hizo. */
+function juegaLaCasa() {
+    const suyas = [];
+    if (dios || !reglas.sugerencia) return suyas;
+    for (let i = 0; i < CASA_MAX; i++) {
+        const st = reglas.estado(p);
+        if (st.is_game_over) break;
+        if (st.turn === undefined || st.turn === miTurno) break;
+        const j = reglas.sugerencia(p);
+        if (!j || !reglas.mover(p, j)) break;
+        suyas.push(j);
+    }
+    return suyas;
+}
+
+const deLaCasa = [];
+deLaCasa.push(...juegaLaCasa());   // por si la casa abre
+
 let hechas = 0;
 for (const j of jugadas) {
     /**
@@ -76,9 +138,10 @@ for (const j of jugadas) {
         break;
     }
     hechas++;
+    deLaCasa.push(...juegaLaCasa());
 }
 
 const st = reglas.estado(p);
-console.log(`\n[${juego} · semilla ${semilla} · ${hechas} jugada(s) hechas]\n`);
+console.log(`\n[${juego} · semilla ${semilla} · ${hechas} tuyas · ${deLaCasa.length} de la casa` + (dios ? ` · ⚠️ MODO DIOS: mueves todos los asientos, esto NO mide nada` : ``) + `]\n`);
 console.log(describirEstado(juego, st, obtenerSustrato(juego, reglas, p, st)));
 console.log('');

@@ -37,6 +37,7 @@
  */
 
 import { sustratoDe } from './sustrato.js';
+import { puntuacionDe } from './Verificador.js';
 
 export class ProtoHub {
     constructor() {
@@ -104,7 +105,31 @@ export class ProtoHub {
              * y nada cambia para ellos.
              */
             ...(estado.normas ? { normas: estado.normas } : {}),
-            puntos: estado.puntos ?? estado.score ?? null,
+            /**
+             * ⚠️ EL RECIBO LLEVABA UN OBJETO DONDE DICE LLEVAR UN NÚMERO.
+             *
+             * Esto era `estado.puntos ?? estado.score ?? null`. El respaldo a
+             * `score` parece inofensivo y no lo es: varios juegos publican el
+             * marcador por bando —`{white: 0, black: 0}`— y entonces el recibo
+             * salía con un OBJETO en `puntos`. Medido el 29-08 sobre los 41: le
+             * pasa a `mecha`, que no publica `puntos` propio.
+             *
+             * Lo que se ve por fuera: el panel de la mesa imprimía «Turno white ·
+             * [object Object]», y el primer agente externo que jugó el banco
+             * apuntó `[object Object]` como su puntuación en dos juegos. Nadie da
+             * error; sencillamente el número que sostiene toda la comparación deja
+             * de ser un número.
+             *
+             * ⚠️ Y LA FUNCIÓN QUE NORMALIZA ESTO EXISTE DESDE SIEMPRE.
+             *
+             * `puntuacionDe` en `Verificador.js` sabe leer un marcador por bando y
+             * sacar el número que toca — de hecho el propio entorno de gym la usa,
+             * con una nota que dice por qué: «si el entorno y el verificador
+             * contaran los puntos de forma distinta, el recibo de una partida
+             * legítima no cuadraría». El recibo es justo lo que se verifica, y era
+             * el único que la esquivaba.
+             */
+            puntos: puntuacionDe(estado),
             terminada: !!estado.is_game_over,
             reproducible: g.semilla !== null && g.semilla !== undefined,
         };

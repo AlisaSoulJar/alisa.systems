@@ -144,7 +144,25 @@ const peaton = {
         }).join(' · ');
 
         return {
-            state: { width: W, height: H, peaton: { ...p.pos }, carriles_resumen, score: p.score },
+            /**
+             * ⚠️ `state` ES LO QUE LEE EL VISUALIZADOR 3D, Y SE QUEDÓ SIN COCHES.
+             *
+             * Al añadir el resumen de carriles y quitar el volcado de `carriles`,
+             * este objeto anidado perdió `hazards` y `carriles`. `peaton_visualizer`
+             * hace `syncStateToBoard(data.state)` y recorre `state.hazards` para
+             * pintar coches, troncos y hurón: sin ellos dibujaba **la rana y nada
+             * más**. Lo cazó `prueba_vistas` —«el sustrato dice 20 y se dibujan 1»—
+             * y no lo habría notado nadie mirando el texto, que estaba perfecto.
+             *
+             * ⚠️ Y NO CUESTA PROMPT: `state` es maquinaria y el descriptor no lo
+             *    saca al texto. Lo que se quitó para no gastar contexto —el volcado
+             *    de `carriles` en la RAÍZ— sigue quitado. Aquí abajo no se lee.
+             */
+            state: {
+                width: W, height: H, peaton: { ...p.pos }, carriles_resumen,
+                hazards, carriles: p.carriles, huron: p.huron ?? null,
+                score: p.score,
+            },
             width: W, height: H,
             peaton: { ...p.pos },
             carriles_resumen,

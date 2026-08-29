@@ -1335,6 +1335,30 @@ const SABOTAJES = [
         vigila: 'que un agente sin visión siga viendo el tablero de los 26',
     },
     {
+        nombre: 'la_casa_juega',
+        corre: 'node prueba_acreditar.mjs',
+        fichero: 'acreditar.mjs',
+        /**
+         * ⚠️ SIN CASA, LA HERRAMIENTA QUE REPARTE TÍTULOS MIDE OTRA COSA.
+         *
+         * En un juego de dos asientos, re-simular un recibo sin dejar jugar al
+         * rival significa que el recibo —y las siete políticas contra las que se
+         * compara— juegan TAMBIÉN por el otro. Entonces la nota no dice «juega
+         * bien»: dice «ha construido una línea a su favor».
+         *
+         * No es hipotético. El 29-08-2026, el primer agente externo que jugó este
+         * banco sacó 1000 puntos en el ajedrez haciendo el mate del loco con las
+         * negras, eligiéndolas él. Su frase fue el diagnóstico: «el entorno no mide
+         * mi capacidad de jugar a los barquitos, mide que soy dios en ese tablero».
+         *
+         * Quitar esta línea devuelve la herramienta a ese estado. Y no daría error
+         * ninguno: seguiría acreditando, sólo que a quien no debe.
+         */
+        de: '    if (!reglas.sugerencia) return;',
+        a: '    return;',
+        vigila: 'que el rival juegue cuando se re-simula un recibo, y no lo juegue quien lo firma',
+    },
+    {
         nombre: 'arneses',
         corre: 'node --import ./resolver_three.mjs prueba_arneses.mjs',
         fichero: 'public/js/gym_runners/boids_gym.js',

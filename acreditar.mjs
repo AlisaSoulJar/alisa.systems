@@ -20,7 +20,31 @@
  * declaraciones — pero un recibo que cualquiera puede sacar dando botones al azar
  * es una declaración con más pasos.
  *
- * ⚠️ SE COMPARA CONTRA EL MISMO SUELO QUE USA EL BANCO, Y CON EL MISMO HORIZONTE.
+ * ⚠️ CORRECCIÓN DEL 29-08-2026: AQUÍ PONÍA UNA COSA QUE NO ERA VERDAD.
+ *
+ * Ponía «se compara contra EL MISMO SUELO que usa el banco», y no lo era. La
+ * tabla publicada —`suelo_por_entorno.json`, que escribe `prueba_senal.mjs`—
+ * acumula la SUMA DE RECOMPENSAS a lo largo del episodio, jugando a través del
+ * entorno de gym. Esto de aquí devuelve la PUNTUACIÓN FINAL, jugando directamente
+ * sobre las reglas. Son dos cantidades distintas, no dos caminos a la misma.
+ *
+ * Medido en sokoban con sus 400 pasos: aquí sale -201 donde la tabla dice -198.
+ * Poco, y da igual cuánto: el problema no es el número, es que la frase invitaba
+ * a poner las dos notas en la misma columna.
+ *
+ * Lo que SÍ es cierto, y es lo que sostiene el veredicto:
+ *
+ *   · son LAS MISMAS siete políticas —se importan de `baseline.js`, no se copian;
+ *   · juegan el MISMO horizonte que trae el recibo;
+ *   · y sobre todo: **el recibo y las siete se puntúan igual**, con la misma
+ *     función y por el mismo camino. Eso es lo que hace justa la comparación, y
+ *     lo vigila `prueba_acreditar.mjs` re-jugando la política «primera» como si
+ *     fuera un recibo y exigiendo que salga su mismo número.
+ *
+ * Unificar las dos medidas es una tarea aparte y hay que hacerla mirando qué
+ * cambia en la tabla publicada, no de tapadillo.
+ *
+ * ⚠️ SE COMPARA CONTRA LAS MISMAS SIETE POLÍTICAS, Y CON EL MISMO HORIZONTE.
  *
  * Las siete políticas ciegas son las de `prueba_senal.mjs`: ciclo, primera,
  * última, tres de azar con semilla y un bandido que aprende del premio. No se
@@ -73,18 +97,65 @@ import { blindPolicies } from './public/js/alisa-engine/src/gym/baseline.js';
  * yo: duplicar esa comprobación aquí sería un segundo árbitro que algún día
  * discreparía del primero.
  */
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ LA CASA JUEGA LOS OTROS ASIENTOS — Y ESTO SE ESCRIBIÓ SIN ELLA.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Este fichero re-simulaba aplicando todas las jugadas del recibo a pelo, y
+ * corría las siete ciegas moviendo lo que tocara sin más. En un juego de un
+ * asiento da igual. En uno de dos significa que el recibo y las ciegas juegan
+ * TAMBIÉN por el rival, y entonces la nota no mide jugar: mide construir una
+ * línea a favor.
+ *
+ * Motoko lo destapó jugando: hizo el mate del loco eligiendo ella las dos peores
+ * jugadas de las negras, y lo dijo con la frase exacta — «el entorno no mide mi
+ * capacidad de jugar a los barquitos, mide que soy dios en ese tablero».
+ *
+ * ⚠️ Y HAY UN SEGUNDO MOTIVO, QUE ES PEOR Y ES EL QUE ROMPÍA COSAS.
+ *
+ * La cabecera de arriba promete que «se compara contra EL MISMO SUELO que usa el
+ * banco». El suelo publicado lo mide `prueba_senal.mjs` **a través del entorno de
+ * gym**, y ese entorno hace jugar a la casa desde siempre. O sea que la promesa
+ * era falsa para todo juego de más de un asiento: aquí se recalculaba otro suelo.
+ *
+ * Y en cuanto arreglé `a_ciegas.mjs` para que la casa jugara, los recibos nuevos
+ * dejaron de poder verificarse aquí: traen sólo TUS jugadas, y sin la casa de por
+ * medio el tablero es otro. Lo cantó el dominó de Motoko — «3 jugadas ilegales,
+ * ignoradas»— una hora después de que yo escribiera que este proyecto arregla las
+ * cosas en un extremo y no en el otro. Van nueve, y ésta es mía.
+ */
+const CASA_MAX = 64;
+
+/** Deja jugar a la casa mientras no le toque a `miTurno`. */
+function dejaJugarALaCasa(reglas, p, miTurno) {
+    if (!reglas.sugerencia) return;
+    for (let i = 0; i < CASA_MAX; i++) {
+        const st = reglas.estado(p);
+        if (st.is_game_over) break;
+        if (st.turn === undefined || st.turn === miTurno) break;
+        const j = reglas.sugerencia(p);
+        if (!j || !reglas.mover(p, j)) break;
+    }
+}
+
 function reproducir(reglas, semilla, jugadas) {
     const p = reglas.nuevaPartida({ semilla, seed: semilla });
+    const miTurno = reglas.estado(p).turn;
     let rechazadas = 0;
+    dejaJugarALaCasa(reglas, p, miTurno);      // por si la casa abre
     for (const j of jugadas) {
         if (reglas.estado(p).is_game_over) break;
         if (!reglas.mover(p, j)) rechazadas++;
+        dejaJugarALaCasa(reglas, p, miTurno);
     }
     return { p, rechazadas };
 }
 
 function correrCiega(reglas, semilla, pasos, pol) {
     const p = reglas.nuevaPartida({ semilla, seed: semilla });
+    const miTurno = reglas.estado(p).turn;
+    dejaJugarALaCasa(reglas, p, miTurno);
     for (let i = 0; i < pasos; i++) {
         const st = reglas.estado(p);
         const v = (st.legal_moves ?? []).map(String);
@@ -92,6 +163,7 @@ function correrCiega(reglas, semilla, pasos, pol) {
         const antes = puntuacionDe(st);
         const o = pol.elegir(v, i);
         try { if (!reglas.mover(p, o)) break; } catch { break; }
+        dejaJugarALaCasa(reglas, p, miTurno);
         pol.aprender?.(o, puntuacionDe(reglas.estado(p)) - antes);
     }
     return puntuacionDe(reglas.estado(p));
