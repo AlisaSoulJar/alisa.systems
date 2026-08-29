@@ -299,7 +299,23 @@ async function fetchState() {
     const hub = _hub();
     if (!hub) return;
     try {
-        pintar(_adaptar(hub.state('peaton')));
+        const st = hub.state('peaton');
+        pintar(_adaptar(st));
+        /**
+         * El mundo avanza solo —los coches se mueven aunque tú esperes—, así que
+         * quien no ve la pantalla tiene que enterarse también por aquí, y no sólo
+         * cuando le da a un botón. Si no, te atropellarían mientras esperas y no
+         * lo sabrías hasta la siguiente tecla.
+         *
+         * ⚠️ Y ESTO TIENE UN PRECIO QUE SE DICE: el mundo late a 1 Hz y en las
+         *    reglas ese latido ES la jugada `esperar`, así que justo después de
+         *    moverte el aviso puede pasar a decir «última jugada: esperar». Es
+         *    verdad —eso es lo último que pasó— pero pisa tu propio movimiento.
+         *    El cerrojo de `narrar` evita la parte peor (no repite el mismo texto
+         *    sesenta veces), y lo demás es de este juego: en un tiempo real, el
+         *    mundo tiene más que contar que tú.
+         */
+        window.narrarMesa?.('peaton', st);
     } catch (e) {
         const conn = document.getElementById('ui-conn');
         if (conn) { conn.innerText = 'TIMED OUT'; conn.style.color = '#ff0044'; }
@@ -315,8 +331,27 @@ async function sendMove(direction) {
     const hub = _hub();
     if (!hub) return;
     try {
+        /**
+         * ⚠️ QUE SUENE Y QUE SE CUENTE — Y POR QUÉ HAY QUE PEDIRLO AQUÍ.
+         *
+         * Esta mesa es el CUARTO camino por el que sale una jugada del arcade, y
+         * el único que no pasa ni por un `backend` ni por la vista genérica: este
+         * visualizador habla directamente con el hub y se pinta él solo.
+         *
+         * Consecuencia medida en Chrome el 29-08-2026: `peaton` no sonaba al
+         * jugar ni decía nada a un lector de pantalla, mientras los otros cuarenta
+         * sí. Lo destapó `prueba_asimetria` al mirar los 41 — sola, esta página
+         * parece perfecta.
+         *
+         * `footstep` no se escribe aquí: sale de la tabla de verbos del léxico,
+         * que ya sabe que `arriba` es un paso. Ver `sonido_mesa.js`.
+         */
+        window.sonarJugada?.(direction, 'ficha');
         await hub.move('peaton', { move: direction });
-        pintar(_adaptar(hub.state('peaton')));
+        const st = hub.state('peaton');
+        pintar(_adaptar(st));
+        window.narrarMesa?.('peaton', st, direction);
+        window.sonarFinDePartida?.(st, 'peaton');
     } catch (e) { console.warn(e); }
 }
 

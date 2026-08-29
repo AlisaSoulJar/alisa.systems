@@ -33,6 +33,21 @@
  */
 import { ProtoHub } from './protohub/ProtoHub.js';
 import { JUEGOS, TITULOS, cargarReglas } from './protohub/rules/index.js';
+/**
+ * La descripción que lee un agente sin visión. Se importa aquí —el único módulo
+ * del andamio— y se ofrece por `window` para que `narrador.js`, que es un script
+ * clásico, pueda dársela a un lector de pantalla.
+ *
+ * ⚠️ ES LA MISMA, SIN UNA PALABRA DE DIFERENCIA, Y ESO NO ES PEREZA.
+ *
+ * Da la mano escribir aquí un texto «más bonito para personas». Si se hiciera,
+ * una persona ciega y un modelo estarían leyendo dos juegos distintos, y la
+ * comparación entre los dos —que es lo único que este banco vende— dejaría de
+ * significar nada. Es el mismo motivo por el que `descripcion.js` salió de
+ * `ProtoHubEnv` en su día: una copia «parecida» es peor que no tenerla.
+ */
+import { describirEstado } from './protohub/descripcion.js';
+if (typeof window !== 'undefined') window.describirMesa = describirEstado;
 
 /**
  * ⚠️ LA VERSIÓN QUE VIAJA EN LA URL. NO ES COSMÉTICA: IMPIDE MEZCLAR.
@@ -51,7 +66,7 @@ import { JUEGOS, TITULOS, cargarReglas } from './protohub/rules/index.js';
  * `prueba_version.mjs` comprueba que corresponde a lo que hay en disco y, si no,
  * dice el valor que toca. No hay que acordarse: hay que hacer caso a la prueba.
  */
-const VERSION = '6a5e1e58';
+const VERSION = '9631fc92';
 
 /**
  * Lo que toda página de tablero necesitaba y repetía. En orden.
@@ -238,6 +253,17 @@ export const ANDAMIO = [
      */
     '/js/sfx.js',
     'js/sonido_mesa.js',
+    /**
+     * Y la voz. Mismo motivo que el sonido: quien lo llama son los dos motores
+     * clásicos y la vista genérica, y sólo uno de los tres puede importar.
+     *
+     * ⚠️ MEDIDO ANTES DE ESCRIBIRLO: `aria-live` aparecía en TRES ficheros de
+     *    todo el proyecto y ninguno era del arcade. El texto que lee un agente
+     *    sin visión existía desde hacía meses —`descripcion.js`, con su prueba de
+     *    asimetría y todo— y no llegaba a ningún lector de pantalla. La mitad
+     *    difícil estaba hecha; faltaba el altavoz.
+     */
+    'js/narrador.js',
 ];
 
 /**

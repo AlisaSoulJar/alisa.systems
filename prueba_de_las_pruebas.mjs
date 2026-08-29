@@ -1254,6 +1254,27 @@ const SABOTAJES = [
         vigila: 'que el contorno de una pieza se separe de ella y no sea decorado',
     },
     {
+        nombre: 'voz_de_la_mesa',
+        corre: 'node prueba_asimetria.mjs',
+        fichero: 'public/arcade/js/narrador.js',
+        /**
+         * ⚠️ EL FALLO DE ACCESIBILIDAD QUE MEJOR DISIMULA: EL ELEMENTO ESTÁ.
+         *
+         * Sin `aria-live` la región sigue en el HTML, se ve en el inspector, tiene
+         * el texto correcto dentro y un lector de pantalla NO DICE NADA cuando
+         * cambia. No hay error, no hay hueco en la página, no hay nada que mirar.
+         * Es exactamente el estado en el que estaba el arcade entero hasta hoy: el
+         * texto para un jugador sin vista existía desde hacía meses —con su prueba
+         * de asimetría y todo— y no llegaba a ningún sitio.
+         *
+         * Ataca al mundo: quita el atributo que hace que se oiga, no la
+         * comprobación que lo mira.
+         */
+        de: "        aviso.setAttribute('aria-live', 'polite');",
+        a: '',
+        vigila: 'que un lector de pantalla se entere de que la mesa ha cambiado',
+    },
+    {
         nombre: 'arneses',
         corre: 'node --import ./resolver_three.mjs prueba_arneses.mjs',
         fichero: 'public/js/gym_runners/boids_gym.js',

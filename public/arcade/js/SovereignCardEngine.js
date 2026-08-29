@@ -135,6 +135,12 @@ class SovereignCardEngine {
              * quién usa qué motor ya lo decide el sustrato en `montarMesa.js`.
              */
             this.backend = window.conSonidoDeMesa?.(this.backend, 'carta') ?? this.backend;
+        /**
+         * Y que se pueda jugar sin verla. Va detrás del sonido y en otra función
+         * a propósito: uno es adorno y el otro decide si alguien puede jugar o
+         * no. Ver la cabecera de `narrador.js`.
+         */
+        this.backend = window.conVozDeMesa?.(this.backend, window.ALISA_JUEGO) ?? this.backend;
             this.pollHub();
             setInterval(this.pollHub, 1000);
             this._montarRepetidor();

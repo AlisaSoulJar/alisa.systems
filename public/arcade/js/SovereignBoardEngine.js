@@ -137,6 +137,12 @@ class SovereignBoardEngine {
             // asigna en cuatro ramas y una sale con un `return` temprano. `ficha`
             // porque esto es el motor de tablero — ver `sonido_mesa.js`.
             this.backend = window.conSonidoDeMesa?.(this.backend, 'ficha') ?? this.backend;
+            /**
+             * Y que se pueda jugar sin verla. Va detrás del sonido y en otra
+             * función a propósito: uno es adorno y el otro decide si alguien
+             * puede jugar o no. Ver la cabecera de `narrador.js`.
+             */
+            this.backend = window.conVozDeMesa?.(this.backend, window.ALISA_JUEGO) ?? this.backend;
             this.pollHub();
             setInterval(this.pollHub, 1000);
             // Si alguna silla no es de una persona, el automático se enciende

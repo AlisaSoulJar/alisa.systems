@@ -374,8 +374,26 @@ for (const nombre of conReceta) {
     if (!/sonarFinDePartida\?\.\(/.test(vista)) {
         mal('la vista genérica ya no toca la fanfarria del final');
     }
-    console.log(gris('  las dos vistas del arcade piden sonido: backend (20 juegos) '
-        + 'y vista genérica (21)'));
+
+    /**
+     * ⚠️ Y EL CUARTO CAMINO, QUE APARECIÓ DESPUÉS Y ERA UNO SOLO.
+     *
+     * Escribí «los 20 con backend y los 21 de la vista genérica» y me faltaba uno:
+     * `peaton` tiene visualizador propio pero NO monta motor. Habla directamente
+     * con el hub y se pinta él solo, así que no sonaba ni decía nada. Lo destapó
+     * `prueba_asimetria` mirando los 41 a la vez — sola, esa página parece
+     * perfecta.
+     *
+     * O sea que el reparto real es 19 + 21 + 1, y la lección es la de siempre:
+     * una frase sobre el diseño no es una medida.
+     */
+    const peaton = await readFile('./public/arcade/js/peaton_visualizer.js', 'utf8');
+    comprobaciones += 2;
+    if (!/sonarJugada\?\.\(/.test(peaton)) mal('peaton_visualizer.js ya no suena al jugar');
+    if (!/narrarMesa\?\.\(/.test(peaton)) mal('peaton_visualizer.js ya no cuenta lo que pasa');
+
+    console.log(gris('  los tres caminos del arcade piden sonido: backend (19 juegos), '
+        + 'vista genérica (21) y peaton (1)'));
 }
 
 // ── veredicto ────────────────────────────────────────────────────────────────

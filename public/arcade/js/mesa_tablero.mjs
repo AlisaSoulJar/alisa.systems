@@ -1086,6 +1086,13 @@ async function refrescar() {
     // Y la fanfarria del final, que tampoco llegaba aquí. Lleva su propio cerrojo
     // dentro: esto se llama en cada refresco y el final ocurre una vez.
     window.sonarFinDePartida?.(st, juego);
+    /**
+     * Y la voz, en el mismo sitio y por el mismo motivo: aquí se ve el estado
+     * DESPUÉS de que se mueva quien sea. Anunciar en el `enviar` sólo contaría
+     * mis jugadas, y quien no ve el tablero se enteraría de lo que hace él y no
+     * de lo que le hacen — que es la mitad que importa.
+     */
+    window.narrarMesa?.(juego, st, (hub.partida(juego)?.jugadas ?? []).at(-1));
     const susLocal = hub.sustrato(juego);
     pintor.pintar(susLocal);
     // Para el encuadre: un tablero grande necesita más inclinación o el fondo se

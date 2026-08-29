@@ -166,6 +166,8 @@ console.log('\n¿Sabe la persona lo que sabe el agente?\n');
 let fallos = 0;
 const usadas = new Set();
 const informe = [];
+// La puerta de quien no ve la pantalla: cuántas mesas hablan y cuáles callan.
+const mudas = []; let conVoz = 0;
 
 for (const juego of juegos) {
     const pag = paginas[juego];
@@ -211,7 +213,37 @@ for (const juego of juegos) {
             if (!st) return null;
             const panel = document.querySelector('.hud-panel')?.innerText ?? '';
             const barra = document.querySelector('.jugadas')?.innerText ?? '';
-            return { st, visible: `${panel}\n${barra}` };
+            /**
+             * ⚠️ Y LA TERCERA PUERTA: LA DE QUIEN NO VE LA PANTALLA.
+             *
+             * Esta prueba nació preguntando si la PERSONA sabe lo que sabe el
+             * agente. Falta la de al lado: si lo sabe alguien que no puede mirar.
+             * El texto para eso existe desde hace meses —`describirEstado`— y
+             * hasta hoy no llegaba a ningún lector de pantalla: `aria-live`
+             * aparecía en tres ficheros del proyecto y ninguno era del arcade.
+             *
+             * Se apunta el estado real de las dos regiones. Lo importante no es
+             * que el elemento exista: es que esté en el ÁRBOL DE ACCESIBILIDAD.
+             * Con `display:none` estaría en el HTML, se vería en el inspector y
+             * no lo leería nadie — que es el fallo clásico de esto.
+             */
+            const viva = document.getElementById('narrador-aviso');
+            const desc = document.getElementById('narrador-mesa');
+            const enElArbol = (el) => {
+                if (!el) return false;
+                const s = getComputedStyle(el);
+                return s.display !== 'none' && s.visibility !== 'hidden';
+            };
+            const voz = {
+                hayViva: !!viva,
+                rol: viva?.getAttribute('role') ?? null,
+                live: viva?.getAttribute('aria-live') ?? null,
+                atomic: viva?.getAttribute('aria-atomic') ?? null,
+                leible: enElArbol(viva) && enElArbol(desc),
+                aviso: viva?.textContent ?? '',
+                descrito: desc?.textContent ?? '',
+            };
+            return { st, visible: `${panel}\n${barra}`, voz };
         });
         r = await leer();
         // Si el panel todavía no ha crecido, se le da otra vuelta de reloj.
@@ -304,6 +336,33 @@ for (const juego of juegos) {
     }
     await p.close();
 
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  ⚠️ Y LA TERCERA PUERTA: ¿SE ENTERA QUIEN NO PUEDE MIRAR?
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Se mide sobre la página de verdad, después de seis jugadas, porque es lo
+     * único que distingue «hay una región viva en el HTML» de «un lector de
+     * pantalla diría algo». Las tres cosas que la rompen no dan error ninguna:
+     * esconderla con `display:none` (se va del árbol de accesibilidad), dejarla
+     * vacía (no hay nada que leer) y olvidar `aria-live` (nadie se entera de que
+     * cambió).
+     */
+    const v = r?.voz;
+    if (!v?.hayViva) {
+        mudas.push(`${juego}: no hay región viva`);
+    } else if (!v.leible) {
+        mudas.push(`${juego}: la región está escondida del árbol de accesibilidad`);
+    } else if (v.live !== 'polite' || v.rol !== 'status' || v.atomic !== 'true') {
+        mudas.push(`${juego}: role=${v.rol} aria-live=${v.live} aria-atomic=${v.atomic}`);
+    } else if (!v.aviso.trim()) {
+        mudas.push(`${juego}: la región viva está vacía después de seis jugadas`);
+    } else if (v.descrito.length < 40) {
+        mudas.push(`${juego}: la descripción completa tiene ${v.descrito.length} caracteres`);
+    } else {
+        conVoz++;
+    }
+
     if (escondidos.length) {
         fallos++;
         informe.push([juego, escondidos]);
@@ -322,6 +381,14 @@ srv.kill();
 const sobran = Object.keys(EN_LA_MESA).filter(k => !usadas.has(k));
 
 console.log('');
+console.log(gris(`  ${conVoz} de ${juegos.length} mesas se pueden seguir sin ver la pantalla`));
+if (mudas.length) {
+    fallos++;
+    console.log(rojo(`\n  ✗ ${mudas.length} mesa(s) que un lector de pantalla no sabría contar:`));
+    for (const m of mudas.slice(0, 8)) console.log(gris(`      ${m}`));
+    console.log(gris('    El texto para esto existe desde hace meses y es el mismo que lee un'));
+    console.log(gris('    agente sin visión. Lo que falla aquí no es tenerlo: es entregarlo.'));
+}
 if (sobran.length && !pedidos.length) {
     console.log(rojo(`  ✗ ${sobran.length} excepción(es) declaradas que ya no usa nadie: ${sobran.join(', ')}`));
     console.log(gris('    Quitalas de `EN_LA_MESA`: una excepción que sobra tapa la siguiente de verdad.'));
