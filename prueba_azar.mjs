@@ -113,10 +113,14 @@ async function ficheros(dir, acc = []) {
 
 let otros = 0;
 const copias = [];
+// Los que de verdad tocan el azar: es el DENOMINADOR de las copias. Sin él,
+// «nueve copias» no dice si son nueve de diez o nueve de doscientos.
+const conAzar = [];
 for (const f of await ficheros(path.join(RAIZ, 'public/js/alisa-engine/src'))) {
     if (PERMITIDOS.some(p => f.endsWith(p))) continue;
     const bruto = await readFile(f, 'utf-8');
     const codigo = bruto.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+    if (/Math\.random|mulberry32|DeterministicScope|\brnd\b|\brng\b/.test(codigo)) conAzar.push(f);
     for (const [re, que] of OTRO_ALGORITMO) {
         if (re.test(codigo)) {
             otros++;
@@ -134,6 +138,21 @@ if (copias.length > TECHO_COPIAS) {
       + 'Impórtalo de `DeterministicScope.js`, no subas el techo.');
 } else if (copias.length < TECHO_COPIAS) {
     console.log(`  ↓ bajó. Actualiza TECHO_COPIAS a ${copias.length} para que no vuelva a subir.`);
+}
+
+/**
+ * Y se publica el denominador, que es la forma de este fallo que no se ve: nueve
+ * ficheros copiando la fórmula no es «nueve ficheros con un problema», es
+ * «nueve de los que la usan no la importan». Ver `adopcion.mjs`.
+ */
+{
+    const { apuntar } = await import('./adopcion.mjs');
+    await apuntar({
+        clave: 'azar-importado',
+        titulo: 'ficheros que IMPORTAN el generador con semilla en vez de copiarlo',
+        usan: conAzar.length - copias.length, podrian: conAzar.length, quien: 'prueba_azar.mjs',
+        nota: 'una copia se separa del original sin avisar, y entonces la misma semilla da dos mundos',
+    });
 }
 
 /**

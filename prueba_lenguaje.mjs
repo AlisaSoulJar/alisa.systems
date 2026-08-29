@@ -22,6 +22,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { JUEGOS, cargarReglas } from './public/arcade/js/protohub/rules/index.js';
 import { describirEstado } from './public/arcade/js/protohub/descripcion.js';
+import { apuntar } from './adopcion.mjs';
 
 // Las reglas leen `card_library.json` con fetch; en Node eso es file://
 const fetchReal = globalThis.fetch;
@@ -154,10 +155,103 @@ for (const juego of JUEGOS) {
         mal(`${juego}: la descripción son ${d.length} caracteres (tope ${TOPE_CARACTERES})`);
     }
 
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  ⚠️ 5. Y EL AGUJERO QUE ENCONTRÉ JUGANDO, QUE ES DISTINTO DE LOS CUATRO
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * La comprobación 1 pide que el juego cuente ALGO más que turno y jugadas
+     * legales. `mecha` la pasa diciendo «t: 0. rotasPorJugador: [0,0]» — que es
+     * algo, y no sirve para nada. Jugué una partida a ciegas leyendo sólo esto y
+     * no sabía dónde estaba yo, dónde estaban las cajas ni dónde había puesto mi
+     * bomba. Se puede elegir sin equivocarse —eso lo garantiza `legal_moves`— y no
+     * se puede elegir bien.
+     *
+     * Medido el 29-08-2026: de los 26 juegos de rejilla, 9 publican tablero en
+     * texto y 17 no. Y no falta la máquina: `dibujarRejilla` existe en
+     * `descripcion.js` y el sustrato ya publica rejilla, piezas, terreno y
+     * símbolos —es lo que `pintar2d.js` usa para el minimapa—. Lo que hay es un
+     * `contarEspacial` con cuatro ramas escritas a mano, o sea una lista paralela
+     * de las que esta casa ha arreglado seis veces.
+     *
+     * ⚠️ NO SE MARCA COMO FALLO HOY, Y SE DICE POR QUÉ. Ponerlo en rojo dejaría la
+     *    suite con diecisiete rojos que no se arreglan en una tarde, y una suite
+     *    que se queda roja deja de mirarse. Va de trinquete: publicado y sólo
+     *    puede subir.
+     */
     if (!fallos || true) {
         const resumen = cuerpo.replace(/\s+/g, ' ').slice(0, 58);
         console.log(`  ✓ ${juego.padEnd(10)} ${String(d.length).padStart(5)} car · ${resumen}…`);
     }
+}
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ¿CUÁNTOS JUEGOS DE REJILLA PUBLICAN SU TABLERO EN TEXTO?
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Los cuatro controles de arriba miran que el texto no MIENTA. Éste mira que
+ * BASTE, que es otra cosa. Lo encontré jugando a `mecha` a ciegas: la
+ * descripción entera era «Puntos: 0. Turno: white. t: 0. rotasPorJugador: [0,0].
+ * Puedes: abajo, derecha, esperar, bomba.» Ni dónde estaba yo, ni dónde las
+ * cajas, ni dónde el rival.
+ *
+ * Es la avería que la cabecera de `descripcion.js` dice haber arreglado —«jugar
+ * al ajedrez leyendo *Puedes: a2a3…* sin ver el tablero jamás»— y que volvió a
+ * entrar con cada juego nuevo, porque el relato espacial es una cadena de `if`
+ * por juego y nadie le añade una rama al llegar.
+ *
+ * ⚠️ EL CRITERIO ES EXACTO, NO UNA HEURÍSTICA. Tres instrumentos míos acusaron en
+ *    falso antes de éste: uno por regex (decía que `mancala` no dice dónde está
+ *    nada, y lo dice); otro comparando cuatro repartos (acusaba a ajedrez, go y
+ *    damas, que empiezan siempre en la misma posición, claro). Lo que se
+ *    pregunta aquí es del código: si el juego tiene rejilla, ¿publica `fen`,
+ *    `board`/`tablero`, o tiene rama propia en `contarEspacial`?
+ */
+{
+    const { obtenerSustrato } = await import('./public/arcade/js/protohub/sustrato.js');
+    const CON_RAMA = new Set(['mancala', 'snake', 'fagocito', 'peaton']);
+    const conTablero = [], ciegos = [];
+    for (const juego of JUEGOS) {
+        let sus, st;
+        try {
+            const reglas = await cargarReglas(juego, {});
+            const p = reglas.nuevaPartida({ semilla: 7, seed: 7 });
+            st = reglas.estado(p);
+            sus = obtenerSustrato(juego, reglas, p, st) ?? {};
+        } catch { continue; }
+        if (!sus.rejilla) continue;              // los de cartas se cuentan solos
+        const publica = !!(st.fen || st.tablero || st.board || st.state?.board) || CON_RAMA.has(juego);
+        (publica ? conTablero : ciegos).push(juego);
+    }
+    const total = conTablero.length + ciegos.length;
+
+    /**
+     * ⚠️ TRINQUETE, NO FALLO. Ponerlo en rojo hoy dejaría la suite con diecisiete
+     *    rojos que no se arreglan en una tarde, y una suite que se queda roja deja
+     *    de mirarse — eso es peor que el agujero. Así que se publica y sólo puede
+     *    subir; el día que suba, hay que subir este número a mano, que es lo que
+     *    obliga a mirarlo.
+     */
+    const SUELO_CON_TABLERO = 9;
+    console.log(`\n  ${conTablero.length} de ${total} juegos de rejilla publican su tablero en texto`);
+    if (ciegos.length) {
+        console.log(`  a ciegas: ${ciegos.join(', ')}`);
+    }
+    if (conTablero.length < SUELO_CON_TABLERO) {
+        console.log(`\n  ✗ BAJÓ: eran ${SUELO_CON_TABLERO} y ahora son ${conTablero.length}. `
+            + 'Un juego ha dejado de contar dónde está lo que hay.');
+        fallos++;
+    } else if (conTablero.length > SUELO_CON_TABLERO) {
+        console.log(`  ↑ subió a ${conTablero.length}: aprieta SUELO_CON_TABLERO.`);
+    }
+
+    await apuntar({
+        clave: 'tablero-en-texto',
+        titulo: 'juegos de rejilla que dicen DÓNDE está lo que hay, no sólo cuántos',
+        usan: conTablero.length, podrian: total, quien: 'prueba_lenguaje.mjs',
+        nota: 'el resto sólo publica escalares: se puede elegir sin equivocarse, no elegir bien',
+    });
 }
 
 console.log(fallos === 0

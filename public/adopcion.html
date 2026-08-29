@@ -1,0 +1,131 @@
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ALISA — el denominador</title>
+<meta name="alisa-escaparate" content="motor">
+<style>
+:root{color-scheme:light dark}
+body{margin:0;padding:2.5rem 1.25rem;background:#f4f6f8;color:#1a2230;
+font:15px/1.6 ui-sans-serif,system-ui,sans-serif}
+main{max-width:60rem;margin:0 auto}
+h1{font:600 1.5rem/1.2 ui-monospace,monospace;letter-spacing:.14em;text-transform:uppercase}
+h2{font:600 1rem/1.2 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;margin-top:2.2rem}
+p.sub{color:#4a5866;max-width:48rem}
+table{border-collapse:collapse;width:100%;margin:1.2rem 0;background:#fff;
+border:1px solid #d9e0e7;font-size:14px}
+th,td{padding:.42rem .6rem;border-bottom:1px solid #eef2f5;vertical-align:top}
+thead th{font:600 11px/1.4 ui-monospace,monospace;text-transform:uppercase;
+letter-spacing:.06em;color:#4a5866;text-align:right}
+thead th:first-child,thead th:nth-child(2){text-align:left}
+td{text-align:right;font-variant-numeric:tabular-nums}
+td:first-child,td:nth-child(2){text-align:left}
+td:first-child{font-family:ui-monospace,monospace}
+tbody tr:hover{background:#f8fafb}
+code{background:#eef2f5;padding:.1rem .3rem;border-radius:3px;font-size:13px}
+.nota{color:#4a5866;font-size:13px;border-left:3px solid #d9e0e7;padding-left:.9rem;margin:1.4rem 0}
+.barra{display:inline-block;width:7rem;height:.55rem;background:#e3e9ee;border-radius:3px;
+overflow:hidden;vertical-align:middle;margin-right:.5rem}
+.barra i{display:block;height:100%;background:#0a7d55}
+.parcial i{background:#c9822b}
+.hueco i{background:#b23}
+.quien{color:#7b8896;font-size:12px;font-family:ui-monospace,monospace}
+.cuando{color:#9aa6b2;font-size:12px;font-variant-numeric:tabular-nums}
+</style>
+
+<main>
+<h1>El denominador</h1>
+
+<p class="sub">De cuántos que <b>podían</b> usar cada cosa, cuántos la usan. No es
+una lista de código muerto: medidos los 1.194 ficheros del repositorio, hay 593
+símbolos exportados y sólo 43 que no nombra nadie —y casi todos en <code>dist/</code>,
+que es salida de compilación—. De basura sin usar, poca.</p>
+
+<p class="sub">El problema es otro. <code>sfx.js</code> eran 37 KB de motor de
+sonido usados por <b>2 páginas de 111</b>. <code>DeterministicScope</code> lo
+importaban 26 ficheros y <b>ninguno</b> de los 22 arneses del gimnasio, que eran
+justo los que lo necesitaban. El texto que lee un agente sin visión existía desde
+hacía meses y no llegaba a <b>ninguna</b> de las 41 mesas. Ninguno de los tres
+habría salido en una lista de huérfanos: <b>todos tenían usuarios. El problema era
+el denominador.</b></p>
+
+<!--
+  ⚠️ ESTA PÁGINA NO LLEVA NI UN NÚMERO DENTRO, POR LA MISMA CICATRIZ QUE `suelo.html`.
+
+  `clasificacion.html` los llevaba incrustados y estuvo ocho días publicando una
+  clasificación que no correspondía a ninguna medida guardada. Aquí los ratios los
+  escriben las pruebas al pasar —cada una el suyo, con `adopcion.mjs`— y esto los
+  lee. No hay segunda copia que pueda separarse, porque no hay segunda copia.
+
+  Y hay un motivo de más para no recalcularlos aquí: los números buenos ya los
+  calculan las 31 pruebas que llevan techos y suelos declarados. Volver a
+  calcularlos sería exactamente la duplicación que este repositorio lleva
+  arreglando desde agosto.
+-->
+<div id="tabla">Cargando lo medido…</div>
+
+<p class="nota">Cada ratio lo escribe la prueba que lo mide, en cada
+<code>npm test</code>, con <code>adopcion.mjs</code> → <code>public/data/adopcion.json</code>.
+Si un número está viejo es porque esa prueba no corrió: por eso cada fila dice
+cuándo se midió y quién la midió.</p>
+
+<h2>Cómo se busca esto</h2>
+<p class="sub">Cuatro formas, y ninguna pregunta «¿se usa?»:</p>
+<ol class="sub">
+<li><b>Asimetría entre hermanos.</b> Ficheros que hacen lo mismo, donde unos usan
+la capacidad y otros no. Así estaba <code>DeterministicScope</code>: veintiséis
+usuarios y cero de los veintidós que la necesitaban.</li>
+<li><b>Reimplementado en vez de importado.</b> Nueve ficheros copiaban
+<code>mulberry32</code> teniéndolo exportado al lado. Lo vigila <code>prueba_azar</code>.</li>
+<li><b>Datos declarados que no lee nadie.</b> La familia <code>peaton</code> del
+léxico de sonidos: cinco escritos, dos tocados.</li>
+<li><b>Exportado, documentado, y con un solo llamador.</b> Hay noventa. Un
+ayudante privado con un llamador está bien; una capacidad con cabecera larga y un
+llamador suele ser un <code>sfx.js</code> esperando.</li>
+</ol>
+
+<script type="module">
+/**
+ * ⚠️ LA PÁGINA NO SABE NADA. LEE.
+ * Mismo criterio que `suelo.html` y que las páginas de juego: no calcula, no
+ * guarda números, no decide nada. Pide el fichero que escribieron las pruebas.
+ */
+const F = '/data/adopcion.json';
+const raiz = document.getElementById('tabla');
+
+let d;
+try {
+    const r = await fetch(F);
+    if (!r.ok) throw new Error(r.status);
+    d = await r.json();
+} catch (e) {
+    raiz.textContent = `No he podido leer ${F} (${e.message}). `
+        + 'Lo escribe npm test: si no existe, es que todavía no ha corrido.';
+    throw e;
+}
+
+const filas = Object.entries(d.ratios ?? {});
+if (!filas.length) {
+    raiz.textContent = 'El fichero está pero no tiene ni un ratio. '
+        + 'Lo escriben las pruebas al pasar.';
+} else {
+    // De menor adopción a mayor: lo que falta va arriba, que es a lo que se viene.
+    filas.sort(([, a], [, b]) => (a.usan / a.podrian) - (b.usan / b.podrian));
+    const esc = (s) => String(s ?? '').replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+    const fila = ([clave, r]) => {
+        const p = r.podrian ? r.usan / r.podrian : 0;
+        const clase = p >= 0.999 ? '' : p >= 0.6 ? 'parcial' : 'hueco';
+        return `<tr>
+            <td>${esc(clave)}<div class="quien">${esc(r.quien)}</div></td>
+            <td>${esc(r.titulo)}${r.nota ? `<div class="quien">${esc(r.nota)}</div>` : ''}</td>
+            <td><span class="barra ${clase}"><i style="width:${(p * 100).toFixed(1)}%"></i></span>
+                ${r.usan} de ${r.podrian}</td>
+            <td class="cuando">${esc((r.medido ?? '').slice(0, 10))}</td>
+        </tr>`;
+    };
+    const completos = filas.filter(([, r]) => r.usan === r.podrian).length;
+    raiz.innerHTML = `<table>
+        <thead><tr><th>qué</th><th>de qué</th><th>usan / podían</th><th>medido</th></tr></thead>
+        <tbody>${filas.map(fila).join('')}</tbody></table>
+        <p class="nota">${filas.length} ratios publicados · ${completos} al completo ·
+        ${filas.length - completos} con hueco.</p>`;
+}
+</script>
+</main>

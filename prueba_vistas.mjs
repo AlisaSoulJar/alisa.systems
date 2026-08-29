@@ -237,6 +237,22 @@ srv.kill();
 console.log(`\n  ${cuadran.length} juegos dibujan exactamente lo que dice su sustrato`);
 console.log(`  ${aCiegas.length} no se pueden comprobar (techo: ${TECHO_A_CIEGAS})`);
 console.log(`  ${conContorno} grupos de piezas llevan contorno del color contrario`);
+if (!pedidos.length) {
+    const { apuntar } = await import('./adopcion.mjs');
+    await apuntar({
+        clave: 'contorno-de-pieza',
+        titulo: 'grupos de piezas que se recortan del suelo con un contorno del color contrario',
+        usan: conContorno, podrian: conContorno + sinContorno.length, quien: 'prueba_vistas.mjs',
+        nota: 'medido en Chrome sobre la escena de verdad, no leyendo el fichero',
+    });
+    await apuntar({
+        clave: 'vista-comprobable',
+        titulo: 'juegos que NOMBRAN lo que dibujan, y por eso se pueden cruzar con el sustrato',
+        usan: cuadran.length, podrian: cuadran.length + aCiegas.length + discrepan.length,
+        quien: 'prueba_vistas.mjs',
+        nota: 'un visualizador que no nombra sus mallas tampoco lo puede leer un agente',
+    });
+}
 
 let fallos = 0;
 

@@ -382,6 +382,15 @@ const sobran = Object.keys(EN_LA_MESA).filter(k => !usadas.has(k));
 
 console.log('');
 console.log(gris(`  ${conVoz} de ${juegos.length} mesas se pueden seguir sin ver la pantalla`));
+if (!pedidos.length) {
+    const { apuntar } = await import('./adopcion.mjs');
+    await apuntar({
+        clave: 'mesa-narrada',
+        titulo: 'mesas que un lector de pantalla puede seguir jugada a jugada',
+        usan: conVoz, podrian: juegos.length, quien: 'prueba_asimetria.mjs',
+        nota: 'el texto existía desde hacía meses; hasta el 29-08-2026 no llegaba a ninguna',
+    });
+}
 if (mudas.length) {
     fallos++;
     console.log(rojo(`\n  ✗ ${mudas.length} mesa(s) que un lector de pantalla no sabría contar:`));

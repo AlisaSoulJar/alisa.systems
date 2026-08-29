@@ -305,6 +305,14 @@ for (const nombre of conReceta) {
         mal(`ahora son ${conVoz} juegos con sonido propio y aquí pone ${SUELO}. `
             + `Sube el número: un techo que no se actualiza deja de medir.`);
     }
+    const { apuntar } = await import('./adopcion.mjs');
+    await apuntar({
+        clave: 'sonido-por-clase-de-jugada',
+        titulo: 'juegos donde poner una bomba y dar un paso suenan distinto',
+        usan: conVoz, podrian: conVoz + alGenerico.length, quien: 'prueba_sonidos.mjs',
+        nota: 'el resto cae al genérico del motor —«ficha» o «carta»—, que es correcto '
+            + 'en los de coordenadas puras',
+    });
     console.log(gris(`  ${conMapa} juego(s) declaran mapa propio · ${mapeadas} jugadas mapeadas · `
         + `${Object.keys(comun ?? {}).length} verbos compartidos`));
     console.log(gris(`  ${conVoz} juegos suenan por jugada · ${alGenerico.length} al genérico `

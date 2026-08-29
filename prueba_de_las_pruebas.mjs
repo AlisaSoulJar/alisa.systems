@@ -1275,6 +1275,40 @@ const SABOTAJES = [
         vigila: 'que un lector de pantalla se entere de que la mesa ha cambiado',
     },
     {
+        nombre: 'denominador',
+        corre: 'node prueba_adopcion.mjs',
+        fichero: 'prueba_lenguaje.mjs',
+        /**
+         * ⚠️ UN RATIO SE PIERDE EN SILENCIO, Y ÉSA ES TODA SU GRACIA.
+         *
+         * `public/adopcion.html` contesta la pregunta de Oscar —«el proyecto tiene
+         * mejor maquinaria de la que ejecuta»— publicando cuántos USAN cada cosa de
+         * los que PODÍAN. Si alguien quita el `apuntar` de una prueba, el número
+         * desaparece de la página, la prueba sigue verde, la página sigue bonita, y
+         * lo único que pasa es que un hueco deja de verse.
+         *
+         * Es exactamente la avería que la página existe para cazar, aplicada a la
+         * página. Se ataca al mundo —la llamada que publica el dato— y no a la
+         * comprobación que la mira.
+         *
+         * ⚠️ Y EL PRIMER SABOTAJE QUE ESCRIBÍ NO VALÍA, QUE ES PARTE DE LA LECCIÓN.
+         *
+         * Renombraba la clave del ratio. `apuntar` funde por clave, así que eso
+         * AÑADE una entrada y deja la vieja: la prueba habría visto siete ratios
+         * válidos y aprobado. Un sabotaje que el instrumento no puede ver es un
+         * instrumento sin vigilancia disfrazado de dos.
+         *
+         * Éste deja de publicar de verdad. Y lo importante: el ratio VIEJO se queda
+         * en el fichero, así que la página seguiría enseñando un número real de
+         * hace meses como si fuera de hoy — que es la misma avería que tuvo
+         * `clasificacion.html` durante ocho días. Lo caza la comprobación que exige
+         * que quien firma un ratio siga llamando a `apuntar`.
+         */
+        de: '    await apuntar({',
+        a: '    await Promise.resolve({',
+        vigila: 'que un ratio no se quede congelado cuando su prueba deja de medirlo',
+    },
+    {
         nombre: 'arneses',
         corre: 'node --import ./resolver_three.mjs prueba_arneses.mjs',
         fichero: 'public/js/gym_runners/boids_gym.js',
