@@ -1132,6 +1132,36 @@ const SABOTAJES = [
         vigila: 'que las cuatro formas del catálogo se dibujen, y no tres',
     },
     {
+        nombre: 'arneses',
+        corre: 'node --import ./resolver_three.mjs prueba_arneses.mjs',
+        fichero: 'prueba_arneses.mjs',
+        /**
+         * ⚠️ ESTE SABOTAJE HUBO QUE CAMBIARLO, Y EL MOTIVO MERECE ESTAR ESCRITO.
+         *
+         * El primero quitaba `llamadas++` de la sonda, para que dejara de contar
+         * quién llama a `Math.random`. Mordía perfectamente… mientras doce arneses
+         * lo llamaban. Al sembrarlos esa misma noche, el contador pasó a valer
+         * cero de todas formas y el sabotaje dejó de cambiar nada: la meta-prueba
+         * lo cazó al momento con «APRUEBA CON EL CABLE CORTADO».
+         *
+         * Es un aviso que conviene recordar: **un sabotaje puede caducar cuando se
+         * arregla la avería que reproducía**. Sigue en el fichero, sigue pareciendo
+         * que vigila, y ya no vigila nada.
+         *
+         * Éste ataca algo que no caduca: que el delator ANOTE. Si `mal()` deja de
+         * apuntar, la prueba recorre los veintidós, no encuentra nada que decir y
+         * canta victoria — con la puerta cerrada de `dqn_gym` intacta y con
+         * cualquier arnés que se rompa mañana. Un vigilante ciego es peor que
+         * ninguno, porque además tranquiliza.
+         *
+         * Y se ve porque el techo baja en los dos sentidos: sin anotar, la cuenta
+         * cae de uno a cero, y eso suspende igual que si subiera.
+         */
+        de: 'const mal = (m) => fallos.push(m);',
+        a: 'const mal = (m) => { };',
+        vigila: 'que las puertas de agente rotas se sigan anotando',
+    },
+    {
         nombre: 'mecha',
         corre: 'node prueba_mecha.mjs',
         fichero: 'public/arcade/js/protohub/rules/mecha.js',

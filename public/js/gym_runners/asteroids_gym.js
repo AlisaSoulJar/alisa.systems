@@ -1,6 +1,7 @@
 import { AsteroidsSystem } from '../alisa-engine/src/world/systems/AsteroidsSystem.js';
+import { DeterministicScope } from '../alisa-engine/src/world/core/DeterministicScope.js';
 
-export async function runGymEpisode(steps = 1500, WORKER_NAME = 'NodeGymWorker') {
+async function _episodio(steps = 1500, WORKER_NAME = 'NodeGymWorker') {
     console.log(`[${WORKER_NAME}] AsteroidsSystem → RL Pure Headless Interface por ${steps} steps...`);
 
     const system = new AsteroidsSystem();
@@ -49,4 +50,25 @@ export async function runGymEpisode(steps = 1500, WORKER_NAME = 'NodeGymWorker')
         sim_time_ms: simTimeMs,
         tps: tps
     };
+}
+
+/**
+ * ⚠️ EL EPISODIO CORRE DENTRO DE UN AMBITO DETERMINISTA, Y ANTES NO.
+ *
+ * Medido el 29-08-2026: este arnes llamaba a `Math.random` sin sembrar, asi que
+ * dos ejecuciones daban resultados distintos. Un arnes que no se repite no sirve
+ * para comparar a nadie con nadie, que es lo unico que hace este banco.
+ *
+ * El motor ya tenia la herramienta —`DeterministicScope`, escrita justamente para
+ * esto y usada por otros veintiseis ficheros— y los arneses eran los unicos que
+ * no la usaban. Sustituye `Math.random` por mulberry32 durante el tramo y lo
+ * devuelve a su sitio al salir: cero ediciones en los sistemas de debajo.
+ *
+ * Se envuelve en vez de tocar el cuerpo a proposito: asi el episodio de siempre
+ * se queda como estaba y la unica diferencia es de donde sale el azar.
+ */
+const SEMILLA = 42;
+
+export async function runGymEpisode(...args) {
+    return DeterministicScope.runAsync(SEMILLA, () => _episodio(...args));
 }

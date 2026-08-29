@@ -1,6 +1,7 @@
 import { StealthSightSystem } from '../alisa-engine/src/world/systems/StealthSightSystem.js';
+import { DeterministicScope } from '../alisa-engine/src/world/core/DeterministicScope.js';
 
-export async function runGymEpisode(epochs = 1500, WORKER_NAME = "LabRat") {
+async function _episodio(epochs = 1500, WORKER_NAME = "LabRat") {
     console.log(`[${WORKER_NAME}] StealthSightSystem → Q-Learning Headless RL por ${epochs} epocas...`);
 
     const engine = new StealthSightSystem();
@@ -115,4 +116,25 @@ export async function runGymEpisode(epochs = 1500, WORKER_NAME = "LabRat") {
         sim_time_ms: t1 - t0,
         q_table_size: Object.keys(QTable).length
     };
+}
+
+/**
+ * ⚠️ EL EPISODIO CORRE DENTRO DE UN AMBITO DETERMINISTA, Y ANTES NO.
+ *
+ * Medido el 29-08-2026: este arnes llamaba a `Math.random` sin sembrar, asi que
+ * dos ejecuciones daban resultados distintos. Un arnes que no se repite no sirve
+ * para comparar a nadie con nadie, que es lo unico que hace este banco.
+ *
+ * El motor ya tenia la herramienta —`DeterministicScope`, escrita justamente para
+ * esto y usada por otros veintiseis ficheros— y los arneses eran los unicos que
+ * no la usaban. Sustituye `Math.random` por mulberry32 durante el tramo y lo
+ * devuelve a su sitio al salir: cero ediciones en los sistemas de debajo.
+ *
+ * Se envuelve en vez de tocar el cuerpo a proposito: asi el episodio de siempre
+ * se queda como estaba y la unica diferencia es de donde sale el azar.
+ */
+const SEMILLA = 42;
+
+export async function runGymEpisode(...args) {
+    return DeterministicScope.runAsync(SEMILLA, () => _episodio(...args));
 }
