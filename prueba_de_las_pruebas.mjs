@@ -1233,6 +1233,27 @@ const SABOTAJES = [
         vigila: 'que los 21 juegos de la vista genérica no se queden mudos otra vez',
     },
     {
+        nombre: 'contorno',
+        corre: 'node --import ./resolver_three.mjs prueba_vistas.mjs',
+        fichero: 'public/arcade/js/protohub/render/paleta.js',
+        /**
+         * ⚠️ EL CONTORNO QUE NO SEPARA NADA — Y POR QUÉ ESTE SABOTAJE FUNCIONA
+         *    Y LA PRIMERA VERSIÓN DE LA COMPROBACIÓN NO LO HABRÍA VISTO.
+         *
+         * Empecé pidiendo «que el contorno sea el que dice `contrasteDe`». Con
+         * este sabotaje puesto, la función devuelve el color de la pieza Y la
+         * expectativa de la prueba se rompe con ella: los dos dirían lo mismo y
+         * habría salido verde con las fichas sin borde. Un instrumento que saca
+         * su respuesta del aparato que vigila no vigila nada.
+         *
+         * Ahora la prueba mide la razón de contraste con su propia fórmula, así
+         * que esto le sale 1:1 y suspende.
+         */
+        de: 'export const contrasteDe = (hex) => (luminancia(hex) > 0.18 ? SILUETA.oscura : SILUETA.clara);',
+        a: 'export const contrasteDe = (hex) => hex;',
+        vigila: 'que el contorno de una pieza se separe de ella y no sea decorado',
+    },
+    {
         nombre: 'arneses',
         corre: 'node --import ./resolver_three.mjs prueba_arneses.mjs',
         fichero: 'public/js/gym_runners/boids_gym.js',

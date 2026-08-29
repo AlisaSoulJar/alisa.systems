@@ -35,6 +35,29 @@ import { spawn } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+/**
+ * ⚠️ AQUÍ NO SE IMPORTA `contrasteDe`, Y ESO ES DELIBERADO.
+ *
+ * La primera versión de esta comprobación pedía «que el contorno sea el que dice
+ * `contrasteDe`». Suena razonable y no vale nada: si alguien rompe esa función
+ * —devolviendo el mismo color de la pieza, que es la avería de verdad— la
+ * expectativa se rompe con ella y la prueba sigue en verde. Un instrumento que
+ * saca su respuesta del aparato que vigila no vigila nada.
+ *
+ * Así que se mide la CONSECUENCIA con su propia regla: la razón de contraste
+ * entre la pieza y su contorno, la fórmula de WCAG 2.x. El mínimo, 3:1, no me lo
+ * he inventado: es el que WCAG 1.4.11 exige para objetos gráficos —justo lo que
+ * es una ficha— y por debajo de ahí el borde deja de leerse.
+ */
+const luz = (hex) => {
+    const c = (v) => { const s = v / 255; return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4); };
+    return 0.2126 * c((hex >> 16) & 255) + 0.7152 * c((hex >> 8) & 255) + 0.0722 * c(hex & 255);
+};
+const contraste = (a, b) => {
+    const [x, y] = [luz(a), luz(b)].sort((p, q) => q - p);
+    return (x + 0.05) / (y + 0.05);
+};
+const MINIMO_CONTRASTE = 3;
 
 const AQUI = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1'));
 const impo = (rel) => import(pathToFileURL(path.join(AQUI, rel)).href);
@@ -96,6 +119,8 @@ await ctx.addInitScript(() => {
 console.log('\n¿Lo que se dibuja sale del sustrato?\n');
 
 const cuadran = [], discrepan = [], aCiegas = [];
+// El contorno de cada grupo de piezas: cuántos hay bien, y los que faltan o mienten.
+const sinContorno = [], malContorno = []; let conContorno = 0;
 for (const juego of juegos) {
     let nSustrato = 0;
     try {
@@ -126,7 +151,23 @@ for (const juego of juegos) {
                 // Las piezas del pintor genérico: `p:tipo:valor` o `z<zona>:v<valor>`.
                 if (/^p:/.test(n) || /^z\d+:v/.test(n)) piezas += cuantas;
             });
-            return { nombradas, sinNombre, piezas };
+            /**
+             * ⚠️ Y EL CONTORNO, QUE ES LO QUE SEPARA UNA FICHA DEL SUELO.
+             *
+             * Cada grupo de piezas `p:forma:dueño` lleva un casco invertido
+             * `s:forma:dueño` del color contrario. Se apuntan los dos con su
+             * color y su cuenta; el emparejamiento se comprueba fuera, que es
+             * donde se puede importar `contrasteDe` y compararlo de verdad.
+             */
+            const montones = [];
+            esc.traverse((o) => {
+                if (!o.isInstancedMesh || !/^[ps]:/.test(o.name || '')) return;
+                montones.push({
+                    nombre: o.name, cuenta: o.count, visible: o.visible,
+                    color: o.material?.color?.getHex?.() ?? null, cara: o.material?.side,
+                });
+            });
+            return { nombradas, sinNombre, piezas, montones };
         });
     } catch { /* el fallo de carga lo cuentan otras */ }
     await pg.close();
@@ -155,6 +196,39 @@ for (const juego of juegos) {
         discrepan.push({ juego, nSustrato, dibujadas: vista.piezas });
         console.log(`  ✗ ${juego.padEnd(12)} el sustrato dice ${nSustrato} y se dibujan ${vista.piezas}`);
     }
+
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  ⚠️ CADA GRUPO DE PIEZAS LLEVA SU CONTORNO, Y DEL COLOR CONTRARIO
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Idea de Oscar: una ficha clara sobre suelo claro pierde el borde, y una
+     * oscura contra la sombra hace lo mismo. El pintor dibuja un casco invertido
+     * por grupo con el color que `contrasteDe` decide por luminancia.
+     *
+     * Esto se mide en el NAVEGADOR y sobre la escena de verdad, no leyendo el
+     * fichero: la avería que puede aparecer aquí —un contorno del mismo color que
+     * la pieza, o que no se dibuja— no cambia ni una línea de código; cambia lo
+     * que se ve. Es la regla de esta casa: medir lo pintado, no lo regenerado.
+     */
+    for (const s of (vista?.montones ?? [])) {
+        if (!s.nombre.startsWith('p:') || !s.visible || !s.cuenta) continue;
+        const gemelo = vista.montones.find((o) => o.nombre === 's:' + s.nombre.slice(2));
+        if (!gemelo) { sinContorno.push(`${juego}/${s.nombre}`); continue; }
+        if (gemelo.cuenta !== s.cuenta) {
+            malContorno.push(`${juego}/${s.nombre}: ${s.cuenta} piezas y ${gemelo.cuenta} contornos`);
+        }
+        const razon = contraste(s.color, gemelo.color);
+        if (razon < MINIMO_CONTRASTE) {
+            malContorno.push(`${juego}/${s.nombre}: pieza #${s.color.toString(16)} y contorno `
+                + `#${gemelo.color.toString(16)} sólo se separan ${razon.toFixed(1)}:1 `
+                + `(hace falta ${MINIMO_CONTRASTE}:1)`);
+        }
+        if (gemelo.cara !== 1) {   // 1 = THREE.BackSide
+            malContorno.push(`${juego}/${s.nombre}: el contorno no se pinta por dentro y taparía la pieza`);
+        }
+        conContorno++;
+    }
 }
 
 await b.close();
@@ -162,8 +236,34 @@ srv.kill();
 
 console.log(`\n  ${cuadran.length} juegos dibujan exactamente lo que dice su sustrato`);
 console.log(`  ${aCiegas.length} no se pueden comprobar (techo: ${TECHO_A_CIEGAS})`);
+console.log(`  ${conContorno} grupos de piezas llevan contorno del color contrario`);
 
 let fallos = 0;
+
+/**
+ * ⚠️ CONTROL POSITIVO: sin contornos, esta comprobación aprueba sola.
+ *
+ * Si el pintor dejara de dibujarlos, `sinContorno` se llenaría — pero si además
+ * dejara de dibujar piezas, no se compararía nada y saldría verde. Por eso se
+ * exige un mínimo: en 41 juegos hay muchos más de diez grupos con piezas.
+ */
+if (conContorno + sinContorno.length < 10) {
+    fallos++;
+    console.log(`\n  ✗ CONTROL POSITIVO: sólo ${conContorno + sinContorno.length} grupos de piezas `
+        + `mirados. Con tan pocos, «todos llevan contorno» no significa nada.`);
+}
+if (sinContorno.length) {
+    fallos++;
+    console.log(`\n  ✗ ${sinContorno.length} grupos de piezas sin contorno:`);
+    for (const s of sinContorno.slice(0, 8)) console.log(`      ${s}`);
+    console.log('    Una ficha clara sobre suelo claro pierde el borde, y una oscura');
+    console.log('    contra la sombra hace lo mismo. El contorno es lo que lo devuelve.');
+}
+if (malContorno.length) {
+    fallos++;
+    console.log(`\n  ✗ ${malContorno.length} contornos que no separan nada:`);
+    for (const s of malContorno.slice(0, 8)) console.log(`      ${s}`);
+}
 if (discrepan.length) {
     fallos++;
     console.log(`\n  ✗ ${discrepan.length} dibujan algo que no está en la matriz, o al revés:`);

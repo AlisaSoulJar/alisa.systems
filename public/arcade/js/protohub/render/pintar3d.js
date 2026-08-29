@@ -31,7 +31,7 @@
  * cosas, que es exactamente lo que un espectador puede hacer.
  */
 
-import { colorDe } from './paleta.js';
+import { colorDe, contrasteDe } from './paleta.js';
 
 /**
  * El tinte de las casillas y los muros por ambiente. Vive aquí y no en `atmosfera.js`
@@ -457,12 +457,27 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
             // bandos se distingan sin depender del color.
             const forma = g.forma === 'disco' ? discoDe(g.de) : geo[g.forma];
             const m = monton(clave, forma, materialDe(g.de, sus.colores), ahora.length);
+            /**
+             * El contorno va por detrás en el mismo bucle: mismas posiciones,
+             * misma geometría, un pelo más ancho. Ver la nota de `contornoDe`.
+             *
+             * ⚠️ SIN EXCEPCIONES, Y ANTES PUSE UNA. Dejé fuera las bolitas
+             *    —`punto`— pensando que son demasiado pequeñas para que un anillo
+             *    se lea. No lo medí: es justo la comida que persigues en
+             *    `fagocito`, o sea lo que más hay que ver. La comprobación la
+             *    cazó como el único grupo sin contorno de los 36.
+             */
+            const s = monton(`s:${g.forma}:${g.de}`, forma,
+                             contornoDe(g.de, sus.colores), ahora.length);
             for (const o of ahora) {
                 const f = escalaPorVida(o.p);
-                poner(m, o.x, (g.alto * f) / 2 + 0.08, o.z,
-                      (g.forma === 'cubo' ? g.alto : 1) * f, 0, f);
+                const y = (g.alto * f) / 2 + 0.08;
+                const escY = (g.forma === 'cubo' ? g.alto : 1) * f;
+                poner(m, o.x, y, o.z, escY, 0, f);
+                if (s) poner(s, o.x, y, o.z, escY, 0, f * ANCHO_CONTORNO);
             }
             m.instanceMatrix.needsUpdate = true;
+            if (s) s.instanceMatrix.needsUpdate = true;
         }
         // Los grupos que ya no tienen piezas dejan de recordar dónde estaban: si
         // no, al volver a aparecer una pieza vendría deslizándose desde donde
@@ -634,6 +649,57 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
         if (hex === null) return mat.de[de] ?? mat.de.null;
         if (!matsColor.has(hex)) matsColor.set(hex, material(hex, { metalness: 0.1 }));
         return matsColor.get(hex);
+    }
+
+    /** El tono real de un bando: el que declaró el juego, o el genérico del pintor. */
+    const hexDe = (de, colores) => colorDe(de, colores) ?? COLOR_DE[de] ?? COLOR_DE.null;
+
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  EL CONTORNO — IDEA DE OSCAR
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Una ficha clara sobre el suelo claro del damero pierde el borde, y una
+     * oscura contra la sombra hace lo mismo por el otro lado. Un contorno del
+     * color contrario devuelve el borde en los dos casos. De qué color va lo
+     * decide `contrasteDe` en `paleta.js`, por luminancia y no por el nombre.
+     *
+     * ⚠️ CASCO INVERTIDO, NO POSTPROCESO.
+     *
+     * Lo habitual fuera es un `OutlinePass`, que pide `EffectComposer` y una
+     * pasada más de pantalla completa. Aquí el arcade es three r128 con scripts
+     * clásicos: meter una cadena de postproceso por un contorno sería pagar el
+     * andamio entero por el adorno. El casco invertido es la misma malla, un pelo
+     * más ancha, pintada por dentro: lo único que asoma es el borde.
+     *
+     * ⚠️ Y CUESTA EXACTAMENTE UN `InstancedMesh` MÁS POR GRUPO, NO POR PIEZA.
+     *
+     * El pintor ya agrupa por `(forma, dueño)` — cuatro o cinco montones en un
+     * tablero cargado— así que el contorno de las treinta y dos piezas del
+     * ajedrez son dos llamadas de dibujo, no treinta y dos.
+     *
+     * ⚠️ SÓLO CRECE EN X-Z, NO EN Y, Y ESO ES A PROPÓSITO.
+     *
+     * Creciendo también en alto, el casco asomaría por debajo del tablero y se
+     * pelearía con el tapete, y por arriba taparía la cara de la ficha. Creciendo
+     * sólo a lo ancho queda un anillo alrededor, que es justo lo que separa la
+     * pieza del suelo desde la cámara de esta mesa.
+     *
+     * ⚠️ Y NO SE LLAMA `p:` SINO `s:`. `prueba_vistas` cuenta las piezas dibujadas
+     *    por ese prefijo y las cruza con el sustrato: si el contorno se llamara
+     *    igual, los 41 juegos dibujarían el doble de piezas de las que hay.
+     */
+    const ANCHO_CONTORNO = 1.10;
+    const matsContorno = new Map();
+    function contornoDe(de, colores) {
+        const hex = contrasteDe(hexDe(de, colores));
+        if (!matsContorno.has(hex)) {
+            matsContorno.set(hex, new THREE.MeshBasicMaterial({
+                color: hex,
+                side: THREE.BackSide,   // se pinta por dentro: sólo asoma el borde
+            }));
+        }
+        return matsContorno.get(hex);
     }
 
     const poner = (m, x, y, z, escY = 1, rotY = 0, escXZ = 1) => {
@@ -956,7 +1022,13 @@ export function crearPintor3d(escena, THREE, opciones = {}) {
             // FOTOGRAMA sin repintar el resto de la mesa: es lo que convierte un
             // salto en un movimiento. Ver su cabecera.
             volcarPiezas(sus, dx, dz);
-            for (const clave of grupos.keys()) usados.add(clave);
+            // El contorno de cada grupo es otro montón, con su propia clave. Sin
+            // apuntarlo aquí, el barrido de abajo lo daría por no usado y lo
+            // escondería — y los contornos parpadearían un cuadro sí y otro no.
+            for (const [clave, g] of grupos) {
+                usados.add(clave);
+                usados.add(`s:${g.forma}:${g.de}`);
+            }
 
             /**
              * ═══════════════════════════════════════════════════════════════
