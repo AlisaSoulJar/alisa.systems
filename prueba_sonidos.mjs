@@ -311,6 +311,73 @@ for (const nombre of conReceta) {
         + `(${alGenerico.join(', ')})`));
 }
 
+// ── 7. LAS DOS VISTAS DEL ARCADE SUENAN, NO SÓLO LA QUE TIENE `backend` ─────
+/**
+ * ⚠️ ESTA COMPROBACIÓN NACE DE UNA FRASE MÍA QUE ERA FALSA.
+ *
+ * La cabecera de `sonido_mesa.js` decía que envolviendo el `backend` de los dos
+ * motores clásicos «pasa TODA jugada de los cuarenta juegos». Medido en Chrome
+ * el 29-08-2026, con `mecha` delante: los 20 juegos CON visualizador propio
+ * pasan por un backend; los otros 21 salen con la vista genérica —
+ * `mesa_tablero.mjs`—, que llama a `hub.move` sin backend ninguno. Esos 21
+ * —mecha, sokoban, go, reversi, xiangqi, damas y quince más— NUNCA sonaron al
+ * jugar, y nadie lo notó porque un juego mudo se oye igual que uno con el
+ * volumen bajo.
+ *
+ * La frase describía el DISEÑO y yo la leí como una MEDIDA. Es la avería de esta
+ * casa: creerse el papel en vez de mirar el recibo.
+ *
+ * Se comprueba en el texto y no jugando porque estos dos ficheros son del
+ * navegador —tocan `window`, `document` y `AudioContext`— y aquí no hay ninguno.
+ * Lo que se puede exigir desde Node es que el cable siga puesto: cada sitio que
+ * MANDA una jugada tiene que pedir el sonido.
+ */
+{
+    const sonMesa = await readFile('./public/arcade/js/sonido_mesa.js', 'utf8');
+    const vista = await readFile('./public/arcade/js/mesa_tablero.mjs', 'utf8');
+
+    comprobaciones += 2;
+    for (const n of ['sonarJugada', 'sonarFinDePartida']) {
+        if (!new RegExp(`window\\.${n}\\s*=`).test(sonMesa)) {
+            mal(`sonido_mesa.js ya no ofrece \`window.${n}\`: la vista genérica se queda muda`);
+        }
+    }
+
+    // Una sola regla: `conSonidoDeMesa` tiene que USAR la que expone, no llevar
+    // su propia copia. Dos copias de «qué sonido toca» es la deuda de siempre.
+    comprobaciones++;
+    if (!/window\.sonarJugada\(/.test(sonMesa)) {
+        mal('conSonidoDeMesa ya no llama a `sonarJugada`: hay dos reglas donde había una');
+    }
+
+    // Y cada `enviar:` de la vista genérica —hay uno para la mesa local y otro
+    // para la sala compartida— tiene que sonar. Se cuentan: si aparece un tercer
+    // sitio que manda jugadas y se olvida del sonido, esto lo ve.
+    /**
+     * ⚠️ SÓLO LÍNEAS DE CÓDIGO. Al escribir la nota que explica este apartado
+     *    puse «conté dos `enviar:` y hay tres» dentro de un comentario, y esta
+     *    misma comprobación lo contó como un cuarto sitio y suspendió. Contar
+     *    sobre el fichero entero es contar también lo que se dice DE él.
+     */
+    const codigo = vista.split('\n')
+        .filter((l) => { const t = l.trim(); return !t.startsWith('*') && !t.startsWith('//') && !t.startsWith('/*'); })
+        .join('\n');
+    const envios = (codigo.match(/enviar:/g) ?? []).length;
+    const suenan = (codigo.match(/sonarJugada\?\.\(/g) ?? []).length;
+    comprobaciones += 2;
+    if (!envios) mal('no encuentro ningún `enviar:` en mesa_tablero.mjs: la lectura falla');
+    else if (suenan < envios) {
+        mal(`mesa_tablero.mjs manda jugadas desde ${envios} sitios y sólo ${suenan} suenan: `
+            + `los ${21} juegos de la vista genérica se quedarían mudos otra vez`);
+    }
+    comprobaciones++;
+    if (!/sonarFinDePartida\?\.\(/.test(vista)) {
+        mal('la vista genérica ya no toca la fanfarria del final');
+    }
+    console.log(gris('  las dos vistas del arcade piden sonido: backend (20 juegos) '
+        + 'y vista genérica (21)'));
+}
+
 // ── veredicto ────────────────────────────────────────────────────────────────
 const MINIMO = 150;
 console.log(`\n¿Suenan los sonidos, o sólo están declarados?\n`);

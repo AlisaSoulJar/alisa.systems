@@ -573,6 +573,15 @@ function enviarSiEsLegal(m) {
     // momento y meterle una jugada encima rompería justo lo que se está enseñando.
     if (repitiendo) return false;
     if (!m || !legalesAhora.includes(m)) return false;
+    /**
+     * Que suene también tocando el tablero, y no sólo por el panel.
+     *
+     * Éste es el tercer camino por el que sale una jugada de esta vista, y lo
+     * encontró la prueba, no yo: conté dos `enviar:` y hay tres. Aquí el sonido
+     * va DESPUÉS del filtro de legalidad —ya está hecho, dos líneas arriba—, así
+     * que un gesto que no vale ni mueve ni suena, que es lo correcto.
+     */
+    window.sonarJugada?.(m, 'ficha');
     hub.move(juego, { move: m });
     refrescar();
     return true;
@@ -1062,13 +1071,21 @@ async function refrescar() {
                 // En una sala el recibo lo lleva el árbitro, no esta pestaña: la
                 // pantalla de fin ofrece lo que se puede ofrecer y calla el resto.
                 enSala: true,
-                enviar: (m) => mesaCompartida.jugar(m).then(refrescar),
+                // Que suene. Ver la nota en el `enviar` de la mesa local: esta
+                // vista no tiene `backend`, así que llama a la regla a mano.
+                enviar: (m) => {
+                    window.sonarJugada?.(m, 'ficha');
+                    return mesaCompartida.jugar(m).then(refrescar);
+                },
             });
         }
         return;
     }
 
     const st = hub.state(juego);
+    // Y la fanfarria del final, que tampoco llegaba aquí. Lleva su propio cerrojo
+    // dentro: esto se llama en cada refresco y el final ocurre una vez.
+    window.sonarFinDePartida?.(st, juego);
     const susLocal = hub.sustrato(juego);
     pintor.pintar(susLocal);
     // Para el encuadre: un tablero grande necesita más inclinación o el fondo se
@@ -1147,7 +1164,29 @@ async function refrescar() {
         rejilla: susLocal?.rejilla ?? null,
         // Señalar un botón enseña dónde cae; soltarlo devuelve lo que tenías cogido.
         alSeñalar: (m) => (m === null ? marcarSeleccion() : marcarJugada(m)),
-        enviar: (m) => { hub.move(juego, { move: m }); refrescar(); },
+        /**
+         * ⚠️ QUE SUENE — Y POR QUÉ HAY QUE PEDIRLO AQUÍ Y NO SE HEREDA.
+         *
+         * `sonido_mesa.js` enchufa el sonido envolviendo el `backend` de los dos
+         * motores clásicos. Esta vista no tiene backend: llama a `hub.move`
+         * directamente. Resultado medido en Chrome el 29-08-2026: los 21 juegos
+         * que salen por aquí —mecha, sokoban, go, reversi, xiangqi, damas y
+         * quince más— no sonaban NUNCA al jugar, y nadie se enteró porque un
+         * juego mudo se oye igual que un juego con el volumen bajo.
+         *
+         * La regla de qué sonido toca —mapa del juego, verbo, tabla común,
+         * genérico— sigue estando en un solo sitio; esto sólo la llama.
+         *
+         * ⚠️ SUENA ANTES DE JUGAR, A PROPÓSITO. `hub.move` es el árbitro y puede
+         *    rechazar la jugada; pero el botón sólo ofrece jugadas legales, y
+         *    sonar después mete el retardo del repintado entre el clic y el
+         *    sonido. Un mando que responde tarde se siente roto.
+         */
+        enviar: (m) => {
+            window.sonarJugada?.(m, 'ficha');
+            hub.move(juego, { move: m });
+            refrescar();
+        },
     });
 
     // Lo que ha pasado, y que se puede volver a jugar. La semilla a la vista no es

@@ -1211,6 +1211,28 @@ const SABOTAJES = [
         vigila: 'que la tabla compartida de verbos no mande a un sonido inexistente',
     },
     {
+        nombre: 'vista_generica_muda',
+        corre: 'node prueba_sonidos.mjs',
+        fichero: 'public/arcade/js/mesa_tablero.mjs',
+        /**
+         * ⚠️ ESTO NO ES UNA AVERÍA INVENTADA: ES EL ESTADO EN EL QUE ESTUVO EL
+         *    ARCADE HASTA EL 29-08-2026, Y NADIE LO VIO.
+         *
+         * `sonido_mesa.js` enchufa el sonido envolviendo el `backend` de los dos
+         * motores clásicos, y su cabecera decía que por ahí «pasa TODA jugada de
+         * los cuarenta juegos». Falso: sólo pasan los 20 que tienen visualizador
+         * propio. Los otros 21 —mecha, sokoban, go, reversi, xiangqi, damas y
+         * quince más— salen con la vista genérica, que llama a `hub.move` sin
+         * backend ninguno. No sonaban al jugar. Nunca.
+         *
+         * Se destapó midiendo en Chrome, no leyendo. Quitar aquí esa línea
+         * devuelve el arcade a ese estado, y la prueba tiene que verlo.
+         */
+        de: "            window.sonarJugada?.(m, 'ficha');",
+        a: '',
+        vigila: 'que los 21 juegos de la vista genérica no se queden mudos otra vez',
+    },
+    {
         nombre: 'arneses',
         corre: 'node --import ./resolver_three.mjs prueba_arneses.mjs',
         fichero: 'public/js/gym_runners/boids_gym.js',

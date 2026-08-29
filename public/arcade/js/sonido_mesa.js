@@ -7,8 +7,15 @@
  * ciento once. No estaba roto ni perdido: estaba desenchufado.
  *
  * Esto lo enchufa envolviendo el `backend` que ya tienen los dos motores del
- * arcade. Por ahí pasa TODA jugada de los cuarenta juegos, en las dos formas de
- * jugar —mesa compartida y local—, así que es un punto y no cuarenta.
+ * arcade.
+ *
+ * ⚠️ AQUÍ PONÍA «POR AHÍ PASA TODA JUGADA DE LOS CUARENTA JUEGOS». ERA FALSO.
+ *    Medido en Chrome el 29-08-2026: los 20 juegos CON visualizador propio pasan
+ *    por un `backend` y sonaban; los otros 21 salen con la vista genérica, que
+ *    llama a `hub.move` sin backend ninguno, y no sonaban al jugar. Nunca. La
+ *    frase describía el diseño y yo la leí como una medida.
+ *
+ *    Los dos caminos usan ahora la misma regla, expuesta en `window.sonarJugada`.
  *
  * ⚠️ ENVUELVE, NO TOCA AL ÁRBITRO.
  * La tentación era meter un `SFX.play` dentro de `ProtoHub.jugar`, que también es
@@ -47,25 +54,9 @@
         document.addEventListener('keydown', despertar, { once: true, capture: true });
     }
 
+    const suena = (nombre) => { try { window.SFX?.play?.(nombre); } catch { /* nada */ } };
+
     /**
-     * Envuelve un backend para que suene. Devuelve el mismo objeto si no hay
-     * nada que envolver — una página sin `sfx.js` cargado tiene que seguir
-     * funcionando exactamente igual.
-     */
-    window.conSonidoDeMesa = function conSonidoDeMesa(backend, sonidoDeJugada) {
-        if (!backend || typeof backend.move !== 'function') return backend;
-
-        const suena = (nombre) => { try { window.SFX?.play?.(nombre); } catch { /* nada */ } };
-
-        // `is_game_over` pasa de false a true UNA vez, y hay que avisar UNA vez.
-        // Sin este cerrojo el estado se repregunta en cada refresco y la fanfarria
-        // sonaría en bucle mientras el jugador mira el tablero terminado.
-        let yaSono = false;
-
-        const original = backend.move;
-        const verEstado = backend.state;
-
-        /**
          * ═══════════════════════════════════════════════════════════════════
          *  EL MAPA DE SONIDO DEL JUEGO — IDEA DE OSCAR
          * ═══════════════════════════════════════════════════════════════════
@@ -95,10 +86,7 @@
          *    que comparar las piezas antes y después y sonar por lo que aparece.
          *    Es el siguiente paso y es más caro; esto es el barato y ya sirve.
          */
-        const mapa = (typeof window !== 'undefined' ? window.SONIDOS_DEL_JUEGO : null) || null;
-        const porJugada = mapa && mapa.jugada ? mapa.jugada : null;
-
-        /**
+    /**
          * ═══════════════════════════════════════════════════════════════════
          *  EL VERBO DE LA JUGADA — POR QUÉ NO HACEN FALTA CUARENTA MAPAS
          * ═══════════════════════════════════════════════════════════════════
@@ -126,60 +114,109 @@
          *    correcto: en el ajedrez todas las jugadas SON la misma clase de acto,
          *    y darle un sonido distinto a `e2e4` que a `d2d4` no diría nada.
          */
-        const verboDe = (nombre) => {
-            const i = nombre.indexOf(':');
-            if (i > 0) return nombre.slice(0, i);
-            const j = nombre.indexOf(' ');          // «enviar a», en defensa
-            return j > 0 ? nombre.slice(0, j) : nombre;
-        };
+    const verboDe = (nombre) => {
+        const i = nombre.indexOf(':');
+        if (i > 0) return nombre.slice(0, i);
+        const j = nombre.indexOf(' ');          // «enviar a», en defensa
+        return j > 0 ? nombre.slice(0, j) : nombre;
+    };
 
-        /**
-         * Devuelve `{ s }` con el sonido —que puede ser `null`, o sea silencio
-         * pedido— o `undefined` si esa tabla no dice nada de esta jugada. Envolver
-         * es lo que distingue «suena a nada» de «no lo sé», y sin esa distinción
-         * un `null` en la tabla caería al genérico y sonaría.
-         */
-        const busca = (tabla, clave) =>
-            (tabla && Object.hasOwn(tabla, clave)) ? { s: tabla[clave] } : undefined;
+    /**
+     * Devuelve `{ s }` con el sonido —que puede ser `null`, o sea silencio
+     * pedido— o `undefined` si esa tabla no dice nada de esta jugada. Envolver
+     * es lo que distingue «suena a nada» de «no lo sé», y sin esa distinción
+     * un `null` en la tabla caería al genérico y sonaría.
+     */
+    const busca = (tabla, clave) =>
+        (tabla && Object.hasOwn(tabla, clave)) ? { s: tabla[clave] } : undefined;
+
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  EL PUNTO ÚNICO — Y POR QUÉ HOY HAY QUE EXPONERLO, Y NO SÓLO ENVOLVER
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * La cabecera de este fichero decía que envolviendo el `backend` de los dos
+     * motores del arcade «pasa TODA jugada de los cuarenta juegos». Medido hoy en
+     * Chrome, con `mecha` delante: **era falso para 21 de los 41**.
+     *
+     * `SovereignBoardEngine` y `SovereignCardEngine` tienen `backend`, y son los
+     * que usan los 20 juegos CON visualizador propio. Los otros 21 —los que salen
+     * con la vista genérica, `mesa_tablero.mjs`— no tienen backend: llaman
+     * directamente a `hub.move(...)`. Nunca sonaron al jugar. Ni hoy ni antes:
+     * esto no lo rompió el mapa de sonido, lo destapó.
+     *
+     * ⚠️ Y LA AVERÍA ES LA DE SIEMPRE: NO DABA ERROR. Un juego mudo y un juego con
+     *    el volumen bajo se oyen exactamente igual.
+     *
+     * Así que la regla —nombre exacto del juego, verbo del juego, tabla común,
+     * verbo de la tabla, genérico— se queda en UN sitio, aquí, y se ofrece por
+     * `window`: los dos motores clásicos la usan envolviendo su backend, y la
+     * vista genérica la llama a mano donde envía la jugada. Una implementación,
+     * dos caminos. Poner una segunda copia allí es la deuda que acabamos de pagar
+     * con los cincuenta y tres sonidos duplicados.
+     */
+    window.sonarJugada = function sonarJugada(jugada, generico) {
+        const mapa = window.SONIDOS_DEL_JUEGO || null;
+        const porJugada = mapa && mapa.jugada ? mapa.jugada : null;
+        if (jugada !== undefined && jugada !== null) {
+            const n = String(jugada);
+            const v = verboDe(n);
+            const comun = (window.SFX && window.SFX.jugadas) || null;
+            const elegido = busca(porJugada, n) ?? busca(porJugada, v)
+                ?? busca(comun, n) ?? busca(comun, v);
+            if (elegido) {
+                if (elegido.s) suena(elegido.s);   // `null` es silencio pedido
+                return;
+            }
+        }
+        suena(generico);
+    };
+
+    /**
+     * Ganar y perder no suenan igual, y saber cuál fue es más sutil de lo que
+     * parece: `result` dice el color que ganó —«black», «white», «draw»— y no si
+     * ganaste TÚ. La respuesta está en `puntos`, que sigue al asiento en los
+     * treinta y tres juegos que lo publican. Si no hay dato, suena el neutro:
+     * mejor un final sin color que un «¡victoria!» a quien acaba de perder.
+     *
+     * ⚠️ `is_game_over` pasa de false a true UNA vez, y hay que avisar UNA vez.
+     *    Sin este cerrojo el estado se repregunta en cada refresco y la fanfarria
+     *    sonaría en bucle mientras el jugador mira el tablero terminado. El
+     *    cerrojo va por juego: dos mesas en la misma pestaña no se pisan.
+     */
+    const finSonado = new Set();
+    window.sonarFinDePartida = function sonarFinDePartida(estado, juego) {
+        const clave = juego ?? '·';
+        if (!estado) return;
+        if (!estado.is_game_over) { finSonado.delete(clave); return; }
+        if (finSonado.has(clave)) return;
+        finSonado.add(clave);
+        const p = Number(estado.puntos);
+        suena(Number.isFinite(p) ? (p > 0 ? 'victory' : p < 0 ? 'game_over' : 'bell_cycle')
+            : 'bell_cycle');
+    };
+
+    /**
+     * Envuelve un backend para que suene. Devuelve el mismo objeto si no hay
+     * nada que envolver — una página sin `sfx.js` cargado tiene que seguir
+     * funcionando exactamente igual.
+     */
+    window.conSonidoDeMesa = function conSonidoDeMesa(backend, sonidoDeJugada) {
+        if (!backend || typeof backend.move !== 'function') return backend;
+
+        const original = backend.move;
+        const verEstado = backend.state;
 
         backend.move = async function (a) {
             const r = await original.apply(this, arguments);
-            const nombre = typeof a === 'string' ? a : (a && a.jugada);
-            if (nombre !== undefined && nombre !== null) {
-                const n = String(nombre);
-                const v = verboDe(n);
-                const comun = (window.SFX && window.SFX.jugadas) || null;
-                const elegido = busca(porJugada, n) ?? busca(porJugada, v)
-                    ?? busca(comun, n) ?? busca(comun, v);
-                if (elegido) {
-                    if (elegido.s) suena(elegido.s);
-                    return r;
-                }
-            }
-            suena(sonidoDeJugada);
+            window.sonarJugada(typeof a === 'string' ? a : (a && a.jugada), sonidoDeJugada);
             return r;
         };
 
         if (typeof verEstado === 'function') {
             backend.state = async function () {
                 const st = await verEstado.apply(this, arguments);
-                if (st && st.is_game_over && !yaSono) {
-                    yaSono = true;
-                    /**
-                     * Ganar y perder no suenan igual, y saber cuál fue es más
-                     * sutil de lo que parece: `result` dice el color que ganó
-                     * —«black», «white», «draw»— y no si ganaste TÚ. La respuesta
-                     * está en `puntos`, que desde hoy sigue al asiento en los
-                     * treinta y tres juegos que lo publican. Si no hay dato, suena
-                     * el neutro: mejor un final sin color que un «¡victoria!» a
-                     * quien acaba de perder.
-                     */
-                    const p = Number(st.puntos);
-                    suena(Number.isFinite(p) ? (p > 0 ? 'victory' : p < 0 ? 'game_over' : 'bell_cycle')
-                        : 'bell_cycle');
-                } else if (st && !st.is_game_over) {
-                    yaSono = false;      // partida nueva: vuelve a poder sonar
-                }
+                window.sonarFinDePartida(st, 'backend');
                 return st;
             };
         }
