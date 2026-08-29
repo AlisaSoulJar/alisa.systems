@@ -643,8 +643,10 @@ export async function crearCanadiense({ url = RUTA_BIBLIOTECA, jugadores = 4,
             };
 
             const mezcla = revuelto(p.semilla ^ p.jugadas.length);
-            return [...opciones]
-                .sort((a, b) => valor(b) - valor(a) || ((mezcla % 2) ? 1 : -1))[0];
+            const vals = opciones.map(m => ({ m, v: valor(m) }));
+            const maxV = vals.reduce((M, x) => Math.max(M, x.v), -Infinity);
+            const best = vals.filter(x => x.v === maxV);
+            return best[mezcla % best.length].m;
         },
 
         /**
