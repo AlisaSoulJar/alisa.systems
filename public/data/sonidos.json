@@ -1,0 +1,1133 @@
+{
+  "schema": "alisa.sonido.lexico.v1",
+  "note": "Las recetas de sonido del banco, en datos. Cada sonido son CAPAS de tres primitivas —barrido, ruido, onda— y por eso se pueden tocar de dos maneras: planas en el arcade (sfx.js) y colocadas en el espacio (SpatialAudioPlugin). Una sola definicion, dos formas de oirla. Los sonidos de `soloCodigo` NO estan aqui a proposito: usan Web Audio a pelo, arpegios o temporizadores, y meterlos a martillazos en este vocabulario seria inventarse un formato para siete casos.",
+  "owner": "Aris (sonido)",
+  "primitivas": {
+    "barrido": {
+      "campos": [
+        "desde",
+        "hasta",
+        "dur",
+        "forma",
+        "vol"
+      ],
+      "desc": "un tono que se desliza de una frecuencia a otra"
+    },
+    "ruido": {
+      "campos": [
+        "dur",
+        "vol",
+        "filtro",
+        "hz"
+      ],
+      "desc": "ruido blanco filtrado: golpes, explosiones, viento"
+    },
+    "onda": {
+      "campos": [
+        "forma",
+        "hz",
+        "dur",
+        "vol",
+        "detune"
+      ],
+      "desc": "un tono simple sostenido"
+    }
+  },
+  "soloCodigo": [
+    "boss_death",
+    "boss_enter",
+    "dado",
+    "game_over",
+    "level_complete",
+    "notification",
+    "npc_talk",
+    "powerup",
+    "safe_zone",
+    "victory"
+  ],
+  "sonidos": {
+    "armor_close": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 400,
+          "hasta": 200,
+          "dur": 0.15,
+          "forma": "square",
+          "vol": 0.08
+        },
+        {
+          "tipo": "ruido",
+          "dur": 0.1,
+          "vol": 0.15,
+          "filtro": "lowpass",
+          "hz": 500
+        },
+        {
+          "tipo": "onda",
+          "forma": "square",
+          "hz": 150,
+          "dur": 0.05,
+          "vol": 0.15
+        }
+      ],
+      "intencion": "Mechanical panels closing — clank",
+      "familia": "asteroids"
+    },
+    "armor_open": {
+      "capas": [
+        {
+          "tipo": "ruido",
+          "dur": 0.3,
+          "vol": 0.12,
+          "filtro": "highpass",
+          "hz": 3000
+        },
+        {
+          "tipo": "barrido",
+          "desde": 200,
+          "hasta": 400,
+          "dur": 0.2,
+          "forma": "square",
+          "vol": 0.08
+        }
+      ],
+      "intencion": "Mechanical panels opening — hydraulic hiss",
+      "familia": "asteroids"
+    },
+    "barrier_deploy": {
+      "capas": [
+        {
+          "tipo": "onda",
+          "forma": "sawtooth",
+          "hz": 200,
+          "dur": 0.3,
+          "vol": 0.15
+        },
+        {
+          "tipo": "onda",
+          "forma": "square",
+          "hz": 205,
+          "dur": 0.3,
+          "vol": 0.1
+        },
+        {
+          "tipo": "barrido",
+          "desde": 500,
+          "hasta": 2000,
+          "dur": 0.2,
+          "forma": "sine",
+          "vol": 0.1
+        }
+      ],
+      "intencion": "Force field activate — electric buzz",
+      "familia": "asteroids"
+    },
+    "bell_cycle": {
+      "capas": [
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 2000,
+          "dur": 0.06,
+          "vol": 0.1
+        },
+        {
+          "tipo": "onda",
+          "forma": "triangle",
+          "hz": 3000,
+          "dur": 0.04,
+          "vol": 0.08
+        }
+      ],
+      "intencion": "Bell color change — quick ting",
+      "familia": "asteroids"
+    },
+    "bomb_use": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 2000,
+          "hasta": 30,
+          "dur": 0.8,
+          "forma": "sawtooth",
+          "vol": 0.4
+        },
+        {
+          "tipo": "ruido",
+          "dur": 0.6,
+          "vol": 0.35,
+          "filtro": "lowpass",
+          "hz": 200
+        },
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 30,
+          "dur": 1.0,
+          "vol": 0.3
+        }
+      ],
+      "intencion": "Screen-clearing bomb — massive sweep + noise",
+      "familia": "asteroids"
+    },
+    "boss_charge": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 100,
+          "hasta": 800,
+          "dur": 0.8,
+          "forma": "sawtooth",
+          "vol": 0.15
+        },
+        {
+          "tipo": "ruido",
+          "dur": 0.5,
+          "vol": 0.1,
+          "filtro": "bandpass",
+          "hz": 500
+        }
+      ],
+      "intencion": "Charging up whoosh",
+      "familia": "asteroids"
+    },
+    "boss_laser": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 600,
+          "hasta": 60,
+          "dur": 0.35,
+          "forma": "sawtooth",
+          "vol": 0.22
+        },
+        {
+          "tipo": "barrido",
+          "desde": 400,
+          "hasta": 40,
+          "dur": 0.4,
+          "forma": "square",
+          "vol": 0.12
+        },
+        {
+          "tipo": "ruido",
+          "dur": 0.2,
+          "vol": 0.1,
+          "filtro": "lowpass",
+          "hz": 400
+        }
+      ],
+      "familia": "asteroids"
+    },
+    "boss_phase": {
+      "capas": [
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 40,
+          "dur": 0.6,
+          "vol": 0.4
+        },
+        {
+          "tipo": "ruido",
+          "dur": 0.3,
+          "vol": 0.25,
+          "filtro": "lowpass",
+          "hz": 300
+        },
+        {
+          "tipo": "barrido",
+          "desde": 1500,
+          "hasta": 200,
+          "dur": 0.4,
+          "forma": "sawtooth",
+          "vol": 0.2
+        }
+      ],
+      "intencion": "Phase transition — deep impact + alarm",
+      "familia": "asteroids"
+    },
+    "boss_sweep": {
+      "capas": [
+        {
+          "tipo": "onda",
+          "forma": "sawtooth",
+          "hz": 150,
+          "dur": 0.3,
+          "vol": 0.12
+        },
+        {
+          "tipo": "onda",
+          "forma": "square",
+          "hz": 152,
+          "dur": 0.3,
+          "vol": 0.08
+        }
+      ],
+      "intencion": "Laser beam hum",
+      "familia": "asteroids"
+    },
+    "bubble": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 600,
+          "hasta": 1800,
+          "dur": 0.1,
+          "forma": "sine",
+          "vol": 0.06
+        }
+      ],
+      "intencion": "Rising bubble — quick sine blip",
+      "familia": "aquarium"
+    },
+    "capsule_collect": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 600,
+          "hasta": 1400,
+          "dur": 0.08,
+          "forma": "sine",
+          "vol": 0.2
+        },
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 1200,
+          "dur": 0.06,
+          "vol": 0.1
+        }
+      ],
+      "intencion": "Quick pickup — bright blip",
+      "familia": "asteroids"
+    },
+    "car_pass": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 300,
+          "hasta": 150,
+          "dur": 0.3,
+          "forma": "sawtooth",
+          "vol": 0.06
+        }
+      ],
+      "intencion": "Doppler-like car whoosh",
+      "familia": "peaton"
+    },
+    "carta": {
+      "capas": [
+        {
+          "tipo": "ruido",
+          "dur": 0.05,
+          "vol": 0.09,
+          "filtro": "highpass",
+          "hz": 2600
+        },
+        {
+          "tipo": "onda",
+          "forma": "triangle",
+          "hz": 520,
+          "dur": 0.02,
+          "vol": 0.03
+        }
+      ],
+      "intencion": "El roce del papel al salir de la mano: aire, no tono.",
+      "familia": "interaction / overworld"
+    },
+    "click": {
+      "capas": [
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 1000,
+          "dur": 0.03,
+          "vol": 0.1
+        }
+      ],
+      "familia": "interaction / overworld"
+    },
+    "combo": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 800,
+          "hasta": 1600,
+          "dur": 0.06,
+          "forma": "sine",
+          "vol": 0.12
+        }
+      ],
+      "intencion": "Quick rising note for combo increment",
+      "familia": "asteroids"
+    },
+    "crash": {
+      "capas": [
+        {
+          "tipo": "ruido",
+          "dur": 0.3,
+          "vol": 0.4,
+          "filtro": "bandpass",
+          "hz": 600
+        },
+        {
+          "tipo": "onda",
+          "forma": "sawtooth",
+          "hz": 70,
+          "dur": 0.4,
+          "vol": 0.25
+        }
+      ],
+      "intencion": "Metal crunch",
+      "familia": "asteroids"
+    },
+    "door_open": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 200,
+          "hasta": 500,
+          "dur": 0.2,
+          "forma": "triangle",
+          "vol": 0.1
+        },
+        {
+          "tipo": "ruido",
+          "dur": 0.15,
+          "vol": 0.05,
+          "filtro": "highpass",
+          "hz": 2000
+        }
+      ],
+      "familia": "interaction / overworld"
+    },
+    "drown": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 800,
+          "hasta": 200,
+          "dur": 0.4,
+          "forma": "sine",
+          "vol": 0.15
+        },
+        {
+          "tipo": "ruido",
+          "dur": 0.3,
+          "vol": 0.1,
+          "filtro": "bandpass",
+          "hz": 1500
+        }
+      ],
+      "intencion": "Sinking — descending bubbles",
+      "familia": "peaton"
+    },
+    "energy_low": {
+      "capas": [
+        {
+          "tipo": "onda",
+          "forma": "square",
+          "hz": 440,
+          "dur": 0.1,
+          "vol": 0.1
+        },
+        {
+          "tipo": "onda",
+          "forma": "square",
+          "hz": 440,
+          "dur": 0.1,
+          "vol": 0.08
+        }
+      ],
+      "intencion": "Warning beep — low energy",
+      "familia": "asteroids"
+    },
+    "error": {
+      "capas": [
+        {
+          "tipo": "onda",
+          "forma": "square",
+          "hz": 200,
+          "dur": 0.15,
+          "vol": 0.15
+        },
+        {
+          "tipo": "onda",
+          "forma": "square",
+          "hz": 150,
+          "dur": 0.2,
+          "vol": 0.1
+        }
+      ],
+      "intencion": "Error buzz",
+      "familia": "interaction / overworld"
+    },
+    "explosion": {
+      "capas": [
+        {
+          "tipo": "ruido",
+          "dur": 0.4,
+          "vol": 0.35,
+          "filtro": "lowpass",
+          "hz": 600
+        },
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 60,
+          "dur": 0.3,
+          "vol": 0.4
+        },
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 40,
+          "dur": 0.5,
+          "vol": 0.2
+        }
+      ],
+      "intencion": "Big boom: noise burst + low freq shake",
+      "familia": "asteroids"
+    },
+    "explosion_small": {
+      "capas": [
+        {
+          "tipo": "ruido",
+          "dur": 0.2,
+          "vol": 0.2,
+          "filtro": "lowpass",
+          "hz": 800
+        },
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 80,
+          "dur": 0.15,
+          "vol": 0.2
+        }
+      ],
+      "intencion": "Asteroid break",
+      "familia": "asteroids"
+    },
+    "ferret_catch": {
+      "capas": [
+        {
+          "tipo": "onda",
+          "forma": "square",
+          "hz": 600,
+          "dur": 0.05,
+          "vol": 0.2
+        },
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 400,
+          "dur": 0.08,
+          "vol": 0.15
+        },
+        {
+          "tipo": "barrido",
+          "desde": 1000,
+          "hasta": 2000,
+          "dur": 0.06,
+          "forma": "sine",
+          "vol": 0.1
+        }
+      ],
+      "intencion": "Predator catches prey — satisfying snap",
+      "familia": "peaton"
+    },
+    "ficha": {
+      "capas": [
+        {
+          "tipo": "onda",
+          "forma": "triangle",
+          "hz": 190,
+          "dur": 0.045,
+          "vol": 0.11
+        },
+        {
+          "tipo": "ruido",
+          "dur": 0.025,
+          "vol": 0.05,
+          "filtro": "lowpass",
+          "hz": 1400
+        }
+      ],
+      "intencion": "Madera sobre madera: golpe corto y grave, sin cola.",
+      "familia": "interaction / overworld"
+    },
+    "fish_eat": {
+      "capas": [
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 300,
+          "dur": 0.05,
+          "vol": 0.2
+        },
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 150,
+          "dur": 0.08,
+          "vol": 0.15
+        },
+        {
+          "tipo": "ruido",
+          "dur": 0.03,
+          "vol": 0.1,
+          "filtro": "highpass",
+          "hz": 3000
+        }
+      ],
+      "intencion": "Quick chomp",
+      "familia": "aquarium"
+    },
+    "fish_spawn": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 800,
+          "hasta": 1500,
+          "dur": 0.06,
+          "forma": "sine",
+          "vol": 0.12
+        },
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 1200,
+          "dur": 0.04,
+          "vol": 0.08
+        }
+      ],
+      "intencion": "Bubble pop",
+      "familia": "aquarium"
+    },
+    "footstep": {
+      "capas": [
+        {
+          "tipo": "ruido",
+          "dur": 0.04,
+          "vol": 0.06,
+          "filtro": "lowpass",
+          "hz": 500
+        },
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 80,
+          "dur": 0.03,
+          "vol": 0.05
+        }
+      ],
+      "familia": "interaction / overworld"
+    },
+    "frog_hop": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 200,
+          "hasta": 500,
+          "dur": 0.1,
+          "forma": "sine",
+          "vol": 0.15
+        }
+      ],
+      "intencion": "Boing",
+      "familia": "asteroids"
+    },
+    "graze": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 300,
+          "hasta": 1500,
+          "dur": 0.1,
+          "forma": "sine",
+          "vol": 0.1
+        },
+        {
+          "tipo": "ruido",
+          "dur": 0.1,
+          "vol": 0.05,
+          "filtro": "highpass",
+          "hz": 2000
+        }
+      ],
+      "intencion": "High pitched quick whoosh for near miss",
+      "familia": "asteroids"
+    },
+    "hit_armor": {
+      "capas": [
+        {
+          "tipo": "onda",
+          "forma": "square",
+          "hz": 800,
+          "dur": 0.05,
+          "vol": 0.15
+        },
+        {
+          "tipo": "onda",
+          "forma": "square",
+          "hz": 1200,
+          "dur": 0.03,
+          "vol": 0.1
+        },
+        {
+          "tipo": "ruido",
+          "dur": 0.05,
+          "vol": 0.08,
+          "filtro": "highpass",
+          "hz": 4000
+        }
+      ],
+      "intencion": "Metallic clang — deflect off boss armor",
+      "familia": "asteroids"
+    },
+    "hit_core": {
+      "capas": [
+        {
+          "tipo": "onda",
+          "forma": "sawtooth",
+          "hz": 400,
+          "dur": 0.1,
+          "vol": 0.25
+        },
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 200,
+          "dur": 0.15,
+          "vol": 0.2
+        },
+        {
+          "tipo": "ruido",
+          "dur": 0.1,
+          "vol": 0.15,
+          "filtro": "bandpass",
+          "hz": 1000
+        }
+      ],
+      "intencion": "Critical hit — satisfying crunch",
+      "familia": "asteroids"
+    },
+    "hover": {
+      "capas": [
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 1500,
+          "dur": 0.02,
+          "vol": 0.05
+        }
+      ],
+      "familia": "interaction / overworld"
+    },
+    "item_pickup": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 500,
+          "hasta": 1200,
+          "dur": 0.1,
+          "forma": "sine",
+          "vol": 0.15
+        }
+      ],
+      "familia": "interaction / overworld"
+    },
+    "jump": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 200,
+          "hasta": 600,
+          "dur": 0.08,
+          "forma": "square",
+          "vol": 0.15
+        }
+      ],
+      "intencion": "Classic frog hop — rising blip",
+      "familia": "peaton"
+    },
+    "land": {
+      "capas": [
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 100,
+          "dur": 0.06,
+          "vol": 0.15
+        },
+        {
+          "tipo": "ruido",
+          "dur": 0.04,
+          "vol": 0.08,
+          "filtro": "lowpass",
+          "hz": 400
+        }
+      ],
+      "intencion": "Landing thud",
+      "familia": "peaton"
+    },
+    "laser": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 1200,
+          "hasta": 200,
+          "dur": 0.08,
+          "forma": "square",
+          "vol": 0.15
+        }
+      ],
+      "intencion": "Classic pew-pew: high sine sweep down",
+      "familia": "asteroids"
+    },
+    "laser_heavy": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 800,
+          "hasta": 100,
+          "dur": 0.15,
+          "forma": "sawtooth",
+          "vol": 0.2
+        },
+        {
+          "tipo": "barrido",
+          "desde": 600,
+          "hasta": 80,
+          "dur": 0.18,
+          "forma": "square",
+          "vol": 0.1
+        }
+      ],
+      "intencion": "Power laser: deeper, longer",
+      "familia": "asteroids"
+    },
+    "menu_close": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 800,
+          "hasta": 400,
+          "dur": 0.08,
+          "forma": "sine",
+          "vol": 0.08
+        }
+      ],
+      "familia": "interaction / overworld"
+    },
+    "menu_open": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 400,
+          "hasta": 800,
+          "dur": 0.1,
+          "forma": "sine",
+          "vol": 0.1
+        }
+      ],
+      "familia": "interaction / overworld"
+    },
+    "menu_select": {
+      "capas": [
+        {
+          "tipo": "onda",
+          "forma": "square",
+          "hz": 660,
+          "dur": 0.04,
+          "vol": 0.07
+        }
+      ],
+      "familia": "interaction / overworld"
+    },
+    "orb_collect": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 400,
+          "hasta": 2000,
+          "dur": 0.15,
+          "forma": "sine",
+          "vol": 0.25
+        },
+        {
+          "tipo": "barrido",
+          "desde": 500,
+          "hasta": 2500,
+          "dur": 0.2,
+          "forma": "triangle",
+          "vol": 0.15
+        },
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 1800,
+          "dur": 0.1,
+          "vol": 0.1
+        }
+      ],
+      "intencion": "Valuable catch — shimmering collect",
+      "familia": "asteroids"
+    },
+    "predator_alert": {
+      "capas": [
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 80,
+          "dur": 0.2,
+          "vol": 0.15
+        },
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 120,
+          "dur": 0.15,
+          "vol": 0.1
+        }
+      ],
+      "intencion": "Danger proximity — low pulse",
+      "familia": "aquarium"
+    },
+    "radar": {
+      "capas": [
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 1400,
+          "dur": 0.14,
+          "vol": 0.16
+        },
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 2100,
+          "dur": 0.06,
+          "vol": 0.05
+        }
+      ],
+      "familia": "interaction / overworld"
+    },
+    "rocket": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 300,
+          "hasta": 1500,
+          "dur": 0.1,
+          "forma": "sawtooth",
+          "vol": 0.15
+        },
+        {
+          "tipo": "ruido",
+          "dur": 0.15,
+          "vol": 0.1,
+          "filtro": "bandpass",
+          "hz": 800
+        }
+      ],
+      "intencion": "Whoosh + rumble",
+      "familia": "asteroids"
+    },
+    "school_form": {
+      "capas": [
+        {
+          "tipo": "onda",
+          "forma": "triangle",
+          "hz": 800,
+          "dur": 0.2,
+          "vol": 0.05
+        },
+        {
+          "tipo": "onda",
+          "forma": "triangle",
+          "hz": 1200,
+          "dur": 0.15,
+          "vol": 0.04
+        },
+        {
+          "tipo": "onda",
+          "forma": "triangle",
+          "hz": 600,
+          "dur": 0.2,
+          "vol": 0.03
+        }
+      ],
+      "intencion": "Fish schooling — soft shimmer",
+      "familia": "aquarium"
+    },
+    "score": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 800,
+          "hasta": 1200,
+          "dur": 0.04,
+          "forma": "sine",
+          "vol": 0.08
+        }
+      ],
+      "intencion": "Score increment",
+      "familia": "universal"
+    },
+    "shield_hit": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 2000,
+          "hasta": 500,
+          "dur": 0.12,
+          "forma": "sine",
+          "vol": 0.15
+        },
+        {
+          "tipo": "onda",
+          "forma": "triangle",
+          "hz": 300,
+          "dur": 0.08,
+          "vol": 0.1
+        }
+      ],
+      "intencion": "Shield absorb — buzzy deflect",
+      "familia": "asteroids"
+    },
+    "ship_death": {
+      "capas": [
+        {
+          "tipo": "barrido",
+          "desde": 1000,
+          "hasta": 50,
+          "dur": 0.5,
+          "forma": "sawtooth",
+          "vol": 0.3
+        },
+        {
+          "tipo": "ruido",
+          "dur": 0.6,
+          "vol": 0.3,
+          "filtro": "lowpass",
+          "hz": 500
+        },
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 40,
+          "dur": 0.8,
+          "vol": 0.3
+        }
+      ],
+      "intencion": "Player death — descending buzz + explosion",
+      "familia": "asteroids"
+    },
+    "splash": {
+      "capas": [
+        {
+          "tipo": "ruido",
+          "dur": 0.3,
+          "vol": 0.2,
+          "filtro": "bandpass",
+          "hz": 2000
+        },
+        {
+          "tipo": "barrido",
+          "desde": 400,
+          "hasta": 200,
+          "dur": 0.15,
+          "forma": "sine",
+          "vol": 0.1
+        }
+      ],
+      "intencion": "Water splash",
+      "familia": "aquarium"
+    },
+    "squish": {
+      "capas": [
+        {
+          "tipo": "ruido",
+          "dur": 0.2,
+          "vol": 0.3,
+          "filtro": "lowpass",
+          "hz": 800
+        },
+        {
+          "tipo": "barrido",
+          "desde": 200,
+          "hasta": 50,
+          "dur": 0.2,
+          "forma": "sawtooth",
+          "vol": 0.2
+        }
+      ],
+      "intencion": "Splat",
+      "familia": "asteroids"
+    },
+    "tick": {
+      "capas": [
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 1000,
+          "dur": 0.02,
+          "vol": 0.06
+        }
+      ],
+      "intencion": "Timer/counter tick",
+      "familia": "universal"
+    },
+    "toggle": {
+      "capas": [
+        {
+          "tipo": "ruido",
+          "dur": 0.02,
+          "vol": 0.08,
+          "filtro": "highpass",
+          "hz": 4000
+        },
+        {
+          "tipo": "onda",
+          "forma": "square",
+          "hz": 320,
+          "dur": 0.03,
+          "vol": 0.06
+        }
+      ],
+      "familia": "interaction / overworld"
+    },
+    "turret_die": {
+      "capas": [
+        {
+          "tipo": "ruido",
+          "dur": 0.25,
+          "vol": 0.25,
+          "filtro": "bandpass",
+          "hz": 1200
+        },
+        {
+          "tipo": "onda",
+          "forma": "sine",
+          "hz": 70,
+          "dur": 0.2,
+          "vol": 0.2
+        },
+        {
+          "tipo": "barrido",
+          "desde": 3000,
+          "hasta": 800,
+          "dur": 0.15,
+          "forma": "sine",
+          "vol": 0.1
+        }
+      ],
+      "intencion": "Sub-explosion + sparks",
+      "familia": "asteroids"
+    }
+  }
+}

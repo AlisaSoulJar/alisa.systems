@@ -1132,6 +1132,29 @@ const SABOTAJES = [
         vigila: 'que las cuatro formas del catálogo se dibujen, y no tres',
     },
     {
+        nombre: 'sonidos',
+        corre: 'node prueba_sonidos.mjs',
+        fichero: 'public/js/alisa-engine/src/soma/audio/sonido.js',
+        /**
+         * ⚠️ UN SONIDO QUE NO SUENA NO SE QUEJA — Y ES LA MITAD DE ESTE PROYECTO.
+         *
+         * `prueba_sonido.mjs` (la vieja) compara listas de NOMBRES, y ella misma
+         * declara su límite: «`sfx.js` no es un módulo, así que esto lo lee, no lo
+         * ejecuta». Un sonido podía estar declarado, con el nombre correcto, y ser
+         * silencio. El fallo y el funcionamiento correcto suenan igual.
+         *
+         * Ahora 53 de los 63 son recetas en datos y la síntesis es matemática pura,
+         * así que se pueden RENDERIZAR en Node y medirles la energía. Callar la
+         * síntesis de las ondas deja mudos a casi todos, y eso ahora se ve.
+         *
+         * Ataca al mundo y no al instrumento, que es la lección que me costó dos
+         * sabotajes caducados esta misma noche.
+         */
+        de: '            salida[i] += onda(fase) * vol * Math.exp(-3 * avance);',
+        a: '            salida[i] += 0;',
+        vigila: 'que un sonido declarado suene de verdad y no sea silencio',
+    },
+    {
         nombre: 'arneses',
         corre: 'node --import ./resolver_three.mjs prueba_arneses.mjs',
         fichero: 'public/js/gym_runners/boids_gym.js',

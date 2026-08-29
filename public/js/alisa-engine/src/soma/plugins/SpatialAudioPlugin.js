@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { capasDe, sintetizar } from '../audio/sonido.js';
 
 export class SpatialAudioPlugin {
     constructor(gfx) {
@@ -37,6 +38,60 @@ export class SpatialAudioPlugin {
         const buffer = fabricar(this.listener.context);
         this.sounds.set(nombre, buffer);
         return buffer;
+    }
+
+    /**
+     * ═══════════════════════════════════════════════════════════════════════
+     *  EL CATÁLOGO DEL ARCADE, COLOCADO EN EL ESPACIO
+     * ═══════════════════════════════════════════════════════════════════════
+     *
+     * Había dos sistemas de sonido y parecían duplicados. No lo eran: `sfx.js`
+     * es el CATÁLOGO —sesenta y tres sonidos sintetizados— y esto es quien los
+     * COLOCA. Faltaba la receta en medio, y resulta que ya existía disfrazada
+     * de código: cada sonido son capas de tres primitivas.
+     *
+     * Ahora esas capas son datos (`public/data/sonidos.json`) y la síntesis es
+     * matemática pura (`soma/audio/sonido.js`, sin `AudioContext`). Con eso,
+     * **el mismo sonido definido una vez se puede oír plano en el arcade y
+     * colocado en una sala 3D**, que es lo que significa que sean componibles.
+     *
+     *     const n = await plugin.cargarLexicoDeSonidos();
+     *     plugin.playPositionalSound('explosion', laMalla);
+     *
+     * ⚠️ NO SUENA IDÉNTICO AL DE `sfx.js`, Y ESTÁ DICHO EN `sonido.js`: el
+     *    filtro de aquí es de un polo y el del navegador de dos. Es el mismo
+     *    sonido, no la misma onda. Para colocar algo en el espacio eso sobra;
+     *    para comparar muestra a muestra, no valdría.
+     */
+    async cargarLexicoDeSonidos(url = '/data/sonidos.json') {
+        try {
+            const r = await fetch(url);
+            if (!r.ok) throw new Error(`${r.status} en ${url}`);
+            return this.registrarLexicoDeSonidos(await r.json());
+        } catch (e) {
+            // Sin léxico la escena sigue: los sonidos cargados por fichero y el
+            // zumbido no dependen de él. Se avisa y no se rompe nada.
+            console.warn('[SpatialAudio] sin léxico de sonidos:', e.message);
+            return 0;
+        }
+    }
+
+    /** Registra cada receta como un buffer. Devuelve cuántas entraron. */
+    registrarLexicoDeSonidos(lexico) {
+        let n = 0;
+        for (const nombre of Object.keys(lexico?.sonidos ?? {})) {
+            const capas = capasDe(nombre, lexico);
+            if (!capas) continue;
+            this.registrarSonido(nombre, (ctx) => {
+                const m = sintetizar(capas, { muestreo: ctx.sampleRate });
+                const buf = ctx.createBuffer(1, Math.max(1, m.length), ctx.sampleRate);
+                buf.getChannelData(0).set(m);
+                return buf;
+            });
+            n++;
+        }
+        console.log(`[SpatialAudio] ${n} sonidos del léxico, listos para colocar.`);
+        return n;
     }
 
     /**
