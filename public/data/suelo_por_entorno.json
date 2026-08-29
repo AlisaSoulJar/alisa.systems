@@ -124,15 +124,15 @@
       "familia": "protohub",
       "separa": true,
       "suelo": [
+        449,
+        275,
         0,
-        142,
-        323,
-        7,
-        324,
-        29,
-        0
+        302,
+        199,
+        337,
+        271
       ],
-      "mejorCiega": 324,
+      "mejorCiega": 449,
       "peorCiega": 0,
       "pasos": 400,
       "semilla": 1234,

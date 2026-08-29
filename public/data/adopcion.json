@@ -9,7 +9,7 @@
       "podrian": 95,
       "quien": "prueba_azar.mjs",
       "nota": "una copia se separa del original sin avisar, y entonces la misma semilla da dos mundos",
-      "medido": "2026-08-29T21:02:55Z"
+      "medido": "2026-08-29T22:47:50Z"
     },
     "contorno-de-pieza": {
       "titulo": "grupos de piezas que se recortan del suelo con un contorno del color contrario",
@@ -17,7 +17,7 @@
       "podrian": 36,
       "quien": "prueba_vistas.mjs",
       "nota": "medido en Chrome sobre la escena de verdad, no leyendo el fichero",
-      "medido": "2026-08-29T20:55:45Z"
+      "medido": "2026-08-29T22:40:41Z"
     },
     "mesa-narrada": {
       "titulo": "mesas que un lector de pantalla puede seguir jugada a jugada",
@@ -25,7 +25,7 @@
       "podrian": 41,
       "quien": "prueba_asimetria.mjs",
       "nota": "el texto existía desde hacía meses; hasta el 29-08-2026 no llegaba a ninguna",
-      "medido": "2026-08-29T21:01:17Z"
+      "medido": "2026-08-29T22:46:08Z"
     },
     "modulo-enchufado": {
       "titulo": "módulos que usa algo que no es su propia prueba",
@@ -33,7 +33,7 @@
       "podrian": 304,
       "quien": "prueba_enchufado.mjs",
       "nota": "un módulo que sólo conocen sus guardianes no está en producción: está en cuarentena, y ningún detector de código muerto lo ve, porque su prueba SÍ lo referencia",
-      "medido": "2026-08-29T21:03:34Z"
+      "medido": "2026-08-29T22:48:17Z"
     },
     "sonido-por-clase-de-jugada": {
       "titulo": "juegos donde poner una bomba y dar un paso suenan distinto",
@@ -41,7 +41,7 @@
       "podrian": 41,
       "quien": "prueba_sonidos.mjs",
       "nota": "el resto cae al genérico del motor —«ficha» o «carta»—, que es correcto en los de coordenadas puras",
-      "medido": "2026-08-29T21:01:29Z"
+      "medido": "2026-08-29T22:46:20Z"
     },
     "tablero-en-texto": {
       "titulo": "juegos de rejilla que dicen DÓNDE está lo que hay, no sólo cuántos",
@@ -49,7 +49,7 @@
       "podrian": 26,
       "quien": "prueba_lenguaje.mjs",
       "nota": "el resto sólo publica escalares: se puede elegir sin equivocarse, no elegir bien",
-      "medido": "2026-08-29T20:54:07Z"
+      "medido": "2026-08-29T22:39:02Z"
     },
     "vista-comprobable": {
       "titulo": "juegos que NOMBRAN lo que dibujan, y por eso se pueden cruzar con el sustrato",
@@ -57,7 +57,7 @@
       "podrian": 41,
       "quien": "prueba_vistas.mjs",
       "nota": "un visualizador que no nombra sus mallas tampoco lo puede leer un agente",
-      "medido": "2026-08-29T20:55:45Z"
+      "medido": "2026-08-29T22:40:41Z"
     }
   }
 }
