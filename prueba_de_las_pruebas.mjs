@@ -1192,6 +1192,25 @@ const SABOTAJES = [
         vigila: 'que un juego no pueda pedir un sonido que no existe',
     },
     {
+        nombre: 'verbos_de_jugada',
+        corre: 'node prueba_sonidos.mjs',
+        fichero: 'public/data/sonidos.json',
+        /**
+         * ⚠️ EL MISMO ERROR DE DEDO, PERO EN LA TABLA QUE COMPARTEN TREINTA JUEGOS.
+         *
+         * El mapa de `mecha` sólo puede enmudecer a `mecha`. Esta tabla la usan
+         * treinta: un `footsteps` por `footstep` deja sin sonido de paso a los
+         * trece juegos que se mueven, todos a la vez, y ninguno da error — cada
+         * uno cae al genérico y sigue sonando, sólo que a otra cosa.
+         *
+         * Va en los datos y no en el código a propósito: es donde de verdad se
+         * escribe mal un nombre.
+         */
+        de: '"arriba": "footstep",',
+        a: '"arriba": "footsteps",',
+        vigila: 'que la tabla compartida de verbos no mande a un sonido inexistente',
+    },
+    {
         nombre: 'arneses',
         corre: 'node --import ./resolver_three.mjs prueba_arneses.mjs',
         fichero: 'public/js/gym_runners/boids_gym.js',

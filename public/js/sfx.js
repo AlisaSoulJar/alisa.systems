@@ -472,6 +472,19 @@ const SFX = (() => {
         /** La promesa del léxico, por si alguien quiere esperar a que esté. */
         listo,
 
+        /**
+         * La tabla compartida de VERBO DE JUGADA → sonido, tal cual viene del
+         * léxico. La usa `sonido_mesa.js`, que es un script clásico y no puede
+         * importar nada, y por eso pasa por aquí en vez de volver a pedir el JSON.
+         *
+         * ⚠️ Se expone el DATO, no una función que lo interprete. La regla de
+         *    resolución —nombre exacto del juego, verbo del juego, tabla, genérico—
+         *    vive en un solo sitio, y ese sitio es quien suena las mesas. Poner
+         *    aquí una segunda copia de esa regla es exactamente la deuda que
+         *    acabamos de pagar con los cincuenta y tres sonidos duplicados.
+         */
+        get jugadas() { return lexico?.jugadas ?? null; },
+
         play(name, vol) {
             if (!ensureCtx()) return;
             if (muted) return;

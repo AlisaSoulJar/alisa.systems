@@ -149,6 +149,26 @@ a { color: var(--acento); }
         if (!grupos.has(fam)) grupos.set(fam, []);
         grupos.get(fam).push({ nombre, ...s });
     }
+    /**
+     * ⚠️ EL BANCO DE PRUEBA NO ES SÓLO «LOS SESENTA Y TRES SONIDOS».
+     *
+     * La pregunta que de verdad se hace uno delante de esto no es «¿cómo suena
+     * `footstep`?» sino «¿a qué suena DAR UN PASO?». Eso lo contesta la tabla de
+     * verbos del léxico, que es la que usan treinta de los cuarenta y un juegos.
+     *
+     * Se pone antes de los de código porque es lo que más se consulta: aquí se
+     * oye lo que va a oír un jugador, ordenado por lo que HACE, no por cómo está
+     * hecho el sonido.
+     */
+    const verbos = Object.entries(lexico.jugadas ?? {});
+    if (verbos.length) {
+        grupos.set('qué suena cada clase de jugada', verbos.map(([verbo, sonido]) => ({
+            nombre: sonido,
+            etiqueta: verbo,
+            intencion: sonido ? `suena «${sonido}»` : 'silencio a propósito',
+        })));
+    }
+
     grupos.set('escritos como código', (lexico.soloCodigo ?? []).map((nombre) => ({ nombre, escrito: true })));
 
     const cont = $('familias');
@@ -168,8 +188,10 @@ a { color: var(--acento); }
             b.className = 'sonido' + (s.escrito ? ' escrito' : '');
             b.type = 'button';
             const nombre = document.createElement('b');
-            nombre.textContent = s.nombre;
+            // `etiqueta` es el verbo de jugada; el resto se llaman como suenan.
+            nombre.textContent = s.etiqueta ?? s.nombre;
             b.appendChild(nombre);
+            if (!s.nombre) b.disabled = true;   // un verbo mapeado a `null` no suena
             if (s.intencion) {
                 const i = document.createElement('div');
                 i.className = 'intencion';
@@ -187,7 +209,10 @@ a { color: var(--acento); }
                 tocar(s.nombre, b);
             });
             rej.appendChild(b);
-            todos.push({ nombre: s.nombre, boton: b });
+            // La tanda recorre CADA sonido una vez. Los verbos repiten sonidos que
+            // ya están en su familia, así que no entran: en una secuencia seguida
+            // un mudo se nota como un hueco en el ritmo, y repetir rompe el ritmo.
+            if (s.nombre && !s.etiqueta) todos.push({ nombre: s.nombre, boton: b });
         }
         sec.appendChild(rej);
         cont.appendChild(sec);

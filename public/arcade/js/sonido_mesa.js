@@ -98,15 +98,65 @@
         const mapa = (typeof window !== 'undefined' ? window.SONIDOS_DEL_JUEGO : null) || null;
         const porJugada = mapa && mapa.jugada ? mapa.jugada : null;
 
+        /**
+         * ═══════════════════════════════════════════════════════════════════
+         *  EL VERBO DE LA JUGADA — POR QUÉ NO HACEN FALTA CUARENTA MAPAS
+         * ═══════════════════════════════════════════════════════════════════
+         *
+         * Medido jugando los 41 juegos 120 plies cada uno: 17 tienen un alfabeto
+         * de jugadas corto y con nombre —`arriba`, `bomba`, `nueva`— y el resto
+         * parecían coordenadas. No lo eran. `descartar:H_Q` no es una coordenada:
+         * es el verbo `descartar` con un complemento pegado detrás. Contando por
+         * verbo salen 48 en total, y 36 de los 41 tienen al menos uno.
+         *
+         * Y los comparten: `nueva` lo tienen 15 juegos, las cuatro direcciones 13,
+         * `jugar` 7. Así que la tabla es UNA, vive en `sonidos.json` al lado de las
+         * recetas, y no hay que tocar cuarenta ficheros para que un paso suene a
+         * paso.
+         *
+         * ⚠️ ORDEN DE PREFERENCIA, DE MÁS ESPECÍFICO A MENOS:
+         *      1. el nombre exacto, si el juego lo declara     (`bomba` en mecha)
+         *      2. el verbo, si el juego lo declara             (`descartar:H_Q`)
+         *      3. el nombre exacto en la tabla compartida
+         *      4. el verbo en la tabla compartida
+         *      5. el genérico del motor — `ficha` o `carta`, como toda la vida
+         *
+         * ⚠️ LOS CINCO QUE NO TIENEN VERBO —ajedrez, damas, reversi, xiangqi y
+         *    mancala— juegan con coordenadas puras y se quedan en el genérico. Es
+         *    correcto: en el ajedrez todas las jugadas SON la misma clase de acto,
+         *    y darle un sonido distinto a `e2e4` que a `d2d4` no diría nada.
+         */
+        const verboDe = (nombre) => {
+            const i = nombre.indexOf(':');
+            if (i > 0) return nombre.slice(0, i);
+            const j = nombre.indexOf(' ');          // «enviar a», en defensa
+            return j > 0 ? nombre.slice(0, j) : nombre;
+        };
+
+        /**
+         * Devuelve `{ s }` con el sonido —que puede ser `null`, o sea silencio
+         * pedido— o `undefined` si esa tabla no dice nada de esta jugada. Envolver
+         * es lo que distingue «suena a nada» de «no lo sé», y sin esa distinción
+         * un `null` en la tabla caería al genérico y sonaría.
+         */
+        const busca = (tabla, clave) =>
+            (tabla && Object.hasOwn(tabla, clave)) ? { s: tabla[clave] } : undefined;
+
         backend.move = async function (a) {
             const r = await original.apply(this, arguments);
             const nombre = typeof a === 'string' ? a : (a && a.jugada);
-            if (porJugada && nombre !== undefined && Object.hasOwn(porJugada, nombre)) {
-                const s = porJugada[nombre];
-                if (s) suena(s);            // `null` es silencio pedido, no un olvido
-            } else {
-                suena(sonidoDeJugada);
+            if (nombre !== undefined && nombre !== null) {
+                const n = String(nombre);
+                const v = verboDe(n);
+                const comun = (window.SFX && window.SFX.jugadas) || null;
+                const elegido = busca(porJugada, n) ?? busca(porJugada, v)
+                    ?? busca(comun, n) ?? busca(comun, v);
+                if (elegido) {
+                    if (elegido.s) suena(elegido.s);
+                    return r;
+                }
             }
+            suena(sonidoDeJugada);
             return r;
         };
 

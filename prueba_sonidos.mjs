@@ -177,7 +177,49 @@ for (const nombre of conReceta) {
 {
     const { REGLAS, cargarReglas } = await import('./public/arcade/js/protohub/rules/index.js');
     const catalogo = new Set(nombresDe(LEX));
-    let conMapa = 0, mapeadas = 0;
+    const comun = LEX.jugadas ?? null;
+    let conMapa = 0, mapeadas = 0, conVoz = 0;
+    const alGenerico = [];
+
+    /**
+     * ⚠️ LA TABLA COMPARTIDA DE VERBOS, QUE ES LO QUE LE DA VOZ A TREINTA JUEGOS.
+     *
+     * Un juego puede declarar su mapa, pero casi ninguno lo hace y casi ninguno
+     * lo necesita: 36 de los 41 usan verbos —`nueva`, `tirar`, `descartar`,
+     * `arriba`— y muchos los comparten. La tabla vive en `sonidos.json` y un
+     * nombre mal escrito ahí enmudece esa clase de jugada en TODOS a la vez.
+     */
+    comprobaciones++;
+    if (!comun) {
+        mal('el léxico ya no trae la tabla `jugadas`: los juegos con verbo volverían al genérico');
+    }
+    for (const [verbo, sonido] of Object.entries(comun ?? {})) {
+        comprobaciones++;
+        if (sonido !== null && !catalogo.has(sonido)) {
+            mal(`la tabla de jugadas manda «${verbo}» a «${sonido}», que no está en el catálogo`);
+        }
+    }
+
+    /**
+     * La misma regla que `public/arcade/js/sonido_mesa.js`, copiada a propósito:
+     * aquél es un script clásico del arcade y no se puede importar desde Node.
+     * Lo que sí se puede es medir la CONSECUENCIA —cuántos juegos acaban con voz
+     * propia— y ponerle techo, que es lo que hace el apartado 6.
+     */
+    const verboDe = (n) => {
+        const i = n.indexOf(':');
+        if (i > 0) return n.slice(0, i);
+        const j = n.indexOf(' ');
+        return j > 0 ? n.slice(0, j) : n;
+    };
+    const resuelve = (tablas, n) => {
+        for (const t of tablas) {
+            if (!t) continue;
+            if (Object.hasOwn(t, n)) return true;
+            if (Object.hasOwn(t, verboDe(n))) return true;
+        }
+        return false;
+    };
 
     for (const juego of Object.keys(REGLAS)) {
         let reglas;
@@ -187,6 +229,23 @@ for (const nombre of conReceta) {
         let sus;
         try { sus = reglas.sustrato(reglas.nuevaPartida({ seed: 1, semilla: 1 }), 0); } catch { continue; }
         const mapa = sus?.sonidos?.jugada;
+
+        // ── 6. ¿ACABA ESTE JUEGO CON VOZ PROPIA, O CON EL GENÉRICO DE SIEMPRE? ──
+        {
+            const suyas = new Set();
+            try {
+                const p = reglas.nuevaPartida({ seed: 7, semilla: 7 });
+                for (let i = 0; i < 40; i++) {
+                    for (const m of reglas.estado(p).legal_moves ?? []) suyas.add(String(m));
+                    const m = reglas.sugerencia?.(p);
+                    if (!m || !reglas.mover(p, m)) break;
+                }
+            } catch { /* lo que se haya visto ya vale */ }
+            comprobaciones++;
+            if ([...suyas].some((m) => resuelve([mapa, comun], m))) conVoz++;
+            else alGenerico.push(juego);
+        }
+
         if (!mapa) continue;
         conMapa++;
 
@@ -226,7 +285,30 @@ for (const nombre of conReceta) {
             }
         }
     }
-    console.log(gris(`  ${conMapa} juego(s) declaran mapa de sonido · ${mapeadas} jugadas mapeadas`));
+    /**
+     * ⚠️ TECHO QUE FALLA EN LAS DOS DIRECCIONES.
+     *
+     * Si alguien renombra `nueva` o `tirar` en un juego, o le quita una entrada a
+     * la tabla, la cuenta baja y esto se pone rojo — que es la avería silenciosa
+     * de siempre: nada falla, el juego suena, sólo suena a menos.
+     *
+     * Y si sube, también, para que el número se actualice a mano y no se quede
+     * mintiendo hacia abajo. Los que caen al genérico son los de coordenadas
+     * puras —ajedrez, damas, reversi, xiangqi, mancala— y ahí es lo correcto.
+     */
+    const SUELO = 30;
+    comprobaciones++;
+    if (conVoz < SUELO) {
+        mal(`sólo ${conVoz} juegos tienen sonido propio de jugada, y había ${SUELO}. `
+            + `Al genérico: ${alGenerico.join(', ')}`);
+    } else if (conVoz > SUELO) {
+        mal(`ahora son ${conVoz} juegos con sonido propio y aquí pone ${SUELO}. `
+            + `Sube el número: un techo que no se actualiza deja de medir.`);
+    }
+    console.log(gris(`  ${conMapa} juego(s) declaran mapa propio · ${mapeadas} jugadas mapeadas · `
+        + `${Object.keys(comun ?? {}).length} verbos compartidos`));
+    console.log(gris(`  ${conVoz} juegos suenan por jugada · ${alGenerico.length} al genérico `
+        + `(${alGenerico.join(', ')})`));
 }
 
 // ── veredicto ────────────────────────────────────────────────────────────────
