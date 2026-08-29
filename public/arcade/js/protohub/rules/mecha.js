@@ -527,6 +527,27 @@ export const mecha = {
                 mejora_alcance: 0.22,
                 mejora_bomba: 0.22,
             },
+            /**
+             * ⚠️ EL MAPA DE SONIDO. Poner una bomba y dar un paso son decisiones
+             *    opuestas, y hasta hoy sonaban igual: el arcade tocaba un único
+             *    `ficha` para toda jugada.
+             *
+             * `bomba` suena a `tick` porque lo que empieza no es la explosión: es
+             * la MECHA. El sonido cuenta lo que acaba de pasar, no lo que pasará
+             * dentro de ocho jugadas — y en este juego esa distancia es el juego.
+             *
+             * Y `esperar` es `null`: silencio PEDIDO, que no es lo mismo que no
+             * estar en el mapa. Quedarse quieto un turno es una jugada legal y de
+             * las importantes, y no debería sonar a nada.
+             */
+            sonidos: {
+                jugada: {
+                    bomba: 'tick',
+                    arriba: 'footstep', abajo: 'footstep',
+                    izquierda: 'footstep', derecha: 'footstep',
+                    esperar: null,
+                },
+            },
             zonas: [],
             leyenda: {
                 caja: 'caja: se rompe con una bomba y puede esconder una mejora',

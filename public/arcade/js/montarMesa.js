@@ -51,7 +51,7 @@ import { JUEGOS, TITULOS, cargarReglas } from './protohub/rules/index.js';
  * `prueba_version.mjs` comprueba que corresponde a lo que hay en disco y, si no,
  * dice el valor que toca. No hay que acordarse: hay que hacer caso a la prueba.
  */
-const VERSION = '53b40a81';
+const VERSION = '780a9ba3';
 
 /**
  * Lo que toda página de tablero necesitaba y repetía. En orden.
@@ -495,6 +495,20 @@ export async function montarMesa(cfg) {
         const sus = reglas.sustrato ? reglas.sustrato(q, 0)
                                     : obtenerSustrato(juego, reglas, q, reglas.estado(q));
         deCartas = !!(sus?.zonas?.length) && !sus?.rejilla;
+        /**
+         * ⚠️ Y DE PASO, EL MAPA DE SONIDO DEL JUEGO — SI LO DECLARA.
+         *
+         * Se aprovecha esta misma partida de muestra en vez de volver a montar
+         * otra: ya está aquí y ya se está mirando de qué está hecho el juego.
+         *
+         * Va por un global porque los dos motores del arcade son scripts clásicos
+         * y no pueden importar nada — el mismo motivo por el que `conSonidoDeMesa`
+         * también lo es. Se pone ANTES de cargar el motor, y el motor engancha el
+         * sonido más tarde, en su `start()`, así que para entonces está.
+         *
+         * Quien no declara `sonidos` deja el global en null y suena como siempre.
+         */
+        window.SONIDOS_DEL_JUEGO = sus?.sonidos ?? null;
     } catch { /* si no se puede mirar, tablero: es lo de siempre */ }
 
     for (const s of (deCartas ? MOTOR_CARTAS : MOTOR_TABLERO)) await cargar(s);

@@ -161,6 +161,74 @@ for (const nombre of conReceta) {
     }
 }
 
+// ── 5. LOS MAPAS DE SONIDO DE LOS JUEGOS NOMBRAN SONIDOS QUE EXISTEN ────────
+/**
+ * ⚠️ UN NOMBRE MAL ESCRITO EN UN MAPA ES SILENCIO, Y ES LA MISMA ENFERMEDAD.
+ *
+ * Un juego puede declarar `sonidos: { jugada: { bomba: 'tick' } }` en su
+ * sustrato. Si escribe `'tik'`, `SFX.play` no lo encuentra y esa jugada enmudece
+ * — sin error, igual que antes. La única defensa es la de siempre: comparar la
+ * lista que los juegos PIDEN contra la que el catálogo TIENE.
+ *
+ * Y también se mira que la jugada exista: mapear un sonido a `sltar` cuando la
+ * jugada se llama `saltar` deja el sonido genérico para siempre y nadie lo nota,
+ * porque suena algo.
+ */
+{
+    const { REGLAS, cargarReglas } = await import('./public/arcade/js/protohub/rules/index.js');
+    const catalogo = new Set(nombresDe(LEX));
+    let conMapa = 0, mapeadas = 0;
+
+    for (const juego of Object.keys(REGLAS)) {
+        let reglas;
+        try { reglas = await cargarReglas(juego); } catch { continue; }
+        if (typeof reglas?.sustrato !== 'function') continue;
+
+        let sus;
+        try { sus = reglas.sustrato(reglas.nuevaPartida({ seed: 1, semilla: 1 }), 0); } catch { continue; }
+        const mapa = sus?.sonidos?.jugada;
+        if (!mapa) continue;
+        conMapa++;
+
+        /**
+         * ⚠️ LAS LEGALES DEL PRIMER TURNO NO SON LAS JUGADAS DEL JUEGO, Y ESTO
+         *    ACUSÓ A `mecha` DE MAPEAR JUGADAS INVENTADAS.
+         *
+         * Comparé contra `legal_moves` de la posición inicial y saltaron `arriba` e
+         * `izquierda`. Son jugadas suyas perfectamente: lo que pasa es que el
+         * jugador empieza en una esquina y ahí las dos dan a la pared.
+         *
+         * Así que se juega un rato y se acumula todo lo que llega a ser legal. Es
+         * una aproximación —una jugada rarísima puede no salir en sesenta— y por
+         * eso el aviso dice «no la he visto», que es lo que de verdad sé, y no «no
+         * existe», que es más de lo que puedo afirmar.
+         */
+        const legales = new Set();
+        try {
+            const p = reglas.nuevaPartida({ seed: 1, semilla: 1 });
+            for (let i = 0; i < 60; i++) {
+                for (const m of reglas.estado(p).legal_moves ?? []) legales.add(m);
+                const m = reglas.sugerencia?.(p);
+                if (!m || !reglas.mover(p, m)) break;
+            }
+        } catch { /* si no se puede jugar, no se comprueba: no es asunto de esto */ }
+        for (const [jugada, sonido] of Object.entries(mapa)) {
+            comprobaciones += 2;
+            mapeadas++;
+            if (sonido !== null && !catalogo.has(sonido)) {
+                mal(`«${juego}» mapea la jugada «${jugada}» a «${sonido}», que no está en el catálogo`);
+            }
+            // Las jugadas legales cambian con la partida, así que sólo se avisa si
+            // el nombre no se parece a ninguna de las de la posición inicial.
+            if (legales.size && !legales.has(jugada) && !/^(esperar|pasar|rendirse)$/.test(jugada)) {
+                mal(`«${juego}» mapea «${jugada}», y no la he visto legal en sesenta jugadas `
+                    + `(legales al empezar: ${[...legales].slice(0, 6).join(', ')})`);
+            }
+        }
+    }
+    console.log(gris(`  ${conMapa} juego(s) declaran mapa de sonido · ${mapeadas} jugadas mapeadas`));
+}
+
 // ── veredicto ────────────────────────────────────────────────────────────────
 const MINIMO = 150;
 console.log(`\n¿Suenan los sonidos, o sólo están declarados?\n`);

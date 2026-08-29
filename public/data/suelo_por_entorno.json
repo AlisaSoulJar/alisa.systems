@@ -3,7 +3,7 @@
   "_suelo": "alisa-engine/src/gym/baseline.js — ciclo, primera, ultima, azar1, azar7, azar99, bandido",
   "_medido_por": "prueba_senal.mjs, en cada npm test. Publica quien mide, para que no se separen.",
   "propios": 13,
-  "total": 53,
+  "total": 54,
   "entornos": [
     {
       "id": "alisa/ajedrez-protohub-v0",
@@ -552,6 +552,25 @@
       ],
       "mejorCiega": 1432,
       "peorCiega": 624,
+      "pasos": 400,
+      "semilla": 1234,
+      "forma": "action"
+    },
+    {
+      "id": "alisa/mecha-protohub-v0",
+      "familia": "protohub",
+      "separa": true,
+      "suelo": [
+        1,
+        0,
+        2,
+        1,
+        2,
+        1,
+        1
+      ],
+      "mejorCiega": 2,
+      "peorCiega": 0,
       "pasos": 400,
       "semilla": 1234,
       "forma": "action"

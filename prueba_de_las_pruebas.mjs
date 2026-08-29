@@ -1171,6 +1171,27 @@ const SABOTAJES = [
         vigila: 'que un sonido declarado suene de verdad y no sea silencio',
     },
     {
+        nombre: 'mapa_de_sonido',
+        corre: 'node prueba_sonidos.mjs',
+        fichero: 'public/arcade/js/protohub/rules/mecha.js',
+        /**
+         * ⚠️ LA MISMA ENFERMEDAD, UN PISO MÁS ARRIBA: EL NOMBRE MAL ESCRITO.
+         *
+         * Desde hoy un juego puede declarar en su sustrato qué suena en cada
+         * jugada. El catálogo está bien, la síntesis está bien, `SFX.play` está
+         * bien — y si el juego escribe `tic` donde el sonido se llama `tick`, esa
+         * jugada enmudece. Sin error y sin aviso, porque el resto del juego sigue
+         * sonando: no es un silencio, es UN hueco, que se nota todavía menos.
+         *
+         * Ataca al mundo —a lo que el juego declara— y no al instrumento. Ése es
+         * el sabotaje que no caduca cuando el catálogo se muda de sitio, que es lo
+         * que ya me pasó tres veces con `sfx.js`.
+         */
+        de: "                    bomba: 'tick',",
+        a: "                    bomba: 'tic',",
+        vigila: 'que un juego no pueda pedir un sonido que no existe',
+    },
+    {
         nombre: 'arneses',
         corre: 'node --import ./resolver_three.mjs prueba_arneses.mjs',
         fichero: 'public/js/gym_runners/boids_gym.js',

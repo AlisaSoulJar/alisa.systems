@@ -65,9 +65,48 @@
         const original = backend.move;
         const verEstado = backend.state;
 
+        /**
+         * ═══════════════════════════════════════════════════════════════════
+         *  EL MAPA DE SONIDO DEL JUEGO — IDEA DE OSCAR
+         * ═══════════════════════════════════════════════════════════════════
+         *
+         * Hasta hoy sonaba UN nombre para todas las jugadas: `ficha` en tablero y
+         * `carta` en cartas, escritos a mano en los dos motores. O sea que se oía
+         * «ocurrió una jugada», nunca QUÉ jugada. En un juego donde poner una
+         * bomba y dar un paso son decisiones opuestas, eso es perder la mitad de
+         * lo que el sonido podría contar.
+         *
+         * Ahora el juego lo puede declarar en su sustrato, igual que ya declara
+         * `simbolos`, `alturas` y `leyenda`:
+         *
+         *     sonidos: { jugada: { bomba: 'tick', arriba: 'footstep', esperar: null } }
+         *
+         * ⚠️ ADITIVO: QUIEN NO DECLARA NADA SUENA EXACTAMENTE IGUAL QUE ANTES.
+         *    Cuarenta juegos no tienen mapa y no tienen que enterarse de esto.
+         *
+         * ⚠️ Y `null` SIGNIFICA SILENCIO A PROPÓSITO, que no es lo mismo que no
+         *    estar en el mapa. Esperar un turno no debería sonar a nada, y sin esa
+         *    distinción la única forma de callarlo sería no declararlo — y
+         *    entonces caería al genérico y sonaría igual que moverse.
+         *
+         * ⚠️ LO QUE ESTO TODAVÍA NO HACE, DICHO: los sonidos que causa el MUNDO al
+         *    avanzar —una bomba que estalla tres turnos después— no salen de aquí,
+         *    porque este envoltorio ve la jugada y no el sustrato. Para eso habría
+         *    que comparar las piezas antes y después y sonar por lo que aparece.
+         *    Es el siguiente paso y es más caro; esto es el barato y ya sirve.
+         */
+        const mapa = (typeof window !== 'undefined' ? window.SONIDOS_DEL_JUEGO : null) || null;
+        const porJugada = mapa && mapa.jugada ? mapa.jugada : null;
+
         backend.move = async function (a) {
             const r = await original.apply(this, arguments);
-            suena(sonidoDeJugada);
+            const nombre = typeof a === 'string' ? a : (a && a.jugada);
+            if (porJugada && nombre !== undefined && Object.hasOwn(porJugada, nombre)) {
+                const s = porJugada[nombre];
+                if (s) suena(s);            // `null` es silencio pedido, no un olvido
+            } else {
+                suena(sonidoDeJugada);
+            }
             return r;
         };
 
