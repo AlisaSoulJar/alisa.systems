@@ -142,14 +142,36 @@ function dejaJugarALaCasa(reglas, p, miTurno) {
 function reproducir(reglas, semilla, jugadas) {
     const p = reglas.nuevaPartida({ semilla, seed: semilla });
     const miTurno = reglas.estado(p).turn;
-    let rechazadas = 0;
+    let rechazadas = 0, efectivas = 0, decisiones = 0;
     dejaJugarALaCasa(reglas, p, miTurno);      // por si la casa abre
     for (const j of jugadas) {
-        if (reglas.estado(p).is_game_over) break;
-        if (!reglas.mover(p, j)) rechazadas++;
+        const antes = reglas.estado(p);
+        if (antes.is_game_over) break;
+        /**
+         * ⚠️ ¿HUBO ALGO QUE ELEGIR? EL CANARIO, GENERALIZADO.
+         *
+         * `docs/cuando_los_puntos_valen_algo.md` lo dejó escrito el 08-08-2026 y
+         * nadie lo implementó: **`guerra` es el control del banco**, un juego
+         * donde no hay una sola decisión y todo el mundo DEBE empatar. *«Si la
+         * fila de guerra de un candidato se separa, no está jugando mejor: está
+         * tocando el arnés. Es una alarma que cuesta cero y que sólo un tramposo
+         * dispara.»*
+         *
+         * Al ir a escribirlo salió una versión mejor y que no menciona a `guerra`:
+         * lo que hace a ese juego un control no es su nombre, es que **cada turno
+         * ofrece UNA sola jugada legal**. Eso es medible en cualquier partida y en
+         * cualquier momento — hay juegos que pasan tramos enteros sin elección.
+         *
+         * Así que se cuentan las DECISIONES REALES: los turnos donde había más de
+         * una jugada posible. Un recibo con cero decisiones tiene la puntuación
+         * forzada por la semilla, y entonces no puede demostrar nada: ni bien ni
+         * mal, porque no había nada que acertar.
+         */
+        if ((antes.legal_moves ?? []).length > 1) decisiones++;
+        if (reglas.mover(p, j)) efectivas++; else rechazadas++;
         dejaJugarALaCasa(reglas, p, miTurno);
     }
-    return { p, rechazadas };
+    return { p, rechazadas, efectivas, decisiones };
 }
 
 function correrCiega(reglas, semilla, pasos, pol) {
@@ -193,12 +215,12 @@ if (!recibo?.juego || !JUEGOS.includes(recibo.juego)) {
 
 const reglas = await cargarReglas(recibo.juego, {});
 const jugadas = (recibo.jugadas ?? []).map(String);
-const { p, rechazadas } = reproducir(reglas, recibo.semilla, jugadas);
+const { p, rechazadas, efectivas, decisiones } = reproducir(reglas, recibo.semilla, jugadas);
 const suya = puntuacionDe(reglas.estado(p));
 
 const ciegas = blindPolicies().map(pol => ({
     nombre: pol.nombre,
-    nota: correrCiega(reglas, recibo.semilla, jugadas.length, pol),
+    nota: correrCiega(reglas, recibo.semilla, efectivas, pol),
 }));
 const mejor = ciegas.reduce((a, b) => (b.nota > a.nota ? b : a));
 const media = ciegas.reduce((s, c) => s + c.nota, 0) / ciegas.length;
@@ -235,6 +257,37 @@ if (plano) {
      * Así que se dice lo que se sabe: plano CON ESTE HORIZONTE. Quién tiene la
      * culpa —el entorno o el recibo— lo dice el número de jugadas.
      */
+    /**
+     * ⚠️ EL CANARIO: «SUELO PLANO» Y «NO HABÍA NADA QUE ELEGIR» NO SON LO MISMO.
+     *
+     * Las dos salen como siete ciegas empatadas, y el diagnóstico es opuesto:
+     *
+     *   · en `snake` a 33 jugadas el suelo es plano porque las ciegas son malas —
+     *     el juego SÍ tiene decisiones y estar por encima significaría algo;
+     *   · en `guerra` no hay ni una sola decisión: cada turno ofrece una jugada y
+     *     la puntuación la fija la semilla. Ahí todo el mundo DEBE empatar.
+     *
+     * `docs/cuando_los_puntos_valen_algo.md` ya llamaba a `guerra` «el control del
+     * banco» el 08-08-2026, y nadie lo implementó. Pero lo que hace control a ese
+     * juego no es su nombre: es que no hay elección. Eso se mide, y así el canario
+     * vale para cualquier juego y para cualquier tramo — hay partidas que pasan
+     * trozos enteros sin nada que decidir.
+     *
+     * Y si alguien manda un recibo SIN decisiones cuya puntuación NO es la forzada,
+     * eso no es «no acredita»: es imposible sin tocar el arnés. Cuesta cero
+     * detectarlo y sólo lo dispara un tramposo.
+     */
+    if (decisiones === 0) {
+        console.log(`  ⚠️ NO ACREDITA — en estas ${efectivas} jugadas no hubo NI UNA decisión:`);
+        console.log(`     cada turno ofrecía una sola jugada legal, así que la puntuación la`);
+        console.log(`     fija la semilla y no quien juega. No hay nada que acertar.`);
+        if (suya !== mejor.nota) {
+            console.log(`\n  ✗ Y ADEMÁS ES IMPOSIBLE: sin decisiones, todo el mundo saca`);
+            console.log(`     ${mejor.nota} en este mundo, y este recibo dice ${suya}. Eso no se`);
+            console.log(`     consigue jugando mejor — se consigue tocando el arnés.`);
+        }
+        process.exit(1);
+    }
     console.log(`  ⚠️ NO ACREDITA — con ${jugadas.length} jugadas, las siete políticas ciegas empatan.`);
     console.log(`     El suelo es plano a este horizonte, así que estar encima no demostraría nada.`);
     console.log(jugadas.length < 20

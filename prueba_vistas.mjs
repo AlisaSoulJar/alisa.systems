@@ -151,9 +151,29 @@ for (const juego of juegos) {
          * que de verdad no dibuja sigue agotando el plazo y sigue saliendo roja.
          * Lo único que se quita es el falso rojo.
          */
-        await pg.waitForFunction(() => !!window.__escena, { timeout: 20000 })
-                .catch(() => {});
-        await pg.waitForTimeout(2000);   // y un respiro para que pinte lo suyo
+        /**
+         * ⚠️ SE ESPERA A LO QUE SE MIDE, NO A UN INDICIO DE ELLO.
+         *
+         * La primera corrección esperaba a que EXISTIERA `window.__escena` y
+         * luego dos segundos fijos. Siguió parpadeando: el 29-08 salió `reversi`
+         * en una pasada y `marea` en la siguiente —juegos distintos, o sea carga
+         * de máquina y no un juego roto—, porque la escena existe antes de que
+         * los visualizadores hayan nombrado nada.
+         *
+         * Lo que esta prueba mide son MALLAS CON NOMBRE. Así que se espera a que
+         * haya al menos una, y no a un rato. No ablanda nada: una página que de
+         * verdad no nombra sus mallas agota el plazo y sigue saliendo roja; lo
+         * único que se quita es medir la carga de la máquina y llamarlo fallo del
+         * juego, con el trinquete de los no comprobables en cero.
+         */
+        await pg.waitForFunction(() => {
+            const e = window.__escena;
+            if (!e) return false;
+            let conNombre = 0;
+            e.traverse((o) => { if (o.isMesh && o.name) conNombre++; });
+            return conNombre > 0;
+        }, { timeout: 20000 }).catch(() => {});
+        await pg.waitForTimeout(600);   // un respiro corto para el primer repintado
         vista = await pg.evaluate(() => {
             const esc = window.__escena;
             if (!esc) return null;

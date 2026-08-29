@@ -134,7 +134,75 @@ console.log('\n¿Está derecha la vara de medir?\n');
     }
 }
 
-// ── 3. LOS TRES VEREDICTOS EXISTEN Y SE DISTINGUEN ─────────────────────────
+// ── 3. RELLENAR EL RECIBO CON JUGADAS INÚTILES NO PAGA MÁS ─────────────────
+/**
+ * ⚠️ EL ATAQUE DEL NO-OP, Y LO ENCONTRÓ MOTOKO EN VEINTE MINUTOS.
+ *
+ * En SC-144 escribí que el dedupe era «exacto por construcción» porque el recibo
+ * es determinista. Su respuesta: «un jugador puede coger una ruta ganadora de
+ * Sokoban y añadirle al final un movimiento contra la pared; el hash de las
+ * jugadas cambia, pero el trabajo es el mismo».
+ *
+ * Al comprobarlo salió peor de lo que ella pensaba. El horizonte de las siete
+ * políticas ciegas salía de la LONGITUD DE LA LISTA, así que pegar jugadas
+ * inútiles les daba más pasos para perder puntos:
+ *
+ *     recibo original       ✓ supera por 101.0
+ *     el mismo + 1 NO-OP    ✓ supera por 102.0     ← MÁS
+ *
+ * O sea que rellenar estaba doblemente premiado: esquivaba el dedupe Y subía el
+ * margen. Arreglado contando las jugadas EFECTIVAS —las que el árbitro aceptó— en
+ * vez de las que trae la lista.
+ *
+ * Esto lo vigila comparando los dos veredictos, que es la única forma de que no
+ * vuelva: el fallo no estaba en una línea reconocible, estaba en qué número se le
+ * pasaba a una función.
+ */
+{
+    const ruta = 'arriba,abajo,abajo,izquierda,izquierda,arriba,arriba,arriba,'
+               + 'derecha,abajo,abajo,izquierda,abajo,derecha';
+    const margen = async (jugadas) => {
+        const { stdout } = await correr('node',
+            ['acreditar.mjs', '--juego', 'sokoban', '--semilla', '99', '--jugadas', jugadas],
+            { cwd: process.cwd(), maxBuffer: 8 * 1024 * 1024 })
+            .catch((err) => ({ stdout: err.stdout ?? '' }));
+        /**
+         * ⚠️ NI ACENTOS NI COLORES. La primera versión buscaba la frase entera
+         *    —«supera a la mejor política ciega por N»— y devolvía `NaN` siempre:
+         *    la salida viene con códigos ANSI y con la acentuación cambiada al
+         *    capturarla desde otro proceso. Un instrumento que devuelve NaN y lo
+         *    compara con NaN da rojo pase lo que pase, que es tan inútil como uno
+         *    que da verde pase lo que pase.
+         */
+        /**
+         * ⚠️ Y EL PUNTO FINAL DE LA FRASE NO ES PARTE DEL NÚMERO.
+         *    La frase acaba en «por 101.0.» y `[\d.]+` se comía también el punto,
+         *    así que `Number('101.0.')` daba NaN y la comprobación salía roja
+         *    dijera lo que dijera el código. Dos veces seguidas el instrumento, no
+         *    el mundo.
+         */
+        const m = stdout.replace(/\x1b\[[0-9;]*m/g, '')
+            .match(/supera[\s\S]{0,60}?por (-?\d+(?:\.\d+)?)/);
+        return m ? Number(m[1]) : null;
+    };
+
+    const limpio = await margen(ruta);
+    const relleno = await margen(ruta + ',arriba'.repeat(20));
+    comprobaciones += 2;
+
+    if (limpio === null) {
+        console.log(rojo('\nCONTROL POSITIVO FALLIDO: el recibo limpio ya no acredita, '
+            + 'así que comparar márgenes no mide nada.\n'));
+        process.exit(2);
+    }
+    if (relleno !== limpio) {
+        mal(`pegar veinte jugadas inútiles cambia el margen de ${limpio} a ${relleno}. `
+            + 'El horizonte sale de la longitud de la lista en vez de las jugadas '
+            + 'efectivas, así que rellenar paga — y encima esquiva el dedupe.');
+    }
+}
+
+// ── 4. LOS TRES VEREDICTOS EXISTEN Y SE DISTINGUEN ─────────────────────────
 {
     comprobaciones += 3;
     for (const [que, re] of [
@@ -156,4 +224,4 @@ if (fallos.length) {
     console.log(rojo(`\n✗ ${fallos.length} fallo(s) en la vara de medir\n`));
     process.exit(1);
 }
-console.log(verde('✓ la casa juega, el recibo y las ciegas se puntúan igual, y los tres veredictos siguen ahí\n'));
+console.log(verde('✓ la casa juega, rellenar no paga, el recibo y las ciegas se puntúan igual\n'));
