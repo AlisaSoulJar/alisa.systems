@@ -329,8 +329,30 @@ for (const juego of juegos) {
      * o no aparece, y esperar no la inventa. Si el campo no se pinta, no se pintará
      * por mirar cuatro veces.
      */
-    for (let intento = 0; escondidos.length && segundaLectura && intento < 4; intento++) {
-        await p.waitForTimeout(1200);
+    /**
+     * ⚠️ Y CUATRO VECES TAMPOCO BASTARON. EL FALLO ERA ESPERAR POR RELOJ.
+     *
+     * El 29-08 `defensa` salió roja dentro de la suite con diez campos —bando, oro,
+     * vida, torres…— y verde corriéndola sola. Lo comprobé antes de tocar nada:
+     * `filasDeEstado` pinta nueve de esos diez en cuanto se le llama. O sea que el
+     * panel no escondía nada; la prueba miró antes de tiempo, con la máquina llena.
+     *
+     * Van tres remedios para el mismo síntoma —«ha crecido», una repetición, cuatro
+     * repeticiones— y los tres eran el mismo error: **medir un reloj en vez de
+     * esperar a lo que se mide.** Es la misma avería que arreglé hoy en
+     * `prueba_vistas`, que aguardaba dos segundos fijos y acusaba a un juego
+     * distinto en cada pasada.
+     *
+     * Ahora se sondea: se vuelve a mirar cada 200 ms y se para EN CUANTO no queda
+     * nada escondido, hasta un tope generoso. Un juego verde no paga ni un
+     * milisegundo —el bucle ni se entra— y uno que de verdad esconde algo agota el
+     * plazo entero y sigue rojo. Sigue sin poder inventar un aprobado, que es la
+     * razón de que esperar aquí sea seguro: la cabecera lo dice desde el principio,
+     * *la información aparece o no aparece, y esperar no la inventa*.
+     */
+    const PLAZO = 20000, CADA = 200;
+    for (let t = 0; escondidos.length && segundaLectura && t < PLAZO; t += CADA) {
+        await p.waitForTimeout(CADA);
         const otra = await segundaLectura().catch(() => null);
         if (otra) escondidos = buscarEscondidos(otra);
     }

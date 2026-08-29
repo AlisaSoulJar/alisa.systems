@@ -1359,6 +1359,114 @@ const SABOTAJES = [
         vigila: 'que el rival juegue cuando se re-simula un recibo, y no lo juegue quien lo firma',
     },
     {
+        nombre: 'la_casa_esta_en_el_suelo',
+        corre: 'node prueba_acreditar.mjs',
+        fichero: 'acreditar.mjs',
+        /**
+         * ⚠️ EL SUELO ERA SIETE POLÍTICAS TONTAS, Y LA CASA YA LAS BATÍA.
+         *
+         * Lo vio Fable leyendo, no ejecutando: *«el suelo es demasiado bajo; la
+         * política de la casa ya lo supera, y esa política viene en el repo»*.
+         *
+         * Es el ataque más barato que ha tenido este banco. Tres líneas: juegas tu
+         * asiento llamando a `reglas.sugerencia(p)` —el greedy que distribuimos con
+         * cada juego— y mandas el recibo. Medido contra la semilla emitida:
+         *
+         *     damas   ✓ ACREDITA — supera por 1002.0
+         *     oca     ✓ ACREDITA — supera por 32.0
+         *
+         * Búsqueda: **cero**. Y el diseño entero se apoya en que buscar sea caro.
+         * Lo que se pagaba no era jugar bien: era copiar una función nuestra.
+         *
+         * El sitio donde ya estaba escrito, como casi siempre:
+         * `docs/cuando_los_puntos_valen_algo.md`, 08-08 — *«el huevo se gana CONTRA
+         * LA CASA»*. La casa se re-simulaba desde entonces para mover el rival; lo
+         * que faltaba era meterla en el conjunto que hay que superar. Arreglado en
+         * un extremo y no en el otro, otra vez.
+         *
+         * Devolver el suelo a las siete no rompe nada visible: la herramienta sigue
+         * corriendo, sigue re-simulando, sigue diciendo ACREDITA. Sólo que a quien
+         * se copió el repositorio.
+         */
+        de: '    ...(laCasa === null ? [] : [{ nombre: ',
+        a: '    ...(true ? [] : [{ nombre: ',
+        vigila: 'que la política que va en nuestro propio repositorio no acredite a nadie',
+    },
+    {
+        nombre: 'libre_no_acredita',
+        corre: 'node prueba_acreditar.mjs',
+        fichero: 'acreditar.mjs',
+        /**
+         * ⚠️ LA PUERTA MÁS IMPORTANTE, SALTADA POR LA DE SERVICIO.
+         *
+         * Lo vio Fable leyendo el 29-08-2026: `--libre` escribía el literal
+         * `✓ ACREDITA` y salía con **código 0**. La advertencia de al lado —«esto NO
+         * es una acreditación»— era texto para humanos.
+         *
+         * O sea que toda la puerta de las semillas emitidas, la que cierra «juega
+         * cien y manda la mejor», la saltaba cualquier consumidor haciendo lo
+         * normal: mirar el código de salida o buscar el literal. Y jamás habría dado
+         * error: la herramienta imprimía su aviso y quien la llamaba leía «acreditó».
+         *
+         * Peor: `prueba_acreditar` no lo cazaba porque yo había escrito la
+         * comprobación al revés — EXIGÍA ver `✓ ACREDITA` en modo libre, y miraba
+         * que la advertencia estuviera. La advertencia estaba. Verde.
+         *
+         * Devolver el 0 no rompe nada visible. Por eso lo vigila esto.
+         */
+        de: '        process.exit(3);',
+        a: '        process.exit(0);',
+        vigila: 'que --libre no salga con código de acreditado, diga lo que diga el texto',
+    },
+    {
+        nombre: 'suelo_que_busca',
+        corre: 'node prueba_acreditar.mjs',
+        fichero: 'acreditar.mjs',
+        /**
+         * ⚠️ EL SUELO TENÍA UN INTENTO Y QUIEN JUEGA TENÍA INFINITOS.
+         *
+         * Lo trajo Motoko media hora después de que le pidiera que rompiera esta
+         * herramienta: *«generamos mil partidas al azar en local, nos quedamos con
+         * la que haya tenido una suerte absurda, y la mandamos»*. Medido con la
+         * semilla emitida y juzgado por el propio banco: `oca` acreditaba por +908
+         * y `mancala` por +37, dando botones al azar.
+         *
+         * Es la asimetría del revés. Todo esto se apoya en que buscar cuesta y
+         * verificar es barato — y el suelo no buscaba NADA: batir a una sola tirada
+         * al azar no cuesta nada.
+         *
+         * Quitar la búsqueda del suelo devuelve el agujero entero, y no da error
+         * ninguno: la tabla sale igual de bonita, con una fila menos.
+         */
+        de: '    ...(laBusqueda === null ? [] : [{',
+        a: '    ...(true ? [] : [{',
+        vigila: 'que dar botones al azar mil veces y mandar la partida afortunada no reparta títulos',
+    },
+    {
+        nombre: 'semilla_emitida',
+        corre: 'node prueba_acreditar.mjs',
+        fichero: 'acreditar.mjs',
+        /**
+         * ⚠️ «JUEGA CIEN Y MANDA LA MEJOR» — EL AGUJERO MÁS BARATO DE CERRAR,
+         *    ESCRITO EL 08-08-2026 Y ABIERTO HASTA HOY.
+         *
+         * `docs/cuando_los_puntos_valen_algo.md`: *«quien corre el banco elige sus
+         * semillas: juega cien y manda las tres mejores. La selección es la
+         * trampa.»*
+         *
+         * Y es la clase de agujero que no parece uno: el recibo es impecable
+         * —re-simula, cuadra, supera a las siete políticas ciegas— y aun así no
+         * demuestra nada, porque lo que se eligió no fue la jugada, fue el examen.
+         *
+         * Abrir esta puerta no rompe ninguna otra comprobación: todo lo demás
+         * seguiría en verde mientras la nota deja de significar nada. Por eso hace
+         * falta que alguien la vigile.
+         */
+        de: '    if (!emision.emitida && !libre) {',
+        a: '    if (false) {',
+        vigila: 'que no se pueda acreditar con una semilla que eligió quien juega',
+    },
+    {
         nombre: 'arneses',
         corre: 'node --import ./resolver_three.mjs prueba_arneses.mjs',
         fichero: 'public/js/gym_runners/boids_gym.js',
@@ -1694,6 +1802,42 @@ for (const f of await leerCarpeta(CARPETA_DATOS).catch(() => [])) {
     foto.set(f, await readFile(u, 'utf8').catch(() => null));
 }
 
+/**
+ * ¿Está ESTE sabotaje puesto en el árbol ahora mismo?
+ *
+ * Se usa para distinguir «sabotaje caducado» —el código cambió y hay que
+ * actualizarlo— de «sabotaje que se quedó puesto» tras una pasada muerta a medias.
+ * Los dos se leen igual: el texto que busca no está.
+ *
+ * ⚠️ LA PRIMERA VERSIÓN PREGUNTABA «¿git ve el fichero modificado?» Y DIO UN FALSO
+ * POSITIVO EN SU PRIMERA PASADA — el mío, media hora después de escribirlo.
+ *
+ * `acreditar.mjs` estaba modificado porque yo estaba trabajando en él, y la prueba
+ * anunció a gritos que había un sabotaje puesto. Cualquier fichero con trabajo sin
+ * cometer dispararía lo mismo, o sea casi siempre. Un aviso que salta siempre no
+ * avisa de nada, y encima manda a mirar al sitio equivocado.
+ *
+ * Ahora se mira el DIFF y se exige la transformación exacta: una línea quitada que
+ * contiene el `de` y una puesta que contiene el `a`. Eso sólo puede haberlo escrito
+ * este mismo fichero. Sin diff, sin git o con error: `false` y al mensaje de
+ * siempre — un instrumento que no sabe no se inventa nada.
+ */
+function sabotajePuesto(fichero, de, a) {
+    return new Promise((res) => {
+        const g = spawn('git', ['diff', '--unified=0', '--', fichero], { shell: true });
+        let salida = '';
+        g.stdout.on('data', (d) => { salida += d; });
+        g.on('error', () => res(false));
+        g.on('close', (code) => {
+            if (code !== 0) return res(false);
+            const lineas = salida.split('\n');
+            const quitada = lineas.some((l) => l.startsWith('-') && !l.startsWith('---') && l.slice(1).includes(de));
+            const puesta = lineas.some((l) => l.startsWith('+') && !l.startsWith('+++') && l.slice(1).includes(a));
+            res(quitada && puesta);
+        });
+    });
+}
+
 for (const s of lista) {
     const original = await readFile(s.fichero, 'utf8').catch(() => null);
     if (original === null) {
@@ -1708,8 +1852,35 @@ for (const s of lista) {
          * pasar la prueba por buena sin haberla probado, que es exactamente el fallo
          * que este instrumento existe para cazar — cometido aquí dentro.
          */
+        /**
+         * ⚠️ Y HAY DOS CAUSAS QUE SE LEEN IGUAL Y SIGNIFICAN LO CONTRARIO.
+         *
+         * La de arriba —sabotaje caducado, hay que actualizarlo— y ésta otra: **el
+         * sabotaje se quedó PUESTO** de una pasada que alguien mató a medias. El
+         * texto que busca no está porque lo cambió ella misma, hace una hora.
+         *
+         * La cabecera de este fichero ya avisaba de esto y aun así me comió el
+         * tiempo el 29-08-2026: `paleta.js` llevaba `contrasteDe = (hex) => hex` en
+         * el árbol —el sabotaje— y esta línea me dijo «el código cambió». Es un
+         * diagnóstico FALSO, y de los caros: mandas a alguien a reescribir un
+         * sabotaje que estaba perfecto mientras el proyecto corre con un fallo
+         * puesto a propósito.
+         *
+         * Se distinguen preguntándole a git, que es quien lo sabe. No se restaura
+         * sola —para eso haría falta estar segura de que el cambio no es tuyo, y no
+         * lo estoy— pero sí dice cuál de las dos cosas es y cómo salir.
+         */
+        const puesto = await sabotajePuesto(s.fichero, s.de, s.a);
         console.log(`  ${rojo('✗')} ${s.nombre.padEnd(12)} el sabotaje ya no encaja: falta «${s.de.slice(0, 40)}»`);
-        console.log(gris(`      el código cambió y este fichero no. Hay que actualizar el sabotaje.`));
+        if (puesto) {
+            console.log(rojo(`      ⚠️ ESTE SABOTAJE ESTÁ PUESTO EN EL ÁRBOL AHORA MISMO: el diff tiene`));
+            console.log(rojo(`         su línea quitada y su línea puesta. No está caducado — se quedó de`));
+            console.log(rojo(`         una pasada muerta a medias, y el proyecto corre averiado:`));
+            console.log(gris(`             git diff -- ${s.fichero}`));
+            console.log(gris(`             git checkout -- ${s.fichero}   # si el cambio no es tuyo`));
+        } else {
+            console.log(gris(`      el código cambió y este fichero no. Hay que actualizar el sabotaje.`));
+        }
         malas++;
         continue;
     }

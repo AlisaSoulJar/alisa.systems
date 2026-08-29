@@ -119,7 +119,7 @@ console.log('\n¿Está derecha la vara de medir?\n');
     }
 
     const { stdout } = await correr('node',
-        ['acreditar.mjs', '--juego', 'sokoban', '--semilla', '99', '--jugadas', jugadas.join(',')],
+        ['acreditar.mjs', '--juego', 'sokoban', '--semilla', '99', '--jugadas', jugadas.join(','), '--libre'],
         { cwd: process.cwd(), maxBuffer: 8 * 1024 * 1024 })
         .catch((err) => ({ stdout: err.stdout ?? '' }));
 
@@ -163,7 +163,7 @@ console.log('\n¿Está derecha la vara de medir?\n');
                + 'derecha,abajo,abajo,izquierda,abajo,derecha';
     const margen = async (jugadas) => {
         const { stdout } = await correr('node',
-            ['acreditar.mjs', '--juego', 'sokoban', '--semilla', '99', '--jugadas', jugadas],
+            ['acreditar.mjs', '--juego', 'sokoban', '--semilla', '99', '--jugadas', jugadas, '--libre'],
             { cwd: process.cwd(), maxBuffer: 8 * 1024 * 1024 })
             .catch((err) => ({ stdout: err.stdout ?? '' }));
         /**
@@ -181,8 +181,17 @@ console.log('\n¿Está derecha la vara de medir?\n');
          *    dijera lo que dijera el código. Dos veces seguidas el instrumento, no
          *    el mundo.
          */
+        /**
+         * ⚠️ Y TERCERA VEZ QUE ESTA REGEX ME MIENTE, AHORA POR LEER EL LITERAL.
+         *    Buscaba «supera … por N», que era como hablaba `--libre` cuando
+         *    `--libre` acreditaba. Al quitarle la acreditación —el agujero que
+         *    encontró Fable— la frase pasó a ser «SUPERA EL SUELO por N» y esto
+         *    devolvió `null`, o sea el control positivo en rojo. El fallo no estaba
+         *    en la puerta nueva: estaba en que la prueba dependía de una palabra.
+         *    Se aceptan las dos formas y se deja escrito por qué hay dos.
+         */
         const m = stdout.replace(/\x1b\[[0-9;]*m/g, '')
-            .match(/supera[\s\S]{0,60}?por (-?\d+(?:\.\d+)?)/);
+            .match(/supera[\s\S]{0,60}?por (-?\d+(?:\.\d+)?)/i);
         return m ? Number(m[1]) : null;
     };
 
@@ -202,7 +211,310 @@ console.log('\n¿Está derecha la vara de medir?\n');
     }
 }
 
-// ── 4. LOS TRES VEREDICTOS EXISTEN Y SE DISTINGUEN ─────────────────────────
+// ── 4. UNA SEMILLA ELEGIDA POR QUIEN JUEGA NO ACREDITA ─────────────────────
+/**
+ * ⚠️ EL AGUJERO MÁS BARATO DE CERRAR, Y ESTUVO ABIERTO DESDE SIEMPRE.
+ *
+ * `docs/cuando_los_puntos_valen_algo.md`, 08-08-2026: *«quien corre el banco elige
+ * sus semillas: juega cien y manda las tres mejores. La selección es la trampa.»*
+ *
+ * No hacía falta ningún truco — `--semilla <la que quieras>`— y el recibo era
+ * impecable: re-simulaba, cuadraba, superaba a las siete. Y no demostraba nada.
+ *
+ * Se comprueba con el MISMO recibo dos veces, que es lo único que aísla la puerta:
+ * una vez tal cual —semilla elegida, no debe acreditar— y otra con `--libre`, donde
+ * sí acredita pero diciendo en voz alta que no vale. Si las dos dieran lo mismo, la
+ * puerta no estaría haciendo nada.
+ */
+{
+    const ruta = 'arriba,abajo,abajo,izquierda,izquierda,arriba,arriba,arriba,'
+               + 'derecha,abajo,abajo,izquierda,abajo,derecha';
+    const corre = async (extra) => {
+        const { stdout } = await correr('node',
+            ['acreditar.mjs', '--juego', 'sokoban', '--semilla', '99', '--jugadas', ruta, ...extra],
+            { cwd: process.cwd(), maxBuffer: 8 * 1024 * 1024 })
+            .catch((err) => ({ stdout: err.stdout ?? '' }));
+        return stdout.replace(/\x1b\[[0-9;]*m/g, '');
+    };
+
+    const elegida = await corre([]);
+    const conLibre = await corre(['--libre']);
+    comprobaciones += 3;
+
+    if (!/no est. emitida/i.test(elegida)) {
+        mal('un recibo con semilla elegida por quien juega sigue acreditando. '
+            + '«Juega cien y manda la mejor» vuelve a funcionar.');
+    }
+    /**
+     * ⚠️ ESTA COMPROBACIÓN PEDÍA LO CONTRARIO, Y ERA EL AGUJERO.
+     *
+     * Decía: «con --libre debe salir ACREDITA, y además debe avisar de que no
+     * vale». O sea que yo misma había escrito una prueba que EXIGÍA el literal
+     * `✓ ACREDITA` en el único modo donde la semilla la elige quien juega.
+     *
+     * Fable lo vio leyendo: la advertencia era texto para humanos, y el proceso
+     * salía con **código 0**. Cualquier consumidor que hiciera lo normal —mirar el
+     * código de salida, o buscar el literal— acreditaba una semilla autoelegida.
+     * La puerta más importante de todas, saltada por la de servicio, sin dar error.
+     *
+     * Y la prueba no lo cazaba porque estaba mirando la advertencia, que sí estaba.
+     * Es la avería de siempre: la protección escrita y no conectada a lo único que
+     * una máquina lee.
+     *
+     * Ahora `--libre` no acredita: no escribe ese literal jamás y sale con 3.
+     */
+    if (/ACREDITA/.test(conLibre)) {
+        mal('--libre escribe el literal «ACREDITA». Quien lea la salida con un grep '
+            + '—que es lo normal— acredita una semilla elegida por quien juega. '
+            + 'La puerta de las semillas emitidas se salta entera por ahí.');
+    }
+    if (!/SUPERA EL SUELO/.test(conLibre) || !/NO es una acreditación/i.test(conLibre)) {
+        mal('con --libre ya no se puede ni mirar una partida vieja, o no dice qué es. '
+            + 'Tiene que seguir sirviendo para practicar, diciendo que no vale.');
+    }
+    {
+        const { code } = await correr('node',
+            ['acreditar.mjs', '--juego', 'sokoban', '--semilla', '99', '--jugadas', ruta, '--libre'],
+            { cwd: process.cwd(), maxBuffer: 8 * 1024 * 1024 })
+            .then(() => ({ code: 0 })).catch((err) => ({ code: err.code ?? 1 }));
+        comprobaciones++;
+        if (code === 0) {
+            mal('--libre sale con código 0. El texto puede decir misa: lo que lee una '
+                + 'máquina es el código de salida, y un 0 ahí significa acreditado.');
+        }
+    }
+}
+
+// ── 5. LA POLÍTICA DE LA CASA NO ACREDITA A NADIE ──────────────────────────
+/**
+ * ⚠️ EL ATAQUE MÁS BARATO DEL BANCO, Y LO ENCONTRÓ FABLE EN UNA LECTURA.
+ *
+ * Su frase: *«el suelo es demasiado bajo; la política de la casa ya lo supera, y
+ * esa política viene en el repo»*. El ataque son tres líneas — juegas tu asiento
+ * llamando a `reglas.sugerencia(p)`, el greedy que distribuimos con cada juego, y
+ * mandas el resultado. Medido contra la semilla emitida, sin `--libre`:
+ *
+ *     damas   ✓ ACREDITA — supera a la mejor ciega por 1002.0
+ *     oca     ✓ ACREDITA — supera por 32.0
+ *
+ * Coste de búsqueda: **cero**. Y el diseño entero se apoya en que buscar es caro.
+ * Con siete políticas tontas de suelo, lo que se pagaba no era jugar bien: era
+ * copiar una función nuestra.
+ *
+ * Se arregló metiendo la casa como octava del suelo — que era lo que
+ * `docs/cuando_los_puntos_valen_algo.md` ya decía el 08-08: *«el huevo se gana
+ * contra la casa»*.
+ *
+ * ⚠️ Y SE VIGILA GENERANDO EL ATAQUE, NO BUSCÁNDOLO EN EL TEXTO.
+ *
+ * Aquí se juega de verdad con `sugerencia` y se le pide a `acreditar` que lo
+ * rechace. Si alguien quita la casa del suelo, esto vuelve a acreditar y la prueba
+ * lo canta — cosa que ninguna lectura del código haría, porque el fallo no es una
+ * línea: es qué conjunto se compara.
+ */
+{
+    const { cargarReglas } = await import('./public/arcade/js/protohub/rules/index.js');
+    const { semillaDe } = await import('./semillas.mjs');
+
+    let mirados = 0, colados = [];
+    for (const juego of ['damas', 'oca', 'mancala', 'reversi']) {
+        const reglas = await cargarReglas(juego, {});
+        if (!reglas.sugerencia) continue;
+        const s = semillaDe(juego);
+        const p = reglas.nuevaPartida({ semilla: s, seed: s });
+        const mio = reglas.estado(p).turn;
+        const jugadas = [];
+        for (let i = 0; i < 200; i++) {
+            const st = reglas.estado(p);
+            if (st.is_game_over || (st.turn !== undefined && st.turn !== mio)) break;
+            const m = reglas.sugerencia(p);
+            if (!m || !reglas.mover(p, m)) break;
+            jugadas.push(String(m));
+            for (let k = 0; k < 64; k++) {
+                const t = reglas.estado(p);
+                if (t.is_game_over || t.turn === undefined || t.turn === mio) break;
+                const c = reglas.sugerencia(p);
+                if (!c || !reglas.mover(p, c)) break;
+            }
+        }
+        if (jugadas.length < 3) continue;
+        mirados++;
+
+        const { stdout } = await correr('node',
+            ['acreditar.mjs', '--juego', juego, '--semilla', String(s), '--jugadas', jugadas.join(',')],
+            { cwd: process.cwd(), maxBuffer: 8 * 1024 * 1024 })
+            .catch((err) => ({ stdout: err.stdout ?? '' }));
+        const limpio = stdout.replace(/\x1b\[[0-9;]*m/g, '');
+        comprobaciones++;
+        if (/✓ ACREDITA/.test(limpio)) colados.push(juego);
+    }
+
+    comprobaciones++;
+    if (mirados < 2) {
+        console.log(rojo(`\nCONTROL POSITIVO FALLIDO: sólo ${mirados} juegos con política de casa `
+            + 'jugable. Con tan pocos, «ninguno cuela» no significa nada.\n'));
+        process.exit(2);
+    }
+    if (colados.length) {
+        mal(`la política de la casa acredita sola en: ${colados.join(', ')}. `
+            + 'Copiar una función que va en el repositorio no puede ser una acreditación: '
+            + 'el coste de búsqueda es cero y el diseño se apoya en que buscar es caro.');
+    }
+}
+
+// ── 6. UN RECIBO SIN NI UNA DECISIÓN NO ACREDITA, AUNQUE EL SUELO NO SEA PLANO ──
+/**
+ * ⚠️ EL ARREGLO DE LA MAÑANA APAGABA EL CANARIO DE LA TARDE.
+ *
+ * Segundo hallazgo de Fable: *«el canario de decisiones sólo corre dentro de la
+ * rama `plano`»*. Cuando lo escribí eso parecía inofensivo —sin decisiones, las
+ * siete ciegas empatan siempre, así que siempre pasaba por `plano`—.
+ *
+ * Meter a la casa en el suelo rompió justo esa premisa: la casa separa donde las
+ * ciegas empataban, el suelo deja de salir plano, y un recibo cuya puntuación la
+ * fija la semilla entraba directo a comparar notas. Dos arreglos correctos por
+ * separado que juntos abren una puerta — y ninguno de los dos da error.
+ *
+ * Se vigila con el juego de control: uno donde cada turno ofrece UNA jugada legal.
+ * Se busca midiendo, no por nombre, porque «el que no tiene decisiones» es una
+ * propiedad de la partida y no una lista que se pueda quedar vieja.
+ */
+{
+    const { cargarReglas, JUEGOS } = await import('./public/arcade/js/protohub/rules/index.js');
+    const { semillaDe } = await import('./semillas.mjs');
+
+    let control = null;
+    for (const juego of JUEGOS) {
+        let reglas;
+        try { reglas = await cargarReglas(juego, {}); } catch { continue; }
+        const s = semillaDe(juego);
+        const p = reglas.nuevaPartida({ semilla: s, seed: s });
+        const jugadas = [];
+        let hubo = false;
+        for (let i = 0; i < 40; i++) {
+            const st = reglas.estado(p);
+            if (st.is_game_over) break;
+            const posibles = st.legal_moves ?? [];
+            if (posibles.length !== 1) { hubo = posibles.length > 1; break; }
+            if (!reglas.mover(p, posibles[0])) break;
+            jugadas.push(String(posibles[0]));
+        }
+        if (!hubo && jugadas.length >= 8) { control = { juego, semilla: s, jugadas }; break; }
+    }
+
+    comprobaciones++;
+    if (!control) {
+        console.log(rojo('\nCONTROL POSITIVO FALLIDO: no hay ningún juego sin decisiones con el que '
+            + 'probar el canario. Si todos los juegos de control han desaparecido, esta '
+            + 'comprobación no vigila nada — bórrala o traed uno.\n'));
+        process.exit(2);
+    }
+
+    const { stdout } = await correr('node',
+        ['acreditar.mjs', '--juego', control.juego, '--semilla', String(control.semilla),
+            '--jugadas', control.jugadas.join(',')],
+        { cwd: process.cwd(), maxBuffer: 8 * 1024 * 1024 })
+        .catch((err) => ({ stdout: err.stdout ?? '' }));
+    const limpio = stdout.replace(/\x1b\[[0-9;]*m/g, '');
+
+    comprobaciones++;
+    if (/✓ ACREDITA/.test(limpio)) {
+        mal(`«${control.juego}» acredita con ${control.jugadas.length} jugadas y CERO decisiones. `
+            + 'Cada turno ofrecía una sola jugada legal: la puntuación la fija la semilla, '
+            + 'no quien juega. Esto no puede acreditar aunque el suelo no sea plano.');
+    }
+    comprobaciones++;
+    if (!/NI UNA decisión/.test(limpio)) {
+        mal(`«${control.juego}» no acredita, pero tampoco dice POR QUÉ: la razón es que no hubo `
+            + 'ni una decisión, y decirlo importa — es la diferencia entre «has jugado mal» '
+            + 'y «aquí no había nada que acertar».');
+    }
+}
+
+// ── 7. LA FUERZA BRUTA AL AZAR NO ACREDITA ─────────────────────────────────
+/**
+ * ⚠️ EL ATAQUE DE MOTOKO, Y LO TRAJO MEDIA HORA DESPUÉS DE QUE SE LO PIDIERA.
+ *
+ * *«Como el suelo sólo toma UNA muestra por política ciega, generamos mil partidas
+ * al azar en local, nos quedamos con la que haya tenido una suerte absurda, y la
+ * mandamos.»* Medido antes de creérmelo, con la semilla emitida:
+ *
+ *     oca       ✓ ACREDITA — supera por 908.0     ← al azar, cero inteligencia
+ *     mancala   ✓ ACREDITA — supera por  37.0     ← al azar
+ *
+ * La raíz es una asimetría al revés: **el suelo tenía un intento y quien juega
+ * tenía infinitos**. Y todo este banco se apoya en la asimetría contraria — buscar
+ * cuesta, verificar es barato.
+ *
+ * Cerrado metiendo la búsqueda EN el suelo: `busqueda-N` es la mejor de N partidas
+ * al azar sobre el mismo mundo y el mismo horizonte, con N publicado. Entonces
+ * pasar significa una de dos cosas, y las dos son trabajo: jugar mejor que la
+ * búsqueda tonta, o gastar más de N.
+ *
+ * Aquí se ATACA de verdad —se generan partidas al azar y se manda la mejor— con un
+ * presupuesto muy por debajo del del banco. Si algún día vuelve a acreditar, es que
+ * alguien bajó el suelo.
+ */
+{
+    const { cargarReglas } = await import('./public/arcade/js/protohub/rules/index.js');
+    const { puntuacionDe } = await import('./public/arcade/js/protohub/Verificador.js');
+    const { semillaDe } = await import('./semillas.mjs');
+    const INTENTOS = 300, PASOS = 60;
+
+    let mirados = 0, colados = [];
+    for (const juego of ['oca', 'mancala', 'reversi', 'sokoban']) {
+        let reglas;
+        try { reglas = await cargarReglas(juego, {}); } catch { continue; }
+        if (!reglas) continue;
+        const s = semillaDe(juego);
+        const miTurno = reglas.estado(reglas.nuevaPartida({ semilla: s, seed: s })).turn;
+
+        let mejor = { nota: -Infinity, jugadas: [] };
+        for (let n = 0; n < INTENTOS; n++) {
+            const p = reglas.nuevaPartida({ semilla: s, seed: s });
+            const jugadas = [];
+            for (let i = 0; i < PASOS; i++) {
+                const st = reglas.estado(p);
+                if (st.is_game_over) break;
+                if (st.turn !== undefined && st.turn !== miTurno) {
+                    const c = reglas.sugerencia?.(p);
+                    if (!c || !reglas.mover(p, c)) break;
+                    continue;
+                }
+                const posibles = st.legal_moves ?? [];
+                if (!posibles.length) break;
+                const m = posibles[Math.floor(Math.random() * posibles.length)];
+                if (!reglas.mover(p, m)) break;
+                jugadas.push(String(m));
+            }
+            const nota = puntuacionDe(reglas.estado(p));
+            if (nota > mejor.nota && jugadas.length >= 4) mejor = { nota, jugadas };
+        }
+        if (!mejor.jugadas.length) continue;
+        mirados++;
+
+        const { stdout } = await correr('node',
+            ['acreditar.mjs', '--juego', juego, '--semilla', String(s), '--jugadas', mejor.jugadas.join(',')],
+            { cwd: process.cwd(), maxBuffer: 8 * 1024 * 1024 })
+            .catch((err) => ({ stdout: err.stdout ?? '' }));
+        comprobaciones++;
+        if (/✓ ACREDITA/.test(stdout.replace(/\x1b\[[0-9;]*m/g, ''))) colados.push(`${juego} (${mejor.nota})`);
+    }
+
+    comprobaciones++;
+    if (mirados < 2) {
+        console.log(rojo(`\nCONTROL POSITIVO FALLIDO: sólo ${mirados} juegos atacables. `
+            + 'Con tan pocos, «la fuerza bruta no cuela» no significa nada.\n'));
+        process.exit(2);
+    }
+    if (colados.length) {
+        mal(`la fuerza bruta al azar acredita en: ${colados.join(', ')}, con sólo ${INTENTOS} `
+            + 'intentos en local. Dar botones al azar y quedarse con la partida afortunada '
+            + 'no puede repartir títulos: no hay ninguna capacidad detrás.');
+    }
+}
+
+// ── 8. LOS TRES VEREDICTOS EXISTEN Y SE DISTINGUEN ─────────────────────────
 {
     comprobaciones += 3;
     for (const [que, re] of [
@@ -224,4 +536,4 @@ if (fallos.length) {
     console.log(rojo(`\n✗ ${fallos.length} fallo(s) en la vara de medir\n`));
     process.exit(1);
 }
-console.log(verde('✓ la casa juega, rellenar no paga, el recibo y las ciegas se puntúan igual\n'));
+console.log(verde('✓ la casa juega, la semilla no la eliges tú, rellenar no paga, y todo se puntúa igual\n'));

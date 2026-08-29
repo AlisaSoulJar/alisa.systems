@@ -86,6 +86,8 @@ import { puntuacionDe } from './public/arcade/js/protohub/Verificador.js';
  * trinquete y la que produjo el «46 de 49».
  */
 import { blindPolicies } from './public/js/alisa-engine/src/gym/baseline.js';
+import { mulberry32 } from './public/js/alisa-engine/src/world/core/DeterministicScope.js';
+import { estaEmitida, semillaDe, periodoActual } from './semillas.mjs';
 
 /**
  * Re-simula una partida enviada. Mismo mecanismo que `/api/gym`: sin estado, se
@@ -174,6 +176,50 @@ function reproducir(reglas, semilla, jugadas) {
     return { p, rechazadas, efectivas, decisiones };
 }
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ LA CASA ES LA OCTAVA, Y ES LA QUE DE VERDAD HAY QUE BATIR.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Lo encontró Fable atacando este fichero el 29-08-2026, y tumba la premisa
+ * entera del diseño. Su frase: *«el suelo es demasiado bajo; la política de la
+ * casa ya lo supera, y esa política viene en el repo»*.
+ *
+ * El ataque son tres líneas: juega TU asiento llamando a `reglas.sugerencia(p)`
+ * —el greedy que ya distribuimos con cada juego— y manda el resultado. Medido
+ * contra la semilla emitida de hoy, sin `--libre`:
+ *
+ *     damas   ✓ ACREDITA — supera a la mejor ciega por 1002.0
+ *     oca     ✓ ACREDITA — supera por 32.0
+ *
+ * Coste de búsqueda: **cero**. Y el diseño entero se apoyaba en que buscar una
+ * buena jugada es caro. Con siete políticas tontas de suelo, lo que se paga no es
+ * jugar bien: es copiar una función nuestra.
+ *
+ * ⚠️ Y LA CORRECCIÓN YA ESTABA ESCRITA, COMO TODO HOY.
+ *
+ * `docs/cuando_los_puntos_valen_algo.md`, 08-08-2026: *«la respuesta más limpia es
+ * también la más barata: el huevo se gana CONTRA LA CASA»*. La casa siempre fue el
+ * listón; lo que faltaba era ponerla en el suelo.
+ *
+ * Con esto, el ataque empata consigo mismo y deja de acreditar. Quien juegue MEJOR
+ * que la casa sigue acreditando, que es exactamente lo que la nota debía significar.
+ */
+function correrLaCasa(reglas, semilla, pasos) {
+    if (!reglas.sugerencia) return null;
+    const p = reglas.nuevaPartida({ semilla, seed: semilla });
+    const miTurno = reglas.estado(p).turn;
+    dejaJugarALaCasa(reglas, p, miTurno);
+    for (let i = 0; i < pasos; i++) {
+        const st = reglas.estado(p);
+        if (st.is_game_over) break;
+        const j = reglas.sugerencia(p);
+        if (!j || !reglas.mover(p, j)) break;
+        dejaJugarALaCasa(reglas, p, miTurno);
+    }
+    return puntuacionDe(reglas.estado(p));
+}
+
 function correrCiega(reglas, semilla, pasos, pol) {
     const p = reglas.nuevaPartida({ semilla, seed: semilla });
     const miTurno = reglas.estado(p).turn;
@@ -213,6 +259,32 @@ if (!recibo?.juego || !JUEGOS.includes(recibo.juego)) {
     process.exit(2);
 }
 
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ LA SEMILLA NO LA ELIGE QUIEN JUEGA. ERA EL AGUJERO MÁS BARATO DE CERRAR.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * `docs/cuando_los_puntos_valen_algo.md` lo dejó escrito el 08-08-2026:
+ *
+ *     «Semillas emitidas — el agujero más grande y el más barato de cerrar. Hoy,
+ *      quien corre el banco elige sus semillas: juega cien y manda las tres
+ *      mejores. LA SELECCIÓN ES LA TRAMPA.»
+ *
+ * Y no hacía falta ningún truco: `--semilla <la que quieras>`. El recibo no miente
+ * —se re-simula y cuadra— y aun así la nota no significa nada, porque compara el
+ * mejor de cien intentos contra lo que sacan las ciegas en ese mismo mundo.
+ *
+ * Con `semillas.mjs` hay UNA semilla emitida por juego y periodo. Se acepta también
+ * la de los seis días anteriores: un recibo tarda en llegar y cerrar la ventana a
+ * medianoche haría que la misma partida acreditara o no según la hora.
+ *
+ * ⚠️ `--libre` EXISTE Y GRITA. Sirve para practicar, para las pruebas y para mirar
+ *    una partida vieja. Lo que NO hace es acreditar: si acreditara, el agujero
+ *    seguiría abierto con un nombre más largo.
+ */
+const libre = args.includes('--libre');
+const emision = estaEmitida(recibo.juego, recibo.semilla);
+
 const reglas = await cargarReglas(recibo.juego, {});
 const jugadas = (recibo.jugadas ?? []).map(String);
 const { p, rechazadas, efectivas, decisiones } = reproducir(reglas, recibo.semilla, jugadas);
@@ -222,16 +294,150 @@ const ciegas = blindPolicies().map(pol => ({
     nombre: pol.nombre,
     nota: correrCiega(reglas, recibo.semilla, efectivas, pol),
 }));
-const mejor = ciegas.reduce((a, b) => (b.nota > a.nota ? b : a));
+/**
+ * La casa entra en el suelo. Ver la nota larga de `correrLaCasa`: sin ella, el
+ * ataque más barato del banco es copiar una función que va en el propio repositorio.
+ *
+ * Se marca aparte porque NO es ciega —mira el tablero y decide— y la media de las
+ * siete tiene que seguir significando «lo que saca quien no mira». El techo, en
+ * cambio, es el máximo de las ocho: eso es lo que hay que batir.
+ */
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ EL SUELO TENÍA UN INTENTO Y EL CANDIDATO TENÍA INFINITOS.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Lo encontró Motoko atacando este fichero el 29-08-2026, media hora después de
+ * que le pidiera que lo rompiera. Su frase: *«como el suelo sólo toma UNA muestra
+ * por política ciega, generamos mil partidas al azar en local, nos quedamos con la
+ * que haya tenido una suerte absurda, y la mandamos»*.
+ *
+ * Medido de punta a punta —fuerza bruta al azar, mejor de 400, semilla emitida,
+ * juzgado por este mismo fichero—:
+ *
+ *     sokoban   ✗ no supera a la casa (188)
+ *     snake     ⚠️ suelo plano
+ *     oca       ✓ ACREDITA — supera por 908.0      ← al azar
+ *     mancala   ✓ ACREDITA — supera por  37.0      ← al azar
+ *     reversi   ✗ no supera a la casa (40)
+ *
+ * La casa tapaba tres de cinco y no las otras dos. En `oca` no podía: es de dados,
+ * y ahí la casa no sabe nada que el azar no sepa.
+ *
+ * ⚠️ EL ARREGLO NO ES SUBIR EL SUELO A OJO. ES METER LA BÚSQUEDA EN EL SUELO.
+ *
+ * La tentación es multiplicar las muestras hasta que el ataque no salga. Eso es una
+ * carrera: quien ataca usa el doble y vuelve. Y sobre todo no dice nada — un número
+ * elegido para que hoy salga verde caduca el día que alguien tenga más máquina.
+ *
+ * Lo que sí se puede decir es esto: **el suelo busca, y su presupuesto se publica.**
+ * `busqueda-N` es la mejor de N partidas al azar sobre el mismo mundo, el mismo
+ * horizonte y el mismo marcador. Entonces «supera al suelo» deja de significar
+ * «tuvo más suerte que una tirada» y pasa a significar una de dos cosas, y las dos
+ * son trabajo de verdad:
+ *
+ *   · o jugó mejor que la búsqueda tonta —eso es inteligencia—,
+ *   · o gastó más de N partidas —eso es cómputo, y es medible y comparable.
+ *
+ * Que es exactamente la asimetría en la que se apoya todo esto: buscar cuesta,
+ * verificar es barato. El agujero era que el suelo no buscaba nada.
+ *
+ * ⚠️ Y LA BÚSQUEDA VA CON SEMILLA, NO CON `Math.random`.
+ *
+ * Un veredicto que depende del azar del servidor no se puede volver a comprobar, y
+ * un recibo que no se puede re-verificar no vale nada — es la propiedad que sostiene
+ * el banco entero. El generador se IMPORTA de `DeterministicScope.js`: `prueba_azar`
+ * lleva trinquete contando las copias de `mulberry32`, y dos copias de un generador
+ * se separan igual que dos copias de una lista.
+ */
+const PRESUPUESTO = 2000;
+
+function correrBusqueda(reglas, semilla, pasos, intentos) {
+    const rnd = mulberry32(semilla ^ 0x5eed);
+    const miTurno = reglas.estado(reglas.nuevaPartida({ semilla, seed: semilla })).turn;
+    const notas = [];
+    for (let n = 0; n < intentos; n++) {
+        const p = reglas.nuevaPartida({ semilla, seed: semilla });
+        /**
+         * ⚠️ EL HORIZONTE SE CUENTA IGUAL QUE EN `correrCiega`, Y LA PRIMERA
+         * VERSIÓN NO LO HACÍA.
+         *
+         * Aquí los turnos de la casa gastaban pasos del contador, así que la
+         * búsqueda jugaba la mitad de jugadas PROPIAS que el recibo en cualquier
+         * juego de dos asientos. Resultado medido: mancala y reversi seguían
+         * acreditando al azar con un suelo que jugaba con un brazo atado.
+         *
+         * Es el mismo fallo que el relleno de NO-OPs que encontró Motoko: contar
+         * pasos del reloj en vez de jugadas efectivas. Se cuenta lo mismo que
+         * cuenta el suelo ciego —jugadas propias, la casa va aparte— o no es la
+         * misma vara.
+         */
+        dejaJugarALaCasa(reglas, p, miTurno);
+        for (let i = 0; i < pasos; i++) {
+            const st = reglas.estado(p);
+            const posibles = st.legal_moves ?? [];
+            if (!posibles.length || st.is_game_over) break;
+            try { if (!reglas.mover(p, posibles[Math.floor(rnd() * posibles.length)])) break; } catch { break; }
+            dejaJugarALaCasa(reglas, p, miTurno);
+        }
+        notas.push(puntuacionDe(reglas.estado(p)));
+    }
+    const buenas = notas.filter(Number.isFinite).sort((a, b) => a - b);
+    if (!buenas.length) return null;
+    /**
+     * ⚠️ EL SUELO ES EL MÁXIMO, Y PROBÉ ALGO MÁS LISTO QUE ESTABA MAL.
+     *
+     * Mi primer intento de cerrar la moneda al aire fue pedir `max + holgura`, con
+     * `holgura = max − p90`: «que la nota quede fuera del alcance de la suerte».
+     * Sonaba a medida y era un número inventado con disfraz. En una distribución
+     * sesgada ese hueco es medio marcador:
+     *
+     *     mancala   max 29   p90 14   →  holgura 15   →  suelo 44
+     *
+     * O sea que pedía casi el DOBLE de lo mejor que saca el azar. Y lo cazó el
+     * control positivo, no el ataque: **gastar diez veces el presupuesto seguía sin
+     * acreditar en ninguno de los cuatro juegos**. Había construido una puerta que
+     * no se abre nunca, que es el fallo peor de todos y el que sale en verde.
+     *
+     * Así que el suelo es el máximo de N y ya está. Y lo que eso garantiza —y lo
+     * que no— se dice claro, porque es la propiedad de la que cuelga todo esto:
+     *
+     *   · con MENOS de N intentos, pasar es improbable;
+     *   · con N justos es una moneda al aire — y ya has gastado N;
+     *   · con más de N se pasa, y entonces has gastado más cómputo que el banco.
+     *
+     * Ese último caso NO es un agujero: es la premisa. Buscar cuesta, verificar es
+     * barato, y quien gaste más que el presupuesto publicado ha hecho trabajo de
+     * verdad. Lo que estaba roto era que el suelo no buscaba NADA: batir a una sola
+     * tirada al azar no cuesta nada, y por eso `oca` acreditaba por +908.
+     *
+     * El único parámetro honesto aquí es N, y va escrito arriba y sale en la tabla.
+     */
+    return { max: buenas[buenas.length - 1], muestras: buenas.length };
+}
+
+const laCasa = correrLaCasa(reglas, recibo.semilla, efectivas);
+const laBusqueda = correrBusqueda(reglas, recibo.semilla, efectivas, PRESUPUESTO);
+const suelo = [
+    ...ciegas,
+    ...(laCasa === null ? [] : [{ nombre: 'casa', nota: laCasa, esCasa: true }]),
+    ...(laBusqueda === null ? [] : [{
+        nombre: `busqueda-${PRESUPUESTO}`,
+        nota: laBusqueda.max,
+        esBusqueda: true,
+    }]),
+];
+const mejor = suelo.reduce((a, b) => (b.nota > a.nota ? b : a));
 const media = ciegas.reduce((s, c) => s + c.nota, 0) / ciegas.length;
 
 console.log(`\n  ${recibo.juego} · semilla ${recibo.semilla} · ${jugadas.length} jugadas · ${recibo.quien ?? 'anónimo'}\n`);
 console.log(`  quien juega              nota`);
 console.log(`  ${String(recibo.quien ?? 'la partida').padEnd(22)} ${String(suya).padStart(7)}`);
-for (const c of ciegas.sort((a, b) => b.nota - a.nota)) {
-    console.log(`  ${('· ' + c.nombre).padEnd(22)} ${String(c.nota).padStart(7)}`);
+for (const c of suelo.sort((a, b) => b.nota - a.nota)) {
+    console.log(`  ${('· ' + c.nombre).padEnd(22)} ${String(c.nota).padStart(7)}`
+        + (c.esBusqueda ? `   (la mejor de ${PRESUPUESTO} partidas al azar)` : ''));
 }
-console.log(`\n  mejor ciega: ${mejor.nombre} (${mejor.nota}) · media ciega: ${media.toFixed(1)}`);
+console.log(`\n  techo: ${mejor.nombre} (${mejor.nota}) · media de las siete ciegas: ${media.toFixed(1)}`);
 
 if (rechazadas) console.log(`  ⚠️ ${rechazadas} jugada(s) ilegales, ignoradas — el recibo no cuadra con las reglas`);
 
@@ -242,8 +448,47 @@ if (rechazadas) console.log(`  ⚠️ ${rechazadas} jugada(s) ilegales, ignorada
  * buena que sea la partida: si el suelo es plano, estar encima no dice nada. Eso
  * es un fallo del entorno, no de quien juega, y se dice así.
  */
-const plano = ciegas.every(c => c.nota === ciegas[0].nota);
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ⚠️ EL CANARIO SE MIRA SIEMPRE, NO SÓLO CUANDO EL SUELO SALE PLANO.
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Segundo hallazgo de Fable sobre este fichero, el 29-08-2026: *«el canario de
+ * decisiones sólo corre dentro de la rama `plano`»*. Y tenía razón — estaba
+ * escondido dentro de un `if` por cómo lo escribí, no por ningún motivo.
+ *
+ * Por qué importa, y es justo lo que acaba de cambiar hoy: **al meter a la casa
+ * en el suelo, el suelo deja de salir plano casi nunca**, porque la casa separa
+ * donde las siete ciegas empataban. O sea que el arreglo de la mañana apagaba el
+ * canario de la tarde. Un recibo sin NI UNA decisión —donde la puntuación la fija
+ * la semilla y no quien juega— entraba directo a comparar notas.
+ *
+ * ⚠️ Y NO PONGO UMBRAL POR ENCIMA DE CERO, A PROPÓSITO.
+ *
+ * La tentación es rechazar por debajo de, digamos, un 20% de turnos con elección.
+ * No lo hago porque **no tengo con qué justificar el número**: hay juegos con
+ * tramos largos legítimamente forzados (una cadena de capturas obligadas en damas
+ * es una sola decisión y muchas jugadas). Cero sí es defendible sin medir nada:
+ * si no hubo nada que elegir, no hubo nada que acertar.
+ *
+ * Así que la fracción se PUBLICA siempre —en el veredicto, gane o pierda— y quien
+ * lea el recibo juzga. Un número a la vista vale más que un umbral inventado.
+ */
+const fraccion = efectivas > 0 ? decisiones / efectivas : 0;
 console.log('');
+if (decisiones === 0) {
+    console.log(`  ⚠️ NO ACREDITA — en estas ${efectivas} jugadas no hubo NI UNA decisión:`);
+    console.log(`     cada turno ofrecía una sola jugada legal, así que la puntuación la`);
+    console.log(`     fija la semilla y no quien juega. No hay nada que acertar.`);
+    if (suya !== mejor.nota) {
+        console.log(`\n  ✗ Y ADEMÁS ES IMPOSIBLE: sin decisiones, todo el mundo saca`);
+        console.log(`     ${mejor.nota} en este mundo, y este recibo dice ${suya}. Eso no se`);
+        console.log(`     consigue jugando mejor — se consigue tocando el arnés.`);
+    }
+    process.exit(1);
+}
+console.log(`  decisiones reales: ${decisiones} de ${efectivas} turnos (${(fraccion * 100).toFixed(0)}%)`);
+const plano = ciegas.every(c => c.nota === ciegas[0].nota);
 if (plano) {
     /**
      * ⚠️ «PLANO» NO ES LO MISMO QUE «EL ENTORNO ESTÁ ROTO», Y LA PRIMERA VERSIÓN
@@ -258,36 +503,20 @@ if (plano) {
      * culpa —el entorno o el recibo— lo dice el número de jugadas.
      */
     /**
-     * ⚠️ EL CANARIO: «SUELO PLANO» Y «NO HABÍA NADA QUE ELEGIR» NO SON LO MISMO.
+     * ⚠️ SI SE LLEGA AQUÍ, YA SE SABE QUE **SÍ** HUBO DECISIONES.
      *
-     * Las dos salen como siete ciegas empatadas, y el diagnóstico es opuesto:
+     * «Suelo plano» y «no había nada que elegir» salen igual —siete ciegas
+     * empatadas— y significan lo contrario:
      *
      *   · en `snake` a 33 jugadas el suelo es plano porque las ciegas son malas —
      *     el juego SÍ tiene decisiones y estar por encima significaría algo;
      *   · en `guerra` no hay ni una sola decisión: cada turno ofrece una jugada y
      *     la puntuación la fija la semilla. Ahí todo el mundo DEBE empatar.
      *
-     * `docs/cuando_los_puntos_valen_algo.md` ya llamaba a `guerra` «el control del
-     * banco» el 08-08-2026, y nadie lo implementó. Pero lo que hace control a ese
-     * juego no es su nombre: es que no hay elección. Eso se mide, y así el canario
-     * vale para cualquier juego y para cualquier tramo — hay partidas que pasan
-     * trozos enteros sin nada que decidir.
-     *
-     * Y si alguien manda un recibo SIN decisiones cuya puntuación NO es la forzada,
-     * eso no es «no acredita»: es imposible sin tocar el arnés. Cuesta cero
-     * detectarlo y sólo lo dispara un tramposo.
+     * El segundo caso se corta arriba, antes de esta rama y de la de acreditar —
+     * ver la nota del canario. Aquí sólo queda el primero: entorno sin señal a
+     * este horizonte, que es un fallo del banco y no de quien juega.
      */
-    if (decisiones === 0) {
-        console.log(`  ⚠️ NO ACREDITA — en estas ${efectivas} jugadas no hubo NI UNA decisión:`);
-        console.log(`     cada turno ofrecía una sola jugada legal, así que la puntuación la`);
-        console.log(`     fija la semilla y no quien juega. No hay nada que acertar.`);
-        if (suya !== mejor.nota) {
-            console.log(`\n  ✗ Y ADEMÁS ES IMPOSIBLE: sin decisiones, todo el mundo saca`);
-            console.log(`     ${mejor.nota} en este mundo, y este recibo dice ${suya}. Eso no se`);
-            console.log(`     consigue jugando mejor — se consigue tocando el arnés.`);
-        }
-        process.exit(1);
-    }
     console.log(`  ⚠️ NO ACREDITA — con ${jugadas.length} jugadas, las siete políticas ciegas empatan.`);
     console.log(`     El suelo es plano a este horizonte, así que estar encima no demostraría nada.`);
     console.log(jugadas.length < 20
@@ -296,10 +525,63 @@ if (plano) {
     process.exit(1);
 }
 if (suya > mejor.nota) {
+    /**
+     * ⚠️ SUPERAR EL SUELO NO BASTA SI TÚ ELEGISTE EL MUNDO.
+     *
+     * Ésta es la última puerta y la más barata de todas: el recibo puede ser
+     * impecable —re-simula, cuadra, supera a las siete— y aun así no demostrar
+     * nada, porque quien lo manda jugó cien semillas y mandó ésta.
+     *
+     * Se dice el número que SÍ acreditaría, para que no haya que adivinarlo. Y se
+     * dice que es la de hoy, no una cualquiera: quien quiera acreditar tiene una
+     * partida por juego y por día, la misma para todo el mundo.
+     */
+    if (!emision.emitida && !libre) {
+        console.log(`  ⚠️ NO ACREDITA — la semilla ${recibo.semilla} no está emitida.`);
+        console.log(`     Supera a la mejor ciega por ${(suya - mejor.nota).toFixed(1)}, y da igual: el`);
+        console.log(`     mundo lo elegiste tú. Jugar cien semillas y mandar la mejor no es jugar`);
+        console.log(`     mejor, es elegir el examen.`);
+        console.log(`\n     La de hoy para ${recibo.juego} es ${semillaDe(recibo.juego)} (${periodoActual()}).`);
+        console.log(`     Se aceptan también las de los seis días anteriores.`);
+        console.log(`     Con --libre se salta esta puerta, y entonces esto no acredita nada.`);
+        process.exit(1);
+    }
+    /**
+     * ⚠️ EL AGUJERO DE LA SELECCIÓN, ENTERO, POR LA PUERTA DE SERVICIO.
+     *
+     * Lo encontró Fable leyendo, el 29-08-2026, y es de los que dan más vergüenza:
+     * `--libre` escribía el literal `✓ ACREDITA` y salía con **código 0**. La
+     * advertencia de al lado era texto para humanos.
+     *
+     * O sea que toda la puerta de las semillas emitidas —la que cierra «juega cien
+     * y manda la mejor», el agujero más barato de todos— la saltaba cualquier
+     * consumidor que hiciera lo normal: mirar el código de salida, o buscar el
+     * literal. Y no habría dado error nunca: la herramienta imprimía su aviso, se
+     * quedaba tan tranquila, y quien la llamaba leía «acreditó».
+     *
+     * Es la avería de siempre en su forma más pura: la protección estaba escrita
+     * —hasta con su ⚠️— y no estaba conectada a lo único que una máquina lee.
+     *
+     * `--libre` no acredita. Punto. Sale distinto, se llama distinto, y no escribe
+     * jamás ese literal.
+     */
+    if (libre) {
+        console.log(`  ~ SUPERA EL SUELO por ${(suya - mejor.nota).toFixed(1)}, y esto NO es una acreditación.`);
+        console.log(`    Modo libre: la semilla ${recibo.semilla} la elegiste tú, así que la nota sólo`);
+        console.log(`    vale para probar. La de hoy para ${recibo.juego} es ${semillaDe(recibo.juego)}.`);
+        process.exit(3);
+    }
     console.log(`  ✓ ACREDITA — supera a la mejor política ciega por ${(suya - mejor.nota).toFixed(1)}.`);
     console.log(`    Con el mismo mundo, la misma semilla y el mismo horizonte.`);
+    console.log(`    Semilla emitida el ${emision.periodo}, la misma para todo el mundo.`);
     process.exit(0);
 }
-console.log(`  ✗ NO ACREDITA — no supera a «${mejor.nombre}» (${mejor.nota}) jugando a ciegas.`);
+console.log(mejor.esCasa
+    ? `  ✗ NO ACREDITA — no supera a LA CASA (${mejor.nota}), que es la política que va en el repositorio.`
+    : mejor.esBusqueda
+    ? `  ✗ NO ACREDITA — no supera a la BÚSQUEDA TONTA (${mejor.nota}): la mejor de\n`
+      + `     ${PRESUPUESTO} partidas al azar en este mismo mundo. Para pasar hay que jugar\n`
+      + `     mejor que eso, o gastar más de ${PRESUPUESTO} intentos. Las dos cosas son trabajo.`
+    : `  ✗ NO ACREDITA — no supera a «${mejor.nombre}» (${mejor.nota}) jugando a ciegas.`);
 console.log(`    No significa que jugara mal: significa que esta partida no demuestra que mirara.`);
 process.exit(1);
