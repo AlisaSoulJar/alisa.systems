@@ -350,6 +350,40 @@ const ciegas = blindPolicies().map(pol => ({
  * lleva trinquete contando las copias de `mulberry32`, y dos copias de un generador
  * se separan igual que dos copias de una lista.
  */
+/**
+ * ⚠️ POR QUÉ LA CURVA SE APLANA TAN PRONTO, Y QUÉ SIGNIFICA PARA ESTE NÚMERO.
+ *
+ * Al medir `max(N)` sale algo que descoloca: en muchos juegos el máximo de 2000
+ * tiradas es EL MISMO que el de 250. Parece que la búsqueda no sirve de nada.
+ *
+ * La explicación la trajo Motoko el 30-08-2026: **la casa es un blanco estático.**
+ * Juega una única línea determinista dada la semilla, así que las 2000 partidas al
+ * azar exploran ramas distintas contra un rival que siempre responde igual. Contra
+ * una sola línea rival hay pocos desenlaces distintos, y 250 tiradas ya los tocan
+ * casi todos.
+ *
+ * Su conclusión era que había que quitarle el determinismo a la casa. **Y eso no se
+ * puede**, porque es lo que sostiene el banco entero: un recibo es
+ * `{juego, semilla, jugadas}` y vale porque cualquiera lo re-simula y le sale lo
+ * mismo. Una casa que varíe hace el recibo inverificable, y ahí se cae la propiedad
+ * de la que cuelga todo — que no haga falta confiar en el servidor.
+ *
+ * O sea que el blanco estático no es un defecto: es el precio de la
+ * verificabilidad, pagado a propósito. Y es SIMÉTRICO, que es lo que lo hace justo:
+ * quien juega se enfrenta a la misma línea fija que la búsqueda. Si el azar
+ * encuentra el mate en 12 jugadas contra esa línea, quien mire el tablero lo puede
+ * encontrar en menos — y ganar antes puntúa más. Por eso `xiangqi` topa en 988 y
+ * `ajedrez` llega a 991: son victorias con penalización por jugadas, y el hueco de
+ * arriba existe.
+ *
+ * ⚠️ Y DE AHÍ SALE LA HONESTIDAD SOBRE ESTE NÚMERO.
+ *
+ * Con la curva plana, subir N no compra casi nada: 2000 y 20.000 dan casi siempre el
+ * mismo techo. Así que 2000 no está elegido porque sea el punto donde la búsqueda
+ * deja de mejorar —eso es mucho antes— sino porque es un presupuesto que **cuesta
+ * correr** y que se publica. Lo que compra no es un techo más alto: es que igualarlo
+ * salga caro.
+ */
 const PRESUPUESTO = 2000;
 
 function correrBusqueda(reglas, semilla, pasos, intentos) {
