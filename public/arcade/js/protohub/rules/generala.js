@@ -343,17 +343,22 @@ export function crearGenerala({ jugadores = 2 } = {}) {
             const caras = mano(p);
             const mezcla = revuelto(p.semilla ^ p.jugadas.length);
 
-            // La mejor anotación disponible ahora mismo. A igualdad de puntos —y el
-            // caso que importa es el de anotar CERO— se gasta la casilla de menor
+                        // La mejor anotación disponible ahora mismo. A igualdad de puntos -y el
+            // caso que importa es el de anotar CERO- se gasta la casilla de menor
             // potencial, que es la que menos duele perder. Se lee de `potencial`, no
             // de un orden de preferencia escrito aparte.
-            const mejor = ops
+            const opsConPuntos = ops
                 .filter(m => m.startsWith('anotar:'))
                 .map(m => ({ m, c: POR_ID[m.slice(7)] }))
-                .map(x => ({ ...x, pts: puntuar(x.c, caras, hoja, p.tiradas) }))
-                .sort((a, b) => b.pts - a.pts
-                             || a.c.potencial - b.c.potencial
-                             || ((mezcla % 2) ? 1 : -1))[0];
+                .map(x => ({ ...x, pts: puntuar(x.c, caras, hoja, p.tiradas) }));
+            
+            const maxPts = opsConPuntos.reduce((M, x) => Math.max(M, x.pts), -Infinity);
+            let mejores = opsConPuntos.filter(x => x.pts === maxPts);
+            if (mejores.length > 1) {
+                const minPot = mejores.reduce((m, x) => Math.min(m, x.c.potencial), Infinity);
+                mejores = mejores.filter(x => x.c.potencial === minPot);
+            }
+            const mejor = mejores[mezcla % mejores.length];
 
             // Sin tiradas por delante no hay nada que pensar: hay que anotar.
             if (!ops.includes('tirar') && !ops.some(m => m.startsWith('guardar:'))) return mejor.m;
