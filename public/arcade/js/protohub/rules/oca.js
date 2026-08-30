@@ -444,9 +444,52 @@ export function crearOca({ jugadores = 2, fichas = 2 } = {}) {
                      // que venía.
                      - Math.max(0, p.fichas[i].casilla - f.casilla) * 0.5;
             };
+            /**
+             * ⚠️ EL DESEMPATE NO PUEDE IR DENTRO DEL COMPARADOR. LO ENCONTRÓ MOTOKO.
+             *
+             * Aquí ponía `|| ((mezcla % 2) ? 1 : -1)`, y es un comparador
+             * **intransitivo**: para dos jugadas de igual valor devuelve siempre el
+             * mismo signo, así que puede afirmar a la vez que A>B, B>C y C>A. El
+             * TimSort de V8 asume orden total; con esa entrada el resultado no está
+             * definido, y `sort()[0]` deja de ser el mejor para ser casi cualquiera.
+             *
+             * O sea que `valor()` —todo el cálculo de arriba, con su cuenta de lo
+             * que se ha perdido y sus posadas— se tiraba a la basura al ordenar.
+             *
+             * Medido en `canadiense`, que tenía el mismo patrón: la casa pasó de
+             * sacar **0 a sacar 381**, y el suelo publicado del banco subió de 324 a
+             * 449.
+             *
+             * ⚠️ AQUÍ, EN CAMBIO, EL EFECTO MEDIDO ES CERO. A/B/A EN EL MISMO MINUTO:
+             *
+             *     con el arreglo     casa 1504
+             *     sin él (roto)      casa 1504
+             *     con él otra vez    casa 1504
+             *
+             * Se queda igualmente, y conviene decir por qué: un comparador
+             * intransitivo no es «un orden distinto», es **comportamiento no
+             * definido**. Que hoy dé lo mismo depende de cuántos empates produzca
+             * `valor()` y de cómo trocee TimSort esta entrada concreta. El día que
+             * alguien toque `valor()` —o que V8 cambie— empieza a dar otra cosa sin
+             * que nada avise. No se deja puesto porque hoy no se note.
+             *
+             * Y esto casi me hace publicar una mentira: medí 234 antes y 1504
+             * después, y por un momento lo apunté como una mejora enorme del
+             * arreglo. No lo era. Había cambiado la SEMILLA EMITIDA —pasó la
+             * medianoche UTC a mitad del análisis— así que estaba comparando dos
+             * mundos distintos y atribuyéndoselo al código. El A/B/A de arriba, todo
+             * en el mismo minuto, es lo que lo desmontó.
+             *
+             * El arreglo separa las dos cosas que estaban mezcladas: primero se
+             * elige el máximo, y sólo entre los empatados se desempata. `mezcla` es
+             * un hash sin estado a propósito —ver la cabecera— para que mirar la
+             * partida no la cambie.
+             */
             const mezcla = revuelto(p.semilla ^ p.jugadas.length);
-            return [...opciones]
-                .sort((a, b) => valor(b) - valor(a) || ((mezcla % 2) ? 1 : -1))[0];
+            const vals = opciones.map(m => ({ m, v: valor(m) }));
+            const maxV = vals.reduce((M, x) => Math.max(M, x.v), -Infinity);
+            const best = vals.filter(x => x.v === maxV);
+            return best[mezcla % best.length].m;
         },
 
         /**
